@@ -3,3 +3,5 @@ syntax: glob
 *.user
 dfr/dfr/bin/
 dfr/dfr/obj/
+firmware decode/firmware decode/bin
+firmware decode/firmware decode/obj
