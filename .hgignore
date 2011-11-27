@@ -1,0 +1,5 @@
+syntax: glob
+*.suo
+*.user
+dfr/dfr/bin/
+dfr/dfr/obj/
