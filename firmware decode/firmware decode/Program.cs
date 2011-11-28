@@ -12,21 +12,21 @@ namespace Nikon_Decode
 
         static void Main(string[] args)
         {
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
 
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
 
  
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
@@ -44,6 +44,13 @@ namespace Nikon_Decode
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750101b.bin"); 
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
+
+            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
+            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
+            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
+            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
+
 
             //TryCRC_16(@"C:\Temp\b640101b-HaCkEd.bin");
         }
@@ -373,6 +380,42 @@ namespace Nikon_Decode
                 }
             }
         }
+
+        static void SearchJpegs(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                byte[] data;
+                using (var br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
+
+                List<int> markers = new List<int>();
+                for (int i = 0; i < (data.Length - 4); i++)
+                {
+                    // J 4A, F 46, I 49, F 46
+                    if (data[i + 0] == 0x4a &&
+                          data[i + 1] == 0x46 &&
+                          data[i + 2] == 0x49 &&
+                          data[i + 3] == 0x46)
+                    {
+                        markers.Add(i-6);
+                    }
+                }
+                markers.Add(data.Length);
+
+                for (int i = 0; i < markers.Count - 1; i++)
+                {
+                    var name = string.Format("{0}.{1:x6}.jpg", fileName, markers[i]);
+                    using (var bw = new BinaryWriter(File.Open(name, FileMode.Create)))
+                    {
+                        bw.Write(data, markers[i], markers[i + 1] - markers[i]);
+                    }
+                }
+            }
+        }
+
 
 
     }
