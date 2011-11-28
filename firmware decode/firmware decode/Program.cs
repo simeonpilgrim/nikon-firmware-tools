@@ -46,10 +46,10 @@ namespace Nikon_Decode
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
 
             SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
-            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
-            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
-            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
-            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
+            //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
+            //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
+            //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
+            //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
 
 
             //TryCRC_16(@"C:\Temp\b640101b-HaCkEd.bin");
@@ -186,7 +186,7 @@ namespace Nikon_Decode
 
                 try
                 {
-                    br = new BinaryReader(File.Open(fileName + ".out2.bin", FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+                    br = new BinaryReader(File.Open(fileName + ".out.bin", FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
                     br.BaseStream.Seek(0x20, SeekOrigin.Begin);
 
                     uint count = ReadUint32(br);
@@ -407,7 +407,9 @@ namespace Nikon_Decode
 
                 for (int i = 0; i < markers.Count - 1; i++)
                 {
-                    var name = string.Format("{0}.{1:x6}.jpg", fileName, markers[i]);
+                    //windows can't sort hex correctly, so add i first.
+                    //var name = string.Format("{0}_{1:X8}.jpg", Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "Jpgs"), Path.GetFileNameWithoutExtension(fileName)), markers[i] + 0x40000);
+                    var name = string.Format("{0}_{2} {1:X8}.jpg", Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "Jpgs"), Path.GetFileNameWithoutExtension(fileName)), markers[i] + 0x40000, i);
                     using (var bw = new BinaryWriter(File.Open(name, FileMode.Create)))
                     {
                         bw.Write(data, markers[i], markers[i + 1] - markers[i]);
