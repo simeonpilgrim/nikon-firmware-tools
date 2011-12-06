@@ -499,13 +499,14 @@ namespace dfr2
 
                     case 'X':
                     case 'x':
-                        //        if (!(arg = parseopt_arg(&pos)))
-                        //            goto missing;
-                        //        if (fileoptions(arg)) {
-                        //            fprintf(stderr, "%s: cannot open options file \"%s\": %s\n",
-                        //                cmdname, arg, strerror(errno));
-                        //            exit(1);
-                        //        }
+                        arg = pos.arg();
+                        if (arg == null ||
+                            fileoptions(arg) == false)
+                        {
+                            Log("{0}: cannot open options file \"{1}\"", cmdname, arg);
+                            usage();
+                            return false;
+                        }
                         break;
 
                     case 'Z':
@@ -528,16 +529,13 @@ namespace dfr2
             return false;
         }
 
-        static void fileoptions(string filename)
+        static bool fileoptions(string filename)
         {
+            if (File.Exists(filename) == false)
+                return false;
+
             using (var fp = File.OpenText(filename))
             {
-                if (fp == null)
-                {
-                    Debug.WriteLine("File: '{0}' cannot be opened", filename);
-                    return;
-                }
-
                 string buf = null;
                 while ((buf = fp.ReadLine()) != null)
                 {
@@ -562,6 +560,8 @@ namespace dfr2
                     options(buf);
                 }
             }
+
+            return true;
         }
     }
 }

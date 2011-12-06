@@ -57,7 +57,7 @@ namespace dfr2
         {
             fileoptions("dfr.txt");
 
-            options(args);
+            if (options(args) == false) return;
             initialize();
             process();
             finalize();
