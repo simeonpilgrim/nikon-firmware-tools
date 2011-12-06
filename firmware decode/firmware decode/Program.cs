@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using System.Collections;
 
 namespace Nikon_Decode
 {
@@ -28,7 +29,7 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
 
- 
+
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
@@ -45,7 +46,7 @@ namespace Nikon_Decode
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750101b.bin"); 
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
 
-            SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
             //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
@@ -53,6 +54,10 @@ namespace Nikon_Decode
 
 
             //TryCRC_16(@"C:\Temp\b640101b-HaCkEd.bin");
+            //CalcCRC(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin.out.bin");
+            //CalcCRC(@"C:\Temp\D5100_0101.bin.out2.bin");
+
+            SearchTextPointers(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
         }
 
 
@@ -135,7 +140,7 @@ namespace Nikon_Decode
                         int ord3_idx = (i >> 16) & 0xFF;
 
                         int b = data[i] ^ Xor_Ord1[ord1_idx] ^ Xor_Ord2[ord2_idx] ^ Xor_Ord3[ord3_idx];
- 
+
                         data[i] = (byte)b;
                     }
 
@@ -349,8 +354,6 @@ namespace Nikon_Decode
                                     datab[ii] = (byte)(b ^ m);
                                 }
 
-                                // J 4A, F 46, I 49, F 46
-
                                 for (int ii = 0; ii < count - 4; ii++)
                                 {
                                     if (datab[ii + 0] == 0x4a &&
@@ -400,7 +403,7 @@ namespace Nikon_Decode
                           data[i + 2] == 0x49 &&
                           data[i + 3] == 0x46)
                     {
-                        markers.Add(i-6);
+                        markers.Add(i - 6);
                     }
                 }
                 markers.Add(data.Length);
@@ -418,7 +421,101 @@ namespace Nikon_Decode
             }
         }
 
+        static void SearchTextPointers(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                byte[] data;
+                using (var br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
 
+
+                int min = 0x10;
+                int max = data.Length + 0x40000;
+                RefSet tab = new RefSet();
+
+                Debug.WriteLine("start build");
+                for (int i = 0; i < (data.Length - 4); i += 4) //dword
+                {
+                    //if (data[i] == 0 && data[i + 1] <= ((max >> 16) & 0xff))
+                    //{
+                        int v = (data[i + 1] << 16) + (data[i + 2] << 8) + (data[i + 3]);
+                        tab.Add(v, i + 0x40000);
+                    //}
+                }
+                Debug.WriteLine("end build");
+
+                long count = 0;
+                for (int i = 0; i < (data.Length - 4); i += 2) // word aligned
+                {
+                    //if ((data[i + 0] & 0x1f) <= 0x08)
+                    if ((data[i + 0] & 0x1f) == 0x01 && data[i + 1] == 0xf2)
+                    {
+                        int ii = i + 0x40000;
+                        int t1 = ii - 4;
+
+                        //foreach(var ff in tab.
+                        foreach (int j in tab.AllRefs(t1))
+                        {
+                            Debug.WriteLine("0x{0:X6} {1:x2}{2:x2} t1: 0x{3:X6} j: 0x{4:X6}  ", ii, data[i], data[i + 1], t1, j);
+
+                            int t2 = j - 0x10;
+                            foreach (int k in tab.AllRefs(t2))
+                            {
+                                //int t3 = k - 8;
+                                int t3 = k - 4;
+                                foreach (int l in tab.AllRefs(t3))
+                                {
+                                    count++;
+                                    Debug.WriteLine("{7,4} 0x{0:X6} {1:x2}{2:x2} t1: 0x{3:X6} t2: 0x{4:X6} t3: 0x{5:X6} l: 0x{6:X6} ", ii, data[i], data[i + 1], t1, t2, t3, l, count);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+
+
+    public class RefSet
+    {
+        SortedList<int, List<int>> tab = new SortedList<int, List<int>>();
+
+        public RefSet()
+        {
+        }
+
+        public void Add(int a, int b)
+        {
+            List<int> list;
+            if (tab.TryGetValue(a, out list))
+            {
+                list.Add(b);
+            }
+            else
+            {
+                list = new List<int>();
+                list.Add(b);
+                tab.Add(a, list);
+            }
+        }
+
+        public IEnumerable AllRefs(int loc)
+        {
+            List<int> list;
+            if (tab.TryGetValue(loc, out list))
+            {
+                foreach (int t in list)
+                {
+                    yield return t;
+                }
+            }
+        }
 
     }
 }
