@@ -610,7 +610,7 @@ namespace dfr2
 
             public void writedis(TextWriter tw)
             {
-                tw.Write("{0:X8} ({1:X8}) ", pc, pc-0x40000);
+                tw.Write("{0:X8} ", pc);
 
                 for (int ii = 0; ii < 3; ++ii)
                 {
