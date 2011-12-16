@@ -5,6 +5,8 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 using System.Collections;
+using System.Drawing;
+using System.Drawing.Imaging;
 
 namespace Nikon_Decode
 {
@@ -57,7 +59,11 @@ namespace Nikon_Decode
             //CalcCRC(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin.out.bin");
             //CalcCRC(@"C:\Temp\D5100_0101.bin.out2.bin");
 
-            SearchTextPointers(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //SearchTextPointers(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+
+            SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35f218, 0x35fad8);
+            //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
+            //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
         }
 
 
@@ -162,6 +168,12 @@ namespace Nikon_Decode
             return (UInt32)(b[0] << 24 | b[1] << 16 | b[2] << 8 | b[3]);
         }
 
+        static UInt32 ReadUint32(byte[] data, int pos)
+        {
+            return (UInt32)(data[pos + 0] << 24 | data[pos + 1] << 16 | data[pos + 2] << 8 | data[pos + 3]);
+        }
+
+
         static string ReadString(BinaryReader br, int count)
         {
             byte[] b = br.ReadBytes(count);
@@ -247,6 +259,131 @@ namespace Nikon_Decode
             }
         }
 
+
+        class Overlay
+        {
+            public int dummy1;
+            public int loc;
+            public int width;
+            public int height;
+            public Overlay(int du, int lo, int wi, int he)
+            {
+                dummy1 = du;
+                loc = lo;
+                width = wi;
+                height = he;
+            }
+        }
+
+        static void SaveOverlays(string fileName, int start, int stop)
+        {
+            if (File.Exists(fileName))
+            {
+                BinaryReader br = null;
+
+                byte[] data;
+
+                using (br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
+
+                int last_loc = 0;
+                for (int pos = start; pos < stop; pos += 16)
+                {
+                    int dummy1 = (int)ReadUint32(data, pos);
+                    int width = data[pos + 6];
+                    int loc = (int)ReadUint32(data, pos + 8) - 0x040000; // Fix RAM space -> File space.
+                    int indextab = (int)ReadUint32(data, pos + 12);
+
+                    int ll = last_loc - loc;
+                    int v1 = dummy1 & 0x01ff;
+                    int v2 = (dummy1 >> 9) & 0x7f;
+                   // var ol = new Overlay(dummy1, loc, width, 
+                    Debug.WriteLine("D: {0:X8} W: {1:X2}  ({2:X8}) L: {3:X8} I: {4:X8} Len: {5:X8} {6:X8} {7:X8} {8} {9}",
+                        dummy1, width, ReadUint32(data, pos + 4), loc, indextab, ll, v1, v2, ((double)ll) / ((double)v1), ((double)ll) / ((double)width));
+
+                    //if (loc != 0 && width > 0 && last_loc != 0)
+                    //{
+                    //    int lenght = last_loc - loc;
+                    //    int height = (lenght * 8) / (width);
+
+                    //    var name = string.Format("{0}_{1:X8}_BW.png", Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "Overlays"), Path.GetFileNameWithoutExtension(fileName)), loc);
+
+                    //    DumpRGBLineStrippedBig1BitBW(data, name, data.Length, loc, width, height);
+                    //}
+
+
+                    last_loc = loc;
+                }
+            }
+        }
+
+        static void DumpRGBLineStrippedBig1Bit(byte[] dataIn, string name, int fileSize, int offset, int Pix_X, int Pix_Y)
+        {
+            var bitmap = new Bitmap(Pix_X, Pix_Y, PixelFormat.Format24bppRgb);
+
+            int inWidth = (Pix_X + 7) / 8;
+
+            // 1 pixel
+            for (int j = 0; j < Pix_Y; j++)
+            {
+                //int j_off = j * RowsStep;
+
+                if (offset + (inWidth * 3) < fileSize)
+                {
+                    // RGB stripped by row.
+                    for (int i = 0; i < Pix_X; i++)
+                    {
+                        int shift = 7 - (i % 8);
+                        int in_off = i / 8;
+                        int c_scale = 255 / 1; // scale below values to 0 - 255 range;
+                        int r = ((dataIn[offset + in_off] >> shift) & 0x01) * c_scale;
+                        int g = ((dataIn[offset + in_off + inWidth] >> shift) & 0x01) * c_scale;
+                        int b = ((dataIn[offset + in_off + inWidth + inWidth] >> shift) & 0x01) * c_scale;
+
+                        bitmap.SetPixel(i, j, Color.FromArgb(r, g, b));
+                    }
+                    offset += inWidth * 3;
+                }
+            }
+
+            if (File.Exists(name)) File.Delete(name);
+
+            bitmap.Save(name, ImageFormat.Png);
+        }
+
+        static void DumpRGBLineStrippedBig1BitBW(byte[] dataIn, string name, int fileSize, int offset, int Pix_X, int Pix_Y)
+        {
+            var bitmap = new Bitmap(Pix_X, Pix_Y, PixelFormat.Format24bppRgb);
+
+            int inWidth = (Pix_X + 7) / 8;
+
+            // 1 pixel
+            for (int j = 0; j < Pix_Y; j++)
+            {
+                if (offset + (inWidth * 3) < fileSize)
+                {
+                    // BW stripped by row.
+                    for (int i = 0; i < Pix_X; i++)
+                    {
+                        int shift = 7 - (i % 8);
+                        int in_off = i / 8;
+                        int c_scale = 255 / 1; // scale below values to 0 - 255 range;
+                        int r = ((dataIn[offset + in_off] >> shift) & 0x01) * c_scale;
+                        //int g = ((dataIn[offset + in_off + inWidth] >> shift) & 0x01) * c_scale;
+                        //int b = ((dataIn[offset + in_off + inWidth + inWidth] >> shift) & 0x01) * c_scale;
+
+                        bitmap.SetPixel(i, j, Color.FromArgb(r, r, r));
+                    }
+                    offset += inWidth;
+                }
+            }
+
+            if (File.Exists(name)) File.Delete(name);
+
+            bitmap.Save(name, ImageFormat.Png);
+        }
 
         static void SearchWords(string fileName)
         {
