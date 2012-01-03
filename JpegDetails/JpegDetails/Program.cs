@@ -9,16 +9,34 @@ namespace JpegDetails
 {
     class Program
     {
+        static TextWriter log;
+        static void SetLogFile(string filename)
+        {
+            if( log != null )
+            {
+                log.Close();
+                log.Dispose();
+            }
+
+            if( filename != "")
+                log = new StreamWriter(File.Open(filename, FileMode.OpenOrCreate));
+        }
+
         static void Log(string fmt, params object[] obj)
         {
+            if (log != null)
+                log.WriteLine(fmt, obj);
             Console.WriteLine(fmt, obj);
             Debug.WriteLine(fmt, obj);
         }
 
         static void Main(string[] args)
         {
+            SetLogFile(@"C:\Temp\Jpeg - Nikon.txt");
             Details(@"C:\Users\spilgrim\Downloads\Nikon\Decode\Jpgs\b640101b_126 007E17B4.jpg");
-            Details(@"C:\Users\spilgrim\Pictures\city.jpg");
+            SetLogFile(@"C:\Temp\Jpeg - Replacement.txt"); 
+            Details(@"C:\Users\spilgrim\Downloads\vaderhead_300dpi.jpg");
+            SetLogFile("");
         }
 
         static int xWord(BinaryReader br)
@@ -90,6 +108,10 @@ namespace JpegDetails
                             SOFxDetails(br, m1);
                             break;
 
+                        case SOS:
+                            SosDetails(br);
+                            break;
+
                         default:
                             Log("UNKNOWN: {0:x4}", m1);
                             good = false;
@@ -98,6 +120,32 @@ namespace JpegDetails
                     }
                 }
             }
+        }
+
+        private static void SosDetails(BinaryReader br)
+        {
+            Log("SOS - Start of Scan segment");
+            int len = xWord(br);
+            Log("  Length {0}", len);
+            int Ns = xByte(br);
+            Log("  #Segs  {0}", Ns);
+
+            for (int i = 0; i < Ns; i++)
+            {
+                Log("  Cs{0}    {1} - Scan component selector", i, xByte(br));
+                int tmp = xByte(br);
+                int Td = (tmp & 0xf0) >> 4;
+                int Ta = tmp & 0x0f;
+                Log("    Td{0}  {1}", i, Td);
+                Log("    Ta{0}  {1}", i, Ta);
+            }
+            Log("  Ss  {0}", xByte(br));
+            Log("  Se  {0}", xByte(br));
+            int tmp2 = xByte(br);
+            int Ah = (tmp2 & 0xf0) >> 4;
+            int Al = tmp2 & 0x0f;
+            Log("  Ah  {0}", Ah);
+            Log("  Al  {0}", Al);
         }
 
         private static void DhtDetails(BinaryReader br)
