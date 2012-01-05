@@ -8,9 +8,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+/**
+ * @deprecated
+ * @see CPUStateEditorFrame
+ */
 public class CPUStateFrame extends DocumentFrame {
 
-    private static final int UPDATE_INTERVAL_MS = 40; // 25fps
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
     private static final int WINDOW_WIDTH = 280;
     private static final int WINDOW_HEIGHT = 320;
     private static final int LABEL0_X = 5;
