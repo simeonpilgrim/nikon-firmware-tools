@@ -10,6 +10,7 @@ import java.io.PrintStream;
 
 public class Emulator {
 
+    private long totalCycles;
     private int interruptPeriod;
     private boolean exitRequired = false;
     private Memory memory;
@@ -45,6 +46,14 @@ public class Emulator {
         this.interruptPeriod = interruptPeriod;
     }
 
+
+    public long getTotalCycles() {
+        return totalCycles;
+    }
+
+    public void setTotalCycles(long totalCycles) {
+        this.totalCycles = totalCycles;
+    }
 
     public int getInterruptPeriod() {
         return interruptPeriod;
@@ -2215,6 +2224,7 @@ public class Emulator {
                 if (cycleRemaining <= 0) {
                     // TODO : Check for interrupts
 
+                    totalCycles += interruptPeriod;
                     cycleRemaining += interruptPeriod;
                     if (exitRequired) break;
                 }
