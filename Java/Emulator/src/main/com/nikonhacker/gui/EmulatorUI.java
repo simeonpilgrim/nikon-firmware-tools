@@ -66,6 +66,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private boolean isImageLoaded = false;
     private boolean isEmulatorPlaying = false;
 
+    long lastUpdateCycles = 0;
+    long lastUpdateTime = 0;
+
     private JDesktopPane mdiPane;
 
     private JMenuItem loadMenuItem;
@@ -140,7 +143,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
 
         //Set up the GUI.
-        mdiPane = new JDesktopPane(); //a specialized layered pane
+        mdiPane = new JDesktopPane();
 
         setJMenuBar(createMenuBar());
 
@@ -159,6 +162,27 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         //Make dragging a little faster but perhaps uglier.
         // mdiPane.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
+
+        new Timer(1000, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateTitleBar();
+            }
+        }).start();
+    }
+
+    private void updateTitleBar() {
+        if (emulator != null) {
+            long totalCycles = emulator.getTotalCycles();
+            long now = System.currentTimeMillis();
+            long cps = (1000 * (totalCycles - lastUpdateCycles))/(now - lastUpdateTime);
+
+            lastUpdateCycles = totalCycles;
+            lastUpdateTime = now;
+            setTitle("Emulator UI (" + totalCycles + " cycles emulated. Current speed is "+ cps + "Hz)");
+        }
+        else {
+            setTitle("Emulator UI");
+        }
     }
 
     private JPanel createToolBar() {
@@ -478,7 +502,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
         }
     }
-    
+
     private void openEncodeDialog() {
         JTextField destinationFile = new JTextField();
         JTextField sourceFile1 = new JTextField();
@@ -620,7 +644,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
             int sleepValue = prefs.getInt(this.getClass().getSimpleName() + PREFKEY_SLEEP, 2);
             setEmulatorSleep(sleepValue);
-            
+
             isImageLoaded = true;
             closeAllFrames();
 
@@ -774,7 +798,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             stopMenuItem.setEnabled(true);
             stopButton.setEnabled(true);
 
-            if (isEmulatorPlaying) {                
+            if (isEmulatorPlaying) {
                 loadMenuItem.setEnabled(false);
                 loadButton.setEnabled(false);
                 playMenuItem.setEnabled(false);
