@@ -24,14 +24,14 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JButton leftButton;
     private JButton rightButton;
     private byte[] currentPage;
-    private final int baseAddress;
+    private int baseAddress;
 
     public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.baseTitle = title;
         this.memory = memory;
-        this.baseAddress = baseAddress;
-        
+
+
         getContentPane().add(createEditor(baseAddress, editable));
 
         // Start update timer
@@ -98,6 +98,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     private void loadPage(int baseAddress) {
+        this.baseAddress = baseAddress;
         addressField.setBackground(Color.WHITE);
 
         setTitle(baseTitle + " from 0x" + Format.asHex(baseAddress, 8) + " to 0x" + Format.asHex(baseAddress + memory.getPageSize() - 1, 8));
@@ -154,7 +155,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
     public void hexBytesChanged(HexEditorEvent e) {
         if (e.isModification()) {
-            memory.store8(baseAddress + e.getOffset(), hexEditor.getByte(e.getOffset()));
+            memory.store8((int) ((baseAddress & 0xFFFFFFFFL) + (long)e.getOffset()), hexEditor.getByte(e.getOffset()));
         }
     }
 }
