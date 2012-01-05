@@ -10,7 +10,7 @@ import java.awt.event.ActionListener;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
-    private static final int UPDATE_INTERVAL_MS = 40; // 25fps
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private Timer _timer;
 
@@ -22,14 +22,19 @@ public class CPUStateEditorFrame extends DocumentFrame {
         this.cpuState = cpuState;
 
         getContentPane().add(new CPUStateComponent());
+
+        loadValues();
         
         // Start update timer
         _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!editable) loadValues();
+                //if (!editable)
+                    loadValues();
             }
         });
-        _timer.start();
+        if (!editable) {
+            _timer.start();
+        }
     }
 
     public void dispose() {
@@ -258,6 +263,17 @@ public class CPUStateEditorFrame extends DocumentFrame {
     
     public void setEditable(boolean editable) {
         this.editable = editable;
+        
+        if (editable) {
+            if (_timer.isRunning()) {
+                _timer.stop();
+            }
+        }
+        else {
+            if (!_timer.isRunning()) {
+                _timer.start();
+            }
+        }
 
         pcTextField.setEditable(editable);
         pcTextField.setBackground(Color.WHITE);
