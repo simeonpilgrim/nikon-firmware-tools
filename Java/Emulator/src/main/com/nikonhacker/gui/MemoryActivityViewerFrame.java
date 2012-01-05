@@ -5,20 +5,19 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 
 public class MemoryActivityViewerFrame extends DocumentFrame {
 
-    private static final int UPDATE_INTERVAL_MS = 40; // 25fps
+    private static final int UPDATE_INTERVAL_MS = 100; // 25fps
     private static final int MAP_WIDTH = 256;
     private static final int MAP_HEIGHT = 256;
     private static final int PAGE_SIZE_BITS = 16;
