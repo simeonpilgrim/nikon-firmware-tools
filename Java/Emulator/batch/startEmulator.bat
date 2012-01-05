@@ -1,0 +1,1 @@
+java -cp FrEmulator.jar;lib/commons-io-2.1.jar;lib/commons-lang3-3.1.jar;lib/HexEditor.jar;lib/jacksum.jar com.nikonhacker.gui.EmulatorUI
