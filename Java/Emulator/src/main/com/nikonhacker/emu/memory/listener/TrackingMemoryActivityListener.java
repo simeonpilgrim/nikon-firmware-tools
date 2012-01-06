@@ -47,7 +47,7 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
 //        }
     }
 
-    public void onLoadInstruction(int page, int offset) {
+    public void onLoadInstruction(int page, int offset, byte value) {
 //        if ((pageActivityMap[page] & 0xFF)!=0xFF) pageActivityMap[page]+= 0x01;
 //        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
 //
@@ -64,7 +64,7 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
         if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF)!=0xFF)) cellActivityMaps[page][offset]+= 0x01;
     }
 
-    public void onLoadData(int page, int offset) {
+    public void onLoadData(int page, int offset, byte value) {
 //        if ((pageActivityMap[page] & 0xFF00)!=0xFF00) pageActivityMap[page]+= 0x0100;
 //        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
 //
@@ -81,7 +81,7 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
         if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF00)!=0xFF00)) cellActivityMaps[page][offset]+= 0x0100;
     }
 
-    public void onStore(int page, int offset) {
+    public void onStore(int page, int offset, byte value) {
 //        if ((pageActivityMap[page] & 0xFF0000)!=0xFF0000) pageActivityMap[page]+= 0x010000;
 //        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
 //

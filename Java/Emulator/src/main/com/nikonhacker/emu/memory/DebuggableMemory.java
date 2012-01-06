@@ -9,7 +9,7 @@
  */
 package com.nikonhacker.emu.memory;
 
-import com.nikonhacker.dfr.Format;
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.EmulatorOptions;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 import org.apache.commons.lang3.StringUtils;
@@ -69,7 +69,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             }
 
             for (MemoryActivityListener activityListener : activityListeners) {
-                activityListener.onLoadData(page, offset);
+                activityListener.onLoadData(page, offset, pageData[offset]);
             }
 
             return pageData[offset];
@@ -100,7 +100,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             }
 
             for (MemoryActivityListener activityListener : activityListeners) {
-                activityListener.onLoadData(page, offset);
+                activityListener.onLoadData(page, offset, pageData[offset]);
             }
 
             return pageData[offset] & 0xFF;
@@ -159,7 +159,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
                     + " val: " + executableMemory[page][offset]);
 
         for (MemoryActivityListener activityListener : activityListeners) {
-            activityListener.onLoadInstruction(page, offset);
+            activityListener.onLoadInstruction(page, offset, executableMemory[page][offset]);
         }
         return executableMemory[page][offset] & 0xFF;
     }
@@ -201,7 +201,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         }
 
         for (MemoryActivityListener activityListener : activityListeners) {
-            activityListener.onStore(page, offset);
+            activityListener.onStore(page, offset, (byte) value);
         }
 
         pageData[offset] = (byte) value;
