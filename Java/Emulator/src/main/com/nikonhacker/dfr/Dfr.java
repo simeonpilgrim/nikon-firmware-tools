@@ -43,6 +43,7 @@ package com.nikonhacker.dfr;
 // */
 
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.io.FilenameUtils;

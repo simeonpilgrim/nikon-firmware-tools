@@ -1,5 +1,6 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 

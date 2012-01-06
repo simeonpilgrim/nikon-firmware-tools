@@ -1,5 +1,7 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.Format;
+
 public class Range implements Comparable<Range> {
     int start;
     int end;

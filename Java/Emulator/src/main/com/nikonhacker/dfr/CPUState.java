@@ -1,5 +1,7 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.Format;
+
 public class CPUState {
     /** registers names */
     public final static String[] REG_LABEL =

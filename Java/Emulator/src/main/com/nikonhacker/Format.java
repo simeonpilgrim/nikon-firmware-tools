@@ -3,6 +3,7 @@ package com.nikonhacker;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class Format {
 
@@ -18,7 +19,7 @@ public class Format {
         return StringUtils.leftPad(Integer.toBinaryString(value).toUpperCase(), nbChars, '0');
     }
 
-    static char asAscii(int c)
+    public static char asAscii(int c)
     {
         c &= 0xFF;
         if (c > 31 && c < 127) {
@@ -29,14 +30,37 @@ public class Format {
         }
     }
 
-    public static int parseHexField(JTextField addressField) throws NumberFormatException {
-        if (addressField.getText().toLowerCase().startsWith("0x")) {
-            addressField.setText(addressField.getText().substring(2));
-        }
-        long address = Long.parseLong(addressField.getText(), 16);
-        if (address >=0 && address <= 0xFFFFFFFFL){
+    public static int parseHexField(JTextField textField) throws NumberFormatException {
+        try {
+            if (textField.getText().toLowerCase().startsWith("0x")) {
+                textField.setText(textField.getText().substring(2));
+            }
+            long address = Long.parseLong(textField.getText(), 16);
+            if (address < 0 || address > 0xFFFFFFFFL) {
+                throw new NumberFormatException("Address out of range");
+            }
+            textField.setBackground(Color.WHITE);
             return (int) address;
+        } catch (NumberFormatException e) {
+            textField.setBackground(Color.RED);
+            throw(e);
         }
-        throw new NumberFormatException("Address out of range");
+    }
+
+    public static int parseBinaryField(JTextField textField) throws NumberFormatException {
+        try {
+            if (textField.getText().toLowerCase().startsWith("0b")) {
+                textField.setText(textField.getText().substring(2));
+            }
+            long address = Long.parseLong(textField.getText(), 2);
+            if (address < 0 || address > 0xFFFFFFFFL){
+                throw new NumberFormatException("Address out of range");
+            }
+            textField.setBackground(Color.WHITE);
+            return (int) address;
+        } catch (NumberFormatException e) {
+            textField.setBackground(Color.RED);
+            throw(e);
+        }
     }
 }

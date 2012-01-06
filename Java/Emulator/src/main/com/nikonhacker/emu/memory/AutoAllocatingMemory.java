@@ -9,7 +9,7 @@
  */
 package com.nikonhacker.emu.memory;
 
-import com.nikonhacker.dfr.Format;
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.EmulatorOptions;
 import org.apache.commons.lang3.StringUtils;
 

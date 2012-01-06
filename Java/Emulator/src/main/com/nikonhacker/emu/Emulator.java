@@ -1,6 +1,10 @@
 package com.nikonhacker.emu;
 
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.Format;
+import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.Dfr;
+import com.nikonhacker.dfr.DisassemblyState;
+import com.nikonhacker.dfr.OpCode;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 

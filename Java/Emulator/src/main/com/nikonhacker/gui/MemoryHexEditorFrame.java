@@ -1,6 +1,6 @@
 package com.nikonhacker.gui;
 
-import com.nikonhacker.dfr.Format;
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;

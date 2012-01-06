@@ -1,7 +1,7 @@
 package com.nikonhacker.gui;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.Format;
 
 import javax.swing.*;
 import java.awt.*;
