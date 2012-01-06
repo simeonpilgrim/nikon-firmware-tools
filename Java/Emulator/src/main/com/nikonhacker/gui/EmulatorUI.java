@@ -7,7 +7,6 @@ package com.nikonhacker.gui;
 
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
-/* TODO : allow memory editing */
 
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.EmulationException;
@@ -46,6 +45,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_SCREEN_EMULATOR = "TOGGLE_SCREEN_EMULATOR";
     private static final String COMMAND_TOGGLE_DISASSEMBLY_WINDOW = "TOGGLE_DISASSEMBLY_WINDOW";
     private static final String COMMAND_TOGGLE_CPUSTATE_WINDOW = "TOGGLE_CPUSTATE_WINDOW";
+    private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_DISASSEMBLE_FILE = "DISASSEMBLE_FILE";
@@ -80,6 +80,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem memoryActivityViewerMenuItem;
     private JCheckBoxMenuItem memoryHexEditorMenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
+    private JCheckBoxMenuItem component4006MenuItem;
 
     private JButton loadButton;
     private JButton playButton;
@@ -90,12 +91,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton memoryActivityViewerButton;
     private JButton memoryHexEditorButton;
     private JButton screenEmulatorButton;
+    private JButton component4006Button;
 
     private DocumentFrame disassemblyFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
     private DocumentFrame screenEmulatorFrame;
     private DocumentFrame memoryActivityViewerFrame;
     private MemoryHexEditorFrame memoryHexEditorFrame;
+    private Component4006Frame component4006Frame;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -215,6 +218,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(memoryHexEditorButton);
         screenEmulatorButton = makeButton("screen", COMMAND_TOGGLE_SCREEN_EMULATOR, "Screen emulator", "Screen");
         bar.add(screenEmulatorButton);
+        component4006Button = makeButton("4006", COMMAND_TOGGLE_COMPONENT_4006_WINDOW, "Component 4006", "Component 4006");
+        bar.add(component4006Button);
 
         bar.add(Box.createHorizontalGlue());
         return bar;
@@ -378,6 +383,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         cpuStateMenuItem.addActionListener(this);
         viewMenu.add(cpuStateMenuItem);
 
+        //Component 4006
+        component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window");
+        component4006MenuItem.setMnemonic(KeyEvent.VK_4);
+        component4006MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
+        component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
+        component4006MenuItem.addActionListener(this);
+        viewMenu.add(component4006MenuItem);
+
 
         //Set up the tools menu.
         JMenu toolsMenu = new JMenu("Tools");
@@ -461,6 +474,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_CPUSTATE_WINDOW.equals(e.getActionCommand())) {
             toggleCPUState();
+        }
+        else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
+            toggleComponent4006();
         }
         else if (COMMAND_DECODE.equals(e.getActionCommand())) {
             openDecodeDialog();
@@ -676,6 +692,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             cpuStateEditorFrame.dispose();
             cpuStateEditorFrame = null;
         }
+        if (component4006Frame != null) {
+            component4006Frame.dispose();
+            component4006Frame = null;
+        }
     }
 
     private void toggleMemoryActivityViewer() {
@@ -746,6 +766,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
+    private void toggleComponent4006() {
+        if (component4006Frame == null) {
+            component4006Frame = new Component4006Frame("Component 4006", false, true, false, true, memory, 0x4006, this);
+            addDocumentFrame(component4006Frame);
+            component4006Frame.display(true);
+        }
+        else {
+            component4006Frame.dispose();
+            component4006Frame = null;
+        }
+        updateStates();
+    }
+
+
     public void addDocumentFrame(DocumentFrame frame) {
         mdiPane.add(frame);
     }
@@ -771,6 +805,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == memoryHexEditorFrame) {
             toggleMemoryHexEditor();
         }
+        else if (frame == component4006Frame) {
+            toggleComponent4006();
+        }
         else {
             System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
         }
@@ -782,6 +819,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
         memoryActivityViewerMenuItem.setSelected(memoryActivityViewerFrame != null);
         memoryHexEditorMenuItem.setSelected(memoryHexEditorFrame != null);
+        component4006MenuItem.setSelected(component4006Frame != null);
 
         if (isImageLoaded) {
             disassemblyMenuItem.setEnabled(true);
@@ -794,6 +832,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerButton.setEnabled(true);
             memoryHexEditorMenuItem.setEnabled(true);
             memoryHexEditorButton.setEnabled(true);
+            component4006MenuItem.setEnabled(true);
+            component4006Button.setEnabled(true);
 
             stopMenuItem.setEnabled(true);
             stopButton.setEnabled(true);
@@ -830,6 +870,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerButton.setEnabled(false);
             memoryHexEditorMenuItem.setEnabled(false);
             memoryHexEditorButton.setEnabled(false);
+            component4006MenuItem.setEnabled(false);
+            component4006Button.setEnabled(false);
 
             loadMenuItem.setEnabled(true);
             loadButton.setEnabled(true);
