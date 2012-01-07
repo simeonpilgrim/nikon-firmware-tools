@@ -9,7 +9,7 @@ import java.awt.*;
 
 public class MemoryMappedComponentFrame extends DocumentFrame {
     private static final int ROWS = 60;
-    private static final int COLUMNS = 40;
+    private static final int COLUMNS = 60;
 
     DebuggableMemory memory;
     private final PageAccessLoggerActivityListener listener;
