@@ -140,7 +140,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
                         colorMap[i] = Color.LIGHT_GRAY;
                     }
                     else {
-                        colorMap[i] = new Color((activity & 0xFF0000) == 0?0:0xCF, (activity & 0xFF00) == 0?0:0xCF, (activity & 0xFF) == 0?0:0xCF);
+                        colorMap[i] = new Color((activity & 0xFF0000) == 0?0:0xFF, (activity & 0xFF00) == 0?0:0x7F, (activity & 0xFF) == 0?0:0xFF);
                     }
                 }
             }
