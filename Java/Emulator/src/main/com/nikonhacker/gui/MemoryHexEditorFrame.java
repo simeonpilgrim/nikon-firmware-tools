@@ -2,6 +2,7 @@ package com.nikonhacker.gui;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
@@ -12,6 +13,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
     DebuggableMemory memory;
@@ -47,6 +49,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         if (currentPage != null) {
             try {
                 hexEditor.open(new ByteArrayInputStream(currentPage));
+                hexEditor.setColorMap(createColorMap());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -112,10 +115,37 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
                 currentPage = memory.getPageForAddress(baseAddress);
             }
             hexEditor.open(new ByteArrayInputStream(currentPage));
+            hexEditor.setColorMap(createColorMap());
             hexEditor.setRowHeaderOffset(baseAddress);
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private Color[] createColorMap() {
+        Color[] colorMap = null; // default if memory is not tracked
+        TrackingMemoryActivityListener activityListener = ui.getTrackingMemoryActivityListener();
+        if (activityListener != null) {
+            int[] cellActivityMap = activityListener.getCellActivityMap(baseAddress >>> 16);
+            colorMap = new Color[0x10000];
+            if (cellActivityMap == null) {
+                // Memory is tracked, but this is page has never been accessed
+                Arrays.fill(colorMap, Color.LIGHT_GRAY);
+            }
+            else {
+                // Memory is tracked, set cell color according to access
+                for (int i = 0; i < cellActivityMap.length; i++) {
+                    int activity = cellActivityMap[i];
+                    if (activity == 0 ) {
+                        colorMap[i] = Color.LIGHT_GRAY;
+                    }
+                    else {
+                        colorMap[i] = new Color((activity & 0xFF0000) == 0?0:0xCF, (activity & 0xFF00) == 0?0:0xCF, (activity & 0xFF) == 0?0:0xCF);
+                    }
+                }
+            }
+        }
+        return colorMap;
     }
 
     public void dispose() {

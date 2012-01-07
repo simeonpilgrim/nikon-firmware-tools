@@ -742,7 +742,23 @@ public class HexEditor extends JScrollPane {
         return (getRowHeader() != null && getRowHeader().getView() != null);
     }
 
-	/**
+    /**
+     * Pass through to table
+     * @return
+     */
+    public Color[] getColorMap() {
+        return table.getColorMap();
+    }
+
+    /**
+     * Pass through to table
+     * @return
+     */
+    public void setColorMap(Color[] colorMap) {
+        table.setColorMap(colorMap);
+    }
+
+    /**
 	 * Tries to undo the last action.
 	 *
 	 * @return Whether there is another action to undo after this one.

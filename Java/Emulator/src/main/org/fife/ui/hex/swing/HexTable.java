@@ -62,6 +62,7 @@ class HexTable extends JTable {
 	private static final Color ANTERNATING_CELL_COLOR = new Color(240,240,240);
 
 	private CellEditor cellEditor = new CellEditor();
+    private Color[] colorMap;
 
 	/**
 	 * Creates a new table to display hex data.
@@ -271,7 +272,6 @@ class HexTable extends JTable {
 	 * 
 	 * @see #addSelectionChangedListener(org.fife.ui.hex.event.SelectionChangedListener)
 	 * @see #removeSelectionChangedListener(org.fife.ui.hex.event.SelectionChangedListener)
-	 * @param e Contains proper information.
 	 */
 	private void fireSelectionChangedEvent(int prevSmallest, int prevLargest) {
 
@@ -545,7 +545,7 @@ class HexTable extends JTable {
 	 * Toggles whether the cells in the hex editor are editable by clicking
 	 * in them.
 	 *
-	 * @param Whether individual hex editor cells should be editable.
+	 * @param cellEditable Whether individual hex editor cells should be editable.
 	 */
 	public void setCellEditable(boolean cellEditable) {
 		cellEditor.setEditable(cellEditable);
@@ -604,8 +604,15 @@ class HexTable extends JTable {
 
 	}
 
+    public Color[] getColorMap() {
+        return colorMap;
+    }
 
-	/**
+    public void setColorMap(Color[] colorMap) {
+        this.colorMap = colorMap;
+    }
+
+    /**
 	 * Tries to undo the last action.
 	 *
 	 * @return Whether there is another action to undo after this one.
@@ -727,6 +734,9 @@ class HexTable extends JTable {
 					}
 				}
 			}
+
+            if (colorMap != null)
+                setForeground(colorMap[row * 16 + column]);
 
 			return this;
 

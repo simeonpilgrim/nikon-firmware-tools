@@ -12,6 +12,7 @@ import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
@@ -96,7 +97,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DocumentFrame disassemblyFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
     private DocumentFrame screenEmulatorFrame;
-    private DocumentFrame memoryActivityViewerFrame;
+    private MemoryActivityViewerFrame memoryActivityViewerFrame;
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
 
@@ -928,6 +929,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     //Quit the application.
     protected void quit() {
         System.exit(0);
+    }
+
+    public TrackingMemoryActivityListener getTrackingMemoryActivityListener() {
+        if (memoryActivityViewerFrame != null) {
+            return memoryActivityViewerFrame.getTrackingMemoryActivityListener();
+        }
+        else {
+            return null;
+        }
     }
 
     public class FileSelectionPanel extends JPanel implements ActionListener {

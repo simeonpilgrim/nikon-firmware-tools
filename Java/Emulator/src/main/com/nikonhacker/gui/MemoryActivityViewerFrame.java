@@ -30,7 +30,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
     private double scaleX;
     private double scaleY;
 
-    private TrackingMemoryActivityListener memoryActivityListener;
+    private TrackingMemoryActivityListener trackingMemoryActivityListener;
     private DebuggableMemory memory;
     
     /** Indicate if this is a "master" view (1 cell = 1 memory page) or a "detail view" (1 cell = 1 memory byte) */ 
@@ -50,15 +50,19 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
         this.memory = memory;
 
         // Attach the listener
-        this.memoryActivityListener = new TrackingMemoryActivityListener(memory.getNumPages(), memory.getPageSize());
-        memory.addActivityListener(memoryActivityListener);
+        this.trackingMemoryActivityListener = new TrackingMemoryActivityListener(memory.getNumPages(), memory.getPageSize());
+        memory.addActivityListener(trackingMemoryActivityListener);
 
-        getContentPane().add(new MemoryMapComponent(memoryActivityListener.getPageActivityMap()));
+        getContentPane().add(new MemoryMapComponent(trackingMemoryActivityListener.getPageActivityMap()));
 
         startTimer();
     }
 
-    /** 
+    public TrackingMemoryActivityListener getTrackingMemoryActivityListener() {
+        return trackingMemoryActivityListener;
+    }
+
+    /**
      * Create a viewer frame in "detail" mode (1 cell = 1 memory byte) 
      */
     public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int[] activityMap, int baseAddress, MemoryActivityViewerFrame parentFrame, EmulatorUI ui) {
@@ -87,8 +91,8 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
         int y = (int) (screenY / scaleY);
         int address = getAddressFromPosition(x, y);
         if (isMaster && ui != null) {
-            if (memoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS) != null) {
-                MemoryActivityViewerFrame subFrame = new MemoryActivityViewerFrame("Memory activity from 0x" + Format.asHex(address, 8), true, true, true, true, memoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS), address, this, ui);
+            if (trackingMemoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS) != null) {
+                MemoryActivityViewerFrame subFrame = new MemoryActivityViewerFrame("Memory activity from 0x" + Format.asHex(address, 8), true, true, true, true, trackingMemoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS), address, this, ui);
                 ui.addDocumentFrame(subFrame);
                 children.add(subFrame);
                 subFrame.display(false);
@@ -127,7 +131,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
             for (MemoryActivityViewerFrame child : children) {
                 child.dispose();
             }
-            memory.removeActivityListener(memoryActivityListener);            
+            memory.removeActivityListener(trackingMemoryActivityListener);
         }
         super.dispose();
     }
