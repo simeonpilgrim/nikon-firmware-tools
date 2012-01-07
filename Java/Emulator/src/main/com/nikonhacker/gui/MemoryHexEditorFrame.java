@@ -84,7 +84,9 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         editorPanel.add(selectionPanel, BorderLayout.NORTH);
         
         
-        hexEditor = new HexEditor(baseAddress, 8);
+        hexEditor = new HexEditor();
+        hexEditor.setRowHeaderOffset(baseAddress);
+        hexEditor.setRowHeaderMinDigits(8);
         hexEditor.setCellEditable(editable);
         hexEditor.setAlternateRowBG(true);
 

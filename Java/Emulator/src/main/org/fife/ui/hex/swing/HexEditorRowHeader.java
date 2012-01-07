@@ -71,6 +71,34 @@ class HexEditorRowHeader extends JList implements TableModelListener {
 		table.getModel().addTableModelListener(this);
 	}
 
+    /**
+     *  Pass through to RowHeaderListModel
+     */
+    public int getOffset() {
+        return model.getOffset();
+    }
+
+    /**
+     *  Pass through to RowHeaderListModel
+     */
+    public void setOffset(int offset) {
+        model.setOffset(offset);
+    }
+
+    /**
+     *  Pass through to RowHeaderListModel
+     */
+    public int getMinDigits() {
+        return model.getMinDigits();
+    }
+
+    /**
+     *  Pass through to RowHeaderListModel
+     */
+    public void setMinDigits(int minDigits) {
+        model.setMinDigits(minDigits);
+    }
+
 
 	public void addSelectionInterval(int anchor, int lead) {
 		super.addSelectionInterval(anchor, lead);
@@ -150,12 +178,33 @@ class HexEditorRowHeader extends JList implements TableModelListener {
 		private static final long serialVersionUID = 1L;
 
 		private int size;
+        private int offset = 0;
+        private int minDigits = 4;
 
-		public Object getElementAt(int index) {
-			return "0x" + Integer.toHexString(index*16);
+        public Object getElementAt(int index) {
+            String prefix = "0x";
+            String s = Integer.toHexString(index * 16 + offset);
+            for (int i = 0; i < minDigits - s.length(); i++) prefix += "0";
+            return prefix + s;
 		}
 
-		public int getSize() {
+        public int getOffset() {
+            return offset;
+        }
+
+        public void setOffset(int offset) {
+            this.offset = offset;
+        }
+
+        public int getMinDigits() {
+            return minDigits;
+        }
+
+        public void setMinDigits(int minDigits) {
+            this.minDigits = minDigits;
+        }
+
+        public int getSize() {
 			return size;
 		}
 

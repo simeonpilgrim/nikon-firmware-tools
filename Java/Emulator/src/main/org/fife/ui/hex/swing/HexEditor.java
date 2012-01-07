@@ -99,6 +99,8 @@ public class HexEditor extends JScrollPane {
 	private boolean highlightSelectionInAsciiDump;
 	private Color highlightSelectionInAsciiDumpColor;
 	private boolean padLowBytes;
+    private int rowHeaderOffset = 0;
+    private int rowHeaderMinDigits = 0;
 
 	private static final TransferHandler DEFAULT_TRANSFER_HANDLER =
 							new HexEditorTransferHandler();
@@ -337,8 +339,33 @@ public class HexEditor extends JScrollPane {
 		return padLowBytes;
 	}
 
+    /**
+     * Returns the offset to be added to row header values.
+     * This feature allows the HexEditor to load only part of a huge file but show the
+     * actual offsets in the left column.
+     * Default is 0
+     *
+     * @return The offset to be added to row header values.
+     * @see #setRowHeaderOffset(int)
+     */
+    public int getRowHeaderOffset() {
+        return rowHeaderOffset;
+    }
 
-	/**
+    /**
+     * Returns the minimum number of digits to be presented in the row header column.
+     * This feature allows the HexEditor to always present a left header column of the
+     * same width, no matter if it shows low or high offsets.
+     * Default is 0
+     *
+     * @return The minimum number of digits to be presented in the row header column.
+     * @see #setRowHeaderMinDigits(int)
+     */
+    public int getRowHeaderMinDigits() {
+        return rowHeaderMinDigits;
+    }
+
+    /**
 	 * Returns the smallest selection index.
 	 *
 	 * @return The smallest selection index.
@@ -605,8 +632,48 @@ public class HexEditor extends JScrollPane {
 		}
 	}
 
+    /**
+     * Sets the offset to be added to row header values.
+     * This feature allows the HexEditor to load only part of a huge file but show the
+     * actual offsets in the left column.
+     * Default is 0
+     *
+     * @param rowHeaderOffset The offset to be added to row header values.
+     * @see #getRowHeaderOffset()
+     */
+    public void setRowHeaderOffset(int rowHeaderOffset) {
+        if (this.rowHeaderOffset != rowHeaderOffset) {
+            this.rowHeaderOffset = rowHeaderOffset;
+            if (isShowRowHeader()) {
+                // Header was currently visible. Recreate a new one with new settings
+                setShowRowHeader(true);
+            }
+            table.repaint();
+        }
+    }
 
-	/**
+
+    /**
+     * Sets the minimum number of digits to be presented in the row header column.
+     * This feature allows the HexEditor to always present a left header column of the
+     * same width, no matter if it shows low or high offsets.
+     * Default is 0
+     *
+     * @param rowHeaderMinDigits The minimum number of digits to be presented in the row header column.
+     * @see #getRowHeaderMinDigits()
+     */
+    public void setRowHeaderMinDigits(int rowHeaderMinDigits) {
+        if (this.rowHeaderMinDigits != rowHeaderMinDigits) {
+            this.rowHeaderMinDigits = rowHeaderMinDigits;
+            if (isShowRowHeader()) {
+                // Header was currently visible. Recreate a new one with new settings
+                setShowRowHeader(true);
+            }
+            table.repaint();
+        }
+    }
+
+    /**
 	 * Sets the range of bytes to select in the hex editor.
 	 *
 	 * @param startOffs The first byte to select.
@@ -650,12 +717,30 @@ public class HexEditor extends JScrollPane {
 	 * Toggles whether table's row header is visible.
 	 *
 	 * @param show Whether to show the table row header.
-	 * @see #setShowColumnHeader(boolean)
+     * @see #isShowRowHeader()
+     * @see #setShowColumnHeader(boolean)
 	 */
 	public void setShowRowHeader(boolean show) {
-		setRowHeaderView(show ? new HexEditorRowHeader(table) : null);
+        if (show) {
+            HexEditorRowHeader hexEditorRowHeader = new HexEditorRowHeader(table);
+            hexEditorRowHeader.setMinDigits(rowHeaderMinDigits);
+            hexEditorRowHeader.setOffset(rowHeaderOffset);
+            setRowHeaderView(hexEditorRowHeader);
+        }
+        else {
+            setRowHeaderView(null);
+        }
 	}
 
+    /**
+     * Gets whether table's row header is visible.
+     *
+     * @return true if the table row header is shown.
+     * @see #setShowRowHeader(boolean)
+     */
+    public boolean isShowRowHeader() {
+        return (getRowHeader() != null && getRowHeader().getView() != null);
+    }
 
 	/**
 	 * Tries to undo the last action.
