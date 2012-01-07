@@ -13,21 +13,57 @@ public class PageAccessLoggerActivityListener implements MemoryActivityListener 
         this.page = page;
     }
 
-    public void onLoadData(int page, int offset, byte value) {
-        if (page == this.page) {
-            printStream.println("    read from 0x" + Format.asHex(page << 16 | offset & 0xFFFF, 8) + " : " + Format.asHex(value & 0xFF, 2));
+    public void onLoadData8(int address, byte value) {
+        if (address >>> 16 == page) {
+            printStream.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2));
         }
     }
 
-    public void onLoadInstruction(int page, int offset, byte value) {
-        if (page == this.page) {
-            printStream.println("EXECUTED from 0x" + Format.asHex(page << 16 | offset & 0xFFFF, 8) + " : " + Format.asHex(value & 0xFF, 2) + " !!!");
+    public void onLoadData16(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4));
         }
     }
 
-    public void onStore(int page, int offset, byte value) {
-        if (page == this.page) {
-            printStream.println(Format.asHex(value & 0xFF, 2) + " written to 0x" + Format.asHex(page << 16 | offset & 0xFFFF, 8));
+    public void onLoadData32(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8));
+        }
+    }
+
+    public void onLoadInstruction8(int address, byte value) {
+        if (address >>> 16 == page) {
+            printStream.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2));
+        }
+    }
+
+    public void onLoadInstruction16(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4));
+        }
+    }
+
+    public void onLoadInstruction32(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8));
+        }
+    }
+
+    public void onStore8(int address, byte value) {
+        if (address >>> 16 == page) {
+            printStream.println("0x" + Format.asHex(value & 0xFF, 2) + "       written to 0x" + Format.asHex(address, 8));
+        }
+    }
+
+    public void onStore16(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("0x" + Format.asHex(value & 0xFFFF, 4) + "     written to 0x" + Format.asHex(address, 8));
+        }
+    }
+
+    public void onStore32(int address, int value) {
+        if (address >>> 16 == page) {
+            printStream.println("0x" + Format.asHex(value, 8) + " written to 0x" + Format.asHex(address, 8));
         }
     }
 }

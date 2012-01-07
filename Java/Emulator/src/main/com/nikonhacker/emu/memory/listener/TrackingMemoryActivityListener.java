@@ -1,12 +1,12 @@
 package com.nikonhacker.emu.memory.listener;
 
-public class TrackingMemoryActivityListener implements MemoryActivityListener {
+public class TrackingMemoryActivityListener extends BaseMemoryActivityListener implements MemoryActivityListener {
 
     /** Arrays to track activity */
     private int[] pageActivityMap;
     private int[][] cellActivityMaps;
     
-    private int numPages, pageSize;
+    private int pageSize;
 
     /** Preference to keep values flashing (rotating) as data is read or written
      */
@@ -14,7 +14,6 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
 
 
     public TrackingMemoryActivityListener(int numPages, int pageSize) {
-        this.numPages = numPages;
         this.pageSize = pageSize;
         pageActivityMap = new int[numPages];
         cellActivityMaps = new int[numPages][];
@@ -47,24 +46,10 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
 //        }
     }
 
-    public void onLoadInstruction(int page, int offset, byte value) {
-//        if ((pageActivityMap[page] & 0xFF)!=0xFF) pageActivityMap[page]+= 0x01;
-//        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
-//
-//        if (cellActivityMaps[page] == null) {
-//            cellActivityMaps[page] = new int[pageSize];
-//        }
-//        if ((cellActivityMaps[page][offset] & 0xFF)!=0xFF) cellActivityMaps[page][offset]+= 0x01;
-//        if (mustRotateValues) cellActivityMaps[page][offset] ^= 0x7F000000;
-        
-        if (mustRotateValues || ((pageActivityMap[page] & 0xFF)!=0xFF)) pageActivityMap[page]+= 0x01;
-        if (cellActivityMaps[page] == null) {
-            cellActivityMaps[page] = new int[pageSize];
-        }
-        if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF)!=0xFF)) cellActivityMaps[page][offset]+= 0x01;
-    }
+    public void onLoadData8(int address, byte value) {
+        int page = address >>> 16;
+        int offset = address & 0xFFFF;
 
-    public void onLoadData(int page, int offset, byte value) {
 //        if ((pageActivityMap[page] & 0xFF00)!=0xFF00) pageActivityMap[page]+= 0x0100;
 //        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
 //
@@ -81,7 +66,30 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
         if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF00)!=0xFF00)) cellActivityMaps[page][offset]+= 0x0100;
     }
 
-    public void onStore(int page, int offset, byte value) {
+    public void onLoadInstruction8(int address, byte value) {
+        int page = address >>> 16;
+        int offset = address & 0xFFFF;
+
+//        if ((pageActivityMap[page] & 0xFF)!=0xFF) pageActivityMap[page]+= 0x01;
+//        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
+//
+//        if (cellActivityMaps[page] == null) {
+//            cellActivityMaps[page] = new int[pageSize];
+//        }
+//        if ((cellActivityMaps[page][offset] & 0xFF)!=0xFF) cellActivityMaps[page][offset]+= 0x01;
+//        if (mustRotateValues) cellActivityMaps[page][offset] ^= 0x7F000000;
+
+        if (mustRotateValues || ((pageActivityMap[page] & 0xFF)!=0xFF)) pageActivityMap[page]+= 0x01;
+        if (cellActivityMaps[page] == null) {
+            cellActivityMaps[page] = new int[pageSize];
+        }
+        if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF)!=0xFF)) cellActivityMaps[page][offset]+= 0x01;
+    }
+
+    public void onStore8(int address, byte value) {
+        int page = address >>> 16;
+        int offset = address & 0xFFFF;
+
 //        if ((pageActivityMap[page] & 0xFF0000)!=0xFF0000) pageActivityMap[page]+= 0x010000;
 //        if (mustRotateValues) pageActivityMap[page] ^= 0x7F000000;
 //
@@ -97,4 +105,6 @@ public class TrackingMemoryActivityListener implements MemoryActivityListener {
         }
         if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF0000)!=0xFF0000)) cellActivityMaps[page][offset]+= 0x010000;
     }
+
+
 }
