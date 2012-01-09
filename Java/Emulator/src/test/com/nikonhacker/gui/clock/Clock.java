@@ -1,13 +1,14 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.clock;
 // Purpose: An analog clock component -- Uses Timer and Calendar.
 // Note   : Uses a BufferedImage for clock face so isn't drawn each time.
 // Author : Fred Swartz, 1999-2007, Placed in public domain.
 
-import java.util.*;
-import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import java.awt.image.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.util.Calendar;
 
 //////////////////////////////////////////////////////////////// Clock class
 class Clock extends JComponent {

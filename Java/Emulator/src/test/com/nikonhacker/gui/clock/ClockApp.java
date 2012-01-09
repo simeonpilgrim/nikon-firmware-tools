@@ -1,4 +1,4 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.clock;
 
 import javax.swing.*;
 import java.awt.*;
