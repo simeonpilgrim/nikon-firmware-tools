@@ -38,7 +38,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_EMULATOR_LOAD = "EMULATOR_LOAD";
     private static final String COMMAND_EMULATOR_PLAY = "EMULATOR_PLAY";
     private static final String COMMAND_EMULATOR_PAUSE = "EMULATOR_PAUSE";
+    private static final String COMMAND_EMULATOR_STEP = "EMULATOR_STEP";
     private static final String COMMAND_EMULATOR_STOP = "EMULATOR_STOP";
+    private static final String COMMAND_SETUP_BREAKPOINTS = "SETUP_BREAKPOINTS";
     private static final String COMMAND_TEST = "TEST";
     private static final String COMMAND_QUIT = "QUIT";
     private static final String COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER = "TOGGLE_MEMORY_ACTIVITY_VIEWER";
@@ -75,7 +77,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JMenuItem loadMenuItem;
     private JMenuItem playMenuItem;
     private JMenuItem pauseMenuItem;
+    private JMenuItem stepMenuItem;
     private JMenuItem stopMenuItem;
+    private JMenuItem breakpointMenuItem;
     private JCheckBoxMenuItem disassemblyMenuItem;
     private JCheckBoxMenuItem cpuStateMenuItem;
     private JCheckBoxMenuItem memoryActivityViewerMenuItem;
@@ -86,7 +90,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton loadButton;
     private JButton playButton;
     private JButton pauseButton;
+    private JButton stepButton;
     private JButton stopButton;
+    private JButton breakpointButton;
     private JButton disassemblyButton;
     private JButton cpuStateButton;
     private JButton memoryActivityViewerButton;
@@ -200,8 +206,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(playButton);
         pauseButton = makeButton("pause", COMMAND_EMULATOR_PAUSE, "Pause emulator", "Pause");
         bar.add(pauseButton);
+        stepButton = makeButton("step", COMMAND_EMULATOR_STEP, "Step emulator", "Step");
+        bar.add(stepButton);
         stopButton = makeButton("stop", COMMAND_EMULATOR_STOP, "Stop emulator and reset", "Stop");
         bar.add(stopButton);
+        bar.add(Box.createRigidArea(new Dimension(10, 0)));
+        breakpointButton = makeButton("breakpoint", COMMAND_SETUP_BREAKPOINTS, "Setup breakpoints", "Breakpoints");
+        bar.add(breakpointButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
         bar.add(new JLabel("Sleep :"));
@@ -314,6 +325,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         pauseMenuItem.addActionListener(this);
         fileMenu.add(pauseMenuItem);
 
+        //emulator step
+        stepMenuItem = new JMenuItem("Step emulator");
+//        stepMenuItem.setMnemonic(KeyEvent.VK_P);
+//        stepMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
+        stepMenuItem.setActionCommand(COMMAND_EMULATOR_STEP);
+        stepMenuItem.addActionListener(this);
+        fileMenu.add(stepMenuItem);
+
         //emulator stop
         stopMenuItem = new JMenuItem("Stop emulator");
 //        stopMenuItem.setMnemonic(KeyEvent.VK_P);
@@ -321,6 +340,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         stopMenuItem.setActionCommand(COMMAND_EMULATOR_STOP);
         stopMenuItem.addActionListener(this);
         fileMenu.add(stopMenuItem);
+
+        //setup breakpoints
+        breakpointMenuItem = new JMenuItem("Setup breakpoints");
+        breakpointMenuItem.setMnemonic(KeyEvent.VK_B);
+        breakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK));
+        breakpointMenuItem.setActionCommand(COMMAND_SETUP_BREAKPOINTS);
+        breakpointMenuItem.addActionListener(this);
+        fileMenu.add(breakpointMenuItem);
+
 
 //        //test
 //        tmpMenuItem = new JMenuItem("Test");
@@ -440,7 +468,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     /**
      * React to menu selections and toggle buttons.
      *
-     * @param e
+     * @param e the event
      */
     public void actionPerformed(ActionEvent e) {
         if (COMMAND_EMULATOR_LOAD.equals(e.getActionCommand())) {
@@ -452,8 +480,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_EMULATOR_PAUSE.equals(e.getActionCommand())) {
             pauseEmulator();
         }
+        else if (COMMAND_EMULATOR_STEP.equals(e.getActionCommand())) {
+            stepEmulator();
+        }
         else if (COMMAND_EMULATOR_STOP.equals(e.getActionCommand())) {
             stopEmulator();
+        }
+        else if (COMMAND_SETUP_BREAKPOINTS.equals(e.getActionCommand())) {
+            setBreakpoints();
         }
         else if (COMMAND_TEST.equals(e.getActionCommand())) {
 
@@ -494,6 +528,32 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             System.err.println("Unknown menu command : " + e.getActionCommand());
         }
+    }
+
+    private void setBreakpoints() {
+
+
+//        JTextField sourceFile = new JTextField();
+//        JTextField destinationDir = new JTextField();
+//        final JComponent[] inputs = new JComponent[]{
+//                new FileSelectionPanel("Source file", sourceFile, false),
+//                new FileSelectionPanel("Destination dir", destinationDir, true)
+//        };
+//        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+//                inputs,
+//                "Choose decoding source and destination",
+//                JOptionPane.OK_CANCEL_OPTION,
+//                JOptionPane.PLAIN_MESSAGE,
+//                null,
+//                null,
+//                JOptionPane.DEFAULT_OPTION)) {
+//            try {
+//                new FirmwareDecoder().decode(sourceFile.getText(), destinationDir.getText(), false);
+                JOptionPane.showMessageDialog(this, "Decoding complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+//            } catch (FirmwareFormatException e) {
+//                JOptionPane.showMessageDialog(this, e.getMessage(), "Error decoding files", JOptionPane.ERROR_MESSAGE);
+//            }
+//        }
     }
 
     private void openDecodeDialog() {
@@ -823,71 +883,54 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setSelected(component4006Frame != null);
 
         if (isImageLoaded) {
-            disassemblyMenuItem.setEnabled(true);
-            disassemblyButton.setEnabled(true);
-            cpuStateMenuItem.setEnabled(true);
-            cpuStateButton.setEnabled(true);
-            screenEmulatorMenuItem.setEnabled(true);
-            screenEmulatorButton.setEnabled(true);
-            memoryActivityViewerMenuItem.setEnabled(true);
-            memoryActivityViewerButton.setEnabled(true);
-            memoryHexEditorMenuItem.setEnabled(true);
-            memoryHexEditorButton.setEnabled(true);
-            component4006MenuItem.setEnabled(true);
-            component4006Button.setEnabled(true);
+            disassemblyMenuItem.setEnabled(true); disassemblyButton.setEnabled(true);
+            cpuStateMenuItem.setEnabled(true); cpuStateButton.setEnabled(true);
+            screenEmulatorMenuItem.setEnabled(true); screenEmulatorButton.setEnabled(true);
+            memoryActivityViewerMenuItem.setEnabled(true); memoryActivityViewerButton.setEnabled(true);
+            memoryHexEditorMenuItem.setEnabled(true); memoryHexEditorButton.setEnabled(true);
+            component4006MenuItem.setEnabled(true); component4006Button.setEnabled(true);
 
-            stopMenuItem.setEnabled(true);
-            stopButton.setEnabled(true);
+            stopMenuItem.setEnabled(true); stopButton.setEnabled(true);
 
             if (isEmulatorPlaying) {
-                loadMenuItem.setEnabled(false);
-                loadButton.setEnabled(false);
-                playMenuItem.setEnabled(false);
-                playButton.setEnabled(false);
-                pauseMenuItem.setEnabled(true);
-                pauseButton.setEnabled(true);
+                loadMenuItem.setEnabled(false); loadButton.setEnabled(false);
+                playMenuItem.setEnabled(false); playButton.setEnabled(false);
+                pauseMenuItem.setEnabled(true); pauseButton.setEnabled(true);
+                stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
+                breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(false);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(false);
             }
             else {
-                loadMenuItem.setEnabled(true);
-                loadButton.setEnabled(true);
-                playMenuItem.setEnabled(true);
-                playButton.setEnabled(true);
-                pauseMenuItem.setEnabled(false);
-                pauseButton.setEnabled(false);
+                loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
+                playMenuItem.setEnabled(true); playButton.setEnabled(true);
+                pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
+                stepMenuItem.setEnabled(true); stepButton.setEnabled(true);
+                breakpointMenuItem.setEnabled(true); breakpointButton.setEnabled(true);
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
             }
         }
         else {
-            disassemblyMenuItem.setEnabled(false);
-            disassemblyButton.setEnabled(false);
-            cpuStateMenuItem.setEnabled(false);
-            cpuStateButton.setEnabled(false);
-            screenEmulatorMenuItem.setEnabled(false);
-            screenEmulatorButton.setEnabled(false);
-            memoryActivityViewerMenuItem.setEnabled(false);
-            memoryActivityViewerButton.setEnabled(false);
-            memoryHexEditorMenuItem.setEnabled(false);
-            memoryHexEditorButton.setEnabled(false);
-            component4006MenuItem.setEnabled(false);
-            component4006Button.setEnabled(false);
+            disassemblyMenuItem.setEnabled(false); disassemblyButton.setEnabled(false);
+            cpuStateMenuItem.setEnabled(false); cpuStateButton.setEnabled(false);
+            screenEmulatorMenuItem.setEnabled(false); screenEmulatorButton.setEnabled(false);
+            memoryActivityViewerMenuItem.setEnabled(false); memoryActivityViewerButton.setEnabled(false);
+            memoryHexEditorMenuItem.setEnabled(false); memoryHexEditorButton.setEnabled(false);
+            component4006MenuItem.setEnabled(false); component4006Button.setEnabled(false);
 
-            loadMenuItem.setEnabled(true);
-            loadButton.setEnabled(true);
-            playMenuItem.setEnabled(false);
-            playButton.setEnabled(false);
-            pauseMenuItem.setEnabled(false);
-            pauseButton.setEnabled(false);
-            stopMenuItem.setEnabled(false);
-            stopButton.setEnabled(false);
+            loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
+            playMenuItem.setEnabled(false); playButton.setEnabled(false);
+            pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
+            stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
+            breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
+
+            stopMenuItem.setEnabled(false); stopButton.setEnabled(false);
 
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
         }
     }
-
 
 
     private void playEmulator() {
@@ -913,6 +956,27 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulator.setExitRequired(true);
         isEmulatorPlaying = false;
         updateStates();
+    }
+
+    private void stepEmulator() {
+        if (!isImageLoaded) {
+            throw new RuntimeException("No Image loaded !");
+        }
+        emulator.setExitRequired(true); // To exit immediately
+        isEmulatorPlaying = true;
+        updateStates();
+        Thread emulatorThread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    emulator.play();
+                    isEmulatorPlaying = false;
+                    updateStates();
+                } catch (EmulationException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        emulatorThread.start();
     }
 
     private void stopEmulator() {
