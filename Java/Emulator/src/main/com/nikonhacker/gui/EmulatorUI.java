@@ -16,6 +16,13 @@ import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
+import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
+import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
+import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
+import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
+import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
+import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -531,8 +538,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void setBreakpoints() {
-
-
 //        JTextField sourceFile = new JTextField();
 //        JTextField destinationDir = new JTextField();
 //        final JComponent[] inputs = new JComponent[]{
@@ -850,7 +855,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * Called back by frames to inform UI that they are being closed
      * @param frame
      */
-    void frameClosing(DocumentFrame frame) {
+    public void frameClosing(DocumentFrame frame) {
         if (frame == disassemblyFrame) {
             toggleDisassembly();
         }

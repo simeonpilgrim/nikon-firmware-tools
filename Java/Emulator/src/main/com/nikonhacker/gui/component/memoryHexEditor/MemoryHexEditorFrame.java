@@ -1,8 +1,10 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.component.memoryHexEditor;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.DocumentFrame;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;

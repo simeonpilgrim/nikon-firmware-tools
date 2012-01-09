@@ -1,7 +1,9 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.component.cpu;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;

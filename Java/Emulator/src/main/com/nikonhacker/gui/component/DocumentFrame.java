@@ -1,4 +1,6 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.component;
+
+import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;

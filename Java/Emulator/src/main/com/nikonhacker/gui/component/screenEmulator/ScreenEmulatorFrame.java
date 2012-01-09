@@ -1,6 +1,8 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.component.screenEmulator;
 
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,6 +1,7 @@
-package com.nikonhacker.gui;
+package com.nikonhacker.gui.component.memoryMapped;
 
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
