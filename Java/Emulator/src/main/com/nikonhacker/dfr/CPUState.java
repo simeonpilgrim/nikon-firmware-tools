@@ -96,6 +96,13 @@ public class CPUState {
 
     /**
      * Constructor
+     */
+    public CPUState() {
+        reset();
+    }
+
+    /**
+     * Constructor
      * @param startPc initial value for the Program Counter
      */
     public CPUState(int startPc) {
