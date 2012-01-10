@@ -164,10 +164,10 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         int address;
         // Handle left button
         if (leftButton.equals(e.getSource())) {
-            address = Format.parseHexField(addressField);
-            address -= memory.getPageSize();
-            if (address >= 0) {
-                addressField.setText(Format.asHex(address, 8));
+            long longAddress = Format.parseHexField(addressField) & 0xFFFFFFFFL;
+            longAddress -= memory.getPageSize();
+            if (longAddress >= 0) {
+                addressField.setText(Format.asHex((int) longAddress, 8));
             }
         }
         // Handle right button
