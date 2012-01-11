@@ -56,6 +56,7 @@ public class CPUState {
     public final static int USP = 19;
     public final static int MDH = 20;
     public final static int MDL = 21;
+
     public final static int PS = 48;
     public final static int CCR = 49;
 
