@@ -37,7 +37,7 @@ public class Format {
             }
             long address = Long.parseLong(textField.getText(), 16);
             if (address < 0 || address > 0xFFFFFFFFL) {
-                throw new NumberFormatException("Address out of range");
+                throw new NumberFormatException("Value out of range");
             }
             textField.setBackground(Color.WHITE);
             return (int) address;
@@ -54,7 +54,7 @@ public class Format {
             }
             long address = Long.parseLong(textField.getText(), 2);
             if (address < 0 || address > 0xFFFFFFFFL){
-                throw new NumberFormatException("Address out of range");
+                throw new NumberFormatException("Value out of range");
             }
             textField.setBackground(Color.WHITE);
             return (int) address;
