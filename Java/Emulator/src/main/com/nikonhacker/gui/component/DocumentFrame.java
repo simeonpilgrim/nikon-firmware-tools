@@ -5,7 +5,6 @@ import com.nikonhacker.gui.EmulatorUI;
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
-import java.util.prefs.Preferences;
 
 public class DocumentFrame extends JInternalFrame implements InternalFrameListener {
     protected EmulatorUI ui;
@@ -28,9 +27,7 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
     public void internalFrameClosed(InternalFrameEvent e) {
         // Called no matter how the close is initiated
         if (this.rememberLastPosition) {
-            Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
-            prefs.putInt(this.getClass().getSimpleName() + EmulatorUI.PREFKEY_LAST_X, getX());
-            prefs.putInt(this.getClass().getSimpleName() + EmulatorUI.PREFKEY_LAST_Y, getY());
+            ui.getPrefs().setWindowPosition(this.getClass().getSimpleName(), getX(), getY());
         }
     }
 
@@ -45,8 +42,8 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
     public void display(boolean rememberLastPosition) {
         this.rememberLastPosition = rememberLastPosition;
         if (this.rememberLastPosition) {
-            Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
-            setLocation(prefs.getInt(this.getClass().getSimpleName() + EmulatorUI.PREFKEY_LAST_X, 0), prefs.getInt(this.getClass().getSimpleName() + EmulatorUI.PREFKEY_LAST_Y, 0));
+            String windowName = this.getClass().getSimpleName();
+            setLocation(ui.getPrefs().getWindowPositionX(windowName), ui.getPrefs().getWindowPositionY(windowName));
         }
         pack();
         setVisible(true);
