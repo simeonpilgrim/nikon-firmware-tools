@@ -30,34 +30,38 @@ public class Format {
         }
     }
 
-    public static int parseHexField(JTextField textField) throws NumberFormatException {
+    public static int parseIntHexField(JTextField textField) throws NumberFormatException {
         try {
             if (textField.getText().toLowerCase().startsWith("0x")) {
                 textField.setText(textField.getText().substring(2));
             }
-            long address = Long.parseLong(textField.getText(), 16);
-            if (address < 0 || address > 0xFFFFFFFFL) {
+            long value = Long.parseLong(textField.getText(), 16);
+            if (value < 0 || value > 0xFFFFFFFFL) {
                 throw new NumberFormatException("Value out of range");
             }
             textField.setBackground(Color.WHITE);
-            return (int) address;
+            return (int) value;
         } catch (NumberFormatException e) {
             textField.setBackground(Color.RED);
             throw(e);
         }
     }
 
-    public static int parseBinaryField(JTextField textField) throws NumberFormatException {
+    public static int parseIntBinaryField(JTextField textField, boolean maskMode) throws NumberFormatException {
         try {
             if (textField.getText().toLowerCase().startsWith("0b")) {
                 textField.setText(textField.getText().substring(2));
             }
-            long address = Long.parseLong(textField.getText(), 2);
-            if (address < 0 || address > 0xFFFFFFFFL){
+            String text = textField.getText();
+            if (maskMode) {
+                text = text.replace('?', '0');
+            }
+            long value = Long.parseLong(text, 2);
+            if (value < 0 || value > 0xFFFFFFFFL){
                 throw new NumberFormatException("Value out of range");
             }
             textField.setBackground(Color.WHITE);
-            return (int) address;
+            return (int) value;
         } catch (NumberFormatException e) {
             textField.setBackground(Color.RED);
             throw(e);
