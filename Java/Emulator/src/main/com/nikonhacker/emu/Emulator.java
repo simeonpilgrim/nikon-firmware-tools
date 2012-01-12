@@ -7,10 +7,12 @@ import com.nikonhacker.dfr.DisassemblyState;
 import com.nikonhacker.dfr.OpCode;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.trigger.BreakCondition;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.List;
 
 public class Emulator {
 
@@ -26,6 +28,7 @@ public class Emulator {
     private PrintStream instructionPrintStream;
     private int sleepIntervalMs = 0;
     private boolean sleepIntervalChanged = false;
+    private List<BreakCondition> breakConditions;
 
     public static void main(String[] args) throws IOException, EmulationException {
         if (args.length < 1) {
@@ -2200,6 +2203,7 @@ public class Emulator {
                     }
                 }
     
+                /* Pause if requested */
                 if (sleepIntervalMs != 0) {
                     if (sleepIntervalMs < 100) {
                         try {
@@ -2228,6 +2232,15 @@ public class Emulator {
                 if (cycleRemaining <= 0) {
                     // TODO : Check for interrupts
 
+                    /* Break if requested */
+                    for (BreakCondition breakCondition : breakConditions) {
+                        if(breakCondition.matches(cpuState, memory)) {
+                            exitRequired = true;
+                            break;
+                        }
+                    }
+
+
                     totalCycles += interruptPeriod;
                     cycleRemaining += interruptPeriod;
                     if (exitRequired) break;
@@ -2251,4 +2264,7 @@ public class Emulator {
         this.delaySlotDone = false;
     }
 
+    public void setBreakConditions(List<BreakCondition> breakConditions) {
+        this.breakConditions = breakConditions;
+    }
 }
