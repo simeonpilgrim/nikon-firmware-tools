@@ -164,7 +164,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         int address;
         // Handle left button
         if (leftButton.equals(e.getSource())) {
-            long longAddress = Format.parseHexField(addressField) & 0xFFFFFFFFL;
+            long longAddress = Format.parseIntHexField(addressField) & 0xFFFFFFFFL;
             longAddress -= memory.getPageSize();
             if (longAddress >= 0) {
                 addressField.setText(Format.asHex((int) longAddress, 8));
@@ -172,7 +172,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         }
         // Handle right button
         else if (rightButton.equals(e.getSource())) {
-            address = Format.parseHexField(addressField);
+            address = Format.parseIntHexField(addressField);
             address += memory.getPageSize();
             if (address < 0xFFFFFFFFL) {
                 addressField.setText(Format.asHex(address, 8));
@@ -180,7 +180,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         }
 
         // In any case, read address and load corresponding page
-        address = Format.parseHexField(addressField);
+        address = Format.parseIntHexField(addressField);
         int baseAddress = address & 0xFFFF0000;
         loadPage(baseAddress);
         int offset = address & 0x0000FFFF;
