@@ -8,15 +8,20 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
+import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.trigger.AlwaysBreakCondition;
+import com.nikonhacker.emu.trigger.BreakCondition;
+import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
@@ -38,12 +43,13 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.prefs.Preferences;
+import java.util.List;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
     private static final String COMMAND_EMULATOR_LOAD = "EMULATOR_LOAD";
     private static final String COMMAND_EMULATOR_PLAY = "EMULATOR_PLAY";
+    private static final String COMMAND_EMULATOR_DEBUG = "EMULATOR_DEBUG";
     private static final String COMMAND_EMULATOR_PAUSE = "EMULATOR_PAUSE";
     private static final String COMMAND_EMULATOR_STEP = "EMULATOR_STEP";
     private static final String COMMAND_EMULATOR_STOP = "EMULATOR_STOP";
@@ -65,9 +71,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private static File imagefile;
 
-    public static final String PREFKEY_LAST_X = "_last_X";
-    public static final String PREFKEY_LAST_Y = "_last_Y";
-    public static final String PREFKEY_SLEEP = "sleep_setting";
+    public static final String APP_NAME = "FrEmulator";
 
     private DebuggableMemory memory;
     private CPUState cpuState;
@@ -78,11 +82,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     long lastUpdateCycles = 0;
     long lastUpdateTime = 0;
+    
+    private Prefs prefs = new Prefs();
 
     private JDesktopPane mdiPane;
 
     private JMenuItem loadMenuItem;
     private JMenuItem playMenuItem;
+    private JMenuItem debugMenuItem;
     private JMenuItem pauseMenuItem;
     private JMenuItem stepMenuItem;
     private JMenuItem stopMenuItem;
@@ -96,6 +103,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private JButton loadButton;
     private JButton playButton;
+    private JButton debugButton;
     private JButton pauseButton;
     private JButton stepButton;
     private JButton stopButton;
@@ -145,7 +153,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         //Create and set up the window.
         EmulatorUI frame = new EmulatorUI();
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         //Display the window.
         frame.setVisible(true);
@@ -153,6 +160,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     public EmulatorUI() {
         super("Emulator UI");
+        
+        prefs = Prefs.load();
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         //Make the app window indented 50 pixels from each edge of the screen.
         int inset = 50;
@@ -187,6 +198,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }).start();
     }
 
+    public Prefs getPrefs() {
+        return prefs;
+    }
+
     private void updateTitleBar() {
         if (emulator != null) {
             long totalCycles = emulator.getTotalCycles();
@@ -195,10 +210,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             lastUpdateCycles = totalCycles;
             lastUpdateTime = now;
-            setTitle("Emulator UI (" + totalCycles + " cycles emulated. Current speed is "+ cps + "Hz)");
+            setTitle(APP_NAME + " (" + totalCycles + " cycles emulated. Current speed is "+ cps + "Hz)");
         }
         else {
-            setTitle("Emulator UI");
+            setTitle(APP_NAME);
         }
     }
 
@@ -211,6 +226,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(loadButton);
         playButton = makeButton("play", COMMAND_EMULATOR_PLAY, "Start or resume emulator", "Play");
         bar.add(playButton);
+        debugButton = makeButton("debug", COMMAND_EMULATOR_DEBUG, "Debug emulator", "Debug");
+        bar.add(debugButton);
         pauseButton = makeButton("pause", COMMAND_EMULATOR_PAUSE, "Pause emulator", "Pause");
         bar.add(pauseButton);
         stepButton = makeButton("step", COMMAND_EMULATOR_STEP, "Step emulator", "Step");
@@ -245,9 +262,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private JSlider makeSlider() {
-        Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
-        int sleepValue = prefs.getInt(this.getClass().getSimpleName() + PREFKEY_SLEEP, 2);
-        JSlider intervalSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, sleepValue);
+        JSlider intervalSlider = new JSlider(JSlider.HORIZONTAL, 0, 5, prefs.getSleepTick());
 
         intervalSlider.addChangeListener(this);
 
@@ -323,6 +338,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         playMenuItem.setActionCommand(COMMAND_EMULATOR_PLAY);
         playMenuItem.addActionListener(this);
         fileMenu.add(playMenuItem);
+
+        //emulator debug
+        debugMenuItem = new JMenuItem("Debug emulator");
+        debugMenuItem.setMnemonic(KeyEvent.VK_G);
+        debugMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.ALT_MASK));
+        debugMenuItem.setActionCommand(COMMAND_EMULATOR_DEBUG);
+        debugMenuItem.addActionListener(this);
+        fileMenu.add(debugMenuItem);
 
         //emulator pause
         pauseMenuItem = new JMenuItem("Pause emulator");
@@ -482,19 +505,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             selectAndLoadImage();
         }
         else if (COMMAND_EMULATOR_PLAY.equals(e.getActionCommand())) {
-            playEmulator();
+            playEmulator(false, false);
+        }
+        else if (COMMAND_EMULATOR_DEBUG.equals(e.getActionCommand())) {
+            playEmulator(false, true);
         }
         else if (COMMAND_EMULATOR_PAUSE.equals(e.getActionCommand())) {
             pauseEmulator();
         }
         else if (COMMAND_EMULATOR_STEP.equals(e.getActionCommand())) {
-            stepEmulator();
+            playEmulator(true, false);
         }
         else if (COMMAND_EMULATOR_STOP.equals(e.getActionCommand())) {
             stopEmulator();
         }
         else if (COMMAND_SETUP_BREAKPOINTS.equals(e.getActionCommand())) {
-            setBreakpoints();
+            setupBreakpoints();
         }
         else if (COMMAND_TEST.equals(e.getActionCommand())) {
 
@@ -537,28 +563,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    private void setBreakpoints() {
-//        JTextField sourceFile = new JTextField();
-//        JTextField destinationDir = new JTextField();
-//        final JComponent[] inputs = new JComponent[]{
-//                new FileSelectionPanel("Source file", sourceFile, false),
-//                new FileSelectionPanel("Destination dir", destinationDir, true)
-//        };
-//        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-//                inputs,
-//                "Choose decoding source and destination",
-//                JOptionPane.OK_CANCEL_OPTION,
-//                JOptionPane.PLAIN_MESSAGE,
-//                null,
-//                null,
-//                JOptionPane.DEFAULT_OPTION)) {
-//            try {
-//                new FirmwareDecoder().decode(sourceFile.getText(), destinationDir.getText(), false);
-                JOptionPane.showMessageDialog(this, "Decoding complete", "Done", JOptionPane.INFORMATION_MESSAGE);
-//            } catch (FirmwareFormatException e) {
-//                JOptionPane.showMessageDialog(this, e.getMessage(), "Error decoding files", JOptionPane.ERROR_MESSAGE);
-//            }
-//        }
+    private void setupBreakpoints() {
+        new BreakTriggerListDialog(this, prefs.getTriggers()).setVisible(true);
     }
 
     private void openDecodeDialog() {
@@ -682,12 +688,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void stateChanged(ChangeEvent e) {
         JSlider source = (JSlider)e.getSource();
         // if (!source.getValueIsAdjusting())
-        setEmulatorSleep(source.getValue());
-        Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
-        prefs.putInt(this.getClass().getSimpleName() + PREFKEY_SLEEP, source.getValue());
+        setEmulatorSleepCode(source.getValue());
+        prefs.setSleepTick(source.getValue());
     }
 
-    private void setEmulatorSleep(int value) {
+    private void setEmulatorSleepCode(int value) {
         emulator.setSleepIntervalChanged();
         switch (value) {
             case 0:
@@ -723,9 +728,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator.setMemory(memory);
             emulator.setCpuState(cpuState);
 
-            Preferences prefs = Preferences.userNodeForPackage(DocumentFrame.class);
-            int sleepValue = prefs.getInt(this.getClass().getSimpleName() + PREFKEY_SLEEP, 2);
-            setEmulatorSleep(sleepValue);
+            setEmulatorSleepCode(prefs.getSleepTick());
 
             isImageLoaded = true;
             closeAllFrames();
@@ -900,6 +903,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (isEmulatorPlaying) {
                 loadMenuItem.setEnabled(false); loadButton.setEnabled(false);
                 playMenuItem.setEnabled(false); playButton.setEnabled(false);
+                debugMenuItem.setEnabled(false); debugButton.setEnabled(false);
                 pauseMenuItem.setEnabled(true); pauseButton.setEnabled(true);
                 stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
                 breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
@@ -909,6 +913,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             else {
                 loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
                 playMenuItem.setEnabled(true); playButton.setEnabled(true);
+                debugMenuItem.setEnabled(true); debugButton.setEnabled(true);
                 pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
                 stepMenuItem.setEnabled(true); stepButton.setEnabled(true);
                 breakpointMenuItem.setEnabled(true); breakpointButton.setEnabled(true);
@@ -926,6 +931,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
             playMenuItem.setEnabled(false); playButton.setEnabled(false);
+            debugMenuItem.setEnabled(false); debugButton.setEnabled(false);
             pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
             stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
             breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
@@ -938,36 +944,27 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
-    private void playEmulator() {
+    private void playEmulator(boolean stepMode, boolean debugMode) {
         if (!isImageLoaded) {
             throw new RuntimeException("No Image loaded !");
         }
+
+        //emulator.setExitRequired(stepMode); // reset, or force to exit immediately
         emulator.setExitRequired(false);
-        Thread emulatorThread = new Thread(new Runnable() {
-            public void run() {
-                try {
-                    emulator.play();
-                } catch (EmulationException e) {
-                    e.printStackTrace();
+
+        List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+        if (stepMode) {
+            breakConditions.add(new AlwaysBreakCondition());
+        }
+        else if (debugMode) {
+            for (BreakTrigger breakTrigger : prefs.getTriggers()) {
+                if (breakTrigger.isEnabled()) {
+                    breakConditions.addAll(breakTrigger.getBreakConditions());
                 }
             }
-        });
-        isEmulatorPlaying = true;
-        updateStates();
-        emulatorThread.start();
-    }
-
-    private void pauseEmulator() {
-        emulator.setExitRequired(true);
-        isEmulatorPlaying = false;
-        updateStates();
-    }
-
-    private void stepEmulator() {
-        if (!isImageLoaded) {
-            throw new RuntimeException("No Image loaded !");
         }
-        emulator.setExitRequired(true); // To exit immediately
+        emulator.setBreakConditions(breakConditions);
+
         isEmulatorPlaying = true;
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
@@ -984,10 +981,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulatorThread.start();
     }
 
+    private void pauseEmulator() {
+        emulator.setExitRequired(true);
+    }
+
     private void stopEmulator() {
         emulator.setExitRequired(true);
-        isEmulatorPlaying = false;
-        updateStates();
         try {
             // Wait for emulator to stop
             Thread.sleep(10);
@@ -1057,4 +1056,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
+    @Override
+    public void dispose() {
+        super.dispose();
+        Prefs.save(prefs);
+        System.exit(0);
+    }
 }
