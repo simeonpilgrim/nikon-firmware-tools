@@ -263,8 +263,22 @@ public class CPUState {
         T = 0;
         I = 0;
         setS(0);
-        setReg(TBR, 0x000FFC00); /* TODO TBR */
-        setReg(SSP, 0x00000000); /* TODO stack */
+        setReg(TBR, 0x000FFC00);
+        setReg(SSP, 0x00000000);
+        regValidityBitmap = 0;
+    }
+
+    public void clear() {
+        for (int i = 0; i < regValue.length; i++) {
+            regValue[i] = new Register32(0);
+        }
+        regValue[15] = regValue[SSP];
+        setILM(0);
+        T = 0;
+        I = 0;
+        setS(0);
+        setReg(TBR, 0);
+        setReg(SSP, 0);
         regValidityBitmap = 0;
     }
 
