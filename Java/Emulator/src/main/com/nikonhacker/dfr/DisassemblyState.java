@@ -208,15 +208,12 @@ public class DisassemblyState {
                     w += 2;
                     break;
                 case 'A':
-//                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.AC]);
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.AC]);
                     break;
                 case 'C':
-//                    currentBuffer.append("CCR");
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.CCR]);
                     break;
                 case 'F':
-//                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.FP]);
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.FP]);
                     break;
                 case 'J':
