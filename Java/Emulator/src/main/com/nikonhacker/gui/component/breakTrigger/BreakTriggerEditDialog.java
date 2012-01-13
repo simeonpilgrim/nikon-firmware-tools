@@ -39,6 +39,8 @@ public class BreakTriggerEditDialog extends JDialog {
         cpuStateComponent.refresh();
         tabbedPane.addTab("CPU conditions", null, cpuStateComponent);
 
+        // TODO Add Memory conditions
+
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         JPanel bottomPanel = new JPanel(new FlowLayout());

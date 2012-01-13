@@ -15,6 +15,7 @@ import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.trigger.AlwaysBreakCondition;
+import com.nikonhacker.emu.trigger.AndCondition;
 import com.nikonhacker.emu.trigger.BreakCondition;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -959,7 +960,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                 if (breakTrigger.isEnabled()) {
-                    breakConditions.addAll(breakTrigger.getBreakConditions());
+                    breakConditions.add(new AndCondition(breakTrigger.getBreakConditions()));
                 }
             }
         }
