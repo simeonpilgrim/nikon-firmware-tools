@@ -3,11 +3,14 @@ package com.nikonhacker.dfr;
 
 public class OpCode {
 
-
+    /**
+     * All 16bit variations of opcode and arguments
+     */
     public static OpCode[] opCodeMap = new OpCode[0x10000];
 
+
     /**
-     * instruction types
+     * Instruction types (formats)
      */
 
     /** Layout of type A instructions is as follows : <pre>[   op          |  Rj   |  Ri   ]</pre> */
@@ -36,7 +39,8 @@ public class OpCode {
 
 
     /**
-     * main instruction map
+     * Main instruction map
+     * These are the official names from Fujitsu's spec
      */
     private static final OpCode[] baseOpCodes = {
         new OpCode( 0x0000, 0xFF00, FORMAT_A, 0, 0, "LD",     "@(A&j),i",     "iw"        ),
@@ -226,6 +230,9 @@ public class OpCode {
         new OpCode( 0xFF00, 0xFF00, FORMAT_D, 0, 0, "BHI:D",  "2ru",          "_?"        ),
     };
 
+    /**
+     * These are replacement names for all stack-related operations
+     */
     static OpCode[] altStackOpCodes = {
         new OpCode( 0x0700, 0xFFF0, FORMAT_E, 0, 0, "POP",    "i",            ""          ),
         new OpCode( 0x0780, 0xFFFF, FORMAT_E, 0, 0, "POP",    "g",            ""          ),
@@ -251,12 +258,19 @@ public class OpCode {
         new OpCode( 0x8F00, 0xFF00, FORMAT_D, 0, 0, "PUSH",   "xy",           ""          ),
     };
 
+    /**
+     * These are replacement names for all "+16" shift opcodes (LSR2, LSL2, ASR2)
+     */
     static OpCode[] altShiftOpCodes = {
         new OpCode( 0xB100, 0xFF00, FORMAT_C, 0, 0, "LSR",    "#bd,i",        "iw"        ),
         new OpCode( 0xB500, 0xFF00, FORMAT_C, 0, 0, "LSL",    "#bd,i",        "iw"        ),
         new OpCode( 0xB900, 0xFF00, FORMAT_C, 0, 0, "ASR",    "#bd,i",        "iw"        ),
     };
 
+    /**
+     * These are replacement names for all DMOV opcodes
+     * TODO check 0x1800 etc ???
+     */
     static OpCode[] altDmovOpCodes = {
         new OpCode( 0x0800, 0xFF00, FORMAT_D, 0, 0, "LD",     "@4u,A",        ""          ),
         new OpCode( 0x0900, 0xFF00, FORMAT_D, 0, 0, "LDUH",   "@2u,A",        ""          ),
@@ -266,6 +280,10 @@ public class OpCode {
         new OpCode( 0x1A00, 0xFF00, FORMAT_D, 0, 0, "STUB",   "A,@u",         ""          ),
     };
 
+    /**
+     * These are replacement names for dedicated opcodes
+     * working on ILM, CCR and SP so that they look the same as others
+     */
     static OpCode[] altSpecialOpCodes = {
         new OpCode( 0x8300, 0xFF00, FORMAT_D, 0, 0, "AND",    "#u,C",         "Cw"        ),
         new OpCode( 0x8700, 0xFF00, FORMAT_D, 0, 0, "MOV",    "#u,M",         ""          ),
@@ -297,11 +315,17 @@ public class OpCode {
 
 
     /**
-     * Instruction decoding upon class loading
-     * This method fills the decode array with all possible variants of instruction word so that
-     * OPCODE can be looked up by just getting decode[instructionWord]
+     * Default instruction decoding upon class loading
      */
     static {
+        initOpcodeTables();
+    }
+
+    /**
+     *  This method fills the decode array with all possible variants of instruction word so that
+     * OPCODE can be looked up by just getting decode[instructionWord]
+     */
+    static void initOpcodeTables() {
         /* opcode decoding */
         expandOpCodes(opCodeMap, baseOpCodes);
         if (Dfr.outOptions.altStack)
