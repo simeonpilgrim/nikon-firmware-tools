@@ -42,7 +42,6 @@ package com.nikonhacker.dfr;
 // Further modifications and port to Java by Vicne
 // */
 
-
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
@@ -90,22 +89,21 @@ public class Dfr
     static void usage()
     {
         String help =
-                "-d range          disassemble only specified range\n"
-                        // + "-e address=name   define entry point symbol\n"
-                        + "-f range=address  map range of input file to memory address\n"
-                        + "-h                display this message\n"
-                        + "-i range=offset   map range of memory to input file offset\n"
-                        + "-l                little-endian input file\n"
-                        + "-m range=type     describe memory range (use -m? to list types)\n"
-                        + "-o filename       output file\n"
-                        + "-r                separate output file for each memory range\n"
-                        // + "-s address=name   define symbol\n"
-                        + "-t address        equivalent to -m address,0x400=DATA:V\n"
-                        + "-v                verbose\n"
-                        + "-w options        output options (use -w? to list options)\n"
-                        + "-x file           read options from file\n"
-                        + "Numbers are C-style. A range is start-end or start,length.\n"
-                ;
+                  "-d range          disassemble only specified range\n"
+                // + "-e address=name   define entry point symbol\n"
+                + "-f range=address  map range of input file to memory address\n"
+                + "-h                display this message\n"
+                + "-i range=offset   map range of memory to input file offset\n"
+                + "-l                little-endian input file\n"
+                + "-m range=type     describe memory range (use -m? to list types)\n"
+                + "-o filename       output file\n"
+                + "-r                separate output file for each memory range\n"
+                // + "-s address=name   define symbol\n"
+                + "-t address        equivalent to -m address,0x400=DATA:V\n"
+                + "-v                verbose\n"
+                + "-w options        output options (use -w? to list options)\n"
+                + "-x file           read options from file\n"
+                + "Numbers are C-style. A range is start-end or start,length.\n";
 
         log("Usage: " + cmdname + "[options] filename");
         log("Options:");
@@ -180,20 +178,102 @@ public class Dfr
 
     ///* output options */
     public static class OutOptions {
-        boolean altReg = false;     /* use AC, SP, FP for R13-R15 - now automatic according to instruction */
-        boolean altDMov = false; /* use LD/ST for some DMOV etc */
-        boolean altShift = false;   /* use large constant for LSL2 etc */
-        boolean altStack = false;   /* use PUSH/POP */
-        boolean altSpecials = false;/* use special register operation */
-        boolean cStyle = false;     /* use C style operand syntax */
-        boolean hexDollar = false;  /* use $0 syntax for hexadecimal numbers */
-        boolean fileMap = false;    /* write file map */
-        boolean memoryMap = false;  /* write memory map */
-        boolean symTab = false;     /* write symbol table */
-        boolean xRef = false;       /* write cross reference */
-        boolean verbose = false; /* verbose messages */
-        boolean debug = false;   /* debug disassembler miscellaneous */
-        boolean invert = false;     /* parsing: invert sense of flag */
+        private static final String XREF1 = "crossreference";
+        private static final String XREF2 = "xreference";
+        private static final String CSTYLE = "cstyle";
+        private static final String DEBUG = "debug";
+        private static final String DMOV = "dmov";
+        private static final String DOLLAR = "dollar";
+        private static final String FILEMAP = "filemap";
+        private static final String MEMORYMAP = "memorymap";
+        private static final String REGISTER = "register";
+        private static final String SHIFT = "shift";
+        private static final String SPECIALS = "specials";
+        private static final String STACK = "stack";
+        private static final String SYMBOLS = "symbols";
+        private static final String VERBOSE = "verbose";
+        private static final String HELP = "?";
+
+        /** use AC, SP, FP for R13-R15 - now automatic according to instruction */
+        boolean altReg = false;
+
+        /** use LD/ST for some DMOV etc */
+        boolean altDMov = false;
+
+        /** use large constant for LSL2 etc */
+        boolean altShift = false;
+
+        /** use PUSH/POP */
+        boolean altStack = false;
+
+        /** use special register operation */
+        boolean altSpecials = false;
+
+        /** use C style operand syntax */
+        boolean cStyle = false;
+
+        /** use $0 syntax for hexadecimal numbers */
+        boolean hexDollar = false;
+
+        /** write file map */
+        boolean fileMap = false;
+
+        /** write memory map */
+        boolean memoryMap = false;
+
+        /** write symbol table */
+        boolean symTab = false;
+
+        /** write cross reference */
+        boolean xRef = false;
+
+        /** verbose messages */
+        boolean verbose = false;
+
+        /** debug disassembler miscellaneous */
+        boolean debug = false;
+
+        public boolean parseFlag(String option) throws OptionParsingException {
+            boolean value = true;
+            if (option.toLowerCase().startsWith("no")) {
+                value = false;
+                option = option.substring(2);
+            }
+            if (XREF1.equals(option) || XREF2.equals(option)) xRef = value;
+            else if (CSTYLE.equals(option)) cStyle = value;
+            else if (DEBUG.equals(option)) debug = value;
+            else if (DMOV.equals(option)) altDMov = value;
+            else if (DOLLAR.equals(option)) hexDollar = value;
+            else if (FILEMAP.equals(option)) fileMap = value;
+            else if (MEMORYMAP.equals(option)) memoryMap = value;
+            else if (REGISTER.equals(option)) altReg = value;
+            else if (SHIFT.equals(option)) altShift = value;
+            else if (SPECIALS.equals(option)) altSpecials = value;
+            else if (STACK.equals(option)) altStack = value;
+            else if (SYMBOLS.equals(option)) symTab = value;
+            else if (VERBOSE.equals(option)) verbose = value;
+            else {
+                if (!HELP.equals(option)) {
+                    System.err.println("Unsupported output format option : " + option);
+                }
+                System.out.println("Here are the allowed output format options");
+                System.out.println(" -" + option + "[no]" + REGISTER + ": use AC, FP, SP instead of R13, R14, R15");
+                System.out.println(" -" + option + "[no]" + STACK + ": use PUSH/POP for stack operations");
+                System.out.println(" -" + option + "[no]" + SHIFT + ": use simple mnemonics for '+16' shift opcodes (LSR2, LSL2, ASR2)");
+                System.out.println(" -" + option + "[no]" + DMOV + ": use LD/ST for some DMOV operations");
+                System.out.println(" -" + option + "[no]" + SPECIALS + ": use simple mnemonics instead of ANDCCR, ORCCR, STILM and ADDSP");
+                System.out.println(" -" + option + "[no]" + CSTYLE + ": use C style operand syntax");
+                System.out.println(" -" + option + "[no]" + DOLLAR + ": use $0 syntax for hexadecimal numbers");
+                System.out.println(" -" + option + "[no]" + FILEMAP + ": write file map");
+                System.out.println(" -" + option + "[no]" + MEMORYMAP + ": write memory map");
+                System.out.println(" -" + option + "[no]" + SYMBOLS + ": write symbol table");
+                System.out.println(" -" + option + "[no]" + XREF1 + ": write cross reference");
+                System.out.println(" -" + option + "[no]" + DEBUG + ": debug disassembler");
+                System.out.println(" -" + option + "[no]" + VERBOSE + ": verbose messages");
+                return false;
+            }
+            return true;
+        }
     }
 
     ///* output */
@@ -201,7 +281,7 @@ public class Dfr
     void openOutput(int pc, boolean usePC, String ext) throws IOException {
         String outName = "";
         if (outputFileName == null) {
-            outName = FilenameUtils.getBaseName(inputFileName) + "." + ext;
+            outName = FilenameUtils.getBaseName(inputFileName);
         }
         if (usePC) {
             outName += "_" + Format.asHex(pc, 8);
@@ -239,7 +319,7 @@ public class Dfr
         fileWriter.write("DFR " + version + "\n");
         fileWriter.write("  Date:   " + startTime + "\n");
         fileWriter.write("  Input:  " + inputFileName + "\n");
-        fileWriter.write("  Output: " + outputFileName + "\n");
+        fileWriter.write("  Output: " + (outputFileName==null?"(default)":outputFileName) + "\n");
         fileWriter.write("\n");
     }
 
@@ -416,6 +496,8 @@ public class Dfr
             CPUState.REG_LABEL[CPUState.FP] = "FP";
             CPUState.REG_LABEL[CPUState.SP] = "SP";
         }
+        
+        OpCode.initOpcodeMap();
 
 //        if (outOptions.fileMap || outOptions.memoryMap) {
         openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
@@ -443,48 +525,6 @@ public class Dfr
 
 
     ///* options */
-
-
-    //int parseflags(int opt, const char *arg, uint32_t *flagsp, struct flag *flag)
-    //{
-    //    char *s;
-    //    int i, on;
-
-    //    while (*arg) {
-    //        if (!_strnicmp(arg, "no", 2)) {
-    //            on = 0;
-    //            arg += 2;
-    //        }
-    //        else {
-    //            on = 1;
-    //        }
-    //        for (i = 0; flag[i].width; ++i) {
-    //            if (!_strnicmp(arg, flag[i].flag, flag[i].width)) {
-    //                if (flag[i].value & OF_INVERT)
-    //                    on = !on;
-    //                if (on)
-    //                    *flagsp |= flag[i].value;
-    //                else
-    //                    *flagsp &= ~flag[i].value;
-    //                break;
-    //            }
-    //        }
-    //        if (!flag[i].width) {
-    //            if (*arg != '?')
-    //                fprintf(stderr, "%s: unknown flag at \"%s\"\n", cmdname, arg);
-    //            for (i = 0; flag[i].width; ++i)
-    //                if (flag[i].desc)
-    //                    fprintf(stderr, "  -%c %-15s-- %s\n",
-    //                            opt, flag[i].flag, flag[i].desc);
-    //            return 1;
-    //        }
-    //        if ((s = strchr(arg, ',')) != NULL)
-    //            arg = s + 1;
-    //        else
-    //            break;
-    //    }
-    //    return 0;
-    //}
 
 
     /**
@@ -529,19 +569,24 @@ public class Dfr
 
                 case 'E':
                 case 'e':
-                    //        if (!(arg = Parseopt_arg(&pos))) {
-                    //            Log(MessageFormat.format("{0}: option \"-{1}\" requires an argument", cmdname, opt));
-                    //            return false;
-                    //        }
-                    //        fprintf(stderr, "%s: symbol table not implemented yet!\n");
-                    return false;
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    System.err.println("-" + option + ": symbol table not implemented yet!\n");
+                    System.exit(1);
+                    break;
 
                 case 'F':
                 case 'f':
-                    //        if (!(arg = Parseopt_arg(&pos))) {
-                    //          Log(MessageFormat.format("{0}: option \"-{1}\" requires an argument", cmdname, opt));
-                    //          return false;
-                    //        }
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    System.err.println("-" + option + ": not implemented yet!\n");
+                    System.exit(1);
                     //        if (parseOffsetRange(opt, arg, &r, &start, &end, &map))
                     //            break;
                     //        insmap(&filemap, map, map + end - start, start);
@@ -595,16 +640,22 @@ public class Dfr
 
                 case 'S':
                 case 's':
-                    //        if (!(arg = Parseopt_arg(&pos)))
-                    //            goto missing;
-                    //        fprintf(stderr, "%s: symbol table not implemented yet!\n");
-                    //        exit(1);
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    System.err.println("-" + option + ": symbol table not implemented yet!\n");
+                    System.exit(1);
                     break;
 
                 case 'T':
                 case 't':
-                    //        if (!(arg = Parseopt_arg(&pos)))
-                    //            goto missing;
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
                     //        start = parseUnsigned(arg, &r);
                     //        insmap(&memmap, start, start + 0x3FF, MKDATA(1, MD_VECTOR));
                     break;
@@ -616,10 +667,14 @@ public class Dfr
 
                 case 'W':
                 case 'w':
-                    //        if (!(arg = Parseopt_arg(&pos)))
-                    //            goto missing;
-                    //        if (parseflags(opt, arg, &opt_outflag, outflags))
-                    //            exit(1);
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    if (!outOptions.parseFlag(argument)) {
+                        System.exit(1);
+                    }
                     break;
 
                 case 'X':

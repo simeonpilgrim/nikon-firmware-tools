@@ -268,8 +268,7 @@ public class OpCode {
     };
 
     /**
-     * These are replacement names for all DMOV opcodes
-     * TODO check 0x1800 etc ???
+     * These are replacement names for all some DMOV opcodes
      */
     static OpCode[] altDmovOpCodes = {
         new OpCode( 0x0800, 0xFF00, FORMAT_D, 0, 0, "LD",     "@4u,A",        ""          ),
@@ -318,14 +317,14 @@ public class OpCode {
      * Default instruction decoding upon class loading
      */
     static {
-        initOpcodeTables();
+        initOpcodeMap();
     }
 
     /**
-     *  This method fills the decode array with all possible variants of instruction word so that
-     * OPCODE can be looked up by just getting decode[instructionWord]
+     * This method fills the opCodeMap array with all possible variants of instruction word so that
+     * OPCODE can be looked up by just getting opCodeMap[instructionWord]
      */
-    static void initOpcodeTables() {
+    static void initOpcodeMap() {
         /* opcode decoding */
         expandOpCodes(opCodeMap, baseOpCodes);
         if (Dfr.outOptions.altStack)
