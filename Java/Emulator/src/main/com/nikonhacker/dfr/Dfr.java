@@ -110,11 +110,11 @@ public class Dfr
         log(help);
     }
 
-    public static void main(String[] args) throws IOException, DisassemblyException, OptionParsingException {
+    public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
         new Dfr().execute("dfr.txt", args);
     }
 
-    private void execute(String dfrFilename, String[] args) throws OptionParsingException, IOException, DisassemblyException {
+    private void execute(String dfrFilename, String[] args) throws ParsingException, IOException, DisassemblyException {
         if (!new File(dfrFilename).exists()) {
             error("File " + dfrFilename + " does not exist !");
             usage();
@@ -233,7 +233,7 @@ public class Dfr
         /** debug disassembler miscellaneous */
         boolean debug = false;
 
-        public boolean parseFlag(String option) throws OptionParsingException {
+        public boolean parseFlag(String option) throws ParsingException {
             boolean value = true;
             if (option.toLowerCase().startsWith("no")) {
                 value = false;
@@ -531,14 +531,14 @@ public class Dfr
      * Processes options passed as a String array. E.g. {"infile.bin", "-t1", "-m", "0x00040000-0x00040947=CODE"}
      * @param args
      * @return
-     * @throws OptionParsingException
+     * @throws ParsingException
      */
-    boolean processOptions(String[] args) throws OptionParsingException {
+    boolean processOptions(String[] args) throws ParsingException {
         Character option;
         String argument;
-        OptionTokenizer optionTokenizer = new OptionTokenizer(args);
+        OptionHandler optionHandler = new OptionHandler(args);
 
-        while ((option = optionTokenizer.getNextOption()) != null)
+        while ((option = optionHandler.getNextOption()) != null)
         {
             switch (option)
             {
@@ -550,26 +550,26 @@ public class Dfr
                         usage();
                         return false;
                     }
-                    inputFileName = optionTokenizer.getArgument();
+                    inputFileName = optionHandler.getArgument();
                     break;
 
 
                 case 'D':
                 case 'd':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (argument == null || argument.length() == 0) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
 
-                    Range range1 = Format.parseOffsetRange(option, argument);
+                    Range range1 = OptionHandler.parseOffsetRange(option, argument);
                     range1.setFileOffset(1);
                     rangeMap.add(range1);
                     break;
 
                 case 'E':
                 case 'e':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
@@ -580,7 +580,7 @@ public class Dfr
 
                 case 'F':
                 case 'f':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
@@ -600,13 +600,13 @@ public class Dfr
 
                 case 'I':
                 case 'i':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
 
-                    Range range = Format.parseOffsetRange(option, argument);
+                    Range range = OptionHandler.parseOffsetRange(option, argument);
                     if (range == null)
                         break;
 
@@ -620,13 +620,13 @@ public class Dfr
 
                 case 'M':
                 case 'm':
-                    argument = optionTokenizer.getArgument();
-                    memMap.add(Format.parseTypeRange(option, argument));
+                    argument = optionHandler.getArgument();
+                    memMap.add(OptionHandler.parseTypeRange(option, argument));
                     break;
 
                 case 'O':
                 case 'o':
-                    outputFileName = optionTokenizer.getArgument();
+                    outputFileName = optionHandler.getArgument();
                     if (StringUtils.isBlank(outputFileName)) {
                         log("option '-" + option + "' requires an argument");
                         return false;
@@ -640,7 +640,7 @@ public class Dfr
 
                 case 'S':
                 case 's':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
@@ -651,7 +651,7 @@ public class Dfr
 
                 case 'T':
                 case 't':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
@@ -667,7 +667,7 @@ public class Dfr
 
                 case 'W':
                 case 'w':
-                    argument = optionTokenizer.getArgument();
+                    argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
@@ -700,12 +700,12 @@ public class Dfr
             }
         }
 
-        optionTokenizer.end();
+        optionHandler.end();
         return true;
     }
 
 
-    private void readOptions(String filename) throws IOException, OptionParsingException {
+    private void readOptions(String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
         String buf;

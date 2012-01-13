@@ -28,12 +28,13 @@ public class Emulator {
     private boolean sleepIntervalChanged = false;
     private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
 
-    public static void main(String[] args) throws IOException, EmulationException, OptionParsingException {
+    public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
-            System.err.println("Usage Emulator <file> <initialPc>\ne.g. Emulator fw.bin 0x40000");
+            System.err.println("Usage Emulator <file> <initialPc>");
+            System.err.println(" e.g. Emulator fw.bin 0x40000");
             System.exit(-1);
         }
-        int initialPc = Format.parseUnsigned(null, args[1]);
+        int initialPc = Format.parseUnsigned(args[1]);
         AutoAllocatingMemory memory = new AutoAllocatingMemory();
         memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
         EmulatorOptions.debugMemory = false;

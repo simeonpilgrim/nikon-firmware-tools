@@ -208,13 +208,16 @@ public class DisassemblyState {
                     w += 2;
                     break;
                 case 'A':
-                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.AC]);
+//                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.AC]);
+                    currentBuffer.append(CPUState.REG_LABEL[CPUState.AC]);
                     break;
                 case 'C':
-                    currentBuffer.append("CCR");
+//                    currentBuffer.append("CCR");
+                    currentBuffer.append(CPUState.REG_LABEL[CPUState.CCR]);
                     break;
                 case 'F':
-                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.FP]);
+//                    currentBuffer.append(CPUState.ALT_REG_LABEL[CPUState.FP]);
+                    currentBuffer.append(CPUState.REG_LABEL[CPUState.FP]);
                     break;
                 case 'J':
                     if (cpuState.isRegisterValid(displayJ))
@@ -308,14 +311,14 @@ public class DisassemblyState {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append("-" + Dfr.hexPrefix + Format.asHexInBitsLength(((1 << (w + 1)) - 1) & Dfr.NEG(w, (1 << (w)) | displayX), w + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + Dfr.hexPrefix, ((1 << (w + 1)) - 1) & Dfr.NEG(w, (1 << (w)) | displayX), w + 1));
                     break;
                 case 'p':
                     /* pair */
                     pos = w >> 1;
-                    currentBuffer.append(Dfr.hexPrefix + Format.asHexInBitsLength(((1 << pos) - 1) & (displayX >> pos), pos));
+                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, ((1 << pos) - 1) & (displayX >> pos), pos));
                     currentBuffer.append(Dfr.fmt_nxt);
-                    currentBuffer.append(Dfr.hexPrefix + Format.asHexInBitsLength(((1 << pos) - 1) & displayX, pos));
+                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, ((1 << pos) - 1) & displayX, pos));
                     break;
                 case 'q':
                     /* rational */
@@ -337,16 +340,16 @@ public class DisassemblyState {
                         if (Dfr.outOptions.cStyle && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append("-" + Dfr.hexPrefix + Format.asHexInBitsLength(Dfr.NEG(w, displayX), w));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + Dfr.hexPrefix, Dfr.NEG(w, displayX), w));
                     }
                     else
                     {
-                        currentBuffer.append(Dfr.hexPrefix + Format.asHexInBitsLength(displayX, w - 1));
+                        currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, displayX, w - 1));
                     }
                     break;
                 case 'u':
                     /* unsigned constant */
-                    currentBuffer.append(Dfr.hexPrefix + Format.asHexInBitsLength(displayX, w));
+                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, displayX, w));
                     break;
                 case 'v':
                     /* vector */
