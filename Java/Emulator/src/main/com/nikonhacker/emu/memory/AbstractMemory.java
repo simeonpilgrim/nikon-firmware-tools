@@ -1,12 +1,15 @@
 package com.nikonhacker.emu.memory;
 
+import com.nikonhacker.dfr.Range;
 import com.nikonhacker.emu.EmulatorOptions;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Collection;
 
 /*
  * Part of this file is taken from PearColator project
@@ -362,5 +365,37 @@ public abstract class AbstractMemory implements Memory {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void loadFile(File sourceFile,  Collection<Range> ranges) throws IOException {
+        FileChannel fc = new RandomAccessFile(sourceFile, "r").getChannel();
+        for (Range range : ranges) {
+
+            int rangeSize = range.getEnd() - range.getStart() + 1;
+
+            ByteBuffer buffer = ByteBuffer.allocate(rangeSize);
+
+            // Read bytes of the file.
+            int bytesRead;
+            do {
+                bytesRead = fc.read(buffer);
+            } while (bytesRead != -1 && buffer.hasRemaining());
+
+            // Push bytes to memory
+            int address = range.getStart();
+            map(address, rangeSize, true, true, true);
+            long bytesPushed = 0;
+            buffer.position(0);
+            while (bytesPushed < rangeSize) {
+                int page = getPTE(address);
+                int offset = getOffset(address);
+                byte[] pageBuffer = getPage(page);
+                int byteCount = PAGE_SIZE - offset;
+                buffer.get(pageBuffer, offset, byteCount);
+                address += byteCount;
+                bytesPushed += byteCount;
+            }
+        }
+
     }
 }

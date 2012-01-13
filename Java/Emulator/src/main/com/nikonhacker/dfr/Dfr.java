@@ -51,7 +51,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Date;
-import java.util.StringTokenizer;
 
 public class Dfr
 {
@@ -60,8 +59,8 @@ public class Dfr
     final static String cmdname = "Dfr";
     final static String version = "1.03";
 
-    String inputFileName = "";
-    String outputFileName = "";
+    String inputFileName;
+    String outputFileName;
 
     boolean optLittleEndian = false;
     boolean optSplitPerMemoryRange = false;
@@ -108,38 +107,31 @@ public class Dfr
                         + "Numbers are C-style. A range is start-end or start,length.\n"
                 ;
 
-        Log("Usage: " + cmdname + "[options] filename");
-        Log("Options:");
-        Log(help);
+        log("Usage: " + cmdname + "[options] filename");
+        log("Options:");
+        log(help);
     }
-
-    static String memtypehelp =
-            "Memtypes are:\n"
-                    + "NONE              do not disassemble\n"
-                    + "UNKNOWN           unknown contents\n"
-                    + "CODE              disassemble as code where possible\n"
-                    + "DATA[:spec]       disassemble as data; spec is up to 8 of:\n"
-                    + "                    L -- long (32-bit) data\n"
-                    + "                    N -- long (32-bit) data, no labels\n"
-                    + "                    R -- rational\n"
-                    + "                    V -- vector\n"
-                    + "                    W -- word (16-bit) data\n"
-            ;
 
     public static void main(String[] args) throws IOException, DisassemblyException, OptionParsingException {
         new Dfr().execute("dfr.txt", args);
     }
 
-    private void execute(String dfrFile, String[] args) throws OptionParsingException, IOException, DisassemblyException {
-        readOptions(dfrFile);
+    private void execute(String dfrFilename, String[] args) throws OptionParsingException, IOException, DisassemblyException {
+        if (!new File(dfrFilename).exists()) {
+            error("File " + dfrFilename + " does not exist !");
+            usage();
+            System.exit(-1);
+        }
 
-        options(args);
+        readOptions(dfrFilename);
+
+        processOptions(args);
         initialize();
         disassembleMemRanges();
         cleanup();
     }
 
-    static void Log(String s)
+    static void log(String s)
     {
         System.out.println(s);
         System.err.println(s);
@@ -206,19 +198,27 @@ public class Dfr
 
     ///* output */
 
-    void openoutput(int pc, int usepc, String ext) throws IOException {
-        //    if (usepc)
-        //        sprintf_s(outname, FILENAME_MAX, "%s-%08lX%s%s", outbase, pc, dot, ext);
-        //    else
-        //        sprintf_s(outname, FILENAME_MAX, "%s%s%s", outbase, dot, ext);
-        //    if (outfp)
-        //        fclose(outfp);
+    void openOutput(int pc, boolean usePC, String ext) throws IOException {
+        String outName = "";
+        if (outputFileName == null) {
+            outName = FilenameUtils.getBaseName(inputFileName) + "." + ext;
+        }
+        if (usePC) {
+            outName += "_" + Format.asHex(pc, 8);
+        }
+        
+        outName += "." + ext;
 
-        String outname = FilenameUtils.getBaseName(inputFileName) + "." + ext;
-        fileWriter = new FileWriter(outname);
+        if (fileWriter != null)
+            fileWriter.close();
+
+        fileWriter = new FileWriter(outName);
     }
 
-    void Info(String s) throws IOException {
+    
+    ///* Logging */
+
+    void info(String s) throws IOException {
         fileWriter.write(s);
 
         if (outOptions.verbose)
@@ -228,10 +228,10 @@ public class Dfr
         System.err.println(s);
     }
 
-    static void Error(String s)
+    static void error(String s)
     {
-        Log("*****");
-        Log(s);
+        log("*****");
+        log(s);
     }
 
 
@@ -311,7 +311,7 @@ public class Dfr
 
         if ((startPc & 1) != 0)
         {
-            Error("Odd start address 0x" + Format.asHex(startPc, 8));
+            error("Odd start address 0x" + Format.asHex(startPc, 8));
             // start &= 0xffFFffFFffFFffFe;
             startPc --;
         }
@@ -350,7 +350,7 @@ public class Dfr
             if (sizeInBytes < 0)
             {
                 if (sizeInBytes != -1)
-                    Error("input error: " + (-sizeInBytes - 1));
+                    error("input error: " + (-sizeInBytes - 1));
                 fileRange.end = cpuState.pc;
                 System.out.println("WARNING : setting pc to max...");
                 cpuState.pc = -1;
@@ -372,12 +372,12 @@ public class Dfr
             }
 
             if (matchingFileRange != null) {
-                Info("Disassemble 0x" + Format.asHex(memRange.start, 8) + "-0x" + Format.asHex(memRange.end, 8)
+                info("Disassemble 0x" + Format.asHex(memRange.start, 8) + "-0x" + Format.asHex(memRange.end, 8)
                         + " (file 0x" + Format.asHex(matchingFileRange.fileOffset, 8)
                         + ") as " + memRange.data + "\n");
-                Info("\n");
+                info("\n");
                 disassembleMemoryRange(memRange, matchingFileRange);
-                Info("\n");
+                info("\n");
             }
         }
     }
@@ -388,16 +388,16 @@ public class Dfr
     void initialize() throws IOException {
         startTime = new Date().toString();
 
-        if (inputFileName.length() == 0)
+        if (inputFileName == null)
         {
-            Log(cmdname + ": no input file\n");
+            log(cmdname + ": no input file\n");
             usage();
             System.exit(-1);
         }
 
         File binaryFile = new File(inputFileName);
 
-        memory.loadFile(binaryFile, 0x40000);
+        memory.loadFile(binaryFile, fileMap.ranges);
 
         if (outOptions.hexDollar) {
             hexPrefix = "$";
@@ -418,7 +418,7 @@ public class Dfr
         }
 
 //        if (outOptions.fileMap || outOptions.memoryMap) {
-        openoutput(0, 0, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
+        openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
         writeHeader();
 //        }
 
@@ -443,118 +443,6 @@ public class Dfr
 
 
     ///* options */
-
-    /**
-     * Parses the given string as an 32-bit integer
-     * The number can be either decimal or hex (0x-prefixed) and can be followed by the K or M (case insensitive) multipliers
-     * @param s the String to convert
-     * @return the converted int, to be considered unsigned
-     */
-    static int parseUnsigned(char opt, String s) throws OptionParsingException {
-        boolean isHex = (s.length() > 2 && s.charAt(0) == '0' && (s.charAt(1) == 'x' || s.charAt(1) == 'X'));
-
-        long v = 0;
-        int i = isHex ? 2 : 0;
-        for (; i < s.length(); i++)
-        {
-            char ch = s.charAt(i);
-            if (isHex)
-            {
-                if (ch >= '0' && ch <= '9')
-                    v = (v * 0x10) + ch - '0';
-                else if (ch >= 'a' && ch <= 'f')
-                    v = (v * 0x10) + ch - 'a' + 0x0a;
-                else if (ch >= 'A' && ch <= 'F')
-                    v = (v * 0x10) + ch - 'A' + 0x0a;
-                else
-                    break;
-            }
-            else
-            {
-                if (ch >= '0' && ch <= '9')
-                    v = (v * 10) + ch - '0';
-                else
-                    break;
-            }
-        }
-
-        if (i != s.length())
-        {
-            switch (s.charAt(i))
-            {
-                case 'k':
-                case 'K':
-                    v *= 1024;
-                    i++;
-                    break;
-                case 'm':
-                case 'M':
-                    v *= 1048576;
-                    i++;
-                    break;
-            }
-        }
-
-        if (i != s.length())
-        {
-            throw new OptionParsingException(cmdname + ": -" + opt + " unrecognized value : " + s);
-        }
-
-        return (int) v;
-    }
-
-
-    /**
-     * Parses a String of the form start-end=offset or start,length=offset
-     * start, end and offset can be either decimal or hex (0x-prefixed) and can be followed by the K or M (case insensitive) multipliers
-     * @param s the String to parse
-     * @return the converted Range
-     */
-    static Range parseOffsetRange(char opt, String s) throws OptionParsingException {
-        StringTokenizer st = new StringTokenizer(s.replace(":", "="), "-,=", true);
-        if (st.countTokens() != 5) {
-            throw new OptionParsingException(cmdname + ": -" + opt + " has an malformed range : " + s);
-        }
-        int start = parseUnsigned(opt, st.nextToken());
-        String sep = st.nextToken();
-        int end = parseUnsigned(opt, st.nextToken()) + ("-".equals(sep)?0:start);
-        String nextSep = st.nextToken();
-        if (!"=".equals(nextSep)) {
-            throw new OptionParsingException(cmdname + ": -" + opt + " has an malformed range : " + s + " (expected '=' or ':' before last address)");
-        }
-        int offset = parseUnsigned(opt, st.nextToken());
-        return new Range(start, end, offset);
-    }
-
-
-    /**
-     * Parses a String of the form start-end=datatype[:wordsize] or start,length=datatype[:wordsize]
-     * start and end can be either decimal or hex (0x-prefixed) and can be followed by the K or M (case insensitive) multipliers
-     * @param s the String to parse
-     * @return the converted Range
-     */
-    private static Range parseTypeRange(char opt, String s) throws OptionParsingException {
-        StringTokenizer st = new StringTokenizer(s, ",-=", true);
-
-        if (st.countTokens() != 5) {
-            throw new OptionParsingException(cmdname + ": -" + opt + " has a malformed range : " + s);
-        }
-
-        int start = parseUnsigned(opt, st.nextToken());
-
-        String sep = st.nextToken();
-
-        int end = parseUnsigned(opt, st.nextToken()) + ("-".equals(sep)?0:start);
-
-        String nextSep = st.nextToken();
-        if (!"=".equals(nextSep)) {
-            throw new OptionParsingException(cmdname + ": -" + opt + " has a malformed range : " + s + " (expected '=' before last address)");
-        }
-
-        DATA map = parseMemtype(st.nextToken());
-
-        return new Range(start, end, map);
-    }
 
 
     //int parseflags(int opt, const char *arg, uint32_t *flagsp, struct flag *flag)
@@ -599,107 +487,42 @@ public class Dfr
     //}
 
 
+    /**
+     * Processes options passed as a String array. E.g. {"infile.bin", "-t1", "-m", "0x00040000-0x00040947=CODE"}
+     * @param args
+     * @return
+     * @throws OptionParsingException
+     */
+    boolean processOptions(String[] args) throws OptionParsingException {
+        Character option;
+        String argument;
+        OptionTokenizer optionTokenizer = new OptionTokenizer(args);
 
-    static DATA parseMemtype(String arg) throws OptionParsingException {
-        if (StringUtils.isBlank(arg))  {
-            throw new OptionParsingException(cmdname + ": no memtype given");
-        }
-
-        DATA memp = new DATA();
-        String wtf = "memory type";
-        switch (arg.charAt(0))
+        while ((option = optionTokenizer.getNextOption()) != null)
         {
-            case 'C':
-            case 'c':
-                memp.memType = DATA.MEMTYPE_CODE;
-                break;
-
-            case 'D':
-            case 'd':
-                wtf = "data type";
-                memp.memType = DATA.MEMTYPE_DATA;
-                memp.spec.add(DATA.SpecType_MD_WORD);
-
-                int separator = arg.lastIndexOf(':');
-                if (separator != -1)
-                {
-                    memp.spec.clear(); // remove above default of MD_WORD
-                    separator++;
-                    while (separator < arg.length())
-                    {
-                        char c = arg.charAt(separator++);
-
-                        int md;
-                        switch ((c + "").toLowerCase().charAt(0))
-                        {
-                            case 'l': md = DATA.SpecType_MD_LONG; break;
-                            case 'n': md = DATA.SpecType_MD_LONGNUM; break;
-                            case 'r': md = DATA.SpecType_MD_RATIONAL; break;
-                            case 'v': md = DATA.SpecType_MD_VECTOR; break;
-                            case 'w': md = DATA.SpecType_MD_WORD; break;
-                            default:
-                                Error(memtypehelp);
-                                throw new OptionParsingException(cmdname + ": unrecognized " + wtf + " at \"" + arg + "\"\n");
-                        }
-                        memp.spec.add(md);
-                    }
-                }
-                break;
-
-            case 'n':
-            case 'N':
-                memp.memType = DATA.MEMTYPE_NONE;
-                break;
-
-            case 'u':
-            case 'U':
-                memp.memType = DATA.MEMTYPE_UNKNOWN;
-                break;
-
-            case 'v':
-            case 'V':
-                memp.memType = DATA.MEMTYPE_DATA;
-                memp.spec.add(DATA.SpecType_MD_VECTOR);
-                break;
-
-            default:
-                Error(memtypehelp);
-                throw new OptionParsingException(cmdname + ": unrecognized " + wtf + " at \"" + arg + "\"\n");
-        }
-
-        return memp;
-    }
-
-
-    boolean options(String[] args) throws OptionParsingException {
-        ParseOpt pos = new ParseOpt(args);
-        char opt;
-        String arg;
-
-        while ((opt = pos.next()) != Character.MAX_VALUE)
-        {
-            switch (opt)
+            switch (option)
             {
                 case 0:
-                    if (inputFileName.length() > 0)
+                    // Not an option => Input file. Check we don't have one already
+                    if (inputFileName != null)
                     {
-                        Log(cmdname + ": too many input files");
+                        log("too many input files");
                         usage();
                         return false;
                     }
-                    inputFileName = pos.arg();
+                    inputFileName = optionTokenizer.getArgument();
                     break;
 
 
                 case 'D':
                 case 'd':
-                    arg = pos.arg();
-                    if (arg == null || arg.length() == 0) {
-                        Log(cmdname + ": option \"-" + opt + "\" requires an argument");
+                    argument = optionTokenizer.getArgument();
+                    if (argument == null || argument.length() == 0) {
+                        log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
 
-                    Range range1 = parseOffsetRange(opt, arg);
+                    Range range1 = Format.parseOffsetRange(option, argument);
                     range1.setFileOffset(1);
                     rangeMap.add(range1);
                     break;
@@ -732,13 +555,13 @@ public class Dfr
 
                 case 'I':
                 case 'i':
-                    arg = pos.arg();
-                    if (StringUtils.isBlank(arg)) {
-                        Log(cmdname + ": option \"-" + opt + "\" requires an argument");
+                    argument = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
 
-                    Range range = parseOffsetRange(opt, arg);
+                    Range range = Format.parseOffsetRange(option, argument);
                     if (range == null)
                         break;
 
@@ -752,15 +575,15 @@ public class Dfr
 
                 case 'M':
                 case 'm':
-                    arg = pos.arg();
-                    memMap.add(parseTypeRange(opt, arg));
+                    argument = optionTokenizer.getArgument();
+                    memMap.add(Format.parseTypeRange(option, argument));
                     break;
 
                 case 'O':
                 case 'o':
-                    outputFileName = pos.arg();
-                    if (outputFileName == null || outputFileName.length() == 0) {
-                        Log(cmdname + ": option \"-" + opt + "\" requires an argument");
+                    outputFileName = optionTokenizer.getArgument();
+                    if (StringUtils.isBlank(outputFileName)) {
+                        log("option '-" + option + "' requires an argument");
                         return false;
                     }
                     break;
@@ -816,13 +639,13 @@ public class Dfr
                     break;
 
                 default:
-                    Log(cmdname + ": unknown option \"-" + opt + "\"");
+                    log("unknown option \"-" + option + "\"");
                     usage();
                     return false;
             }
         }
 
-        pos.end();
+        optionTokenizer.end();
         return true;
     }
 
@@ -834,24 +657,25 @@ public class Dfr
         while ((buf = fp.readLine()) != null)
         {
             buf = buf.trim();
-            if (buf.length() == 0 || buf.charAt(0) == '#')
-                continue;
-
-            if ((buf.charAt(0) == '-') && buf.length() > 2)
+            if (buf.length() > 0 && buf.charAt(0) != '#')
             {
-                if (Character.isWhitespace(buf.charAt(2)))
+                if ((buf.charAt(0) == '-') && buf.length() > 2)
                 {
-                    String ss = buf.substring(0, 2);
-                    String p = buf.substring(2).trim();
-                    if (StringUtils.isNotBlank(p))
+                    // This is an option line
+                    if (Character.isWhitespace(buf.charAt(2)))
                     {
-                        options(new String[]{ss, p});
-                        continue;
+                        String option = buf.substring(0, 2);
+                        String params = buf.substring(2).trim();
+                        if (StringUtils.isNotBlank(params))
+                        {
+                            processOptions(new String[]{option, params});
+                            continue;
+                        }
                     }
                 }
-            }
 
-            options(new String[]{buf});
+                processOptions(new String[]{buf});
+            }
         }
     }
 }

@@ -1,10 +1,7 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.Dfr;
-import com.nikonhacker.dfr.DisassemblyState;
-import com.nikonhacker.dfr.OpCode;
+import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakCondition;
@@ -12,6 +9,7 @@ import com.nikonhacker.emu.trigger.BreakCondition;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Emulator {
@@ -28,18 +26,19 @@ public class Emulator {
     private PrintStream instructionPrintStream;
     private int sleepIntervalMs = 0;
     private boolean sleepIntervalChanged = false;
-    private List<BreakCondition> breakConditions;
+    private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
 
-    public static void main(String[] args) throws IOException, EmulationException {
-        if (args.length < 1) {
-            System.err.println("Usage Emulator <file>");
+    public static void main(String[] args) throws IOException, EmulationException, OptionParsingException {
+        if (args.length < 2) {
+            System.err.println("Usage Emulator <file> <initialPc>\ne.g. Emulator fw.bin 0x40000");
             System.exit(-1);
         }
+        int initialPc = Format.parseUnsigned(null, args[1]);
         AutoAllocatingMemory memory = new AutoAllocatingMemory();
-        memory.loadFile(new File(args[0]), 0x40000);
+        memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
         EmulatorOptions.debugMemory = false;
 
-        CPUState cpuState = new CPUState(0x40000);
+        CPUState cpuState = new CPUState(initialPc);
         Emulator emulator = new Emulator(1000);
         emulator.setMemory(memory);
         emulator.setCpuState(cpuState);

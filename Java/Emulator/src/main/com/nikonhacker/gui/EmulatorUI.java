@@ -68,7 +68,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_DISASSEMBLE_FILE = "DISASSEMBLE_FILE";
     private static final String COMMAND_ABOUT = "ABOUT";
 
-    private static final int BASE_ADDRESS = 0x40000;
+    private static final int BASE_ADDRESS = 0x40000; // TODO de-hardcode this
 
     private static File imagefile;
 

@@ -450,7 +450,7 @@ public class DisassemblyState {
                     r = CPUState.NOREG;
                     break;
                 default:
-                    Dfr.Error("bad action '" + s + "'");
+                    Dfr.error("bad action '" + s + "'");
                     break;
             }
         }

@@ -1,8 +1,11 @@
 package com.nikonhacker.emu.memory;
 
+import com.nikonhacker.dfr.Range;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.Collection;
 
 /*
  * Part of this file is taken from PearColator project
@@ -59,6 +62,8 @@ public interface Memory {
     void changeProtection(int address, int len, boolean newRead, boolean newWrite, boolean newExec);
 
     void loadFile(File file, int memoryOffset) throws IOException;
+
+    void loadFile(File file, Collection<Range> ranges) throws IOException;
 
     void clear();
 }

@@ -9,9 +9,9 @@ public class MemoryMap {
 
     public SortedSet<Range> ranges;
 
-    public MemoryMap(char opt, String name) {
-        this.opt = opt;
-        this.name = name;
+    public MemoryMap(char option, String label) {
+        this.opt = option;
+        this.name = label;
         ranges = new TreeSet<Range>();
     }
 
