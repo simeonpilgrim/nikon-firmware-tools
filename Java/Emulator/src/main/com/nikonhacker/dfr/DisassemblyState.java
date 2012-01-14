@@ -4,6 +4,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Set;
+
 public class DisassemblyState {
     ///* disassembly */
     // [Flags]
@@ -153,7 +155,7 @@ public class DisassemblyState {
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
      *                        must be true in disassembler mode and false in emulator mode
      */
-    public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters) {
+    public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
         int tmp;
         int pos;
         int displayX = x;
@@ -266,7 +268,7 @@ public class DisassemblyState {
                     break;
                 case 'c':
                     /* coprocessor operation */
-                    currentBuffer.append(Dfr.hexPrefix + Format.asHex(c, 2));
+                    currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(c, 2));
                     break;
                 case 'd':
                     /* unsigned decimal */
@@ -308,14 +310,14 @@ public class DisassemblyState {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + Dfr.hexPrefix, ((1 << (w + 1)) - 1) & Dfr.NEG(w, (1 << (w)) | displayX), w + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (w + 1)) - 1) & Dfr.NEG(w, (1 << (w)) | displayX), w + 1));
                     break;
                 case 'p':
                     /* pair */
                     pos = w >> 1;
-                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, ((1 << pos) - 1) & (displayX >> pos), pos));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (displayX >> pos), pos));
                     currentBuffer.append(Dfr.fmt_nxt);
-                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, ((1 << pos) - 1) & displayX, pos));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & displayX, pos));
                     break;
                 case 'q':
                     /* rational */
@@ -334,23 +336,23 @@ public class DisassemblyState {
                     if (Dfr.IsNeg(w, displayX))
                     {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
-                        if (Dfr.outOptions.cStyle && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
+                        if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + Dfr.hexPrefix, Dfr.NEG(w, displayX), w));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), Dfr.NEG(w, displayX), w));
                     }
                     else
                     {
-                        currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, displayX, w - 1));
+                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), displayX, w - 1));
                     }
                     break;
                 case 'u':
                     /* unsigned constant */
-                    currentBuffer.append(Format.asHexInBitsLength(Dfr.hexPrefix, displayX, w));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), displayX, w));
                     break;
                 case 'v':
                     /* vector */
-                    currentBuffer.append(Dfr.hexPrefix + Format.asHex(0xFF - (0xFF & ((cpuState.pc - memRangeStart) / 4)), 1));
+                    currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(0xFF - (0xFF & ((cpuState.pc - memRangeStart) / 4)), 1));
                     break;
                 case 'x':
                     displayX |= 0x100;

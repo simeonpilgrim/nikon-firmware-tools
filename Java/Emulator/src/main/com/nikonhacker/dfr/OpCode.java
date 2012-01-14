@@ -1,6 +1,9 @@
 package com.nikonhacker.dfr;
 
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class OpCode {
 
     /**
@@ -317,23 +320,23 @@ public class OpCode {
      * Default instruction decoding upon class loading
      */
     static {
-        initOpcodeMap();
+        initOpcodeMap(EnumSet.noneOf(OutputOption.class));
     }
 
     /**
      * This method fills the opCodeMap array with all possible variants of instruction word so that
      * OPCODE can be looked up by just getting opCodeMap[instructionWord]
      */
-    static void initOpcodeMap() {
+    static void initOpcodeMap(Set<OutputOption> options) {
         /* opcode decoding */
         expandOpCodes(opCodeMap, baseOpCodes);
-        if (Dfr.outOptions.altStack)
+        if (options.contains(OutputOption.STACK))
             expandOpCodes(opCodeMap, altStackOpCodes);
-        if (Dfr.outOptions.altShift)
+        if (options.contains(OutputOption.SHIFT))
             expandOpCodes(opCodeMap, altShiftOpCodes);
-        if (Dfr.outOptions.altDMov)
+        if (options.contains(OutputOption.DMOV))
             expandOpCodes(opCodeMap, altDmovOpCodes);
-        if (Dfr.outOptions.altSpecials)
+        if (options.contains(OutputOption.SPECIALS))
             expandOpCodes(opCodeMap, altSpecialOpCodes);
     }
 

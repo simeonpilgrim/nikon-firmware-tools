@@ -50,13 +50,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
 import java.util.Date;
+import java.util.EnumSet;
+import java.util.Set;
 
 public class Dfr
 {
-    public static OutOptions outOptions = new OutOptions();
+    public static Set<OutputOption> options = EnumSet.noneOf(OutputOption.class);
 
     final static String cmdname = "Dfr";
     final static String version = "1.03";
+    private static final String DEFAULT_OPTIONS_FILE = "dfr.txt";
 
     String inputFileName;
     String outputFileName;
@@ -84,26 +87,24 @@ public class Dfr
     public static String fmt_par = "(";
     public static String fmt_ens = ")";
 
-    public static String hexPrefix = "0x";
-
     static void usage()
     {
         String help =
-                  "-d range          disassemble only specified range\n"
-                + "-e address=name   (not implemented) define entry point symbol\n"
-                + "-f range=address  (not implemented) map range of input file to memory address\n"
-                + "-h                display this message\n"
-                + "-i range=offset   map range of memory to input file offset\n"
-                + "-l                (not implemented) little-endian input file\n"
-                + "-m range=type     describe memory range (use -m? to list types)\n"
-                + "-o filename       output file\n"
-                + "-r                separate output file for each memory range\n"
-                + "-s address=name   (not implemented) define symbol\n"
-                + "-t address        equivalent to -m address,0x400=DATA:V\n"
-                + "-v                verbose\n"
-                + "-w options        output options (use -w? to list options)\n"
-                + "-x file           read options from file\n"
-                + "Numbers are C-style. A range is start-end or start,length.\n";
+                "-d range          disassemble only specified range\n"
+                        + "-e address=name   (not implemented) define entry point symbol\n"
+                        + "-f range=address  (not implemented) map range of input file to memory address\n"
+                        + "-h                display this message\n"
+                        + "-i range=offset   map range of memory to input file offset\n"
+                        + "-l                (not implemented) little-endian input file\n"
+                        + "-m range=type     describe memory range (use -m? to list types)\n"
+                        + "-o filename       output file\n"
+                        + "-r                separate output file for each memory range\n"
+                        + "-s address=name   (not implemented) define symbol\n"
+                        + "-t address        equivalent to -m address,0x400=DATA:V\n"
+                        + "-v                verbose\n"
+                        + "-w options        output options (use -w? to list options)\n"
+                        + "-x file           read options from file\n"
+                        + "Numbers are C-style. A range is start-end or start,length.\n";
 
         log("Usage: " + cmdname + "[options] filename");
         log("Options:");
@@ -111,17 +112,16 @@ public class Dfr
     }
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
-        new Dfr().execute("dfr.txt", args);
+        new Dfr().execute(args);
     }
 
-    private void execute(String dfrFilename, String[] args) throws ParsingException, IOException, DisassemblyException {
-        if (!new File(dfrFilename).exists()) {
-            error("File " + dfrFilename + " does not exist !");
-            usage();
-            System.exit(-1);
+    private void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
+        if (!new File(DEFAULT_OPTIONS_FILE).exists()) {
+            System.err.println("Default options file " + DEFAULT_OPTIONS_FILE + " not found.");
         }
-
-        readOptions(dfrFilename);
+        else {
+            readOptions(DEFAULT_OPTIONS_FILE);
+        }
         processOptions(args);
 
         initialize();
@@ -131,11 +131,31 @@ public class Dfr
         cleanup();
     }
 
+
+
+    ///* Logging */
+
+    void info(String s) throws IOException {
+        fileWriter.write(s);
+
+        if (options.contains(OutputOption.VERBOSE))
+        {
+            System.err.println(s);
+        }
+    }
+
+    static void error(String s)
+    {
+        log("*** ERROR ***");
+        log(s);
+    }
+
+
     static void log(String s)
     {
-        System.out.println(s);
         System.err.println(s);
     }
+
 
 
     ///* misc definitions */
@@ -178,113 +198,6 @@ public class Dfr
     }
 
 
-    ///* output options */
-    public static class OutOptions {
-        private static final String REGISTER = "register";
-
-        private static final String DMOV = "dmov";
-        private static final String SHIFT = "shift";
-        private static final String STACK = "stack";
-        private static final String SPECIALS = "specials";
-
-        private static final String CSTYLE = "cstyle";
-        private static final String DOLLAR = "dollar";
-
-        private static final String FILEMAP = "filemap";
-        private static final String MEMORYMAP = "memorymap";
-
-        private static final String SYMBOLS = "symbols";
-        private static final String XREF1 = "crossreference";
-        private static final String XREF2 = "xreference";
-
-        private static final String VERBOSE = "verbose";
-        private static final String DEBUG = "debug";
-
-        private static final String HELP = "?";
-
-        /** use AC, SP, FP for R13-R15 - now automatic according to instruction */
-        boolean altReg = false;
-
-        /** use LD/ST for some DMOV etc */
-        boolean altDMov = false;
-
-        /** use large constant for LSL2 etc */
-        boolean altShift = false;
-
-        /** use PUSH/POP */
-        boolean altStack = false;
-
-        /** use special register operation */
-        boolean altSpecials = false;
-
-        /** use C style operand syntax */
-        boolean cStyle = false;
-
-        /** use $0 syntax for hexadecimal numbers */
-        boolean hexDollar = false;
-
-        /** write file map */
-        boolean fileMap = false;
-
-        /** write memory map */
-        boolean memoryMap = false;
-
-        /** write symbol table */
-        boolean symTab = false;
-
-        /** write cross reference */
-        boolean xRef = false;
-
-        /** verbose messages */
-        boolean verbose = false;
-
-        /** debug disassembler miscellaneous */
-        boolean debug = false;
-
-        public boolean parseFlag(Character option, String optionValue) throws ParsingException {
-            boolean value = true;
-            if (optionValue.toLowerCase().startsWith("no")) {
-                value = false;
-                optionValue = optionValue.substring(2);
-            }
-
-            if (REGISTER.equals(optionValue)) altReg = value;
-            else if (DMOV.equals(optionValue)) altDMov = value;
-            else if (SHIFT.equals(optionValue)) altShift = value;
-            else if (STACK.equals(optionValue)) altStack = value;
-            else if (SPECIALS.equals(optionValue)) altSpecials = value;
-            else if (CSTYLE.equals(optionValue)) cStyle = value;
-            else if (DOLLAR.equals(optionValue)) hexDollar = value;
-            else if (FILEMAP.equals(optionValue)) fileMap = value;
-            else if (MEMORYMAP.equals(optionValue)) memoryMap = value;
-            else if (SYMBOLS.equals(optionValue)) symTab = value;
-            else if (XREF1.equals(optionValue) || XREF2.equals(optionValue)) xRef = value;
-            else if (VERBOSE.equals(optionValue)) verbose = value;
-            else if (DEBUG.equals(optionValue)) debug = value;
-            else {
-                if (!HELP.equals(optionValue)) {
-                    System.err.println("Unsupported output format option : " + optionValue);
-                }
-                System.out.println("Here are the allowed output format options (-" + option + ")");
-                System.out.println(" -" + option + REGISTER + ": use AC, FP, SP instead of R13, R14, R15");
-                System.out.println(" -" + option + DMOV + ": use LD/ST for some DMOV operations");
-                System.out.println(" -" + option + SHIFT + ": use LSR, LSL, ASR instead of SR2, LSL2, ASR2 (adding 16 to shift)");
-                System.out.println(" -" + option + STACK + ": use PUSH/POP for stack operations");
-                System.out.println(" -" + option + SPECIALS + ": use AND, OR, ST, ADD instead of ANDCCR, ORCCR, STILM, ADDSP");
-                System.out.println(" -" + option + CSTYLE + ": use C style operand syntax");
-                System.out.println(" -" + option + DOLLAR + ": use $0 syntax for hexadecimal numbers");
-                System.out.println(" -" + option + FILEMAP + ": write file map");
-                System.out.println(" -" + option + MEMORYMAP + ": write memory map");
-                System.out.println(" -" + option + SYMBOLS + ": write symbol table");
-                System.out.println(" -" + option + XREF1 + ": write cross reference");
-                System.out.println(" -" + option + VERBOSE + ": verbose messages");
-                System.out.println(" -" + option + DEBUG + ": debug disassembler");
-                return false;
-            }
-            return true;
-        }
-    }
-
     ///* output */
 
     void openOutput(int pc, boolean usePC, String ext) throws IOException {
@@ -305,25 +218,6 @@ public class Dfr
     }
 
     
-    ///* Logging */
-
-    void info(String s) throws IOException {
-        fileWriter.write(s);
-
-        if (outOptions.verbose)
-        {
-            System.out.println(s);
-        }
-        System.err.println(s);
-    }
-
-    static void error(String s)
-    {
-        log("*****");
-        log(s);
-    }
-
-
     void writeHeader() throws IOException {
         fileWriter.write("DFR " + version + "\n");
         fileWriter.write("  Date:   " + startTime + "\n");
@@ -343,7 +237,7 @@ public class Dfr
 
         disassemblyState.decodeInstructionOperands(cpuState, memory);
 
-        disassemblyState.formatOperandsAndComment(cpuState, true);
+        disassemblyState.formatOperandsAndComment(cpuState, true, options);
 
         printDisassembly(disassemblyState, cpuState, memoryFileOffset);
 
@@ -365,7 +259,7 @@ public class Dfr
 
             disassemblyState.decodeInstructionOperands(cpuState, memory);
 
-            disassemblyState.formatOperandsAndComment(cpuState, true);
+            disassemblyState.formatOperandsAndComment(cpuState, true, options);
 
             sizeInBytes += disassemblyState.n << 1;
 
@@ -484,13 +378,9 @@ public class Dfr
             System.exit(-1);
         }
 
-        if (outOptions.hexDollar) {
-            hexPrefix = "$";
-        }
+        OpCode.initOpcodeMap(options);
 
-        OpCode.initOpcodeMap();
-
-        if (outOptions.cStyle) {
+        if (options.contains(OutputOption.CSTYLE)) {
             fmt_imm = "";
             fmt_and = "+";
             fmt_inc = "++";
@@ -498,7 +388,7 @@ public class Dfr
             fmt_mem = "*";
         }
 
-        if (outOptions.altReg) {
+        if (options.contains(OutputOption.REGISTER)) {
             CPUState.REG_LABEL[CPUState.AC] = "AC";
             CPUState.REG_LABEL[CPUState.FP] = "FP";
             CPUState.REG_LABEL[CPUState.SP] = "SP";
@@ -674,7 +564,7 @@ public class Dfr
 
                 case 'V':
                 case 'v':
-                    outOptions.verbose = true;
+                    options.add(OutputOption.VERBOSE);
                     break;
 
                 case 'W':
@@ -684,25 +574,29 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    if (!outOptions.parseFlag(option, argument)) {
+                    if (!OutputOption.parseFlag(options, option, argument)) {
                         System.exit(1);
                     }
                     break;
 
                 case 'X':
                 case 'x':
-                    //        if (!(arg = Parseopt_arg(&pos)))
-                    //            goto missing;
-                    //        if (readOptions(arg)) {
-                    //            fprintf(stderr, "%s: cannot open options file \"%s\": %s\n",
-                    //                cmdname, arg, strerror(errno));
-                    //            exit(1);
-                    //        }
+                    argument = optionHandler.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    try {
+                        readOptions(argument);
+                    } catch (IOException e) {
+                        System.err.println("Cannot open given options file '" + argument + "'");
+                        System.exit(1);
+                    }
                     break;
 
                 case 'Z':
                 case 'z':
-                    outOptions.debug = true;
+                    options.add(OutputOption.DEBUG);
                     break;
 
                 default:

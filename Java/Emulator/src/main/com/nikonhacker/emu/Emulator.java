@@ -10,7 +10,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class Emulator {
 
@@ -27,6 +29,8 @@ public class Emulator {
     private int sleepIntervalMs = 0;
     private boolean sleepIntervalChanged = false;
     private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+    
+    private Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
@@ -103,6 +107,10 @@ public class Emulator {
         this.sleepIntervalChanged = true;
     }
 
+    public void setOutputOptions(Set<OutputOption> outputOptions) {
+        this.outputOptions = outputOptions;
+    }
+
     public Memory getMemory() {
         return memory;
     }
@@ -163,7 +171,7 @@ public class Emulator {
                     // copying to make sure we keep a reference even if instructionPrintStream gets set to null in between but still avoid costly synchronization
                     if (ips != null) {
                         // OK. copy is still not null
-                        disassemblyState.formatOperandsAndComment(cpuState, false);
+                        disassemblyState.formatOperandsAndComment(cpuState, false, outputOptions);
                         ips.print("0x" + Format.asHex(cpuState.pc, 8) + " " + disassemblyState);
                     }
                 }
@@ -2252,7 +2260,7 @@ public class Emulator {
             e.printStackTrace();
             System.err.println(e.getMessage());
             System.err.println(cpuState);
-            disassemblyState.formatOperandsAndComment(cpuState, false);
+            disassemblyState.formatOperandsAndComment(cpuState, false, outputOptions);
             System.err.println("Offending instruction : " + disassemblyState);
             System.err.println("(just before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
         }
