@@ -6,6 +6,8 @@ import com.nikonhacker.emu.memory.Memory;
 import junit.framework.TestCase;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Random;
+
 /**
  * This class tests all examples provided in the Fujitsu specification
  * Look for the word "spec" for failed tests or differences compared to the examples in the tests
@@ -13,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 public class EmulatorTest extends TestCase {
 
     public static final boolean STAY_SILENT_IF_OK = true;
+    public static final boolean STOP_ON_ERROR = true;
 
     static final int BASE_ADDRESS = 0x40000;
 
@@ -58,6 +61,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : " + CPUState.REG_LABEL[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8)
                     + ", should be " + toHexString(expectedValue, 8) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -68,6 +72,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : ILM=" + toBinString(cpuState.getILM(), 5)
                     + ", should be " + toBinString(expectedValue, 5) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -78,6 +83,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : CCR=" + toBinString(cpuState.getCCR(), 4)
                     + ", should be " + toBinString(expectedValue, 4) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -88,6 +94,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : SCR=" + toBinString(cpuState.getSCR(), 3)
                     + ", should be " + toBinString(expectedValue, 3) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -98,6 +105,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : PS=" + toBinString(cpuState.getPS(), 32)
                     + ", should be " + toBinString(expectedValue, 32) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -108,6 +116,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : (" + toHexString(address, 8) + ")=" + toHexString(memory.load32(address), 8)
                     + ", should be " + toHexString(expectedValue, 8) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -118,6 +127,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : (" + toHexString(address, 8) + ")=" + toHexString(memory.loadUnsigned16(address), 4)
                     + ", should be " + toHexString(expectedValue, 4) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -128,6 +138,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : (" + toHexString(address, 8) + ")=" + toHexString(memory.loadUnsigned8(address), 2)
                     + ", should be " + toHexString(expectedValue, 2) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -138,6 +149,7 @@ public class EmulatorTest extends TestCase {
         else {
             System.out.println(" ERROR : PC=" + toHexString(cpuState.pc, 8)
                     + ", should be " + toHexString(expectedValue, 8) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            if (STOP_ON_ERROR) fail();
         }
     }
 
@@ -344,8 +356,8 @@ public class EmulatorTest extends TestCase {
         checkCCR(0x4); // 0b0100
     }
 
-    public void testCMP_bis() throws EmulationException {
-        System.out.println("EmulatorTest.testCMP_AA");
+    public void testCMP_AAbis() throws EmulationException {
+        System.out.println("EmulatorTest.testCMP_AAbis");
         initCpu();
 
         setInstruction(0xaa23); // 0b1010101000100011
@@ -356,7 +368,7 @@ public class EmulatorTest extends TestCase {
 
         emulator.play();
 
-        checkCCR(0x4); // 0b0100
+        checkCCR(0x9); // 0b1001
     }
 
     public void testCMP_A8() throws EmulationException {
@@ -1021,6 +1033,80 @@ public class EmulatorTest extends TestCase {
         checkRegister(CPUState.MDL, 0xFFFFFFFF);
         checkSCR(0x6); // 0b110
     }
+
+
+    public void testOneSignedDivision(int dividend, int divisor) throws EmulationException {
+        initCpu();
+
+        emulator.setInterruptPeriod(36);
+
+        memory.store16(BASE_ADDRESS     , 0x9742); // 0b1001011101000010 DIV0S R2
+        memory.store16(BASE_ADDRESS +  2, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS +  4, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS +  6, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS +  8, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 10, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 12, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 14, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 16, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 18, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 20, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 22, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 24, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 26, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 28, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 30, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 32, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 34, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 36, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 38, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 40, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 42, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 44, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 46, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 48, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 50, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 52, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 54, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 56, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 58, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 60, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 62, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 64, 0x9762); // 0b1001011101100010 DIV1  R2
+        memory.store16(BASE_ADDRESS + 66, 0x9772); // 0b1001011101110010 DIV2
+        memory.store16(BASE_ADDRESS + 68, 0x9f60); // 0b1001111101100000 DIV3
+        memory.store16(BASE_ADDRESS + 70, 0x9f70); // 0b1001111101110000 DIV4S
+
+        cpuState.setReg(2, divisor);
+        cpuState.setReg(CPUState.MDL, dividend);
+        cpuState.setSCR(0); // 0b000
+
+        emulator.play();
+
+        int foundQuotient = cpuState.getReg(CPUState.MDL);
+        int foundRemainder = cpuState.getReg(CPUState.MDH);
+
+        int correctQuotient = dividend / divisor;
+        int correctRemainder = dividend % divisor;
+
+        if ((correctQuotient != foundQuotient) || (correctRemainder != foundRemainder)) {
+            System.out.println("Error : found " + dividend + "=" + foundQuotient + "x" + divisor + " + " + foundRemainder);
+        }
+    }
+
+    public void testMultipleSignedDivisions() throws EmulationException {
+        System.out.println("EmulatorTest.testMultipleUnsignedDivisions");
+        Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            int dividend = (int) (random.nextLong());
+            int divisor = (int) (random.nextLong());
+            if (divisor != 0) {
+                testOneSignedDivision(dividend, divisor);
+            }
+        }
+    }
+
+
     // ***********************************
 
 
@@ -1077,15 +1163,6 @@ public class EmulatorTest extends TestCase {
     }
 
 
-    public void testMultipleUnsignedDivisions() throws EmulationException {
-        for(int dividend = 0xFFFFFF00; dividend <= 0xFFFFFFFF; dividend++) {
-            for (int divisor = 0xFFFF0000; divisor <= 0xFFFFFFFF; divisor++) {
-                testOneUnsignedDivision(dividend, divisor);
-            }
-        }
-        System.out.println("Done");
-    }
-
     public void testOneUnsignedDivision(int dividend, int divisor) throws EmulationException {
         initCpu();
 
@@ -1138,11 +1215,22 @@ public class EmulatorTest extends TestCase {
         long correctRemainder = (dividend & 0xFFFFFFFFL) % (divisor & 0xFFFFFFFFL);
         
         if ((correctQuotient != foundQuotient) || (correctRemainder != foundRemainder)) {
-            System.out.println("Error : found " + dividend + "=" + foundQuotient + "x" + divisor + " + " + foundRemainder);
+            System.out.println("Error : found " + (dividend & 0xFFFFFFFFL) + "=" + foundQuotient + "x" + (divisor & 0xFFFFFFFFL) + " + " + foundRemainder);
         }
         
     }
 
+    public void testMultipleUnsignedDivisions() throws EmulationException {
+        System.out.println("EmulatorTest.testMultipleUnsignedDivisions");
+        Random random = new Random();
+        for (int i = 0; i < 1000; i++) {
+            int dividend = (int) (random.nextLong()); // Using long to have more than Integer.MAX_VALUE
+            int divisor = (int) (random.nextLong()); // Using long to have more than Integer.MAX_VALUE
+            if (divisor != 0) {
+                testOneUnsignedDivision(dividend, divisor);
+            }
+        }
+    }
 
 
     public void testLSL_B6() throws EmulationException {
