@@ -65,9 +65,6 @@ public class DisassemblyState {
     /** optional comment */
     public String comment;
     
-    /** register buffers (for display only) */
-    public Integer registerBuffer[] = new Integer[49];
-
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
 
