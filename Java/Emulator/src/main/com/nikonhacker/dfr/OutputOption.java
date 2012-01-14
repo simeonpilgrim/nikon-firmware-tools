@@ -14,15 +14,16 @@ public enum OutputOption {
     CSTYLE      ("cstyle",          "use C style operand syntax"),
     DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers"),
 
-    FILEMAP     ("filemap",         "write file map"),
-    MEMORYMAP   ("memorymap",       "write memory map"),
+    //FILEMAP     ("filemap",         "write file map"),
+    //MEMORYMAP   ("memorymap",       "write memory map"),
 
-    SYMBOLS     ("symbols",         "write symbol table"),
-    XREF1       ("crossreference",  "write cross reference"),
-    XREF2       ("xreference",      "write cross reference"),
+    //SYMBOLS     ("symbols",         "write symbol table"),
+    //XREF1       ("crossreference",  "write cross reference"),
+    //XREF2       ("xreference",      "write cross reference"),
 
     VERBOSE     ("verbose",         "verbose messages"),
-    DEBUG       ("debug",           "debug disassembler");
+    DEBUG       ("debug",           "debug disassembler"),
+    ;
 
     private String key;
     private String help;
@@ -30,6 +31,14 @@ public enum OutputOption {
     OutputOption(String key, String help) {
         this.key = key;
         this.help = help;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public String getHelp() {
+        return help;
     }
 
     public static String getFullHelp(Character option) {
