@@ -14,7 +14,7 @@ import java.util.*;
 public class Prefs {    
     int sleepTick = 2;
     List<BreakTrigger> triggers;
-    Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
+    Set<OutputOption> outputOptions;
 
     private HashMap<String, WindowPosition> windowPositionMap;
 
@@ -93,10 +93,12 @@ public class Prefs {
     }
 
     public Set<OutputOption> getOutputOptions() {
+        if (outputOptions==null) outputOptions = EnumSet.noneOf(OutputOption.class);
         return outputOptions;
     }
 
     public void setOutputOption(OutputOption outputOption, boolean value) {
+        if (outputOptions==null) outputOptions = EnumSet.noneOf(OutputOption.class);
         if (value) {
             outputOptions.add(outputOption);
         }
