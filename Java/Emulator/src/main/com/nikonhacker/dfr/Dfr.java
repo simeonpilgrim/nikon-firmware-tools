@@ -55,7 +55,7 @@ import java.util.Set;
 
 public class Dfr
 {
-    public static Set<OutputOption> options = EnumSet.noneOf(OutputOption.class);
+    public static Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     final static String cmdname = "Dfr";
     final static String version = "1.03";
@@ -138,7 +138,7 @@ public class Dfr
     void info(String s) throws IOException {
         fileWriter.write(s);
 
-        if (options.contains(OutputOption.VERBOSE))
+        if (outputOptions.contains(OutputOption.VERBOSE))
         {
             System.err.println(s);
         }
@@ -237,7 +237,7 @@ public class Dfr
 
         disassemblyState.decodeInstructionOperands(cpuState, memory);
 
-        disassemblyState.formatOperandsAndComment(cpuState, true, options);
+        disassemblyState.formatOperandsAndComment(cpuState, true, outputOptions);
 
         printDisassembly(disassemblyState, cpuState, memoryFileOffset);
 
@@ -259,7 +259,7 @@ public class Dfr
 
             disassemblyState.decodeInstructionOperands(cpuState, memory);
 
-            disassemblyState.formatOperandsAndComment(cpuState, true, options);
+            disassemblyState.formatOperandsAndComment(cpuState, true, outputOptions);
 
             sizeInBytes += disassemblyState.n << 1;
 
@@ -378,9 +378,9 @@ public class Dfr
             System.exit(-1);
         }
 
-        OpCode.initOpcodeMap(options);
+        OpCode.initOpcodeMap(outputOptions);
 
-        if (options.contains(OutputOption.CSTYLE)) {
+        if (outputOptions.contains(OutputOption.CSTYLE)) {
             fmt_imm = "";
             fmt_and = "+";
             fmt_inc = "++";
@@ -388,7 +388,7 @@ public class Dfr
             fmt_mem = "*";
         }
 
-        if (options.contains(OutputOption.REGISTER)) {
+        if (outputOptions.contains(OutputOption.REGISTER)) {
             CPUState.REG_LABEL[CPUState.AC] = "AC";
             CPUState.REG_LABEL[CPUState.FP] = "FP";
             CPUState.REG_LABEL[CPUState.SP] = "SP";
@@ -564,7 +564,7 @@ public class Dfr
 
                 case 'V':
                 case 'v':
-                    options.add(OutputOption.VERBOSE);
+                    outputOptions.add(OutputOption.VERBOSE);
                     break;
 
                 case 'W':
@@ -574,7 +574,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    if (!OutputOption.parseFlag(options, option, argument)) {
+                    if (!OutputOption.parseFlag(outputOptions, option, argument)) {
                         System.exit(1);
                     }
                     break;
@@ -596,7 +596,7 @@ public class Dfr
 
                 case 'Z':
                 case 'z':
-                    options.add(OutputOption.DEBUG);
+                    outputOptions.add(OutputOption.DEBUG);
                     break;
 
                 default:
