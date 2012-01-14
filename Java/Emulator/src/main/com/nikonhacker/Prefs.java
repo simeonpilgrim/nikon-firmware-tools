@@ -1,6 +1,7 @@
 package com.nikonhacker;
 
 
+import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.thoughtworks.xstream.XStream;
@@ -8,31 +9,15 @@ import com.thoughtworks.xstream.io.xml.StaxDriver;
 
 import java.io.*;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-public class Prefs {
+public class Prefs {    
     int sleepTick = 2;
     List<BreakTrigger> triggers;
+    Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
+
     private HashMap<String, WindowPosition> windowPositionMap;
 
-    public int getSleepTick() {
-        return sleepTick;
-    }
-
-    public void setSleepTick(int sleepTick) {
-        this.sleepTick = sleepTick;
-    }
-
-    public List<BreakTrigger> getTriggers() {
-        if (triggers == null) triggers = new ArrayList<BreakTrigger>();
-        return triggers;
-    }
-
-    public void setTriggers(List<BreakTrigger> triggers) {
-        this.triggers = triggers;
-    }
 
     public static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + EmulatorUI.APP_NAME);
@@ -97,6 +82,38 @@ public class Prefs {
         else {
             return new Prefs();
         }
+    }
+
+    public int getSleepTick() {
+        return sleepTick;
+    }
+
+    public void setSleepTick(int sleepTick) {
+        this.sleepTick = sleepTick;
+    }
+
+    public Set<OutputOption> getOutputOptions() {
+        return outputOptions;
+    }
+
+    public void setOutputOption(OutputOption outputOption, boolean value) {
+        if (value) {
+            outputOptions.add(outputOption);
+        }
+        else {
+            outputOptions.remove(outputOption);
+        }
+    }
+
+
+
+    public List<BreakTrigger> getTriggers() {
+        if (triggers == null) triggers = new ArrayList<BreakTrigger>();
+        return triggers;
+    }
+
+    public void setTriggers(List<BreakTrigger> triggers) {
+        this.triggers = triggers;
     }
 
     public int getWindowPositionX(String windowName) {

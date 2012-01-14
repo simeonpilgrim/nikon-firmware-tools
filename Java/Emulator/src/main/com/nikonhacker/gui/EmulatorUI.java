@@ -10,6 +10,7 @@ package com.nikonhacker.gui;
 
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -66,6 +67,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_DISASSEMBLE_FILE = "DISASSEMBLE_FILE";
+    private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
     private static final int BASE_ADDRESS = 0x40000; // TODO de-hardcode this
@@ -101,6 +103,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem memoryHexEditorMenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
     private JCheckBoxMenuItem component4006MenuItem;
+    private JMenuItem optionsMenuItem;
 
     private JButton loadButton;
     private JButton playButton;
@@ -115,6 +118,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton memoryHexEditorButton;
     private JButton screenEmulatorButton;
     private JButton component4006Button;
+    private JButton optionsButton;
 
     private DocumentFrame disassemblyFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
@@ -259,6 +263,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(component4006Button);
 
         bar.add(Box.createHorizontalGlue());
+
+        optionsButton = makeButton("options", COMMAND_OPTIONS, "Options", "Options");
+//        bar.add(optionsButton);
+
         return bar;
     }
 
@@ -332,6 +340,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         loadMenuItem.addActionListener(this);
         fileMenu.add(loadMenuItem);
 
+        fileMenu.add(new JSeparator());
+
         //emulator play
         playMenuItem = new JMenuItem("Start (or resume) emulator");
         playMenuItem.setMnemonic(KeyEvent.VK_E);
@@ -388,6 +398,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        tmpMenuItem.setActionCommand(COMMAND_TEST);
 //        tmpMenuItem.addActionListener(this);
 //        fileMenu.add(tmpMenuItem);
+
+        fileMenu.add(new JSeparator());
 
         //quit
         tmpMenuItem = new JMenuItem("Quit");
@@ -451,7 +463,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.addActionListener(this);
         viewMenu.add(component4006MenuItem);
 
-
         //Set up the tools menu.
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
@@ -474,6 +485,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         toolsMenu.add(tmpMenuItem);
 
         //disassembler
+        // TODO
         tmpMenuItem = new JMenuItem("Disassemble firmware");
 //        tmpMenuItem.setMnemonic(KeyEvent.VK_S);
 //        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
@@ -481,12 +493,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         tmpMenuItem.addActionListener(this);
 //        toolsMenu.add(tmpMenuItem);
 
+        toolsMenu.add(new JSeparator());
+
+        //options
+        optionsMenuItem = new JMenuItem("Options");
+        optionsMenuItem.setMnemonic(KeyEvent.VK_O);
+        optionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK));
+        optionsMenuItem.setActionCommand(COMMAND_OPTIONS);
+        optionsMenuItem.addActionListener(this);
+//        toolsMenu.add(optionsMenuItem);
+
         //Set up the help menu.
         JMenu helpMenu = new JMenu("?");
         menuBar.add(helpMenu);
 
         //about
-        tmpMenuItem = new JCheckBoxMenuItem("About");
+        tmpMenuItem = new JMenuItem("About");
         tmpMenuItem.setActionCommand(COMMAND_ABOUT);
         tmpMenuItem.addActionListener(this);
         helpMenu.add(tmpMenuItem);
@@ -556,8 +578,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_DISASSEMBLE_FILE.equals(e.getActionCommand())) {
             //openDisassembleDialog();
         }
+        else if (COMMAND_OPTIONS.equals(e.getActionCommand())) {
+            openOptionsDialog();
+        }
         else if (COMMAND_ABOUT.equals(e.getActionCommand())) {
-            showAbout();
+            showAboutDialog();
         }
         else {
             System.err.println("Unknown menu command : " + e.getActionCommand());
@@ -634,7 +659,25 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    private void showAbout() {
+    private void openOptionsDialog() {
+        JCheckBox checkBox = new JCheckBox();
+        final JComponent[] inputs = new JComponent[]{
+                checkBox
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Options",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+             prefs.setOutputOption(OutputOption.CSTYLE, true);
+        }
+
+    }
+
+    private void showAboutDialog() {
         // for copying style
         JLabel label = new JLabel();
         Font font = label.getFont();
@@ -908,6 +951,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 pauseMenuItem.setEnabled(true); pauseButton.setEnabled(true);
                 stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
                 breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
+                optionsMenuItem.setEnabled(false); optionsButton.setEnabled(false);
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(false);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(false);
             }
@@ -918,6 +962,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
                 stepMenuItem.setEnabled(true); stepButton.setEnabled(true);
                 breakpointMenuItem.setEnabled(true); breakpointButton.setEnabled(true);
+                optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
             }
@@ -936,6 +981,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
             stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
             breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
+            optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
 
             stopMenuItem.setEnabled(false); stopButton.setEnabled(false);
 
@@ -971,6 +1017,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         Thread emulatorThread = new Thread(new Runnable() {
             public void run() {
                 try {
+                    emulator.setOutputOptions(prefs.getOutputOptions());
                     emulator.play();
                     isEmulatorPlaying = false;
                     updateStates();
