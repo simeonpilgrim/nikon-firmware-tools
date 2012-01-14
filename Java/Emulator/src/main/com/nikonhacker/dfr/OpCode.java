@@ -327,7 +327,7 @@ public class OpCode {
      * This method fills the opCodeMap array with all possible variants of instruction word so that
      * OPCODE can be looked up by just getting opCodeMap[instructionWord]
      */
-    static void initOpcodeMap(Set<OutputOption> options) {
+    public static void initOpcodeMap(Set<OutputOption> options) {
         /* opcode decoding */
         expandOpCodes(opCodeMap, baseOpCodes);
         if (options.contains(OutputOption.STACK))

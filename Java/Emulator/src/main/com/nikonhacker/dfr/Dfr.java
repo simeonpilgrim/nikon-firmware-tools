@@ -77,16 +77,6 @@ public class Dfr
 
     String startTime = "";
 
-    ///* output formatting */
-    public static String fmt_nxt = ",";
-    public static String fmt_imm = "#";
-    public static String fmt_and = ",";
-    public static String fmt_inc = "+";
-    public static String fmt_dec = "-";
-    public static String fmt_mem = "@";
-    public static String fmt_par = "(";
-    public static String fmt_ens = ")";
-
     static void usage()
     {
         String help =
@@ -380,20 +370,10 @@ public class Dfr
 
         OpCode.initOpcodeMap(outputOptions);
 
-        if (outputOptions.contains(OutputOption.CSTYLE)) {
-            fmt_imm = "";
-            fmt_and = "+";
-            fmt_inc = "++";
-            fmt_dec = "--";
-            fmt_mem = "*";
-        }
+        DisassemblyState.initFormatChars(outputOptions);
 
-        if (outputOptions.contains(OutputOption.REGISTER)) {
-            CPUState.REG_LABEL[CPUState.AC] = "AC";
-            CPUState.REG_LABEL[CPUState.FP] = "FP";
-            CPUState.REG_LABEL[CPUState.SP] = "SP";
-        }
-        
+        CPUState.initRegisterLabels(outputOptions);
+
 //        if (outOptions.fileMap || outOptions.memoryMap) {
         openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
         writeHeader();

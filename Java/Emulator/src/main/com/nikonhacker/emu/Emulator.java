@@ -108,6 +108,9 @@ public class Emulator {
     }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
+        OpCode.initOpcodeMap(outputOptions);
+        DisassemblyState.initFormatChars(outputOptions);
+        CPUState.initRegisterLabels(outputOptions);
         this.outputOptions = outputOptions;
     }
 

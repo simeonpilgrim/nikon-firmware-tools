@@ -4,6 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 public class DisassemblyState {
@@ -19,6 +20,17 @@ public class DisassemblyState {
     public final static int DF_TO_KEEP = DF_FLOW | DF_BRANCH | DF_JUMP | DF_CALL | DF_RETURN;
     public final static int DF_TO_COPY = DF_DELAY;
     public final static int DF_TO_DELAY = DF_BREAK;
+
+    ///* output formatting */
+    public static String fmt_nxt;
+    public static String fmt_imm;
+    public static String fmt_and;
+    public static String fmt_inc;
+    public static String fmt_dec;
+    public static String fmt_mem;
+    public static String fmt_par;
+    public static String fmt_ens;
+
     /** decoded opcode */
     public OpCode opcode = null;
 
@@ -59,6 +71,13 @@ public class DisassemblyState {
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
 
+    /**
+     * Default instruction decoding upon class loading
+     */
+    static {
+        initFormatChars(EnumSet.noneOf(OutputOption.class));
+    }
+
     public DisassemblyState() {
         reset();
     }
@@ -66,6 +85,27 @@ public class DisassemblyState {
     public DisassemblyState(int memRangeStart) {
         this.memRangeStart = memRangeStart;
         reset();
+    }
+
+    public static void initFormatChars(Set<OutputOption> outputOptions) {
+        fmt_nxt = ",";
+        fmt_par = "(";
+        fmt_ens = ")";
+
+        if (outputOptions.contains(OutputOption.CSTYLE)) {
+            fmt_imm = "";
+            fmt_and = "+";
+            fmt_inc = "++";
+            fmt_dec = "--";
+            fmt_mem = "*";
+        }
+        else {
+            fmt_imm = "#";
+            fmt_and = ",";
+            fmt_inc = "+";
+            fmt_dec = "-";
+            fmt_mem = "@";
+        }
     }
 
     public void decodeInstructionOperands(CPUState cpuState, Memory memory) {
@@ -175,31 +215,31 @@ public class DisassemblyState {
             switch (formatChar)
             {
                 case '#':
-                    currentBuffer.append(Dfr.fmt_imm);
+                    currentBuffer.append(fmt_imm);
                     break;
                 case '&':
-                    currentBuffer.append(Dfr.fmt_and);
+                    currentBuffer.append(fmt_and);
                     break;
                 case '(':
-                    currentBuffer.append(Dfr.fmt_par);
+                    currentBuffer.append(fmt_par);
                     break;
                 case ')':
-                    currentBuffer.append(Dfr.fmt_ens);
+                    currentBuffer.append(fmt_ens);
                     break;
                 case '+':
-                    currentBuffer.append(Dfr.fmt_inc);
+                    currentBuffer.append(fmt_inc);
                     break;
                 case ',':
-                    currentBuffer.append(Dfr.fmt_nxt);
+                    currentBuffer.append(fmt_nxt);
                     break;
                 case '-':
-                    currentBuffer.append(Dfr.fmt_dec);
+                    currentBuffer.append(fmt_dec);
                     break;
                 case ';':
                     currentBuffer = commentBuffer;
                     break;
                 case '@':
-                    currentBuffer.append(Dfr.fmt_mem);
+                    currentBuffer.append(fmt_mem);
                     break;
                 case '2':
                     displayX <<= 1;
@@ -316,7 +356,7 @@ public class DisassemblyState {
                     /* pair */
                     pos = w >> 1;
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (displayX >> pos), pos));
-                    currentBuffer.append(Dfr.fmt_nxt);
+                    currentBuffer.append(fmt_nxt);
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & displayX, pos));
                     break;
                 case 'q':
@@ -362,7 +402,7 @@ public class DisassemblyState {
                     // goto case 'z'; /*FALLTHROUGH*/
                 case 'z':
                     /* register list */
-                    currentBuffer.append(Dfr.fmt_par);
+                    currentBuffer.append(fmt_par);
                     boolean first = true;
                     for (int i = 0; i < 8; ++i)
                     {
@@ -379,7 +419,7 @@ public class DisassemblyState {
                                 currentBuffer.append(CPUState.REG_LABEL[c + i]);
                         }
                     }
-                    currentBuffer.append(Dfr.fmt_ens);
+                    currentBuffer.append(fmt_ens);
                     break;
                 default:
                     currentBuffer.append(formatChar);

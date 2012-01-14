@@ -2,47 +2,12 @@ package com.nikonhacker.dfr;
 
 import com.nikonhacker.Format;
 
+import java.util.EnumSet;
+import java.util.Set;
+
 public class CPUState {
     /** registers names */
-    public final static String[] REG_LABEL =
-        {
-            "R0",       "R1",       "R2",       "R3",
-            "R4",       "R5",       "R6",       "R7",
-            "R8",       "R9",       "R10",      "R11",
-            "R12",      "R13",      "R14",      "R15",  /* standard names */
-
-            "TBR",      "RP",       "SSP",      "USP",
-            "MDH",      "MDL",      "D6",       "D7",
-            "D8",       "D9",       "D10",      "D11",
-            "D12",      "D13",      "D14",      "D15",
-
-            "CR0",      "CR1",      "CR2",      "CR3",
-            "CR4",      "CR5",      "CR6",      "CR7",
-            "CR8",      "CR9",      "CR10",     "CR11",
-            "CR12",     "CR13",     "CR14",     "CR15",
-
-            "PS",       "CCR"
-        };
-    /** registers with alternate names */
-    public final static String[] ALT_REG_LABEL =
-        {
-            "R0",       "R1",       "R2",       "R3",
-            "R4",       "R5",       "R6",       "R7",
-            "R8",       "R9",       "R10",      "R11",
-            "R12",      "AC",       "FP",       "SP",   /* alt. names */
-
-            "TBR",      "RP",       "SSP",      "USP",
-            "MDH",      "MDL",      "D6",       "D7",
-            "D8",       "D9",       "D10",      "D11",
-            "D12",      "D13",      "D14",      "D15",
-
-            "CR0",      "CR1",      "CR2",      "CR3",
-            "CR4",      "CR5",      "CR6",      "CR7",
-            "CR8",      "CR9",      "CR10",     "CR11",
-            "CR12",     "CR13",     "CR14",     "CR15",
-
-            "PS",       "CCR"
-        };
+    public static String[] REG_LABEL;
     public final static int DEDICATED_REG_OFFSET =   16;
     public final static int COPROCESSOR_REG_OFFSET = 32;
 
@@ -94,6 +59,13 @@ public class CPUState {
     public int V=0;
     public int C=0;
 
+    /**
+     * Default instruction decoding upon class loading
+     */
+    static {
+        initRegisterLabels(EnumSet.noneOf(OutputOption.class));
+    }
+
 
     /**
      * Constructor
@@ -109,6 +81,35 @@ public class CPUState {
     public CPUState(int startPc) {
         reset();
         pc = startPc;
+    }
+
+
+    public static void initRegisterLabels(Set<OutputOption> outputOptions) {
+        REG_LABEL = new String[]{
+                "R0",       "R1",       "R2",       "R3",
+                "R4",       "R5",       "R6",       "R7",
+                "R8",       "R9",       "R10",      "R11",
+                "R12",      "R13",      "R14",      "R15",  /* standard names by default */
+
+                "TBR",      "RP",       "SSP",      "USP",
+                "MDH",      "MDL",      "D6",       "D7",
+                "D8",       "D9",       "D10",      "D11",
+                "D12",      "D13",      "D14",      "D15",
+
+                "CR0",      "CR1",      "CR2",      "CR3",
+                "CR4",      "CR5",      "CR6",      "CR7",
+                "CR8",      "CR9",      "CR10",     "CR11",
+                "CR12",     "CR13",     "CR14",     "CR15",
+
+                "PS",       "CCR"
+        };
+
+        // Patch names if requested
+        if (outputOptions.contains(OutputOption.REGISTER)) {
+            CPUState.REG_LABEL[CPUState.AC] = "AC";
+            CPUState.REG_LABEL[CPUState.FP] = "FP";
+            CPUState.REG_LABEL[CPUState.SP] = "SP";
+        }
     }
 
     /**

@@ -11,6 +11,7 @@ package com.nikonhacker.gui;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.dfr.OutputOption;
+import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -32,6 +33,7 @@ import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
@@ -43,8 +45,7 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
@@ -265,7 +266,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(Box.createHorizontalGlue());
 
         optionsButton = makeButton("options", COMMAND_OPTIONS, "Options", "Options");
-//        bar.add(optionsButton);
+        bar.add(optionsButton);
 
         return bar;
     }
@@ -501,7 +502,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         optionsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK));
         optionsMenuItem.setActionCommand(COMMAND_OPTIONS);
         optionsMenuItem.addActionListener(this);
-//        toolsMenu.add(optionsMenuItem);
+        toolsMenu.add(optionsMenuItem);
 
         //Set up the help menu.
         JMenu helpMenu = new JMenu("?");
@@ -660,21 +661,43 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void openOptionsDialog() {
-        JCheckBox checkBox = new JCheckBox();
-        final JComponent[] inputs = new JComponent[]{
-                checkBox
-        };
+        JTabbedPane optionsTabbedPane = new JTabbedPane();
+        JPanel outputOptionsPanel = new JPanel(new GridLayout(0,1));
+        outputOptionsPanel.setName("Disassembler output");
+        optionsTabbedPane.add(outputOptionsPanel);
+        List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
+        for (OutputOption outputOption : EnumSet.range(OutputOption.REGISTER, OutputOption.DOLLAR)) {
+            JCheckBox checkBox = makeCheckBox(outputOption, prefs.getOutputOptions());
+            outputOptionsCheckBoxes.add(checkBox);
+            outputOptionsPanel.add(checkBox);
+        }
+        outputOptionsPanel.add(new JLabel("(hover over the options for help)", SwingConstants.CENTER));
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-                inputs,
+                optionsTabbedPane,
                 "Options",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
                 null,
-                JOptionPane.DEFAULT_OPTION)) {
-             prefs.setOutputOption(OutputOption.CSTYLE, true);
+                JOptionPane.DEFAULT_OPTION)) 
+        {
+            // save
+            for (JCheckBox checkBox : outputOptionsCheckBoxes) {
+                try {
+                    OutputOption.setOption(prefs.getOutputOptions(), checkBox.getText(), checkBox.isSelected());
+                } catch (ParsingException e) {
+                    e.printStackTrace();
+                }
+            }
         }
 
+    }
+
+    private JCheckBox makeCheckBox(OutputOption outputOption, Set<OutputOption> outputOptions) {
+        JCheckBox checkBox = new JCheckBox(outputOption.getKey());
+        checkBox.setToolTipText(outputOption.getHelp());
+        checkBox.setSelected(outputOptions.contains(outputOption));
+        return checkBox;
     }
 
     private void showAboutDialog() {
