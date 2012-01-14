@@ -1,0 +1,14 @@
+# File map: D5100
+-i 0x00040000-0x00BFFFFF=0x00000000
+ 
+# Memory map:
+-m 0x00040000-0x00040947=CODE
+-m 0x00040948-0x000409b3=DATA:L
+-m 0x000409b4-0x00050068=CODE
+ 
+# interrupt vector table.
+-m 0x000dfc00-0x000dffff=DATA:L
+ 
+#-m 0x000e0000-0x0x000fffff=DATA:L // this is 0xFF rubbish
+ 
+-m 0x00100000-0x00236A4A=CODE
