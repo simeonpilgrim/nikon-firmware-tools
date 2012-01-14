@@ -6,16 +6,23 @@ import java.util.List;
 public class FirmwareDecoder {
 
     public static void usage() {
-        System.out.println("Usage : " + FirmwareEncoder.class.getName() + " <infile1> <destdir> ");
+        System.out.println("Usage : " + FirmwareEncoder.class.getName() + " <infile> [<destdir>] ");
         System.exit(-1);
     }
 
     public static void main(String[] args) {
-        if (args.length < 2 ) {
+        if (args.length < 1 ) {
             usage();
         }
+        String destDir;
+        if (args.length < 2) {
+            destDir = ".";
+        }
+        else {
+            destDir = args[1];
+        }
         try {
-            new FirmwareDecoder().decode(args[0], args[1], true);
+            new FirmwareDecoder().decode(args[0], destDir, true);
         } catch (FirmwareFormatException e) {
             usage();
             e.printStackTrace();
