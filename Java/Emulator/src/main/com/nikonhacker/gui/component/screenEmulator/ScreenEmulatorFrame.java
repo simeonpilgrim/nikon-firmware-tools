@@ -1,6 +1,6 @@
 package com.nikonhacker.gui.component.screenEmulator;
 
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -18,7 +18,7 @@ public class ScreenEmulatorFrame extends DocumentFrame {
     private AffineTransform resizeTransform;
     private int previousW, previousH;
 
-    private Memory memory;
+    private DebuggableMemory memory;
     private int start;
     int screenHeight, screenWidth;
 
@@ -26,7 +26,7 @@ public class ScreenEmulatorFrame extends DocumentFrame {
 
     private Timer _timer;
 
-    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Memory memory, int start, int end, int screenWidth, EmulatorUI ui) {
+    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int start, int end, int screenWidth, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
         this.start = start;
@@ -82,7 +82,7 @@ public class ScreenEmulatorFrame extends DocumentFrame {
             for (int y = 0; y < screenHeight; y++, yOffset+= screenWidth) {
                 off = yOffset;
                 for (int x = 0; x < screenWidth; x++) {
-                    pixel = img.getColorModel().getDataElements(memory.loadUnsigned16(off++), pixel);
+                    pixel = img.getColorModel().getDataElements(memory.loadUnsigned16(off++, false), pixel);
                     img.getRaster().setDataElements(x, y, pixel);
                 }
             }
