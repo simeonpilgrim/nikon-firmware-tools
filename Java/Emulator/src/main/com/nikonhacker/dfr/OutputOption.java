@@ -14,6 +14,8 @@ public enum OutputOption {
     CSTYLE      ("cstyle",          "use C style operand syntax"),
     DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers"),
 
+    STRUCTURE   ("structure",       "structural code analysis"),
+
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),
 
@@ -27,6 +29,8 @@ public enum OutputOption {
 
     private String key;
     private String help;
+    
+    public static EnumSet<OutputOption> formatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, CSTYLE, DOLLAR);
 
     OutputOption(String key, String help) {
         this.key = key;
@@ -42,7 +46,7 @@ public enum OutputOption {
     }
 
     public static String getFullHelp(Character option) {
-        String s= "Here are the allowed output format options" + (option==null?"":" (-" + option + ") :\n");
+        String s= "Here are the allowed output options" + (option==null?"":" (-" + option + ") :\n");
         for (OutputOption outputOption : EnumSet.allOf(OutputOption.class)) {
             s += (option==null?"  ":("  -" + option)) + outputOption.key + " : " + outputOption.help + "\n";
         }

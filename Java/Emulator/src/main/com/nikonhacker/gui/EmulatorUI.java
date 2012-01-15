@@ -33,7 +33,6 @@ import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
@@ -45,8 +44,10 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.Set;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
@@ -666,7 +667,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         outputOptionsPanel.setName("Disassembler output");
         optionsTabbedPane.add(outputOptionsPanel);
         List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
-        for (OutputOption outputOption : EnumSet.range(OutputOption.REGISTER, OutputOption.DOLLAR)) {
+        for (OutputOption outputOption : OutputOption.formatOptions) {
             JCheckBox checkBox = makeCheckBox(outputOption, prefs.getOutputOptions());
             outputOptionsCheckBoxes.add(checkBox);
             outputOptionsPanel.add(checkBox);

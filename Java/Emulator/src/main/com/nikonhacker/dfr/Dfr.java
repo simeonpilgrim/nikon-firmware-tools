@@ -49,9 +49,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.*;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.Set;
+import java.util.*;
 
 public class Dfr
 {
@@ -76,6 +74,7 @@ public class Dfr
     MemoryMap rangeMap = new MemoryMap('d', "Selected ranges");
 
     String startTime = "";
+    private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
 
     static void usage()
     {
@@ -89,12 +88,13 @@ public class Dfr
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file\n"
                         + "-r                separate output file for each memory range\n"
-                        + "-s address=name   (not implemented) define symbol\n"
+                        + "-s address=name   define symbol\n"
                         + "-t address        equivalent to -m address,0x400=DATA:V\n"
                         + "-v                verbose\n"
                         + "-w options        output options (use -w? to list options)\n"
                         + "-x file           read options from file\n"
-                        + "Numbers are C-style. A range is start-end or start,length.\n";
+                        + "Numbers are C-style (16 or 0x10) and can be followed by the K or M multipliers.\n"
+                        + "A range is start-end or start,length.\n";
 
         log("Usage: " + cmdname + "[options] filename");
         log("Options:");
@@ -199,39 +199,53 @@ public class Dfr
             outName += "_" + Format.asHex(pc, 8);
         }
         
-        outName += "." + ext;
-
-        if (fileWriter != null)
+        if (fileWriter != null) {
             fileWriter.close();
+        }
 
-        fileWriter = new FileWriter(outName);
+        fileWriter = new FileWriter(outName + "." + ext);
     }
 
     
     void writeHeader() throws IOException {
-        fileWriter.write("DFR " + version + "\n");
-        fileWriter.write("  Date:   " + startTime + "\n");
-        fileWriter.write("  Input:  " + inputFileName + "\n");
-        fileWriter.write("  Output: " + (outputFileName==null?"(default)":outputFileName) + "\n");
-        fileWriter.write("\n");
+        writeHeader(fileWriter);
+    }
+
+    private void writeHeader(Writer writer) throws IOException {
+        writer.write("DFR " + version + "\n");
+        writer.write("  Date:   " + startTime + "\n");
+        writer.write("  Input:  " + inputFileName + "\n");
+        writer.write("  Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");
+        writer.write("\n");
     }
 
 
-    int disassembleOneCodeRecord(CPUState cpuState, Range memRange, int memoryFileOffset) throws IOException {
-        DisassemblyState disassemblyState = new DisassemblyState(memRange.start);
-        disassemblyState.getNextInstruction(memory, cpuState.pc);
-        if ((disassemblyState.opcode = OpCode.opCodeMap[disassemblyState.data[0]]) == null)
+    int disassembleOneInstruction(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
+        DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
+        disassembledInstruction.getNextInstruction(memory, cpuState.pc);
+        if ((disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]]) == null)
         {
-            disassemblyState.opcode = OpCode.opData[DATA.SpecType_MD_WORD];
+            disassembledInstruction.opcode = OpCode.opData[DATA.SpecType_MD_WORD];
         }
 
-        disassemblyState.decodeInstructionOperands(cpuState, memory);
+        disassembledInstruction.decodeInstructionOperands(cpuState, memory);
 
-        disassemblyState.formatOperandsAndComment(cpuState, true, outputOptions);
+        disassembledInstruction.formatOperandsAndComment(cpuState, true, outputOptions);
+        
+        if (codeStructure != null) {
+            codeStructure.getInstructions().put(cpuState.pc, disassembledInstruction);
+//            if (disassembledInstruction.opcode.isJumpOrBranch) codeStructure.getLabels().put(disassembledInstruction.decodedX, null);
+//            if (disassembledInstruction.opcode.isCall) codeStructure.getFunctions().put(disassembledInstruction.decodedX, null);
+//            if (disassembledInstruction.opcode.isReturn) {
+//                codeStructure.getReturns().put(cpuState.pc, null);
+//                codeStructure.getEnds().put(cpuState.pc + (disassembledInstruction.opcode.hasDelaySlot ? 2 : 0), null);
+//            }
+        }
+        else {
+            printDisassembly(disassembledInstruction, cpuState, memoryFileOffset);
+        }
 
-        printDisassembly(disassemblyState, cpuState, memoryFileOffset);
-
-        return disassemblyState.n << 1;
+        return disassembledInstruction.n << 1;
     }
 
 
@@ -241,19 +255,19 @@ public class Dfr
 
         for (int spec : memRange.data.spec)
         {
-            DisassemblyState disassemblyState = new DisassemblyState(memRange.start);
-            disassemblyState.getNextData(memory, cpuState.pc);
-            disassemblyState.x = disassemblyState.data[0];
-            disassemblyState.w = 16;
-            disassemblyState.opcode = OpCode.opData[spec];
+            DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
+            disassembledInstruction.getNextData(memory, cpuState.pc);
+            disassembledInstruction.x = disassembledInstruction.data[0];
+            disassembledInstruction.xBitWidth = 16;
+            disassembledInstruction.opcode = OpCode.opData[spec];
 
-            disassemblyState.decodeInstructionOperands(cpuState, memory);
+            disassembledInstruction.decodeInstructionOperands(cpuState, memory);
 
-            disassemblyState.formatOperandsAndComment(cpuState, true, outputOptions);
+            disassembledInstruction.formatOperandsAndComment(cpuState, true, outputOptions);
 
-            sizeInBytes += disassemblyState.n << 1;
+            sizeInBytes += disassembledInstruction.n << 1;
 
-            printDisassembly(disassemblyState, cpuState, memoryFileOffset);
+            printDisassembly(disassembledInstruction, cpuState, memoryFileOffset);
         }
 
         return sizeInBytes;
@@ -261,23 +275,23 @@ public class Dfr
 
     /**
      *
-     * @param disassemblyState
+     * @param disassembledInstruction
      * @param cpuState
      * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)
      * @throws IOException
      */
-    private void printDisassembly(DisassemblyState disassemblyState, CPUState cpuState, int memoryFileOffset) throws IOException {
+    private void printDisassembly(DisassembledInstruction disassembledInstruction, CPUState cpuState, int memoryFileOffset) throws IOException {
         fileWriter.write(Format.asHex(cpuState.pc, 8) + " ");
 
         if (memoryFileOffset != 0) {
             fileWriter.write("(" + Format.asHex(cpuState.pc - memoryFileOffset, 8) + ") ");
         }
 
-        fileWriter.write(disassemblyState.toString());
+        fileWriter.write(disassembledInstruction.toString());
     }
 
 
-    void disassembleMemoryRange(Range memRange, Range fileRange) throws IOException, DisassemblyException {
+    void disassembleMemoryRange(Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
         int startPc = memRange.start;
         int end = memRange.end;
         boolean isCode;
@@ -314,7 +328,7 @@ public class Dfr
         {
             int sizeInBytes;
             if (isCode) {
-                sizeInBytes = disassembleOneCodeRecord(cpuState, memRange, memoryFileOffset);
+                sizeInBytes = disassembleOneInstruction(cpuState, memRange, memoryFileOffset, codeStructure);
             }
             else {
                 sizeInBytes = disassembleOneDataRecord(cpuState, memRange, memoryFileOffset);
@@ -334,6 +348,12 @@ public class Dfr
     }
 
     void disassembleMemRanges() throws IOException, DisassemblyException {
+        
+        CodeStructure codeStructure = null;
+        if (outputOptions.contains(OutputOption.STRUCTURE)) {
+            codeStructure = new CodeStructure();
+        }
+
         for (Range memRange : memMap.ranges) {
             // find file offset covering this memory location.
             Range matchingFileRange = null;
@@ -349,10 +369,22 @@ public class Dfr
                         + " (file 0x" + Format.asHex(matchingFileRange.fileOffset, 8)
                         + ") as " + memRange.data + "\n");
                 info("\n");
-                disassembleMemoryRange(memRange, matchingFileRange);
+                disassembleMemoryRange(memRange, matchingFileRange, codeStructure);
                 info("\n");
             }
         }
+
+        if (outputOptions.contains(OutputOption.STRUCTURE)) {
+            codeStructure.postProcess(symbols);
+            codeStructure.writeDisassembly(fileWriter);
+        }
+
+        // print and output
+        log(codeStructure.getInstructions().size() + " instructions");
+        log(codeStructure.getLabels().size() + " labels");
+        log(codeStructure.getFunctions().size() + " functions");
+        log(codeStructure.getReturns().size() + " returns");
+
     }
 
 
@@ -370,7 +402,7 @@ public class Dfr
 
         OpCode.initOpcodeMap(outputOptions);
 
-        DisassemblyState.initFormatChars(outputOptions);
+        DisassembledInstruction.initFormatChars(outputOptions);
 
         CPUState.initRegisterLabels(outputOptions);
 
@@ -527,8 +559,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    System.err.println("-" + option + ": not implemented yet!\n");
-                    System.exit(1);
+                    OptionHandler.parseSymbol(symbols, argument);
                     break;
 
                 case 'T':
@@ -586,7 +617,6 @@ public class Dfr
             }
         }
 
-        optionHandler.end();
         return true;
     }
 

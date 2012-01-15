@@ -109,7 +109,7 @@ public class Emulator {
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
         OpCode.initOpcodeMap(outputOptions);
-        DisassemblyState.initFormatChars(outputOptions);
+        DisassembledInstruction.initFormatChars(outputOptions);
         CPUState.initRegisterLabels(outputOptions);
         this.outputOptions = outputOptions;
     }
@@ -154,37 +154,37 @@ public class Emulator {
                     Rs, @-R15 command just after DIV1 command, an interlock is always brought, increasing
                     the number of execution cycles from 1 cycle to 2 cycles. */
 
-        DisassemblyState disassemblyState = new DisassemblyState();
+        DisassembledInstruction disassembledInstruction = new DisassembledInstruction();
 
         cpuState.setAllRegistersValid();
 
         try {
             for (;;) {
                 
-                disassemblyState.reset();
+                disassembledInstruction.reset();
 
-                disassemblyState.getNextInstruction(memory, cpuState.pc);
+                disassembledInstruction.getNextInstruction(memory, cpuState.pc);
     
-                disassemblyState.opcode = OpCode.opCodeMap[disassemblyState.data[0]];
+                disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]];
     
-                disassemblyState.decodeInstructionOperands(cpuState, memory);
+                disassembledInstruction.decodeInstructionOperands(cpuState, memory);
 
                 if (instructionPrintStream != null) {
                     PrintStream ips = instructionPrintStream;
                     // copying to make sure we keep a reference even if instructionPrintStream gets set to null in between but still avoid costly synchronization
                     if (ips != null) {
                         // OK. copy is still not null
-                        disassemblyState.formatOperandsAndComment(cpuState, false, outputOptions);
-                        ips.print("0x" + Format.asHex(cpuState.pc, 8) + " " + disassemblyState);
+                        disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
+                        ips.print("0x" + Format.asHex(cpuState.pc, 8) + " " + disassembledInstruction);
                     }
                 }
                 
-                switch (disassemblyState.opcode.encoding) {
+                switch (disassembledInstruction.opcode.encoding) {
                     case 0xA600: /* ADD Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) + (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL);
                         result32 = (int) result64;
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.j) & 0x80000000) >>> 31;
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.j) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         cpuState.N = Sr;
@@ -192,7 +192,7 @@ public class Emulator {
                         cpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -200,9 +200,9 @@ public class Emulator {
                         break;
     
                     case 0xA400: /* ADD #i4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) + disassemblyState.x;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + disassembledInstruction.x;
                         result32 = (int) result64;
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 0; /* unsigned extension of x means positive */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -211,7 +211,7 @@ public class Emulator {
                         cpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -219,9 +219,9 @@ public class Emulator {
                         break;
     
                     case 0xA500: /* ADD2 #i4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) + (Dfr.extn(4, disassemblyState.x) & 0xFFFFFFFFL);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + (Dfr.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
                         result32 = (int) result64;
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -230,7 +230,7 @@ public class Emulator {
                         cpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -238,10 +238,10 @@ public class Emulator {
                         break;
     
                     case 0xA700: /* ADDC Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) + (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL) + cpuState.C;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL) + cpuState.C;
                         result32 = (int) result64;
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         cpuState.N = Sr;
@@ -249,7 +249,7 @@ public class Emulator {
                         cpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -257,7 +257,7 @@ public class Emulator {
                         break;
     
                     case 0xA200: /* ADDN Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) + cpuState.getReg(disassemblyState.j));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) + cpuState.getReg(disassembledInstruction.j));
     
                         /* No change to NZVC */
 
@@ -267,7 +267,7 @@ public class Emulator {
                         break;
     
                     case 0xA000: /* ADDN #i4, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) + disassemblyState.x);
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) + disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -277,7 +277,7 @@ public class Emulator {
                         break;
     
                     case 0xA100: /* ADDN2 #i4, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) + Dfr.extn(4, disassemblyState.x));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) + Dfr.extn(4, disassembledInstruction.x));
     
                         /* No change to NZVC */
 
@@ -287,9 +287,9 @@ public class Emulator {
                         break;
     
                     case 0xAC00: /* SUB Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL);
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.j) & 0x80000000) >>> 31;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL);
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.j) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         cpuState.N = Sr;
@@ -297,7 +297,7 @@ public class Emulator {
                         cpuState.V = (S1 ^ S2) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
     
-                        cpuState.setReg(disassemblyState.i, (int) result64);
+                        cpuState.setReg(disassembledInstruction.i, (int) result64);
 
                         cpuState.pc += 2;
 
@@ -305,9 +305,9 @@ public class Emulator {
                         break;
     
                     case 0xAD00: /* SUBC Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL) - cpuState.C;
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL) - cpuState.C;
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         cpuState.N = Sr;
@@ -315,7 +315,7 @@ public class Emulator {
                         cpuState.V = (S1 ^ S2) & (S1 ^ Sr);
                         cpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
     
-                        cpuState.setReg(disassemblyState.i, (int) result64);
+                        cpuState.setReg(disassembledInstruction.i, (int) result64);
 
                         cpuState.pc += 2;
 
@@ -323,7 +323,7 @@ public class Emulator {
                         break;
     
                     case 0xAE00: /* SUBN Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) - cpuState.getReg(disassemblyState.j));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) - cpuState.getReg(disassembledInstruction.j));
     
                         /* No change to NZVC */
 
@@ -333,9 +333,9 @@ public class Emulator {
                         break;
     
                     case 0xAA00: /* CMP Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL);
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.j) & 0x80000000) >>> 31;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL);
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.j) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         cpuState.N = Sr;
@@ -349,9 +349,9 @@ public class Emulator {
                         break;
     
                     case 0xA800: /* CMP #i4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) - disassemblyState.x;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - disassembledInstruction.x;
                         /* optimize : 0 extension of x means S2 is 0, right ?  */
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 0; /* unsigned extension of x means positive */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -366,8 +366,8 @@ public class Emulator {
                         break;
     
                     case 0xA900: /* CMP2 #i4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) - (Dfr.extn(4, disassemblyState.x) & 0xFFFFFFFFL);
-                        S1 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (Dfr.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
+                        S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -382,8 +382,8 @@ public class Emulator {
                         break;
     
                     case 0x8200: /* AND Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) & cpuState.getReg(disassemblyState.j);
-                        cpuState.setReg(disassemblyState.i, result32);
+                        result32 = cpuState.getReg(disassembledInstruction.i) & cpuState.getReg(disassembledInstruction.j);
+                        cpuState.setReg(disassembledInstruction.i, result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -394,8 +394,8 @@ public class Emulator {
                         break;
     
                     case 0x8400: /* AND Rj, @Ri */
-                        result32 = memory.load32(cpuState.getReg(disassemblyState.i)) & cpuState.getReg(disassemblyState.j);
-                        memory.store32(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.load32(cpuState.getReg(disassembledInstruction.i)) & cpuState.getReg(disassembledInstruction.j);
+                        memory.store32(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -406,8 +406,8 @@ public class Emulator {
                         break;
     
                     case 0x8500: /* ANDH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(cpuState.getReg(disassemblyState.i)) & cpuState.getReg(disassemblyState.j);
-                        memory.store16(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned16(cpuState.getReg(disassembledInstruction.i)) & cpuState.getReg(disassembledInstruction.j);
+                        memory.store16(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x8000) >>> 15;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -418,8 +418,8 @@ public class Emulator {
                         break;
     
                     case 0x8600: /* ANDB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) & cpuState.getReg(disassemblyState.j);
-                        memory.store8(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & cpuState.getReg(disassembledInstruction.j);
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80) >>> 7;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -430,8 +430,8 @@ public class Emulator {
                         break;
     
                     case 0x9200: /* OR Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) | cpuState.getReg(disassemblyState.j);
-                        cpuState.setReg(disassemblyState.i, result32);
+                        result32 = cpuState.getReg(disassembledInstruction.i) | cpuState.getReg(disassembledInstruction.j);
+                        cpuState.setReg(disassembledInstruction.i, result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -442,8 +442,8 @@ public class Emulator {
                         break;
     
                     case 0x9400: /* OR Rj, @Ri */
-                        result32 = memory.load32(cpuState.getReg(disassemblyState.i)) | cpuState.getReg(disassemblyState.j);
-                        memory.store32(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.load32(cpuState.getReg(disassembledInstruction.i)) | cpuState.getReg(disassembledInstruction.j);
+                        memory.store32(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -454,8 +454,8 @@ public class Emulator {
                         break;
     
                     case 0x9500: /* ORH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(cpuState.getReg(disassemblyState.i)) | cpuState.getReg(disassemblyState.j);
-                        memory.store16(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned16(cpuState.getReg(disassembledInstruction.i)) | cpuState.getReg(disassembledInstruction.j);
+                        memory.store16(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x8000) >>> 15;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -466,8 +466,8 @@ public class Emulator {
                         break;
     
                     case 0x9600: /* ORB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) | cpuState.getReg(disassemblyState.j);
-                        memory.store8(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) | cpuState.getReg(disassembledInstruction.j);
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80) >>> 7;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -478,8 +478,8 @@ public class Emulator {
                         break;
     
                     case 0x9A00: /* EOR Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) ^ cpuState.getReg(disassemblyState.j);
-                        cpuState.setReg(disassemblyState.i, result32);
+                        result32 = cpuState.getReg(disassembledInstruction.i) ^ cpuState.getReg(disassembledInstruction.j);
+                        cpuState.setReg(disassembledInstruction.i, result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -490,8 +490,8 @@ public class Emulator {
                         break;
     
                     case 0x9C00: /* EOR Rj, @Ri */
-                        result32 = memory.load32(cpuState.getReg(disassemblyState.i)) ^ cpuState.getReg(disassemblyState.j);
-                        memory.store32(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.load32(cpuState.getReg(disassembledInstruction.i)) ^ cpuState.getReg(disassembledInstruction.j);
+                        memory.store32(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -502,8 +502,8 @@ public class Emulator {
                         break;
     
                     case 0x9D00: /* EORH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(cpuState.getReg(disassemblyState.i)) ^ cpuState.getReg(disassemblyState.j);
-                        memory.store16(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned16(cpuState.getReg(disassembledInstruction.i)) ^ cpuState.getReg(disassembledInstruction.j);
+                        memory.store16(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x8000) >>> 15;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -514,8 +514,8 @@ public class Emulator {
                         break;
     
                     case 0x9E00: /* EORB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) ^ cpuState.getReg(disassemblyState.j);
-                        memory.store8(cpuState.getReg(disassemblyState.i), result32);
+                        result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) ^ cpuState.getReg(disassembledInstruction.j);
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), result32);
     
                         cpuState.N = (result32 & 0x80) >>> 7;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -526,7 +526,7 @@ public class Emulator {
                         break;
     
                     case 0x8000: /* BANDL #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) & (0xF0 + disassemblyState.x));
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & (0xF0 + disassembledInstruction.x));
     
                         /* No change to NZVC */
 
@@ -536,7 +536,7 @@ public class Emulator {
                         break;
     
                     case 0x8100: /* BANDH #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) & ((disassemblyState.x << 4) + 0x0F));
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & ((disassembledInstruction.x << 4) + 0x0F));
     
                         /* No change to NZVC */
 
@@ -546,7 +546,7 @@ public class Emulator {
                         break;
     
                     case 0x9000: /* BORL #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) | disassemblyState.x);
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) | disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -556,7 +556,7 @@ public class Emulator {
                         break;
     
                     case 0x9100: /* BORH #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) | (disassemblyState.x << 4));
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) | (disassembledInstruction.x << 4));
     
                         /* No change to NZVC */
 
@@ -566,7 +566,7 @@ public class Emulator {
                         break;
     
                     case 0x9800: /* BEORL #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) ^ disassemblyState.x);
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) ^ disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -576,7 +576,7 @@ public class Emulator {
                         break;
     
                     case 0x9900: /* BEORH #u4, @Ri (u4: 0 to 0FH) */
-                        memory.store8(cpuState.getReg(disassemblyState.i), memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) ^ (disassemblyState.x << 4));
+                        memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) ^ (disassembledInstruction.x << 4));
     
                         /* No change to NZVC */
 
@@ -586,7 +586,7 @@ public class Emulator {
                         break;
     
                     case 0x8800: /* BTSTL #u4, @Ri (u4: 0 to 0FH) */
-                        result32 = memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) & disassemblyState.x;
+                        result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & disassembledInstruction.x;
     
                         cpuState.N = 0;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -597,7 +597,7 @@ public class Emulator {
                         break;
     
                     case 0x8900: /* BTSTH #u4, @Ri (u4: 0 to 0FH) */
-                        result32 = memory.loadUnsigned8(cpuState.getReg(disassemblyState.i)) & (disassemblyState.x << 4);
+                        result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & (disassembledInstruction.x << 4);
     
                         cpuState.N = (result32 & 0x80) >>> 7;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
@@ -608,7 +608,7 @@ public class Emulator {
                         break;
     
                     case 0xAF00: /* MUL Rj,Ri */
-                        result64 = ((long) cpuState.getReg(disassemblyState.j)) * ((long) cpuState.getReg(disassemblyState.i));
+                        result64 = ((long) cpuState.getReg(disassembledInstruction.j)) * ((long) cpuState.getReg(disassembledInstruction.i));
                         cpuState.setReg(CPUState.MDH, (int) (result64 >> 32));
                         cpuState.setReg(CPUState.MDL, (int) (result64 & 0xFFFFFFFFL));
     
@@ -622,7 +622,7 @@ public class Emulator {
                         break;
     
                     case 0xAB00: /* MULU Rj,Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) * (cpuState.getReg(disassemblyState.j) & 0xFFFFFFFFL);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) * (cpuState.getReg(disassembledInstruction.j) & 0xFFFFFFFFL);
                         cpuState.setReg(CPUState.MDH, (int) (result64 >> 32));
                         cpuState.setReg(CPUState.MDL, (int) (result64 & 0xFFFFFFFFL));
     
@@ -636,7 +636,7 @@ public class Emulator {
                         break;
     
                     case 0xBF00: /* MULH Rj,Ri */
-                        result32 = ((short) cpuState.getReg(disassemblyState.j)) * ((short) cpuState.getReg(disassemblyState.i));
+                        result32 = ((short) cpuState.getReg(disassembledInstruction.j)) * ((short) cpuState.getReg(disassembledInstruction.i));
                         cpuState.setReg(CPUState.MDL, result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
@@ -648,7 +648,7 @@ public class Emulator {
                         break;
     
                     case 0xBB00: /* MULUH Rj,Ri */
-                        result32 = (cpuState.getReg(disassemblyState.j) & 0xFFFF) * (cpuState.getReg(disassemblyState.i) & 0xFFFF);
+                        result32 = (cpuState.getReg(disassembledInstruction.j) & 0xFFFF) * (cpuState.getReg(disassembledInstruction.i) & 0xFFFF);
                         cpuState.setReg(CPUState.MDL, result32);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
@@ -661,7 +661,7 @@ public class Emulator {
     
                     case 0x9740: /* DIV0S Ri */
                         S1 = (cpuState.getReg(CPUState.MDL) & 0x80000000) >>> 31;
-                        S2 = (cpuState.getReg(disassemblyState.i) & 0x80000000) >>> 31;
+                        S2 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         cpuState.D0= S1;
                         cpuState.D1= S1 ^ S2;
                         result64 = (long) cpuState.getReg(CPUState.MDL);
@@ -692,14 +692,14 @@ public class Emulator {
                         cpuState.setReg(CPUState.MDL, cpuState.getReg(CPUState.MDL) << 1);
                         if (cpuState.D1 == 1) {
                             // Dividend and divisor have opposite signs
-                            result64 = (cpuState.getReg(CPUState.MDH) & 0xFFFFFFFFL) + (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL);
+                            result64 = (cpuState.getReg(CPUState.MDH) & 0xFFFFFFFFL) + (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL);
                             result32 = (int) result64;
                             cpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
                             cpuState.Z = (result32 == 0)?1:0;
                         }
                         else {
                             // Dividend and divisor have same signs
-                            result64 = (cpuState.getReg(CPUState.MDH) & 0xFFFFFFFFL) - (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL);
+                            result64 = (cpuState.getReg(CPUState.MDH) & 0xFFFFFFFFL) - (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL);
                             result32 = (int) result64;
                             cpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
                             cpuState.Z = (result32 == 0)?1:0;
@@ -716,13 +716,13 @@ public class Emulator {
     
                     case 0x9770: /* DIV2 Ri */
                         if (cpuState.D1 == 1) {
-                            result64 = cpuState.getReg(CPUState.MDH) + cpuState.getReg(disassemblyState.i);
+                            result64 = cpuState.getReg(CPUState.MDH) + cpuState.getReg(disassembledInstruction.i);
                             result32 = (int) result64;
                             cpuState.C = (result32 == result64) ? 0 : 1;
                             cpuState.Z = (result32 == 0)?1:0;
                         }
                         else {
-                            result64 = cpuState.getReg(CPUState.MDH) - cpuState.getReg(disassemblyState.i);
+                            result64 = cpuState.getReg(CPUState.MDH) - cpuState.getReg(disassembledInstruction.i);
                             result32 = (int) result64;
                             cpuState.C = (result32 == result64) ? 0 : 1;
                             cpuState.Z = (result32 == 0)?1:0;
@@ -761,13 +761,13 @@ public class Emulator {
                         break;
     
                     case 0xB600: /* LSL Rj, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) << (cpuState.getReg(disassemblyState.j) & 0x1F);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) << (cpuState.getReg(disassembledInstruction.j) & 0x1F);
     
                         cpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         cpuState.Z = (result64 == 0) ? 1 : 0;
                         cpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
     
-                        cpuState.setReg(disassemblyState.i, (int) result64);
+                        cpuState.setReg(disassembledInstruction.i, (int) result64);
 
                         cpuState.pc += 2;
 
@@ -775,13 +775,13 @@ public class Emulator {
                         break;
     
                     case 0xB400: /* LSL #u4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) << disassemblyState.x;
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) << disassembledInstruction.x;
     
                         cpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         cpuState.Z = (result64 == 0) ? 1 : 0;
-                        cpuState.C = (disassemblyState.x == 0) ? 0 : (int) ((result64 & 0x100000000L) >>> 32);
+                        cpuState.C = (disassembledInstruction.x == 0) ? 0 : (int) ((result64 & 0x100000000L) >>> 32);
     
-                        cpuState.setReg(disassemblyState.i, (int) result64);
+                        cpuState.setReg(disassembledInstruction.i, (int) result64);
 
                         cpuState.pc += 2;
 
@@ -789,13 +789,13 @@ public class Emulator {
                         break;
     
                     case 0xB500: /* LSL2 #u4, Ri */
-                        result64 = (cpuState.getReg(disassemblyState.i) & 0xFFFFFFFFL) << (disassemblyState.x + 16);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) << (disassembledInstruction.x + 16);
     
                         cpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         cpuState.Z = (result64 == 0) ? 1 : 0;
                         cpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
     
-                        cpuState.setReg(disassemblyState.i, (int) result64);
+                        cpuState.setReg(disassembledInstruction.i, (int) result64);
 
                         cpuState.pc += 2;
 
@@ -803,13 +803,13 @@ public class Emulator {
                         break;
     
                     case 0xB200: /* LSR Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >>> (cpuState.getReg(disassemblyState.j) & 0x1F);
+                        result32 = cpuState.getReg(disassembledInstruction.i) >>> (cpuState.getReg(disassembledInstruction.j) & 0x1F);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = ((cpuState.getReg(disassemblyState.j) & 0x1F) == 0) ? 0 : (cpuState.getReg(disassemblyState.i) >> ((cpuState.getReg(disassemblyState.j) & 0x1F) - 1)) & 1;
+                        cpuState.C = ((cpuState.getReg(disassembledInstruction.j) & 0x1F) == 0) ? 0 : (cpuState.getReg(disassembledInstruction.i) >> ((cpuState.getReg(disassembledInstruction.j) & 0x1F) - 1)) & 1;
 
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -817,13 +817,13 @@ public class Emulator {
                         break;
     
                     case 0xB000: /* LSR #u4, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >>> disassemblyState.x;
+                        result32 = cpuState.getReg(disassembledInstruction.i) >>> disassembledInstruction.x;
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = (disassemblyState.x == 0) ? 0 : (cpuState.getReg(disassemblyState.i) >> (disassemblyState.x - 1)) & 1;
+                        cpuState.C = (disassembledInstruction.x == 0) ? 0 : (cpuState.getReg(disassembledInstruction.i) >> (disassembledInstruction.x - 1)) & 1;
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -831,13 +831,13 @@ public class Emulator {
                         break;
     
                     case 0xB100: /* LSR2 #u4, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >>> (disassemblyState.x + 16);
+                        result32 = cpuState.getReg(disassembledInstruction.i) >>> (disassembledInstruction.x + 16);
     
                         cpuState.N = 0;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = (cpuState.getReg(disassemblyState.i) >> (disassemblyState.x + 15)) & 1;
+                        cpuState.C = (cpuState.getReg(disassembledInstruction.i) >> (disassembledInstruction.x + 15)) & 1;
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -845,13 +845,13 @@ public class Emulator {
                         break;
     
                     case 0xBA00: /* ASR Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >> (cpuState.getReg(disassemblyState.j) & 0x1F);
+                        result32 = cpuState.getReg(disassembledInstruction.i) >> (cpuState.getReg(disassembledInstruction.j) & 0x1F);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = ((cpuState.getReg(disassemblyState.j) & 0x1F) == 0) ? 0 : (cpuState.getReg(disassemblyState.i) >> ((cpuState.getReg(disassemblyState.j) & 0x1F) - 1)) & 1;
+                        cpuState.C = ((cpuState.getReg(disassembledInstruction.j) & 0x1F) == 0) ? 0 : (cpuState.getReg(disassembledInstruction.i) >> ((cpuState.getReg(disassembledInstruction.j) & 0x1F) - 1)) & 1;
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -859,13 +859,13 @@ public class Emulator {
                         break;
     
                     case 0xB800: /* ASR #u4, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >> disassemblyState.x;
+                        result32 = cpuState.getReg(disassembledInstruction.i) >> disassembledInstruction.x;
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = (disassemblyState.x == 0) ? 0 : (cpuState.getReg(disassemblyState.i) >> (disassemblyState.x - 1)) & 1;
+                        cpuState.C = (disassembledInstruction.x == 0) ? 0 : (cpuState.getReg(disassembledInstruction.i) >> (disassembledInstruction.x - 1)) & 1;
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -873,13 +873,13 @@ public class Emulator {
                         break;
     
                     case 0xB900: /* ASR2 #u4, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i) >> (disassemblyState.x + 16);
+                        result32 = cpuState.getReg(disassembledInstruction.i) >> (disassembledInstruction.x + 16);
     
                         cpuState.N = (result32 & 0x80000000) >>> 31;
                         cpuState.Z = (result32 == 0) ? 1 : 0;
-                        cpuState.C = (cpuState.getReg(disassemblyState.i) >> (disassemblyState.x + 15)) & 1;
+                        cpuState.C = (cpuState.getReg(disassembledInstruction.i) >> (disassembledInstruction.x + 15)) & 1;
     
-                        cpuState.setReg(disassemblyState.i, result32);
+                        cpuState.setReg(disassembledInstruction.i, result32);
 
                         cpuState.pc += 2;
 
@@ -887,7 +887,7 @@ public class Emulator {
                         break;
     
                     case 0x9F80: /* LDI:32 #i32, Ri */
-                        cpuState.setReg(disassemblyState.i, disassemblyState.x);
+                        cpuState.setReg(disassembledInstruction.i, disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -897,7 +897,7 @@ public class Emulator {
                         break;
     
                     case 0x9B00: /* LDI:20 #i20, Ri */
-                        cpuState.setReg(disassemblyState.i, disassemblyState.x);
+                        cpuState.setReg(disassembledInstruction.i, disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -907,7 +907,7 @@ public class Emulator {
                         break;
     
                     case 0xC000: /* LDI:8 #i8, Ri */
-                        cpuState.setReg(disassemblyState.i, disassemblyState.x);
+                        cpuState.setReg(disassembledInstruction.i, disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -917,7 +917,7 @@ public class Emulator {
                         break;
     
                     case 0x0400: /* LD @Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, memory.load32(cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -927,7 +927,7 @@ public class Emulator {
                         break;
     
                     case 0x0000: /* LD @(R13,Rj), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.load32(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -937,7 +937,7 @@ public class Emulator {
                         break;
     
                     case 0x2000: /* LD @(R14,disp10), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.load32(cpuState.getReg(14) + Dfr.signExtend(8, disassemblyState.x) * 4));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 4));
     
                         /* No change to NZVC */
 
@@ -947,7 +947,7 @@ public class Emulator {
                         break;
     
                     case 0x0300: /* LD @(R15,udisp6), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.load32(cpuState.getReg(15) + disassemblyState.x * 4));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(15) + disassembledInstruction.x * 4));
     
                         /* No change to NZVC */
 
@@ -957,7 +957,7 @@ public class Emulator {
                         break;
     
                     case 0x0700: /* LD @R15+, Ri */
-                        cpuState.setReg(disassemblyState.i, memory.load32(cpuState.getReg(15)));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(15)));
                         cpuState.setReg(15, cpuState.getReg(15) + 4);
     
                         /* No change to NZVC */
@@ -973,7 +973,7 @@ public class Emulator {
                     case 0x0783:
                     case 0x0784:
                     case 0x0785:
-                        cpuState.setReg(CPUState.DEDICATED_REG_OFFSET + disassemblyState.i, memory.load32(cpuState.getReg(15)));
+                        cpuState.setReg(CPUState.DEDICATED_REG_OFFSET + disassembledInstruction.i, memory.load32(cpuState.getReg(15)));
                         cpuState.setReg(15, cpuState.getReg(15) + 4);
     
                         /* No change to NZVC */
@@ -995,7 +995,7 @@ public class Emulator {
                         break;
     
                     case 0x0500: /* LDUH @Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned16(cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned16(cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -1005,7 +1005,7 @@ public class Emulator {
                         break;
     
                     case 0x0100: /* LDUH @(R13,Rj), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned16(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned16(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -1015,7 +1015,7 @@ public class Emulator {
                         break;
     
                     case 0x4000: /* LDUH @(R14,disp9), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned16(cpuState.getReg(14) + Dfr.signExtend(8, disassemblyState.x) * 2));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned16(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 2));
     
                         /* No change to NZVC */
 
@@ -1025,7 +1025,7 @@ public class Emulator {
                         break;
     
                     case 0x0600: /* LDUB @Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned8(cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -1035,7 +1035,7 @@ public class Emulator {
                         break;
     
                     case 0x0200: /* LDUB @(R13,Rj), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned8(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j)));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned8(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j)));
     
                         /* No change to NZVC */
 
@@ -1045,7 +1045,7 @@ public class Emulator {
                         break;
     
                     case 0x6000: /* LDUB @(R14,disp8), Ri */
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned8(cpuState.getReg(14) + disassemblyState.x));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned8(cpuState.getReg(14) + disassembledInstruction.x));
     
                         /* No change to NZVC */
 
@@ -1055,7 +1055,7 @@ public class Emulator {
                         break;
     
                     case 0x1400: /* ST Ri, @Rj */
-                        memory.store32(cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store32(cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1065,7 +1065,7 @@ public class Emulator {
                         break;
     
                     case 0x1000: /* ST Ri, @(R13,Rj) */
-                        memory.store32(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store32(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1075,7 +1075,7 @@ public class Emulator {
                         break;
     
                     case 0x3000: /* ST Ri, @(R14,disp10) */
-                        memory.store32(cpuState.getReg(14) + Dfr.signExtend(8, disassemblyState.x) * 4, cpuState.getReg(disassemblyState.i));
+                        memory.store32(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 4, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1085,7 +1085,7 @@ public class Emulator {
                         break;
     
                     case 0x1300: /* ST Ri, @(R15,udisp6) */
-                        memory.store32(cpuState.getReg(15) + disassemblyState.x * 4, cpuState.getReg(disassemblyState.i));
+                        memory.store32(cpuState.getReg(15) + disassembledInstruction.x * 4, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1096,12 +1096,12 @@ public class Emulator {
     
                     case 0x1700: /* ST Ri, @-R15 */
                         cpuState.setReg(15, cpuState.getReg(15) - 4);
-                        if (disassemblyState.i == 15) {
+                        if (disassembledInstruction.i == 15) {
                             /*special case for R15: value stored is R15 before it was decremented */
                             memory.store32(cpuState.getReg(15), cpuState.getReg(15) + 4);
                         }
                         else {
-                            memory.store32(cpuState.getReg(15), cpuState.getReg(disassemblyState.i));
+                            memory.store32(cpuState.getReg(15), cpuState.getReg(disassembledInstruction.i));
                         }
     
                         /* No change to NZVC */
@@ -1118,7 +1118,7 @@ public class Emulator {
                     case 0x1784:
                     case 0x1785:
                         cpuState.setReg(15, cpuState.getReg(15) - 4);
-                        memory.store32(cpuState.getReg(15), cpuState.getReg(CPUState.DEDICATED_REG_OFFSET + disassemblyState.i));
+                        memory.store32(cpuState.getReg(15), cpuState.getReg(CPUState.DEDICATED_REG_OFFSET + disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1139,7 +1139,7 @@ public class Emulator {
                         break;
     
                     case 0x1500: /* STH Ri, @Rj */
-                        memory.store16(cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store16(cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1149,7 +1149,7 @@ public class Emulator {
                         break;
     
                     case 0x1100: /* STH Ri, @(R13,Rj) */
-                        memory.store16(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store16(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1159,7 +1159,7 @@ public class Emulator {
                         break;
     
                     case 0x5000: /* STH Ri, @(R14,disp9) */
-                        memory.store16(cpuState.getReg(14) + Dfr.signExtend(8, disassemblyState.x) * 2, cpuState.getReg(disassemblyState.i));
+                        memory.store16(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 2, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1169,7 +1169,7 @@ public class Emulator {
                         break;
     
                     case 0x1600: /* STB Ri, @Rj */
-                        memory.store8(cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store8(cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1179,7 +1179,7 @@ public class Emulator {
                         break;
     
                     case 0x1200: /* STB Ri, @(R13,Rj) */
-                        memory.store8(cpuState.getReg(13) + cpuState.getReg(disassemblyState.j), cpuState.getReg(disassemblyState.i));
+                        memory.store8(cpuState.getReg(13) + cpuState.getReg(disassembledInstruction.j), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1189,7 +1189,7 @@ public class Emulator {
                         break;
     
                     case 0x7000: /* STB Ri, @(R14,disp8) */
-                        memory.store8(cpuState.getReg(14) + Dfr.signExtend(8, disassemblyState.x), cpuState.getReg(disassemblyState.i));
+                        memory.store8(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1199,7 +1199,7 @@ public class Emulator {
                         break;
     
                     case 0x8B00: /* MOV Rj, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.j));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.j));
     
                         /* No change to NZVC */
 
@@ -1214,7 +1214,7 @@ public class Emulator {
                     case 0xB730:
                     case 0xB740:
                     case 0xB750:
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(CPUState.DEDICATED_REG_OFFSET + disassemblyState.j));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(CPUState.DEDICATED_REG_OFFSET + disassembledInstruction.j));
     
                         /* No change to NZVC */
 
@@ -1229,7 +1229,7 @@ public class Emulator {
                     case 0xB330:
                     case 0xB340:
                     case 0xB350:
-                        cpuState.setReg(CPUState.DEDICATED_REG_OFFSET + disassemblyState.j, cpuState.getReg(disassemblyState.i));
+                        cpuState.setReg(CPUState.DEDICATED_REG_OFFSET + disassembledInstruction.j, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1239,7 +1239,7 @@ public class Emulator {
                         break;
     
                     case 0x1710: /* MOV PS, Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getPS());
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getPS());
     
                         /* No change to NZVC */
 
@@ -1249,7 +1249,7 @@ public class Emulator {
                         break;
     
                     case 0x0710: /* MOV Ri, PS */
-                        cpuState.setPS(cpuState.getReg(disassemblyState.i));
+                        cpuState.setPS(cpuState.getReg(disassembledInstruction.i));
     
                         /* NZVC is part of the PS !*/
 
@@ -1259,7 +1259,7 @@ public class Emulator {
                         break;
     
                     case 0x9700: /* JMP @Ri */
-                        cpuState.pc = cpuState.getReg(disassemblyState.i);
+                        cpuState.pc = cpuState.getReg(disassembledInstruction.i);
     
                         /* No change to NZVC */
 
@@ -1268,7 +1268,7 @@ public class Emulator {
     
                     case 0xD000: /* CALL label12 */
                         cpuState.setReg(CPUState.RP, cpuState.pc + 2);
-                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(11, disassemblyState.x) * 2; // TODO check *2 ?
+                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2; // TODO check *2 ?
 
 
                         /* No change to NZVC */
@@ -1278,7 +1278,7 @@ public class Emulator {
     
                     case 0x9710: /* CALL @Ri */
                         cpuState.setReg(CPUState.RP, cpuState.pc + 2);
-                        cpuState.pc = cpuState.getReg(disassemblyState.i);
+                        cpuState.pc = cpuState.getReg(disassembledInstruction.i);
     
                         /* No change to NZVC */
     
@@ -1300,7 +1300,7 @@ public class Emulator {
                         memory.store32(cpuState.getReg(CPUState.SSP), cpuState.pc + 2);
                         cpuState.I = 0;
                         cpuState.setS(0);
-                        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - disassemblyState.x * 4);
+                        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - disassembledInstruction.x * 4);
     
                         /* No change to NZVC */
     
@@ -1345,7 +1345,7 @@ public class Emulator {
                         break;
     
                     case 0xE000: /* BRA label9 */
-                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
     
                         /* No change to NZVC */
     
@@ -1354,7 +1354,7 @@ public class Emulator {
     
                     case 0xE200: /* BEQ label9 */
                         if (cpuState.Z == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1368,7 +1368,7 @@ public class Emulator {
     
                     case 0xE300: /* BNE label9 */
                         if (cpuState.Z == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1382,7 +1382,7 @@ public class Emulator {
     
                     case 0xE400: /* BC label9 */
                         if (cpuState.C == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1396,7 +1396,7 @@ public class Emulator {
     
                     case 0xE500: /* BNC label9 */
                         if (cpuState.C == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1410,7 +1410,7 @@ public class Emulator {
     
                     case 0xE600: /* BN label9 */
                         if (cpuState.N == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1424,7 +1424,7 @@ public class Emulator {
     
                     case 0xE700: /* BP label9 */
                         if (cpuState.N == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1438,7 +1438,7 @@ public class Emulator {
     
                     case 0xE800: /* BV label9 */
                         if (cpuState.V == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1452,7 +1452,7 @@ public class Emulator {
     
                     case 0xE900: /* BNV label9 */
                         if (cpuState.V == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1466,7 +1466,7 @@ public class Emulator {
     
                     case 0xEA00: /* BLT label9 */
                         if ((cpuState.V ^ cpuState.N) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1480,7 +1480,7 @@ public class Emulator {
     
                     case 0xEB00: /* BGE label9 */
                         if ((cpuState.V ^ cpuState.N) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1494,7 +1494,7 @@ public class Emulator {
     
                     case 0xEC00: /* BLE label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1508,7 +1508,7 @@ public class Emulator {
     
                     case 0xED00: /* BGT label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1522,7 +1522,7 @@ public class Emulator {
     
                     case 0xEE00: /* BLS label9 */
                         if ((cpuState.C | cpuState.Z) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1536,7 +1536,7 @@ public class Emulator {
     
                     case 0xEF00: /* BHI label9 */
                         if ((cpuState.C | cpuState.Z) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1549,7 +1549,7 @@ public class Emulator {
                         break;
     
                     case 0x9F00: /* JMP:D @Ri */
-                        setDelayedChanges(cpuState.getReg(disassemblyState.i), null);
+                        setDelayedChanges(cpuState.getReg(disassembledInstruction.i), null);
     
                         /* No change to NZVC */
 
@@ -1559,7 +1559,7 @@ public class Emulator {
                         break;
     
                     case 0xD800: /* CALL:D label12 */
-                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(11, disassemblyState.x) * 2, cpuState.pc + 4);  // TODO check *2
+                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2, cpuState.pc + 4);  // TODO check *2
     
                         /* No change to NZVC */
 
@@ -1569,7 +1569,7 @@ public class Emulator {
                         break;
     
                     case 0x9F10: /* CALL:D @Ri */
-                        setDelayedChanges(cpuState.getReg(disassemblyState.i), cpuState.pc + 4);
+                        setDelayedChanges(cpuState.getReg(disassembledInstruction.i), cpuState.pc + 4);
     
                         /* No change to NZVC */
 
@@ -1599,7 +1599,7 @@ public class Emulator {
                         break;
     
                     case 0xF000: /* BRA:D label9 */
-                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
     
                         /* No change to NZVC */
 
@@ -1610,7 +1610,7 @@ public class Emulator {
     
                     case 0xF200: /* BEQ:D label9 */
                         if (cpuState.Z == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1622,7 +1622,7 @@ public class Emulator {
     
                     case 0xF300: /* BNE:D label9 */
                         if (cpuState.Z == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1634,7 +1634,7 @@ public class Emulator {
     
                     case 0xF400: /* BC:D label9 */
                         if (cpuState.C == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1646,7 +1646,7 @@ public class Emulator {
     
                     case 0xF500: /* BNC:D label9 */
                         if (cpuState.C == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1658,7 +1658,7 @@ public class Emulator {
     
                     case 0xF600: /* BN:D label9 */
                         if (cpuState.N == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1670,7 +1670,7 @@ public class Emulator {
     
                     case 0xF700: /* BP:D label9 */
                         if (cpuState.N == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1682,7 +1682,7 @@ public class Emulator {
     
                     case 0xF800: /* BV:D label9 */
                         if (cpuState.V == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1694,7 +1694,7 @@ public class Emulator {
     
                     case 0xF900: /* BNV:D label9 */
                         if (cpuState.V == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1706,7 +1706,7 @@ public class Emulator {
     
                     case 0xFA00: /* BLT:D label9 */
                         if ((cpuState.V ^ cpuState.N) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1718,7 +1718,7 @@ public class Emulator {
     
                     case 0xFB00: /* BGE:D label9 */
                         if ((cpuState.V ^ cpuState.N) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1730,7 +1730,7 @@ public class Emulator {
     
                     case 0xFC00: /* BLE:D label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1742,7 +1742,7 @@ public class Emulator {
     
                     case 0xFD00: /* BGT:D label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1754,7 +1754,7 @@ public class Emulator {
     
                     case 0xFE00: /* BLS:D label9 */
                         if ((cpuState.C | cpuState.Z) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1766,7 +1766,7 @@ public class Emulator {
     
                     case 0xFF00: /* BHI:D label9 */
                         if ((cpuState.C | cpuState.Z) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassemblyState.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1777,7 +1777,7 @@ public class Emulator {
                         break;
     
                     case 0x0800: /* DMOV @dir10, R13 */
-                        cpuState.setReg(13, memory.load32(disassemblyState.x * 4));
+                        cpuState.setReg(13, memory.load32(disassembledInstruction.x * 4));
     
                         /* No change to NZVC */
 
@@ -1787,7 +1787,7 @@ public class Emulator {
                         break;
     
                     case 0x1800: /* DMOV R13, @dir10 */
-                        memory.store32(disassemblyState.x * 4, cpuState.getReg(13));
+                        memory.store32(disassembledInstruction.x * 4, cpuState.getReg(13));
     
                         /* No change to NZVC */
 
@@ -1797,7 +1797,7 @@ public class Emulator {
                         break;
     
                     case 0x0C00: /* DMOV @dir10, @R13+ */
-                        memory.store32(cpuState.getReg(13), memory.load32(disassemblyState.x * 4));
+                        memory.store32(cpuState.getReg(13), memory.load32(disassembledInstruction.x * 4));
                         cpuState.setReg(13, cpuState.getReg(13) + 4);
     
                         /* No change to NZVC */
@@ -1808,7 +1808,7 @@ public class Emulator {
                         break;
     
                     case 0x1C00: /* DMOV @R13+, @dir10 */
-                        memory.store32(disassemblyState.x * 4, memory.load32(cpuState.getReg(13)));
+                        memory.store32(disassembledInstruction.x * 4, memory.load32(cpuState.getReg(13)));
                         cpuState.setReg(13, cpuState.getReg(13) + 4);
     
                         /* No change to NZVC */
@@ -1820,7 +1820,7 @@ public class Emulator {
     
                     case 0x0B00: /* DMOV @dir10, @–R15 */
                         cpuState.setReg(15, cpuState.getReg(15) - 4);
-                        memory.store32(cpuState.getReg(15), memory.load32(disassemblyState.x * 4));
+                        memory.store32(cpuState.getReg(15), memory.load32(disassembledInstruction.x * 4));
     
                         /* No change to NZVC */
 
@@ -1830,7 +1830,7 @@ public class Emulator {
                         break;
     
                     case 0x1B00: /* DMOV @R15+, @dir10 */
-                        memory.store32(disassemblyState.x * 4, memory.load32(cpuState.getReg(15)));
+                        memory.store32(disassembledInstruction.x * 4, memory.load32(cpuState.getReg(15)));
                         cpuState.setReg(15, cpuState.getReg(15) + 4);
     
                         /* No change to NZVC */
@@ -1841,7 +1841,7 @@ public class Emulator {
                         break;
     
                     case 0x0900: /* DMOVH @dir9, R13 */
-                        cpuState.setReg(13, memory.loadUnsigned16(disassemblyState.x * 2));
+                        cpuState.setReg(13, memory.loadUnsigned16(disassembledInstruction.x * 2));
     
                         /* No change to NZVC */
 
@@ -1851,7 +1851,7 @@ public class Emulator {
                         break;
     
                     case 0x1900: /* DMOVH R13, @dir9 */
-                        memory.store16(disassemblyState.x * 2, cpuState.getReg(13));
+                        memory.store16(disassembledInstruction.x * 2, cpuState.getReg(13));
     
                         /* No change to NZVC */
 
@@ -1861,7 +1861,7 @@ public class Emulator {
                         break;
     
                     case 0x0D00: /* DMOVH @dir9, @R13+ */
-                        memory.store16(cpuState.getReg(13), memory.loadUnsigned16(disassemblyState.x * 2));
+                        memory.store16(cpuState.getReg(13), memory.loadUnsigned16(disassembledInstruction.x * 2));
                         cpuState.setReg(13, cpuState.getReg(13) + 2);
     
                         /* No change to NZVC */
@@ -1872,7 +1872,7 @@ public class Emulator {
                         break;
     
                     case 0x1D00: /* DMOVH @R13+, @dir9 */
-                        memory.store16(disassemblyState.x * 2, memory.loadUnsigned16(cpuState.getReg(13)));
+                        memory.store16(disassembledInstruction.x * 2, memory.loadUnsigned16(cpuState.getReg(13)));
                         cpuState.setReg(13, cpuState.getReg(13) + 2);
     
                         /* No change to NZVC */
@@ -1883,7 +1883,7 @@ public class Emulator {
                         break;
     
                     case 0x0A00: /* DMOVB @dir8, R13 */
-                        cpuState.setReg(13, memory.loadUnsigned8(disassemblyState.x));
+                        cpuState.setReg(13, memory.loadUnsigned8(disassembledInstruction.x));
     
                         /* No change to NZVC */
 
@@ -1893,7 +1893,7 @@ public class Emulator {
                         break;
     
                     case 0x1A00: /* DMOVB R13, @dir8 */
-                        memory.store8(disassemblyState.x, cpuState.getReg(13));
+                        memory.store8(disassembledInstruction.x, cpuState.getReg(13));
     
                         /* No change to NZVC */
 
@@ -1903,7 +1903,7 @@ public class Emulator {
                         break;
     
                     case 0x0E00: /* DMOVB @dir8, @R13+ */
-                        memory.store8(cpuState.getReg(13), memory.loadUnsigned8(disassemblyState.x));
+                        memory.store8(cpuState.getReg(13), memory.loadUnsigned8(disassembledInstruction.x));
                         cpuState.setReg(13, cpuState.getReg(13) + 1);
     
                         /* No change to NZVC */
@@ -1914,7 +1914,7 @@ public class Emulator {
                         break;
     
                     case 0x1E00: /* DMOVB @R13+, @dir8 */
-                        memory.store8(disassemblyState.x, memory.loadUnsigned8(cpuState.getReg(13)));
+                        memory.store8(disassembledInstruction.x, memory.loadUnsigned8(cpuState.getReg(13)));
                         cpuState.setReg(13, cpuState.getReg(13) + 1);
     
                         /* No change to NZVC */
@@ -1926,7 +1926,7 @@ public class Emulator {
     
                     case 0xBC00: /* LDRES @Ri+, #u4 */
                         /* TODO FUTURE */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /*sentToResource(x, memory.load32(cpuState.getReg(i)));
                         cpuState.getReg(i) + = 4;*/
     
@@ -1939,7 +1939,7 @@ public class Emulator {
     
                     case 0xBD00: /* STRES #u4, @Ri+ */
                         /* TODO FUTURE */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* memory.store32(cpuState.getReg(i), getFromResource(x); cpuState.getReg(i) + = 4;*/
     
                         /* No change to NZVC */
@@ -1951,7 +1951,7 @@ public class Emulator {
     
                     case 0x9FC0: /* COPOP #u4, #CC, CRj, CRi */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
     
                         /* No change to NZVC */
 
@@ -1962,7 +1962,7 @@ public class Emulator {
     
                     case 0x9FD0: /* COPLD #u4, #CC, Rj, CRi */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + i) = cpuState.getReg(j); */
     
                         /* No change to NZVC */
@@ -1974,7 +1974,7 @@ public class Emulator {
     
                     case 0x9FE0: /* COPST #u4, #CC, CRj, Ri */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(i) = cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j); */
     
                         /* No change to NZVC */
@@ -1986,7 +1986,7 @@ public class Emulator {
     
                     case 0x9FF0: /* COPSV #u4, #CC, CRj, Ri */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(disassemblyState.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(disassembledInstruction.opcode.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(i) = cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j);*/
     
                         /* No change to NZVC */
@@ -2007,7 +2007,7 @@ public class Emulator {
                         break;
     
                     case 0x8300: /* ANDCCR #u8 */
-                        cpuState.setCCR(cpuState.getCCR() & disassemblyState.x);
+                        cpuState.setCCR(cpuState.getCCR() & disassembledInstruction.x);
     
                         /* NZVC is part of the CCR !*/
 
@@ -2017,7 +2017,7 @@ public class Emulator {
                         break;
                     
                     case 0x9300: /* ORCCR #u8 */
-                        cpuState.setCCR(cpuState.getCCR() | disassemblyState.x);
+                        cpuState.setCCR(cpuState.getCCR() | disassembledInstruction.x);
     
                         /* NZVC is part of the CCR !*/
 
@@ -2027,7 +2027,7 @@ public class Emulator {
                         break;
                     
                     case 0x8700: /* STILM #u8 */
-                        cpuState.setILM(disassemblyState.x);
+                        cpuState.setILM(disassembledInstruction.x);
     
                         /* No change to NZVC */
 
@@ -2037,7 +2037,7 @@ public class Emulator {
                         break;
                     
                     case 0xA300: /* ADDSP #s10 */
-                        cpuState.setReg(15, cpuState.getReg(15) + (Dfr.signExtend(8, disassemblyState.x) * 4));
+                        cpuState.setReg(15, cpuState.getReg(15) + (Dfr.signExtend(8, disassembledInstruction.x) * 4));
                         
                         /* No change to NZVC */
 
@@ -2047,7 +2047,7 @@ public class Emulator {
                         break;
                     
                     case 0x9780: /* EXTSB Ri */
-                        cpuState.setReg(disassemblyState.i, Dfr.signExtend(8, cpuState.getReg(disassemblyState.i)));
+                        cpuState.setReg(disassembledInstruction.i, Dfr.signExtend(8, cpuState.getReg(disassembledInstruction.i)));
                         
                         /* No change to NZVC */
 
@@ -2057,7 +2057,7 @@ public class Emulator {
                         break;
                     
                     case 0x9790: /* EXTUB Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) & 0xFF);
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) & 0xFF);
                         
                         /* No change to NZVC */
 
@@ -2067,7 +2067,7 @@ public class Emulator {
                         break;
                     
                     case 0x97A0: /* EXTSH Ri */
-                        cpuState.setReg(disassemblyState.i, Dfr.signExtend(16, cpuState.getReg(disassemblyState.i)));
+                        cpuState.setReg(disassembledInstruction.i, Dfr.signExtend(16, cpuState.getReg(disassembledInstruction.i)));
                         
                         /* No change to NZVC */
 
@@ -2077,7 +2077,7 @@ public class Emulator {
                         break;
                     
                     case 0x97B0: /* EXTUH Ri */
-                        cpuState.setReg(disassemblyState.i, cpuState.getReg(disassemblyState.i) & 0xFFFF);
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) & 0xFFFF);
                         
                         /* No change to NZVC */
 
@@ -2089,7 +2089,7 @@ public class Emulator {
                     case 0x8C00: /* LDM0 (reglist) */
                         n = 0;
                         for (int r = 0; r <= 7; r++) {
-                            if ((disassemblyState.x & (1 << r)) != 0) {
+                            if ((disassembledInstruction.x & (1 << r)) != 0) {
                                 cpuState.setReg(r, memory.load32(cpuState.getReg(15)));
                                 cpuState.setReg(15, cpuState.getReg(15) + 4);
                                 n++;
@@ -2106,7 +2106,7 @@ public class Emulator {
                     case 0x8D00: /* LDM1 (reglist) */
                         n = 0;
                         for (int r = 0; r <= 7; r++) {
-                            if ((disassemblyState.x & (1 << r)) != 0) {
+                            if ((disassembledInstruction.x & (1 << r)) != 0) {
                                 cpuState.setReg(r + 8, memory.load32(cpuState.getReg(15)));
                                 cpuState.setReg(15, cpuState.getReg(15) + 4);
                                 n++;
@@ -2123,7 +2123,7 @@ public class Emulator {
                     case 0x8E00: /* STM0 (reglist) */
                         n = 0;
                         for (int r = 0; r <= 7; r++) {
-                            if ((disassemblyState.x & (1 << r)) != 0) {
+                            if ((disassembledInstruction.x & (1 << r)) != 0) {
                                 cpuState.setReg(15, cpuState.getReg(15) - 4);
                                 memory.store32(cpuState.getReg(15), cpuState.getReg(7-r));
                                 n++;
@@ -2139,14 +2139,14 @@ public class Emulator {
                     
                     case 0x8F00: /* STM1 (reglist) */
                         n = 0;
-                        if ((disassemblyState.x & 0x1) != 0) {
+                        if ((disassembledInstruction.x & 0x1) != 0) {
                             cpuState.setReg(15, cpuState.getReg(15) - 4);
                             /*special case for R15: value stored is R15 before it was decremented */
                             memory.store32(cpuState.getReg(15), cpuState.getReg(15) + 4);
                             n++;
                         }
                         for (int r = 1; r <= 7; r++) {
-                            if ((disassemblyState.x & (1 << r)) != 0) {
+                            if ((disassembledInstruction.x & (1 << r)) != 0) {
                                 cpuState.setReg(15, cpuState.getReg(15) - 4);
                                 memory.store32(cpuState.getReg(15), cpuState.getReg((7-r) + 8));
                                 n++;
@@ -2163,7 +2163,7 @@ public class Emulator {
                     case 0x0F00: /* ENTER #u10 */
                         memory.store32(cpuState.getReg(15) - 4, cpuState.getReg(14));
                         cpuState.setReg(14, cpuState.getReg(15) - 4);
-                        cpuState.setReg(15, cpuState.getReg(15) - disassemblyState.x * 4);
+                        cpuState.setReg(15, cpuState.getReg(15) - disassembledInstruction.x * 4);
                         
                         /* No change to NZVC */
 
@@ -2184,9 +2184,9 @@ public class Emulator {
                         break;
                     
                     case 0x8A00: /* XCHB @Rj, Ri */
-                        result32 = cpuState.getReg(disassemblyState.i);
-                        cpuState.setReg(disassemblyState.i, memory.loadUnsigned8(cpuState.getReg(disassemblyState.j)));
-                        memory.store8(cpuState.getReg(disassemblyState.j), result32);
+                        result32 = cpuState.getReg(disassembledInstruction.i);
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.j)));
+                        memory.store8(cpuState.getReg(disassembledInstruction.j), result32);
                         
                         /* No change to NZVC */
 
@@ -2196,7 +2196,7 @@ public class Emulator {
                         break;
                     
                     default:
-                        throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassemblyState.opcode.encoding));
+                        throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
                 }
 
                 /* Delay slot processing */
@@ -2263,8 +2263,8 @@ public class Emulator {
             e.printStackTrace();
             System.err.println(e.getMessage());
             System.err.println(cpuState);
-            disassemblyState.formatOperandsAndComment(cpuState, false, outputOptions);
-            System.err.println("Offending instruction : " + disassemblyState);
+            disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
+            System.err.println("Offending instruction : " + disassembledInstruction);
             System.err.println("(just before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
         }
     }

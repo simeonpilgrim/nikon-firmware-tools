@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class DisassemblyState {
+public class DisassembledInstruction {
     ///* disassembly */
     // [Flags]
     public final static int DF_FLOW = 0x01;
@@ -41,20 +41,23 @@ public class DisassemblyState {
     public int n;
 
     /** Ri/Rs operand */
-    public int i;
+    public int i; // as-is from instruction
+    public int decodedI; // interpreted
 
     /** Rj operand */
-    public int j;
+    public int j; // as-is from instruction
+    public int decodedJ; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     public int c;
 
-    /** constant operand */
-    public int x;
+    /** direct operand */
+    public int x; // as-is from instruction
+    public int decodedX; // interpreted
 
 
-    /** number of significant bits in x (for display only) */
-    public int w;
+    /** number of significant bits in decodedX (for display only) */
+    public int xBitWidth;
 
     /** flags (for display only) */
     public int flags;
@@ -75,11 +78,11 @@ public class DisassemblyState {
         initFormatChars(EnumSet.noneOf(OutputOption.class));
     }
 
-    public DisassemblyState() {
+    public DisassembledInstruction() {
         reset();
     }
 
-    public DisassemblyState(int memRangeStart) {
+    public DisassembledInstruction(int memRangeStart) {
         this.memRangeStart = memRangeStart;
         reset();
     }
@@ -115,37 +118,37 @@ public class DisassemblyState {
             case OpCode.FORMAT_B:
                 i = 0xF & data[0];
                 x = 0xFF & (data[0] >> 4);
-                w = 8;
+                xBitWidth = 8;
                 break;
             case OpCode.FORMAT_C:
                 i = 0xF & data[0];
                 x = 0xF & (data[0] >> 4);
-                w = 4;
+                xBitWidth = 4;
                 break;
             case OpCode.FORMAT_D:
                 x = 0xFF & data[0];
-                w = 8;
+                xBitWidth = 8;
                 break;
             case OpCode.FORMAT_E:
                 i = 0xF & data[0];
                 break;
             case OpCode.FORMAT_F:
                 x = 0x7FF & data[0];
-                w = 11;
+                xBitWidth = 11;
                 break;
             case OpCode.FORMAT_Z:
                 j = 0xF & (data[0] >> 4);
                 break;
             case OpCode.FORMAT_W:
                 x = data[0];
-                w = 16;
+                xBitWidth = 16;
                 break;
         }
 
         for (int ii = 0; ii < opcode.numberExtraXWords; ii++) {
             getNextInstruction(memory, cpuState.pc);
             x = (x << 16) + data[n - 1];
-            w += 16;
+            xBitWidth += 16;
         }
 
         for (int ii = 0; ii < opcode.numberExtraYWords; ii++) {
@@ -153,7 +156,7 @@ public class DisassemblyState {
             getNextInstruction(memory, cpuState.pc);
             int tmp = data[n - 1];
             x = i;
-            w = 4;
+            xBitWidth = 4;
             c = 0xFF & (tmp >> 8);
             j = 0x0F & (tmp >> 4);
             i = 0x0F & (tmp);
@@ -164,7 +167,7 @@ public class DisassemblyState {
         flags = 0;
         data[0] = data[1] = data[2] = 0xDEAD;
         n = 0;
-        w = 0;
+        xBitWidth = 0;
         c = 0;
         i = CPUState.NOREG;
         j = CPUState.NOREG;
@@ -190,14 +193,15 @@ public class DisassemblyState {
      * must be called after Dfr.decodeInstructionOperands()
      * @param cpuState This stores CPU state.
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
-     *                        must be true in disassembler mode and false in emulator mode
+     * @return the direct argument (x), after decoding (shifts, relative, ...)
      */
     public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
         int tmp;
         int pos;
-        int displayX = x;
-        int displayI = i;
-        int displayJ = j;
+
+        decodedX = x;
+        decodedI = i;
+        decodedJ = j;
 
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
@@ -239,12 +243,12 @@ public class DisassemblyState {
                     currentBuffer.append(fmt_mem);
                     break;
                 case '2':
-                    displayX <<= 1;
-                    w += 1;
+                    decodedX <<= 1;
+                    xBitWidth += 1;
                     break;
                 case '4':
-                    displayX <<= 2;
-                    w += 2;
+                    decodedX <<= 2;
+                    xBitWidth += 2;
                     break;
                 case 'A':
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.AC]);
@@ -256,27 +260,27 @@ public class DisassemblyState {
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.FP]);
                     break;
                 case 'J':
-                    if (cpuState.isRegisterValid(displayJ))
+                    if (cpuState.isRegisterValid(decodedJ))
                     {
-                        displayX = cpuState.getReg(displayJ);
-                        w = 32;
+                        decodedX = cpuState.getReg(decodedJ);
+                        xBitWidth = 32;
                     }
                     else
                     {
-                        displayX = 0;
-                        w = 0;
+                        decodedX = 0;
+                        xBitWidth = 0;
                     }
                     break;
                 case 'I':
-                    if (cpuState.isRegisterValid(displayI))
+                    if (cpuState.isRegisterValid(decodedI))
                     {
-                        displayX = cpuState.getReg(displayI);
-                        w = 32;
+                        decodedX = cpuState.getReg(decodedI);
+                        xBitWidth = 32;
                     }
                     else
                     {
-                        displayX = 0;
-                        w = 0;
+                        decodedX = 0;
+                        xBitWidth = 0;
                     }
                     break;
                 case 'M':
@@ -292,16 +296,16 @@ public class DisassemblyState {
                 case 'Y':
                     throw new RuntimeException("no more X or Y : operand parsing is now done in decodeInstructionOperands()");
                 case 'a':
-                    pos = w;
+                    pos = xBitWidth;
                     while (pos >= 8){
                         pos -= 8;
-                        currentBuffer.append(Format.asAscii(displayX >> pos));
+                        currentBuffer.append(Format.asAscii(decodedX >> pos));
                     }
                     break;
                 case 'b':
                     /* shift2 */
-                    displayX += 16;
-                    w += 1;
+                    decodedX += 16;
+                    xBitWidth += 1;
                     break;
                 case 'c':
                     /* coprocessor operation */
@@ -309,13 +313,13 @@ public class DisassemblyState {
                     break;
                 case 'd':
                     /* unsigned decimal */
-                    currentBuffer.append(displayX);
+                    currentBuffer.append(decodedX);
                     break;
                 case 'f':
-                    pos = w >> 1;
+                    pos = xBitWidth >> 1;
 
-                    tmp = (int)(((1L << pos) - 1) & (displayX >> pos));
-                    int tmq = (int)(((1L << pos) - 1) & displayX);
+                    tmp = (int)(((1L << pos) - 1) & (decodedX >> pos));
+                    int tmq = (int)(((1L << pos) - 1) & decodedX);
                     if (tmq != 0)
                         currentBuffer.append(((double)tmp) / tmq);
                     else
@@ -323,76 +327,76 @@ public class DisassemblyState {
 
                     break;
                 case 'g':
-                    displayI += CPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(CPUState.REG_LABEL[displayI]);
+                    decodedI += CPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(CPUState.REG_LABEL[decodedI]);
                     break;
                 case 'h':
-                    displayJ += CPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(CPUState.REG_LABEL[displayJ]);
+                    decodedJ += CPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(CPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'i':
-                    currentBuffer.append(CPUState.REG_LABEL[displayI]);
+                    currentBuffer.append(CPUState.REG_LABEL[decodedI]);
                     break;
                 case 'j':
-                    currentBuffer.append(CPUState.REG_LABEL[displayJ]);
+                    currentBuffer.append(CPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'k':
-                    displayI += CPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(displayI);
+                    decodedI += CPUState.COPROCESSOR_REG_OFFSET;
+                    currentBuffer.append(decodedI);
                     break;
                 case 'l':
-                    displayJ += CPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(displayJ);
+                    decodedJ += CPUState.COPROCESSOR_REG_OFFSET;
+                    currentBuffer.append(decodedJ);
                     break;
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (w + 1)) - 1) & Dfr.NEG(w, (1 << (w)) | displayX), w + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (xBitWidth + 1)) - 1) & Dfr.NEG(xBitWidth, (1 << (xBitWidth)) | decodedX), xBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
-                    pos = w >> 1;
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (displayX >> pos), pos));
+                    pos = xBitWidth >> 1;
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (decodedX >> pos), pos));
                     currentBuffer.append(fmt_nxt);
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & displayX, pos));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & decodedX, pos));
                     break;
                 case 'q':
                     /* rational */
-                    pos = w >> 1;
-                    currentBuffer.append(((1L << pos) - 1) & (displayX >> pos));
+                    pos = xBitWidth >> 1;
+                    currentBuffer.append(((1L << pos) - 1) & (decodedX >> pos));
                     currentBuffer.append("/");
-                    currentBuffer.append(((1L << pos) - 1) & displayX);
+                    currentBuffer.append(((1L << pos) - 1) & decodedX);
                     break;
                 case 'r':
                     /* relative */
-                    displayX = cpuState.pc + 2 + Dfr.signExtend(w, displayX);
-                    w = 32;
+                    decodedX = cpuState.pc + 2 + Dfr.signExtend(xBitWidth, decodedX);
+                    xBitWidth = 32;
                     break;
                 case 's':
                     /* signed constant */
-                    if (Dfr.IsNeg(w, displayX))
+                    if (Dfr.IsNeg(xBitWidth, decodedX))
                     {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                         if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), Dfr.NEG(w, displayX), w));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), Dfr.NEG(xBitWidth, decodedX), xBitWidth));
                     }
                     else
                     {
-                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), displayX, w - 1));
+                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedX, xBitWidth - 1));
                     }
                     break;
                 case 'u':
                     /* unsigned constant */
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), displayX, w));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedX, xBitWidth));
                     break;
                 case 'v':
                     /* vector */
                     currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(0xFF - (0xFF & ((cpuState.pc - memRangeStart) / 4)), 1));
                     break;
                 case 'x':
-                    displayX |= 0x100;
+                    decodedX |= 0x100;
                     break;
                 case 'y':
                     c += 8;
@@ -403,14 +407,14 @@ public class DisassemblyState {
                     boolean first = true;
                     for (int i = 0; i < 8; ++i)
                     {
-                        if ((displayX & (1 << i)) != 0)
+                        if ((decodedX & (1 << i)) != 0)
                         {
                             if (first)
                                 first = false;
                             else
                                 currentBuffer.append(",");
 
-                            if ((displayX & 0x100) != 0)
+                            if ((decodedX & 0x100) != 0)
                                 currentBuffer.append(CPUState.REG_LABEL[c + 7 - i]);
                             else
                                 currentBuffer.append(CPUState.REG_LABEL[c + i]);
@@ -468,10 +472,10 @@ public class DisassemblyState {
                     r = CPUState.SP;
                     break;
                 case 'i':
-                    r = displayI;
+                    r = decodedI;
                     break;
                 case 'j':
-                    r = displayJ;
+                    r = decodedJ;
                     break;
                 case 'w':
                     if (updateRegisters) {
@@ -482,7 +486,7 @@ public class DisassemblyState {
                     if (updateRegisters && cpuState.isOkRegisterNumber(r))
                     {
                         cpuState.setRegisterValid(r);
-                        cpuState.setReg(r, displayX);
+                        cpuState.setReg(r, decodedX);
                     }
                     break;
                 case 'x':
@@ -529,6 +533,10 @@ public class DisassemblyState {
         else {
             out += "               (no opcode)" + operands;
         }
+        
+//        for (int i = 0; i < 15-operands.length(); i++) {
+//            out += " ";
+//        }
 
         if (StringUtils.isNotBlank(comment)) {
             out += StringUtils.leftPad("; " + comment, 22);

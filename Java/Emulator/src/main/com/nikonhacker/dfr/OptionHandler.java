@@ -3,6 +3,7 @@ package com.nikonhacker.dfr;
 import com.nikonhacker.Format;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.Map;
 import java.util.StringTokenizer;
 
 ///* reinventing the wheel because resetting getopt() isn't portable */
@@ -30,6 +31,34 @@ public class OptionHandler
         this.arguments = arguments;
         currentToken = null;
     }
+
+
+    Character getNextOption() {
+        if (StringUtils.isBlank(currentToken)) {
+            if (index >= arguments.length) return null; // end of list
+
+            currentToken = arguments[index++]; // read next
+
+            if (currentToken.charAt(0) != '-') return 0; // not an option (input filename)
+
+            currentToken = currentToken.substring(1); // remove the dash 
+        }
+        char c = currentToken.charAt(0); // get the option
+        currentToken = currentToken.substring(1); // to allow options such as -d2 . Now currentArg = 2
+        return c;
+    }
+
+    String getArgument() {
+        if (StringUtils.isBlank(currentToken)) {
+            if (index >= arguments.length) return null; // end of list
+
+            currentToken = arguments[index++]; // read next
+        }
+        String argument = currentToken; // get the argument
+        currentToken = null; // clear current to force a read at next call
+        return argument;
+    }
+
 
     /**
      * Parses a String of the form start-end=offset or start,length=offset
@@ -157,32 +186,19 @@ public class OptionHandler
         return memp;
     }
 
-    void end() { }
-
-    Character getNextOption() {
-        if (StringUtils.isBlank(currentToken)) {
-            if (index >= arguments.length) return null; // end of list
-
-            currentToken = arguments[index++]; // read next
-
-            if (currentToken.charAt(0) != '-') return 0; // not an option (input filename)
-            
-            currentToken = currentToken.substring(1); // remove the dash 
+    public static void parseSymbol(Map<Integer, Symbol> symbols, String argument) throws ParsingException {
+        Integer address = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
+        String value = StringUtils.substringAfter(argument, "=").trim();
+        int commentStart = value.indexOf("(");
+        String comment = null;
+        if (commentStart != -1) {
+            if (!value.endsWith(")")) {
+                throw new ParsingException("Invalid symbol '" + argument + "' : no closing parenthesis");
+            }
+            comment = value.substring(commentStart + 1, value.length() - 1).trim();
+            value = value.substring(0,commentStart - 1).trim();
         }
-        char c = currentToken.charAt(0); // get the option
-        currentToken = currentToken.substring(1); // to allow options such as -d2 . Now currentArg = 2
-        return c;
-    }
-
-    String getArgument() {
-        if (StringUtils.isBlank(currentToken)) {
-            if (index >= arguments.length) return null; // end of list
-
-            currentToken = arguments[index++]; // read next
-        }
-        String argument = currentToken; // get the argument
-        currentToken = null; // clear current to force a read at next call
-        return argument;
+        symbols.put(address, new Symbol(address, value, comment));
     }
 }
 
