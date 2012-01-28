@@ -1,19 +1,34 @@
 package com.nikonhacker.dfr;
 
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Function extends Symbol {
-    private int endPoint;
-    private List<CodeRange> codeRanges;
+    private int endAddress;
+    private List<CodeSegment> codeSegments;
     private List<Jump> jumps;
+    private List<Jump> calls;
+    private Type type = Type.STANDARD;
 
-    
+    public enum Type {MAIN, INTERRUPT, STANDARD, UNKNOWN}
+
+
     public Function(int address, String name, String comment) {
         super(address, name, comment);
-        codeRanges = new ArrayList<CodeRange>();
+        codeSegments = new ArrayList<CodeSegment>();
         jumps = new ArrayList<Jump>();
+        calls = new ArrayList<Jump>();
+    }
+
+    public Function(int address, String name, String comment, Type type) {
+        super(address, name, comment);
+        this.type = type;
+        codeSegments = new ArrayList<CodeSegment>();
+        jumps = new ArrayList<Jump>();
+        calls = new ArrayList<Jump>();
     }
 
     public Function(Symbol symbol) {
@@ -21,20 +36,20 @@ public class Function extends Symbol {
     }
 
 
-    public int getEndPoint() {
-        return endPoint;
+    public int getEndAddress() {
+        return endAddress;
     }
 
-    public void setEndPoint(int endPoint) {
-        this.endPoint = endPoint;
+    public void setEndAddress(int endAddress) {
+        this.endAddress = endAddress;
     }
 
-    public List<CodeRange> getCodeRanges() {
-        return codeRanges;
+    public List<CodeSegment> getCodeSegments() {
+        return codeSegments;
     }
 
-    public void setCodeRanges(List<CodeRange> codeRanges) {
-        this.codeRanges = codeRanges;
+    public void setCodeSegments(List<CodeSegment> codeSegments) {
+        this.codeSegments = codeSegments;
     }
 
     public List<Jump> getJumps() {
@@ -45,53 +60,44 @@ public class Function extends Symbol {
         this.jumps = jumps;
     }
 
-    public class Jump{
-        int from;
-        int to;
-        boolean isConditional;
+    public List<Jump> getCalls() {
+        return calls;
+    }
 
-        public Jump(int from, int to, boolean conditional) {
-            this.from = from;
-            this.to = to;
-            isConditional = conditional;
-        }
+    public void setCalls(List<Jump> calls) {
+        this.calls = calls;
+    }
 
-        public int getFrom() {
-            return from;
-        }
+    public Type getType() {
+        return type;
+    }
 
-        public int getTo() {
-            return to;
-        }
+    public void setType(Type type) {
+        this.type = type;
+    }
 
-        public boolean isConditional() {
-            return isConditional;
+    public String getColor() {
+        switch (type) {
+            case INTERRUPT:
+                return "#FFFF77";
+            case MAIN:
+                return "#77FF77";
+            case STANDARD:
+                return "#77FFFF";
+            default:
+                return "#777777";
         }
     }
-    
-    public class CodeRange{
-        int start;
-        int address;
 
-        public CodeRange(int start, int address) {
-            this.start = start;
-            this.address = address;
-        }
-
-        public int getStart() {
-            return start;
-        }
-
-        public void setStart(int start) {
-            this.start = start;
-        }
-
-        public int getAddress() {
-            return address;
-        }
-
-        public void setAddress(int address) {
-            this.address = address;
-        }
+    @Override
+    public String toString() {
+        return getName() + " starting at 0x" + Integer.toHexString(getAddress()) + " [" + codeSegments.size() + " segment(s)]";
     }
+
+    public String getTitleLine() {
+        return getName()
+                + (StringUtils.isNotBlank(comment)?" (" + comment + ") ":"")
+                + (codeSegments.size()>1?(" [" + codeSegments.size() + " segment" + "s]"):"");
+    }
+
 }

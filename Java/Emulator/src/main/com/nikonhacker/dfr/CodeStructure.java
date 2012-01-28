@@ -1,16 +1,23 @@
 package com.nikonhacker.dfr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class CodeStructure {
+
+    public static final int INTERRUPT_VECTOR_LENGTH = 0x400;
+
+    private int entryPoint;
+
+    // TODO : Optimize by merging instructions/labels/functions/returns/ends in a same table with various properties
+
     /** Map address -> Instruction */
-    Map<Integer, DisassembledInstruction> instructions = new TreeMap<Integer, DisassembledInstruction>();
+    TreeMap<Integer, DisassembledInstruction> instructions = new TreeMap<Integer, DisassembledInstruction>();
     
     /** Map address -> Labels */
     Map<Integer, Symbol> labels = new TreeMap<Integer, Symbol>();
@@ -26,7 +33,10 @@ public class CodeStructure {
      */
     Map<Integer, Integer> ends = new TreeMap<Integer, Integer>();
 
-    
+    public CodeStructure(int address) {
+        this.entryPoint = address;
+    }
+
     public Map<Integer, DisassembledInstruction> getInstructions() {
         return instructions;
     }
@@ -73,98 +83,279 @@ public class CodeStructure {
     }
 
 
-    // Post-process jump addresses
-    public void postProcess(Map<Integer, Symbol> symbols) {
-        for (Integer address : getInstructions().keySet()) {
-            DisassembledInstruction disassembledInstruction = getInstructions().get(address);
-            if (disassembledInstruction.opcode.isJumpOrBranch) getLabels().put(disassembledInstruction.decodedX, null);
-            if (disassembledInstruction.opcode.isCall) getFunctions().put(disassembledInstruction.decodedX, null);
-            if (disassembledInstruction.opcode.isReturn) {
-                getReturns().put(address, null);
-                getEnds().put(address + (disassembledInstruction.opcode.hasDelaySlot ? 2 : 0), null);
+    /**
+     * Post-process instructions to retrieve code structure
+     */
+    public void postProcess(Map<Integer, Symbol> symbols, SortedSet<Range> ranges, Memory memory) {
+
+
+        Set<Integer> processedInstructions = new HashSet<Integer>();
+
+        // Follow functions, starting at entry point.
+        Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
+        functions.put(entryPoint, main);
+        followFunction(main, entryPoint, processedInstructions);
+
+
+        // Follow functions, starting at each interrupt.
+        for (Range range : ranges) {
+            if (range instanceof InterruptVectorRange) {
+                for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
+                    Integer address = memory.load32(range.getStart() + 4 * (0x100 - interruptNumber - 1));
+                    if (!functions.containsKey(address)) {
+                        Function function = new Function(address, "interrupt_" + interruptNumber + "_", "");
+                        functions.put(address, function);
+                        followFunction(function, address, processedInstructions);
+                    }
+                }
             }
         }
 
 
-        // TODO : parse interrupt table and add interrupts to function table so that function table is complete
-
-        // Try to match returns with starts
-        Integer lastFunctionStartAddress = null;
-        for (Integer address : instructions.keySet()) {
-            if (isFunction(address)) {
-                lastFunctionStartAddress = address;
+        // Process remaining instructions as "unknown" functions
+        Map.Entry<Integer, DisassembledInstruction> entry = instructions.firstEntry();
+        while (entry != null) {
+            Integer address = entry.getKey();
+            if (!processedInstructions.contains(address)) {
+                Function function = new Function(address, "", "", Function.Type.UNKNOWN);
+                functions.put(address, function);
+                followFunction(function, address, processedInstructions);
             }
-            if (isReturn(address)) {
-                returns.put(address, lastFunctionStartAddress);
-            }
-            if (isEnd(address)) {
-                ends.put(address, lastFunctionStartAddress);
-                lastFunctionStartAddress = null;
-            }
+            entry = instructions.higherEntry(address);
         }
+
 
         // Give default names to functions
         int functionNumber = 1;
         for (Integer address : functions.keySet()) {
-            if (StringUtils.isBlank(getFunctionName(address))) {
-                functions.put(address, new Function(address, "function_" + functionNumber + "_", null));
+            Function function = functions.get(address);
+            if (StringUtils.isBlank(function.getName())) {
+                if (function.getType() == Function.Type.UNKNOWN) {
+                    function.setName("unknown_" + functionNumber + "_");
+                }
+                else {
+                    function.setName("function_" + functionNumber + "_");
+                }
             }
             // increment even if unused, to make output stable no matter what future replacements will occur
             functionNumber++;
         }
 
+
         // Override names using symbols table (if defined)
         if (symbols != null) {
             for (Integer address : symbols.keySet()) {
                 if (isFunction(address)) {
-                    functions.put(address, new Function(symbols.get(address)));
+                    Function function = functions.get(address);
+                    Symbol symbol = symbols.get(address);
+                    function.setName(symbol.getName());
+                    function.setComment(symbol.getComment());
                 }
             }
         }
 
+
         // Give default names to labels
         int labelNumber = 1;
+        // Temporary storage for names given to returns to make sure they are unique
+        Set<String> usedReturnLabels = new HashSet<String>();
         for (Integer address : labels.keySet()) {
-            if (isFunction(address)) {
-                labels.put(address, new Symbol(address, "start_of_" + getFunctionName(address), null));
-            }
-            else if (isReturn(address)) {
-                Integer matchingStart = returns.get(address);
-                if (matchingStart != null) {
-                    labels.put(address, new Symbol(address, "end_" + getFunctionName(matchingStart), null));
+            boolean match = false;
+            for (Function function : functions.values()) {
+                if (function.getAddress() == address) {
+                    labels.put(address, new Symbol(address, "start_of_" + getFunctionName(address), null));
+                    match = true;
                 }
                 else {
-                    labels.put(address, new Symbol(address, "end_unidentified_fn_l_" + labelNumber + "_", null));
+                    for (int i = 0; i < function.getCodeSegments().size(); i++) {
+                        CodeSegment codeSegment = function.getCodeSegments().get(i);
+                        if (codeSegment.getStart() == address) {
+                            labels.put(address, new Symbol(address, "part_" + (i+1) + "_of_" + function.getName(), null));
+                            match = true;
+                            break;
+                        }
+                    }
                 }
             }
-            else {
-                labels.put(address, new Symbol(address, "label_" + labelNumber + "_", null));
+            if (!match) {
+                String label;
+                if (isReturn(address)) {
+                    Integer matchingFunctionStart = returns.get(address);
+                    if (matchingFunctionStart != null) {
+                        String functionName = getFunctionName(matchingFunctionStart);
+                        if (functionName==null) {
+                            functionName = "unnamed_function_starting_at_0x" + Format.asHex(matchingFunctionStart, 8);
+                        }
+                        label = "end_" + functionName;
+                        // Prevent multiple exit points of the same function from being given the same name
+                        if (usedReturnLabels.contains(label)){
+                            // Make it unique
+                            int i = 2;
+                            while (usedReturnLabels.contains(label + i + "_")) {
+                                i++;
+                            }
+                            label = label + "_" + i;
+                        }
+                        usedReturnLabels.add(label);
+                    }
+                    else {
+                        label = "end_unidentified_fn_l_" + labelNumber + "_";
+                    }
+                }
+                else {
+                    label = "label_" + labelNumber + "_";
+                }
+                labels.put(address, new Symbol(address, label, null));
             }
-
             // increment even if unused, to make output stable no matter what future replacements will occur
             labelNumber++;
         }
 
-        // TODO : trace a graph of calls
+
+        // Trace a graph of calls
+//        try {
+//            CallGraph frame = new CallGraph(functions);
+//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//            frame.setSize(800, 600);
+//            frame.setVisible(true);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+
 
     }
 
-    public void writeDisassembly(Writer writer) throws IOException {
+    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions) {
+        CodeSegment currentSegment = new CodeSegment();
+        currentFunction.getCodeSegments().add(currentSegment);
+        List<Jump> jumps = new ArrayList<Jump>();
+        currentSegment.setStart(address);
+        while(address != null) {
+            DisassembledInstruction instruction = instructions.get(address);
+            if (instruction == null) {
+                System.err.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
+                break;
+            }
+            else {
+                processedInstructions.add(address);
+                currentSegment.setEnd(address);
+                if (instruction.opcode.isReturn) {
+//                    labels.put(address, new Symbol(address, "", ""));
+                    returns.put(address, currentFunction.getAddress());
+                    ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+                }
+                if (instruction.opcode.isCall) {
+                    if (instruction.opcode.hasDelaySlot) {
+                        currentSegment.setEnd(address + 2);
+                        processedInstructions.add(address + 2);
+                    }
+                    Integer targetAddress = instruction.decodedX;
+                    Jump jump = new Jump(address, instruction.decodedX, false);
+                    currentFunction.getCalls().add(jump);
+                    if (targetAddress == null || targetAddress == 0) {
+                        System.err.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                    }
+                    else {
+                        Function function = functions.get(targetAddress);
+                        if (function == null) {
+                            // new Function
+                            function = new Function(targetAddress, "", "", Function.Type.INTERRUPT);
+                            functions.put(targetAddress, function);
+                            followFunction(function, targetAddress, processedInstructions);
+                        }
+                        else {
+                            // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
+                            if (function.getType() == Function.Type.UNKNOWN) {
+                                function.setType(Function.Type.STANDARD);
+                            }
+                        }
+                    }
+                }
+                if (instruction.opcode.isJumpOrBranch) {
+                    if (instruction.decodedX != 0) {
+                        labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
+                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode.isConditional);
+                        jumps.add(jump);
+                        currentFunction.getJumps().add(jump);
+                    }
+                }
+                if (instruction.opcode.isReturn || (instruction.opcode.isJumpOrBranch && !instruction.opcode.isConditional)) {
+                    if (instruction.opcode.hasDelaySlot) {
+                        currentSegment.setEnd(address + 2);
+                        processedInstructions.add(address + 2);
+                    }
+                    break;
+                }
+            }
+            address = instructions.higherKey(address);
+        }
+
+        // Process jumps
+        currentFunction.getJumps().addAll(jumps);
+        boolean inProcessedSegment;
+        for (Jump jump:jumps) {
+            inProcessedSegment = false;
+            for (CodeSegment segment : currentFunction.getCodeSegments()) {
+                if (jump.target >= segment.start && jump.target <= segment.end) {
+                    // At first look, this part of code has already been processed.
+                    // However, it happens (eg 001B77A4) that a jump ends on the delay slot of an unconditional JMP
+                    // So we should consider we're really in a processed segment if
+                    // - either it's a jump/call/return
+                    DisassembledInstruction instruction = instructions.get(jump.target);
+                    if (instruction != null && (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch || instruction.opcode.isReturn)) {
+                        inProcessedSegment = true;
+                        break;
+                    }
+                    // - or the next instruction is also in the range
+                    Integer addressFollowingTarget = instructions.higherKey(jump.target);
+                    if (addressFollowingTarget != null && addressFollowingTarget >= segment.start && addressFollowingTarget <= segment.end) {
+                        inProcessedSegment = true;
+                        break;
+                    }
+                    // Otherwise, it has to be followed...
+                }
+            }
+            if (!inProcessedSegment) {
+                followFunction(currentFunction, jump.target, processedInstructions);
+            }
+        }
+
+        // Merge segments to clean up
+        for (int i = 0; i < currentFunction.getCodeSegments().size(); i++) {
+            // take a segment
+            CodeSegment segmentA = currentFunction.getCodeSegments().get(i);
+            // and try to merge it with all following ones
+            for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
+                CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
+                if ((segmentA.start >= segmentB.start - 2 && segmentA.start <= segmentB.end + 2)
+                        || (segmentA.end >= segmentB.start - 2 && segmentA.end <= segmentB.end + 2)) {
+                    // merge
+                    segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
+                    segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
+                    currentFunction.getCodeSegments().remove(j);
+                }
+            }
+        }
+    }
+
+
+    public void writeDisassembly(Writer writer, Range range) throws IOException {
 
         // Start output
-        for (Integer address : instructions.keySet()) {
-            DisassembledInstruction instruction = instructions.get(address);
+        Integer address = range.getStart();
+        DisassembledInstruction instruction = instructions.get(address);
+        while (instruction != null && address < range.getEnd()) {
 
             // function
             if (isFunction(address)) {
-                writer.write("\n; ************************************\n");
-                writer.write("; " + functions.get(address).toString() + "\n");
-                writer.write("; ************************************\n");
+                writer.write("\n; ************************************************************************\n");
+                writer.write("; " + functions.get(address).getTitleLine() + "\n");
+                writer.write("; ************************************************************************\n");
             }
 
             // label
             if (isLabel(address)) {
-                writer.write("; " + labels.get(address).getName() + " :\n");
+                writer.write(labels.get(address).getName() + ":\n");
             }
 
             if (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch) {
@@ -179,9 +370,11 @@ public class CodeStructure {
                         else {
                             symbol = labels.get(targetAddress);
                         }
-
-                        instruction.comment = symbol.toString();
+                        if (symbol != null) {
+                            instruction.comment = symbol.getName();
+                        }
                         if (instruction.opcode.isJumpOrBranch) {
+                            //if (areInSameRange(functions,  address, targetAddress))
                             instruction.comment += (targetAddress>address?" (skip)":" (loop)");
                         }
                     } catch (ParsingException e) {
@@ -192,12 +385,19 @@ public class CodeStructure {
                     try {
                         int targetAddress = Format.parseUnsigned(instruction.operands);
                         if (instruction.opcode.isCall) {
-                            instruction.operands = functions.get(targetAddress).getName();
+                            Function function = functions.get(targetAddress);
+                            if (function != null) {
+                                instruction.operands = function.getName();
+                            }
                         }
                         else {
-                            instruction.operands = labels.get(targetAddress).getName();
+                            Symbol label = labels.get(targetAddress);
+                            if (label != null) {
+                                instruction.operands = label.getName();
+                            }
                         }
                         if (instruction.opcode.isJumpOrBranch) {
+                            //TODO if(areInSameRange(address, targetAddress))
                             instruction.comment =  targetAddress>address?"(skip)":"(loop)";
                         }
                     } catch (ParsingException e) {
@@ -209,7 +409,7 @@ public class CodeStructure {
             // print instruction
             writer.write(Format.asHex(address, 8) + " " + instruction.toString());
 
-            // return from function
+            // after return from function
             if (isEnd(address)) {
                 Integer matchingStart = ends.get(address);
                 if (matchingStart == null) {
@@ -218,8 +418,11 @@ public class CodeStructure {
                 else {
                     writer.write("; end of " + getFunctionName(matchingStart) + "\n");
                 }
-                writer.write("; ------------------------------------\n\n");
+                writer.write("; ------------------------------------------------------------------------\n\n");
             }
+            
+            address = instructions.higherKey(address);
+            instruction = address==null?null:instructions.get(address);
         }
 
     }

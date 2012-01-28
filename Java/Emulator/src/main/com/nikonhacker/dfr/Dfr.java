@@ -89,7 +89,7 @@ public class Dfr
                         + "-o filename       output file\n"
                         + "-r                separate output file for each memory range\n"
                         + "-s address=name   define symbol\n"
-                        + "-t address        equivalent to -m address,0x400=DATA:V\n"
+                        + "-t address        interrupt vector start, equivalent to -m address,0x400=DATA:V\n"
                         + "-v                verbose\n"
                         + "-w options        output options (use -w? to list options)\n"
                         + "-x file           read options from file\n"
@@ -116,7 +116,7 @@ public class Dfr
 
         initialize();
 
-        disassembleMemRanges();
+        disassembleMemRanges(fileWriter);
 
         cleanup();
     }
@@ -220,7 +220,7 @@ public class Dfr
     }
 
 
-    int disassembleOneInstruction(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
+    int disassembleOneInstruction(Writer writer, CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
         DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
         disassembledInstruction.getNextInstruction(memory, cpuState.pc);
         if ((disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]]) == null)
@@ -234,22 +234,17 @@ public class Dfr
         
         if (codeStructure != null) {
             codeStructure.getInstructions().put(cpuState.pc, disassembledInstruction);
-//            if (disassembledInstruction.opcode.isJumpOrBranch) codeStructure.getLabels().put(disassembledInstruction.decodedX, null);
-//            if (disassembledInstruction.opcode.isCall) codeStructure.getFunctions().put(disassembledInstruction.decodedX, null);
-//            if (disassembledInstruction.opcode.isReturn) {
-//                codeStructure.getReturns().put(cpuState.pc, null);
-//                codeStructure.getEnds().put(cpuState.pc + (disassembledInstruction.opcode.hasDelaySlot ? 2 : 0), null);
-//            }
         }
         else {
-            printDisassembly(disassembledInstruction, cpuState, memoryFileOffset);
+            // No structure analysis, output right now
+            printDisassembly(writer, disassembledInstruction, cpuState, memoryFileOffset);
         }
 
         return disassembledInstruction.n << 1;
     }
 
 
-    int disassembleOneDataRecord(CPUState cpuState, Range memRange, int memoryFileOffset) throws IOException {
+    int disassembleOneDataRecord(Writer writer, CPUState cpuState, Range memRange, int memoryFileOffset) throws IOException {
 
         int sizeInBytes = 0;
 
@@ -267,7 +262,7 @@ public class Dfr
 
             sizeInBytes += disassembledInstruction.n << 1;
 
-            printDisassembly(disassembledInstruction, cpuState, memoryFileOffset);
+            printDisassembly(writer, disassembledInstruction, cpuState, memoryFileOffset);
         }
 
         return sizeInBytes;
@@ -275,26 +270,28 @@ public class Dfr
 
     /**
      *
+     *
+     *
+     * @param writer
      * @param disassembledInstruction
      * @param cpuState
      * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)
      * @throws IOException
      */
-    private void printDisassembly(DisassembledInstruction disassembledInstruction, CPUState cpuState, int memoryFileOffset) throws IOException {
-        fileWriter.write(Format.asHex(cpuState.pc, 8) + " ");
+    private void printDisassembly(Writer writer, DisassembledInstruction disassembledInstruction, CPUState cpuState, int memoryFileOffset) throws IOException {
+        writer.write(Format.asHex(cpuState.pc, 8) + " ");
 
         if (memoryFileOffset != 0) {
-            fileWriter.write("(" + Format.asHex(cpuState.pc - memoryFileOffset, 8) + ") ");
+            writer.write("(" + Format.asHex(cpuState.pc - memoryFileOffset, 8) + ") ");
         }
 
-        fileWriter.write(disassembledInstruction.toString());
+        writer.write(disassembledInstruction.toString());
     }
 
 
-    void disassembleMemoryRange(Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
+    void disassembleMemoryRange(Writer writer, Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
         int startPc = memRange.start;
         int end = memRange.end;
-        boolean isCode;
 
         if ((startPc & 1) != 0)
         {
@@ -307,18 +304,6 @@ public class Dfr
             end++;
         }
 
-        switch (memRange.data.memType)
-        {
-            case DATA.MEMTYPE_CODE:
-            case DATA.MEMTYPE_UNKNOWN:
-                isCode = true;
-                break;
-            case DATA.MEMTYPE_DATA:
-                isCode = false;
-                break;
-            default:
-                throw new DisassemblyException("Unknown memory type : " + memRange.data.memType);
-        }
 
         CPUState cpuState = new CPUState(startPc);
 
@@ -327,11 +312,11 @@ public class Dfr
         while (cpuState.pc < end)
         {
             int sizeInBytes;
-            if (isCode) {
-                sizeInBytes = disassembleOneInstruction(cpuState, memRange, memoryFileOffset, codeStructure);
+            if (memRange.data.isCode()) {
+                sizeInBytes = disassembleOneInstruction(writer, cpuState, memRange, memoryFileOffset, codeStructure);
             }
             else {
-                sizeInBytes = disassembleOneDataRecord(cpuState, memRange, memoryFileOffset);
+                sizeInBytes = disassembleOneDataRecord(writer, cpuState, memRange, memoryFileOffset);
             }
 
             if (sizeInBytes < 0)
@@ -347,11 +332,11 @@ public class Dfr
         }
     }
 
-    void disassembleMemRanges() throws IOException, DisassemblyException {
+    void disassembleMemRanges(Writer writer) throws IOException, DisassemblyException {
         
         CodeStructure codeStructure = null;
         if (outputOptions.contains(OutputOption.STRUCTURE)) {
-            codeStructure = new CodeStructure();
+            codeStructure = new CodeStructure(memMap.ranges.first().start);
         }
 
         for (Range memRange : memMap.ranges) {
@@ -369,21 +354,29 @@ public class Dfr
                         + " (file 0x" + Format.asHex(matchingFileRange.fileOffset, 8)
                         + ") as " + memRange.data + "\n");
                 info("\n");
-                disassembleMemoryRange(memRange, matchingFileRange, codeStructure);
+                disassembleMemoryRange(writer, memRange, matchingFileRange, codeStructure);
                 info("\n");
             }
         }
 
-        if (outputOptions.contains(OutputOption.STRUCTURE)) {
-            codeStructure.postProcess(symbols);
-            codeStructure.writeDisassembly(fileWriter);
-        }
+        if (codeStructure != null) {
+            codeStructure.postProcess(symbols, memMap.ranges, memory);
+            
+            for (Range range : memMap.ranges) {
+                if (range.data.isCode()) {
+                    codeStructure.writeDisassembly(writer, range);
+                }
+                else {
+                    //writeData(range);
+                }
+            }
 
-        // print and output
-        log(codeStructure.getInstructions().size() + " instructions");
-        log(codeStructure.getLabels().size() + " labels");
-        log(codeStructure.getFunctions().size() + " functions");
-        log(codeStructure.getReturns().size() + " returns");
+            // print and output
+            log(codeStructure.getInstructions().size() + " instructions");
+            log(codeStructure.getLabels().size() + " labels");
+            log(codeStructure.getFunctions().size() + " functions");
+            log(codeStructure.getReturns().size() + " returns");
+        }
 
     }
 
@@ -569,8 +562,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    //        start = parseUnsigned(arg, &r);
-                    //        insmap(&memmap, start, start + 0x3FF, MKDATA(1, MD_VECTOR));
+                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeStructure.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
                     break;
 
                 case 'V':
