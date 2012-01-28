@@ -57,4 +57,7 @@ public class DATA {
         }
     }
 
+    public boolean isCode() {
+        return memType == DATA.MEMTYPE_CODE || memType == MEMTYPE_UNKNOWN;
+    }
 }
