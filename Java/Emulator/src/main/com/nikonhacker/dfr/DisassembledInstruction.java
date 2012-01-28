@@ -292,6 +292,9 @@ public class DisassembledInstruction {
                 case 'S':
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.SP]);
                     break;
+                case 'T':
+                    currentBuffer.append("INT");
+                    break;
                 case 'X':
                 case 'Y':
                     throw new RuntimeException("no more X or Y : operand parsing is now done in decodeInstructionOperands()");
