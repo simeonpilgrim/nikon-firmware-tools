@@ -115,7 +115,12 @@ public class OptionHandler
 
         DATA map = parseMemtype(rangeTokenizer.nextToken());
 
-        return new Range(start, end, map);
+        if (option == 't') {
+            return new InterruptVectorRange(start, end, map);
+        }
+        else {
+            return new Range(start, end, map);
+        }
     }
 
     static DATA parseMemtype(String arg) throws ParsingException {
