@@ -660,11 +660,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         List<DependentField> dependencies = new ArrayList<DependentField>();
         dependencies.add(new DependentField(dfrFile, "Dfr.txt"));
         dependencies.add(new DependentField(destinationFile, "asm"));
+
         final JComponent[] inputs = new JComponent[]{
                 new FileSelectionPanel("Source file", sourceFile, false, dependencies),
                 new FileSelectionPanel("Dfr options file", dfrFile, false),
-                new FileSelectionPanel("Destination dir", destinationFile, true)
+                new FileSelectionPanel("Destination dir", destinationFile, true),
+                makeCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
+//                makeCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
         };
+
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
                 "Choose binary source and options",
@@ -689,7 +693,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             JPanel panel = new JPanel(new BorderLayout());
 
-            printWriterArea = new PrintWriterArea(15, 40);
+            printWriterArea = new PrintWriterArea(25, 70);
             panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
 
             closeButton = new JButton("Close");
@@ -726,7 +730,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         debugPrintStream.println("Starting disassembly...");
                         disassembler.disassembleMemRanges();
                         disassembler.cleanup();
-                        debugPrintStream.println("Disassembly complete");
+                        debugPrintStream.println();
+                        debugPrintStream.println("Disassembly complete.");
                     } catch (Exception e) {
                         debugPrintStream.println("ERROR : " + e.getMessage());
                     }                    
@@ -759,7 +764,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         optionsTabbedPane.add(outputOptionsPanel);
         List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
         for (OutputOption outputOption : OutputOption.formatOptions) {
-            JCheckBox checkBox = makeCheckBox(outputOption, prefs.getOutputOptions());
+            JCheckBox checkBox = makeCheckBox(outputOption, prefs.getOutputOptions(), false);
             outputOptionsCheckBoxes.add(checkBox);
             outputOptionsPanel.add(checkBox);
         }
@@ -785,10 +790,24 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     }
 
-    private JCheckBox makeCheckBox(OutputOption outputOption, Set<OutputOption> outputOptions) {
-        JCheckBox checkBox = new JCheckBox(outputOption.getKey());
-        checkBox.setToolTipText(outputOption.getHelp());
-        checkBox.setSelected(outputOptions.contains(outputOption));
+    /**
+     * 
+     * @param option one of the defined options 
+     * @param outputOptions the options list to initialize field from (and to which change will be written if reflectChange is true)
+     * @param reflectChange if true, changing the checkbox immediately changes the option in the given outputOptions
+     * @return
+     */
+    private JCheckBox makeCheckBox(final OutputOption option, Set<OutputOption> outputOptions, boolean reflectChange) {
+        final JCheckBox checkBox = new JCheckBox(option.getKey());
+        checkBox.setToolTipText(option.getHelp());
+        checkBox.setSelected(outputOptions.contains(option));
+        if (reflectChange) {
+            checkBox.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    prefs.setOutputOption(option, checkBox.isSelected());
+                }
+            });
+        }
         return checkBox;
     }
 
@@ -1159,7 +1178,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     //Quit the application.
     protected void quit() {
-        System.exit(0);
+        dispose();
     }
 
     public TrackingMemoryActivityListener getTrackingMemoryActivityListener() {
@@ -1223,7 +1242,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             this.add(button);
 
             button.addActionListener(this);
-            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            //setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         }
 
         public void actionPerformed(ActionEvent e) {

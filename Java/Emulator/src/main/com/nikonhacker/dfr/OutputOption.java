@@ -14,8 +14,8 @@ public enum OutputOption {
     CSTYLE      ("cstyle",          "use C style operand syntax"),
     DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers"),
 
-    STRUCTURE   ("structure",       "structural code analysis"),
-    ORDINAL     ("ordinalnames",    "generate symbol names based on ordinal numbers instead of address"),
+    STRUCTURE   ("structure",       "structural code analysis (code flow, symbols, etc). Needs more resources."),
+    ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address"),
 
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),

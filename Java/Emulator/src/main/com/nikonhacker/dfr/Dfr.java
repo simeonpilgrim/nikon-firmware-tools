@@ -357,14 +357,24 @@ public class Dfr
         else {
             // Advanced two pass disassembly, with intermediary structural analysis
             CodeStructure codeStructure = new CodeStructure(memMap.ranges.first().start);
-            // Disassemble the code ranges
+            debugPrintStream.println("Disassembling the code ranges...");
             for (Range range : memMap.ranges) {
                 if (range.data.isCode()) {
                     disassembleCodeMemoryRange(range, getMatchingFileRange(range), codeStructure);
                 }
             }
-            codeStructure.postProcess(symbols, memMap.ranges, memory, debugPrintStream, outputOptions.contains(OutputOption.ORDINAL));
 
+            debugPrintStream.println("Post processing...");
+            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions.contains(OutputOption.ORDINAL), debugPrintStream);
+            // print and output
+            debugPrintStream.println("Structure analysis results :");
+            debugPrintStream.println("  " + codeStructure.getInstructions().size() + " instructions");
+            debugPrintStream.println("  " + codeStructure.getLabels().size() + " labels");
+            debugPrintStream.println("  " + codeStructure.getFunctions().size() + " functions");
+            debugPrintStream.println("  " + codeStructure.getReturns().size() + " returns");
+            debugPrintStream.println();
+
+            debugPrintStream.println("Writing output to disk...");
             for (Range range : memMap.ranges) {
                 // find file offset covering this memory location.
                 Range matchingFileRange = getMatchingFileRange(range);
@@ -377,11 +387,6 @@ public class Dfr
                 }
             }
 
-            // print and output
-            debugPrintStream.println(codeStructure.getInstructions().size() + " instructions");
-            debugPrintStream.println(codeStructure.getLabels().size() + " labels");
-            debugPrintStream.println(codeStructure.getFunctions().size() + " functions");
-            debugPrintStream.println(codeStructure.getReturns().size() + " returns");
         }
     }
 

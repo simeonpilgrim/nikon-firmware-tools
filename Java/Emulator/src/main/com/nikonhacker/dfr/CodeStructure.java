@@ -83,22 +83,29 @@ public class CodeStructure {
         return ends.containsKey(address);
     }
 
-
     /**
      * Post-process instructions to retrieve code structure
+     *
+     *
+     * @param ranges The defined ranges in the binary file
+     * @param memory The memory image
+     * @param symbols The symbols defined to override auto-generated function names
+     * @param useOrdinalNames if true, use ordinal numbers instead of address to generate names
+     * @param debugPrintStream a stream to which debug/info messages are written (e.g. System.out)
+     * @throws IOException
      */
-    public void postProcess(Map<Integer, Symbol> symbols, SortedSet<Range> ranges, Memory memory, PrintStream debugPrintStream, boolean useOrdinalNames) throws IOException {
+    public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, boolean useOrdinalNames, PrintStream debugPrintStream) throws IOException {
 
 
         Set<Integer> processedInstructions = new HashSet<Integer>();
 
-        // Follow functions, starting at entry point.
+        debugPrintStream.println("Following functions, starting at entry point...");
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
         functions.put(entryPoint, main);
         followFunction(main, entryPoint, processedInstructions, debugPrintStream);
 
 
-        // Follow functions, starting at each interrupt.
+        debugPrintStream.println("Following functions, starting at each interrupt...");
         for (Range range : ranges) {
             if (range instanceof InterruptVectorRange) {
                 for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
@@ -113,7 +120,7 @@ public class CodeStructure {
         }
 
 
-        // Process remaining instructions as "unknown" functions
+        debugPrintStream.println("Processing remaining instructions as 'unknown' functions...");
         Map.Entry<Integer, DisassembledInstruction> entry = instructions.firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
@@ -126,7 +133,7 @@ public class CodeStructure {
         }
 
 
-        // Give default names to functions
+        debugPrintStream.println("Generating names for functions...");
         int functionNumber = 1;
         for (Integer address : functions.keySet()) {
             Function function = functions.get(address);
@@ -144,7 +151,7 @@ public class CodeStructure {
         }
 
 
-        // Override function names using symbols table (if defined)
+        debugPrintStream.println("Overwriting function names with given symbols...");
         if (symbols != null) {
             for (Integer address : symbols.keySet()) {
                 if (isFunction(address)) {
@@ -157,7 +164,7 @@ public class CodeStructure {
         }
 
 
-        // Give default names to labels
+        debugPrintStream.println("Generating names for labels...");
         int labelNumber = 1;
         // Temporary storage for names given to returns to make sure they are unique
         Set<String> usedReturnLabels = new HashSet<String>();
