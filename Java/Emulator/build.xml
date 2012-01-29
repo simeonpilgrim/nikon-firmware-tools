@@ -24,7 +24,7 @@
 		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
 		<mkdir dir="${class-dir}"/>
 		<javac srcdir="${source-dir}" destdir="${class-dir}" deprecation="yes"
-                classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar;${lib-dir}/jgraphx.jar"
+                classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar"
 				debug="${debug}" debuglevel="${debuglevel}"
 				source="${java-level}" target="${java-level}">
 		</javac>
