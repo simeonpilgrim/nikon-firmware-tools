@@ -208,11 +208,11 @@ public class CodeStructure {
                         usedReturnLabels.add(label);
                     }
                     else {
-                        label = "end_unidentified_fn_l_" + labelNumber + "_";
+                        label = "end_unidentified_fn_l_" + (useOrdinalNames?("" + labelNumber):Integer.toHexString(address)) + "_";
                     }
                 }
                 else {
-                    label = "label_" + labelNumber + "_";
+                    label = "label_" + (useOrdinalNames?("" + labelNumber):Integer.toHexString(address)) + "_";
                 }
                 labels.put(address, new Symbol(address, label, null));
             }
