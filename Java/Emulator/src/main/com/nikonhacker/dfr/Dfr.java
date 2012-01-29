@@ -53,11 +53,9 @@ import java.util.*;
 
 public class Dfr
 {
-    public static Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
-
-    final static String cmdname = "Dfr";
-    final static String version = "1.03";
     private static final String DEFAULT_OPTIONS_FILE = "dfr.txt";
+
+    public Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     String inputFileName;
     String outputFileName;
@@ -67,7 +65,8 @@ public class Dfr
 
     Memory memory = new FastMemory();
 
-    FileWriter fileWriter;
+    Writer outWriter;
+    PrintStream debugPrintStream = System.err;
 
     MemoryMap fileMap = new MemoryMap('i', "File map");
     MemoryMap memMap = new MemoryMap('m', "Memory map");
@@ -76,7 +75,7 @@ public class Dfr
     String startTime = "";
     private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
 
-    static void usage()
+    private void usage()
     {
         String help =
                 "-d range          disassemble only specified range\n"
@@ -96,13 +95,45 @@ public class Dfr
                         + "Numbers are C-style (16 or 0x10) and can be followed by the K or M multipliers.\n"
                         + "A range is start-end or start,length.\n";
 
-        log("Usage: " + cmdname + "[options] filename");
-        log("Options:");
-        log(help);
+        System.err.println("Usage: " + getClass().getSimpleName() + "[options] filename");
+        System.err.println("Options:");
+        System.err.println(help);
     }
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
         new Dfr().execute(args);
+    }
+
+    public Set<OutputOption> getOutputOptions() {
+        return outputOptions;
+    }
+
+    public void setOutputOptions(Set<OutputOption> outputOptions) {
+        this.outputOptions = outputOptions;
+    }
+
+    public String getInputFileName() {
+        return inputFileName;
+    }
+
+    public void setInputFileName(String inputFileName) {
+        this.inputFileName = inputFileName;
+    }
+
+    public Writer getOutWriter() {
+        return outWriter;
+    }
+
+    public void setOutWriter(Writer outWriter) {
+        this.outWriter = outWriter;
+    }
+
+    public PrintStream getDebugPrintStream() {
+        return debugPrintStream;
+    }
+
+    public void setDebugPrintStream(PrintStream debugPrintStream) {
+        this.debugPrintStream = debugPrintStream;
     }
 
     private void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
@@ -116,7 +147,7 @@ public class Dfr
 
         initialize();
 
-        disassembleMemRanges(fileWriter);
+        disassembleMemRanges();
 
         cleanup();
     }
@@ -124,26 +155,13 @@ public class Dfr
 
 
     ///* Logging */
-
-    void info(String s) throws IOException {
-        fileWriter.write(s);
-
-        if (outputOptions.contains(OutputOption.VERBOSE))
-        {
+    void log(String s)
+    {
+        try {
+            debugPrintStream.println(s);
+        } catch (Exception e) {
             System.err.println(s);
         }
-    }
-
-    static void error(String s)
-    {
-        log("*** ERROR ***");
-        log(s);
-    }
-
-
-    static void log(String s)
-    {
-        System.err.println(s);
     }
 
 
@@ -179,12 +197,12 @@ public class Dfr
 
     public static int NEG(int n, int x)
     {
-        return (-signExtend((n), (x)));
+        return (-signExtend(n, x));
     }
 
     static boolean IsNeg(int n, int x)
     {
-        return ((x) & (1 << ((n) - 1))) != 0;
+        return (x & (1 << (n - 1))) != 0;
     }
 
 
@@ -199,28 +217,24 @@ public class Dfr
             outName += "_" + Format.asHex(pc, 8);
         }
         
-        if (fileWriter != null) {
-            fileWriter.close();
+        if (outWriter != null) {
+            outWriter.close();
         }
 
-        fileWriter = new FileWriter(outName + "." + ext);
+        outWriter = new FileWriter(outName + "." + ext);
     }
 
     
-    void writeHeader() throws IOException {
-        writeHeader(fileWriter);
-    }
-
     private void writeHeader(Writer writer) throws IOException {
-        writer.write("DFR " + version + "\n");
-        writer.write("  Date:   " + startTime + "\n");
-        writer.write("  Input:  " + inputFileName + "\n");
-        writer.write("  Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");
+        writer.write("; Disassembler based on Dfr v1.03 by Kevin Schoedel\n");
+        writer.write(";   Date:   " + startTime + "\n");
+        writer.write(";   Input:  " + inputFileName + "\n");
+        writer.write(";   Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");
         writer.write("\n");
     }
 
 
-    int disassembleOneInstruction(Writer writer, CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
+    int disassembleOneInstruction(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
         DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
         disassembledInstruction.getNextInstruction(memory, cpuState.pc);
         if ((disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]]) == null)
@@ -228,7 +242,7 @@ public class Dfr
             disassembledInstruction.opcode = OpCode.opData[DATA.SpecType_MD_WORD];
         }
 
-        disassembledInstruction.decodeInstructionOperands(cpuState, memory);
+        disassembledInstruction.decodeInstructionOperands(cpuState.pc, memory);
 
         disassembledInstruction.formatOperandsAndComment(cpuState, true, outputOptions);
         
@@ -237,32 +251,32 @@ public class Dfr
         }
         else {
             // No structure analysis, output right now
-            printDisassembly(writer, disassembledInstruction, cpuState, memoryFileOffset);
+            printDisassembly(disassembledInstruction, cpuState.pc, memoryFileOffset);
         }
 
         return disassembledInstruction.n << 1;
     }
 
 
-    int disassembleOneDataRecord(Writer writer, CPUState cpuState, Range memRange, int memoryFileOffset) throws IOException {
+    int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset) throws IOException {
 
         int sizeInBytes = 0;
 
         for (int spec : memRange.data.spec)
         {
             DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
-            disassembledInstruction.getNextData(memory, cpuState.pc);
+            disassembledInstruction.getNextData(memory, dummyCpuState.pc);
             disassembledInstruction.x = disassembledInstruction.data[0];
             disassembledInstruction.xBitWidth = 16;
             disassembledInstruction.opcode = OpCode.opData[spec];
 
-            disassembledInstruction.decodeInstructionOperands(cpuState, memory);
+            disassembledInstruction.decodeInstructionOperands(dummyCpuState.pc, memory);
 
-            disassembledInstruction.formatOperandsAndComment(cpuState, true, outputOptions);
+            disassembledInstruction.formatOperandsAndComment(dummyCpuState, true, outputOptions);
 
             sizeInBytes += disassembledInstruction.n << 1;
 
-            printDisassembly(writer, disassembledInstruction, cpuState, memoryFileOffset);
+            printDisassembly(disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
         }
 
         return sizeInBytes;
@@ -270,125 +284,150 @@ public class Dfr
 
     /**
      *
-     *
-     *
-     * @param writer
      * @param disassembledInstruction
-     * @param cpuState
-     * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)
-     * @throws IOException
+     * @param address
+     * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)  @throws IOException
      */
-    private void printDisassembly(Writer writer, DisassembledInstruction disassembledInstruction, CPUState cpuState, int memoryFileOffset) throws IOException {
-        writer.write(Format.asHex(cpuState.pc, 8) + " ");
+    private void printDisassembly(DisassembledInstruction disassembledInstruction, int address, int memoryFileOffset) throws IOException {
+        outWriter.write(Format.asHex(address, 8) + " ");
 
         if (memoryFileOffset != 0) {
-            writer.write("(" + Format.asHex(cpuState.pc - memoryFileOffset, 8) + ") ");
+            outWriter.write("(" + Format.asHex(address - memoryFileOffset, 8) + ") ");
         }
 
-        writer.write(disassembledInstruction.toString());
+        outWriter.write(disassembledInstruction.toString());
     }
 
 
-    void disassembleMemoryRange(Writer writer, Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
-        int startPc = memRange.start;
-        int end = memRange.end;
+    void disassembleDataMemoryRange(Range memRange, Range fileRange) throws IOException, DisassemblyException {
 
-        if ((startPc & 1) != 0)
-        {
-            error("Odd start address 0x" + Format.asHex(startPc, 8));
-            // start &= 0xffFFffFFffFFffFe;
-            startPc --;
-        }
-        if ((end & 1) != 0)
-        {
-            end++;
-        }
-
-
-        CPUState cpuState = new CPUState(startPc);
+        fixRangeBoundaries(memRange);
 
         int memoryFileOffset = fileRange.start - fileRange.fileOffset;
 
-        while (cpuState.pc < end)
+        CPUState dummyCpuState = new CPUState(memRange.start); // TODO : get rid of it (! take care, used for interrupt vector counter)
+        while (dummyCpuState.pc < memRange.end)
         {
-            int sizeInBytes;
-            if (memRange.data.isCode()) {
-                sizeInBytes = disassembleOneInstruction(writer, cpuState, memRange, memoryFileOffset, codeStructure);
-            }
-            else {
-                sizeInBytes = disassembleOneDataRecord(writer, cpuState, memRange, memoryFileOffset);
-            }
-
-            if (sizeInBytes < 0)
-            {
-                if (sizeInBytes != -1)
-                    error("input error: " + (-sizeInBytes - 1));
-                fileRange.end = cpuState.pc;
-                System.out.println("WARNING : setting pc to max...");
-                cpuState.pc = -1;
-                break;
-            }
-            cpuState.pc += sizeInBytes;
+            dummyCpuState.pc += disassembleOneDataRecord(dummyCpuState, memRange, memoryFileOffset);
         }
     }
 
-    void disassembleMemRanges(Writer writer) throws IOException, DisassemblyException {
-        
-        CodeStructure codeStructure = null;
-        if (outputOptions.contains(OutputOption.STRUCTURE)) {
-            codeStructure = new CodeStructure(memMap.ranges.first().start);
+    void disassembleCodeMemoryRange(Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
+        fixRangeBoundaries(memRange);
+
+        int memoryFileOffset = fileRange.start - fileRange.fileOffset;
+
+        CPUState cpuState = new CPUState(memRange.start);
+
+        while (cpuState.pc < memRange.end)
+        {
+            cpuState.pc += disassembleOneInstruction(cpuState, memRange, memoryFileOffset, codeStructure);
         }
+    }
 
-        for (Range memRange : memMap.ranges) {
-            // find file offset covering this memory location.
-            Range matchingFileRange = null;
-            for (Range fileRange : fileMap.ranges) {
-                if (memRange.start >= fileRange.start && memRange.start <= fileRange.end) {
-                    matchingFileRange = fileRange;
-                    break;
-                }
-            }
-
-            if (matchingFileRange != null) {
-                info("Disassemble 0x" + Format.asHex(memRange.start, 8) + "-0x" + Format.asHex(memRange.end, 8)
-                        + " (file 0x" + Format.asHex(matchingFileRange.fileOffset, 8)
-                        + ") as " + memRange.data + "\n");
-                info("\n");
-                disassembleMemoryRange(writer, memRange, matchingFileRange, codeStructure);
-                info("\n");
-            }
+    private void fixRangeBoundaries(Range memRange) {
+        if ((memRange.start & 1) != 0)
+        {
+            log("ERROR : Odd start address 0x" + Format.asHex(memRange.start, 8));
+            memRange.start--;
         }
+        if ((memRange.end & 1) != 0)
+        {
+            memRange.end++;
+        }
+    }
 
-        if (codeStructure != null) {
-            codeStructure.postProcess(symbols, memMap.ranges, memory);
-            
+    public void disassembleMemRanges() throws IOException, DisassemblyException {
+        if (!outputOptions.contains(OutputOption.STRUCTURE)) {
+            // Original one pass disassembly
             for (Range range : memMap.ranges) {
+                // find file offset covering this memory location.
+                Range matchingFileRange = getMatchingFileRange(range);
+
+                printRangeHeader(range, matchingFileRange);
+
                 if (range.data.isCode()) {
-                    codeStructure.writeDisassembly(writer, range);
+                    disassembleCodeMemoryRange(range, matchingFileRange, null);
                 }
                 else {
-                    //writeData(range);
+                    disassembleDataMemoryRange(range, matchingFileRange);
+                }
+            }
+        }
+        else {
+            // Advanced two pass disassembly, with intermediary structural analysis
+            CodeStructure codeStructure = new CodeStructure(memMap.ranges.first().start);
+            // Disassemble the code ranges
+            for (Range range : memMap.ranges) {
+                if (range.data.isCode()) {
+                    disassembleCodeMemoryRange(range, getMatchingFileRange(range), codeStructure);
+                }
+            }
+            codeStructure.postProcess(symbols, memMap.ranges, memory, debugPrintStream, outputOptions.contains(OutputOption.ORDINAL));
+
+            for (Range range : memMap.ranges) {
+                // find file offset covering this memory location.
+                Range matchingFileRange = getMatchingFileRange(range);
+                printRangeHeader(range, matchingFileRange);
+                if (range.data.isCode()) {
+                    codeStructure.writeDisassembly(outWriter, range);
+                }
+                else {
+                    disassembleDataMemoryRange(range, matchingFileRange);
                 }
             }
 
             // print and output
-            log(codeStructure.getInstructions().size() + " instructions");
-            log(codeStructure.getLabels().size() + " labels");
-            log(codeStructure.getFunctions().size() + " functions");
-            log(codeStructure.getReturns().size() + " returns");
+            debugPrintStream.println(codeStructure.getInstructions().size() + " instructions");
+            debugPrintStream.println(codeStructure.getLabels().size() + " labels");
+            debugPrintStream.println(codeStructure.getFunctions().size() + " functions");
+            debugPrintStream.println(codeStructure.getReturns().size() + " returns");
         }
+    }
 
+    private void printRangeHeader(Range range, Range matchingFileRange) throws IOException {
+        String msg = "Disassembly of 0x" + Format.asHex(range.start, 8) + "-0x" + Format.asHex(range.end, 8)
+                + " (file 0x" + Format.asHex(range.start - matchingFileRange.start + matchingFileRange.fileOffset, 8)
+                + ") as " + range.data;
+        if (outputOptions.contains(OutputOption.VERBOSE)) {
+            debugPrintStream.println(msg);
+        }
+        outWriter.write("\n");
+        outWriter.write("; ########################################################################\n");
+        outWriter.write("; " + msg + "\n");
+        outWriter.write("; ########################################################################\n");
+    }
+
+    /**
+     * Find file offset covering this memory location.
+     * @param memRange
+     * @return
+     */
+    private Range getMatchingFileRange(Range memRange) {
+        Range matchingFileRange = null;
+        for (Range fileRange : fileMap.ranges) {
+            if (memRange.start >= fileRange.start && memRange.start <= fileRange.end) {
+                matchingFileRange = fileRange;
+                break;
+            }
+        }
+        if (matchingFileRange == null) {
+            debugPrintStream.println("WARNING : No matching file range ('-i' option) found for address 0x" + Format.asHex(memRange.start, 8) + "...");
+            debugPrintStream.println("ssuming no offset between file and memory for now.");
+            return memRange;
+        }
+        return matchingFileRange;
     }
 
 
     ///* initialization */
 
-    void initialize() throws IOException {
+    public void initialize() throws IOException {
         startTime = new Date().toString();
 
         if (inputFileName == null)
         {
-            log(cmdname + ": no input file\n");
+            log(getClass().getSimpleName() + ": no input file");
             usage();
             System.exit(-1);
         }
@@ -401,7 +440,7 @@ public class Dfr
 
 //        if (outOptions.fileMap || outOptions.memoryMap) {
         openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
-        writeHeader();
+        writeHeader(outWriter);
 //        }
 
         File binaryFile = new File(inputFileName);
@@ -424,8 +463,8 @@ public class Dfr
 //                dumpmap(&rangemap);
     }
 
-    void cleanup() throws IOException {
-        fileWriter.close();
+    public void cleanup() throws IOException {
+        outWriter.close();
     }
 
 
@@ -479,7 +518,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    System.err.println("-" + option + ": not implemented yet!\n");
+                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     break;
 
@@ -490,7 +529,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    System.err.println("-" + option + ": not implemented yet!\n");
+                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     //        if (parseOffsetRange(opt, arg, &r, &start, &end, &map))
                     //            break;
@@ -520,7 +559,7 @@ public class Dfr
 
                 case 'L':
                 case 'l':
-                    System.err.println("-" + option + ": not implemented yet!\n");
+                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     optLittleEndian = true;
                     break;
@@ -592,7 +631,7 @@ public class Dfr
                     try {
                         readOptions(argument);
                     } catch (IOException e) {
-                        System.err.println("Cannot open given options file '" + argument + "'");
+                        debugPrintStream.println("Cannot open given options file '" + argument + "'");
                         System.exit(1);
                     }
                     break;
@@ -613,7 +652,7 @@ public class Dfr
     }
 
 
-    private void readOptions(String filename) throws IOException, ParsingException {
+    public void readOptions(String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
         String buf;

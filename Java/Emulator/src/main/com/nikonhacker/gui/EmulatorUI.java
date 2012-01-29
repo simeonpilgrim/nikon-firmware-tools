@@ -10,6 +10,7 @@ package com.nikonhacker.gui;
 
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.Dfr;
 import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.emu.EmulationException;
@@ -24,6 +25,7 @@ import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
@@ -31,6 +33,7 @@ import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -42,7 +45,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -487,13 +492,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         toolsMenu.add(tmpMenuItem);
 
         //disassembler
-        // TODO
         tmpMenuItem = new JMenuItem("Disassemble firmware");
 //        tmpMenuItem.setMnemonic(KeyEvent.VK_S);
 //        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         tmpMenuItem.setActionCommand(COMMAND_DISASSEMBLE_FILE);
         tmpMenuItem.addActionListener(this);
-//        toolsMenu.add(tmpMenuItem);
+        toolsMenu.add(tmpMenuItem);
 
         toolsMenu.add(new JSeparator());
 
@@ -578,7 +582,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             openEncodeDialog();
         }
         else if (COMMAND_DISASSEMBLE_FILE.equals(e.getActionCommand())) {
-            //openDisassembleDialog();
+            openDisassembleDialog();
         }
         else if (COMMAND_OPTIONS.equals(e.getActionCommand())) {
             openOptionsDialog();
@@ -648,6 +652,93 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
+    
+    private void openDisassembleDialog() {
+        JTextField sourceFile = new JTextField();
+        JTextField dfrFile = new JTextField();
+        JTextField destinationFile = new JTextField();
+        List<DependentField> dependencies = new ArrayList<DependentField>();
+        dependencies.add(new DependentField(dfrFile, "Dfr.txt"));
+        dependencies.add(new DependentField(destinationFile, "asm"));
+        final JComponent[] inputs = new JComponent[]{
+                new FileSelectionPanel("Source file", sourceFile, false, dependencies),
+                new FileSelectionPanel("Dfr options file", dfrFile, false),
+                new FileSelectionPanel("Destination dir", destinationFile, true)
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Choose binary source and options",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+            DisassemblerProgressDialog disassemblerProgressDialog = new DisassemblerProgressDialog(this);
+            disassemblerProgressDialog.startBackgroundDisassembly(dfrFile.getText(), sourceFile.getText(), destinationFile.getText());
+            disassemblerProgressDialog.setVisible(true);
+        }
+    }
+
+    private class DisassemblerProgressDialog extends JDialog {
+        PrintWriterArea printWriterArea;
+        JButton closeButton;
+        final JDialog frame = this;
+
+        private DisassemblerProgressDialog(Frame owner) {
+            super(owner, "Disassembly progress", true);
+
+            JPanel panel = new JPanel(new BorderLayout());
+
+            printWriterArea = new PrintWriterArea(15, 40);
+            panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
+
+            closeButton = new JButton("Close");
+            closeButton.setEnabled(false);
+            closeButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.dispose();
+                }
+            });
+            panel.add(closeButton, BorderLayout.SOUTH);
+
+            setContentPane(panel);
+
+            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            pack();
+            setLocationRelativeTo(null);
+        }
+
+        void startBackgroundDisassembly(final String optionsFilename, final String inputFilename, final String outputFilename) {
+            final Dfr disassembler = new Dfr();
+            Thread disassemblerThread = new Thread(new Runnable() {
+                public void run() {
+                    boolean wasVerbose = prefs.getOutputOptions().contains(OutputOption.VERBOSE);
+                    prefs.getOutputOptions().add(OutputOption.VERBOSE);
+                    PrintStream debugPrintStream = printWriterArea.getPrintStream();
+                    try {
+                        debugPrintStream.println("Initializing disassembler...");
+                        disassembler.setDebugPrintStream(debugPrintStream);
+                        disassembler.setOutWriter(new FileWriter(outputFilename));
+                        disassembler.readOptions(optionsFilename);
+                        disassembler.setOutputOptions(prefs.getOutputOptions());
+                        disassembler.setInputFileName(inputFilename);
+                        disassembler.initialize();
+                        debugPrintStream.println("Starting disassembly...");
+                        disassembler.disassembleMemRanges();
+                        disassembler.cleanup();
+                        debugPrintStream.println("Disassembly complete");
+                    } catch (Exception e) {
+                        debugPrintStream.println("ERROR : " + e.getMessage());
+                    }                    
+                    prefs.setOutputOption(OutputOption.VERBOSE, wasVerbose);
+                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                    closeButton.setEnabled(true);
+                }
+            });
+            disassemblerThread.start();
+        }
+    }
+
 
     private void selectAndLoadImage() {
         final JFileChooser fc = new JFileChooser();
@@ -707,7 +798,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         Font font = label.getFont();
 
         // create some css from the label's font
-        StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
+        StringBuilder style = new StringBuilder("font-family:" + font.getFamily() + ";");
         style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
         style.append("font-size:" + font.getSize() + "pt;");
 
@@ -1080,17 +1171,45 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
+    public class DependentField {
+        JTextField field;
+        String suffix;
+
+        public DependentField(JTextField field, String suffix) {
+            this.field = field;
+            this.suffix = suffix;
+        }
+    }
+
     public class FileSelectionPanel extends JPanel implements ActionListener {
         String label;
         JButton button;
         JTextField textField;
         boolean directoryMode;
+        private List<DependentField> dependentFields;
 
         public FileSelectionPanel(String label, JTextField textField, boolean directoryMode) {
             super();
+            init(label, textField, directoryMode, new ArrayList<DependentField>());
+        }
+
+        /**
+         * 
+         * @param label
+         * @param textField
+         * @param directoryMode
+         * @param dependentFields : a list of text fields that will be filled based on this one. Each field is associated with a suffix to customize secondary field filename. If it contains a dot, it replaces the extension, otherwise it replaces the full filename
+         */
+        public FileSelectionPanel(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
+            super();
+            init(label, textField, directoryMode, dependentFields);
+        }
+
+        private void init(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
             this.label = label;
             this.textField = textField;
             this.directoryMode = directoryMode;
+            this.dependentFields = dependentFields;
 
             this.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
@@ -1104,7 +1223,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             this.add(button);
 
             button.addActionListener(this);
-            setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+            setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -1124,6 +1243,25 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 textField.setText(fc.getSelectedFile().getPath());
+                for (DependentField dependentField : dependentFields) {
+                    if (StringUtils.isBlank(dependentField.field.getText())) {
+                        // We have to fill the cascading target based on just made selection and given target
+                        String text = textField.getText();
+                        if (directoryMode) {
+                            dependentField.field.setText(text + File.separatorChar + dependentField.suffix);
+                        }
+                        else {
+                            if (dependentField.suffix.contains(".")) {
+                                // replace filename
+                                dependentField.field.setText(StringUtils.substringBeforeLast(text, File.separator) + File.separator + dependentField.suffix);
+                            }
+                            else {
+                                // only replace extension
+                                dependentField.field.setText(StringUtils.substringBeforeLast(text, ".") + "." + dependentField.suffix);
+                            }                        
+                        }
+                    }
+                }
             }
         }
     }

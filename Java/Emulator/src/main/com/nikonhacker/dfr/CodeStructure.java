@@ -5,6 +5,7 @@ import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Writer;
 import java.util.*;
 
@@ -86,7 +87,7 @@ public class CodeStructure {
     /**
      * Post-process instructions to retrieve code structure
      */
-    public void postProcess(Map<Integer, Symbol> symbols, SortedSet<Range> ranges, Memory memory) {
+    public void postProcess(Map<Integer, Symbol> symbols, SortedSet<Range> ranges, Memory memory, PrintStream debugPrintStream, boolean useOrdinalNames) throws IOException {
 
 
         Set<Integer> processedInstructions = new HashSet<Integer>();
@@ -94,7 +95,7 @@ public class CodeStructure {
         // Follow functions, starting at entry point.
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
         functions.put(entryPoint, main);
-        followFunction(main, entryPoint, processedInstructions);
+        followFunction(main, entryPoint, processedInstructions, debugPrintStream);
 
 
         // Follow functions, starting at each interrupt.
@@ -103,9 +104,9 @@ public class CodeStructure {
                 for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
                     Integer address = memory.load32(range.getStart() + 4 * (0x100 - interruptNumber - 1));
                     if (!functions.containsKey(address)) {
-                        Function function = new Function(address, "interrupt_" + interruptNumber + "_", "");
+                        Function function = new Function(address, "interrupt_0x" + Format.asHex(interruptNumber,2) + "_", "");
                         functions.put(address, function);
-                        followFunction(function, address, processedInstructions);
+                        followFunction(function, address, processedInstructions, debugPrintStream);
                     }
                 }
             }
@@ -119,7 +120,7 @@ public class CodeStructure {
             if (!processedInstructions.contains(address)) {
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 functions.put(address, function);
-                followFunction(function, address, processedInstructions);
+                followFunction(function, address, processedInstructions, debugPrintStream);
             }
             entry = instructions.higherEntry(address);
         }
@@ -130,11 +131,12 @@ public class CodeStructure {
         for (Integer address : functions.keySet()) {
             Function function = functions.get(address);
             if (StringUtils.isBlank(function.getName())) {
+                String functionId = useOrdinalNames?("" + functionNumber):Integer.toHexString(address);
                 if (function.getType() == Function.Type.UNKNOWN) {
-                    function.setName("unknown_" + functionNumber + "_");
+                    function.setName("unknown_" + functionId + "_");
                 }
                 else {
-                    function.setName("function_" + functionNumber + "_");
+                    function.setName("function_" + functionId + "_");
                 }
             }
             // increment even if unused, to make output stable no matter what future replacements will occur
@@ -142,7 +144,7 @@ public class CodeStructure {
         }
 
 
-        // Override names using symbols table (if defined)
+        // Override function names using symbols table (if defined)
         if (symbols != null) {
             for (Integer address : symbols.keySet()) {
                 if (isFunction(address)) {
@@ -225,7 +227,7 @@ public class CodeStructure {
 
     }
 
-    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions) {
+    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintStream debugPrintStream) throws IOException {
         CodeSegment currentSegment = new CodeSegment();
         currentFunction.getCodeSegments().add(currentSegment);
         List<Jump> jumps = new ArrayList<Jump>();
@@ -233,7 +235,7 @@ public class CodeStructure {
         while(address != null) {
             DisassembledInstruction instruction = instructions.get(address);
             if (instruction == null) {
-                System.err.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
+                debugPrintStream.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
                 break;
             }
             else {
@@ -253,7 +255,7 @@ public class CodeStructure {
                     Jump jump = new Jump(address, instruction.decodedX, false);
                     currentFunction.getCalls().add(jump);
                     if (targetAddress == null || targetAddress == 0) {
-                        System.err.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                        debugPrintStream.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
                     }
                     else {
                         Function function = functions.get(targetAddress);
@@ -261,7 +263,7 @@ public class CodeStructure {
                             // new Function
                             function = new Function(targetAddress, "", "", Function.Type.INTERRUPT);
                             functions.put(targetAddress, function);
-                            followFunction(function, targetAddress, processedInstructions);
+                            followFunction(function, targetAddress, processedInstructions, debugPrintStream);
                         }
                         else {
                             // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
@@ -316,7 +318,7 @@ public class CodeStructure {
                 }
             }
             if (!inProcessedSegment) {
-                followFunction(currentFunction, jump.target, processedInstructions);
+                followFunction(currentFunction, jump.target, processedInstructions, debugPrintStream);
             }
         }
 
@@ -348,8 +350,9 @@ public class CodeStructure {
 
             // function
             if (isFunction(address)) {
+                Function function = functions.get(address);
                 writer.write("\n; ************************************************************************\n");
-                writer.write("; " + functions.get(address).getTitleLine() + "\n");
+                writer.write("; " + function.getTitleLine() + "\n");
                 writer.write("; ************************************************************************\n");
             }
 
@@ -397,7 +400,7 @@ public class CodeStructure {
                             }
                         }
                         if (instruction.opcode.isJumpOrBranch) {
-                            //TODO if(areInSameRange(address, targetAddress))
+                            //TODO only if(areInSameRange(address, targetAddress))
                             instruction.comment =  targetAddress>address?"(skip)":"(loop)";
                         }
                     } catch (ParsingException e) {

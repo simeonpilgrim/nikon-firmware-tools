@@ -108,7 +108,7 @@ public class DisassembledInstruction {
         }
     }
 
-    public void decodeInstructionOperands(CPUState cpuState, Memory memory) {
+    public void decodeInstructionOperands(int pc, Memory memory) {
         switch (opcode.instructionFormat)
         {
             case OpCode.FORMAT_A:
@@ -146,14 +146,14 @@ public class DisassembledInstruction {
         }
 
         for (int ii = 0; ii < opcode.numberExtraXWords; ii++) {
-            getNextInstruction(memory, cpuState.pc);
+            getNextInstruction(memory, pc);
             x = (x << 16) + data[n - 1];
             xBitWidth += 16;
         }
 
         for (int ii = 0; ii < opcode.numberExtraYWords; ii++) {
             /* coprocessor extension word */
-            getNextInstruction(memory, cpuState.pc);
+            getNextInstruction(memory, pc);
             int tmp = data[n - 1];
             x = i;
             xBitWidth = 4;
@@ -496,7 +496,7 @@ public class DisassembledInstruction {
                     r = CPUState.NOREG;
                     break;
                 default:
-                    Dfr.error("bad action '" + s + "'");
+                    System.err.println("bad action '" + s + "' at " + Format.asHex(cpuState.pc, 8));
                     break;
             }
         }

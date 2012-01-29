@@ -15,6 +15,7 @@ public enum OutputOption {
     DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers"),
 
     STRUCTURE   ("structure",       "structural code analysis"),
+    ORDINAL     ("ordinalnames",    "generate symbol names based on ordinal numbers instead of address"),
 
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),
@@ -24,9 +25,8 @@ public enum OutputOption {
     //XREF2       ("xreference",      "write cross reference"),
 
     VERBOSE     ("verbose",         "verbose messages"),
-    DEBUG       ("debug",           "debug disassembler"),
+    DEBUG       ("debug",           "debug disassembler")
     ;
-
     private String key;
     private String help;
     

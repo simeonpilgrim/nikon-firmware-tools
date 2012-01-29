@@ -1,8 +1,6 @@
 package com.nikonhacker.dfr;
 
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -96,7 +94,7 @@ public class Function extends Symbol {
 
     public String getTitleLine() {
         return getName()
-                + (StringUtils.isNotBlank(comment)?" (" + comment + ") ":"")
+                + "(" + getComment() + ")"
                 + (codeSegments.size()>1?(" [" + codeSegments.size() + " segment" + "s]"):"");
     }
 

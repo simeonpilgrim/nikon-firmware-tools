@@ -167,7 +167,7 @@ public class Emulator {
     
                 disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]];
     
-                disassembledInstruction.decodeInstructionOperands(cpuState, memory);
+                disassembledInstruction.decodeInstructionOperands(cpuState.pc, memory);
 
                 if (instructionPrintStream != null) {
                     PrintStream ips = instructionPrintStream;
