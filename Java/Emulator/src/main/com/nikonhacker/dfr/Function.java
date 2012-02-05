@@ -1,6 +1,8 @@
 package com.nikonhacker.dfr;
 
 
+import com.nikonhacker.Format;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -89,6 +91,10 @@ public class Function extends Symbol {
 
     @Override
     public String toString() {
+        return getName() + "\n0x" + Format.asHex(getAddress(), 8);
+    }
+
+    public String getSummary() {
         return getName() + " starting at 0x" + Integer.toHexString(getAddress()) + " [" + codeSegments.size() + " segment(s)]";
     }
 

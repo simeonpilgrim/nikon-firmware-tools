@@ -9,10 +9,7 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.Prefs;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.Dfr;
-import com.nikonhacker.dfr.OutputOption;
-import com.nikonhacker.dfr.ParsingException;
+import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -27,6 +24,7 @@ import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
+import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
@@ -45,7 +43,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.URL;
@@ -74,6 +71,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_DISASSEMBLE_FILE = "DISASSEMBLE_FILE";
+    private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
@@ -86,6 +84,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DebuggableMemory memory;
     private CPUState cpuState;
     private Emulator emulator;
+
+    private CodeStructure codeStructure = null;
 
     private boolean isImageLoaded = false;
     private boolean isEmulatorPlaying = false;
@@ -111,6 +111,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem screenEmulatorMenuItem;
     private JCheckBoxMenuItem component4006MenuItem;
     private JMenuItem optionsMenuItem;
+    private JMenuItem codeStructureMenuItem;
 
     private JButton loadButton;
     private JButton playButton;
@@ -126,6 +127,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton screenEmulatorButton;
     private JButton component4006Button;
     private JButton optionsButton;
+    private JButton codeStructureButton;
 
     private DocumentFrame disassemblyFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
@@ -133,6 +135,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private MemoryActivityViewerFrame memoryActivityViewerFrame;
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
+    private CodeStructureFrame codeStructureFrame;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -271,6 +274,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createHorizontalGlue());
 
+        codeStructureButton = makeButton("code_structure", COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW, "Code Structure", "Structure");
+//TODO        bar.add(codeStructureButton);
         optionsButton = makeButton("options", COMMAND_OPTIONS, "Options", "Options");
         bar.add(optionsButton);
 
@@ -501,6 +506,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         toolsMenu.add(new JSeparator());
 
+        //codestructure
+        codeStructureMenuItem = new JMenuItem("Code structure");
+//        codeStructureMenuItem.setMnemonic(KeyEvent.VK_S);
+//        codeStructureMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        codeStructureMenuItem.setActionCommand(COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW);
+        codeStructureMenuItem.addActionListener(this);
+//TODO        toolsMenu.add(codeStructureMenuItem);
+
+//TODO        toolsMenu.add(new JSeparator());
+
         //options
         optionsMenuItem = new JMenuItem("Options");
         optionsMenuItem.setMnemonic(KeyEvent.VK_O);
@@ -584,6 +599,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_DISASSEMBLE_FILE.equals(e.getActionCommand())) {
             openDisassembleDialog();
         }
+        else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
+            toggleCodeStructureWindow();
+        }
         else if (COMMAND_OPTIONS.equals(e.getActionCommand())) {
             openOptionsDialog();
         }
@@ -664,7 +682,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final JComponent[] inputs = new JComponent[]{
                 new FileSelectionPanel("Source file", sourceFile, false, dependencies),
                 new FileSelectionPanel("Dfr options file", dfrFile, false),
-                new FileSelectionPanel("Destination dir", destinationFile, true),
+                new FileSelectionPanel("Destination file", destinationFile, false),
+                makeCheckBox(OutputOption.OFFSET, prefs.getOutputOptions(), true),
                 makeCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
                 makeCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
         };
@@ -722,13 +741,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     try {
                         debugPrintStream.println("Initializing disassembler...");
                         disassembler.setDebugPrintStream(debugPrintStream);
-                        disassembler.setOutWriter(new FileWriter(outputFilename));
+                        disassembler.setOutputFileName(outputFilename);
                         disassembler.readOptions(optionsFilename);
                         disassembler.setOutputOptions(prefs.getOutputOptions());
                         disassembler.setInputFileName(inputFilename);
                         disassembler.initialize();
                         debugPrintStream.println("Starting disassembly...");
-                        disassembler.disassembleMemRanges();
+                        codeStructure = disassembler.disassembleMemRanges();
                         disassembler.cleanup();
                         debugPrintStream.println();
                         debugPrintStream.println("Disassembly complete.");
@@ -738,6 +757,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     prefs.setOutputOption(OutputOption.VERBOSE, wasVerbose);
                     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                     closeButton.setEnabled(true);
+                    updateStates();
                 }
             });
             disassemblerThread.start();
@@ -1027,6 +1047,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
+    private void toggleCodeStructureWindow() {
+        if (codeStructureFrame == null) {
+            codeStructureFrame = new CodeStructureFrame("Code structure", true, true, false, true, codeStructure, this);
+            addDocumentFrame(codeStructureFrame);
+            codeStructureFrame.display(true);
+        }
+        else {
+            codeStructureFrame.dispose();
+            codeStructureFrame = null;
+        }
+        updateStates();
+    }
+
+
+
     public void addDocumentFrame(DocumentFrame frame) {
         mdiPane.add(frame);
     }
@@ -1054,6 +1089,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (frame == component4006Frame) {
             toggleComponent4006();
+        }
+        else if (frame == codeStructureFrame) {
+            toggleCodeStructureWindow();
         }
         else {
             System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
@@ -1122,6 +1160,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
         }
+
+        //codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
+        codeStructureMenuItem.setEnabled(true); codeStructureButton.setEnabled(true);
+
     }
 
 

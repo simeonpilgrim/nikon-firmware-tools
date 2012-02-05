@@ -215,11 +215,21 @@
 
 ############################### Symbols
 
+-s 0x235FDA=strcat
+-s 0x235FF4=strchr
+-s 0x236006=strcmp
+-s 0x23601A=strcpy
+-s 0x236028=strlen
+-s 0x236038=strncat
+-s 0x23605C=strncmp
+-s 0x23607A=strncpy
+
 -s 0x23532A=neg (r4 = in/out)
--s 0x23558E=memset (r4 = dest, r5 = val, r6 = count)
+
+-s 0x235542=memcmp (r4 = ptr1, r5 = ptr2, r6 = count)
 -s 0x23555C=memcpy (r4 = dest, r5 = source, r6 = count)
 -s 0x23556C=memmove (r4 = dest, r5 = source, r6 = count)
--s 0x235542=memcmp (r4 = ptr1, r5 = ptr2, r6 = count)
+-s 0x23558E=memset (r4 = dest, r5 = val, r6 = count)
 
 -s 0x164CBE=trace (debug string is passed)
 
@@ -230,3 +240,7 @@
 -s 0x107526=linked_list_remove_item (remove r4)
 -s 0x107536=linked_list_remove_previous (remove item before r4)
 -s 0x10754C=linked_list_remove_next (remove item after r4)
+
+-s 0x107C80=memcpy_fast
+-s 0x107CB2=memset_fast
+

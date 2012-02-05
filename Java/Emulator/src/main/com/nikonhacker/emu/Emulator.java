@@ -66,10 +66,6 @@ public class Emulator {
         this.totalCycles = totalCycles;
     }
 
-    public int getInterruptPeriod() {
-        return interruptPeriod;
-    }
-
     /**
      * Sets how often external interrupts are checked
      * @param interruptPeriod the period, in CPU cycles
@@ -114,19 +110,10 @@ public class Emulator {
         this.outputOptions = outputOptions;
     }
 
-    public Memory getMemory() {
-        return memory;
-    }
-
-
     public void setMemory(Memory memory) {
         this.memory = memory;
     }
 
-
-    public CPUState getCpuState() {
-        return cpuState;
-    }
 
     public void setCpuState(CPUState cpuState) {
         this.cpuState = cpuState;

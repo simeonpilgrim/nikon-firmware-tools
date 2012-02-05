@@ -348,11 +348,14 @@ public class CodeStructure {
     }
 
 
-    public void writeDisassembly(Writer writer, Range range) throws IOException {
+    public void writeDisassembly(Writer writer, Range range, Set<OutputOption> outputOptions) throws IOException {
 
         // Start output
         Integer address = range.getStart();
         DisassembledInstruction instruction = instructions.get(address);
+
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(range.start - range.fileOffset):0;
+
         while (instruction != null && address < range.getEnd()) {
 
             // function
@@ -417,7 +420,7 @@ public class CodeStructure {
             }
 
             // print instruction
-            writer.write(Format.asHex(address, 8) + " " + instruction.toString());
+            Dfr.printDisassembly(writer, instruction, address, memoryFileOffset);
 
             // after return from function
             if (isEnd(address)) {

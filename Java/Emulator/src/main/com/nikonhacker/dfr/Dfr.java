@@ -104,32 +104,16 @@ public class Dfr
         new Dfr().execute(args);
     }
 
-    public Set<OutputOption> getOutputOptions() {
-        return outputOptions;
-    }
-
     public void setOutputOptions(Set<OutputOption> outputOptions) {
         this.outputOptions = outputOptions;
-    }
-
-    public String getInputFileName() {
-        return inputFileName;
     }
 
     public void setInputFileName(String inputFileName) {
         this.inputFileName = inputFileName;
     }
 
-    public Writer getOutWriter() {
-        return outWriter;
-    }
-
-    public void setOutWriter(Writer outWriter) {
-        this.outWriter = outWriter;
-    }
-
-    public PrintStream getDebugPrintStream() {
-        return debugPrintStream;
+    public void setOutputFileName(String outputFileName) {
+        this.outputFileName = outputFileName;
     }
 
     public void setDebugPrintStream(PrintStream debugPrintStream) {
@@ -209,9 +193,12 @@ public class Dfr
     ///* output */
 
     void openOutput(int pc, boolean usePC, String ext) throws IOException {
-        String outName = "";
-        if (outputFileName == null) {
-            outName = FilenameUtils.getBaseName(inputFileName);
+        String outName;
+        if (StringUtils.isBlank(outputFileName)) {
+            outName = FilenameUtils.removeExtension(inputFileName);
+        }
+        else {
+            outName = FilenameUtils.removeExtension(outputFileName);
         }
         if (usePC) {
             outName += "_" + Format.asHex(pc, 8);
@@ -251,7 +238,7 @@ public class Dfr
         }
         else {
             // No structure analysis, output right now
-            printDisassembly(disassembledInstruction, cpuState.pc, memoryFileOffset);
+            printDisassembly(outWriter, disassembledInstruction, cpuState.pc, memoryFileOffset);
         }
 
         return disassembledInstruction.n << 1;
@@ -276,7 +263,7 @@ public class Dfr
 
             sizeInBytes += disassembledInstruction.n << 1;
 
-            printDisassembly(disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
+            printDisassembly(outWriter, disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
         }
 
         return sizeInBytes;
@@ -284,18 +271,20 @@ public class Dfr
 
     /**
      *
+     * @param writer
      * @param disassembledInstruction
      * @param address
-     * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)  @throws IOException
+     * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)
+     * @throws IOException
      */
-    private void printDisassembly(DisassembledInstruction disassembledInstruction, int address, int memoryFileOffset) throws IOException {
-        outWriter.write(Format.asHex(address, 8) + " ");
+    public static void printDisassembly(Writer writer, DisassembledInstruction disassembledInstruction, int address, int memoryFileOffset) throws IOException {
+        writer.write(Format.asHex(address, 8) + " ");
 
         if (memoryFileOffset != 0) {
-            outWriter.write("(" + Format.asHex(address - memoryFileOffset, 8) + ") ");
+            writer.write("(" + Format.asHex(address - memoryFileOffset, 8) + ") ");
         }
 
-        outWriter.write(disassembledInstruction.toString());
+        writer.write(disassembledInstruction.toString());
     }
 
 
@@ -303,7 +292,7 @@ public class Dfr
 
         fixRangeBoundaries(memRange);
 
-        int memoryFileOffset = fileRange.start - fileRange.fileOffset;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.start - fileRange.fileOffset):0;
 
         CPUState dummyCpuState = new CPUState(memRange.start); // TODO : get rid of it (! take care, used for interrupt vector counter)
         while (dummyCpuState.pc < memRange.end)
@@ -315,7 +304,7 @@ public class Dfr
     void disassembleCodeMemoryRange(Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
         fixRangeBoundaries(memRange);
 
-        int memoryFileOffset = fileRange.start - fileRange.fileOffset;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.start - fileRange.fileOffset):0;
 
         CPUState cpuState = new CPUState(memRange.start);
 
@@ -337,7 +326,7 @@ public class Dfr
         }
     }
 
-    public void disassembleMemRanges() throws IOException, DisassemblyException {
+    public CodeStructure disassembleMemRanges() throws IOException, DisassemblyException {
         if (!outputOptions.contains(OutputOption.STRUCTURE)) {
             // Original one pass disassembly
             for (Range range : memMap.ranges) {
@@ -353,6 +342,7 @@ public class Dfr
                     disassembleDataMemoryRange(range, matchingFileRange);
                 }
             }
+            return null;
         }
         else {
             // Advanced two pass disassembly, with intermediary structural analysis
@@ -380,13 +370,13 @@ public class Dfr
                 Range matchingFileRange = getMatchingFileRange(range);
                 printRangeHeader(range, matchingFileRange);
                 if (range.data.isCode()) {
-                    codeStructure.writeDisassembly(outWriter, range);
+                    codeStructure.writeDisassembly(outWriter, range, outputOptions);
                 }
                 else {
                     disassembleDataMemoryRange(range, matchingFileRange);
                 }
             }
-
+            return codeStructure;
         }
     }
 
