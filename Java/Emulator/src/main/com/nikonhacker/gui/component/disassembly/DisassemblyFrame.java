@@ -3,7 +3,7 @@ package com.nikonhacker.gui.component.disassembly;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintWriterArea;
+import com.nikonhacker.gui.component.PrintStreamArea;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +20,7 @@ public class DisassemblyFrame extends DocumentFrame {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
 
-        final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
+        final PrintStreamArea textArea = new PrintStreamArea(ROWS, COLUMNS);
         scrollPane = new JScrollPane(textArea);
 
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
