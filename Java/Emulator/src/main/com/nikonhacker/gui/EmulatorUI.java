@@ -22,7 +22,7 @@ import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintWriterArea;
+import com.nikonhacker.gui.component.PrintStreamArea;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
@@ -275,7 +275,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(Box.createHorizontalGlue());
 
         codeStructureButton = makeButton("code_structure", COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW, "Code Structure", "Structure");
-//TODO        bar.add(codeStructureButton);
+        bar.add(codeStructureButton);
         optionsButton = makeButton("options", COMMAND_OPTIONS, "Options", "Options");
         bar.add(optionsButton);
 
@@ -512,9 +512,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        codeStructureMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         codeStructureMenuItem.setActionCommand(COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW);
         codeStructureMenuItem.addActionListener(this);
-//TODO        toolsMenu.add(codeStructureMenuItem);
+        toolsMenu.add(codeStructureMenuItem);
 
-//TODO        toolsMenu.add(new JSeparator());
+        toolsMenu.add(new JSeparator());
 
         //options
         optionsMenuItem = new JMenuItem("Options");
@@ -703,7 +703,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private class DisassemblerProgressDialog extends JDialog {
-        PrintWriterArea printWriterArea;
+        PrintStreamArea printStreamArea;
         JButton closeButton;
         final JDialog frame = this;
 
@@ -712,8 +712,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             JPanel panel = new JPanel(new BorderLayout());
 
-            printWriterArea = new PrintWriterArea(25, 70);
-            panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
+            printStreamArea = new PrintStreamArea(25, 70);
+            panel.add(new JScrollPane(printStreamArea), BorderLayout.CENTER);
 
             closeButton = new JButton("Close");
             closeButton.setEnabled(false);
@@ -737,7 +737,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 public void run() {
                     boolean wasVerbose = prefs.getOutputOptions().contains(OutputOption.VERBOSE);
                     prefs.getOutputOptions().add(OutputOption.VERBOSE);
-                    PrintStream debugPrintStream = printWriterArea.getPrintStream();
+                    PrintStream debugPrintStream = printStreamArea.getPrintStream();
                     try {
                         debugPrintStream.println("Initializing disassembler...");
                         disassembler.setDebugPrintStream(debugPrintStream);
@@ -1049,7 +1049,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCodeStructureWindow() {
         if (codeStructureFrame == null) {
-            codeStructureFrame = new CodeStructureFrame("Code structure", true, true, false, true, codeStructure, this);
+            codeStructureFrame = new CodeStructureFrame("Code structure", true, true, true, true, codeStructure, this);
             addDocumentFrame(codeStructureFrame);
             codeStructureFrame.display(true);
         }
@@ -1161,8 +1161,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
         }
 
-        //codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
-        codeStructureMenuItem.setEnabled(true); codeStructureButton.setEnabled(true);
+        codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
+        //codeStructureMenuItem.setEnabled(true); codeStructureButton.setEnabled(true);
 
     }
 
