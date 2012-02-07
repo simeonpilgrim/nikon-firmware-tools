@@ -24,7 +24,7 @@ public class CodeStructure {
     Map<Integer, Symbol> labels = new TreeMap<Integer, Symbol>();
     
     /** Map address -> Functions */
-    Map<Integer, Function> functions = new TreeMap<Integer, Function>();
+    SortedMap<Integer, Function> functions = new TreeMap<Integer, Function>();
 
     /** Map address -> Start of corresponding function */
     Map<Integer, Integer> returns = new TreeMap<Integer, Integer>();
@@ -38,7 +38,11 @@ public class CodeStructure {
         this.entryPoint = address;
     }
 
-    public Map<Integer, DisassembledInstruction> getInstructions() {
+    public int getEntryPoint() {
+        return entryPoint;
+    }
+
+    public TreeMap<Integer, DisassembledInstruction> getInstructions() {
         return instructions;
     }
 
@@ -52,7 +56,7 @@ public class CodeStructure {
     }
 
     
-    public Map<Integer, Function> getFunctions() {
+    public SortedMap<Integer, Function> getFunctions() {
         return functions;
     }
 
@@ -269,6 +273,7 @@ public class CodeStructure {
                         if (function == null) {
                             // new Function
                             function = new Function(targetAddress, "", "", Function.Type.INTERRUPT);
+                            function.getCalledBy().put(jump, currentFunction);
                             functions.put(targetAddress, function);
                             followFunction(function, targetAddress, processedInstructions, debugPrintStream);
                         }
@@ -357,87 +362,90 @@ public class CodeStructure {
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(range.start - range.fileOffset):0;
 
         while (instruction != null && address < range.getEnd()) {
+            writeInstruction(writer, address, instruction, memoryFileOffset);
 
-            // function
-            if (isFunction(address)) {
-                Function function = functions.get(address);
-                writer.write("\n; ************************************************************************\n");
-                writer.write("; " + function.getTitleLine() + "\n");
-                writer.write("; ************************************************************************\n");
-            }
-
-            // label
-            if (isLabel(address)) {
-                writer.write(labels.get(address).getName() + ":\n");
-            }
-
-            if (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch) {
-                // replace address by label
-                if (instruction.comment.length() > 0) {
-                    try {
-                        int targetAddress = Format.parseUnsigned(instruction.comment);
-                        Symbol symbol;
-                        if (instruction.opcode.isCall) {
-                            symbol = functions.get(targetAddress);
-                        }
-                        else {
-                            symbol = labels.get(targetAddress);
-                        }
-                        if (symbol != null) {
-                            instruction.comment = symbol.getName();
-                        }
-                        if (instruction.opcode.isJumpOrBranch) {
-                            //if (areInSameRange(functions,  address, targetAddress))
-                            instruction.comment += (targetAddress>address?" (skip)":" (loop)");
-                        }
-                    } catch (ParsingException e) {
-                        // noop
-                    }
-                }
-                else {
-                    try {
-                        int targetAddress = Format.parseUnsigned(instruction.operands);
-                        if (instruction.opcode.isCall) {
-                            Function function = functions.get(targetAddress);
-                            if (function != null) {
-                                instruction.operands = function.getName();
-                            }
-                        }
-                        else {
-                            Symbol label = labels.get(targetAddress);
-                            if (label != null) {
-                                instruction.operands = label.getName();
-                            }
-                        }
-                        if (instruction.opcode.isJumpOrBranch) {
-                            //TODO only if(areInSameRange(address, targetAddress))
-                            instruction.comment =  targetAddress>address?"(skip)":"(loop)";
-                        }
-                    } catch (ParsingException e) {
-                        // noop
-                    }
-                }
-            }
-
-            // print instruction
-            Dfr.printDisassembly(writer, instruction, address, memoryFileOffset);
-
-            // after return from function
-            if (isEnd(address)) {
-                Integer matchingStart = ends.get(address);
-                if (matchingStart == null) {
-                    writer.write("; end of an unidentified function (never called)\n");
-                }
-                else {
-                    writer.write("; end of " + getFunctionName(matchingStart) + "\n");
-                }
-                writer.write("; ------------------------------------------------------------------------\n\n");
-            }
-            
             address = instructions.higherKey(address);
             instruction = address==null?null:instructions.get(address);
         }
 
+    }
+
+    public void writeInstruction(Writer writer, Integer address, DisassembledInstruction instruction, int memoryFileOffset) throws IOException {
+        // function
+        if (isFunction(address)) {
+            Function function = functions.get(address);
+            writer.write("\n; ************************************************************************\n");
+            writer.write("; " + function.getTitleLine() + "\n");
+            writer.write("; ************************************************************************\n");
+        }
+
+        // label
+        if (isLabel(address)) {
+            writer.write(labels.get(address).getName() + ":\n");
+        }
+
+        if (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch) {
+            // replace address by label
+            if (instruction.comment.length() > 0) {
+                try {
+                    int targetAddress = Format.parseUnsigned(instruction.comment);
+                    Symbol symbol;
+                    if (instruction.opcode.isCall) {
+                        symbol = functions.get(targetAddress);
+                    }
+                    else {
+                        symbol = labels.get(targetAddress);
+                    }
+                    if (symbol != null) {
+                        instruction.comment = symbol.getName();
+                    }
+                    if (instruction.opcode.isJumpOrBranch) {
+                        //if (areInSameRange(functions,  address, targetAddress))
+                        instruction.comment += (targetAddress>address?" (skip)":" (loop)");
+                    }
+                } catch (ParsingException e) {
+                    // noop
+                }
+            }
+            else {
+                try {
+                    int targetAddress = Format.parseUnsigned(instruction.operands);
+                    if (instruction.opcode.isCall) {
+                        Function function = functions.get(targetAddress);
+                        if (function != null) {
+                            instruction.operands = function.getName();
+                        }
+                    }
+                    else {
+                        Symbol label = labels.get(targetAddress);
+                        if (label != null) {
+                            instruction.operands = label.getName();
+                        }
+                    }
+                    if (instruction.opcode.isJumpOrBranch) {
+                        //TODO only if(areInSameRange(address, targetAddress))
+                        instruction.comment =  targetAddress>address?"(skip)":"(loop)";
+                    }
+                } catch (ParsingException e) {
+                    // noop
+                }
+            }
+        }
+
+        // print instruction
+        Dfr.printDisassembly(writer, instruction, address, memoryFileOffset);
+
+        // after return from function
+        if (isEnd(address)) {
+            Integer matchingStart = ends.get(address);
+            if (matchingStart == null) {
+                writer.write("; end of an unidentified function (never called)\n");
+            }
+            else {
+                writer.write("; end of " + getFunctionName(matchingStart) + "\n");
+            }
+            writer.write("; ------------------------------------------------------------------------\n\n");
+        }
     }
 
 }

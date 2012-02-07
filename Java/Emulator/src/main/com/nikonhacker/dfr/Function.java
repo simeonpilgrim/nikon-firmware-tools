@@ -4,13 +4,28 @@ package com.nikonhacker.dfr;
 import com.nikonhacker.Format;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Function extends Symbol {
-    private int endAddress;
+    /**
+     * List of Code Segments that compose the function
+     */
     private List<CodeSegment> codeSegments;
+    /**
+     * List of jumps (JMP, Bcc) made from this function
+     */
     private List<Jump> jumps;
+    /**
+     * List of calls to other functions made by this function
+     */
     private List<Jump> calls;
+    /**
+     * List of calls to this function made by other functions
+     * The map associates the call with the source function
+     */
+    private Map<Jump,Function> calledBy;
     private Type type = Type.STANDARD;
 
     public enum Type {MAIN, INTERRUPT, STANDARD, UNKNOWN}
@@ -21,6 +36,7 @@ public class Function extends Symbol {
         codeSegments = new ArrayList<CodeSegment>();
         jumps = new ArrayList<Jump>();
         calls = new ArrayList<Jump>();
+        calledBy = new HashMap<Jump, Function>();
     }
 
     public Function(int address, String name, String comment, Type type) {
@@ -29,6 +45,7 @@ public class Function extends Symbol {
         codeSegments = new ArrayList<CodeSegment>();
         jumps = new ArrayList<Jump>();
         calls = new ArrayList<Jump>();
+        calledBy = new HashMap<Jump, Function>();
     }
 
     public Function(Symbol symbol) {
@@ -36,36 +53,20 @@ public class Function extends Symbol {
     }
 
 
-    public int getEndAddress() {
-        return endAddress;
-    }
-
-    public void setEndAddress(int endAddress) {
-        this.endAddress = endAddress;
-    }
-
     public List<CodeSegment> getCodeSegments() {
         return codeSegments;
-    }
-
-    public void setCodeSegments(List<CodeSegment> codeSegments) {
-        this.codeSegments = codeSegments;
     }
 
     public List<Jump> getJumps() {
         return jumps;
     }
 
-    public void setJumps(List<Jump> jumps) {
-        this.jumps = jumps;
-    }
-
     public List<Jump> getCalls() {
         return calls;
     }
 
-    public void setCalls(List<Jump> calls) {
-        this.calls = calls;
+    public Map<Jump, Function> getCalledBy() {
+        return calledBy;
     }
 
     public Type getType() {
@@ -91,7 +92,7 @@ public class Function extends Symbol {
 
     @Override
     public String toString() {
-        return getName() + "\n0x" + Format.asHex(getAddress(), 8);
+        return getName() + "\n0x" + Format.asHex(getAddress(), 8) + (getCalls().size()==0?"":(" (+)"));
     }
 
     public String getSummary() {
