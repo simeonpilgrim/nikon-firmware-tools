@@ -6,17 +6,21 @@ import com.mxgraph.view.mxGraph;
 import com.nikonhacker.dfr.Function;
 import com.nikonhacker.dfr.Jump;
 
-import javax.swing.*;
-
 public class CodeStructureMxGraph extends mxGraph {
 
     private final mxHierarchicalLayout layout;
 
-    public CodeStructureMxGraph() {
+    public CodeStructureMxGraph(int orientation) {
         super();
-        layout = new mxHierarchicalLayout(this, SwingConstants.WEST);
+        layout = new mxHierarchicalLayout(this, orientation);
         //        layout.setIntraCellSpacing(layout.getIntraCellSpacing() * 0); // between elements at the same level
         layout.setInterRankCellSpacing(200);
+    }
+
+
+    public void setOrientation(int orientation) {
+        layout.setOrientation(orientation);
+        executeLayout();
     }
 
     @Override
@@ -39,6 +43,8 @@ public class CodeStructureMxGraph extends mxGraph {
             if (!codeStructureFrame.functionObjects.containsKey(function.getAddress())) {
                 codeStructureFrame.addFunction(function);
             }
+            
+            codeStructureFrame.makeExpandedStyle(function);
 
             for (Jump call : function.getCalls()) {
                 if (!codeStructureFrame.renderedCalls.contains(call)) {
@@ -93,4 +99,6 @@ public class CodeStructureMxGraph extends mxGraph {
             getModel().endUpdate();
         }
     }
+
+
 }

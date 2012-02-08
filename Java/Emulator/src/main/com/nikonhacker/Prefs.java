@@ -18,6 +18,8 @@ public class Prefs {
 
     private HashMap<String, WindowPosition> windowPositionMap;
 
+    private String codeStructureGraphOrientation;
+
 
     public static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + EmulatorUI.APP_NAME);
@@ -133,6 +135,14 @@ public class Prefs {
     public void setWindowPosition(String windowName, int x, int y) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
         windowPositionMap.put(windowName, new WindowPosition(x, y));
+    }
+
+    public String getCodeStructureGraphOrientation() {
+        return codeStructureGraphOrientation;
+    }
+
+    public void setCodeStructureGraphOrientation(String codeStructureGraphOrientation) {
+        this.codeStructureGraphOrientation = codeStructureGraphOrientation;
     }
 
     public class WindowPosition {

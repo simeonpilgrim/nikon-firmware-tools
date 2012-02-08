@@ -92,7 +92,7 @@ public class Function extends Symbol {
 
     @Override
     public String toString() {
-        return getName() + "\n0x" + Format.asHex(getAddress(), 8) + (getCalls().size()==0?"":(" (+)"));
+        return getName() + "\n" + (getCalledBy().size()==0?"":("=> ")) + "0x" + Format.asHex(getAddress(), 8) + (getCalls().size()==0?"":(" =>"));
     }
 
     public String getSummary() {

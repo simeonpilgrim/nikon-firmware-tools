@@ -2,10 +2,14 @@ package com.nikonhacker.gui.component.codeStructure;
 
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
+import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxCellRenderer;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.png.mxPngEncodeParam;
+import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.gui.EmulatorUI;
@@ -14,6 +18,11 @@ import com.nikonhacker.gui.component.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
@@ -23,15 +32,33 @@ public class CodeStructureFrame extends DocumentFrame
 {
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
+    private static final int CELL_WIDTH = 100;
+    private static final int CELL_HEIGHT = 30;
+
     Object parent;
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
     Map<Integer,Object> functionObjects = new HashMap<Integer, Object>();
     Set<Jump> renderedCalls = new HashSet<Jump>();
     private final PrintWriterArea listingArea;
+    private mxGraphComponent graphComponent;
 
+    public enum Orientation{
+        HORIZONTAL(SwingConstants.WEST),
+        VERTICAL(SwingConstants.NORTH);
+        
+        private int swingValue;
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, CodeStructure codeStructure, EmulatorUI ui) {
+        Orientation(int swingValue) {
+            this.swingValue = swingValue;
+        }
+
+        public int getSwingValue() {
+            return swingValue;
+        }
+    }
+
+    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
         this.codeStructure = codeStructure;
@@ -39,8 +66,99 @@ public class CodeStructureFrame extends DocumentFrame
         // Create fake structure
         // createFakeStructure();
 
+        // Create toolbar
+        JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        
+        final JComboBox orientationCombo = new JComboBox(new Orientation[]{Orientation.HORIZONTAL, Orientation.VERTICAL});
+        Orientation currentOrientation = getCurrentOrientation();
+        orientationCombo.setSelectedItem(currentOrientation);
+        orientationCombo.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                Orientation selOrientation = (Orientation) orientationCombo.getSelectedItem();
+                ui.getPrefs().setCodeStructureGraphOrientation(selOrientation.name());
+                graph.setOrientation(selOrientation.getSwingValue());
+            }
+        });
+        toolbar.add(orientationCombo);
+        
+        final JTextField targetAddressField = new JTextField(7);
+        toolbar.add(targetAddressField);
+        
+        JButton exploreButton = new JButton("Explore");
+        exploreButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    int address = Format.parseUnsigned(targetAddressField.getText());
+                    Function function = codeStructure.getFunctions().get(address);
+                    if (function == null) {
+                        JOptionPane.showMessageDialog(CodeStructureFrame.this, "No start of function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+                    }
+                    else{
+                        graph.expandFunction(function, CodeStructureFrame.this);
+                    }
+                } catch (ParsingException ex) {
+                    JOptionPane.showMessageDialog(CodeStructureFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        toolbar.add(exploreButton);
+
+        JButton svgButton = new JButton("Save as SVG");
+        svgButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final JFileChooser fc = new JFileChooser();
+
+                fc.setDialogTitle("Save SVG as...");
+                fc.setCurrentDirectory(new java.io.File("."));
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fc.setAcceptAllFileFilterUsed(true);
+
+                if (fc.showOpenDialog(CodeStructureFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        saveSvg(fc.getSelectedFile());
+                    } catch (IOException e1) {
+                        JOptionPane.showMessageDialog(CodeStructureFrame.this, e1.getMessage(), "Error saving to SVG", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        toolbar.add(svgButton);
+
+        JButton pngButton = new JButton("Save as PNG");
+        pngButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final JFileChooser fc = new JFileChooser();
+
+                fc.setDialogTitle("Save PNG as...");
+                fc.setCurrentDirectory(new java.io.File("."));
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fc.setAcceptAllFileFilterUsed(true);
+
+                if (fc.showOpenDialog(CodeStructureFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    try {
+                        savePng(fc.getSelectedFile());
+                    } catch (IOException e1) {
+                        JOptionPane.showMessageDialog(CodeStructureFrame.this, e1.getMessage(), "Error saving to SVG", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        toolbar.add(pngButton);
+
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                graph.removeCells(graph.getChildCells(graph.getDefaultParent(), true, true));
+                functionObjects = new HashMap<Integer, Object>();
+                renderedCalls = new HashSet<Jump>();
+                graph.executeLayout();
+            }
+        });
+        toolbar.add(clearButton);
+
+        
         // Create left hand graph
-        graph = new CodeStructureMxGraph();
+        graph = new CodeStructureMxGraph(getCurrentOrientation().getSwingValue());
         Component graphComponent = getGraphPane();
 
         // Create right hand listing
@@ -49,12 +167,29 @@ public class CodeStructureFrame extends DocumentFrame
         Component listingComponent = getListingPane();
 
         // Create a left-right split pane
-        getContentPane().add(new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphComponent, listingComponent));
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphComponent, listingComponent);
+
+        // Create and fill main panel
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.add(toolbar, BorderLayout.NORTH);
+        mainPanel.add(splitPane, BorderLayout.CENTER);
+
+        getContentPane().add(mainPanel);
 
         // Start with entry point
-        graph.expandFunction(this.codeStructure.getFunctions().get(this.codeStructure.getEntryPoint()), this);
+//        graph.expandFunction(this.codeStructure.getFunctions().get(this.codeStructure.getEntryPoint()), this);
 
         pack();
+    }
+
+    private Orientation getCurrentOrientation() {
+        Orientation currentOrientation;
+        try {
+            currentOrientation = Orientation.valueOf(ui.getPrefs().getCodeStructureGraphOrientation());
+        } catch (Exception e) {
+            currentOrientation = Orientation.HORIZONTAL;
+        }
+        return currentOrientation;
     }
 
     /** for debugging only */
@@ -86,7 +221,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH/2, FRAME_HEIGHT));
 
-        mxGraphComponent graphComponent = new CodeStructureMxGraphComponent(graph, this);
+        graphComponent = new CodeStructureMxGraphComponent(graph, this);
         // Prevent edge drawing from UI
         graphComponent.setConnectable(false);
         graphComponent.setAutoScroll(true);
@@ -107,7 +242,8 @@ public class CodeStructureFrame extends DocumentFrame
 
 
     public void addFunction(Function function) {
-        Object vertex = graph.insertVertex(parent, null, function, 0, 0, 90, 30, "defaultVertex;fillColor=" + function.getColor());
+        // Cells are created white and remain so until they are expanded
+        Object vertex = graph.insertVertex(parent, "" + function.getAddress(), function, 0, 0, CELL_WIDTH, CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
         functionObjects.put(function.getAddress(), vertex);
     }
 
@@ -133,7 +269,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    private void saveSvg(String filename) throws IOException {
+    private void saveSvg(File file) throws IOException {
         try {
             // Save as SVG
             mxSvgCanvas canvas = (mxSvgCanvas) mxCellRenderer.drawCells(graph, null, 1, null,
@@ -144,10 +280,53 @@ public class CodeStructureFrame extends DocumentFrame
                             return canvas;
                         }
                     });
-            mxUtils.writeFile(mxUtils.getXml(canvas.getDocument()), filename);
+            mxUtils.writeFile(mxUtils.getXml(canvas.getDocument()), file.getAbsolutePath());
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
+    private void savePng(File file) throws IOException {
+        // Creates the image for the PNG file
+        BufferedImage image = mxCellRenderer.createBufferedImage(graph, null, 1, Color.WHITE, true, null, graphComponent.getCanvas());
+
+        // Creates the URL-encoded XML data
+        mxPngEncodeParam param = mxPngEncodeParam.getDefaultEncodeParam(image);
+        param.setCompressedText(new String[] { });
+
+        // Saves as a PNG file
+        FileOutputStream outputStream = new FileOutputStream(file);
+        try
+        {
+            mxPngImageEncoder encoder = new mxPngImageEncoder(outputStream, param);
+
+            if (image != null)
+            {
+                encoder.encode(image);
+            }
+            else
+            {
+                JOptionPane.showMessageDialog(CodeStructureFrame.this, "Error rendering image", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+        finally
+        {
+            outputStream.close();
+        }
+    }
+
+    public void makeExpandedStyle(Function function) {
+        mxCell cell = getCellById("" + function.getAddress());
+        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, function.getColor(), new Object[]{cell});
+    }
+
+    private mxCell getCellById(String id) {
+        for (Object c : graph.getChildCells(graph.getDefaultParent(), true, true)) {
+            mxCell cell = (mxCell) c; 
+            if (id.equals(cell.getId())) {
+                return cell;
+            }
+        }
+        return null;
+    }
 }
