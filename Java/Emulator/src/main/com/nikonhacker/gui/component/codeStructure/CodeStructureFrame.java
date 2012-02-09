@@ -279,7 +279,7 @@ public class CodeStructureFrame extends DocumentFrame
             for (int i = 0; i < segments.size(); i++) {
                 CodeSegment codeSegment = segments.get(i);
                 if (segments.size() > 1) {
-                    writer.write("; Segment #" + i + "\n");
+                    writer.write("; Segment " + (i+1) + "/" + segments.size() + "\n");
                 }
                 for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getInstructions().higherKey(address)) {
                     DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
