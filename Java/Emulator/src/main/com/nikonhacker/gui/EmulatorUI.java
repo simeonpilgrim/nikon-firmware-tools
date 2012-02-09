@@ -713,6 +713,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private class DisassemblerProgressDialog extends JDialog {
         PrintStreamArea printStreamArea;
+        //private PrintWriterArea printWriterArea;
         JButton closeButton;
         final JDialog frame = this;
 
@@ -723,6 +724,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             printStreamArea = new PrintStreamArea(25, 70);
             panel.add(new JScrollPane(printStreamArea), BorderLayout.CENTER);
+            //printWriterArea = new PrintWriterArea(25, 70);
+            //panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
 
             closeButton = new JButton("Close");
             closeButton.setEnabled(false);
@@ -747,6 +750,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     boolean wasVerbose = prefs.getOutputOptions().contains(OutputOption.VERBOSE);
                     prefs.getOutputOptions().add(OutputOption.VERBOSE);
                     PrintStream debugPrintStream = printStreamArea.getPrintStream();
+                    //PrintStream debugPrintStream = new PrintStream(new WriterOutputStream(printWriterArea.getWriter()));
                     try {
                         debugPrintStream.println("Initializing disassembler...");
                         disassembler.setDebugPrintStream(debugPrintStream);
