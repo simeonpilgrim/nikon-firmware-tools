@@ -15,7 +15,7 @@ public class CodeStructure {
 
     private int entryPoint;
 
-    // TODO : Optimize by merging instructions/labels/functions/returns/ends in a same table with various properties
+    // TODO : Optimize by merging instructions/labels/functions/returns/ends in a same table with various properties ?
 
     /** Map address -> Instruction */
     TreeMap<Integer, DisassembledInstruction> instructions = new TreeMap<Integer, DisassembledInstruction>();
@@ -224,18 +224,6 @@ public class CodeStructure {
             labelNumber++;
         }
 
-
-        // Trace a graph of calls
-//        try {
-//            CallGraph frame = new CallGraph(functions);
-//            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//            frame.setSize(800, 600);
-//            frame.setVisible(true);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-
-
     }
 
     void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintStream debugPrintStream) throws IOException {
@@ -263,8 +251,8 @@ public class CodeStructure {
                         processedInstructions.add(address + 2);
                     }
                     Integer targetAddress = instruction.decodedX;
-                    Jump jump = new Jump(address, instruction.decodedX, false);
-                    currentFunction.getCalls().add(jump);
+                    Jump call = new Jump(address, targetAddress, false);
+                    currentFunction.getCalls().add(call);
                     if (targetAddress == null || targetAddress == 0) {
                         debugPrintStream.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
                     }
@@ -272,8 +260,7 @@ public class CodeStructure {
                         Function function = functions.get(targetAddress);
                         if (function == null) {
                             // new Function
-                            function = new Function(targetAddress, "", "", Function.Type.INTERRUPT);
-                            function.getCalledBy().put(jump, currentFunction);
+                            function = new Function(targetAddress, "", "", Function.Type.STANDARD); // todo why was in interrupt ? Copy/paste error ?
                             functions.put(targetAddress, function);
                             followFunction(function, targetAddress, processedInstructions, debugPrintStream);
                         }
@@ -283,6 +270,7 @@ public class CodeStructure {
                                 function.setType(Function.Type.STANDARD);
                             }
                         }
+                        function.getCalledBy().put(call, currentFunction);
                     }
                 }
                 if (instruction.opcode.isJumpOrBranch) {
