@@ -40,7 +40,7 @@ public class CodeStructureMxGraph extends mxGraph {
         getModel().beginUpdate();
         try
         {
-            if (!codeStructureFrame.functionObjects.containsKey(function.getAddress())) {
+            if (!codeStructureFrame.cellObjects.containsKey(function.getAddress())) {
                 codeStructureFrame.addFunction(function);
             }
             
@@ -48,23 +48,29 @@ public class CodeStructureMxGraph extends mxGraph {
 
             for (Jump call : function.getCalls()) {
                 if (!codeStructureFrame.renderedCalls.contains(call)) {
-                    if (!codeStructureFrame.functionObjects.containsKey(call.getTarget())) {
-                        Function target = codeStructureFrame.codeStructure.getFunctions().get(call.getTarget());
-                        codeStructureFrame.addFunction(target);
+                    Object targetCell = codeStructureFrame.cellObjects.get(call.getTarget());
+                    if (targetCell == null) {
+                        Function targetFunction = codeStructureFrame.codeStructure.getFunctions().get(call.getTarget());
+                        if (targetFunction == null) {
+                            targetCell = codeStructureFrame.addFakeFunction(call.getTarget());
+                        }
+                        else {
+                            targetCell = codeStructureFrame.addFunction(targetFunction);
+                        }
                     }
                     // Add calls as edges
-                    codeStructureFrame.addCall(function, call);
+                    codeStructureFrame.addCall(function, call, targetCell);
                 }
             }
 
             for (Jump call : function.getCalledBy().keySet()) {
                 if (!codeStructureFrame.renderedCalls.contains(call)) {
                     Function sourceFunction = function.getCalledBy().get(call);
-                    if (!codeStructureFrame.functionObjects.containsKey(sourceFunction.getAddress())) {
+                    if (!codeStructureFrame.cellObjects.containsKey(sourceFunction.getAddress())) {
                         codeStructureFrame.addFunction(sourceFunction);
                     }
                     // Add calls as edges
-                    codeStructureFrame.addCall(sourceFunction, call);
+                    codeStructureFrame.addCall(sourceFunction, call, codeStructureFrame.cellObjects.get(function.getAddress()));
                 }
             }
 

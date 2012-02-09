@@ -32,13 +32,16 @@ public class CodeStructureFrame extends DocumentFrame
 {
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
-    private static final int CELL_WIDTH = 100;
-    private static final int CELL_HEIGHT = 30;
+    private static final int FUNCTION_CELL_WIDTH = 100;
+    private static final int FUNCTION_CELL_HEIGHT = 30;
+    private static final int FAKE_FUNCTION_CELL_WIDTH = 50;
+    private static final int FAKE_FUNCTION_CELL_HEIGHT = 20;
 
     Object parent;
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
-    Map<Integer,Object> functionObjects = new HashMap<Integer, Object>();
+    // Map from value object (Function or anonymous Object when calling unknown destination) to cell
+    Map<Object,Object> cellObjects = new HashMap<Object, Object>();
     Set<Jump> renderedCalls = new HashSet<Jump>();
     private final PrintWriterArea listingArea;
     private mxGraphComponent graphComponent;
@@ -149,7 +152,7 @@ public class CodeStructureFrame extends DocumentFrame
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 graph.removeCells(graph.getChildCells(graph.getDefaultParent(), true, true));
-                functionObjects = new HashMap<Integer, Object>();
+                cellObjects = new HashMap<Object, Object>();
                 renderedCalls = new HashSet<Jump>();
                 graph.executeLayout();
             }
@@ -235,21 +238,38 @@ public class CodeStructureFrame extends DocumentFrame
     }
 
 
-    public void addCall(Function sourceFunction, Jump call) {
-        graph.insertEdge(parent, null, "", functionObjects.get(sourceFunction.getAddress()), functionObjects.get(call.getTarget()));
+    public void addCall(Function sourceFunction, Jump call, Object targetCell) {
+        graph.insertEdge(parent, null, "", cellObjects.get(sourceFunction.getAddress()), targetCell);
         renderedCalls.add(call);
     }
 
 
-    public void addFunction(Function function) {
-        // Cells are created white and remain so until they are expanded
-        Object vertex = graph.insertVertex(parent, "" + function.getAddress(), function, 0, 0, CELL_WIDTH, CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
-        functionObjects.put(function.getAddress(), vertex);
+    public Object addFunction(Function function) {
+        // Function cells are created white and remain so until they are expanded
+        Object vertex = graph.insertVertex(parent, "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
+        cellObjects.put(function.getAddress(), vertex);
+        return vertex;
+    }
+
+    public Object addFakeFunction(int address) {
+        // Fake functions are targets that haven't been disassembled as code
+        Object vertex;
+        Object value;
+        if (address == 0) {
+            value = "??";
+            vertex = graph.insertVertex(parent, new Object().toString(), value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF7700");
+        }
+        else {
+            value = address;
+            vertex = graph.insertVertex(parent, "" + address, value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF0000");
+        }
+        cellObjects.put(value, vertex);
+        return vertex;
     }
 
 
-    public void printFunction(Function function) throws IOException {
-        listingArea.clear(); // clear
+    public void writeFunction(Function function) throws IOException {
+        listingArea.clear();
         Writer writer = listingArea.getWriter();
         List<CodeSegment> segments = function.getCodeSegments();
         for (int i = 0; i < segments.size(); i++) {
@@ -268,6 +288,14 @@ public class CodeStructureFrame extends DocumentFrame
             writer.write("\n");
         }
     }
+
+    public void writeText(String text) throws IOException {
+        listingArea.clear();
+        Writer writer = listingArea.getWriter();
+        writer.write(text);
+    }
+
+
 
     private void saveSvg(File file) throws IOException {
         try {
