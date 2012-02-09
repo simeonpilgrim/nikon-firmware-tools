@@ -38,6 +38,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -723,6 +724,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             JPanel panel = new JPanel(new BorderLayout());
 
             printStreamArea = new PrintStreamArea(25, 70);
+
+            DefaultCaret caret = (DefaultCaret)printStreamArea.getCaret();
+            caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+
             panel.add(new JScrollPane(printStreamArea), BorderLayout.CENTER);
             //printWriterArea = new PrintWriterArea(25, 70);
             //panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
