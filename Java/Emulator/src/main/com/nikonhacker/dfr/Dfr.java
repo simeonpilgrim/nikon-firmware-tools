@@ -58,7 +58,12 @@ public class Dfr
     public Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     String inputFileName;
-    String outputFileName;
+    /**
+     * If null, no output is created. 
+     * If empty, default name is used. 
+     * If specified, this name is used.
+     */
+    String outputFileName = "";
 
     boolean optLittleEndian = false;
     boolean optSplitPerMemoryRange = false;
@@ -194,21 +199,26 @@ public class Dfr
 
     void openOutput(int pc, boolean usePC, String ext) throws IOException {
         String outName;
-        if (StringUtils.isBlank(outputFileName)) {
-            outName = FilenameUtils.removeExtension(inputFileName);
+        if (outputFileName == null) {
+            outWriter = null;
         }
         else {
-            outName = FilenameUtils.removeExtension(outputFileName);
+            if (outputFileName.length() == 0) {
+                outName = FilenameUtils.removeExtension(inputFileName);
+            }
+            else {
+                outName = FilenameUtils.removeExtension(outputFileName);
+            }
+            if (usePC) {
+                outName += "_" + Format.asHex(pc, 8);
+            }
+            
+            if (outWriter != null) {
+                outWriter.close();
+            }
+    
+            outWriter = new FileWriter(outName + "." + ext);
         }
-        if (usePC) {
-            outName += "_" + Format.asHex(pc, 8);
-        }
-        
-        if (outWriter != null) {
-            outWriter.close();
-        }
-
-        outWriter = new FileWriter(outName + "." + ext);
     }
 
     
@@ -238,7 +248,9 @@ public class Dfr
         }
         else {
             // No structure analysis, output right now
-            printDisassembly(outWriter, disassembledInstruction, cpuState.pc, memoryFileOffset);
+            if (outWriter != null) {
+                printDisassembly(outWriter, disassembledInstruction, cpuState.pc, memoryFileOffset);
+            }
         }
 
         return disassembledInstruction.n << 1;
@@ -263,7 +275,9 @@ public class Dfr
 
             sizeInBytes += disassembledInstruction.n << 1;
 
-            printDisassembly(outWriter, disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
+            if (outWriter != null) {
+                printDisassembly(outWriter, disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
+            }
         }
 
         return sizeInBytes;
@@ -364,16 +378,18 @@ public class Dfr
             debugPrintStream.println("  " + codeStructure.getReturns().size() + " returns");
             debugPrintStream.println();
 
-            debugPrintStream.println("Writing output to disk...");
-            for (Range range : memMap.ranges) {
-                // find file offset covering this memory location.
-                Range matchingFileRange = getMatchingFileRange(range);
-                printRangeHeader(range, matchingFileRange);
-                if (range.data.isCode()) {
-                    codeStructure.writeDisassembly(outWriter, range, outputOptions);
-                }
-                else {
-                    disassembleDataMemoryRange(range, matchingFileRange);
+            if (outWriter != null) {
+                debugPrintStream.println("Writing output to disk...");
+                for (Range range : memMap.ranges) {
+                    // find file offset covering this memory location.
+                    Range matchingFileRange = getMatchingFileRange(range);
+                    printRangeHeader(range, matchingFileRange);
+                    if (range.data.isCode()) {
+                        codeStructure.writeDisassembly(outWriter, range, outputOptions);
+                    }
+                    else {
+                        disassembleDataMemoryRange(range, matchingFileRange);
+                    }
                 }
             }
             return codeStructure;
@@ -387,10 +403,12 @@ public class Dfr
         if (outputOptions.contains(OutputOption.VERBOSE)) {
             debugPrintStream.println(msg);
         }
-        outWriter.write("\n");
-        outWriter.write("; ########################################################################\n");
-        outWriter.write("; " + msg + "\n");
-        outWriter.write("; ########################################################################\n");
+        if (outWriter != null) {
+            outWriter.write("\n");
+            outWriter.write("; ########################################################################\n");
+            outWriter.write("; " + msg + "\n");
+            outWriter.write("; ########################################################################\n");
+        }
     }
 
     /**
@@ -434,8 +452,10 @@ public class Dfr
         CPUState.initRegisterLabels(outputOptions);
 
 //        if (outOptions.fileMap || outOptions.memoryMap) {
-        openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
-        writeHeader(outWriter);
+            openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
+            if (outWriter != null) {
+                writeHeader(outWriter);
+            }
 //        }
 
         File binaryFile = new File(inputFileName);
@@ -459,7 +479,7 @@ public class Dfr
     }
 
     public void cleanup() throws IOException {
-        outWriter.close();
+        if (outWriter != null) outWriter.close();
     }
 
 

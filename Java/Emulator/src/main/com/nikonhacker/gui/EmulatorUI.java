@@ -679,10 +679,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         dependencies.add(new DependentField(dfrFile, "Dfr.txt"));
         dependencies.add(new DependentField(destinationFile, "asm"));
 
+        final JCheckBox writeOutputCheckbox = new JCheckBox("Write disassembly to file");
+        writeOutputCheckbox.setSelected(true);
+        final FileSelectionPanel destinationFileSelectionPanel = new FileSelectionPanel("Destination file", destinationFile, false);
+        writeOutputCheckbox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                destinationFileSelectionPanel.setEnabled(writeOutputCheckbox.isSelected());
+            }
+        });
         final JComponent[] inputs = new JComponent[]{
                 new FileSelectionPanel("Source file", sourceFile, false, dependencies),
                 new FileSelectionPanel("Dfr options file", dfrFile, false),
-                new FileSelectionPanel("Destination file", destinationFile, false),
+                writeOutputCheckbox,
+                destinationFileSelectionPanel,
                 makeCheckBox(OutputOption.OFFSET, prefs.getOutputOptions(), true),
                 makeCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
                 makeCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
@@ -697,7 +706,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             DisassemblerProgressDialog disassemblerProgressDialog = new DisassemblerProgressDialog(this);
-            disassemblerProgressDialog.startBackgroundDisassembly(dfrFile.getText(), sourceFile.getText(), destinationFile.getText());
+            disassemblerProgressDialog.startBackgroundDisassembly(dfrFile.getText(), sourceFile.getText(), writeOutputCheckbox.isSelected()?destinationFile.getText():null);
             disassemblerProgressDialog.setVisible(true);
         }
     }
@@ -1244,6 +1253,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     public class FileSelectionPanel extends JPanel implements ActionListener {
         String label;
+        JLabel jlabel;
         JButton button;
         JTextField textField;
         boolean directoryMode;
@@ -1252,6 +1262,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         public FileSelectionPanel(String label, JTextField textField, boolean directoryMode) {
             super();
             init(label, textField, directoryMode, new ArrayList<DependentField>());
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            jlabel.setEnabled(enabled);
+            button.setEnabled(enabled);
+            textField.setEnabled(enabled);
         }
 
         /**
@@ -1274,7 +1292,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             this.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-            JLabel jlabel = new JLabel(label);
+            jlabel = new JLabel(label);
             this.add(jlabel);
 
             textField.setPreferredSize(new Dimension(400, (int) textField.getPreferredSize().getHeight()));
