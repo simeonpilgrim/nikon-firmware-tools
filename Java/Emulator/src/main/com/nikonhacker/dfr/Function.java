@@ -9,6 +9,18 @@ import java.util.List;
 import java.util.Map;
 
 public class Function extends Symbol {
+
+    public enum Type {
+        /** The entry point */
+        MAIN,
+        /** address referenced in interrupt vector */
+        INTERRUPT,
+        /** code reached by at least one static CALL */
+        STANDARD,
+        /** code not reached by any static CALL */
+        UNKNOWN
+    }
+
     /**
      * List of Code Segments that compose the function
      */
@@ -26,9 +38,12 @@ public class Function extends Symbol {
      * The map associates the call with the source function
      */
     private Map<Jump,Function> calledBy;
-    private Type type = Type.STANDARD;
 
-    public enum Type {MAIN, INTERRUPT, STANDARD, UNKNOWN}
+    /**
+     * Function type
+     * @see Type
+     */
+    private Type type = Type.STANDARD;
 
 
     public Function(int address, String name, String comment) {
@@ -86,7 +101,7 @@ public class Function extends Symbol {
             case STANDARD:
                 return "#77FFFF";
             default:
-                return "#777777";
+                return "#CCCCCC";
         }
     }
 
