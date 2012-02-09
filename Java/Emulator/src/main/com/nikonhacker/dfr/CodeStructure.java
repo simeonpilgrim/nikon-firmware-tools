@@ -227,67 +227,65 @@ public class CodeStructure {
     }
 
     void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintStream debugPrintStream) throws IOException {
+        if (instructions.get(address) == null) {
+            debugPrintStream.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
+            return;
+        }
         CodeSegment currentSegment = new CodeSegment();
         currentFunction.getCodeSegments().add(currentSegment);
         List<Jump> jumps = new ArrayList<Jump>();
         currentSegment.setStart(address);
         while(address != null) {
             DisassembledInstruction instruction = instructions.get(address);
-            if (instruction == null) {
-                debugPrintStream.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
-                break;
-            }
-            else {
-                processedInstructions.add(address);
-                currentSegment.setEnd(address);
-                if (instruction.opcode.isReturn) {
+            processedInstructions.add(address);
+            currentSegment.setEnd(address);
+            if (instruction.opcode.isReturn) {
 //                    labels.put(address, new Symbol(address, "", ""));
-                    returns.put(address, currentFunction.getAddress());
-                    ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+                returns.put(address, currentFunction.getAddress());
+                ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+            }
+            if (instruction.opcode.isCall) {
+                if (instruction.opcode.hasDelaySlot) {
+                    currentSegment.setEnd(address + 2);
+                    processedInstructions.add(address + 2);
                 }
-                if (instruction.opcode.isCall) {
-                    if (instruction.opcode.hasDelaySlot) {
-                        currentSegment.setEnd(address + 2);
-                        processedInstructions.add(address + 2);
-                    }
-                    Integer targetAddress = instruction.decodedX;
-                    Jump call = new Jump(address, targetAddress, false);
-                    currentFunction.getCalls().add(call);
-                    if (targetAddress == null || targetAddress == 0) {
-                        debugPrintStream.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                Integer targetAddress = instruction.decodedX;
+                Jump call = new Jump(address, targetAddress, false);
+                currentFunction.getCalls().add(call);
+                if (targetAddress == null || targetAddress == 0) {
+                    debugPrintStream.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                }
+                else {
+                    Function function = functions.get(targetAddress);
+                    if (function == null) {
+                        // new Function
+                        function = new Function(targetAddress, "", "", Function.Type.STANDARD);
+                        functions.put(targetAddress, function);
+                        followFunction(function, targetAddress, processedInstructions, debugPrintStream);
                     }
                     else {
-                        Function function = functions.get(targetAddress);
-                        if (function == null) {
-                            // new Function
-                            function = new Function(targetAddress, "", "", Function.Type.STANDARD); // todo why was in interrupt ? Copy/paste error ?
-                            functions.put(targetAddress, function);
-                            followFunction(function, targetAddress, processedInstructions, debugPrintStream);
+                        // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
+                        if (function.getType() == Function.Type.UNKNOWN) {
+                            function.setType(Function.Type.STANDARD);
                         }
-                        else {
-                            // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
-                            if (function.getType() == Function.Type.UNKNOWN) {
-                                function.setType(Function.Type.STANDARD);
-                            }
-                        }
-                        function.getCalledBy().put(call, currentFunction);
                     }
+                    function.getCalledBy().put(call, currentFunction);
                 }
-                if (instruction.opcode.isJumpOrBranch) {
-                    if (instruction.decodedX != 0) {
-                        labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
-                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode.isConditional);
-                        jumps.add(jump);
-                        currentFunction.getJumps().add(jump);
-                    }
+            }
+            if (instruction.opcode.isJumpOrBranch) {
+                if (instruction.decodedX != 0) {
+                    labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
+                    Jump jump = new Jump(address, instruction.decodedX, instruction.opcode.isConditional);
+                    jumps.add(jump);
+                    currentFunction.getJumps().add(jump);
                 }
-                if (instruction.opcode.isReturn || (instruction.opcode.isJumpOrBranch && !instruction.opcode.isConditional)) {
-                    if (instruction.opcode.hasDelaySlot) {
-                        currentSegment.setEnd(address + 2);
-                        processedInstructions.add(address + 2);
-                    }
-                    break;
+            }
+            if (instruction.opcode.isReturn || (instruction.opcode.isJumpOrBranch && !instruction.opcode.isConditional)) {
+                if (instruction.opcode.hasDelaySlot) {
+                    currentSegment.setEnd(address + 2);
+                    processedInstructions.add(address + 2);
                 }
+                break;
             }
             address = instructions.higherKey(address);
         }

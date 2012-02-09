@@ -272,20 +272,25 @@ public class CodeStructureFrame extends DocumentFrame
         listingArea.clear();
         Writer writer = listingArea.getWriter();
         List<CodeSegment> segments = function.getCodeSegments();
-        for (int i = 0; i < segments.size(); i++) {
-            CodeSegment codeSegment = segments.get(i);
-            if (segments.size() > 1) {
-                writer.write("; Segment #" + i + "\n");
-            }
-            for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getInstructions().higherKey(address)) {
-                DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
-                try {
-                    codeStructure.writeInstruction(writer, address, instruction, 0);
-                } catch (IOException e) {
-                    writer.write("# ERROR decoding instruction at address 0x" + Format.asHex(address, 8) + " : " + e.getMessage());
+        if (segments.size() == 0) {
+            writer.write("; function at address 0x" + Format.asHex(function.getAddress(), 8) + " was not disassembled (not in CODE range)");
+        }
+        else {
+            for (int i = 0; i < segments.size(); i++) {
+                CodeSegment codeSegment = segments.get(i);
+                if (segments.size() > 1) {
+                    writer.write("; Segment #" + i + "\n");
                 }
+                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getInstructions().higherKey(address)) {
+                    DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
+                    try {
+                        codeStructure.writeInstruction(writer, address, instruction, 0);
+                    } catch (IOException e) {
+                        writer.write("# ERROR decoding instruction at address 0x" + Format.asHex(address, 8) + " : " + e.getMessage());
+                    }
+                }
+                writer.write("\n");
             }
-            writer.write("\n");
         }
     }
 
