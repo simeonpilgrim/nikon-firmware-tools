@@ -94,7 +94,10 @@ public class CodeStructureFrame extends DocumentFrame
                     int address = Format.parseUnsigned(targetAddressField.getText());
                     Function function = codeStructure.getFunctions().get(address);
                     if (function == null) {
-                        JOptionPane.showMessageDialog(CodeStructureFrame.this, "No start of function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+                        function = codeStructure.findFunctionIncluding(address);
+                    }
+                    if (function == null) {
+                        JOptionPane.showMessageDialog(CodeStructureFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
                     else{
                         graph.expandFunction(function, CodeStructureFrame.this);

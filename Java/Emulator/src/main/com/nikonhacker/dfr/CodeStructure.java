@@ -434,4 +434,14 @@ public class CodeStructure {
         }
     }
 
+    public Function findFunctionIncluding(int address) {
+        for (Function function : functions.values()) {
+            for (CodeSegment codeSegment : function.getCodeSegments()) {
+                if (address >= codeSegment.getStart() && address <= codeSegment.getEnd()) {
+                    return function;
+                }
+            }
+        }
+        return null;
+    }
 }
