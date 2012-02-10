@@ -168,7 +168,7 @@ public class CodeStructure {
         }
 
 
-        debugPrintStream.println("Generating names for labels...");
+        debugPrintStream.println("Generating names for labels (this can take some time)...");
         int labelNumber = 1;
         // Temporary storage for names given to returns to make sure they are unique
         Set<String> usedReturnLabels = new HashSet<String>();
