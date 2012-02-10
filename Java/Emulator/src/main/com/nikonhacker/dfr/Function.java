@@ -115,8 +115,8 @@ public class Function extends Symbol {
     }
 
     public String getTitleLine() {
-        return getName()
-                + "(" + getComment() + ")"
+        return name
+                + "(" + (comment==null?"":comment) + ")"
                 + (codeSegments.size()>1?(" [" + codeSegments.size() + " segment" + "s]"):"");
     }
 
