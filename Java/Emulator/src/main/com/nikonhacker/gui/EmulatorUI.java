@@ -23,6 +23,7 @@ import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintStreamArea;
+import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
@@ -728,7 +729,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             DefaultCaret caret = (DefaultCaret)printStreamArea.getCaret();
             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-            panel.add(new JScrollPane(printStreamArea), BorderLayout.CENTER);
+            panel.add(new SearchableTextAreaPanel(printStreamArea), BorderLayout.CENTER);
             //printWriterArea = new PrintWriterArea(25, 70);
             //panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
 

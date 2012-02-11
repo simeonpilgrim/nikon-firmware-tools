@@ -15,6 +15,7 @@ import com.nikonhacker.dfr.*;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintWriterArea;
+import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -237,7 +238,8 @@ public class CodeStructureFrame extends DocumentFrame
 
 
     private Component getListingPane() {
-        return new JScrollPane(listingArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        return new SearchableTextAreaPanel(listingArea);
+        //return new JScrollPane(listingArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     }
 
 
