@@ -22,7 +22,7 @@ import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintStreamArea;
+import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
@@ -46,7 +46,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -714,8 +714,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private class DisassemblerProgressDialog extends JDialog {
-        PrintStreamArea printStreamArea;
-        //private PrintWriterArea printWriterArea;
+        private PrintWriterArea printWriterArea;
         JButton closeButton;
         final JDialog frame = this;
 
@@ -724,14 +723,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             JPanel panel = new JPanel(new BorderLayout());
 
-            printStreamArea = new PrintStreamArea(25, 70);
+            printWriterArea = new PrintWriterArea(25, 70);
 
-            DefaultCaret caret = (DefaultCaret)printStreamArea.getCaret();
+            DefaultCaret caret = (DefaultCaret)printWriterArea.getCaret();
             caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
-            panel.add(new SearchableTextAreaPanel(printStreamArea), BorderLayout.CENTER);
-            //printWriterArea = new PrintWriterArea(25, 70);
-            //panel.add(new JScrollPane(printWriterArea), BorderLayout.CENTER);
+            panel.add(new SearchableTextAreaPanel(printWriterArea), BorderLayout.CENTER);
 
             closeButton = new JButton("Close");
             closeButton.setEnabled(false);
@@ -755,23 +752,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 public void run() {
                     boolean wasVerbose = prefs.getOutputOptions().contains(OutputOption.VERBOSE);
                     prefs.getOutputOptions().add(OutputOption.VERBOSE);
-                    PrintStream debugPrintStream = printStreamArea.getPrintStream();
-                    //PrintStream debugPrintStream = new PrintStream(new WriterOutputStream(printWriterArea.getWriter()));
+                    PrintWriter debugPrintWriter = printWriterArea.getPrintWriter();
                     try {
-                        debugPrintStream.println("Initializing disassembler...");
-                        disassembler.setDebugPrintStream(debugPrintStream);
+                        debugPrintWriter.println("Initializing disassembler...");
+                        disassembler.setDebugPrintWriter(debugPrintWriter);
                         disassembler.setOutputFileName(outputFilename);
                         disassembler.readOptions(optionsFilename);
                         disassembler.setOutputOptions(prefs.getOutputOptions());
                         disassembler.setInputFileName(inputFilename);
                         disassembler.initialize();
-                        debugPrintStream.println("Starting disassembly...");
+                        debugPrintWriter.println("Starting disassembly...");
                         codeStructure = disassembler.disassembleMemRanges();
                         disassembler.cleanup();
-                        debugPrintStream.println();
-                        debugPrintStream.println("Disassembly complete.");
+                        debugPrintWriter.println();
+                        debugPrintWriter.println("Disassembly complete.");
                     } catch (Exception e) {
-                        debugPrintStream.println("ERROR : " + e.getMessage());
+                        debugPrintWriter.println("ERROR : " + e.getMessage());
                     }                    
                     prefs.setOutputOption(OutputOption.VERBOSE, wasVerbose);
                     setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

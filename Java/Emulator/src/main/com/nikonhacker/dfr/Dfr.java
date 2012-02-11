@@ -71,7 +71,7 @@ public class Dfr
     Memory memory = new FastMemory();
 
     Writer outWriter;
-    PrintStream debugPrintStream = System.err;
+    PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
 
     MemoryMap fileMap = new MemoryMap('i', "File map");
     MemoryMap memMap = new MemoryMap('m', "Memory map");
@@ -121,8 +121,8 @@ public class Dfr
         this.outputFileName = outputFileName;
     }
 
-    public void setDebugPrintStream(PrintStream debugPrintStream) {
-        this.debugPrintStream = debugPrintStream;
+    public void setDebugPrintWriter(PrintWriter debugPrintWriter) {
+        this.debugPrintWriter = debugPrintWriter;
     }
 
     private void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
@@ -147,7 +147,7 @@ public class Dfr
     void log(String s)
     {
         try {
-            debugPrintStream.println(s);
+            debugPrintWriter.write(s);
         } catch (Exception e) {
             System.err.println(s);
         }
@@ -361,25 +361,25 @@ public class Dfr
         else {
             // Advanced two pass disassembly, with intermediary structural analysis
             CodeStructure codeStructure = new CodeStructure(memMap.ranges.first().start);
-            debugPrintStream.println("Disassembling the code ranges...");
+            debugPrintWriter.println("Disassembling the code ranges...");
             for (Range range : memMap.ranges) {
                 if (range.data.isCode()) {
                     disassembleCodeMemoryRange(range, getMatchingFileRange(range), codeStructure);
                 }
             }
 
-            debugPrintStream.println("Post processing...");
-            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions.contains(OutputOption.ORDINAL), debugPrintStream);
+            debugPrintWriter.println("Post processing...");
+            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions.contains(OutputOption.ORDINAL), debugPrintWriter);
             // print and output
-            debugPrintStream.println("Structure analysis results :");
-            debugPrintStream.println("  " + codeStructure.getInstructions().size() + " instructions");
-            debugPrintStream.println("  " + codeStructure.getLabels().size() + " labels");
-            debugPrintStream.println("  " + codeStructure.getFunctions().size() + " functions");
-            debugPrintStream.println("  " + codeStructure.getReturns().size() + " returns");
-            debugPrintStream.println();
+            debugPrintWriter.println("Structure analysis results :");
+            debugPrintWriter.println("  " + codeStructure.getInstructions().size() + " instructions");
+            debugPrintWriter.println("  " + codeStructure.getLabels().size() + " labels");
+            debugPrintWriter.println("  " + codeStructure.getFunctions().size() + " functions");
+            debugPrintWriter.println("  " + codeStructure.getReturns().size() + " returns");
+            debugPrintWriter.println();
 
             if (outWriter != null) {
-                debugPrintStream.println("Writing output to disk...");
+                debugPrintWriter.println("Writing output to disk...");
                 for (Range range : memMap.ranges) {
                     // find file offset covering this memory location.
                     Range matchingFileRange = getMatchingFileRange(range);
@@ -401,7 +401,7 @@ public class Dfr
                 + " (file 0x" + Format.asHex(range.start - matchingFileRange.start + matchingFileRange.fileOffset, 8)
                 + ") as " + range.data;
         if (outputOptions.contains(OutputOption.VERBOSE)) {
-            debugPrintStream.println(msg);
+            debugPrintWriter.println(msg);
         }
         if (outWriter != null) {
             outWriter.write("\n");
@@ -425,8 +425,8 @@ public class Dfr
             }
         }
         if (matchingFileRange == null) {
-            debugPrintStream.println("WARNING : No matching file range ('-i' option) found for address 0x" + Format.asHex(memRange.start, 8) + "...");
-            debugPrintStream.println("ssuming no offset between file and memory for now.");
+            debugPrintWriter.println("WARNING : No matching file range ('-i' option) found for address 0x" + Format.asHex(memRange.start, 8) + "...");
+            debugPrintWriter.println("ssuming no offset between file and memory for now.");
             return memRange;
         }
         return matchingFileRange;
@@ -533,7 +533,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
+                    debugPrintWriter.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     break;
 
@@ -544,7 +544,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
+                    debugPrintWriter.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     //        if (parseOffsetRange(opt, arg, &r, &start, &end, &map))
                     //            break;
@@ -574,7 +574,7 @@ public class Dfr
 
                 case 'L':
                 case 'l':
-                    debugPrintStream.println("-" + option + ": not implemented yet!\n");
+                    debugPrintWriter.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
                     optLittleEndian = true;
                     break;
@@ -646,7 +646,7 @@ public class Dfr
                     try {
                         readOptions(argument);
                     } catch (IOException e) {
-                        debugPrintStream.println("Cannot open given options file '" + argument + "'");
+                        debugPrintWriter.println("Cannot open given options file '" + argument + "'");
                         System.exit(1);
                     }
                     break;

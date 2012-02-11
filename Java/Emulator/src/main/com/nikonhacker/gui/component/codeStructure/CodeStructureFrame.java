@@ -275,7 +275,7 @@ public class CodeStructureFrame extends DocumentFrame
 
     public void writeFunction(Function function) throws IOException {
         listingArea.clear();
-        Writer writer = listingArea.getWriter();
+        Writer writer = listingArea.getPrintWriter();
         List<CodeSegment> segments = function.getCodeSegments();
         if (segments.size() == 0) {
             writer.write("; function at address 0x" + Format.asHex(function.getAddress(), 8) + " was not disassembled (not in CODE range)");
@@ -301,7 +301,7 @@ public class CodeStructureFrame extends DocumentFrame
 
     public void writeText(String text) throws IOException {
         listingArea.clear();
-        Writer writer = listingArea.getWriter();
+        Writer writer = listingArea.getPrintWriter();
         writer.write(text);
     }
 

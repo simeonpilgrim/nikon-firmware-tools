@@ -5,7 +5,7 @@ import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.*;
 
@@ -95,21 +95,21 @@ public class CodeStructure {
      * @param memory The memory image
      * @param symbols The symbols defined to override auto-generated function names
      * @param useOrdinalNames if true, use ordinal numbers instead of address to generate names
-     * @param debugPrintStream a stream to which debug/info messages are written (e.g. System.out)
+     * @param debugPrintWriter a PrintWriter to write debug/info messages to
      * @throws IOException
      */
-    public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, boolean useOrdinalNames, PrintStream debugPrintStream) throws IOException {
+    public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, boolean useOrdinalNames, PrintWriter debugPrintWriter) throws IOException {
 
 
         Set<Integer> processedInstructions = new HashSet<Integer>();
 
-        debugPrintStream.println("Following functions, starting at entry point...");
+        debugPrintWriter.println("Following functions, starting at entry point...");
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
         functions.put(entryPoint, main);
-        followFunction(main, entryPoint, processedInstructions, debugPrintStream);
+        followFunction(main, entryPoint, processedInstructions, debugPrintWriter);
 
 
-        debugPrintStream.println("Following functions, starting at each interrupt...");
+        debugPrintWriter.println("Following functions, starting at each interrupt...");
         for (Range range : ranges) {
             if (range instanceof InterruptVectorRange) {
                 for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
@@ -117,27 +117,27 @@ public class CodeStructure {
                     if (!functions.containsKey(address)) {
                         Function function = new Function(address, "interrupt_0x" + Format.asHex(interruptNumber,2) + "_", "");
                         functions.put(address, function);
-                        followFunction(function, address, processedInstructions, debugPrintStream);
+                        followFunction(function, address, processedInstructions, debugPrintWriter);
                     }
                 }
             }
         }
 
 
-        debugPrintStream.println("Processing remaining instructions as 'unknown' functions...");
+        debugPrintWriter.println("Processing remaining instructions as 'unknown' functions...");
         Map.Entry<Integer, DisassembledInstruction> entry = instructions.firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
             if (!processedInstructions.contains(address)) {
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 functions.put(address, function);
-                followFunction(function, address, processedInstructions, debugPrintStream);
+                followFunction(function, address, processedInstructions, debugPrintWriter);
             }
             entry = instructions.higherEntry(address);
         }
 
 
-        debugPrintStream.println("Generating names for functions...");
+        debugPrintWriter.println("Generating names for functions...");
         int functionNumber = 1;
         for (Integer address : functions.keySet()) {
             Function function = functions.get(address);
@@ -155,7 +155,7 @@ public class CodeStructure {
         }
 
 
-        debugPrintStream.println("Overwriting function names with given symbols...");
+        debugPrintWriter.println("Overwriting function names with given symbols...");
         if (symbols != null) {
             for (Integer address : symbols.keySet()) {
                 if (isFunction(address)) {
@@ -168,7 +168,7 @@ public class CodeStructure {
         }
 
 
-        debugPrintStream.println("Generating names for labels (this can take some time)...");
+        debugPrintWriter.println("Generating names for labels (this can take some time)...");
         int labelNumber = 1;
         // Temporary storage for names given to returns to make sure they are unique
         Set<String> usedReturnLabels = new HashSet<String>();
@@ -226,9 +226,9 @@ public class CodeStructure {
 
     }
 
-    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintStream debugPrintStream) throws IOException {
+    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintWriter debugPrintWriter) throws IOException {
         if (instructions.get(address) == null) {
-            debugPrintStream.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
+            debugPrintWriter.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
             return;
         }
         CodeSegment currentSegment = new CodeSegment();
@@ -253,7 +253,7 @@ public class CodeStructure {
                 Jump call = new Jump(address, targetAddress, false);
                 currentFunction.getCalls().add(call);
                 if (targetAddress == null || targetAddress == 0) {
-                    debugPrintStream.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                    debugPrintWriter.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
                 }
                 else {
                     Function function = functions.get(targetAddress);
@@ -261,7 +261,7 @@ public class CodeStructure {
                         // new Function
                         function = new Function(targetAddress, "", "", Function.Type.STANDARD);
                         functions.put(targetAddress, function);
-                        followFunction(function, targetAddress, processedInstructions, debugPrintStream);
+                        followFunction(function, targetAddress, processedInstructions, debugPrintWriter);
                     }
                     else {
                         // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
@@ -316,7 +316,7 @@ public class CodeStructure {
                 }
             }
             if (!inProcessedSegment) {
-                followFunction(currentFunction, jump.target, processedInstructions, debugPrintStream);
+                followFunction(currentFunction, jump.target, processedInstructions, debugPrintWriter);
             }
         }
 

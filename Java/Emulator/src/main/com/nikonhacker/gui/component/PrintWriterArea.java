@@ -5,6 +5,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.SimpleAttributeSet;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
@@ -31,11 +32,11 @@ public class PrintWriterArea extends JTextArea {
     }
 
     /**
-     * Returns the writer to use to write to the area
+     * Returns a PrintWriter to write to the area
      * @return
      */
-    public Writer getWriter() {
-        return writer;
+    public PrintWriter getPrintWriter() {
+        return new PrintWriter(writer);
     }
 
 
