@@ -174,8 +174,10 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
     }
 
     public void clearHighlights() {
-        textArea.getHighlighter().removeAllHighlights();
-        currentlyHighlightedPosition = -1;
+        if (currentlyHighlightedPosition != -1) {
+            textArea.getHighlighter().removeAllHighlights();
+            currentlyHighlightedPosition = -1;
+        }
     }
 
     private int performSearch(String searchText, int startPosition, SearchDirection direction, boolean searchTextChanged) {
