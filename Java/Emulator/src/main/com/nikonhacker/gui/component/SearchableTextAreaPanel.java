@@ -98,7 +98,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         nextButton.addKeyListener(this);
         nextButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.FORWARD, false);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.FORWARD, false);
             }
         });
         searchPanel.add(nextButton);
@@ -107,7 +107,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         previousButton.addKeyListener(this);
         previousButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.BACKWARDS, false);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.BACKWARDS, false);
             }
         });
         searchPanel.add(previousButton);
@@ -116,7 +116,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         highlightAllCheckBox.addKeyListener(this);
         highlightAllCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.NONE, true);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.NONE, true);
             }
         });
         searchPanel.add(highlightAllCheckBox);
@@ -125,7 +125,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         matchCaseCheckBox.addKeyListener(this);
         matchCaseCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.NONE, true);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.NONE, true);
             }
         });
         searchPanel.add(matchCaseCheckBox);
@@ -170,7 +170,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         searchEnabled = true; // restore normal behaviour
 
         // Perform search 
-        return performSearch(text, -1, SearchDirection.FORWARD, true);
+        return performSearch(text, textArea.getSelectionStart(), SearchDirection.FORWARD, true);
     }
 
     public void clearHighlights() {
@@ -221,7 +221,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
             int matchOffset = -1;
             switch (direction) {
                 case NONE :
-                    // No move was requested. See if search still matches, just check
+                    // No move was requested (e.g. searchText was changed. Cheek if search still matches
                     if (matches(startPosition, searchString, text)) {
                         matchOffset = startPosition;
                     }
@@ -231,7 +231,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
                     }
                     break;
                 case FORWARD:
-                    matchOffset = text.indexOf(searchString, (startPosition != -1)?startPosition + 1:0);
+                    matchOffset = text.indexOf(searchString, (startPosition != -1)?startPosition+1:0);
                     break;
                 case BACKWARDS:
                     matchOffset = text.lastIndexOf(searchString, (startPosition != -1)?startPosition-1:text.length());
@@ -239,21 +239,21 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
             }
 
             // Remove previous highlight
-            Object currentHighlight = highlights.get(startPosition);
+            Object currentHighlight = highlights.get(currentlyHighlightedPosition);
             if (currentHighlight != null) {
                 highlighter.removeHighlight(currentHighlight);
                 if (highlightAll) {
                     // put back a "non-current" highlight if still valid
                     try {
-                        if (matches(startPosition, searchString, text)) {
-                            highlights.put(startPosition, highlighter.addHighlight(startPosition, startPosition + searchString.length(), nonSelectedHighlighter));
+                        if (matches(currentlyHighlightedPosition, searchString, text)) {
+                            highlights.put(currentlyHighlightedPosition, highlighter.addHighlight(currentlyHighlightedPosition, currentlyHighlightedPosition + searchString.length(), nonSelectedHighlighter));
                         }
                     } catch (BadLocationException e) {
                         e.printStackTrace();
                     }
                 }
             }
-            // Create new (if match found)
+            // Create new highlight (if match found)
             if (matchOffset > -1) {
                 setSelection(matchOffset, searchString.length());
                 try {
@@ -315,15 +315,20 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         }
         else if (e.getKeyCode() == KeyEvent.VK_F3) {
             if (e.isShiftDown()) {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.BACKWARDS, false);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.BACKWARDS, false);
             }
             else {
-                performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.FORWARD, false);
+                performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.FORWARD, false);
             }
         }
         else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            searchPanel.setVisible(false);
-            textArea.requestFocusInWindow();
+            if (searchPanel.isVisible()) {
+                searchPanel.setVisible(false);
+                textArea.requestFocusInWindow();
+            }
+            else {
+                clearHighlights();
+            }
         }
     }
 
@@ -333,15 +338,15 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
     //  Event handlers for changes to the text search field
     
     public void insertUpdate(DocumentEvent e) {
-        performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.NONE, true);
+        performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.NONE, true);
     }
 
     public void removeUpdate(DocumentEvent e) {
-        performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.NONE, true);
+        performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.NONE, true);
     }
 
     public void changedUpdate(DocumentEvent e) {
-        performSearch(searchTextField.getText(), currentlyHighlightedPosition, SearchDirection.NONE, true);
+        performSearch(searchTextField.getText(), textArea.getSelectionStart(), SearchDirection.NONE, true);
     }
 
     private static class SearchHighlighter implements Callable<java.util.List<Integer>> {
