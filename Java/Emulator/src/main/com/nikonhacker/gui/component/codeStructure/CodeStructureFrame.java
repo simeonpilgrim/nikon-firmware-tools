@@ -297,6 +297,7 @@ public class CodeStructureFrame extends DocumentFrame
                 writer.write("\n");
             }
         }
+        listingArea.setCaretPosition(0);
     }
 
     public void writeText(String text) throws IOException {
