@@ -46,7 +46,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
     JTextField searchTextField;
     JCheckBox highlightAllCheckBox;
     JCheckBox matchCaseCheckBox;
-    int currentlyHighlightedPosition = -1;
+    int selectedHighlightPosition = -1;
     Map<Integer,Object> highlights = new HashMap<Integer, Object>();
     Color defaultSearchFieldBgColor = null;
 
@@ -174,9 +174,9 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
     }
 
     public void clearHighlights() {
-        if (currentlyHighlightedPosition != -1) {
+        if (selectedHighlightPosition != -1) {
             textArea.getHighlighter().removeAllHighlights();
-            currentlyHighlightedPosition = -1;
+            selectedHighlightPosition = -1;
         }
     }
 
@@ -251,14 +251,14 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
             }
 
             // Remove previous highlight
-            Object currentHighlight = highlights.get(currentlyHighlightedPosition);
+            Object currentHighlight = highlights.get(selectedHighlightPosition);
             if (currentHighlight != null) {
                 highlighter.removeHighlight(currentHighlight);
                 if (highlightAll) {
                     // put back a "non-current" highlight if still valid
                     try {
-                        if (matches(currentlyHighlightedPosition, searchString, text)) {
-                            highlights.put(currentlyHighlightedPosition, highlighter.addHighlight(currentlyHighlightedPosition, currentlyHighlightedPosition + searchString.length(), nonSelectedHighlighter));
+                        if (matches(selectedHighlightPosition, searchString, text)) {
+                            highlights.put(selectedHighlightPosition, highlighter.addHighlight(selectedHighlightPosition, selectedHighlightPosition + searchString.length(), nonSelectedHighlighter));
                         }
                     } catch (BadLocationException e) {
                         e.printStackTrace();
@@ -281,7 +281,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
             else {
                 searchTextField.setBackground(Color.PINK);
             }
-            currentlyHighlightedPosition = matchOffset;
+            selectedHighlightPosition = matchOffset;
 
 
             textArea.setEditable(previousEditableStatus);
@@ -289,7 +289,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
 
             return matchOffset;
         }
-        return currentlyHighlightedPosition;
+        return selectedHighlightPosition;
     }
 
     private void setSelection(int offset, int length) {
