@@ -26,7 +26,8 @@ import java.util.concurrent.Future;
  * <p>F3 searches for the next occurrence, Shift-F3 searched for the previous one</p>
  * <p>ESC hides the bar</p>
  * <p>Based on http://coding.derkeiler.com/Archive/Java/comp.lang.java.programmer/2008-04/msg01467.html</p>
- * TODO wrap around
+ * TODO cosmetic : don't select anything if searchText is empty
+ * TODO add "cross icon" to close the search bar
  */
 public class SearchableTextAreaPanel extends JPanel implements DocumentListener, KeyListener {
 
@@ -131,7 +132,6 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         searchPanel.add(matchCaseCheckBox);
 
         searchPanel.setVisible(showBar); // if false, it remains hidden until CTRL-F is pressed
-        //TODO add cross icon to hide bar
         add(searchPanel, BorderLayout.SOUTH);
     }
 
@@ -229,13 +229,22 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
                     else {
                         // if check fails (text changed or match case changed), perform forward search
                         matchOffset = text.indexOf(searchString, startPosition);
+                        if (matchOffset == -1 && startPosition != 0) {
+                            matchOffset = text.indexOf(searchString, 0);
+                        }
                     }
                     break;
                 case FORWARD:
                     matchOffset = text.indexOf(searchString, (startPosition != -1)?startPosition+1:0);
+                    if (matchOffset == -1 && startPosition != 0) {
+                        matchOffset = text.indexOf(searchString, 0);
+                    }
                     break;
                 case BACKWARDS:
                     matchOffset = text.lastIndexOf(searchString, (startPosition != -1)?startPosition-1:text.length());
+                    if (matchOffset == -1 && startPosition != text.length()) {
+                        matchOffset = text.lastIndexOf(searchString, text.length());
+                    }
                     break;
             }
 
