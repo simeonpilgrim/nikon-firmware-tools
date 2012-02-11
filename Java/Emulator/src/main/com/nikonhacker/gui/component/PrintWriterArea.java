@@ -7,23 +7,39 @@ import javax.swing.text.SimpleAttributeSet;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * A JTextArea exposing a Writer to be used for any output or logging
+ */
 public class PrintWriterArea extends JTextArea {
     private AttributeSet attributeSet = new SimpleAttributeSet();
 
     private InternalWriter writer = new InternalWriter();
 
+    /**
+     * Constructs a new empty PrintWriterArea with the specified number of
+     * rows and columns.
+     * By default, the area is not editable
+     *
+     * @param rows the number of rows >= 0
+     * @param columns the number of columns >= 0
+     * @exception IllegalArgumentException if the rows or columns
+     *  arguments are negative.
+     */
     public PrintWriterArea(int rows, int columns) {
         super(rows, columns);
         setEditable(false);
     }
 
-
+    /**
+     * Returns the writer to use to write to the area
+     * @return
+     */
     public Writer getWriter() {
         return writer;
     }
 
 
-    public void write(char cbuf[], int off, int len) throws IOException {
+    private void write(char cbuf[], int off, int len) throws IOException {
         try {
             getDocument().insertString(getDocument().getLength(), new String(cbuf, off, len), attributeSet);
         } catch (BadLocationException e) {
