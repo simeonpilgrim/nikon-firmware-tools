@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
  * <p>F3 searches for the next occurrence, Shift-F3 searched for the previous one</p>
  * <p>ESC hides the bar</p>
  * <p>Based on http://coding.derkeiler.com/Archive/Java/comp.lang.java.programmer/2008-04/msg01467.html</p>
- * TODO : highlights should be cleared if textArea Document content changes
+ * TODO wrap around
  */
 public class SearchableTextAreaPanel extends JPanel implements DocumentListener, KeyListener {
 
@@ -175,6 +175,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
 
     public void clearHighlights() {
         textArea.getHighlighter().removeAllHighlights();
+        currentlyHighlightedPosition = -1;
     }
 
     private int performSearch(String searchText, int startPosition, SearchDirection direction, boolean searchTextChanged) {
@@ -286,7 +287,7 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
     }
 
     private boolean matches(int position, String searchString, String text) {
-        if (position >= 0) {
+        if (position >= 0 && position + searchString.length() <= text.length()) {
             if (matchCaseCheckBox.isSelected()) {
                 return text.substring(position, position + searchString.length()).equals((searchString));
             }
