@@ -2,13 +2,29 @@ package com.nikonhacker.gui.component.codeStructure;
 
 import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
+import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
+import com.nikonhacker.dfr.CodeStructure;
 import com.nikonhacker.dfr.Function;
 import com.nikonhacker.dfr.Jump;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class CodeStructureMxGraph extends mxGraph {
 
+    private static final int FUNCTION_CELL_WIDTH = 100;
+    private static final int FUNCTION_CELL_HEIGHT = 30;
+    private static final int FAKE_FUNCTION_CELL_WIDTH = 50;
+    private static final int FAKE_FUNCTION_CELL_HEIGHT = 20;
+
     private final mxHierarchicalLayout layout;
+
+    // Map from Object (Function, or anonymous Object when calling unknown destination) to cell
+    Map<Object,Object> cellObjects = new HashMap<Object, Object>();
+    Set<Jump> renderedCalls = new HashSet<Jump>();
 
     public CodeStructureMxGraph(int orientation) {
         super();
@@ -36,57 +52,47 @@ public class CodeStructureMxGraph extends mxGraph {
         return super.isCellSelectable(cell);
     }
 
-    void expandFunction(Function function, CodeStructureFrame codeStructureFrame) {
+    void expandFunction(Function function, CodeStructure codeStructure, boolean expandLeft, boolean expandRight) {
         getModel().beginUpdate();
         try
         {
-            if (!codeStructureFrame.cellObjects.containsKey(function.getAddress())) {
-                codeStructureFrame.addFunction(function);
+            if (!cellObjects.containsKey(function.getAddress())) {
+                addFunction(function);
             }
             
-            codeStructureFrame.makeExpandedStyle(function);
+            makeExpandedStyle(function);
 
-            for (Jump call : function.getCalls()) {
-                if (!codeStructureFrame.renderedCalls.contains(call)) {
-                    Object targetCell = codeStructureFrame.cellObjects.get(call.getTarget());
-                    if (targetCell == null) {
-                        Function targetFunction = codeStructureFrame.codeStructure.getFunctions().get(call.getTarget());
-                        if (targetFunction == null) {
-                            targetCell = codeStructureFrame.addFakeFunction(call.getTarget());
+            if (expandLeft) {
+                for (Jump call : function.getCalls()) {
+                    if (!renderedCalls.contains(call)) {
+                        Object targetCell = cellObjects.get(call.getTarget());
+                        if (targetCell == null) {
+                            Function targetFunction = codeStructure.getFunctions().get(call.getTarget());
+                            if (targetFunction == null) {
+                                targetCell = addFakeFunction(call.getTarget());
+                            }
+                            else {
+                                targetCell = addFunction(targetFunction);
+                            }
                         }
-                        else {
-                            targetCell = codeStructureFrame.addFunction(targetFunction);
-                        }
+                        // Add calls as edges
+                        addCall(function, call, targetCell);
                     }
-                    // Add calls as edges
-                    codeStructureFrame.addCall(function, call, targetCell);
                 }
             }
 
-            for (Jump call : function.getCalledBy().keySet()) {
-                if (!codeStructureFrame.renderedCalls.contains(call)) {
-                    Function sourceFunction = function.getCalledBy().get(call);
-                    if (!codeStructureFrame.cellObjects.containsKey(sourceFunction.getAddress())) {
-                        codeStructureFrame.addFunction(sourceFunction);
+            if (expandRight) {
+                for (Jump call : function.getCalledBy().keySet()) {
+                    if (!renderedCalls.contains(call)) {
+                        Function sourceFunction = function.getCalledBy().get(call);
+                        if (!cellObjects.containsKey(sourceFunction.getAddress())) {
+                            addFunction(sourceFunction);
+                        }
+                        // Add calls as edges
+                        addCall(sourceFunction, call, cellObjects.get(function.getAddress()));
                     }
-                    // Add calls as edges
-                    codeStructureFrame.addCall(sourceFunction, call, codeStructureFrame.cellObjects.get(function.getAddress()));
                 }
             }
-
-//            Map<Integer,Object> functionObjects = new HashMap<Integer, Object>();
-//            Function function = codeStructure.getFunctions().get(focusedAddress);
-//            addFunction(functionObjects, function);
-//            for (Jump call : function.getCalls()) {
-//                // Add functions as nodes
-//                if (!functionObjects.containsKey(call.getTarget())) {
-//                    Function target = codeStructure.getFunctions().get(call.getTarget());
-//                    addFunction(functionObjects, target);
-//                }
-//                // Add calls as edges
-//                graph.insertEdge(parent, null, "", functionObjects.get(function.getAddress()), functionObjects.get(call.getTarget()));
-//            }
-
         }
         finally
         {
@@ -106,5 +112,55 @@ public class CodeStructureMxGraph extends mxGraph {
         }
     }
 
+
+    public Object addFakeFunction(int address) {
+        // Fake functions are targets that haven't been disassembled as code
+        Object vertex;
+        Object value;
+        if (address == 0) {
+            value = "??";
+            vertex = insertVertex(getDefaultParent(), new Object().toString(), value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF7700");
+        }
+        else {
+            value = address;
+            vertex = insertVertex(getDefaultParent(), "" + address, value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF0000");
+        }
+        cellObjects.put(value, vertex);
+        return vertex;
+    }
+
+    private Object addFunction(Function function) {
+        // Function cells are created white and remain so until they are expanded
+        Object vertex = insertVertex(getDefaultParent(), "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
+        cellObjects.put(function.getAddress(), vertex);
+        return vertex;
+    }
+
+    private void addCall(Function sourceFunction, Jump call, Object targetCell) {
+        insertEdge(getDefaultParent(), null, "", cellObjects.get(sourceFunction.getAddress()), targetCell);
+        renderedCalls.add(call);
+    }
+
+    public void clear() {
+        removeCells(getChildCells(getDefaultParent(), true, true));
+        cellObjects = new HashMap<Object, Object>();
+        renderedCalls = new HashSet<Jump>();
+        executeLayout();
+    }
+
+    private void makeExpandedStyle(Function function) {
+        mxCell cell = getCellById("" + function.getAddress());
+        setCellStyles(mxConstants.STYLE_FILLCOLOR, function.getColor(), new Object[]{cell});
+    }
+
+    private mxCell getCellById(String id) {
+        for (Object c : getChildCells(getDefaultParent(), true, true)) {
+            mxCell cell = (mxCell) c;
+            if (id.equals(cell.getId())) {
+                return cell;
+            }
+        }
+        return null;
+    }
 
 }

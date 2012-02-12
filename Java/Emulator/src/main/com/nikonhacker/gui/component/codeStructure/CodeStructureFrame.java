@@ -2,10 +2,8 @@ package com.nikonhacker.gui.component.codeStructure;
 
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
-import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxRectangle;
 import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
@@ -26,24 +24,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
 import java.util.List;
 
 public class CodeStructureFrame extends DocumentFrame
 {
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
-    private static final int FUNCTION_CELL_WIDTH = 100;
-    private static final int FUNCTION_CELL_HEIGHT = 30;
-    private static final int FAKE_FUNCTION_CELL_WIDTH = 50;
-    private static final int FAKE_FUNCTION_CELL_HEIGHT = 20;
 
-    Object parent;
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
-    // Map from value object (Function or anonymous Object when calling unknown destination) to cell
-    Map<Object,Object> cellObjects = new HashMap<Object, Object>();
-    Set<Jump> renderedCalls = new HashSet<Jump>();
     private final PrintWriterArea listingArea;
     private mxGraphComponent graphComponent;
 
@@ -87,7 +76,7 @@ public class CodeStructureFrame extends DocumentFrame
         
         final JTextField targetAddressField = new JTextField(7);
         toolbar.add(targetAddressField);
-        
+
         JButton exploreButton = new JButton("Explore");
         exploreButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -101,7 +90,7 @@ public class CodeStructureFrame extends DocumentFrame
                         JOptionPane.showMessageDialog(CodeStructureFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
                     else{
-                        graph.expandFunction(function, CodeStructureFrame.this);
+                        graph.expandFunction(function, codeStructure, true, true);
                     }
                 } catch (ParsingException ex) {
                     JOptionPane.showMessageDialog(CodeStructureFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
@@ -155,22 +144,17 @@ public class CodeStructureFrame extends DocumentFrame
         JButton clearButton = new JButton("Clear");
         clearButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                graph.removeCells(graph.getChildCells(graph.getDefaultParent(), true, true));
-                cellObjects = new HashMap<Object, Object>();
-                renderedCalls = new HashSet<Jump>();
-                graph.executeLayout();
+                graph.clear();
             }
         });
         toolbar.add(clearButton);
 
         
         // Create left hand graph
-        graph = new CodeStructureMxGraph(getCurrentOrientation().getSwingValue());
         Component graphComponent = getGraphPane();
 
         // Create right hand listing
         listingArea = new PrintWriterArea(50, 80);
-        listingArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
         Component listingComponent = getListingPane();
 
         // Create a left-right split pane
@@ -219,8 +203,8 @@ public class CodeStructureFrame extends DocumentFrame
     }
 
     public Component getGraphPane() {
-        parent = graph.getDefaultParent();
-
+        // Create graph object
+        graph = new CodeStructureMxGraph(getCurrentOrientation().getSwingValue());
         // Prevent manual cell resizing
         graph.setCellsResizable(false);
         // Prevent manual cell moving
@@ -228,6 +212,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH/2, FRAME_HEIGHT));
 
+        // Create graph component
         graphComponent = new CodeStructureMxGraphComponent(graph, this);
         // Prevent edge drawing from UI
         graphComponent.setConnectable(false);
@@ -238,38 +223,8 @@ public class CodeStructureFrame extends DocumentFrame
 
 
     private Component getListingPane() {
+        listingArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
         return new SearchableTextAreaPanel(listingArea);
-        //return new JScrollPane(listingArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    }
-
-
-    public void addCall(Function sourceFunction, Jump call, Object targetCell) {
-        graph.insertEdge(parent, null, "", cellObjects.get(sourceFunction.getAddress()), targetCell);
-        renderedCalls.add(call);
-    }
-
-
-    public Object addFunction(Function function) {
-        // Function cells are created white and remain so until they are expanded
-        Object vertex = graph.insertVertex(parent, "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
-        cellObjects.put(function.getAddress(), vertex);
-        return vertex;
-    }
-
-    public Object addFakeFunction(int address) {
-        // Fake functions are targets that haven't been disassembled as code
-        Object vertex;
-        Object value;
-        if (address == 0) {
-            value = "??";
-            vertex = graph.insertVertex(parent, new Object().toString(), value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF7700");
-        }
-        else {
-            value = address;
-            vertex = graph.insertVertex(parent, "" + address, value, 0, 0, FAKE_FUNCTION_CELL_WIDTH, FAKE_FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FF0000");
-        }
-        cellObjects.put(value, vertex);
-        return vertex;
     }
 
 
@@ -345,7 +300,7 @@ public class CodeStructureFrame extends DocumentFrame
             }
             else
             {
-                JOptionPane.showMessageDialog(CodeStructureFrame.this, "Error rendering image", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error rendering image", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
         finally
@@ -354,18 +309,4 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public void makeExpandedStyle(Function function) {
-        mxCell cell = getCellById("" + function.getAddress());
-        graph.setCellStyles(mxConstants.STYLE_FILLCOLOR, function.getColor(), new Object[]{cell});
-    }
-
-    private mxCell getCellById(String id) {
-        for (Object c : graph.getChildCells(graph.getDefaultParent(), true, true)) {
-            mxCell cell = (mxCell) c; 
-            if (id.equals(cell.getId())) {
-                return cell;
-            }
-        }
-        return null;
-    }
 }

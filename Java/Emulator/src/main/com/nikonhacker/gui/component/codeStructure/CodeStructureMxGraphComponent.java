@@ -5,6 +5,7 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.mxgraph.view.mxGraph;
 import com.nikonhacker.Format;
+import com.nikonhacker.dfr.CodeStructure;
 import com.nikonhacker.dfr.Function;
 
 import java.awt.event.MouseAdapter;
@@ -12,11 +13,11 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class CodeStructureMxGraphComponent extends mxGraphComponent {
-    private CodeStructureFrame codeStructureFrame;
+    private CodeStructure codeStructure;
 
     public CodeStructureMxGraphComponent(final mxGraph graph, final CodeStructureFrame codeStructureFrame) {
         super(graph);
-        this.codeStructureFrame = codeStructureFrame;
+        this.codeStructure = codeStructureFrame.codeStructure;
 
         // This handles only mouse click events
         getGraphControl().addMouseListener(new MouseAdapter() {
@@ -58,7 +59,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                             //JOptionPane.showMessageDialog(null, "Dbl Click inside " + vertex.getValue(), "Done", JOptionPane.INFORMATION_MESSAGE);
                             Object value = vertex.getValue();
                             if (value instanceof Function) {
-                                ((CodeStructureMxGraph)graph).expandFunction((Function) value, codeStructureFrame);
+                                ((CodeStructureMxGraph)graph).expandFunction((Function) value, codeStructure, true, true);
                             }
                         }
                     }
