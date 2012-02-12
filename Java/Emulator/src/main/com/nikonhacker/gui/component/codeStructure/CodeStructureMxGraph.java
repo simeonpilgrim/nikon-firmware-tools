@@ -52,17 +52,17 @@ public class CodeStructureMxGraph extends mxGraph {
         return super.isCellSelectable(cell);
     }
 
-    void expandFunction(Function function, CodeStructure codeStructure, boolean expandLeft, boolean expandRight) {
+    public void expandFunction(Function function, CodeStructure codeStructure, boolean expandUsage, boolean expandCallees) {
         getModel().beginUpdate();
         try
         {
             if (!cellObjects.containsKey(function.getAddress())) {
                 addFunction(function);
             }
-            
+
             makeExpandedStyle(function);
 
-            if (expandLeft) {
+            if (expandCallees) {
                 for (Jump call : function.getCalls()) {
                     if (!renderedCalls.contains(call)) {
                         Object targetCell = cellObjects.get(call.getTarget());
@@ -81,7 +81,7 @@ public class CodeStructureMxGraph extends mxGraph {
                 }
             }
 
-            if (expandRight) {
+            if (expandUsage) {
                 for (Jump call : function.getCalledBy().keySet()) {
                     if (!renderedCalls.contains(call)) {
                         Function sourceFunction = function.getCalledBy().get(call);
@@ -101,6 +101,39 @@ public class CodeStructureMxGraph extends mxGraph {
         // Layout
         executeLayout();
     }
+
+    public void removeFunction(Function function) {
+        getModel().beginUpdate();
+        try
+        {
+            if (cellObjects.containsKey(function.getAddress())) {
+                // Visually remove cell from graph, including call edges
+                removeCells(new Object[]{cellObjects.get(function.getAddress())}, true);
+
+                // Process memory structures
+
+                // Remove calls to other functions
+                for (Jump call : function.getCalls()) {
+                    renderedCalls.remove(call);
+                }
+
+                // Remove calls to this function
+                for (Jump call : function.getCalledBy().keySet()) {
+                    renderedCalls.remove(call);
+                }
+
+                // Remove this function
+                cellObjects.remove(function.getAddress());
+            }
+        }
+        finally
+        {
+            getModel().endUpdate();
+        }
+        // Layout
+        executeLayout();
+    }
+
 
     public void executeLayout() {
         getModel().beginUpdate();
