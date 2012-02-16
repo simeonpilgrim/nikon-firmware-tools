@@ -201,7 +201,7 @@ public class OptionHandler
                 throw new ParsingException("Invalid symbol '" + argument + "' : no closing parenthesis");
             }
             comment = value.substring(commentStart + 1, value.length() - 1).trim();
-            value = value.substring(0,commentStart - 1).trim();
+            value = value.substring(0, commentStart).trim();
         }
         symbols.put(address, new Symbol(address, value, comment));
     }
