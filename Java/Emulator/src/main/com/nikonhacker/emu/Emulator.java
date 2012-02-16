@@ -8,7 +8,7 @@ import com.nikonhacker.emu.trigger.BreakCondition;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -25,7 +25,7 @@ public class Emulator {
     private Integer nextPC = null;
     private Integer nextRP = null;
     private boolean delaySlotDone = false;
-    private PrintStream instructionPrintStream;
+    private PrintWriter instructionPrintWriter;
     private int sleepIntervalMs = 0;
     private boolean sleepIntervalChanged = false;
     private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
@@ -47,7 +47,7 @@ public class Emulator {
         Emulator emulator = new Emulator(1000);
         emulator.setMemory(memory);
         emulator.setCpuState(cpuState);
-        emulator.setInstructionPrintStream(System.out);
+        emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();
     }
@@ -85,10 +85,10 @@ public class Emulator {
 
     /**
      * Provide a printstream to send disassembled form of executed instructions to
-     * @param instructionPrintStream
+     * @param instructionPrintWriter
      */
-    public void setInstructionPrintStream(PrintStream instructionPrintStream) {
-        this.instructionPrintStream = instructionPrintStream;
+    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
+        this.instructionPrintWriter = instructionPrintWriter;
     }
 
     /**
@@ -156,13 +156,13 @@ public class Emulator {
     
                 disassembledInstruction.decodeInstructionOperands(cpuState.pc, memory);
 
-                if (instructionPrintStream != null) {
-                    PrintStream ips = instructionPrintStream;
-                    // copying to make sure we keep a reference even if instructionPrintStream gets set to null in between but still avoid costly synchronization
-                    if (ips != null) {
+                if (instructionPrintWriter != null) {
+                    // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
+                    PrintWriter printWriter = instructionPrintWriter;
+                    if (printWriter != null) {
                         // OK. copy is still not null
                         disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
-                        ips.print("0x" + Format.asHex(cpuState.pc, 8) + " " + disassembledInstruction);
+                        printWriter.print("0x" + Format.asHex(cpuState.pc, 8) + " " + disassembledInstruction);
                     }
                 }
                 

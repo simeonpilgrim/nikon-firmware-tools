@@ -4,7 +4,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.PageAccessLoggerActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintStreamArea;
+import com.nikonhacker.gui.component.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,9 +20,9 @@ public class MemoryMappedComponentFrame extends DocumentFrame {
     public MemoryMappedComponentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int page, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
-        final PrintStreamArea textArea = new PrintStreamArea(ROWS, COLUMNS);
+        final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-        listener = new PageAccessLoggerActivityListener(textArea.getPrintStream(), page);
+        listener = new PageAccessLoggerActivityListener(textArea.getPrintWriter(), page);
         memory.addActivityListener(listener);
         setLayout(new BorderLayout());
         add(new JScrollPane(textArea), BorderLayout.PAGE_START);
