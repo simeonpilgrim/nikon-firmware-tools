@@ -13,44 +13,17 @@ public class DisassemblyFrame extends DocumentFrame {
     private static final int ROWS = 50;
     private static final int COLUMNS = 100;
     private Emulator emulator;
-    private boolean followTail = true;
 
     public DisassemblyFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
 
-        final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
-
+        PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
 
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-//        textArea.getDocument().addDocumentListener(new DocumentListener() {
-//            public void insertUpdate(DocumentEvent e) {
-//                if (followTail) {
-//                    textArea.scrollRectToVisible(new Rectangle(0, textArea.getHeight() - 2, 1, 1));
-//                }
-//            }
-//
-//            public void removeUpdate(DocumentEvent e) {}
-//            public void changedUpdate(DocumentEvent e) {
-//            }
-//        });
+
         emulator.setInstructionPrintWriter(textArea.getPrintWriter());
 
-//            scrollPane.getVerticalScrollBar().addAdjustmentListener(new AdjustmentListener() {
-//            public void adjustmentValueChanged(AdjustmentEvent e) {
-//                if (!e.getValueIsAdjusting()) {
-//                    JScrollBar scrollBar = (JScrollBar) e.getSource();
-//                    if (scrollBar.getVisibleAmount() == scrollBar.getMaximum()) {
-//                        // Fully visible. Following is meaningless  TODO is this useful ?
-//                        followTail = false;
-//                    }
-//                    else {
-//                        // Start following if scrollbar has been placed (dragged or due to text insertion) to (or near) the bottom
-//                        followTail = (scrollBar.getValue() + scrollBar.getVisibleAmount() > scrollBar.getMaximum());
-//                    }
-//                }
-//            }
-//        });
         getContentPane().add(new SearchableTextAreaPanel(textArea));
     }
     
