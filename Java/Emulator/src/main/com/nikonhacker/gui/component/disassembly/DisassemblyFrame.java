@@ -4,24 +4,23 @@ import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintWriterArea;
+import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 
-import javax.swing.*;
 import java.awt.*;
 
 
 public class DisassemblyFrame extends DocumentFrame {
     private static final int ROWS = 50;
-    private static final int COLUMNS = 90;
+    private static final int COLUMNS = 100;
     private Emulator emulator;
     private boolean followTail = true;
-    private final JScrollPane scrollPane;
 
     public DisassemblyFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
 
         final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
-        scrollPane = new JScrollPane(textArea);
+
 
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
 //        textArea.getDocument().addDocumentListener(new DocumentListener() {
@@ -52,7 +51,7 @@ public class DisassemblyFrame extends DocumentFrame {
 //                }
 //            }
 //        });
-        getContentPane().add(scrollPane);
+        getContentPane().add(new SearchableTextAreaPanel(textArea));
     }
     
     public void dispose() {
