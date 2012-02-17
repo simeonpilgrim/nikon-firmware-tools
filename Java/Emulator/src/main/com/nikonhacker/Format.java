@@ -74,6 +74,21 @@ public class Format {
         }
     }
 
+    public static int parseUnsignedField(JTextField textField) throws ParsingException {
+        try {
+            long value = parseUnsigned(textField.getText());
+            if (value < 0 || value > 0xFFFFFFFFL) {
+                throw new ParsingException("Value out of range");
+            }
+            textField.setBackground(Color.WHITE);
+            return (int) value;
+        } catch (ParsingException e) {
+            textField.setBackground(Color.RED);
+            throw(e);
+        }
+    }
+
+
     /**
      * Parses the given string as an 32-bit integer
      * The number can be either decimal or hex (0x-prefixed) and can be followed by the K or M (case insensitive) multipliers
