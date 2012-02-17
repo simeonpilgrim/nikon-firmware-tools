@@ -8,7 +8,6 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
-import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
@@ -20,18 +19,19 @@ import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
+import com.nikonhacker.gui.component.dumpMemory.DumpMemoryDialog;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -676,75 +676,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void openDumpMemoryDialog() {
-        JTextField destinationField = new JTextField();
-        JTextField startAddressField = new JTextField(10);
-        final JRadioButton withEndButton = new JRadioButton();
-        final JLabel endAddressLabel = new JLabel("End address");
-        final JTextField endAddressField = new JTextField(10);
-        final JRadioButton withLengthButton = new JRadioButton();
-        final JLabel lengthLabel = new JLabel("Length");
-        final JTextField lengthField = new JTextField(10);
-
-        ButtonGroup group = new ButtonGroup();
-        group.add(withEndButton);
-        group.add(withLengthButton);
-
-        ActionListener buttonListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                endAddressLabel.setEnabled(withEndButton.isSelected());
-                endAddressField.setEnabled(withEndButton.isSelected());
-                lengthLabel.setEnabled(withLengthButton.isSelected());
-                lengthField.setEnabled(withLengthButton.isSelected());
-            }
-        };
-        withEndButton.addActionListener(buttonListener);
-        withLengthButton.addActionListener(buttonListener);
-        withEndButton.setHorizontalAlignment(SwingConstants.RIGHT);
-        withLengthButton.setHorizontalAlignment(SwingConstants.RIGHT);
-
-        withEndButton.setSelected(true);
-        lengthLabel.setEnabled(false);
-        lengthField.setEnabled(false);
-        
-        JPanel rangePanel = new JPanel(new GridLayout(3,3));
-        rangePanel.add(new JLabel());
-        rangePanel.add(new JLabel("Start address"));
-        rangePanel.add(startAddressField);
-        rangePanel.add(withEndButton);
-        rangePanel.add(endAddressLabel);
-        rangePanel.add(endAddressField);
-        rangePanel.add(withLengthButton);
-        rangePanel.add(lengthLabel);
-        rangePanel.add(lengthField);
-
-        final JComponent[] inputs = new JComponent[]{
-                rangePanel,
-                new FileSelectionPanel("Destination file", destinationField, false)
-        };
-        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-                inputs,
-                "Dump memory area to file",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                JOptionPane.DEFAULT_OPTION)) {
-            try {
-                int length;
-                if (withLengthButton.isSelected()) {
-                    length = Format.parseUnsignedField(lengthField);
-                }
-                else {
-                    length = Format.parseUnsignedField(endAddressField) - Format.parseUnsignedField(startAddressField) + 1;
-                }
-                memory.saveToFile(new File(destinationField.getText()), Format.parseUnsignedField(endAddressField), length);
-                JOptionPane.showMessageDialog(this, "Dump complete", "Done", JOptionPane.INFORMATION_MESSAGE);
-            } catch (ParsingException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(), "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
-            } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(), "Error dumping memory to file", JOptionPane.ERROR_MESSAGE);
-            }
-        }
+        new DumpMemoryDialog(this, memory).setVisible(true);
     }
 
 
@@ -1443,110 +1375,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else {
             return null;
-        }
-    }
-
-    public class DependentField {
-        JTextField field;
-        String suffix;
-
-        public DependentField(JTextField field, String suffix) {
-            this.field = field;
-            this.suffix = suffix;
-        }
-    }
-
-    public class FileSelectionPanel extends JPanel implements ActionListener {
-        String label;
-        JLabel jlabel;
-        JButton button;
-        JTextField textField;
-        boolean directoryMode;
-        private List<DependentField> dependentFields;
-
-        public FileSelectionPanel(String label, JTextField textField, boolean directoryMode) {
-            super();
-            init(label, textField, directoryMode, new ArrayList<DependentField>());
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            jlabel.setEnabled(enabled);
-            button.setEnabled(enabled);
-            textField.setEnabled(enabled);
-        }
-
-        /**
-         *
-         * @param label
-         * @param textField
-         * @param directoryMode
-         * @param dependentFields : a list of text fields that will be filled based on this one. Each field is associated with a suffix to customize secondary field filename. If it contains a dot, it replaces the extension, otherwise it replaces the full filename
-         */
-        public FileSelectionPanel(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
-            super();
-            init(label, textField, directoryMode, dependentFields);
-        }
-
-        private void init(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
-            this.label = label;
-            this.textField = textField;
-            this.directoryMode = directoryMode;
-            this.dependentFields = dependentFields;
-
-            this.setLayout(new FlowLayout(FlowLayout.RIGHT));
-
-            jlabel = new JLabel(label);
-            this.add(jlabel);
-
-            textField.setPreferredSize(new Dimension(400, (int) textField.getPreferredSize().getHeight()));
-            this.add(textField);
-
-            button = new JButton("...");
-            this.add(button);
-
-            button.addActionListener(this);
-            //setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            final JFileChooser fc = new JFileChooser();
-
-            fc.setDialogTitle("Select " + label);
-            fc.setCurrentDirectory(new java.io.File("."));
-
-            if (directoryMode) {
-                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fc.setAcceptAllFileFilterUsed(false);
-            }
-            else {
-                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fc.setAcceptAllFileFilterUsed(true);
-            }
-
-            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-                textField.setText(fc.getSelectedFile().getPath());
-                for (DependentField dependentField : dependentFields) {
-                    if (StringUtils.isBlank(dependentField.field.getText())) {
-                        // We have to fill the cascading target based on just made selection and given target
-                        String text = textField.getText();
-                        if (directoryMode) {
-                            dependentField.field.setText(text + File.separatorChar + dependentField.suffix);
-                        }
-                        else {
-                            if (dependentField.suffix.contains(".")) {
-                                // replace filename
-                                dependentField.field.setText(StringUtils.substringBeforeLast(text, File.separator) + File.separator + dependentField.suffix);
-                            }
-                            else {
-                                // only replace extension
-                                dependentField.field.setText(StringUtils.substringBeforeLast(text, ".") + "." + dependentField.suffix);
-                            }                        
-                        }
-                    }
-                }
-            }
         }
     }
 

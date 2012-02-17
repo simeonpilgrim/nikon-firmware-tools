@@ -76,12 +76,9 @@ public class Format {
 
     public static int parseUnsignedField(JTextField textField) throws ParsingException {
         try {
-            long value = parseUnsigned(textField.getText());
-            if (value < 0 || value > 0xFFFFFFFFL) {
-                throw new ParsingException("Value out of range");
-            }
+            int value = parseUnsigned(textField.getText());
             textField.setBackground(Color.WHITE);
-            return (int) value;
+            return value;
         } catch (ParsingException e) {
             textField.setBackground(Color.RED);
             throw(e);
