@@ -3,10 +3,7 @@ package com.nikonhacker.emu.memory;
 import com.nikonhacker.dfr.Range;
 import com.nikonhacker.emu.EmulatorOptions;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Collection;
@@ -349,22 +346,15 @@ public abstract class AbstractMemory implements Memory {
         long length = file.length();
         map(memoryOffset, (int) length, true, true, true);
         FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(file);
-            int addr = memoryOffset;
-            long count = 0;
-            while (count < file.length()) {
-                byte[] page = getPage(getPTE(addr));
-                count += fis.read(page);
-                addr += PAGE_SIZE;
-            }
-        } finally {
-            try {
-                if (fis != null) fis.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        fis = new FileInputStream(file);
+        int addr = memoryOffset;
+        long count = 0;
+        while (count < file.length()) {
+            byte[] page = getPage(getPTE(addr));
+            count += fis.read(page);
+            addr += PAGE_SIZE;
         }
+        fis.close();
     }
 
     public void loadFile(File sourceFile,  Collection<Range> ranges) throws IOException {
@@ -396,6 +386,27 @@ public abstract class AbstractMemory implements Memory {
                 bytesPushed += byteCount;
             }
         }
+        fc.close();
+    }
 
+    public void saveToFile(File file, int startAddress, int length) throws IOException {
+        FileOutputStream fos = new FileOutputStream(file);
+        int pte = getPTE(startAddress);
+        int offset = getOffset(startAddress);
+        int bytesRemainingToWrite = length;
+        while (bytesRemainingToWrite > 0) {
+            int bytesRemainingInPage = getPageSize() - offset;
+            int bytesToWrite = Math.min(bytesRemainingInPage, bytesRemainingToWrite);
+            byte[] page = getPage(pte);
+            if (page == null) {
+                // Unallocated page, use 0-filled page
+                page = new byte[PAGE_SIZE];
+            }
+            fos.write(page, offset, bytesToWrite);
+            bytesRemainingToWrite -= bytesToWrite;
+            pte++;
+            offset = 0;
+        }
+        fos.close();
     }
 }

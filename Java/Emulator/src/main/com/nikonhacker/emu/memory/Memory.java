@@ -65,5 +65,7 @@ public interface Memory {
 
     void loadFile(File file, Collection<Range> ranges) throws IOException;
 
+    void saveToFile(File file, int startAddress, int length) throws IOException;
+
     void clear();
 }

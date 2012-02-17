@@ -8,6 +8,7 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
+import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
@@ -53,7 +54,8 @@ import java.util.Set;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
-    private static final String COMMAND_EMULATOR_LOAD = "EMULATOR_LOAD";
+    private static final String COMMAND_IMAGE_LOAD = "IMAGE_LOAD";
+    private static final String COMMAND_ANALYSE_DISASSEMBLE = "ANALYSE_DISASSEMBLE";
     private static final String COMMAND_EMULATOR_PLAY = "EMULATOR_PLAY";
     private static final String COMMAND_EMULATOR_DEBUG = "EMULATOR_DEBUG";
     private static final String COMMAND_EMULATOR_PAUSE = "EMULATOR_PAUSE";
@@ -70,7 +72,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
-    private static final String COMMAND_ANALYSE_DISASSEMBLE = "ANALYSE_DISASSEMBLE";
+    private static final String COMMAND_DUMP_MEMORY = "DUMP_MEMORY";
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
@@ -113,8 +115,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem memoryHexEditorMenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
     private JCheckBoxMenuItem component4006MenuItem;
+    private JCheckBoxMenuItem codeStructureMenuItem;
+    private JMenuItem dumpMemoryMenuItem;
     private JMenuItem optionsMenuItem;
-    private JMenuItem codeStructureMenuItem;
 
     private JButton loadButton;
     private JButton analyseButton;
@@ -130,8 +133,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton memoryHexEditorButton;
     private JButton screenEmulatorButton;
     private JButton component4006Button;
-    private JButton optionsButton;
     private JButton codeStructureButton;
+    private JButton dumpMemoryButton;
+    private JButton optionsButton;
 
     private DocumentFrame disassemblyFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
@@ -258,7 +262,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.setLayout(new BoxLayout(bar, BoxLayout.LINE_AXIS));
 
-        loadButton = makeButton("load", COMMAND_EMULATOR_LOAD, "Load image", "Load");
+        loadButton = makeButton("load", COMMAND_IMAGE_LOAD, "Load image", "Load");
         bar.add(loadButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -307,6 +311,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         codeStructureButton = makeButton("code_structure", COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW, "Code Structure", "Structure");
         bar.add(codeStructureButton);
+
+        dumpMemoryButton = makeButton("dump_memory", COMMAND_DUMP_MEMORY, "Dump memory area", "Dump memory");
+        bar.add(dumpMemoryButton);
 
         bar.add(Box.createHorizontalGlue());
 
@@ -383,7 +390,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         loadMenuItem = new JMenuItem("Load firmware image");
         loadMenuItem.setMnemonic(KeyEvent.VK_L);
         loadMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK));
-        loadMenuItem.setActionCommand(COMMAND_EMULATOR_LOAD);
+        loadMenuItem.setActionCommand(COMMAND_IMAGE_LOAD);
         loadMenuItem.addActionListener(this);
         fileMenu.add(loadMenuItem);
 
@@ -552,13 +559,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         tmpMenuItem.addActionListener(this);
         toolsMenu.add(tmpMenuItem);
 
-        //disassembler
-//        tmpMenuItem = new JMenuItem("Disassemble firmware");
-//        tmpMenuItem.setMnemonic(KeyEvent.VK_S);
-//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
-//        tmpMenuItem.setActionCommand(COMMAND_ANALYSE_DISASSEMBLE);
-//        tmpMenuItem.addActionListener(this);
-//        toolsMenu.add(tmpMenuItem);
+        toolsMenu.add(new JSeparator());
+
+        // dump memory area
+        dumpMemoryMenuItem = new JMenuItem("Dump memory area");
+//        dumpMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
+//        dumpMemoryMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        dumpMemoryMenuItem.setActionCommand(COMMAND_DUMP_MEMORY);
+        dumpMemoryMenuItem.addActionListener(this);
+        toolsMenu.add(dumpMemoryMenuItem);
 
         toolsMenu.add(new JSeparator());
 
@@ -575,10 +584,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         menuBar.add(helpMenu);
 
         //about
-        tmpMenuItem = new JMenuItem("About");
-        tmpMenuItem.setActionCommand(COMMAND_ABOUT);
-        tmpMenuItem.addActionListener(this);
-        helpMenu.add(tmpMenuItem);
+        dumpMemoryMenuItem = new JMenuItem("About");
+        dumpMemoryMenuItem.setActionCommand(COMMAND_ABOUT);
+        dumpMemoryMenuItem.addActionListener(this);
+        helpMenu.add(dumpMemoryMenuItem);
 
         return menuBar;
     }
@@ -591,8 +600,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @param e the event
      */
     public void actionPerformed(ActionEvent e) {
-        if (COMMAND_EMULATOR_LOAD.equals(e.getActionCommand())) {
-            selectAndLoadImage();
+        if (COMMAND_IMAGE_LOAD.equals(e.getActionCommand())) {
+            openLoadImageDialog();
         }
         else if (COMMAND_ANALYSE_DISASSEMBLE.equals(e.getActionCommand())) {
             openAnalyseDialog();
@@ -645,6 +654,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
         }
+        else if (COMMAND_DUMP_MEMORY.equals(e.getActionCommand())) {
+            openDumpMemoryDialog();
+        }
         else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
             toggleCodeStructureWindow();
         }
@@ -662,6 +674,40 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void setupBreakpoints() {
         new BreakTriggerListDialog(this, prefs.getTriggers()).setVisible(true);
     }
+
+    private void openDumpMemoryDialog() {
+        JTextField destinationField = new JTextField();
+        JTextField fromAddressField = new JTextField();
+        JTextField lengthField = new JTextField();
+        JPanel rangePanel = new JPanel(new GridLayout(2,2));
+        rangePanel.add(new JLabel("Start address"));
+        rangePanel.add(fromAddressField);
+        rangePanel.add(new JLabel("Length"));
+        rangePanel.add(lengthField);
+
+        final JComponent[] inputs = new JComponent[]{
+                new FileSelectionPanel("Destination file", destinationField, false),
+                rangePanel
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Choose dump destination",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+            try {
+                memory.saveToFile(new File(destinationField.getText()), Format.parseUnsigned(fromAddressField.getText()), Format.parseUnsigned(lengthField.getText()));
+                JOptionPane.showMessageDialog(this, "Dump complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+            } catch (ParsingException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage(), "Error dumping memory to file", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
 
     private void openDecodeDialog() {
         JTextField sourceFile = new JTextField();
@@ -820,7 +866,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         codeStructure = disassembler.disassembleMemRanges();
                         disassembler.cleanup();
                         debugPrintWriter.println();
-                        debugPrintWriter.println("Disassembly complete. You may now use the 'Code Structure' window");
+                        debugPrintWriter.println("Disassembly complete.");
+                        if (prefs.getOutputOptions().contains(OutputOption.STRUCTURE)) {
+                            debugPrintWriter.println("You may now use the 'Code Structure' window");
+                        }
                     } catch (Exception e) {
                         debugPrintWriter.println("ERROR : " + e.getMessage());
                     }                    
@@ -835,7 +884,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
-    private void selectAndLoadImage() {
+    private void openLoadImageDialog() {
         final JFileChooser fc = new JFileChooser();
 
         fc.setCurrentDirectory(new java.io.File("."));
@@ -1208,6 +1257,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerMenuItem.setEnabled(true); memoryActivityViewerButton.setEnabled(true);
             memoryHexEditorMenuItem.setEnabled(true); memoryHexEditorButton.setEnabled(true);
             component4006MenuItem.setEnabled(true); component4006Button.setEnabled(true);
+            
+            dumpMemoryMenuItem.setEnabled(true); dumpMemoryButton.setEnabled(true);
 
             stopMenuItem.setEnabled(true); stopButton.setEnabled(true);
 
@@ -1243,6 +1294,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerMenuItem.setEnabled(false); memoryActivityViewerButton.setEnabled(false);
             memoryHexEditorMenuItem.setEnabled(false); memoryHexEditorButton.setEnabled(false);
             component4006MenuItem.setEnabled(false); component4006Button.setEnabled(false);
+
+            dumpMemoryMenuItem.setEnabled(false); dumpMemoryButton.setEnabled(false);
 
             loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
             playMenuItem.setEnabled(false); playButton.setEnabled(false);
@@ -1386,7 +1439,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
         /**
-         * 
+         *
          * @param label
          * @param textField
          * @param directoryMode
