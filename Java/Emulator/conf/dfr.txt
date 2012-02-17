@@ -287,4 +287,8 @@
 
 -s 0x2E1D3A=timezone_setup
 
+-s 0x30B3AC=draw_menu_rows
+-s 0x30BB22=draw_menu_rectangle
+-s 0x2FEA5E=draw_menu_string
+
 
