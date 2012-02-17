@@ -117,6 +117,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JMenuItem codeStructureMenuItem;
 
     private JButton loadButton;
+    private JButton analyseButton;
     private JButton playButton;
     private JButton debugButton;
     private JButton pauseButton;
@@ -245,6 +246,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
+        analyseButton = makeButton("analyse", COMMAND_ANALYSE_DISASSEMBLE, "Analyse/Disassemble", "Analyse");
+        bar.add(analyseButton);
+
+        bar.add(Box.createRigidArea(new Dimension(10, 0)));
+
         playButton = makeButton("play", COMMAND_EMULATOR_PLAY, "Start or resume emulator", "Play");
         bar.add(playButton);
         debugButton = makeButton("debug", COMMAND_EMULATOR_DEBUG, "Debug emulator", "Debug");
@@ -365,6 +371,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         fileMenu.add(new JSeparator());
 
+        //analyse / disassemble
+        analyseMenuItem = new JMenuItem("Analyse / Disassemble");
+        analyseMenuItem.setMnemonic(KeyEvent.VK_A);
+        analyseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
+        analyseMenuItem.setActionCommand(COMMAND_ANALYSE_DISASSEMBLE);
+        analyseMenuItem.addActionListener(this);
+        fileMenu.add(analyseMenuItem);
+
+        fileMenu.add(new JSeparator());
+
         //emulator play
         playMenuItem = new JMenuItem("Start (or resume) emulator");
         playMenuItem.setMnemonic(KeyEvent.VK_E);
@@ -412,16 +428,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         breakpointMenuItem.setActionCommand(COMMAND_SETUP_BREAKPOINTS);
         breakpointMenuItem.addActionListener(this);
         fileMenu.add(breakpointMenuItem);
-
-        fileMenu.add(new JSeparator());
-
-        //analyse / disassemble
-        analyseMenuItem = new JMenuItem("Analyse / Disassemble");
-        analyseMenuItem.setMnemonic(KeyEvent.VK_A);
-        analyseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
-        analyseMenuItem.setActionCommand(COMMAND_ANALYSE_DISASSEMBLE);
-        analyseMenuItem.addActionListener(this);
-        fileMenu.add(analyseMenuItem);
 
 
 //        //test
@@ -570,6 +576,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (COMMAND_EMULATOR_LOAD.equals(e.getActionCommand())) {
             selectAndLoadImage();
         }
+        else if (COMMAND_ANALYSE_DISASSEMBLE.equals(e.getActionCommand())) {
+            openAnalyseDialog();
+        }
         else if (COMMAND_EMULATOR_PLAY.equals(e.getActionCommand())) {
             playEmulator(false, false);
         }
@@ -617,9 +626,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
-        }
-        else if (COMMAND_ANALYSE_DISASSEMBLE.equals(e.getActionCommand())) {
-            openAnalyseDialog();
         }
         else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
             toggleCodeStructureWindow();
@@ -796,7 +802,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         codeStructure = disassembler.disassembleMemRanges();
                         disassembler.cleanup();
                         debugPrintWriter.println();
-                        debugPrintWriter.println("Disassembly complete.");
+                        debugPrintWriter.println("Disassembly complete. You may now use the 'Code Structure' window");
                     } catch (Exception e) {
                         debugPrintWriter.println("ERROR : " + e.getMessage());
                     }                    
@@ -1162,7 +1168,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
 
         if (isImageLoaded) {
-            analyseMenuItem.setEnabled(true);
+            analyseMenuItem.setEnabled(true); analyseButton.setEnabled(true);
 
             disassemblyMenuItem.setEnabled(true); disassemblyButton.setEnabled(true);
             cpuStateMenuItem.setEnabled(true); cpuStateButton.setEnabled(true);
@@ -1197,7 +1203,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
         }
         else {
-            analyseMenuItem.setEnabled(false);
+            analyseMenuItem.setEnabled(false); analyseButton.setEnabled(false);
 
             disassemblyMenuItem.setEnabled(false); disassemblyButton.setEnabled(false);
             cpuStateMenuItem.setEnabled(false); cpuStateButton.setEnabled(false);
