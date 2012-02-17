@@ -213,7 +213,7 @@ public class CodeStructureFrame extends DocumentFrame
         graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH/2, FRAME_HEIGHT));
 
         // Create graph component
-        graphComponent = new CodeStructureMxGraphComponent(graph, this);
+        graphComponent = new CodeStructureMxGraphComponent(graph, this, ui);
         // Prevent edge drawing from UI
         graphComponent.setConnectable(false);
         graphComponent.setAutoScroll(true);

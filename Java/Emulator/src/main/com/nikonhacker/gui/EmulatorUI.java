@@ -14,10 +14,7 @@ import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
-import com.nikonhacker.emu.trigger.AlwaysBreakCondition;
-import com.nikonhacker.emu.trigger.AndCondition;
-import com.nikonhacker.emu.trigger.BreakCondition;
-import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
@@ -78,6 +75,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_ABOUT = "ABOUT";
 
     private static final int BASE_ADDRESS = 0x40000; // TODO de-hardcode this
+
+    private static final int FUNCTION_CALL_BASE_ADDRESS = 0xFFFFFFF0;
 
     private static File imagefile;
 
@@ -1183,13 +1182,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
+    public boolean isEmulatorReady() {
+        return isImageLoaded && !isEmulatorPlaying;
+    }
+
     private void playEmulator(boolean stepMode, boolean debugMode) {
         if (!isImageLoaded) {
             throw new RuntimeException("No Image loaded !");
         }
-
-        //emulator.setExitRequired(stepMode); // reset, or force to exit immediately
-        emulator.setExitRequired(false);
 
         List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
         if (stepMode) {
@@ -1204,6 +1204,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         emulator.setBreakConditions(breakConditions);
 
+        startEmulator();
+    }
+
+    private void startEmulator() {
+        emulator.setExitRequired(false);
         isEmulatorPlaying = true;
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
@@ -1220,6 +1225,26 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         });
         emulatorThread.start();
     }
+
+
+    public void playOneFunction(int address) {
+        // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
+        memory.store16(FUNCTION_CALL_BASE_ADDRESS, 0x9f8c);      // LD R12,
+        memory.store32(FUNCTION_CALL_BASE_ADDRESS + 2, address); //         address
+        memory.store16(FUNCTION_CALL_BASE_ADDRESS + 6, 0x971c);  // CALL @R12
+        memory.store16(FUNCTION_CALL_BASE_ADDRESS + 8, 0xe0ff);  // HALT, infinite loop
+
+        // And we put a breakpoint on the instruction after the call
+        List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+        breakConditions.add(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8));
+        
+        emulator.setBreakConditions(breakConditions);
+
+        cpuState.pc = FUNCTION_CALL_BASE_ADDRESS;
+
+        startEmulator();
+    }
+
 
     private void pauseEmulator() {
         emulator.setExitRequired(true);

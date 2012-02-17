@@ -6,6 +6,7 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CodeStructure;
 import com.nikonhacker.dfr.Function;
+import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -18,7 +19,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
     private CodeStructure codeStructure;
     private Function currentlySelectedFunction;
 
-    public CodeStructureMxGraphComponent(final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame) {
+    public CodeStructureMxGraphComponent(final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame, final EmulatorUI ui) {
         super(graph);
         this.codeStructure = codeStructureFrame.codeStructure;
 
@@ -46,6 +47,16 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
             }
         });
         popupMenu.add(removeMenuItem);
+
+        popupMenu.add(new JSeparator());
+        
+        final JMenuItem executeMenuItem = new JMenuItem("Execute");
+        executeMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ui.playOneFunction(currentlySelectedFunction.getAddress());
+            }
+        });
+        popupMenu.add(executeMenuItem);
 
 
         // This handles only mouse click events
@@ -85,8 +96,8 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                     if (cell != null) {
                         Object value = ((mxCell) cell).getValue();
                         if (value instanceof Function) {
-                            // If right button, also show popup menu
                             currentlySelectedFunction = (Function) value;
+                            executeMenuItem.setEnabled(ui.isEmulatorReady());
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
                     }
