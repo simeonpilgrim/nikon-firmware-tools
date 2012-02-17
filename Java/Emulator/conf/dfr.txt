@@ -147,7 +147,17 @@
 #-m 0x00245886-0x002470F7=DATA:L
 
 # Unknown
-#-m 0x002470F8-0x00283000=DATA:L
+#-m 0x002470F8-0x0026C17=DATA:L
+
+# Table used when rendering strings
+# Each record is 8 bytes long, byte0=0, byte1:01/02/03, byte2=0, byte3=0 and int offset to data below (0x0026c44c)
+#-m 0x0026C178-0x0026c3df=DATA:L
+# Unknown
+#-m 0x0026c3e0-0x0026c44b=DATA:L
+# Offsets pointed to by the table at 0x0026C178
+#-m 0x0026c44c-0x0026c83b=DATA:L
+
+#-m 0x0026c83c-0x00283000=DATA:L
 
 # 0x00
 #-m 0x00283000-0x0028D5BB=DATA:L
@@ -223,35 +233,42 @@
 -s 0x406F6=NOP_406F6
 -s 0x406F8=NOP_406F8
 
--s 0x1074F2=linked_list_init (r4 = pointer to list entity)
--s 0x1074FA=linked_list_compare_previous (r4->prev == r4)
--s 0x107506=linked_list_insert_before (insert r5 before r4)
--s 0x107516=linked_list_insert_after (insert r5 after r4)
--s 0x107526=linked_list_remove_item (remove r4)
--s 0x107536=linked_list_remove_previous (remove item before r4)
--s 0x10754C=linked_list_remove_next (remove item after r4)
+-s 0x1074F2=linked_list_init(R4 [IN, pointer to list entity])
+-s 0x1074FA=linked_list_compare_previous(R4->prev == R4)
+-s 0x107506=linked_list_insert_before(insert R5 before R4)
+-s 0x107516=linked_list_insert_after(insert R5 after R4)
+-s 0x107526=linked_list_remove_item(remove R4)
+-s 0x107536=linked_list_remove_previous(remove item before R4)
+-s 0x10754C=linked_list_remove_next(remove item after R4)
 
 -s 0x107C80=memcpy_fast
 -s 0x107CB2=memset_fast
 
--s 0x164CBE=trace (debug string is passed)
+-s 0x164CBE=trace(debug string is passed)
 
--s 0x1D953C=INT40wABinR12 (call INT40 with 0xAB in R12)
+-s 0x1C0E5A=set_double_buffer(R4 [IN boolean])
+-s 0x1C3CD2=color_fill(R4 [IN RECT*], R5 [IN color_table_idx])
+-s 0x1C97BA=color_fill(R4 [IN RECT*], R5 [IN p_color_tuple])
+
+-s 0x1D5A1C=getR4from0x8F960EAC(R4 [OUT])
+-s 0x1D953C=INT40wABinR12(calls INT40 with 0xAB in R12)
 -s 0x101802=put10at7EF
 
--s 0x23495E=DIV_int
--s 0x234DC4=DIV_uint
+-s 0x23495E=DIV_int(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x234b3c=MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+-s 0x234DC4=DIV_uint(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x234edc=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
 
 -s 0x23514E=ceil
 -s 0x235234=floor
--s 0x23532A=neg (r4 = in/out)
+-s 0x23532A=neg(R4 [IN, OUT])
 -s 0x235338=log_or_log10
 -s 0x23559C=pow
 
--s 0x235542=memcmp (r4 = ptr1, r5 = ptr2, r6 = count)
--s 0x23555C=memcpy (r4 = dest, r5 = source, r6 = count)
--s 0x23556C=memmove (r4 = dest, r5 = source, r6 = count)
--s 0x23558E=memset (r4 = dest, r5 = val, r6 = count)
+-s 0x235542=memcmp(R4 [IN source1], R5 [IN source2], R6 [IN count])
+-s 0x23555C=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
+-s 0x23556C=memmove(R4 [IN dest], R5 [IN source], R6 [IN count])
+-s 0x23558E=memset(R4 [IN dest], R5 [IN val], R6 [IN count])
 
 -s 0x235D2A=rand
 -s 0x235D56=srand
@@ -267,4 +284,7 @@
 -s 0x23607A=strncpy
 -s 0x23609A=strstr
 -s 0x2361EC=vsprintf
+
+-s 0x2E1D3A=timezone_setup
+
 
