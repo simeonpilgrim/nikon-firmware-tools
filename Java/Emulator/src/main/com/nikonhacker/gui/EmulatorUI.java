@@ -1036,7 +1036,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory, 0x8F800A9C, 0x8F800A9C + 0x001C43E0, 640, this);
+            //screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory, 0x8F800A9C, 0x8F800A9C + 0x001C43E0, 640, this);
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory, 0xCE57DC60, 0xCE57DC60 + 0x001C43E0, 640, this);
             addDocumentFrame(screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
