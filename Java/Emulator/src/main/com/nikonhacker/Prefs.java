@@ -11,7 +11,8 @@ import java.io.*;
 import java.nio.charset.Charset;
 import java.util.*;
 
-public class Prefs {    
+public class Prefs {
+    boolean largeToolbarButtons = false;
     int sleepTick = 2;
     List<BreakTrigger> triggers;
     Set<OutputOption> outputOptions;
@@ -84,6 +85,14 @@ public class Prefs {
         else {
             return new Prefs();
         }
+    }
+
+    public boolean isLargeToolbarButtons() {
+        return largeToolbarButtons;
+    }
+
+    public void setLargeToolbarButtons(boolean largeToolbarButtons) {
+        this.largeToolbarButtons = largeToolbarButtons;
     }
 
     public int getSleepTick() {

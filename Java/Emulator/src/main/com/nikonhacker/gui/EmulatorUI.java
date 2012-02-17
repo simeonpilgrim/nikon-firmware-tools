@@ -140,6 +140,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
     private CodeStructureFrame codeStructureFrame;
+    private final Insets toolbarButtonMargin;
+    private final JPanel toolBar;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -194,12 +196,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         setJMenuBar(createMenuBar());
 
-        // setContentPane(mdiPane);
-
+        toolbarButtonMargin = new Insets(2, 14, 2, 14);
+        
         JPanel mainContentPane = new JPanel(new BorderLayout());
-        mainContentPane.add(createToolBar(), BorderLayout.PAGE_START);
+        toolBar = createToolBar();
+        mainContentPane.add(toolBar, BorderLayout.PAGE_START);
         mainContentPane.add(mdiPane, BorderLayout.CENTER);
         setContentPane(mainContentPane);
+
+        applyPrefsToUI();
+
 
         if (imagefile != null) {
             loadImage();
@@ -210,11 +216,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         //Make dragging a little faster but perhaps uglier.
         // mdiPane.setDragMode(JDesktopPane.OUTLINE_DRAG_MODE);
 
+        // Update title bar every seconds with emulator stats
         new Timer(1000, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateTitleBar();
             }
         }).start();
+    }
+
+    private void applyPrefsToUI() {
+        if (prefs.isLargeToolbarButtons()) {
+            toolbarButtonMargin.set(2, 14, 2, 14);
+        }
+        else {
+            toolbarButtonMargin.set(0, 0, 0, 0);
+        }
+        toolBar.revalidate();
     }
 
     public Prefs getPrefs() {
@@ -340,6 +357,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         button.setActionCommand(actionCommand);
         button.setToolTipText(toolTipText);
         button.addActionListener(this);
+        button.setMargin(toolbarButtonMargin);
 
         if (imageURL != null) {
             button.setIcon(new ImageIcon(imageURL, altText));
@@ -731,9 +749,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 new FileSelectionPanel("Dfr options file", dfrField, false),
                 writeOutputCheckbox,
                 destinationFileSelectionPanel,
-                makeCheckBox(OutputOption.OFFSET, prefs.getOutputOptions(), true),
-                makeCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
-                makeCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
+                makeOutputOptionCheckBox(OutputOption.OFFSET, prefs.getOutputOptions(), true),
+                makeOutputOptionCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
+                makeOutputOptionCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
         };
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
@@ -833,16 +851,28 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void openOptionsDialog() {
         JTabbedPane optionsTabbedPane = new JTabbedPane();
+
+        // Output options panel
         JPanel outputOptionsPanel = new JPanel(new GridLayout(0,1));
         outputOptionsPanel.setName("Disassembler output");
-        optionsTabbedPane.add(outputOptionsPanel);
         List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
         for (OutputOption outputOption : OutputOption.formatOptions) {
-            JCheckBox checkBox = makeCheckBox(outputOption, prefs.getOutputOptions(), false);
+            JCheckBox checkBox = makeOutputOptionCheckBox(outputOption, prefs.getOutputOptions(), false);
             outputOptionsCheckBoxes.add(checkBox);
             outputOptionsPanel.add(checkBox);
         }
         outputOptionsPanel.add(new JLabel("(hover over the options for help)", SwingConstants.CENTER));
+        optionsTabbedPane.add(outputOptionsPanel);
+
+        // UI options panel
+        JPanel uiOptionsPanel = new JPanel(new GridLayout(0,1));
+        uiOptionsPanel.setName("User Interface");
+        final JCheckBox largeButtonsCheckBox = new JCheckBox("Use large buttons");
+        //largeButtonsCheckBox.setToolTipText();
+        largeButtonsCheckBox.setSelected(prefs.isLargeToolbarButtons());
+        uiOptionsPanel.add(largeButtonsCheckBox);
+        optionsTabbedPane.add(uiOptionsPanel);
+
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 optionsTabbedPane,
                 "Options",
@@ -860,6 +890,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     e.printStackTrace();
                 }
             }
+            prefs.setLargeToolbarButtons(largeButtonsCheckBox.isSelected());
+            applyPrefsToUI();
         }
 
     }
@@ -871,7 +903,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @param reflectChange if true, changing the checkbox immediately changes the option in the given outputOptions
      * @return
      */
-    private JCheckBox makeCheckBox(final OutputOption option, Set<OutputOption> outputOptions, boolean reflectChange) {
+    private JCheckBox makeOutputOptionCheckBox(final OutputOption option, Set<OutputOption> outputOptions, boolean reflectChange) {
         final JCheckBox checkBox = new JCheckBox(option.getKey());
         checkBox.setToolTipText(option.getHelp());
         checkBox.setSelected(outputOptions.contains(option));
