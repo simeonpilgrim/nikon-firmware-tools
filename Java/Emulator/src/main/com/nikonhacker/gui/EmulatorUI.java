@@ -677,28 +677,67 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void openDumpMemoryDialog() {
         JTextField destinationField = new JTextField();
-        JTextField fromAddressField = new JTextField();
-        JTextField lengthField = new JTextField();
-        JPanel rangePanel = new JPanel(new GridLayout(2,2));
+        JTextField startAddressField = new JTextField(10);
+        final JRadioButton withEndButton = new JRadioButton();
+        final JLabel endAddressLabel = new JLabel("End address");
+        final JTextField endAddressField = new JTextField(10);
+        final JRadioButton withLengthButton = new JRadioButton();
+        final JLabel lengthLabel = new JLabel("Length");
+        final JTextField lengthField = new JTextField(10);
+
+        ButtonGroup group = new ButtonGroup();
+        group.add(withEndButton);
+        group.add(withLengthButton);
+
+        ActionListener buttonListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                endAddressLabel.setEnabled(withEndButton.isSelected());
+                endAddressField.setEnabled(withEndButton.isSelected());
+                lengthLabel.setEnabled(withLengthButton.isSelected());
+                lengthField.setEnabled(withLengthButton.isSelected());
+            }
+        };
+        withEndButton.addActionListener(buttonListener);
+        withLengthButton.addActionListener(buttonListener);
+        withEndButton.setHorizontalAlignment(SwingConstants.RIGHT);
+        withLengthButton.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        withEndButton.setSelected(true);
+        lengthLabel.setEnabled(false);
+        lengthField.setEnabled(false);
+        
+        JPanel rangePanel = new JPanel(new GridLayout(3,3));
+        rangePanel.add(new JLabel());
         rangePanel.add(new JLabel("Start address"));
-        rangePanel.add(fromAddressField);
-        rangePanel.add(new JLabel("Length"));
+        rangePanel.add(startAddressField);
+        rangePanel.add(withEndButton);
+        rangePanel.add(endAddressLabel);
+        rangePanel.add(endAddressField);
+        rangePanel.add(withLengthButton);
+        rangePanel.add(lengthLabel);
         rangePanel.add(lengthField);
 
         final JComponent[] inputs = new JComponent[]{
-                new FileSelectionPanel("Destination file", destinationField, false),
-                rangePanel
+                rangePanel,
+                new FileSelectionPanel("Destination file", destinationField, false)
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
-                "Choose dump destination",
+                "Dump memory area to file",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             try {
-                memory.saveToFile(new File(destinationField.getText()), Format.parseUnsigned(fromAddressField.getText()), Format.parseUnsigned(lengthField.getText()));
+                int length;
+                if (withLengthButton.isSelected()) {
+                    length = Format.parseUnsignedField(lengthField);
+                }
+                else {
+                    length = Format.parseUnsignedField(endAddressField) - Format.parseUnsignedField(startAddressField) + 1;
+                }
+                memory.saveToFile(new File(destinationField.getText()), Format.parseUnsignedField(endAddressField), length);
                 JOptionPane.showMessageDialog(this, "Dump complete", "Done", JOptionPane.INFORMATION_MESSAGE);
             } catch (ParsingException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
