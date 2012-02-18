@@ -1091,7 +1091,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleMemoryHexEditor() {
         if (memoryHexEditorFrame == null) {
-            memoryHexEditorFrame = new MemoryHexEditorFrame("Memory hex editor", true, true, true, true, memory, 0, !isEmulatorPlaying, this);
+            memoryHexEditorFrame = new MemoryHexEditorFrame("Memory hex editor", true, true, true, true, memory, cpuState, 0, !isEmulatorPlaying, this);
             addDocumentFrame(memoryHexEditorFrame);
             memoryHexEditorFrame.display(true);
         }
@@ -1289,6 +1289,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     public boolean isEmulatorReady() {
         return isImageLoaded && !isEmulatorPlaying;
+    }
+
+    public boolean isEmulatorPlaying() {
+        return isEmulatorPlaying;
     }
 
     private void playEmulator(boolean stepMode, boolean debugMode) {

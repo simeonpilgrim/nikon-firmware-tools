@@ -1,6 +1,7 @@
 package com.nikonhacker.gui.component.memoryHexEditor;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
@@ -16,10 +17,12 @@ import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
-    DebuggableMemory memory;
-    String baseTitle;
+    private DebuggableMemory memory;
+    private CPUState cpuState;
+    private String baseTitle;
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private Timer _timer;
@@ -27,13 +30,17 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private HexEditor hexEditor;
     private JButton leftButton;
     private JButton rightButton;
+    private JButton fpButton;
+    private JButton spButton;
     private byte[] currentPage;
     private int baseAddress;
+    private JComboBox registerCombo;
 
-    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int baseAddress, boolean editable, EmulatorUI ui) {
+    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.baseTitle = title;
         this.memory = memory;
+        this.cpuState = cpuState;
 
 
         getContentPane().add(createEditor(baseAddress, editable));
@@ -48,12 +55,14 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     private void refreshData() {
-        if (currentPage != null) {
-            try {
-                hexEditor.open(new ByteArrayInputStream(currentPage));
-                hexEditor.setColorMap(createColorMap());
-            } catch (IOException e) {
-                e.printStackTrace();
+        if (ui.isEmulatorPlaying()) {
+            if (currentPage != null) {
+                try {
+                    hexEditor.open(new ByteArrayInputStream(currentPage));
+                    hexEditor.setColorMap(createColorMap());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -63,14 +72,38 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         
         JPanel selectionPanel = new JPanel();
 
+        fpButton = new JButton("Go to FP");
+        selectionPanel.add(fpButton);
+        fpButton.addActionListener(this);
+
+//        selectionPanel.add(Box.createHorizontalGlue());
+
+        spButton = new JButton("Go to SP");
+        selectionPanel.add(spButton);
+        spButton.addActionListener(this);
+
+//        selectionPanel.add(Box.createHorizontalGlue());
+
+        selectionPanel.add(new JLabel("Go to reg"));
+        Vector<String> labels = new Vector<String>();
+        labels.add("--");
+        labels.addAll(Arrays.asList(CPUState.REG_LABEL));
+        registerCombo = new JComboBox(labels);
+        registerCombo.setMaximumRowCount(17);
+        registerCombo.addActionListener(this);
+        selectionPanel.add(registerCombo);
+
+
+        Box.Filler largeFiller = new Box.Filler(new Dimension(0, 0), new Dimension(60, 0), new Dimension(60, 0));
+        selectionPanel.add(largeFiller);
+
+
         leftButton = new JButton("<<");
+        leftButton.setToolTipText("Previous page (-0x10000)");
         selectionPanel.add(leftButton);
         leftButton.addActionListener(this);
         
-        selectionPanel.add(Box.createHorizontalGlue());
-
         selectionPanel.add(new JLabel("Go to  0x"));
-
         addressField = new JTextField(Format.asHex(baseAddress, 8), 8);
         selectionPanel.add(addressField);
         addressField.addActionListener(this);
@@ -79,16 +112,14 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         selectionPanel.add(goButton);
         goButton.addActionListener(this);
 
-        selectionPanel.add(Box.createHorizontalGlue());
-
         rightButton = new JButton(">>");
+        rightButton.setToolTipText("Next page (+0x10000)");
         selectionPanel.add(rightButton);
         rightButton.addActionListener(this);
 
 
         editorPanel.add(selectionPanel, BorderLayout.NORTH);
-        
-        
+
         hexEditor = new HexEditor();
         hexEditor.setRowHeaderOffset(baseAddress);
         hexEditor.setRowHeaderMinDigits(8);
@@ -162,29 +193,59 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
     public void actionPerformed(ActionEvent e) {
         int address;
-        // Handle left button
+        int selectionLength = 1;
+        // Handle "previous" button
         if (leftButton.equals(e.getSource())) {
             long longAddress = Format.parseIntHexField(addressField) & 0xFFFFFFFFL;
             longAddress -= memory.getPageSize();
             if (longAddress >= 0) {
                 addressField.setText(Format.asHex((int) longAddress, 8));
             }
+            registerCombo.setSelectedIndex(0);
         }
-        // Handle right button
+        // Handle "next" button
         else if (rightButton.equals(e.getSource())) {
             address = Format.parseIntHexField(addressField);
             address += memory.getPageSize();
-            if (address < 0xFFFFFFFFL) {
+            if (address < 0x100000000L) {
                 addressField.setText(Format.asHex(address, 8));
             }
+            registerCombo.setSelectedIndex(0);
+        }
+        // Handle "FP" button
+        else if (fpButton.equals(e.getSource())) {
+            addressField.setText(Format.asHex(cpuState.getReg(CPUState.FP), 8));
+            registerCombo.setSelectedIndex(0);
+            selectionLength = 4;
+        }
+        // Handle "SP" button
+        else if (spButton.equals(e.getSource())) {
+            addressField.setText(Format.asHex(cpuState.getReg(CPUState.SP), 8));
+            registerCombo.setSelectedIndex(0);
+            selectionLength = 4;
+        }
+        // Handle register combo
+        else if (registerCombo.equals(e.getSource())) {
+            int selectedIndex = registerCombo.getSelectedIndex();
+            if (selectedIndex == 0) {
+                return;
+            }
+            addressField.setText(Format.asHex(cpuState.getReg(selectedIndex - 1), 8));
+            selectionLength = 4;
         }
 
-        // In any case, read address and load corresponding page
+        // other cases mean it was just the "GO" button or Return key in the text field
+        jumpToAddress(selectionLength);
+    }
+
+    private void jumpToAddress(int selectionLength) {
+        // read address in field and load corresponding page
+        int address;
         address = Format.parseIntHexField(addressField);
         int baseAddress = address & 0xFFFF0000;
         loadPage(baseAddress);
         int offset = address & 0x0000FFFF;
-        hexEditor.setSelectedRange(offset, offset);
+        hexEditor.setSelectedRange(offset, offset + selectionLength - 1);
     }
 
     public void hexBytesChanged(HexEditorEvent e) {
