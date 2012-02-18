@@ -6,6 +6,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.dumpMemory.DumpMemoryDialog;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
@@ -35,6 +36,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private byte[] currentPage;
     private int baseAddress;
     private JComboBox registerCombo;
+    private JButton dumpButton;
 
     public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -93,11 +95,11 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         registerCombo.addActionListener(this);
         selectionPanel.add(registerCombo);
 
-
+        
         Box.Filler largeFiller = new Box.Filler(new Dimension(0, 0), new Dimension(60, 0), new Dimension(60, 0));
         selectionPanel.add(largeFiller);
 
-
+        
         leftButton = new JButton("<<");
         leftButton.setToolTipText("Previous page (-0x10000)");
         selectionPanel.add(leftButton);
@@ -116,6 +118,15 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         rightButton.setToolTipText("Next page (+0x10000)");
         selectionPanel.add(rightButton);
         rightButton.addActionListener(this);
+
+        
+        selectionPanel.add(largeFiller);
+
+        
+        dumpButton = new JButton("Dump");
+        dumpButton.setToolTipText("Dump selected area to file");
+        selectionPanel.add(dumpButton);
+        dumpButton.addActionListener(this);
 
 
         editorPanel.add(selectionPanel, BorderLayout.NORTH);
@@ -194,26 +205,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     public void actionPerformed(ActionEvent e) {
         int address;
         int selectionLength = 1;
-        // Handle "previous" button
-        if (leftButton.equals(e.getSource())) {
-            long longAddress = Format.parseIntHexField(addressField) & 0xFFFFFFFFL;
-            longAddress -= memory.getPageSize();
-            if (longAddress >= 0) {
-                addressField.setText(Format.asHex((int) longAddress, 8));
-            }
-            registerCombo.setSelectedIndex(0);
-        }
-        // Handle "next" button
-        else if (rightButton.equals(e.getSource())) {
-            address = Format.parseIntHexField(addressField);
-            address += memory.getPageSize();
-            if (address < 0x100000000L) {
-                addressField.setText(Format.asHex(address, 8));
-            }
-            registerCombo.setSelectedIndex(0);
-        }
         // Handle "FP" button
-        else if (fpButton.equals(e.getSource())) {
+        if (fpButton.equals(e.getSource())) {
             addressField.setText(Format.asHex(cpuState.getReg(CPUState.FP), 8));
             registerCombo.setSelectedIndex(0);
             selectionLength = 4;
@@ -233,7 +226,32 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
             addressField.setText(Format.asHex(cpuState.getReg(selectedIndex - 1), 8));
             selectionLength = 4;
         }
-
+        // Handle "previous" button
+        else if (leftButton.equals(e.getSource())) {
+            long longAddress = Format.parseIntHexField(addressField) & 0xFFFFFFFFL;
+            longAddress -= memory.getPageSize();
+            if (longAddress >= 0) {
+                addressField.setText(Format.asHex((int) longAddress, 8));
+            }
+            registerCombo.setSelectedIndex(0);
+        }
+        // Handle "next" button
+        else if (rightButton.equals(e.getSource())) {
+            address = Format.parseIntHexField(addressField);
+            address += memory.getPageSize();
+            if (address < 0x100000000L) {
+                addressField.setText(Format.asHex(address, 8));
+            }
+            registerCombo.setSelectedIndex(0);
+        }
+        // Handle "dump" button
+        else if (dumpButton.equals(e.getSource())) {
+            int start = hexEditor.getSmallestSelectionIndex();
+            int end =  hexEditor.getLargestSelectionIndex();
+            new DumpMemoryDialog(getEmulatorUi(), memory, baseAddress + start, (start==end)?null:(baseAddress + end)).setVisible(true);
+            return;
+        }
+        
         // other cases mean it was just the "GO" button or Return key in the text field
         jumpToAddress(selectionLength);
     }
