@@ -780,8 +780,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
-            analyseProgressDialog.setVisible(true);
             analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imagefile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
+            analyseProgressDialog.setVisible(true);
         }
     }
 
