@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.screenEmulator;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -11,7 +12,7 @@ import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public class ScreenEmulatorFrame extends DocumentFrame {
+public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener {
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
@@ -25,17 +26,30 @@ public class ScreenEmulatorFrame extends DocumentFrame {
     BufferedImage img;
 
     private Timer _timer;
+    private final JTextField addressField;
 
     public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int start, int end, int screenWidth, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
         this.start = start;
         this.screenWidth = screenWidth;
-        this.screenHeight = (end - start)/ (3 * screenWidth);
+        this.screenHeight = (end - start) / screenWidth;
 
-        img = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_3BYTE_BGR);
+        img = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
+        
+        JPanel selectionPanel = new JPanel();
+        selectionPanel.add(new JLabel("Set start to  0x"));
+        addressField = new JTextField(Format.asHex(start, 8), 8);
+        selectionPanel.add(addressField);
+        addressField.addActionListener(this);
+                
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.add(selectionPanel, BorderLayout.NORTH);
+        contentPanel.add(new JScrollPane(new ScreenEmulatorComponent(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        
+        getContentPane().add(contentPanel);
 
-        getContentPane().add(new ScreenEmulatorComponent());
+        setPreferredSize(new Dimension(screenWidth, 600));
 
         // Start update timer
         _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
@@ -50,6 +64,10 @@ public class ScreenEmulatorFrame extends DocumentFrame {
         _timer.stop();
         _timer = null;
         super.dispose();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        this.start = Format.parseIntHexField(addressField);
     }
 
     private class ScreenEmulatorComponent extends JComponent {
@@ -82,8 +100,11 @@ public class ScreenEmulatorFrame extends DocumentFrame {
             for (int y = 0; y < screenHeight; y++, yOffset+= screenWidth) {
                 off = yOffset;
                 for (int x = 0; x < screenWidth; x++) {
-                    pixel = img.getColorModel().getDataElements(memory.loadUnsigned16(off++, false), pixel);
+                    int value1 = memory.loadUnsigned8(off, false);
+                    // Using the same value for R, G and B
+                    pixel = img.getColorModel().getDataElements(value1<<16|value1<<8|value1, pixel);
                     img.getRaster().setDataElements(x, y, pixel);
+                    off++;
                 }
             }
 
