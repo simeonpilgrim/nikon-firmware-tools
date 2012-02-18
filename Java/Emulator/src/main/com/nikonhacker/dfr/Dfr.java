@@ -385,7 +385,7 @@ public class Dfr
                     Range matchingFileRange = getMatchingFileRange(range);
                     printRangeHeader(range, matchingFileRange);
                     if (range.data.isCode()) {
-                        codeStructure.writeDisassembly(outWriter, range, outputOptions);
+                        codeStructure.writeDisassembly(outWriter, range, matchingFileRange, outputOptions);
                     }
                     else {
                         disassembleDataMemoryRange(range, matchingFileRange);

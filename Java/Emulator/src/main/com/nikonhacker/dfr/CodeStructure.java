@@ -339,15 +339,15 @@ public class CodeStructure {
     }
 
 
-    public void writeDisassembly(Writer writer, Range range, Set<OutputOption> outputOptions) throws IOException {
+    public void writeDisassembly(Writer writer, Range memRange, Range fileRange, Set<OutputOption> outputOptions) throws IOException {
 
         // Start output
-        Integer address = range.getStart();
+        Integer address = memRange.getStart();
         DisassembledInstruction instruction = instructions.get(address);
 
-        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(range.start - range.fileOffset):0;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.start - fileRange.fileOffset):0;
 
-        while (instruction != null && address < range.getEnd()) {
+        while (instruction != null && address < memRange.getEnd()) {
             writeInstruction(writer, address, instruction, memoryFileOffset);
 
             address = instructions.higherKey(address);
