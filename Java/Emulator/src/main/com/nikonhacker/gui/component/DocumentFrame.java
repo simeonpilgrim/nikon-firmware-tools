@@ -17,6 +17,10 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
     }
 
+    public EmulatorUI getEmulatorUi() {
+        return ui;
+    }
+
     public void internalFrameClosing(InternalFrameEvent e) {
         // Called only when close is initiated by clicking on the close widget
         ui.frameClosing(this);
