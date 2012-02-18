@@ -17,6 +17,14 @@ import java.io.IOException;
 public class DumpMemoryDialog extends JDialog {
 
     public DumpMemoryDialog(Frame owner, final Memory memory) {
+        this(owner,  memory, null, null);
+    }
+
+    public DumpMemoryDialog(Frame owner, final Memory memory, Integer startAddress) {
+        this(owner,  memory, startAddress, null);
+    }
+    
+    public DumpMemoryDialog(Frame owner, final Memory memory, Integer startAddress, Integer endAddress) {
         super(owner, "Dump memory area to file", true);
 
         // Start / End / Length range bloc definition
@@ -95,6 +103,22 @@ public class DumpMemoryDialog extends JDialog {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(mainPanel, BorderLayout.CENTER);
         contentPanel.add(bottomPanel, BorderLayout.SOUTH);
+        
+        // Set default values if a startAddress was given
+        
+        if (startAddress != null) {
+            String startAddressString = "0x" + Format.asHex(startAddress, 8);
+            startAddressField.setText(startAddressString);
+            if (endAddress != null) {
+                String endAddressString = "0x" + Format.asHex(endAddress, 8);
+                endAddressField.setText(endAddressString);
+                withEndButton.setSelected(true);
+                destinationField.setText(new File("Dump_" + startAddressString + "-" + endAddressString + ".bin").getAbsolutePath());
+            }
+            else {
+                destinationField.setText(new File("Dump_" + startAddressString + ".bin").getAbsolutePath());
+            }
+        }
 
         setContentPane(contentPanel);
         pack();
