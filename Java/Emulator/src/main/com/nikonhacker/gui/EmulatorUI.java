@@ -9,7 +9,10 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.Prefs;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.CodeStructure;
+import com.nikonhacker.dfr.OutputOption;
+import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -20,8 +23,7 @@ import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.SearchableTextAreaPanel;
+import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
@@ -38,14 +40,12 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -779,78 +779,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
-            DisassemblerProgressDialog disassemblerProgressDialog = new DisassemblerProgressDialog(this);
-            disassemblerProgressDialog.startBackgroundDisassembly(dfrField.getText(), imagefile.getAbsolutePath(), writeOutputCheckbox.isSelected() ?destinationField.getText() : null);
-            disassemblerProgressDialog.setVisible(true);
-        }
-    }
-
-    private class DisassemblerProgressDialog extends JDialog {
-        private PrintWriterArea printWriterArea;
-        JButton closeButton;
-        final JDialog frame = this;
-
-        private DisassemblerProgressDialog(Frame owner) {
-            super(owner, "Disassembly progress", true);
-
-            JPanel panel = new JPanel(new BorderLayout());
-
-            printWriterArea = new PrintWriterArea(25, 70);
-
-            DefaultCaret caret = (DefaultCaret)printWriterArea.getCaret();
-            caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-
-            panel.add(new SearchableTextAreaPanel(printWriterArea), BorderLayout.CENTER);
-
-            closeButton = new JButton("Close");
-            closeButton.setEnabled(false);
-            closeButton.addActionListener(new ActionListener() {
-                public void actionPerformed(ActionEvent e) {
-                    frame.dispose();
-                }
-            });
-            panel.add(closeButton, BorderLayout.SOUTH);
-
-            setContentPane(panel);
-
-            setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-            pack();
-            setLocationRelativeTo(null);
-        }
-
-        void startBackgroundDisassembly(final String optionsFilename, final String inputFilename, final String outputFilename) {
-            final Dfr disassembler = new Dfr();
-            Thread disassemblerThread = new Thread(new Runnable() {
-                public void run() {
-                    boolean wasVerbose = prefs.getOutputOptions().contains(OutputOption.VERBOSE);
-                    prefs.getOutputOptions().add(OutputOption.VERBOSE);
-                    PrintWriter debugPrintWriter = printWriterArea.getPrintWriter();
-                    try {
-                        debugPrintWriter.println("Initializing disassembler...");
-                        disassembler.setDebugPrintWriter(debugPrintWriter);
-                        disassembler.setOutputFileName(outputFilename);
-                        disassembler.readOptions(optionsFilename);
-                        disassembler.setOutputOptions(prefs.getOutputOptions());
-                        disassembler.setInputFileName(inputFilename);
-                        disassembler.initialize();
-                        debugPrintWriter.println("Starting disassembly...");
-                        codeStructure = disassembler.disassembleMemRanges();
-                        disassembler.cleanup();
-                        debugPrintWriter.println();
-                        debugPrintWriter.println("Disassembly complete.");
-                        if (prefs.getOutputOptions().contains(OutputOption.STRUCTURE)) {
-                            debugPrintWriter.println("You may now use the 'Code Structure' window");
-                        }
-                    } catch (Exception e) {
-                        debugPrintWriter.println("ERROR : " + e.getMessage());
-                    }                    
-                    prefs.setOutputOption(OutputOption.VERBOSE, wasVerbose);
-                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                    closeButton.setEnabled(true);
-                    updateStates();
-                }
-            });
-            disassemblerThread.start();
+            AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
+            analyseProgressDialog.setVisible(true);
+            analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imagefile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
         }
     }
 
@@ -1293,6 +1224,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     public boolean isEmulatorPlaying() {
         return isEmulatorPlaying;
+    }
+
+    public CodeStructure getCodeStructure() {
+        return codeStructure;
+    }
+
+    public void setCodeStructure(CodeStructure codeStructure) {
+        this.codeStructure = codeStructure;
     }
 
     private void playEmulator(boolean stepMode, boolean debugMode) {
