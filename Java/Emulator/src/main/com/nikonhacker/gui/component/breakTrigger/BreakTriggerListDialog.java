@@ -27,13 +27,13 @@ public class BreakTriggerListDialog extends JDialog {
         triggerList = new JList(listModel);
         triggerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         triggerList.setLayoutOrientation(JList.VERTICAL);
-        triggerList.setVisibleRowCount(5);
+        triggerList.setVisibleRowCount(10);
         JScrollPane listScroller = new JScrollPane(triggerList);
-        listScroller.setPreferredSize(new Dimension(250, 100));
+        listScroller.setPreferredSize(new Dimension(250, 300));
         mainPanel.add(listScroller, BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(3, 1));
+        rightPanel.setLayout(new GridLayout(4, 1));
 
         JButton addButton = new JButton("Add");
         addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -43,8 +43,8 @@ public class BreakTriggerListDialog extends JDialog {
             }
         });
         rightPanel.add(addButton);
-        
-        JButton editButton = new JButton("Edit");        
+
+        JButton editButton = new JButton("Edit");
         editButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -52,7 +52,16 @@ public class BreakTriggerListDialog extends JDialog {
             }
         });
         rightPanel.add(editButton);
-        
+
+        JButton toggleButton = new JButton("Toggle");
+        toggleButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        toggleButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                toggleTrigger(triggerList.getSelectedIndex());
+            }
+        });
+        rightPanel.add(toggleButton);
+
         JButton deleteButton = new JButton("Delete");
         deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deleteButton.addActionListener(new ActionListener() {
@@ -87,6 +96,13 @@ public class BreakTriggerListDialog extends JDialog {
         setContentPane(mainPanel);
         pack();
         setLocationRelativeTo(null);
+    }
+
+    private void toggleTrigger(int index) {
+        BreakTrigger trigger = breakTriggers.get(index);
+        trigger.setEnabled(!trigger.isEnabled());
+        triggerList.setModel(createListModel(breakTriggers));
+        triggerList.setSelectedIndex(index);
     }
 
     private DefaultListModel createListModel(List<BreakTrigger> breakTriggers) {
