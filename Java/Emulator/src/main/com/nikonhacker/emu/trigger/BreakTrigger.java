@@ -52,21 +52,21 @@ public class BreakTrigger {
     public List<BreakCondition> getBreakConditions() {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
-            conditions.add(new BreakPointCondition(cpuStateValues.pc));
+            conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
         for (int i = 0; i <= CPUState.MDL; i++) {
             if (cpuStateFlags.getReg(i) != 0) {
-                conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i)));
+                conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
             }
         }
         if (cpuStateFlags.getCCR() != 0) {
-            conditions.add(new CCRBreakCondition(cpuStateValues.getCCR(), cpuStateFlags.getCCR()));
+            conditions.add(new CCRBreakCondition(cpuStateValues.getCCR(), cpuStateFlags.getCCR(), this));
         }
         if (cpuStateFlags.getSCR() != 0) {
-            conditions.add(new SCRBreakCondition(cpuStateValues.getSCR(), cpuStateFlags.getSCR()));
+            conditions.add(new SCRBreakCondition(cpuStateValues.getSCR(), cpuStateFlags.getSCR(), this));
         }
         if (cpuStateFlags.getILM() != 0) {
-            conditions.add(new ILMBreakCondition(cpuStateValues.getILM(), cpuStateFlags.getILM()));
+            conditions.add(new ILMBreakCondition(cpuStateValues.getILM(), cpuStateFlags.getILM(), this));
         }
         return conditions;
     }

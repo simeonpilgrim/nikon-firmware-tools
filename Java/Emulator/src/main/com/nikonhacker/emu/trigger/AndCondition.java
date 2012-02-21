@@ -8,11 +8,11 @@ import java.util.List;
 
 public class AndCondition implements BreakCondition {
     List<BreakCondition> conditions = new ArrayList<BreakCondition>();
-    public AndCondition() {
-    }
+    private BreakTrigger breakTrigger;
 
-    public AndCondition(List<BreakCondition> conditions) {
+    public AndCondition(List<BreakCondition> conditions, BreakTrigger breakTrigger) {
         this.conditions = conditions;
+        this.breakTrigger = breakTrigger;
     }
 
     public List<BreakCondition> getConditions() {
@@ -25,6 +25,10 @@ public class AndCondition implements BreakCondition {
 
     public void addBreakCondition(BreakCondition condition) {
         conditions.add(condition);
+    }
+
+    public BreakTrigger getBreakTrigger() {
+        return breakTrigger;
     }
 
     public boolean matches(CPUState cpuState, Memory memory) {

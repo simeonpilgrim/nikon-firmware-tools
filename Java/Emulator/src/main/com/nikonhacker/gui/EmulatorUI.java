@@ -24,7 +24,7 @@ import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
-import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListDialog;
+import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
@@ -141,6 +141,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private CPUStateEditorFrame cpuStateEditorFrame;
     private DocumentFrame screenEmulatorFrame;
     private MemoryActivityViewerFrame memoryActivityViewerFrame;
+    private BreakTriggerListFrame breakTriggerListFrame;
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
     private CodeStructureFrame codeStructureFrame;
@@ -622,7 +623,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             stopEmulator();
         }
         else if (COMMAND_SETUP_BREAKPOINTS.equals(e.getActionCommand())) {
-            setupBreakpoints();
+            toggleBreakTriggerList();
         }
         else if (COMMAND_TEST.equals(e.getActionCommand())) {
 
@@ -669,10 +670,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             System.err.println("Unknown menu command : " + e.getActionCommand());
         }
-    }
-
-    private void setupBreakpoints() {
-        new BreakTriggerListDialog(this, prefs.getTriggers()).setVisible(true);
     }
 
     private void openDumpMemoryDialog() {
@@ -1007,6 +1004,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
+    private void toggleBreakTriggerList() {
+        if (breakTriggerListFrame == null) {
+            breakTriggerListFrame = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, prefs.getTriggers(), this);
+            addDocumentFrame(breakTriggerListFrame);
+            breakTriggerListFrame.display(true);
+        }
+        else {
+            breakTriggerListFrame.dispose();
+            breakTriggerListFrame = null;
+        }
+        updateStates();
+    }
+
     private void toggleMemoryActivityViewer() {
         if (memoryActivityViewerFrame == null) {
             memoryActivityViewerFrame = new MemoryActivityViewerFrame("Base memory activity viewer (each cell=64k, click to zoom)", true, true, true, true, memory, this);
@@ -1136,6 +1146,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == codeStructureFrame) {
             toggleCodeStructureWindow();
         }
+        else if (frame == breakTriggerListFrame) {
+            toggleBreakTriggerList();
+        }
         else {
             System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
         }
@@ -1246,7 +1259,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                 if (breakTrigger.isEnabled()) {
-                    breakConditions.add(new AndCondition(breakTrigger.getBreakConditions()));
+                    breakConditions.add(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
                 }
             }
         }
@@ -1263,8 +1276,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             public void run() {
                 try {
                     emulator.setOutputOptions(prefs.getOutputOptions());
-                    emulator.play();
+                    BreakCondition breakCondition = emulator.play();
                     isEmulatorPlaying = false;
+                    if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
+                        JOptionPane.showMessageDialog(EmulatorUI.this, "Break trigger matched :\n" + breakCondition.getBreakTrigger().getName());
+                    }
                     updateStates();
                 } catch (EmulationException e) {
                     e.printStackTrace();
@@ -1284,7 +1300,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // And we put a breakpoint on the instruction after the call
         List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-        breakConditions.add(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8));
+        breakConditions.add(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
         
         emulator.setBreakConditions(breakConditions);
 

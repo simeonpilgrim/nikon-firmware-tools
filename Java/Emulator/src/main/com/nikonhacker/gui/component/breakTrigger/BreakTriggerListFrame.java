@@ -3,6 +3,8 @@ package com.nikonhacker.gui.component.breakTrigger;
 
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,19 +12,18 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
 
-public class BreakTriggerListDialog extends JDialog {
+public class BreakTriggerListFrame extends DocumentFrame {
 
     private List<BreakTrigger> breakTriggers;
     private final JList triggerList;
-    private final DefaultListModel listModel;
 
-    public BreakTriggerListDialog(Frame owner, final List<BreakTrigger> breakTriggers) {
-        super(owner, "Setup breakpoints and triggers", true);
+    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, List<BreakTrigger> breakTriggers, EmulatorUI ui) {
+        super(title, resizable, closable, maximizable, iconifiable, ui);
         this.breakTriggers = breakTriggers;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        listModel = createListModel(breakTriggers);
+        DefaultListModel listModel = createListModel(breakTriggers);
         
         triggerList = new JList(listModel);
         triggerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -75,7 +76,7 @@ public class BreakTriggerListDialog extends JDialog {
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new FlowLayout());
-        JButton okButton = new JButton("OK");
+        JButton okButton = new JButton("Close");
         okButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 saveTriggers();
@@ -95,7 +96,7 @@ public class BreakTriggerListDialog extends JDialog {
 
         setContentPane(mainPanel);
         pack();
-        setLocationRelativeTo(null);
+        //setLocationRelativeTo(null);
     }
 
     private void toggleTrigger(int index) {
@@ -130,7 +131,7 @@ public class BreakTriggerListDialog extends JDialog {
     }
 
     private void editTrigger(BreakTrigger trigger) {
-        new BreakTriggerEditDialog(this, trigger, "Edit trigger conditions").setVisible(true);
+        new BreakTriggerEditDialog(null, trigger, "Edit trigger conditions").setVisible(true);
         triggerList.setModel(createListModel(breakTriggers));
     }
 

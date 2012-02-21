@@ -119,8 +119,12 @@ public class Emulator {
         this.cpuState = cpuState;
     }
 
-
-    public void play() throws EmulationException {
+    /**
+     * Starts emulating
+     * @return the BreakCondition that made the emulator stop, or null if it didn't stop for a BreakCondition
+     * @throws EmulationException
+     */
+    public BreakCondition play() throws EmulationException {
         /* temporary variables */
         int cycleRemaining = interruptPeriod;
         int result32, S1, S2, Sr, n;
@@ -2234,14 +2238,14 @@ public class Emulator {
                     for (BreakCondition breakCondition : breakConditions) {
                         if(breakCondition.matches(cpuState, memory)) {
                             exitRequired = true;
-                            break;
+                            return breakCondition;
                         }
                     }
 
 
                     totalCycles += interruptPeriod;
                     cycleRemaining += interruptPeriod;
-                    if (exitRequired) break;
+                    if (exitRequired) return null;
                 }
 
             }
@@ -2254,6 +2258,7 @@ public class Emulator {
             System.err.println("Offending instruction : " + disassembledInstruction);
             System.err.println("(just before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
         }
+        return null;
     }
 
     private void setDelayedChanges(Integer nextPC, Integer nextRP) {
