@@ -9,11 +9,12 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.dfr.CodeStructure;
+import com.nikonhacker.dfr.Function;
+import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,8 +24,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.Writer;
-import java.util.List;
 
 public class CodeStructureFrame extends DocumentFrame
 {
@@ -33,7 +32,6 @@ public class CodeStructureFrame extends DocumentFrame
 
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
-    private final PrintWriterArea listingArea;
     private mxGraphComponent graphComponent;
 
     public enum Orientation{
@@ -150,25 +148,15 @@ public class CodeStructureFrame extends DocumentFrame
         toolbar.add(clearButton);
 
         
-        // Create left hand graph
+        // Create graph
         Component graphComponent = getGraphPane();
-
-        // Create right hand listing
-        listingArea = new PrintWriterArea(50, 80);
-        Component listingComponent = getListingPane();
-
-        // Create a left-right split pane
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, graphComponent, listingComponent);
 
         // Create and fill main panel
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.add(toolbar, BorderLayout.NORTH);
-        mainPanel.add(splitPane, BorderLayout.CENTER);
+        mainPanel.add(graphComponent, BorderLayout.CENTER);
 
         getContentPane().add(mainPanel);
-
-        // Start with entry point
-//        graph.expandFunction(this.codeStructure.getFunctions().get(this.codeStructure.getEntryPoint()), this);
 
         pack();
     }
@@ -210,7 +198,7 @@ public class CodeStructureFrame extends DocumentFrame
         // Prevent manual cell moving
         graph.setCellsMovable(false);
 
-        graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH/2, FRAME_HEIGHT));
+        graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
 
         // Create graph component
         graphComponent = new CodeStructureMxGraphComponent(graph, this, ui);
@@ -222,45 +210,9 @@ public class CodeStructureFrame extends DocumentFrame
     }
 
 
-    private Component getListingPane() {
-        listingArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-        return new SearchableTextAreaPanel(listingArea);
-    }
-
-
     public void writeFunction(Function function) throws IOException {
-        listingArea.clear();
-        Writer writer = listingArea.getPrintWriter();
-        List<CodeSegment> segments = function.getCodeSegments();
-        if (segments.size() == 0) {
-            writer.write("; function at address 0x" + Format.asHex(function.getAddress(), 8) + " was not disassembled (not in CODE range)");
-        }
-        else {
-            for (int i = 0; i < segments.size(); i++) {
-                CodeSegment codeSegment = segments.get(i);
-                if (segments.size() > 1) {
-                    writer.write("; Segment " + (i+1) + "/" + segments.size() + "\n");
-                }
-                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getInstructions().higherKey(address)) {
-                    DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
-                    try {
-                        codeStructure.writeInstruction(writer, address, instruction, 0);
-                    } catch (IOException e) {
-                        writer.write("# ERROR decoding instruction at address 0x" + Format.asHex(address, 8) + " : " + e.getMessage());
-                    }
-                }
-                writer.write("\n");
-            }
-        }
-        listingArea.setCaretPosition(0);
+        ui.jumpToSource(function);
     }
-
-    public void writeText(String text) throws IOException {
-        listingArea.clear();
-        Writer writer = listingArea.getPrintWriter();
-        writer.write(text);
-    }
-
 
 
     private void saveSvg(File file) throws IOException {

@@ -9,10 +9,7 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.Prefs;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.OutputOption;
-import com.nikonhacker.dfr.ParsingException;
+import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -33,6 +30,7 @@ import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
+import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import org.apache.commons.io.FilenameUtils;
 
 import javax.swing.*;
@@ -74,6 +72,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_DUMP_MEMORY = "DUMP_MEMORY";
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
+    private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
@@ -116,6 +115,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem screenEmulatorMenuItem;
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem codeStructureMenuItem;
+    private JCheckBoxMenuItem sourceCodeMenuItem;
     private JMenuItem dumpMemoryMenuItem;
     private JMenuItem optionsMenuItem;
 
@@ -134,6 +134,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton screenEmulatorButton;
     private JButton component4006Button;
     private JButton codeStructureButton;
+    private JButton sourceCodeButton;
     private JButton dumpMemoryButton;
     private JButton optionsButton;
 
@@ -145,6 +146,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
     private CodeStructureFrame codeStructureFrame;
+    private SourceCodeFrame sourceCodeFrame;
     private final Insets toolbarButtonMargin;
     private final JPanel toolBar;
 
@@ -312,6 +314,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         codeStructureButton = makeButton("code_structure", COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW, "Code Structure", "Structure");
         bar.add(codeStructureButton);
+        sourceCodeButton = makeButton("source", COMMAND_TOGGLE_SOURCE_CODE_WINDOW, "Source code", "Source");
+        bar.add(sourceCodeButton);
 
         dumpMemoryButton = makeButton("dump_memory", COMMAND_DUMP_MEMORY, "Dump memory area", "Dump memory");
         bar.add(dumpMemoryButton);
@@ -538,6 +542,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         codeStructureMenuItem.addActionListener(this);
         viewMenu.add(codeStructureMenuItem);
 
+        //source code
+        sourceCodeMenuItem = new JCheckBoxMenuItem("Source code");
+//        sourceCodeMenuItem.setMnemonic(KeyEvent.VK_S);
+//        sourceCodeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        sourceCodeMenuItem.setActionCommand(COMMAND_TOGGLE_SOURCE_CODE_WINDOW);
+        sourceCodeMenuItem.addActionListener(this);
+        viewMenu.add(sourceCodeMenuItem);
+
 
         //Set up the tools menu.
         JMenu toolsMenu = new JMenu("Tools");
@@ -660,6 +672,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
             toggleCodeStructureWindow();
+        }
+        else if (COMMAND_TOGGLE_SOURCE_CODE_WINDOW.equals(e.getActionCommand())) {
+            toggleSourceCodeWindow();
         }
         else if (COMMAND_OPTIONS.equals(e.getActionCommand())) {
             openOptionsDialog();
@@ -1002,6 +1017,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             codeStructureFrame.dispose();
             codeStructureFrame = null;
         }
+        if (sourceCodeFrame != null) {
+            sourceCodeFrame.dispose();
+            sourceCodeFrame = null;
+        }
     }
 
     private void toggleBreakTriggerList() {
@@ -1113,6 +1132,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
+    private void toggleSourceCodeWindow() {
+        if (sourceCodeFrame == null) {
+            sourceCodeFrame = new SourceCodeFrame("Source code", true, true, true, true, codeStructure, this);
+            addDocumentFrame(sourceCodeFrame);
+            sourceCodeFrame.display(true);
+        }
+        else {
+            sourceCodeFrame.dispose();
+            sourceCodeFrame = null;
+        }
+        updateStates();
+    }
+
 
 
     public void addDocumentFrame(DocumentFrame frame) {
@@ -1146,6 +1178,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == codeStructureFrame) {
             toggleCodeStructureWindow();
         }
+        else if (frame == sourceCodeFrame) {
+            toggleSourceCodeWindow();
+        }
         else if (frame == breakTriggerListFrame) {
             toggleBreakTriggerList();
         }
@@ -1162,6 +1197,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryHexEditorMenuItem.setSelected(memoryHexEditorFrame != null);
         component4006MenuItem.setSelected(component4006Frame != null);
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
+        sourceCodeMenuItem.setSelected(sourceCodeFrame != null);
 
         if (isImageLoaded) {
             analyseMenuItem.setEnabled(true); analyseButton.setEnabled(true);
@@ -1227,6 +1263,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
         codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
+        sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
 
     }
 
@@ -1279,7 +1316,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     BreakCondition breakCondition = emulator.play();
                     isEmulatorPlaying = false;
                     if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
-                        JOptionPane.showMessageDialog(EmulatorUI.this, "Break trigger matched :\n" + breakCondition.getBreakTrigger().getName());
+                        setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
                     }
                     updateStates();
                 } catch (EmulationException e) {
@@ -1342,5 +1379,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         super.dispose();
         Prefs.save(prefs);
         System.exit(0);
+    }
+
+    public void jumpToSource(Function function) {
+        if (sourceCodeFrame == null && codeStructure != null) {
+            toggleSourceCodeWindow();
+        }
+        sourceCodeFrame.writeFunction(function);
+    }
+
+    public void setStatusText(String message) {
+        // TODO replace this by a status bar
+        JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
     }
 }
