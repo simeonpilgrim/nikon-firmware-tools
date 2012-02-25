@@ -73,10 +73,10 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                             codeStructureFrame.writeFunction(function);
                         }
                         else if (value instanceof Integer) {
-                            ui.setStatusText("; The function at address 0x" + Format.asHex((Integer) value, 8) + " was not part of a CODE segment and was not disassembled");
+                            ui.setStatusText("The function at address 0x" + Format.asHex((Integer) value, 8) + " was not part of a CODE segment and was not disassembled");
                         }
                         else {
-                            ui.setStatusText("; The target for this jump could not be determined in a static way");
+                            ui.setStatusText("The target for this jump could not be determined in a static way");
                         }
                     } catch (IOException e1) {
                         e1.printStackTrace();

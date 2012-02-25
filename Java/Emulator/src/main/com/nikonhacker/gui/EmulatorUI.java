@@ -80,7 +80,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private static final int FUNCTION_CALL_BASE_ADDRESS = 0xFFFFFFF0;
 
-    private static File imagefile;
+    private static File imageFile;
 
     public static final String APP_NAME = "FrEmulator";
 
@@ -149,12 +149,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private SourceCodeFrame sourceCodeFrame;
     private final Insets toolbarButtonMargin;
     private final JPanel toolBar;
+    private JLabel statusBar;
+    private String statusText = "Ready";
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
         if (args.length > 0) {
             if (new File(args[0]).exists()) {
-                imagefile = new File(args[0]);
+                imageFile = new File(args[0]);
             }
         }
 
@@ -204,17 +206,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         setJMenuBar(createMenuBar());
 
         toolbarButtonMargin = new Insets(2, 14, 2, 14);
-        
-        JPanel mainContentPane = new JPanel(new BorderLayout());
         toolBar = createToolBar();
+
+        statusBar = new JLabel(statusText);
+
+        JPanel mainContentPane = new JPanel(new BorderLayout());
         mainContentPane.add(toolBar, BorderLayout.PAGE_START);
         mainContentPane.add(mdiPane, BorderLayout.CENTER);
+        mainContentPane.add(statusBar, BorderLayout.SOUTH);
         setContentPane(mainContentPane);
 
         applyPrefsToUI();
 
 
-        if (imagefile != null) {
+        if (imageFile != null) {
             loadImage();
         }
 
@@ -226,7 +231,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Update title bar every seconds with emulator stats
         new Timer(1000, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updateTitleBar();
+                updateStatusBar();
             }
         }).start();
     }
@@ -245,7 +250,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         return prefs;
     }
 
-    private void updateTitleBar() {
+    public void setStatusText(String message) {
+        statusText = message;
+        updateStatusBar();
+    }
+
+    private void updateStatusBar() {
         if (emulator != null) {
             long totalCycles = emulator.getTotalCycles();
             long now = System.currentTimeMillis();
@@ -253,10 +263,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             lastUpdateCycles = totalCycles;
             lastUpdateTime = now;
-            setTitle(APP_NAME + " (" + totalCycles + " cycles emulated. Current speed is "+ cps + "Hz)");
+            statusBar.setText(statusText + " (" + totalCycles + " cycles emulated. Current speed is " + cps + "Hz)");
         }
         else {
-            setTitle(APP_NAME);
+            statusBar.setText(statusText);
         }
     }
 
@@ -750,9 +760,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         JTextField dfrField = new JTextField();
         JTextField destinationField = new JTextField();
         // compute default name for Dfr.txt
-        File optionsFile = new File(imagefile.getParentFile(), FilenameUtils.getBaseName(imagefile.getAbsolutePath()) + ".txt");
+        File optionsFile = new File(imageFile.getParentFile(), FilenameUtils.getBaseName(imageFile.getAbsolutePath()) + ".txt");
         if (!optionsFile.exists()) {
-            optionsFile = new File(imagefile.getParentFile(), "Dfr.txt");
+            optionsFile = new File(imageFile.getParentFile(), "Dfr.txt");
             if (!optionsFile.exists()) {
                 optionsFile = null;
             }
@@ -762,7 +772,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
         // compute default name for output
-        File outputFile = new File(imagefile.getParentFile(), FilenameUtils.getBaseName(imagefile.getAbsolutePath()) + ".asm");
+        File outputFile = new File(imageFile.getParentFile(), FilenameUtils.getBaseName(imageFile.getAbsolutePath()) + ".asm");
         destinationField.setText(outputFile.getAbsolutePath());
 
         final JCheckBox writeOutputCheckbox = new JCheckBox("Write disassembly to file");
@@ -792,7 +802,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
-            analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imagefile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
+            analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
             analyseProgressDialog.setVisible(true);
         }
     }
@@ -805,7 +815,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            imagefile = fc.getSelectedFile();
+            imageFile = fc.getSelectedFile();
             // Scratch any analysis that was previously done
             codeStructure = null;
             loadImage();
@@ -968,7 +978,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void loadImage() {
         try {
             memory = new DebuggableMemory();
-            memory.loadFile(imagefile, BASE_ADDRESS);
+            memory.loadFile(imageFile, BASE_ADDRESS);
 
             cpuState = new CPUState(BASE_ADDRESS);
 
@@ -1313,10 +1323,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             public void run() {
                 try {
                     emulator.setOutputOptions(prefs.getOutputOptions());
+                    setStatusText("Emulator is running...");
                     BreakCondition breakCondition = emulator.play();
                     isEmulatorPlaying = false;
                     if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
                         setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
+                    }
+                    else {
+                        setStatusText("Emulation complete");
                     }
                     updateStates();
                 } catch (EmulationException e) {
@@ -1388,8 +1402,4 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         sourceCodeFrame.writeFunction(function);
     }
 
-    public void setStatusText(String message) {
-        // TODO replace this by a status bar
-        JOptionPane.showMessageDialog(this, message, "Information", JOptionPane.INFORMATION_MESSAGE);
-    }
 }
