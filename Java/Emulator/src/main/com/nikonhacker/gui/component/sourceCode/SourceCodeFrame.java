@@ -46,7 +46,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     List<Integer> lineAddresses = new ArrayList<Integer>();
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -58,8 +58,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         final JTextField targetAddressField = new JTextField(7);
         topToolbar.add(targetAddressField);
-        JButton exploreButton = new JButton("Explore");
+        final JButton exploreButton = new JButton("Explore");
         topToolbar.add(exploreButton);
+        JButton goToPcButton = new JButton("Go to PC");
+        topToolbar.add(goToPcButton);
 
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -74,6 +76,14 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     }
                     else {
                         writeFunction(function);
+                        Integer line = getLineFromAddress(address);
+                        if (line != null) {
+                            try {
+                                listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
+                            } catch (BadLocationException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
                     }
                 } catch (ParsingException ex) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
@@ -82,8 +92,15 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         };
         targetAddressField.addActionListener(exploreExecutor);
         exploreButton.addActionListener(exploreExecutor);
+        goToPcButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                targetAddressField.setText("0x" + Format.asHex(cpuState.pc, 8));
+                exploreButton.doClick(0);
+            }
+        });
         targetAddressField.addKeyListener(this);
         exploreButton.addKeyListener(this);
+        
 
         // Create listing
         listingArea = new RSyntaxTextArea(50, 80);
@@ -133,6 +150,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         listingArea.setCodeFoldingEnabled(true);
         listingArea.setAntiAliasingEnabled(true);
+        
+        listingArea.setMarkOccurrences(true);
+        listingArea.setMarkOccurrencesColor(Color.GREEN);
+
+        // Make current line transparent so PC line highlight passes through
+        listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
 
         // For custom syntax, see http://fifesoft.com/blog/?p=214
         // and http://fifesoft.com/forum/viewtopic.php?f=11&t=615&p=1377&hilit=keyboard#p1377
@@ -233,7 +256,6 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 JTextComponent textComponent = getTextComponent(e);
                 if (textComponent instanceof JTextArea) {
                     JTextArea textArea = (JTextArea) textComponent;
-                    //textArea.setCaretPosition(textArea.viewToModel(e.getPoint()));
                     Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(textArea.getCaretPosition()));
                     if (addressFromLine != null) {
                         toggleBreakpoint(addressFromLine);
