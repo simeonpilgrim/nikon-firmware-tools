@@ -137,7 +137,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton dumpMemoryButton;
     private JButton optionsButton;
 
-    private DocumentFrame disassemblyFrame;
+    private DocumentFrame disassemblyLogFrame;
     private CPUStateEditorFrame cpuStateEditorFrame;
     private DocumentFrame screenEmulatorFrame;
     private MemoryActivityViewerFrame memoryActivityViewerFrame;
@@ -295,7 +295,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(makeSlider());
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        disassemblyButton = makeButton("disassembly", COMMAND_TOGGLE_DISASSEMBLY_WINDOW, "Disassembly window", "Disassembly");
+        disassemblyButton = makeButton("disassembly_log", COMMAND_TOGGLE_DISASSEMBLY_WINDOW, "Real time disassembly log", "Disassembly");
         bar.add(disassemblyButton);
         cpuStateButton = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW, "CPU State window", "CPU");
         bar.add(cpuStateButton);
@@ -505,7 +505,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         viewMenu.add(screenEmulatorMenuItem);
 
         //disassembly
-        disassemblyMenuItem = new JCheckBoxMenuItem("Disassembly window");
+        disassemblyMenuItem = new JCheckBoxMenuItem("Real-time disassembly log");
         disassemblyMenuItem.setMnemonic(KeyEvent.VK_D);
         disassemblyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
         disassemblyMenuItem.setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW);
@@ -641,7 +641,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             toggleScreenEmulator();
         }
         else if (COMMAND_TOGGLE_DISASSEMBLY_WINDOW.equals(e.getActionCommand())) {
-            toggleDisassembly();
+            toggleDisassemblyLog();
         }
         else if (COMMAND_TOGGLE_CPUSTATE_WINDOW.equals(e.getActionCommand())) {
             toggleCPUState();
@@ -986,9 +986,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryHexEditorFrame.dispose();
             memoryHexEditorFrame = null;
         }
-        if (disassemblyFrame != null) {
-            disassemblyFrame.dispose();
-            disassemblyFrame = null;
+        if (disassemblyLogFrame != null) {
+            disassemblyLogFrame.dispose();
+            disassemblyLogFrame = null;
         }
         if (cpuStateEditorFrame != null) {
             cpuStateEditorFrame.dispose();
@@ -1043,15 +1043,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
-    private void toggleDisassembly() {
-        if (disassemblyFrame == null) {
-            disassemblyFrame = new DisassemblyFrame("Disassembly", true, true, true, true, emulator, this);
-            addDocumentFrame(disassemblyFrame);
-            disassemblyFrame.display(true);
+    private void toggleDisassemblyLog() {
+        if (disassemblyLogFrame == null) {
+            disassemblyLogFrame = new DisassemblyFrame("Real-time disassembly log", true, true, true, true, emulator, this);
+            addDocumentFrame(disassemblyLogFrame);
+            disassemblyLogFrame.display(true);
         }
         else {
-            disassemblyFrame.dispose();
-            disassemblyFrame = null;
+            disassemblyLogFrame.dispose();
+            disassemblyLogFrame = null;
         }
         updateStates();
     }
@@ -1125,8 +1125,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @param frame
      */
     public void frameClosing(DocumentFrame frame) {
-        if (frame == disassemblyFrame) {
-            toggleDisassembly();
+        if (frame == disassemblyLogFrame) {
+            toggleDisassemblyLog();
         }
         else if (frame == cpuStateEditorFrame) {
             toggleCPUState();
@@ -1155,7 +1155,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public void updateStates() {
-        disassemblyMenuItem.setSelected(disassemblyFrame != null);
+        disassemblyMenuItem.setSelected(disassemblyLogFrame != null);
         cpuStateMenuItem.setSelected(cpuStateEditorFrame != null);
         screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
         memoryActivityViewerMenuItem.setSelected(memoryActivityViewerFrame != null);
