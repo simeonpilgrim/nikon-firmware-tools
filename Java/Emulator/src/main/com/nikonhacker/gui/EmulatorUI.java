@@ -259,7 +259,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (emulator != null) {
             long totalCycles = emulator.getTotalCycles();
             long now = System.currentTimeMillis();
-            long cps = 0;
+            long cps;
             try {
                 cps = (1000 * (totalCycles - lastUpdateCycles))/(now - lastUpdateTime);
             } catch (Exception e) {
@@ -781,13 +781,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         destinationField.setText(outputFile.getAbsolutePath());
 
         final JCheckBox writeOutputCheckbox = new JCheckBox("Write disassembly to file");
-        writeOutputCheckbox.setSelected(true);
+
         final FileSelectionPanel destinationFileSelectionPanel = new FileSelectionPanel("Destination file", destinationField, false);
         writeOutputCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                destinationFileSelectionPanel.setEnabled(writeOutputCheckbox.isSelected());
+                boolean writeToFile = writeOutputCheckbox.isSelected();
+                destinationFileSelectionPanel.setEnabled(writeToFile);
+                prefs.setWriteDisassemblyToFile(writeToFile);
             }
         });
+
+        writeOutputCheckbox.setSelected(prefs.isWriteDisassemblyToFile());
+        destinationFileSelectionPanel.setEnabled(prefs.isWriteDisassemblyToFile());
+
         final JComponent[] inputs = new JComponent[]{
                 //new FileSelectionPanel("Source file", sourceFile, false, dependencies),
                 new FileSelectionPanel("Dfr options file", dfrField, false),

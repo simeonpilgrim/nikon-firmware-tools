@@ -12,10 +12,12 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 public class Prefs {
-    boolean largeToolbarButtons = false;
     int sleepTick = 2;
     List<BreakTrigger> triggers;
     Set<OutputOption> outputOptions;
+
+    boolean largeToolbarButtons = false;
+    boolean writeDisassemblyToFile = true;
 
     private HashMap<String, WindowPosition> windowPositionMap;
 
@@ -93,6 +95,14 @@ public class Prefs {
 
     public void setLargeToolbarButtons(boolean largeToolbarButtons) {
         this.largeToolbarButtons = largeToolbarButtons;
+    }
+
+    public boolean isWriteDisassemblyToFile() {
+        return writeDisassemblyToFile;
+    }
+
+    public void setWriteDisassemblyToFile(boolean writeDisassemblyToFile) {
+        this.writeDisassemblyToFile = writeDisassemblyToFile;
     }
 
     public int getSleepTick() {
