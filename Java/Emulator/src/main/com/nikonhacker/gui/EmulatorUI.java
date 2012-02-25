@@ -285,11 +285,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        analyseButton = makeButton("analyse", COMMAND_ANALYSE_DISASSEMBLE, "Analyse/Disassemble", "Analyse");
-        bar.add(analyseButton);
-
-        bar.add(Box.createRigidArea(new Dimension(10, 0)));
-
         playButton = makeButton("play", COMMAND_EMULATOR_PLAY, "Start or resume emulator", "Play");
         bar.add(playButton);
         debugButton = makeButton("debug", COMMAND_EMULATOR_DEBUG, "Debug emulator", "Debug");
@@ -327,10 +322,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
+        analyseButton = makeButton("analyse", COMMAND_ANALYSE_DISASSEMBLE, "Analyse/Disassemble", "Analyse");
+        bar.add(analyseButton);
         codeStructureButton = makeButton("code_structure", COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW, "Code Structure", "Structure");
         bar.add(codeStructureButton);
         sourceCodeButton = makeButton("source", COMMAND_TOGGLE_SOURCE_CODE_WINDOW, "Source code", "Source");
         bar.add(sourceCodeButton);
+
+        bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
         dumpMemoryButton = makeButton("dump_memory", COMMAND_DUMP_MEMORY, "Dump memory area", "Dump memory");
         bar.add(dumpMemoryButton);
