@@ -102,7 +102,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void toggleTrigger(int index) {
         BreakTrigger trigger = breakTriggers.get(index);
         trigger.setEnabled(!trigger.isEnabled());
-        triggerList.setModel(createListModel(breakTriggers));
+        ui.onBreaktriggersChange();
         triggerList.setSelectedIndex(index);
     }
 
@@ -119,7 +119,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         if (index != -1) {
             breakTriggers.remove(index);
         }
-        triggerList.setModel(createListModel(breakTriggers));
+        ui.onBreaktriggersChange();
     }
 
     private void editTrigger(int index) {
@@ -132,7 +132,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private void editTrigger(BreakTrigger trigger) {
         new BreakTriggerEditDialog(null, trigger, "Edit trigger conditions").setVisible(true);
-        triggerList.setModel(createListModel(breakTriggers));
+        ui.onBreaktriggersChange();
     }
 
     private void addTrigger(int index) {
@@ -140,7 +140,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         cpuStateFlags.clear();
         BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags);
         breakTriggers.add(trigger);
-        triggerList.setModel(createListModel(breakTriggers));
+        ui.onBreaktriggersChange();
         triggerList.setSelectedIndex(index+1);
         editTrigger(trigger);
     }
@@ -169,4 +169,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         dispose();
     }
 
+    public void updateBreaktriggers() {
+        triggerList.setModel(createListModel(breakTriggers));
+    }
 }

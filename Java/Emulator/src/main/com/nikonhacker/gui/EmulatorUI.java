@@ -920,7 +920,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>Dfr Fujitsu FR diassembler Copyright (c) Kevin Schoedel - " + makeLink("http://scratchpad.wikia.com/wiki/Disassemblers/DFR") + "<br/>and its port to C# by Simeon Pilgrim</li>"
                 + "<li>The PearColator x86 emulator project - " + makeLink("http://apt.cs.man.ac.uk/projects/jamaica/tools/PearColator/") + "</li>"
                 + "<li>The Jacksum checksum library Copyright (c) Dipl.-Inf. (FH) Johann Nepomuk Löfflmann  - " + makeLink("http://www.jonelo.de/java/jacksum/") + "</li>"
-                + "<li>HexEditor swing component, Copyright (c) Robert Futrell - " + makeLink("http://fifesoft.com/hexeditor/") + "</li>"
+                + "<li>HexEditor & RSyntaxTextArea swing components, Copyright (c) Robert Futrell - " + makeLink("http://fifesoft.com/hexeditor/") + "</li>"
                 + "<li>JGraphX graph drawing library, Copyright (c) JGraph Ltd - " + makeLink("http://www.jgraph.com/jgraph.html") + "</li>"
                 + "<li>Apache commons libraries, Copyright (c) The Apache Software Foundation - " + makeLink("http://commons.apache.org/") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
@@ -1154,7 +1154,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleSourceCodeWindow() {
         if (sourceCodeFrame == null) {
-            sourceCodeFrame = new SourceCodeFrame("Source code", true, true, true, true, codeStructure, this);
+            sourceCodeFrame = new SourceCodeFrame("Source code", true, true, true, true, cpuState, codeStructure, this);
             addDocumentFrame(sourceCodeFrame);
             sourceCodeFrame.display(true);
         }
@@ -1334,8 +1334,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 try {
                     emulator.setOutputOptions(prefs.getOutputOptions());
                     setStatusText("Emulator is running...");
-                    BreakCondition breakCondition = emulator.play();
+                    BreakCondition breakCondition = emulator.play();                    
                     isEmulatorPlaying = false;
+                    if (sourceCodeFrame != null) {
+                        sourceCodeFrame.highlightPc();
+                    }
                     if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
                         setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
                     }
@@ -1412,4 +1415,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         sourceCodeFrame.writeFunction(function);
     }
 
+    public void onBreaktriggersChange() {
+        if (sourceCodeFrame != null) {
+            sourceCodeFrame.updateBreaktriggers();
+        }
+        if (breakTriggerListFrame != null) {
+            breakTriggerListFrame.updateBreaktriggers();
+        }
+    }
 }
