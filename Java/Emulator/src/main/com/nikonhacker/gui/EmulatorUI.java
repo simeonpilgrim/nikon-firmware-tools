@@ -259,11 +259,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (emulator != null) {
             long totalCycles = emulator.getTotalCycles();
             long now = System.currentTimeMillis();
-            long cps = (1000 * (totalCycles - lastUpdateCycles))/(now - lastUpdateTime);
+            long cps = 0;
+            try {
+                cps = (1000 * (totalCycles - lastUpdateCycles))/(now - lastUpdateTime);
+            } catch (Exception e) {
+                cps = -1;
+            }
 
             lastUpdateCycles = totalCycles;
             lastUpdateTime = now;
-            statusBar.setText(statusText + " (" + totalCycles + " cycles emulated. Current speed is " + cps + "Hz)");
+            statusBar.setText(statusText + " (" + totalCycles + " cycles emulated. Current speed is " + (cps<0?"?":(""+cps)) + "Hz)");
         }
         else {
             statusBar.setText(statusText);
