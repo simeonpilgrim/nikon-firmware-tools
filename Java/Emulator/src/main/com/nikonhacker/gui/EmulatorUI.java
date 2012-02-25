@@ -1141,7 +1141,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCodeStructureWindow() {
         if (codeStructureFrame == null) {
-            codeStructureFrame = new CodeStructureFrame("Code structure", true, true, true, true, codeStructure, this);
+            codeStructureFrame = new CodeStructureFrame("Code structure", true, true, true, true, cpuState, codeStructure, this);
             addDocumentFrame(codeStructureFrame);
             codeStructureFrame.display(true);
         }

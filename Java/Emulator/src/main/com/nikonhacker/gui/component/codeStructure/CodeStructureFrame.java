@@ -9,10 +9,7 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
-import com.nikonhacker.dfr.ParsingException;
+import com.nikonhacker.dfr.*;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -33,6 +30,7 @@ public class CodeStructureFrame extends DocumentFrame
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
+    private CPUState cpuState;
 
     public enum Orientation{
         HORIZONTAL(SwingConstants.WEST),
@@ -49,10 +47,12 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
-        setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        this.cpuState = cpuState;
         this.codeStructure = codeStructure;
+
+        setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
         // Create fake structure
         // createFakeStructure();
@@ -75,7 +75,7 @@ public class CodeStructureFrame extends DocumentFrame
         final JTextField targetAddressField = new JTextField(7);
         toolbar.add(targetAddressField);
 
-        JButton exploreButton = new JButton("Explore");
+        final JButton exploreButton = new JButton("Explore");
         exploreButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -96,6 +96,16 @@ public class CodeStructureFrame extends DocumentFrame
             }
         });
         toolbar.add(exploreButton);
+        JButton goToPcButton = new JButton("Go to PC");
+        toolbar.add(goToPcButton);
+        goToPcButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                targetAddressField.setText("0x" + Format.asHex(CodeStructureFrame.this.cpuState.pc, 8));
+                exploreButton.doClick(0);
+            }
+        });
+
+
 
         JButton svgButton = new JButton("Save as SVG");
         svgButton.addActionListener(new ActionListener() {
