@@ -247,6 +247,8 @@
 -s 0x164CBE=trace(debug string is passed)
 
 -s 0x1C0E5A=set_double_buffer(R4 [IN boolean])
+-s 0x1C1D6E=text_load_XX(R6 [IN string index tttiiiiiiiiiiiii])
+-s 0x1C1F68=bigtable_xx_04
 -s 0x1C3CD2=color_fill(R4 [IN RECT*], R5 [IN color_table_idx])
 -s 0x1C97BA=color_fill(R4 [IN RECT*], R5 [IN p_color_tuple])
 
@@ -287,8 +289,19 @@
 
 -s 0x2E1D3A=timezone_setup
 
+-s 0x2FEA5E=draw_menu_string
 -s 0x30B3AC=draw_menu_rows
 -s 0x30BB22=draw_menu_rectangle
--s 0x2FEA5E=draw_menu_string
+
+-s 0x3013BA=show_popup_message
+-s 0x311A08=err_wrong_battery
+-s 0x311A1E=err_eye_fi_locked
+-s 0x311A4A=err_card_locked
+-s 0x311A60=err_card_not_fmtd
+-s 0x311A34=err_card_bad
+-s 0x3129F2=confirm_card_fmt_a
+-s 0x2FDBA4=confirm_card_fmt_b
+
+
 
 
