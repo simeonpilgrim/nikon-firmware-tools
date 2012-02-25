@@ -120,6 +120,9 @@ public class BreakTriggerListFrame extends DocumentFrame {
             breakTriggers.remove(index);
         }
         ui.onBreaktriggersChange();
+        if (!breakTriggers.isEmpty()) {
+            triggerList.setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+        }
     }
 
     private void editTrigger(int index) {
