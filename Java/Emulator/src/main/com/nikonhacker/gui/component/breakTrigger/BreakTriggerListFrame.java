@@ -40,7 +40,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                addTrigger(triggerList.getSelectedIndex());
+                addTrigger();
             }
         });
         rightPanel.add(addButton);
@@ -99,13 +99,6 @@ public class BreakTriggerListFrame extends DocumentFrame {
         //setLocationRelativeTo(null);
     }
 
-    private void toggleTrigger(int index) {
-        BreakTrigger trigger = breakTriggers.get(index);
-        trigger.setEnabled(!trigger.isEnabled());
-        ui.onBreaktriggersChange();
-        triggerList.setSelectedIndex(index);
-    }
-
     private DefaultListModel createListModel(List<BreakTrigger> breakTriggers) {
         DefaultListModel model = new DefaultListModel();
         for (BreakTrigger breakTrigger : breakTriggers) {
@@ -118,10 +111,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void deleteTrigger(int index) {
         if (index != -1) {
             breakTriggers.remove(index);
-        }
-        ui.onBreaktriggersChange();
-        if (!breakTriggers.isEmpty()) {
-            triggerList.setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+            ui.onBreaktriggersChange();
+            if (!breakTriggers.isEmpty()) {
+                triggerList.setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+            }
         }
     }
 
@@ -133,19 +126,28 @@ public class BreakTriggerListFrame extends DocumentFrame {
         }
     }
 
-    private void editTrigger(BreakTrigger trigger) {
-        new BreakTriggerEditDialog(null, trigger, "Edit trigger conditions").setVisible(true);
-        ui.onBreaktriggersChange();
-    }
-
-    private void addTrigger(int index) {
+    private void addTrigger() {
         CPUState cpuStateFlags = new CPUState();
         cpuStateFlags.clear();
         BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags);
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange();
-        triggerList.setSelectedIndex(index+1);
+        triggerList.setSelectedIndex(breakTriggers.size() - 1);
         editTrigger(trigger);
+    }
+
+    private void toggleTrigger(int index) {
+        if (index != -1) {
+            BreakTrigger trigger = breakTriggers.get(index);
+            trigger.setEnabled(!trigger.isEnabled());
+            ui.onBreaktriggersChange();
+            triggerList.setSelectedIndex(index);
+        }
+    }
+
+    private void editTrigger(BreakTrigger trigger) {
+        new BreakTriggerEditDialog(null, trigger, "Edit trigger conditions").setVisible(true);
+        ui.onBreaktriggersChange();
     }
 
     private String findNewName() {
