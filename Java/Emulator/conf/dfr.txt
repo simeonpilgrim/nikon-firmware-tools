@@ -114,7 +114,11 @@
 # Table of addresses reached from 0x000D97CE (target range 000D97DC-000D9E62)
 #-m 0x000DC114-0x000DC303=DATA:L
 # Unknown
-#-m 0x000DC304-0x000DD357=DATA:L
+#-m 0x000DC304-0x000DC30F=DATA:L
+# 32b header + Table of 0x3C records of 0x1C bytes, containing among other things language menu function address
+#-m 0x000DC310-0x000DC9A3=DATA:L
+# Unknown
+#-m 0x000DC9A4-0x000DD357=DATA:L
 # 0xFF
 #-m 0x000DD358-0x000DFBEF=DATA:L
 # Unknown
@@ -232,6 +236,8 @@
 -s 0x406F4=NOP_406F4
 -s 0x406F6=NOP_406F6
 -s 0x406F8=NOP_406F8
+
+-s 0x41A4A=table_offset_load(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
 
 -s 0x1074F2=linked_list_init(R4 [IN, pointer to list entity])
 -s 0x1074FA=linked_list_compare_previous(R4->prev == R4)
