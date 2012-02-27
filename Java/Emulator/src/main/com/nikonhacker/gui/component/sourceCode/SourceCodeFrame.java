@@ -44,6 +44,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     List<Integer> lineAddresses = new ArrayList<Integer>();
+    private final JTextField targetAddressField;
 
 
     public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
@@ -56,7 +57,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Create toolbar
         JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        final JTextField targetAddressField = new JTextField(7);
+        targetAddressField = new JTextField(7);
         topToolbar.add(targetAddressField);
         final JButton exploreButton = new JButton("Explore");
         topToolbar.add(exploreButton);
@@ -66,25 +67,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    int address = Format.parseUnsigned(targetAddressField.getText());
-                    Function function = codeStructure.getFunctions().get(address);
-                    if (function == null) {
-                        function = codeStructure.findFunctionIncluding(address);
-                    }
-                    if (function == null) {
-                        JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
-                    }
-                    else {
-                        writeFunction(function);
-                        Integer line = getLineFromAddress(address);
-                        if (line != null) {
-                            try {
-                                listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
-                            } catch (BadLocationException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
+                    exploreAddress(Format.parseUnsigned(targetAddressField.getText()));
                 } catch (ParsingException ex) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
                 }
@@ -94,8 +77,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                targetAddressField.setText("0x" + Format.asHex(cpuState.pc, 8));
-                exploreButton.doClick(0);
+                exploreAddress(cpuState.pc);
             }
         });
         targetAddressField.addKeyListener(this);
@@ -142,6 +124,28 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         getContentPane().add(contentPanel);
 
         pack();
+    }
+
+    public void exploreAddress(int address) {
+        targetAddressField.setText("0x" + Format.asHex(cpuState.pc, 8));
+        Function function = codeStructure.getFunctions().get(address);
+        if (function == null) {
+            function = codeStructure.findFunctionIncluding(address);
+        }
+        if (function == null) {
+            JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+        }
+        else {
+            writeFunction(function);
+            Integer line = getLineFromAddress(address);
+            if (line != null) {
+                try {
+                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
+                } catch (BadLocationException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
     }
 
     private JComponent prepareListingPane() {
