@@ -170,7 +170,7 @@ public class CodeStructureMxGraph extends mxGraph {
     }
 
     private void addCall(Function sourceFunction, Jump call, Object targetCell) {
-        insertEdge(getDefaultParent(), null, "", cellObjects.get(sourceFunction.getAddress()), targetCell);
+        insertEdge(getDefaultParent(), null, call, cellObjects.get(sourceFunction.getAddress()), targetCell, "noLabel=1");
         renderedCalls.add(call);
     }
 

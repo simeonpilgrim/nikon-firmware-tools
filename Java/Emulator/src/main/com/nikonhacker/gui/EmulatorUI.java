@@ -1418,6 +1418,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         sourceCodeFrame.writeFunction(function);
     }
 
+    public void jumpToSource(int address) {
+        if (sourceCodeFrame == null && codeStructure != null) {
+            toggleSourceCodeWindow();
+        }
+        sourceCodeFrame.exploreAddress(address);
+    }
+
     public void onBreaktriggersChange() {
         if (sourceCodeFrame != null) {
             sourceCodeFrame.updateBreaktriggers();

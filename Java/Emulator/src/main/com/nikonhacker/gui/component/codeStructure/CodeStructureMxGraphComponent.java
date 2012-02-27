@@ -6,6 +6,7 @@ import com.mxgraph.swing.mxGraphComponent;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CodeStructure;
 import com.nikonhacker.dfr.Function;
+import com.nikonhacker.dfr.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
@@ -71,6 +72,10 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         if (value instanceof Function) {
                             Function function = (Function) value;
                             codeStructureFrame.writeFunction(function);
+                        }
+                        if (value instanceof Jump) {
+                            Jump jump = (Jump) value;
+                            ui.jumpToSource(jump.getSource());
                         }
                         else if (value instanceof Integer) {
                             ui.setStatusText("The function at address 0x" + Format.asHex((Integer) value, 8) + " was not part of a CODE segment and was not disassembled");
