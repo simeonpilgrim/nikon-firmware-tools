@@ -1331,24 +1331,27 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
             public void run() {
+                emulator.setOutputOptions(prefs.getOutputOptions());
+                setStatusText("Emulator is running...");
+                BreakCondition breakCondition = null;
                 try {
-                    emulator.setOutputOptions(prefs.getOutputOptions());
-                    setStatusText("Emulator is running...");
-                    BreakCondition breakCondition = emulator.play();                    
-                    isEmulatorPlaying = false;
-                    if (sourceCodeFrame != null) {
-                        sourceCodeFrame.highlightPc();
-                    }
-                    if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
-                        setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
-                    }
-                    else {
-                        setStatusText("Emulation complete");
-                    }
-                    updateStates();
-                } catch (EmulationException e) {
-                    e.printStackTrace();
+                    breakCondition = emulator.play();
                 }
+                catch (Throwable t) {
+                    t.printStackTrace();
+                    JOptionPane.showMessageDialog(EmulatorUI.this, t.getMessage(), "Emulator error", JOptionPane.ERROR_MESSAGE);
+                }
+                isEmulatorPlaying = false;
+                if (sourceCodeFrame != null) {
+                    sourceCodeFrame.highlightPc();
+                }
+                if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
+                    setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
+                }
+                else {
+                    setStatusText("Emulation complete");
+                }
+                updateStates();
             }
         });
         emulatorThread.start();
