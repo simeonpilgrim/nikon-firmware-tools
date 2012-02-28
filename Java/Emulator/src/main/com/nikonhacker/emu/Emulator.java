@@ -517,6 +517,7 @@ public class Emulator {
                         break;
     
                     case 0x8000: /* BANDL #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : AND'ing with FFFFxxxx is like AND'ing only the lowest 4 bits with xxxx (1 is neutral for AND)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & (0xF0 + disassembledInstruction.x));
     
                         /* No change to NZVC */
@@ -527,6 +528,7 @@ public class Emulator {
                         break;
     
                     case 0x8100: /* BANDH #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : AND'ing with xxxxFFFF is like AND'ing only the highest 4 bits with xxxx (1 is neutral for AND)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & ((disassembledInstruction.x << 4) + 0x0F));
     
                         /* No change to NZVC */
@@ -537,6 +539,7 @@ public class Emulator {
                         break;
     
                     case 0x9000: /* BORL #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : OR'ing with 0000xxxx is like OR'ing only the lowest 4 bits with xxxx (0 is neutral for OR)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) | disassembledInstruction.x);
     
                         /* No change to NZVC */
@@ -547,6 +550,7 @@ public class Emulator {
                         break;
     
                     case 0x9100: /* BORH #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : OR'ing with xxxx0000 is like OR'ing only the highest 4 bits with xxxx (0 is neutral for OR)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) | (disassembledInstruction.x << 4));
     
                         /* No change to NZVC */
@@ -557,6 +561,7 @@ public class Emulator {
                         break;
     
                     case 0x9800: /* BEORL #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : EOR'ing with 0000xxxx is like EOR'ing only the lowest 4 bits with xxxx (0 is neutral for EOR)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) ^ disassembledInstruction.x);
     
                         /* No change to NZVC */
@@ -567,6 +572,7 @@ public class Emulator {
                         break;
     
                     case 0x9900: /* BEORH #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : EOR'ing with xxxx0000 is like EORing only the highest 4 bits with xxxx (0 is neutral for EOR)
                         memory.store8(cpuState.getReg(disassembledInstruction.i), memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) ^ (disassembledInstruction.x << 4));
     
                         /* No change to NZVC */
@@ -577,6 +583,7 @@ public class Emulator {
                         break;
     
                     case 0x8800: /* BTSTL #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : testing 8 bits AND 0000xxxx is like testing only the lowest 4 bits AND xxxx (0 is absorbing for AND)
                         result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & disassembledInstruction.x;
     
                         cpuState.N = 0;
@@ -588,6 +595,7 @@ public class Emulator {
                         break;
     
                     case 0x8900: /* BTSTH #u4, @Ri (u4: 0 to 0FH) */
+                        // Note : testing 8 bits AND xxxx0000 is like testing only the highest 4 bits AND xxxx (0 is absorbing for AND)
                         result32 = memory.loadUnsigned8(cpuState.getReg(disassembledInstruction.i)) & (disassembledInstruction.x << 4);
     
                         cpuState.N = (result32 & 0x80) >>> 7;
