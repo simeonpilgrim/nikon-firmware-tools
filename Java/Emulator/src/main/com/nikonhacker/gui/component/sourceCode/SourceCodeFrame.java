@@ -5,9 +5,10 @@ import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
+import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
 import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchContext;
@@ -161,10 +162,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Make current line transparent so PC line highlight passes through
         listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
 
-        // For custom syntax, see http://fifesoft.com/blog/?p=214
-        // and http://fifesoft.com/forum/viewtopic.php?f=11&t=615&p=1377&hilit=keyboard#p1377
-        // For now, lets use X86 ASM
-        listingArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_ASSEMBLER_X86);
+        // Register our FR assembly syntax highlighter
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+        atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.AssemblerFrTokenMaker");
+        TokenMakerFactory.setDefaultInstance(atmf);
+
+        // Assign it to our area
+        listingArea.setSyntaxEditingStyle("text/frasm");
         RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
         listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
 
