@@ -1,7 +1,7 @@
 /*
  * Generated on 2/28/12 7:53 PM
  */
-package com.nikonhacker.gui.component.sourceCode;
+package com.nikonhacker.gui.component.sourceCode.syntaxHighlighter;
 
 import java.io.*;
 import javax.swing.text.Segment;

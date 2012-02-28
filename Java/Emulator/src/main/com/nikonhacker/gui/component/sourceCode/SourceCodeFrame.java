@@ -164,7 +164,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         // Register our FR assembly syntax highlighter
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.AssemblerFrTokenMaker");
+        atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerFrTokenMaker");
         TokenMakerFactory.setDefaultInstance(atmf);
 
         // Assign it to our area
