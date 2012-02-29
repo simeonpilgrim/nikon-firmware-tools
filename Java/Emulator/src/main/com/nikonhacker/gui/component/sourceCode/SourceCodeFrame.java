@@ -5,10 +5,7 @@ import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import org.fife.ui.rsyntaxtextarea.AbstractTokenMakerFactory;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextAreaHighlighter;
-import org.fife.ui.rsyntaxtextarea.TokenMakerFactory;
+import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchContext;
@@ -162,10 +159,26 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Make current line transparent so PC line highlight passes through
         listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
 
+
         // Register our FR assembly syntax highlighter
         AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerFrTokenMaker");
         TokenMakerFactory.setDefaultInstance(atmf);
+
+        SyntaxScheme ss = listingArea.getSyntaxScheme();
+        Style functionStyle = ss.getStyle(Token.FUNCTION);
+        
+        Style addressStyle = (Style) functionStyle.clone();
+        ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
+        addressStyle.foreground = Color.BLACK;
+
+        Style instructionStyle = (Style) functionStyle.clone();
+        ss.setStyle(Token.ANNOTATION, instructionStyle);
+        instructionStyle.foreground = new Color(192, 192, 192);
+
+        Style variableStyle = ss.getStyle(Token.VARIABLE);
+        variableStyle.foreground = new Color(155, 22, 188);
+
 
         // Assign it to our area
         listingArea.setSyntaxEditingStyle("text/frasm");

@@ -428,7 +428,9 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 	{Label}						{ addToken(Token.PREPROCESSOR); }
 
 /*	^%({Letter}|{Digit})*			{ addToken(Token.FUNCTION); } */
-	{Address}                       { addToken(Token.ANNOTATION); }
+	{Address}                       { addToken(Token.LITERAL_NUMBER_HEXADECIMAL); }
+	{Instruction}                       { addToken(Token.ANNOTATION); }
+
 
 	/* Comment Literals. */
 	{CommentBegin}.*				{ addToken(Token.COMMENT_EOL); addNullToken(); return firstToken; }
