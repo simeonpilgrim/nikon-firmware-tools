@@ -179,6 +179,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         Style variableStyle = ss.getStyle(Token.VARIABLE);
         variableStyle.foreground = new Color(155, 22, 188);
 
+        Style reservedWordStyle = ss.getStyle(Token.RESERVED_WORD);
+        reservedWordStyle.foreground = new Color(0, 0, 255);
+
+        Style reservedWord2Style = ss.getStyle(Token.RESERVED_WORD_2);
+        reservedWord2Style.foreground = new Color(0, 150, 150);
+
 
         // Assign it to our area
         listingArea.setSyntaxEditingStyle("text/frasm");

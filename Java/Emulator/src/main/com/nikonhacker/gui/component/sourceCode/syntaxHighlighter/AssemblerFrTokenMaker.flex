@@ -231,8 +231,7 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 <YYINITIAL> {
 
 
-	/* Keywords */
-	"ADD" |
+"ADD" |
 "ADD2" |
 "ADDC" |
 "ADDN" |
@@ -246,46 +245,12 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "ASR2" |
 "BANDH" |
 "BANDL" |
-"BC" |
-"BC:D" |
 "BEORH" |
 "BEORL" |
-"BEQ" |
-"BEQ:D" |
-"BGE" |
-"BGE:D" |
-"BGT" |
-"BGT:D" |
-"BHI" |
-"BHI:D" |
-"BLE" |
-"BLE:D" |
-"BLS" |
-"BLS:D" |
-"BLT" |
-"BLT:D" |
-"BN" |
-"BN:D" |
-"BNC" |
-"BNC:D" |
-"BNE" |
-"BNE:D" |
-"BNO" |
-"BNO:D" |
-"BNV" |
-"BNV:D" |
 "BORH" |
 "BORL" |
-"BP" |
-"BP:D" |
-"BRA" |
-"BRA:D" |
 "BTSTH" |
 "BTSTL" |
-"BV" |
-"BV:D" |
-"CALL" |
-"CALL:D" |
 "CMP" |
 "CMP2" |
 "COPLD" |
@@ -311,8 +276,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "EXTUH" |
 "INT" |
 "INTE" |
-"JMP" |
-"JMP:D" |
 "LD" |
 "LD" |
 "LDI:20" |
@@ -340,9 +303,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "ORH" |
 "POP" |
 "PUSH" |
-"RET" |
-"RET:D" |
-"RETI" |
 "ST" |
 "STB" |
 "STH" |
@@ -354,6 +314,47 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "SUBC" |
 "SUBN" |
 "XCHB"		{ addToken(Token.RESERVED_WORD); }
+
+
+"BC" |
+"BC:D" |
+"BEQ" |
+"BEQ:D" |
+"BGE" |
+"BGE:D" |
+"BGT" |
+"BGT:D" |
+"BHI" |
+"BHI:D" |
+"BLE" |
+"BLE:D" |
+"BLS" |
+"BLS:D" |
+"BLT" |
+"BLT:D" |
+"BN" |
+"BN:D" |
+"BNC" |
+"BNC:D" |
+"BNE" |
+"BNE:D" |
+"BNO" |
+"BNO:D" |
+"BNV" |
+"BNV:D" |
+"BP" |
+"BP:D" |
+"BRA" |
+"BRA:D" |
+"BV" |
+"BV:D" |
+"CALL" |
+"CALL:D" |
+"JMP" |
+"JMP:D" |
+"RET" |
+"RET:D" |
+"RETI"      { addToken(Token.RESERVED_WORD_2); }
 
 
 	"DB" |
