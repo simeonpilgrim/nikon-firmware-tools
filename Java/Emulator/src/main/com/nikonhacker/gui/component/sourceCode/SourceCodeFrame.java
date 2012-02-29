@@ -43,6 +43,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     List<Integer> lineAddresses = new ArrayList<Integer>();
     private final JTextField targetAddressField;
+    private int lastClickedTextPosition;
 
 
     public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
@@ -198,8 +199,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         listingArea.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {}
             public void mousePressed(MouseEvent e) {
-                listingArea.requestFocusInWindow();
-                listingArea.setCaretPosition(listingArea.viewToModel(e.getPoint()));
+                lastClickedTextPosition = listingArea.viewToModel(e.getPoint());
             }
             public void mouseReleased(MouseEvent e) {}
             public void mouseEntered(MouseEvent e) {}
@@ -283,7 +283,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 JTextComponent textComponent = getTextComponent(e);
                 if (textComponent instanceof JTextArea) {
                     JTextArea textArea = (JTextArea) textComponent;
-                    Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(textArea.getCaretPosition()));
+                    Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                     if (addressFromLine != null) {
                         toggleBreakpoint(addressFromLine);
                     }
