@@ -199,6 +199,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         listingArea.addMouseListener(new MouseListener() {
             public void mouseClicked(MouseEvent e) {}
             public void mousePressed(MouseEvent e) {
+                listingArea.requestFocusInWindow();
                 lastClickedTextPosition = listingArea.viewToModel(e.getPoint());
             }
             public void mouseReleased(MouseEvent e) {}
@@ -222,6 +223,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         newPopupMenu.add(new JMenuItem(new FindTextAction()));
         newPopupMenu.addSeparator();
         newPopupMenu.add(new JMenuItem(new ToggleBreakpointAction()));
+        newPopupMenu.addSeparator();
+        newPopupMenu.add(new JMenuItem(new RunToHereAction(true)));
+        newPopupMenu.addSeparator();
+        newPopupMenu.add(new JMenuItem(new RunToHereAction(false)));
         listingArea.setPopupMenu(newPopupMenu);
 
         RTextScrollPane scrollPane = new RTextScrollPane(listingArea);
@@ -270,7 +275,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
 
     /**
-     * An action that toggles breakpoint at caret
+     * An action that toggles breakpoint at clicked position
      */
     private class ToggleBreakpointAction extends TextAction {
 
@@ -293,6 +298,35 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
         }
     }
+
+    /**
+     * An action that allows to run/debug code up to the click position
+     */
+    private class RunToHereAction extends TextAction {
+
+        private boolean debugMode;
+
+        public RunToHereAction(boolean debugMode) {
+            super((debugMode?"Debug":"Run") + " to this line");
+            this.debugMode = debugMode;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                JTextComponent textComponent = getTextComponent(e);
+                if (textComponent instanceof JTextArea) {
+                    JTextArea textArea = (JTextArea) textComponent;
+                    Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
+                    if (addressFromLine != null) {
+                        ui.playToAddress(addressFromLine, debugMode);
+                    }
+                }
+            } catch (BadLocationException ble) {
+                ble.printStackTrace();
+            }
+        }
+    }
+
     
     public void actionPerformed(ActionEvent e) {
         // "FindNext" => search forward, "FindPrev" => search backward
@@ -447,8 +481,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         if (matchedTrigger == null) {
             // No match. Create a new one
-            CPUState values = new CPUState();
-            values.pc = addressFromLine;
+            CPUState values = new CPUState(addressFromLine);
             CPUState flags = new CPUState();
             flags.pc = 1;
             flags.setILM(0);

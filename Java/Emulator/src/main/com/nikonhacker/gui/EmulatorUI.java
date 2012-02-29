@@ -8,6 +8,7 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
+import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
@@ -634,16 +635,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             openAnalyseDialog();
         }
         else if (COMMAND_EMULATOR_PLAY.equals(e.getActionCommand())) {
-            playEmulator(false, false);
+            playEmulator(false, false, null);
         }
         else if (COMMAND_EMULATOR_DEBUG.equals(e.getActionCommand())) {
-            playEmulator(false, true);
+            playEmulator(false, true, null);
         }
         else if (COMMAND_EMULATOR_PAUSE.equals(e.getActionCommand())) {
             pauseEmulator();
         }
         else if (COMMAND_EMULATOR_STEP.equals(e.getActionCommand())) {
-            playEmulator(true, false);
+            playEmulator(true, false, null);
         }
         else if (COMMAND_EMULATOR_STOP.equals(e.getActionCommand())) {
             stopEmulator();
@@ -1304,7 +1305,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         this.codeStructure = codeStructure;
     }
 
-    private void playEmulator(boolean stepMode, boolean debugMode) {
+    private void playEmulator(boolean stepMode, boolean debugMode, Integer endAddress) {
         if (!isImageLoaded) {
             throw new RuntimeException("No Image loaded !");
         }
@@ -1313,16 +1314,32 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (stepMode) {
             breakConditions.add(new AlwaysBreakCondition());
         }
-        else if (debugMode) {
-            for (BreakTrigger breakTrigger : prefs.getTriggers()) {
-                if (breakTrigger.isEnabled()) {
-                    breakConditions.add(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+        else {
+            if (debugMode) {
+                for (BreakTrigger breakTrigger : prefs.getTriggers()) {
+                    if (breakTrigger.isEnabled()) {
+                        breakConditions.add(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+                    }
                 }
+            }
+            if (endAddress != null) {
+                CPUState values = new CPUState(endAddress);
+                CPUState flags = new CPUState();
+                flags.pc = 1;
+                flags.setILM(0);
+                flags.setReg(CPUState.TBR, 0);
+                BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags);
+                breakConditions.add(new BreakPointCondition(endAddress, breakTrigger));
             }
         }
         emulator.setBreakConditions(breakConditions);
 
         startEmulator();
+    }
+
+
+    public void playToAddress(Integer endAddress, boolean debugMode) {
+        playEmulator(false, debugMode, endAddress);
     }
 
     private void startEmulator() {
