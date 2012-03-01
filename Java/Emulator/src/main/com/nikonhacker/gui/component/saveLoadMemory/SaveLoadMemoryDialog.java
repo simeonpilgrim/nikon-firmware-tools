@@ -164,18 +164,24 @@ public class SaveLoadMemoryDialog extends JDialog {
         if (saveButton.isSelected()) {
             // Save
             try {
-                File destinationFile = new File(filenameField.getText());
-                if (!destinationFile.exists() || JOptionPane.showConfirmDialog(this, "Are you sure you want to overwrite " + destinationFile.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    int startAddress = Format.parseUnsignedField(startAddressField);
-                    int length;
-                    if (withLengthButton.isSelected()) {
-                        length = Format.parseUnsignedField(lengthField);
+                if ((withLengthButton.isSelected() && lengthField.getText().length() == 0) || (!withLengthButton.isSelected() && endAddressField.getText().length() == 0)) {
+                    JOptionPane.showMessageDialog(this, "A length or end address must be given for saving memory to file", "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    File destinationFile = new File(filenameField.getText());
+                    if (!destinationFile.exists() || JOptionPane.showConfirmDialog(this, "Are you sure you want to overwrite " + destinationFile.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        int startAddress = Format.parseUnsignedField(startAddressField);
+                        int length;
+                        if (withLengthButton.isSelected()) {
+                            length = Format.parseUnsignedField(lengthField);
+                        }
+                        else {
+                            length = Format.parseUnsignedField(endAddressField) - startAddress + 1;
+                        }
+                        memory.saveToFile(destinationFile, startAddress, length);
+                        JOptionPane.showMessageDialog(this, "Dump complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                        dispose();
                     }
-                    else {
-                        length = Format.parseUnsignedField(endAddressField) - startAddress + 1;
-                    }    
-                    memory.saveToFile(destinationFile, startAddress, length);
-                    JOptionPane.showMessageDialog(this, "Dump complete", "Done", JOptionPane.INFORMATION_MESSAGE);
                 }
             } catch (ParsingException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
@@ -194,15 +200,14 @@ public class SaveLoadMemoryDialog extends JDialog {
                     int startAddress = Format.parseUnsignedField(startAddressField);
                     memory.loadFile(sourceFile, startAddress);
                     JOptionPane.showMessageDialog(this, "Load complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                    dispose();
                 }
-                dispose();
             } catch (ParsingException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Error parsing parameters", JOptionPane.ERROR_MESSAGE);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Error loading memory from file", JOptionPane.ERROR_MESSAGE);
             }
         }
-        dispose();
     }
 
 }
