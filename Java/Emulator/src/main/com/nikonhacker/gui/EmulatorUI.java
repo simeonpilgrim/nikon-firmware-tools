@@ -1424,6 +1424,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     @Override
     public void dispose() {
         super.dispose();
+        closeAllFrames();
         Prefs.save(prefs);
         System.exit(0);
     }
