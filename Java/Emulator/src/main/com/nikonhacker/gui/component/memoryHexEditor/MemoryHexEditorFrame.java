@@ -123,8 +123,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         selectionPanel.add(largeFiller);
 
         
-        saveLoadButton = new JButton("Dump");
-        saveLoadButton.setToolTipText("Dump selected area to file");
+        saveLoadButton = new JButton("Save/Load");
+        saveLoadButton.setToolTipText("Save/Load selected area to/from file");
         selectionPanel.add(saveLoadButton);
         saveLoadButton.addActionListener(this);
 

@@ -590,7 +590,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         toolsMenu.add(new JSeparator());
 
         // save/load memory area
-        saveLoadMemoryMenuItem = new JMenuItem("Dump memory area");
+        saveLoadMemoryMenuItem = new JMenuItem("Save/Load memory area");
 //        saveLoadMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
 //        saveLoadMemoryMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         saveLoadMemoryMenuItem.setActionCommand(COMMAND_SAVE_LOAD_MEMORY);
@@ -683,7 +683,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             openEncodeDialog();
         }
         else if (COMMAND_SAVE_LOAD_MEMORY.equals(e.getActionCommand())) {
-            openDumpMemoryDialog();
+            openSaveLoadMemoryDialog();
         }
         else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
             toggleCodeStructureWindow();
@@ -702,7 +702,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    private void openDumpMemoryDialog() {
+    private void openSaveLoadMemoryDialog() {
         new SaveLoadMemoryDialog(this, memory).setVisible(true);
     }
 
