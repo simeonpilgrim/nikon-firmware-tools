@@ -344,9 +344,11 @@ public abstract class AbstractMemory implements Memory {
 
     public void loadFile(File file, int memoryOffset) throws IOException {
         long length = file.length();
-        map(memoryOffset, (int) length, true, true, true);
-        FileInputStream fis = null;
-        fis = new FileInputStream(file);
+        if (!isMapped(memoryOffset)) {
+            // TODO : won't work if only part of memory is mapped and file length > 64K
+            map(memoryOffset, (int) length, true, true, true);
+        }
+        FileInputStream fis = new FileInputStream(file);
         int addr = memoryOffset;
         long count = 0;
         while (count < file.length()) {
