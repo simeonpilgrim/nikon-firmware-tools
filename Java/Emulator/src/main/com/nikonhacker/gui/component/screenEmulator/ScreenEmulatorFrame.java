@@ -20,29 +20,41 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private int previousW, previousH;
 
     private DebuggableMemory memory;
-    private int start;
+    private int yStart, uStart, vStart;
     int screenHeight, screenWidth;
 
     BufferedImage img;
 
     private Timer _timer;
-    private final JTextField addressField;
+    private final JTextField yAddressField, uAddressField, vAddressField;
 
-    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int start, int end, int screenWidth, EmulatorUI ui) {
+    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int yStart, int uStart, int vStart, int screenWidth, int screenHeight, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
-        this.start = start;
+        this.yStart = yStart;
+        this.uStart = uStart;
+        this.vStart = vStart;
         this.screenWidth = screenWidth;
-        this.screenHeight = (end - start) / screenWidth;
+        this.screenHeight = screenHeight;
 
         img = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
         
         JPanel selectionPanel = new JPanel();
-        selectionPanel.add(new JLabel("Set start to  0x"));
-        addressField = new JTextField(Format.asHex(start, 8), 8);
-        selectionPanel.add(addressField);
-        addressField.addActionListener(this);
-                
+        selectionPanel.add(new JLabel("Start addresses:    Y = 0x"));
+        yAddressField = new JTextField(Format.asHex(yStart, 8), 8);
+        selectionPanel.add(yAddressField);
+        yAddressField.addActionListener(this);
+
+        selectionPanel.add(new JLabel("  U = 0x"));
+        uAddressField = new JTextField(Format.asHex(uStart, 8), 8);
+        selectionPanel.add(uAddressField);
+        uAddressField.addActionListener(this);
+
+        selectionPanel.add(new JLabel("  V = 0x"));
+        vAddressField = new JTextField(Format.asHex(vStart, 8), 8);
+        selectionPanel.add(vAddressField);
+        vAddressField.addActionListener(this);
+
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(selectionPanel, BorderLayout.NORTH);
         contentPanel.add(new JScrollPane(new ScreenEmulatorComponent(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
@@ -67,18 +79,22 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     }
 
     public void actionPerformed(ActionEvent e) {
-        this.start = Format.parseIntHexField(addressField);
+        this.yStart = Format.parseIntHexField(yAddressField);
+        this.uStart = Format.parseIntHexField(uAddressField);
+        this.vStart = Format.parseIntHexField(vAddressField);
     }
 
     private class ScreenEmulatorComponent extends JComponent {
+        Object pixel = null;
+
         private ScreenEmulatorComponent() {
             super();
             setPreferredSize(new Dimension(screenWidth, screenHeight));
         }
 
         // This method is called whenever the contents needs to be painted
-        public void paintComponent(Graphics g) {
-            Graphics2D g2d = (Graphics2D) g;
+        public void paintComponent(Graphics graphics) {
+            Graphics2D g2d = (Graphics2D) graphics;
 
             int w = getWidth();
             int h = getHeight();
@@ -93,22 +109,40 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                 previousH = h;
             }
 
-            int yOffset = start;
-            int off;
-            Object pixel = null;
+            int yOffset, uvOffset;
 
-            for (int y = 0; y < screenHeight; y++, yOffset+= screenWidth) {
-                off = yOffset;
-                for (int x = 0; x < screenWidth; x++) {
-                    int value1 = memory.loadUnsigned8(off, false);
-                    // Using the same value for R, G and B
-                    pixel = img.getColorModel().getDataElements(value1<<16|value1<<8|value1, pixel);
-                    img.getRaster().setDataElements(x, y, pixel);
-                    off++;
+            for (int yPos = 0; yPos < 480; yPos++) {
+                for (int xPos = 0; xPos < screenWidth/2; xPos++) {
+                    yOffset = yPos * screenWidth + xPos * 2;
+                    uvOffset = yPos * screenWidth + xPos;
+
+//                    int value = memory.loadUnsigned8(yStart + yOffset, false);
+//                    setPixelFromRGB(xPos * 2, yPos, value, value, value);
+//                    value = memory.loadUnsigned8(yStart + yOffset + 1, false);
+//                    setPixelFromRGB(xPos * 2 + 1, yPos, value, value, value);
+
+                    int u = memory.loadUnsigned8(uStart + uvOffset, false);
+                    int v = memory.loadUnsigned8(vStart + uvOffset, false);
+//                    setPixelFromRGB(xPos * 2 + 1, yPos, u, u, u);
+
+                    setPixelFromYUV(xPos * 2, yPos, memory.loadUnsigned8(yStart + yOffset, false) - 128, u - 128, v - 128);
+                    setPixelFromYUV(xPos * 2 + 1, yPos, memory.loadUnsigned8(yStart + yOffset + 1, false) - 128, u - 128, v - 128);
                 }
             }
 
             g2d.drawImage(img, resizeTransform, null);
+        }
+
+        private void setPixelFromYUV(int xPos, int yPos, int y, int u, int v) {
+            int r = Math.max(0, Math.min(255, (int) (128 + y + 1.13983 * v)));
+            int g = Math.max(0, Math.min(255, (int) (128 + y - 0.39465 * u - 0.58060 * v)));
+            int b = Math.max(0, Math.min(255, (int) (128 + y + 2.03211 * u)));
+
+            img.getRaster().setDataElements(xPos, yPos, img.getColorModel().getDataElements(r << 16 | g << 8 | b, pixel));
+        }
+
+        private void setPixelFromRGB(int xPos, int yPos, int r, int g, int b) {
+            img.getRaster().setDataElements(xPos, yPos, img.getColorModel().getDataElements(r << 16 | g << 8 | b, pixel));
         }
     }
 }
