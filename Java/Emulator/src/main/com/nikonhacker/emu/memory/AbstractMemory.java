@@ -342,19 +342,27 @@ public abstract class AbstractMemory implements Memory {
         }
     }
 
-    public void loadFile(File file, int memoryOffset) throws IOException {
-        long length = file.length();
-        if (!isMapped(memoryOffset)) {
-            // TODO : won't work if only part of memory is mapped and file length > 64K
-            map(memoryOffset, (int) length, true, true, true);
-        }
+    public void loadFile(File file, int startAddress) throws IOException {
         FileInputStream fis = new FileInputStream(file);
-        int addr = memoryOffset;
-        long count = 0;
-        while (count < file.length()) {
-            byte[] page = getPage(getPTE(addr));
-            count += fis.read(page);
-            addr += PAGE_SIZE;
+        int pte = getPTE(startAddress);
+        int offset = getOffset(startAddress);
+        long bytesRemainingToRead = file.length();
+        while (bytesRemainingToRead > 0) {
+            int bytesRemainingInPage = getPageSize() - offset;
+            int bytesToRead = (int) Math.min(bytesRemainingInPage, bytesRemainingToRead);
+            byte[] page = getPage(pte);
+            if (page == null) {
+                // Unallocated page, allocate it
+                map(pte << OFFSET_BITS, getPageSize(), true, true, true);
+                page = getPage(pte);
+            }
+            int bytesRead = fis.read(page, offset, bytesToRead);
+            if (bytesRead != bytesToRead) {
+                throw new IOException("Error : expected " + bytesToRead + " bytes but could only read " + bytesRead);
+            }
+            bytesRemainingToRead -= bytesToRead;
+            pte++;
+            offset = 0;
         }
         fis.close();
     }
