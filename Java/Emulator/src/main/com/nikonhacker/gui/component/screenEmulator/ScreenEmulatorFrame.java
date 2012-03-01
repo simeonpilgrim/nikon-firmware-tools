@@ -96,14 +96,15 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         public void paintComponent(Graphics graphics) {
             Graphics2D g2d = (Graphics2D) graphics;
 
-            int w = getWidth();
-            int h = getHeight();
+            // Get size of JScrollPane
+            int w = getParent().getWidth();
+            int h = getParent().getHeight();
 
             // Create the resizing transform upon first call or resize
             if (resizeTransform == null || previousW != w || previousH != h) {
                 resizeTransform = new AffineTransform();
-                double scaleX = Math.max((double) w / screenWidth, 1);
-                double scaleY = Math.max((double) h / screenHeight, 1);
+                double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
+                double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
                 resizeTransform.scale(scaleX, scaleY);
                 previousW = w;
                 previousH = h;
@@ -116,14 +117,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     yOffset = yPos * screenWidth + xPos * 2;
                     uvOffset = yPos * screenWidth + xPos;
 
-//                    int value = memory.loadUnsigned8(yStart + yOffset, false);
-//                    setPixelFromRGB(xPos * 2, yPos, value, value, value);
-//                    value = memory.loadUnsigned8(yStart + yOffset + 1, false);
-//                    setPixelFromRGB(xPos * 2 + 1, yPos, value, value, value);
-
                     int u = memory.loadUnsigned8(uStart + uvOffset, false);
                     int v = memory.loadUnsigned8(vStart + uvOffset, false);
-//                    setPixelFromRGB(xPos * 2 + 1, yPos, u, u, u);
 
                     setPixelFromYUV(xPos * 2, yPos, memory.loadUnsigned8(yStart + yOffset, false) - 128, u - 128, v - 128);
                     setPixelFromYUV(xPos * 2 + 1, yPos, memory.loadUnsigned8(yStart + yOffset + 1, false) - 128, u - 128, v - 128);
@@ -138,10 +133,6 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
             int g = Math.max(0, Math.min(255, (int) (128 + y - 0.39465 * u - 0.58060 * v)));
             int b = Math.max(0, Math.min(255, (int) (128 + y + 2.03211 * u)));
 
-            img.getRaster().setDataElements(xPos, yPos, img.getColorModel().getDataElements(r << 16 | g << 8 | b, pixel));
-        }
-
-        private void setPixelFromRGB(int xPos, int yPos, int r, int g, int b) {
             img.getRaster().setDataElements(xPos, yPos, img.getColorModel().getDataElements(r << 16 | g << 8 | b, pixel));
         }
     }
