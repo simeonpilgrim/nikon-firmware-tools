@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="FrEmulator"/>
-    <property name="app-version"      value="1.5"/>
+    <property name="app-version"      value="1.51"/>
 	<property name="source-dir"       location="src/main"/>
 	<property name="class-dir"        location="ant-classes"/>
     <property name="dist-dir"         location="dist"/>
