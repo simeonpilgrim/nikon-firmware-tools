@@ -31,7 +31,9 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
     public void internalFrameClosed(InternalFrameEvent e) {
         // Called no matter how the close is initiated
         if (this.rememberLastPosition) {
-            ui.getPrefs().setWindowPosition(this.getClass().getSimpleName(), getX(), getY());
+            String windowName = this.getClass().getSimpleName();
+            ui.getPrefs().setWindowPosition(windowName, getX(), getY());
+            ui.getPrefs().setWindowSize(windowName, getWidth(), getHeight());
         }
     }
 
@@ -45,11 +47,15 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
 
     public void display(boolean rememberLastPosition) {
         this.rememberLastPosition = rememberLastPosition;
+        pack();
         if (this.rememberLastPosition) {
             String windowName = this.getClass().getSimpleName();
             setLocation(ui.getPrefs().getWindowPositionX(windowName), ui.getPrefs().getWindowPositionY(windowName));
+            int windowSizeX = ui.getPrefs().getWindowSizeX(windowName);
+            if (windowSizeX > 0) {
+                setSize(windowSizeX, ui.getPrefs().getWindowSizeY(windowName));
+            }
         }
-        pack();
         setVisible(true);
         try {
             setSelected(true);

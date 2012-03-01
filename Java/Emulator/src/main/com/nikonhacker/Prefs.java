@@ -20,6 +20,7 @@ public class Prefs {
     boolean writeDisassemblyToFile = true;
 
     private HashMap<String, WindowPosition> windowPositionMap;
+    private HashMap<String, WindowPosition> windowSizeMap;
 
     private String codeStructureGraphOrientation;
 
@@ -156,6 +157,23 @@ public class Prefs {
         windowPositionMap.put(windowName, new WindowPosition(x, y));
     }
 
+    public int getWindowSizeX(String windowName) {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowSize = windowSizeMap.get(windowName);
+        return (windowSize==null)?0:windowSize.getX();
+    }
+
+    public int getWindowSizeY(String windowName) {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowSize = windowSizeMap.get(windowName);
+        return (windowSize==null)?0:windowSize.getY();
+    }
+
+    public void setWindowSize(String windowName, int x, int y) {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        windowSizeMap.put(windowName, new WindowPosition(x, y));
+    }
+
     public String getCodeStructureGraphOrientation() {
         return codeStructureGraphOrientation;
     }
@@ -164,13 +182,15 @@ public class Prefs {
         this.codeStructureGraphOrientation = codeStructureGraphOrientation;
     }
 
+    /**
+     * This is basically just a structure with an X Y value.
+     * Now used for position but also for size
+     * Should probably have used java.awt.Point but didn't want to break saved prefs ...
+     */
     public class WindowPosition {
         int x = 0;
         int y = 0;
         
-        public WindowPosition() {
-        }
-
         public WindowPosition(int x, int y) {
             this.x = x;
             this.y = y;
