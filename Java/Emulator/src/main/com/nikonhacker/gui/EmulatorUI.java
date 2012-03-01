@@ -26,10 +26,10 @@ import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
-import com.nikonhacker.gui.component.dumpMemory.DumpMemoryDialog;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
+import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import org.apache.commons.io.FilenameUtils;
@@ -71,7 +71,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
-    private static final String COMMAND_DUMP_MEMORY = "DUMP_MEMORY";
+    private static final String COMMAND_SAVE_LOAD_MEMORY = "SAVE_LOAD_MEMORY";
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
@@ -117,7 +117,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
-    private JMenuItem dumpMemoryMenuItem;
+    private JMenuItem saveLoadMemoryMenuItem;
     private JMenuItem optionsMenuItem;
 
     private JButton loadButton;
@@ -136,7 +136,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton component4006Button;
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
-    private JButton dumpMemoryButton;
+    private JButton saveLoadMemoryButton;
     private JButton optionsButton;
 
     private DocumentFrame disassemblyLogFrame;
@@ -332,8 +332,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        dumpMemoryButton = makeButton("dump_memory", COMMAND_DUMP_MEMORY, "Dump memory area", "Dump memory");
-        bar.add(dumpMemoryButton);
+        saveLoadMemoryButton = makeButton("save_load_memory", COMMAND_SAVE_LOAD_MEMORY, "Save/Load memory area", "Save/Load memory");
+        bar.add(saveLoadMemoryButton);
 
         bar.add(Box.createHorizontalGlue());
 
@@ -589,13 +589,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         toolsMenu.add(new JSeparator());
 
-        // dump memory area
-        dumpMemoryMenuItem = new JMenuItem("Dump memory area");
-//        dumpMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
-//        dumpMemoryMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
-        dumpMemoryMenuItem.setActionCommand(COMMAND_DUMP_MEMORY);
-        dumpMemoryMenuItem.addActionListener(this);
-        toolsMenu.add(dumpMemoryMenuItem);
+        // save/load memory area
+        saveLoadMemoryMenuItem = new JMenuItem("Dump memory area");
+//        saveLoadMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
+//        saveLoadMemoryMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        saveLoadMemoryMenuItem.setActionCommand(COMMAND_SAVE_LOAD_MEMORY);
+        saveLoadMemoryMenuItem.addActionListener(this);
+        toolsMenu.add(saveLoadMemoryMenuItem);
 
         toolsMenu.add(new JSeparator());
 
@@ -612,10 +612,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         menuBar.add(helpMenu);
 
         //about
-        dumpMemoryMenuItem = new JMenuItem("About");
-        dumpMemoryMenuItem.setActionCommand(COMMAND_ABOUT);
-        dumpMemoryMenuItem.addActionListener(this);
-        helpMenu.add(dumpMemoryMenuItem);
+        saveLoadMemoryMenuItem = new JMenuItem("About");
+        saveLoadMemoryMenuItem.setActionCommand(COMMAND_ABOUT);
+        saveLoadMemoryMenuItem.addActionListener(this);
+        helpMenu.add(saveLoadMemoryMenuItem);
 
         return menuBar;
     }
@@ -682,7 +682,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
         }
-        else if (COMMAND_DUMP_MEMORY.equals(e.getActionCommand())) {
+        else if (COMMAND_SAVE_LOAD_MEMORY.equals(e.getActionCommand())) {
             openDumpMemoryDialog();
         }
         else if (COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW.equals(e.getActionCommand())) {
@@ -703,7 +703,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void openDumpMemoryDialog() {
-        new DumpMemoryDialog(this, memory).setVisible(true);
+        new SaveLoadMemoryDialog(this, memory).setVisible(true);
     }
 
 
@@ -1230,7 +1230,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryHexEditorMenuItem.setEnabled(true); memoryHexEditorButton.setEnabled(true);
             component4006MenuItem.setEnabled(true); component4006Button.setEnabled(true);
             
-            dumpMemoryMenuItem.setEnabled(true); dumpMemoryButton.setEnabled(true);
+            saveLoadMemoryMenuItem.setEnabled(true); saveLoadMemoryButton.setEnabled(true);
 
             stopMenuItem.setEnabled(true); stopButton.setEnabled(true);
 
@@ -1267,7 +1267,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryHexEditorMenuItem.setEnabled(false); memoryHexEditorButton.setEnabled(false);
             component4006MenuItem.setEnabled(false); component4006Button.setEnabled(false);
 
-            dumpMemoryMenuItem.setEnabled(false); dumpMemoryButton.setEnabled(false);
+            saveLoadMemoryMenuItem.setEnabled(false); saveLoadMemoryButton.setEnabled(false);
 
             loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
             playMenuItem.setEnabled(false); playButton.setEnabled(false);

@@ -237,6 +237,10 @@
 -s 0x406F6=NOP_406F6
 -s 0x406F8=NOP_406F8
 
+-s 0x041886=called_by_INT40_1
+-s 0x0419D6=called_by_INT40_2
+-s 0x041ACA=called_by_INT40_3
+
 -s 0x41A4A=table_offset_load(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
 
 -s 0x1074F2=linked_list_init(R4 [IN, pointer to list entity])
@@ -295,18 +299,24 @@
 
 -s 0x2E1D3A=timezone_setup
 
+-s 0x2FDBA4=confirm_card_fmt_b
+
 -s 0x2FEA5E=draw_menu_string
+
+-s 0x3013BA=show_popup_message
+
 -s 0x30B3AC=draw_menu_rows
 -s 0x30BB22=draw_menu_rectangle
 
--s 0x3013BA=show_popup_message
+-s 0x311942=Lang_TOP_LEVEL
+
 -s 0x311A08=err_wrong_battery
 -s 0x311A1E=err_eye_fi_locked
 -s 0x311A4A=err_card_locked
 -s 0x311A60=err_card_not_fmtd
 -s 0x311A34=err_card_bad
 -s 0x3129F2=confirm_card_fmt_a
--s 0x2FDBA4=confirm_card_fmt_b
+
 
 
 

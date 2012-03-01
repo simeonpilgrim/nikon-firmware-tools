@@ -6,7 +6,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.dumpMemory.DumpMemoryDialog;
+import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
@@ -36,7 +36,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private byte[] currentPage;
     private int baseAddress;
     private JComboBox registerCombo;
-    private JButton dumpButton;
+    private JButton saveLoadButton;
 
     public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -123,10 +123,10 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         selectionPanel.add(largeFiller);
 
         
-        dumpButton = new JButton("Dump");
-        dumpButton.setToolTipText("Dump selected area to file");
-        selectionPanel.add(dumpButton);
-        dumpButton.addActionListener(this);
+        saveLoadButton = new JButton("Dump");
+        saveLoadButton.setToolTipText("Dump selected area to file");
+        selectionPanel.add(saveLoadButton);
+        saveLoadButton.addActionListener(this);
 
 
         editorPanel.add(selectionPanel, BorderLayout.NORTH);
@@ -244,11 +244,11 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
             }
             registerCombo.setSelectedIndex(0);
         }
-        // Handle "dump" button
-        else if (dumpButton.equals(e.getSource())) {
+        // Handle "save/load" button
+        else if (saveLoadButton.equals(e.getSource())) {
             int start = hexEditor.getSmallestSelectionIndex();
             int end =  hexEditor.getLargestSelectionIndex();
-            new DumpMemoryDialog(getEmulatorUi(), memory, baseAddress + start, (start==end)?null:(baseAddress + end)).setVisible(true);
+            new SaveLoadMemoryDialog(getEmulatorUi(), memory, baseAddress + start, (start==end)?null:(baseAddress + end)).setVisible(true);
             return;
         }
         
