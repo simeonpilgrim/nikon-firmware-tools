@@ -66,7 +66,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    exploreAddress(Format.parseUnsigned(targetAddressField.getText()));
+                    int address = Format.parseUnsigned(targetAddressField.getText());
+                    if (!exploreAddress(address)) {
+                        JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+                    }
                 } catch (ParsingException ex) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
                 }
@@ -76,7 +79,9 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                exploreAddress(cpuState.pc);
+                if (!exploreAddress(cpuState.pc)) {
+                    JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(cpuState.pc, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
         targetAddressField.addKeyListener(this);
@@ -125,16 +130,18 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         pack();
     }
 
-    public void exploreAddress(int address) {
+    /**
+     * Returns true if requested function was found
+     * @param address
+     * @return
+     */
+    public boolean exploreAddress(int address) {
         targetAddressField.setText("0x" + Format.asHex(address, 8));
         Function function = codeStructure.getFunctions().get(address);
         if (function == null) {
             function = codeStructure.findFunctionIncluding(address);
         }
-        if (function == null) {
-            JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
-        }
-        else {
+        if (function != null) {
             writeFunction(function);
             Integer line = getLineFromAddress(address);
             if (line != null) {
@@ -144,6 +151,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     e1.printStackTrace();
                 }
             }
+            return true;
+        }
+        else {
+            return false;
         }
     }
 
@@ -250,6 +261,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         try {
             Integer lineFromAddress = getLineFromAddress(cpuState.pc);
+            if (lineFromAddress == null) {
+                // PC is not found in current function. Try to find the correct function
+                // ExploreAddress will take care of calling this function to highlight PC
+                exploreAddress(cpuState.pc);
+            }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
             }

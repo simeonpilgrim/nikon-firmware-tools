@@ -1440,7 +1440,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (sourceCodeFrame == null && codeStructure != null) {
             toggleSourceCodeWindow();
         }
-        sourceCodeFrame.exploreAddress(address);
+        if (!sourceCodeFrame.exploreAddress(address)) {
+            JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void onBreaktriggersChange() {
