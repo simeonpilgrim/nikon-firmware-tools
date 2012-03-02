@@ -3,7 +3,6 @@ package com.nikonhacker;
 
 import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
-import com.nikonhacker.gui.EmulatorUI;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 
@@ -26,7 +25,7 @@ public class Prefs {
 
 
     public static File getPreferenceFile() {
-        return new File(System.getProperty("user.home") + File.separator + "." + EmulatorUI.APP_NAME);
+        return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
     }
 
     public static void save(Prefs prefs) {

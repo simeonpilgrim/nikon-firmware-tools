@@ -8,8 +8,9 @@
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="FrEmulator"/>
     <property name="app-version"      value="1.52"/>
-	<property name="source-dir"       location="src/main"/>
-	<property name="class-dir"        location="ant-classes"/>
+    <property name="source-dir"       location="src/main"/>
+    <property name="template-dir"     location="src/template"/>
+    <property name="class-dir"        location="ant-classes"/>
     <property name="dist-dir"         location="dist"/>
     <property name="lib-dir"          location="lib"/>
     <property name="batch-dir"        location="batch"/>
@@ -19,8 +20,26 @@
 	<property name="java-level"       value="1.6"/>
 
 
+    <target name="preprocess" description="Substitute values for symbolic names in template files">
+        <!--<copy file="${template-dir}/com/nikonhacker/ApplicationInfo.java" tofile="${source-dir}/com/nikonhacker/ApplicationInfo.java">-->
+        <tstamp>
+            <format property="build-time" pattern="yyyy-MM-dd HH:mm:ss" />
+        </tstamp>
+
+        <copy todir="${source-dir}">
+            <fileset dir="${template-dir}"/>
+            <filterchain>
+                <replacetokens>
+                    <token key="APPNAME" value="${app-name}"/>
+                    <token key="APPVERSION" value="${app-version}"/>
+                    <token key="BUILDTIME" value="${build-time}"/>
+                </replacetokens>
+            </filterchain>
+        </copy>
+    </target>
+
 	<!-- Compiles all classes.  -->
-	<target name="compile" description="Compile the source.">
+	<target name="compile" description="Compile the source." depends="preprocess">
 		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
 		<mkdir dir="${class-dir}"/>
 		<javac srcdir="${source-dir}" destdir="${class-dir}" deprecation="yes"

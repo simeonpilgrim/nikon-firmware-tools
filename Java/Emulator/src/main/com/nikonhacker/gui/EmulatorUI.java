@@ -8,6 +8,7 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
+import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
@@ -83,7 +84,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private static File imageFile;
 
-    public static final String APP_NAME = "FrEmulator";
 
     private DebuggableMemory memory;
     private CPUState cpuState;
@@ -190,7 +190,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public EmulatorUI() {
-        super("Emulator UI");
+        super(ApplicationInfo.getName() + " " + ApplicationInfo.getVersion());
         
         prefs = Prefs.load();
 
@@ -913,7 +913,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // html content
         JEditorPane editorPane = new JEditorPane("text/html", "<html><body style=\"" + style + "\">"
-                + "<font size=\"+1\">Fujitsu FR emulator</font><br/><br/>"
+                + "<font size=\"+1\">" + ApplicationInfo.getName() + " " + ApplicationInfo.getVersion() + "</font>"
+                + "<br/>Built on " + ApplicationInfo.getBuildTime() + "<br/><br/>"
                 + "This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.<br/>"
                 + "This software is provided under the GNU General Public License, version 3 - " + makeLink("http://www.gnu.org/licenses/gpl-3.0.txt") + "<br/>"
                 + "This software is based on, or makes use of, the following works:<ul>\n"
