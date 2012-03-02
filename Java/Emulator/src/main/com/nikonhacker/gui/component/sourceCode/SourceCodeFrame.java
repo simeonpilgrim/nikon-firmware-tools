@@ -268,6 +268,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
+                listingArea.setCaretPosition(listingArea.getLineStartOffset(lineFromAddress));
             }
         } catch (BadLocationException e) {
             pcHighlightTag = null;
