@@ -256,6 +256,8 @@
 
 -s 0x164CBE=trace(debug string is passed)
 
+-s 0x1AA60E=NCP_CreateSaveData
+-s 0x1AA778=NCP_SaveFile
 -s 0x1C0E5A=set_double_buffer(R4 [IN boolean])
 -s 0x1C1D6E=text_load_XX(R6 [IN string index tttiiiiiiiiiiiii])
 -s 0x1C1F68=bigtable_xx_04
@@ -299,6 +301,8 @@
 
 -s 0x2E1D3A=timezone_setup
 
+-s 0x2FA790=NCP_Save_2FA790
+
 -s 0x2FDBA4=confirm_card_fmt_b
 
 -s 0x2FEA5E=draw_menu_string
@@ -316,8 +320,3 @@
 -s 0x311A60=err_card_not_fmtd
 -s 0x311A34=err_card_bad
 -s 0x3129F2=confirm_card_fmt_a
-
-
-
-
-
