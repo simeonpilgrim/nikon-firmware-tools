@@ -34,6 +34,7 @@ import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -1356,7 +1357,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
                 catch (Throwable t) {
                     t.printStackTrace();
-                    JOptionPane.showMessageDialog(EmulatorUI.this, t.getMessage(), "Emulator error", JOptionPane.ERROR_MESSAGE);
+                    String message = t.getMessage();
+                    if (StringUtils.isEmpty(message)) {
+                        message = t.getClass().getName();
+                    }
+                    JOptionPane.showMessageDialog(EmulatorUI.this, message, "Emulator error", JOptionPane.ERROR_MESSAGE);
                 }
                 isEmulatorPlaying = false;
                 if (sourceCodeFrame != null) {

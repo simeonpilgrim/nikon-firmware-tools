@@ -515,16 +515,8 @@ public class DisassembledInstruction {
     }
 
     public String toString() {
-        String out = "";
+        String out = formatDataAsHex();
 
-        for (int i = 0; i < 3; ++i) {
-            if (i < n) {
-                out += " " + Format.asHex(data[i], 4);
-            }
-            else {
-                out += "     ";
-            }
-        }
         if (opcode != null) {
             if ((flags & DF_DELAY) != 0) {
                 out += "                " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
@@ -547,6 +539,19 @@ public class DisassembledInstruction {
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
             out += "\n";
+        }
+        return out;
+    }
+
+    public String formatDataAsHex() {
+        String out = "";
+        for (int i = 0; i < 3; ++i) {
+            if (i < n) {
+                out += " " + Format.asHex(data[i], 4);
+            }
+            else {
+                out += "     ";
+            }
         }
         return out;
     }

@@ -2262,11 +2262,16 @@ public class Emulator {
             e.printStackTrace();
             System.err.println(e.getMessage());
             System.err.println(cpuState);
-            disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
-            System.err.println("Offending instruction : " + disassembledInstruction);
-            System.err.println("(just before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
+            try {
+                disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
+                System.err.println("Offending instruction : " + disassembledInstruction);
+            }
+            catch(Exception e1) {
+                System.err.println("Cannot disassemble offending instruction :" + disassembledInstruction.formatDataAsHex());
+            }
+            System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
+            throw new EmulationException(e);
         }
-        return null;
     }
 
     private void setDelayedChanges(Integer nextPC, Integer nextRP) {
