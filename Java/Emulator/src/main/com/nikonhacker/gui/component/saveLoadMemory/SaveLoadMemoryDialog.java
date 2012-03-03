@@ -35,8 +35,8 @@ public class SaveLoadMemoryDialog extends JDialog {
         
         final JTextField filenameField = new JTextField();
         final JTextField startAddressField = new JTextField(10);
-        final JRadioButton saveButton = new JRadioButton();
-        final JRadioButton loadButton = new JRadioButton();
+        final JRadioButton saveButton = new JRadioButton("Save");
+        final JRadioButton loadButton = new JRadioButton("Load");
         final JRadioButton withEndButton = new JRadioButton();
         final JLabel endAddressLabel = new JLabel("End address");
         final JTextField endAddressField = new JTextField(10);
@@ -82,11 +82,11 @@ public class SaveLoadMemoryDialog extends JDialog {
         directionLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         rangePanel.add(directionLabel);
         rangePanel.add(saveButton);
-        rangePanel.add(new JLabel("Save"));
+        rangePanel.add(new JLabel());
 
         rangePanel.add(new JLabel());
         rangePanel.add(loadButton);
-        rangePanel.add(new JLabel("Load"));
+        rangePanel.add(new JLabel());
 
         rangePanel.add(new JLabel());
         rangePanel.add(new JLabel("Start address"));
