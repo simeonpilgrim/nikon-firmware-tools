@@ -1361,7 +1361,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     if (StringUtils.isEmpty(message)) {
                         message = t.getClass().getName();
                     }
-                    JOptionPane.showMessageDialog(EmulatorUI.this, message, "Emulator error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
                 }
                 isEmulatorPlaying = false;
                 if (sourceCodeFrame != null) {
