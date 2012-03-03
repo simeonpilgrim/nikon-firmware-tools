@@ -11,6 +11,7 @@
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
     <property name="class-dir"        location="ant-classes"/>
+    <property name="gen-dir"          location="ant-gen"/>
     <property name="dist-dir"         location="dist"/>
     <property name="lib-dir"          location="lib"/>
     <property name="batch-dir"        location="batch"/>
@@ -21,12 +22,11 @@
 
 
     <target name="preprocess" description="Substitute values for symbolic names in template files">
-        <!--<copy file="${template-dir}/com/nikonhacker/ApplicationInfo.java" tofile="${source-dir}/com/nikonhacker/ApplicationInfo.java">-->
         <tstamp>
             <format property="build-time" pattern="yyyy-MM-dd HH:mm:ss" />
         </tstamp>
 
-        <copy todir="${source-dir}">
+        <copy todir="${gen-dir}">
             <fileset dir="${template-dir}"/>
             <filterchain>
                 <replacetokens>
@@ -42,11 +42,13 @@
 	<target name="compile" description="Compile the source." depends="preprocess">
 		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
 		<mkdir dir="${class-dir}"/>
-		<javac srcdir="${source-dir}" destdir="${class-dir}" deprecation="yes"
+		<javac destdir="${class-dir}" deprecation="yes"
                 classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar;${lib-dir}/jgraphx.jar;${lib-dir}/rsyntaxtextarea.jar"
 				debug="${debug}" debuglevel="${debuglevel}"
 				source="${java-level}" target="${java-level}">
-		</javac>
+            <src path="${source-dir}"/>
+            <src path="${gen-dir}"/>
+        </javac>
         <copy todir="${class-dir}" >
             <fileset dir="${source-dir}">
                 <include name="/**/*.png"/>
@@ -116,6 +118,7 @@
     <!-- Clean dirs -->
     <target name="clean" description="cleanup module">
         <delete dir="${class-dir}"/>
+        <delete dir="${gen-dir}"/>
         <delete dir="${dist-dir}"/>
     </target>
 
