@@ -17,6 +17,7 @@ public class Prefs {
 
     boolean largeToolbarButtons = false;
     boolean writeDisassemblyToFile = true;
+    boolean followPc = true;
 
     private HashMap<String, WindowPosition> windowPositionMap;
     private HashMap<String, WindowPosition> windowSizeMap;
@@ -103,6 +104,14 @@ public class Prefs {
 
     public void setWriteDisassemblyToFile(boolean writeDisassemblyToFile) {
         this.writeDisassemblyToFile = writeDisassemblyToFile;
+    }
+
+    public boolean isFollowPc() {
+        return followPc;
+    }
+
+    public void setFollowPc(boolean followPc) {
+        this.followPc = followPc;
     }
 
     public int getSleepTick() {

@@ -1350,9 +1350,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             public void run() {
                 emulator.setOutputOptions(prefs.getOutputOptions());
                 setStatusText("Emulator is running...");
-                BreakCondition breakCondition = null;
+                BreakCondition stopCause = null;
                 try {
-                    breakCondition = emulator.play();
+                    stopCause = emulator.play();
                 }
                 catch (Throwable t) {
                     t.printStackTrace();
@@ -1360,10 +1360,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
                 isEmulatorPlaying = false;
                 if (sourceCodeFrame != null) {
-                    sourceCodeFrame.highlightPc();
+                    sourceCodeFrame.onPcChanged();
                 }
-                if (breakCondition != null && breakCondition.getBreakTrigger() != null) {
-                    setStatusText("Break trigger matched : " + breakCondition.getBreakTrigger().getName());
+                if (stopCause != null && stopCause.getBreakTrigger() != null) {
+                    setStatusText("Break trigger matched : " + stopCause.getBreakTrigger().getName());
                 }
                 else {
                     setStatusText("Emulation complete");
@@ -1447,7 +1447,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     public void onBreaktriggersChange() {
         if (sourceCodeFrame != null) {
-            sourceCodeFrame.updateBreaktriggers();
+            sourceCodeFrame.updateBreakTriggers();
         }
         if (breakTriggerListFrame != null) {
             breakTriggerListFrame.updateBreaktriggers();

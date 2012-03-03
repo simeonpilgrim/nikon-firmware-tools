@@ -30,7 +30,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final RSyntaxTextArea listingArea;
     private final ImageIcon enabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointIcon.png"));
     private final ImageIcon disabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointIcon.png"));
-    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
+//    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
     
     private Gutter gutter;
     Object pcHighlightTag = null;
@@ -44,6 +44,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     List<Integer> lineAddresses = new ArrayList<Integer>();
     private final JTextField targetAddressField;
     private int lastClickedTextPosition;
+    private final JCheckBox followPcCheckBox;
 
 
     public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
@@ -53,7 +54,9 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         setSize(FRAME_WIDTH, FRAME_HEIGHT);
 
-        // Create toolbar
+
+        // Create top toolbar
+
         JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         targetAddressField = new JTextField(7);
@@ -62,7 +65,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         topToolbar.add(exploreButton);
         JButton goToPcButton = new JButton("Go to PC");
         topToolbar.add(goToPcButton);
+        followPcCheckBox = new JCheckBox("Follow PC");
+        followPcCheckBox.setSelected(ui.getPrefs().isFollowPc());
+        topToolbar.add(followPcCheckBox);
 
+        // Add listeners
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
@@ -86,13 +93,24 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         });
         targetAddressField.addKeyListener(this);
         exploreButton.addKeyListener(this);
+        followPcCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ui.getPrefs().setFollowPc(followPcCheckBox.isSelected());
+                if (followPcCheckBox.isSelected()) {
+                    reachAndHighlightPc();
+                }
+            }
+        });
         
 
         // Create listing
+
         listingArea = new RSyntaxTextArea(50, 80);
         JComponent listingComponent = prepareListingPane();
 
+
         // Create a bottom toolbar with searching options.
+
         JPanel searchBar = new JPanel();
         searchField = new JTextField(30);
         searchField.addKeyListener(this);
@@ -186,7 +204,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         Style instructionStyle = (Style) functionStyle.clone();
         ss.setStyle(Token.ANNOTATION, instructionStyle);
-        instructionStyle.foreground = new Color(192, 192, 192);
+        instructionStyle.foreground = Color.LIGHT_GRAY;
 
         Style variableStyle = ss.getStyle(Token.VARIABLE);
         variableStyle.foreground = new Color(155, 22, 188);
@@ -254,8 +272,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         return scrollPane;
     }
 
-    
-    public void highlightPc() {
+
+    public void reachAndHighlightPc() {
         if (pcHighlightTag != null) {
             listingArea.removeLineHighlight(pcHighlightTag);
         }
@@ -276,7 +294,31 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    
+    public void highlightPc() {
+        if (pcHighlightTag != null) {
+            listingArea.removeLineHighlight(pcHighlightTag);
+        }
+        try {
+            Integer lineFromAddress = getLineFromAddress(cpuState.pc);
+            if (lineFromAddress != null) {
+                pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
+            }
+        } catch (BadLocationException e) {
+            pcHighlightTag = null;
+            e.printStackTrace();
+        }
+    }
+
+    public void onPcChanged() {
+        if (followPcCheckBox.isSelected()) {
+            reachAndHighlightPc();
+        }
+        else {
+            highlightPc();
+        }
+    }
+
+
     /**
      * An action that gets the text at the current caret position and searches it
      */
@@ -404,7 +446,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
     
     
-    // Real source code handling methods 
+    // Real source code handling methods
+
 
     public void writeFunction(Function function) {
         listingArea.setText("");
@@ -447,11 +490,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         listingArea.setCaretPosition(0);
         highlightPc();
-        updateBreaktriggers();
+        updateBreakTriggers();
     }
 
 
-    public void updateBreaktriggers() {
+    public void updateBreakTriggers() {
         gutter.removeAllTrackingIcons();
         for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers()) {
             if (breakTrigger.getCpuStateFlags().pc != 0) {
