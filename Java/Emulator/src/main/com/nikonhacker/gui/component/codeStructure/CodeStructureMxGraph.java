@@ -164,15 +164,14 @@ public class CodeStructureMxGraph extends mxGraph {
 
     private Object addFunction(Function function) {
         // Function cells are created white and remain so until they are expanded
-        String style = "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF;" + mxConstants.STYLE_STROKECOLOR + function.getBorderColor();
-        // TODO style border according to function type (MAIN/INT/FUNCT/UNKNOWN)
+        String style = "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF;" + mxConstants.STYLE_STROKECOLOR + "=" + function.getBorderColor();
         Object vertex = insertVertex(getDefaultParent(), "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, style);
         cellObjects.put(function.getAddress(), vertex);
         return vertex;
     }
 
     private void addCall(Function sourceFunction, Jump call, Object targetCell) {
-        String style = "noLabel=1;" + mxConstants.STYLE_STROKECOLOR + call.getStrokeColor();
+        String style = "noLabel=1;" + mxConstants.STYLE_STROKECOLOR + "=" + call.getStrokeColor();
         insertEdge(getDefaultParent(), null, call, cellObjects.get(sourceFunction.getAddress()), targetCell, style);
         renderedCalls.add(call);
     }

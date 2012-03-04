@@ -40,7 +40,7 @@ public class Jump {
         }
         switch (opcode.type) {
             case CALL:
-                return "#000000";
+                return "#777777";
             case INT:
             case INTE:
                 return "#007700";

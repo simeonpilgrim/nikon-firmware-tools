@@ -93,7 +93,7 @@ public class Function extends Symbol {
             case STANDARD:
                 return "#77FFFF";
             default:
-                return "#777777";
+                return "#AAAAAA";
         }
     }
 
