@@ -87,9 +87,9 @@ public class Function extends Symbol {
     public String getFillColor() {
         switch (type) {
             case INTERRUPT:
-                return "#FFFF77";
-            case MAIN:
                 return "#77FF77";
+            case MAIN:
+                return "#FFFF77";
             case STANDARD:
                 return "#77FFFF";
             default:
@@ -100,9 +100,9 @@ public class Function extends Symbol {
     public String getBorderColor() {
         switch (type) {
             case INTERRUPT:
-                return "#777700";
-            case MAIN:
                 return "#007700";
+            case MAIN:
+                return "#777700";
             case STANDARD:
                 return "#007777";
             default:
