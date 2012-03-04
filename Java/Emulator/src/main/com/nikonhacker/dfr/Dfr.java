@@ -42,6 +42,7 @@ package com.nikonhacker.dfr;
 // Further modifications and port to Java by Vicne
 // */
 
+import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
@@ -223,7 +224,7 @@ public class Dfr
 
     
     private void writeHeader(Writer writer) throws IOException {
-        writer.write("; Disassembler based on Dfr v1.03 by Kevin Schoedel\n");
+        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + ", disassembler based on Dfr v1.03 by Kevin Schoedel\n");
         writer.write(";   Date:   " + startTime + "\n");
         writer.write(";   Input:  " + inputFileName + "\n");
         writer.write(";   Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");

@@ -191,7 +191,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public EmulatorUI() {
-        super(ApplicationInfo.getName() + " " + ApplicationInfo.getVersion());
+        super(ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
         
         prefs = Prefs.load();
 
@@ -914,7 +914,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // html content
         JEditorPane editorPane = new JEditorPane("text/html", "<html><body style=\"" + style + "\">"
-                + "<font size=\"+1\">" + ApplicationInfo.getName() + " " + ApplicationInfo.getVersion() + "</font><br/>"
+                + "<font size=\"+1\">" + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + "</font><br/>"
                 + "<font size=\"-2\">Built on " + ApplicationInfo.getBuildTime() + "</font><br/><br/>"
                 + "This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.<br/>"
                 + "This software is provided under the GNU General Public License, version 3 - " + makeLink("http://www.gnu.org/licenses/gpl-3.0.txt") + "<br/>"
