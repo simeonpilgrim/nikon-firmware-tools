@@ -74,6 +74,7 @@ public class AnalyseProgressDialog extends JDialog {
                 } catch (Exception e) {
                     e.printStackTrace();
                     debugPrintWriter.println("ERROR : " + e.getClass().getName() + ": " + e.getMessage());
+                    debugPrintWriter.println("See console for more information");
                 }
                 emulatorUI.getPrefs().setOutputOption(OutputOption.VERBOSE, wasVerbose);
                 setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
