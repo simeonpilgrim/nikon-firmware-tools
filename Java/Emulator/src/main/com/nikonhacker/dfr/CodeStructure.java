@@ -114,21 +114,31 @@ public class CodeStructure {
         }
 
 
-        debugPrintWriter.println("Following functions, starting at entry point...");
+        debugPrintWriter.println("Following flow starting at entry point...");
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
         functions.put(entryPoint, main);
-        followFunction(main, entryPoint, processedInstructions, debugPrintWriter);
+        try {
+            followFunction(main, entryPoint, processedInstructions, debugPrintWriter, interruptTable);
+        }
+        catch (DisassemblyException e) {
+            debugPrintWriter.println("Error disassembling 'main' code at 0x" + Format.asHex(entryPoint, 2) + ": " + e.getMessage());
+        }
 
 
-        debugPrintWriter.println("Following functions, starting at each interrupt...");
+        debugPrintWriter.println("Following flow starting at each interrupt...");
         for (Integer interruptNumber : interruptTable.keySet()) {
             Integer address = interruptTable.get(interruptNumber);
             String name = "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_";
             Function function = functions.get(address);
             if (function == null) {
-                function = new Function(address, name, "");
+                function = new Function(address, name, "", Function.Type.INTERRUPT);
                 functions.put(address, function);
-                followFunction(function, address, processedInstructions, debugPrintWriter);
+                try {
+                    followFunction(function, address, processedInstructions, debugPrintWriter, interruptTable);
+                }
+                catch (DisassemblyException e) {
+                    debugPrintWriter.println("Error disassembling interrupt 0x" + Format.asHex(interruptNumber, 2) + ": " + e.getMessage());
+                }
             }
             else {
                 function.addAlias(name);
@@ -143,7 +153,12 @@ public class CodeStructure {
             if (!processedInstructions.contains(address)) {
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 functions.put(address, function);
-                followFunction(function, address, processedInstructions, debugPrintWriter);
+                try {
+                    followFunction(function, address, processedInstructions, debugPrintWriter, interruptTable);
+                }
+                catch (DisassemblyException e) {
+                    debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
+                }
             }
             entry = instructions.higherEntry(address);
         }
@@ -242,10 +257,9 @@ public class CodeStructure {
     }
 
 
-    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintWriter debugPrintWriter) throws IOException {
+    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintWriter debugPrintWriter, Map<Integer, Integer> interruptTable) throws IOException, DisassemblyException {
         if (instructions.get(address) == null) {
-            debugPrintWriter.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
-            return;
+            throw new DisassemblyException("No decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
         }
         CodeSegment currentSegment = new CodeSegment();
         currentFunction.getCodeSegments().add(currentSegment);
@@ -260,16 +274,25 @@ public class CodeStructure {
                     returns.put(address, currentFunction.getAddress());
                     ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
                     break;
+                case JMP:
+                case BRA:
+                    if (instruction.decodedX != 0) {
+                        labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
+                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode);
+                        jumps.add(jump);
+                        currentFunction.getJumps().add(jump);
+                    }
+                    break;
                 case CALL:
                     if (instruction.opcode.hasDelaySlot) {
                         currentSegment.setEnd(address + 2);
                         processedInstructions.add(address + 2);
                     }
-                    Integer targetAddress = instruction.decodedX;
+                    int targetAddress = instruction.decodedX;
                     Jump call = new Jump(address, targetAddress, instruction.opcode);
                     currentFunction.getCalls().add(call);
-                    if (targetAddress == null || targetAddress == 0) {
-                        debugPrintWriter.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
+                    if (targetAddress == 0) {
+                        debugPrintWriter.println("WARNING : Cannot determine target of CALL/INT made from 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
                     }
                     else {
                         Function function = functions.get(targetAddress);
@@ -277,7 +300,12 @@ public class CodeStructure {
                             // new Function
                             function = new Function(targetAddress, "", "", Function.Type.STANDARD);
                             functions.put(targetAddress, function);
-                            followFunction(function, targetAddress, processedInstructions, debugPrintWriter);
+                            try {
+                                followFunction(function, targetAddress, processedInstructions, debugPrintWriter, interruptTable);
+                            }
+                            catch (DisassemblyException e) {
+                                debugPrintWriter.println("Error following call at 0x" + Format.asHex(address, 8) + ": " + e.getMessage());
+                            }
                         }
                         else {
                             // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
@@ -288,20 +316,35 @@ public class CodeStructure {
                         function.getCalledBy().put(call, currentFunction);
                     }
                     break;
-                case JMP:
-                case BRA:
-                    if (instruction.decodedX != 0) {
-                        labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
-                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode);
-                        jumps.add(jump);
-                        currentFunction.getJumps().add(jump);
+                case INT:
+                case INTE:
+                    Integer interruptAddress = interruptTable.get(instruction.decodedX);
+                    if (instruction.decodedX == 0x40) {
+                        // Specific interrupt used as a wrapper by RTOS
+                        Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
+                        currentFunction.getCalls().add(interruptCall);
+                        Function interrupt = functions.get(interruptAddress);
+                        if (interrupt != null) {
+                            interrupt.getCalledBy().put(interruptCall, currentFunction);
+                        }
+                        else {
+                            debugPrintWriter.println("Error : following INT at 0x" + Format.asHex(address, 8) + ": no code found at 0x" + Format.asHex(interruptAddress, 8));
+                        }
+                    }
+                    else {
+                        Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
+                        currentFunction.getCalls().add(interruptCall);
+                        Function interrupt = functions.get(interruptAddress);
+                        if (interrupt != null) {
+                            interrupt.getCalledBy().put(interruptCall, currentFunction);
+                        }
+                        else {
+                            debugPrintWriter.println("Error : following INT at 0x" + Format.asHex(address, 8) + ": no code found at 0x" + Format.asHex(interruptAddress, 8));
+                        }
                     }
                     break;
-                case INT:
-                    if (instruction.decodedX == 0x40) {
-                        // Specific case of 
-                    }
             }
+
             if (instruction.opcode.type == OpCode.Type.RET || instruction.opcode.type == OpCode.Type.JMP) {
                 if (instruction.opcode.hasDelaySlot) {
                     currentSegment.setEnd(address + 2);
@@ -316,7 +359,7 @@ public class CodeStructure {
         // Process jumps
         currentFunction.getJumps().addAll(jumps);
         boolean inProcessedSegment;
-        for (Jump jump:jumps) {
+        for (Jump jump : jumps) {
             inProcessedSegment = false;
             for (CodeSegment segment : currentFunction.getCodeSegments()) {
                 if (jump.target >= segment.start && jump.target <= segment.end) {
@@ -342,7 +385,12 @@ public class CodeStructure {
                 }
             }
             if (!inProcessedSegment) {
-                followFunction(currentFunction, jump.target, processedInstructions, debugPrintWriter);
+                try {
+                    followFunction(currentFunction, jump.target, processedInstructions, debugPrintWriter, interruptTable);
+                }
+                catch (DisassemblyException e) {
+                    debugPrintWriter.println("Error following jump at 0x" + Format.asHex(jump.getSource(), 8) + ": " + e.getMessage());
+                }
             }
         }
 

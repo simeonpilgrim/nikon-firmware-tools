@@ -184,16 +184,16 @@ public class CodeStructureFrame extends DocumentFrame
     /** for debugging only */
     private void createFakeStructure() {
         codeStructure = new CodeStructure(0);
-        Function sourceFunction = new Function(0, "main", "comment");
+        Function sourceFunction = new Function(0, "main", "comment", Function.Type.MAIN);
         codeStructure.getFunctions().put(0, sourceFunction);
         for (int i = 1; i <= 10; i++) {
             int address = i * 10;
-            Function function = new Function(address, "Function" + i, "");
+            Function function = new Function(address, "Function" + i, "", Function.Type.STANDARD);
             codeStructure.getFunctions().put(address, function);
             sourceFunction.getCalls().add(new Jump(0, address, null));
             for (int j = 1; i <= 10; i++) {
                 int address2 = i * 10 + j;
-                Function function2 = new Function(address2, "SubFunction" + j, "");
+                Function function2 = new Function(address2, "SubFunction" + j, "", Function.Type.STANDARD);
                 codeStructure.getFunctions().put(address2, function2);
                 function.getCalls().add(new Jump(address, address2, null));
             }

@@ -164,13 +164,16 @@ public class CodeStructureMxGraph extends mxGraph {
 
     private Object addFunction(Function function) {
         // Function cells are created white and remain so until they are expanded
-        Object vertex = insertVertex(getDefaultParent(), "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF");
+        String style = "defaultVertex;" + mxConstants.STYLE_FILLCOLOR + "=#FFFFFF;" + mxConstants.STYLE_STROKECOLOR + function.getBorderColor();
+        // TODO style border according to function type (MAIN/INT/FUNCT/UNKNOWN)
+        Object vertex = insertVertex(getDefaultParent(), "" + function.getAddress(), function, 0, 0, FUNCTION_CELL_WIDTH, FUNCTION_CELL_HEIGHT, style);
         cellObjects.put(function.getAddress(), vertex);
         return vertex;
     }
 
     private void addCall(Function sourceFunction, Jump call, Object targetCell) {
-        insertEdge(getDefaultParent(), null, call, cellObjects.get(sourceFunction.getAddress()), targetCell, "noLabel=1");
+        String style = "noLabel=1;" + mxConstants.STYLE_STROKECOLOR + call.getStrokeColor();
+        insertEdge(getDefaultParent(), null, call, cellObjects.get(sourceFunction.getAddress()), targetCell, style);
         renderedCalls.add(call);
     }
 
@@ -183,7 +186,7 @@ public class CodeStructureMxGraph extends mxGraph {
 
     private void makeExpandedStyle(Function function) {
         mxCell cell = getCellById("" + function.getAddress());
-        setCellStyles(mxConstants.STYLE_FILLCOLOR, function.getColor(), new Object[]{cell});
+        setCellStyles(mxConstants.STYLE_FILLCOLOR, function.getFillColor(), new Object[]{cell});
     }
 
     private mxCell getCellById(String id) {

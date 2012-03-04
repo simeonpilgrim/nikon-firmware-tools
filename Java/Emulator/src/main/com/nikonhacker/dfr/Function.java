@@ -46,14 +46,6 @@ public class Function extends Symbol {
     private Type type = Type.STANDARD;
 
 
-    public Function(int address, String name, String comment) {
-        super(address, name, comment);
-        codeSegments = new ArrayList<CodeSegment>();
-        jumps = new ArrayList<Jump>();
-        calls = new ArrayList<Jump>();
-        calledBy = new HashMap<Jump, Function>();
-    }
-
     public Function(int address, String name, String comment, Type type) {
         super(address, name, comment);
         this.type = type;
@@ -92,7 +84,7 @@ public class Function extends Symbol {
         this.type = type;
     }
 
-    public String getColor() {
+    public String getFillColor() {
         switch (type) {
             case INTERRUPT:
                 return "#FFFF77";
@@ -101,7 +93,20 @@ public class Function extends Symbol {
             case STANDARD:
                 return "#77FFFF";
             default:
-                return "#CCCCCC";
+                return "#777777";
+        }
+    }
+
+    public String getBorderColor() {
+        switch (type) {
+            case INTERRUPT:
+                return "#777700";
+            case MAIN:
+                return "#007700";
+            case STANDARD:
+                return "#007777";
+            default:
+                return "#DDDDDD";
         }
     }
 
