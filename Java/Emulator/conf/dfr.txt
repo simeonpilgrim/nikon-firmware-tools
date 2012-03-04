@@ -6,8 +6,8 @@
 -m 0x00040000-0x00040709=CODE
 
 
-# Unknown :
-#-m 0x0004070A-0x00040869=DATA:L
+# Table of offsets used by INT 0x40 :
+-m 0x0004070A-0x00040869=DATA:W
 
 
 -m 0x0004086A-0x00040947=CODE
@@ -25,8 +25,10 @@
 # FotoNation RedEye library Copyright :
 #-m 0x00054200-0x00054255=DATA:L
 #-m 0x00054256-0x00055eeb=DATA:L
+#JPEG till the end ?
+#-m 0x00055eec-0x00081d5f=DATA:L
 #JPEGs
-#-m 0x00055eec-0x0008a15f=DATA:L
+#-m 0x00081d60-0x0008a15f=DATA:L
 # Unknown :
 #-m 0x0008a160-0x000A10E2=DATA:L
 # 0xFF :
@@ -237,10 +239,6 @@
 -s 0x406F6=NOP_406F6
 -s 0x406F8=NOP_406F8
 
--s 0x041886=called_by_INT40_1
--s 0x0419D6=called_by_INT40_2
--s 0x041ACA=called_by_INT40_3
-
 -s 0x41A4A=table_offset_load(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
 
 -s 0x1074F2=linked_list_init(R4 [IN, pointer to list entity])
@@ -264,9 +262,10 @@
 -s 0x1C3CD2=color_fill(R4 [IN RECT*], R5 [IN color_table_idx])
 -s 0x1C97BA=color_fill(R4 [IN RECT*], R5 [IN p_color_tuple])
 
--s 0x1D5A1C=getR4from0x8F960EAC(R4 [OUT])
--s 0x1D953C=INT40wABinR12(calls INT40 with 0xAB in R12)
 -s 0x101802=put10at7EF
+-s 0x1D5A1C=getR4from0x8F960EAC(R4 [OUT])
+-s 0x1D953C=INT40_w_AB(calls INT40 with 0xAB in R12)
+-s 0x1c07e8=poll_until_8f8a1864!8004
 
 -s 0x23495E=DIV_int(R4 [IN dividend, OUT quotient], R5 [IN divisor])
 -s 0x234b3c=MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])
