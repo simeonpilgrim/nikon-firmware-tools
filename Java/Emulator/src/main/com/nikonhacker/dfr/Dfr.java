@@ -175,14 +175,14 @@ public class Dfr
     }
 
     /**
-     * Interpret x as a signed value based on its last n bits, and extend that MSB
+     * Interpret value as a signed value based on its last numBits bits, and extend the higher bits
      * so that return represents the same number, but on 32 bits
-     * @param n the number of bits to take into account
-     * @param x the original number
+     * @param numBits the number of bits to take into account
+     * @param value the original number
      */
-    public static int signExtend(int n, int x)
+    public static int signExtend(int numBits, int value)
     {
-        return (x | signExtendMask((1 << (n - 1)), x));
+        return (value | signExtendMask((1 << (numBits - 1)), value));
     }
 
     public static int NEG(int n, int x)
@@ -370,7 +370,7 @@ public class Dfr
             }
 
             debugPrintWriter.println("Post processing...");
-            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions.contains(OutputOption.ORDINAL), debugPrintWriter);
+            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions, debugPrintWriter);
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getInstructions().size() + " instructions");

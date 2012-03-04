@@ -18,6 +18,7 @@ public enum OutputOption {
 
     STRUCTURE   ("structure",       "structural code analysis (code flow, symbols, etc). Needs more resources."),
     ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address"),
+    INT40       ("int40",           "(if structure is enabled) resolve calls through INT40 wrapper"),
 
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),

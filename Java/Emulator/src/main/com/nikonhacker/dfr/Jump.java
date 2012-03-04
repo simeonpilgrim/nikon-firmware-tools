@@ -43,7 +43,7 @@ public class Jump {
                 return "#777777";
             case INT:
             case INTE:
-                return "#007700";
+                return "#00CC00";
             default:
                 return "#777700";
         }

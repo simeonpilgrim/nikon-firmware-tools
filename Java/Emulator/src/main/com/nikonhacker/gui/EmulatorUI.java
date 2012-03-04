@@ -802,7 +802,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 destinationFileSelectionPanel,
                 makeOutputOptionCheckBox(OutputOption.OFFSET, prefs.getOutputOptions(), true),
                 makeOutputOptionCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
-                makeOutputOptionCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true)
+                makeOutputOptionCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true),
+                makeOutputOptionCheckBox(OutputOption.INT40, prefs.getOutputOptions(), true)
         };
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,

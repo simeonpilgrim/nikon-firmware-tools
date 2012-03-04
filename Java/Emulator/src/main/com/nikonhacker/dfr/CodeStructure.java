@@ -91,14 +91,15 @@ public class CodeStructure {
      * Post-process instructions to retrieve code structure
      *
      *
+     *
      * @param ranges The defined ranges in the binary file
      * @param memory The memory image
      * @param symbols The symbols defined to override auto-generated function names
-     * @param useOrdinalNames if true, use ordinal numbers instead of address to generate names
+     * @param outputOptions
      * @param debugPrintWriter a PrintWriter to write debug/info messages to
      * @throws IOException
      */
-    public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, boolean useOrdinalNames, PrintWriter debugPrintWriter) throws IOException {
+    public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, Set<OutputOption> outputOptions, PrintWriter debugPrintWriter) throws IOException {
 
         Set<Integer> processedInstructions = new HashSet<Integer>();
 
@@ -113,12 +114,30 @@ public class CodeStructure {
             }
         }
 
+        Map<Integer, Integer> int40mapping = null;
+        if (outputOptions.contains(OutputOption.INT40)) {
+            // Determine base address to which offsets will be added
+            Integer int40address = interruptTable.get(0x40);
+            if (memory.loadInstruction16(int40address + 0x3E) != 0x9F8D /* LDI:32 #i32, R13 */) {
+                debugPrintWriter.println("INT 0x40 does not have the expected structure. INT40 following will be disabled");
+            }
+            else {
+                DisassembledInstruction instruction = instructions.get(int40address + 0x3E);
+                int baseAddress = instruction.decodedX;
+                int40mapping = new TreeMap<Integer, Integer>();
+                /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
+                for (int r12 = 0; r12 > -0xB0; r12--) {
+                    int40mapping.put(r12, baseAddress + Dfr.signExtend(16, memory.loadUnsigned16(baseAddress + (r12 << 1))));
+                }
+            }
+        }
+
 
         debugPrintWriter.println("Following flow starting at entry point...");
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
         functions.put(entryPoint, main);
         try {
-            followFunction(main, entryPoint, processedInstructions, debugPrintWriter, interruptTable);
+            followFunction(main, entryPoint, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
         }
         catch (DisassemblyException e) {
             debugPrintWriter.println("Error disassembling 'main' code at 0x" + Format.asHex(entryPoint, 2) + ": " + e.getMessage());
@@ -134,7 +153,7 @@ public class CodeStructure {
                 function = new Function(address, name, "", Function.Type.INTERRUPT);
                 functions.put(address, function);
                 try {
-                    followFunction(function, address, processedInstructions, debugPrintWriter, interruptTable);
+                    followFunction(function, address, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("Error disassembling interrupt 0x" + Format.asHex(interruptNumber, 2) + ": " + e.getMessage());
@@ -154,7 +173,7 @@ public class CodeStructure {
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 functions.put(address, function);
                 try {
-                    followFunction(function, address, processedInstructions, debugPrintWriter, interruptTable);
+                    followFunction(function, address, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
@@ -169,7 +188,7 @@ public class CodeStructure {
         for (Integer address : functions.keySet()) {
             Function function = functions.get(address);
             if (StringUtils.isBlank(function.getName())) {
-                String functionId = useOrdinalNames?("" + functionNumber):Integer.toHexString(address);
+                String functionId = outputOptions.contains(OutputOption.ORDINAL)?("" + functionNumber):Integer.toHexString(address);
                 if (function.getType() == Function.Type.UNKNOWN) {
                     function.setName("unknown_" + functionId + "_");
                 }
@@ -242,11 +261,11 @@ public class CodeStructure {
                         usedReturnLabels.add(label);
                     }
                     else {
-                        label = "end_unidentified_fn_l_" + (useOrdinalNames?("" + labelNumber):Integer.toHexString(address)) + "_";
+                        label = "end_unidentified_fn_l_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
                     }
                 }
                 else {
-                    label = "label_" + (useOrdinalNames?("" + labelNumber):Integer.toHexString(address)) + "_";
+                    label = "label_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
                 }
                 labels.put(address, new Symbol(address, label, null));
             }
@@ -257,7 +276,7 @@ public class CodeStructure {
     }
 
 
-    void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintWriter debugPrintWriter, Map<Integer, Integer> interruptTable) throws IOException, DisassemblyException {
+    void followFunction(Function currentFunction, Integer address, PrintWriter debugPrintWriter, Set<Integer> processedInstructions, Map<Integer, Integer> interruptTable, Map<Integer, Integer> int40mapping, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         if (instructions.get(address) == null) {
             throw new DisassemblyException("No decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
         }
@@ -301,7 +320,7 @@ public class CodeStructure {
                             function = new Function(targetAddress, "", "", Function.Type.STANDARD);
                             functions.put(targetAddress, function);
                             try {
-                                followFunction(function, targetAddress, processedInstructions, debugPrintWriter, interruptTable);
+                                followFunction(function, targetAddress, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
                             }
                             catch (DisassemblyException e) {
                                 debugPrintWriter.println("Error following call at 0x" + Format.asHex(address, 8) + ": " + e.getMessage());
@@ -319,17 +338,8 @@ public class CodeStructure {
                 case INT:
                 case INTE:
                     Integer interruptAddress = interruptTable.get(instruction.decodedX);
-                    if (instruction.decodedX == 0x40) {
-                        // Specific interrupt used as a wrapper by RTOS
-                        Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
-                        currentFunction.getCalls().add(interruptCall);
-                        Function interrupt = functions.get(interruptAddress);
-                        if (interrupt != null) {
-                            interrupt.getCalledBy().put(interruptCall, currentFunction);
-                        }
-                        else {
-                            debugPrintWriter.println("Error : following INT at 0x" + Format.asHex(address, 8) + ": no code found at 0x" + Format.asHex(interruptAddress, 8));
-                        }
+                    if (instruction.decodedX == 0x40 && int40mapping != null) {
+                        processInt40Call(currentFunction, address, instruction, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
                     }
                     else {
                         Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
@@ -386,7 +396,7 @@ public class CodeStructure {
             }
             if (!inProcessedSegment) {
                 try {
-                    followFunction(currentFunction, jump.target, processedInstructions, debugPrintWriter, interruptTable);
+                    followFunction(currentFunction, jump.target, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("Error following jump at 0x" + Format.asHex(jump.getSource(), 8) + ": " + e.getMessage());
@@ -408,6 +418,71 @@ public class CodeStructure {
                     segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
                     currentFunction.getCodeSegments().remove(j);
                 }
+            }
+        }
+    }
+
+    private void processInt40Call(Function currentFunction, Integer address, DisassembledInstruction instruction, PrintWriter debugPrintWriter, Set<Integer> processedInstructions, Map<Integer, Integer> interruptTable, Map<Integer, Integer> int40mapping, Set<OutputOption> outputOptions) throws IOException {
+        // Specific interrupt used as a wrapper by RTOS
+        // Determine R12 before the call by reading the instructions up to 200 bytes backwards (168 needed for call at 0x001824D0)
+        // TODO : should follow program flow by climbing back function coderanges.
+        // TODO : Here, we run the risk of not catching the good R12 value...
+        Integer r12 = null;
+        boolean r12SignExtend = false;
+        for (int offset = 1; offset < 100; offset++) {
+            DisassembledInstruction candidateInstruction = instructions.get(address - 2 * offset);
+            if (candidateInstruction != null) {
+                if (candidateInstruction.opcode.encoding == 0x9F80 && candidateInstruction.decodedI == 12) {
+                    /* LDI:32 #i32, R12 */
+                    r12 = candidateInstruction.decodedX;
+                    break;
+                }
+                if (candidateInstruction.opcode.encoding == 0xC000 && candidateInstruction.decodedI == 12) {
+                    /* LDI:8 #i8, R12 */
+                    if (r12SignExtend) {
+                        r12 = Dfr.signExtend(8, candidateInstruction.decodedX);
+                    }
+                    else {
+                        r12 = candidateInstruction.decodedX;
+                    }
+                    break;
+                }
+                if (candidateInstruction.opcode.encoding == 0x9780 && candidateInstruction.decodedI == 12) {
+                    /* EXTSB R12 */
+                    r12SignExtend = true;
+                }
+            }
+        }
+        if (r12 == null) {
+            debugPrintWriter.println("Error : cannot determine R12 value for INT40 at 0x" + Format.asHex(address, 8));
+        }
+        else {
+            Integer int40targetAddress = int40mapping.get(r12);
+            if (int40targetAddress == null) {
+                debugPrintWriter.println("Error : INT40 at 0x" + Format.asHex(address, 8) + " with value R12=0x" + Format.asHex(r12, 8) + " does not match a computed address...");
+            }
+            else {
+                Jump interrupt40Call = new Jump(address, int40targetAddress, instruction.opcode /* TODO should characterize that it is a INT40 call */);
+                currentFunction.getCalls().add(interrupt40Call);
+                Function target = functions.get(int40targetAddress);
+                if (target == null) {
+                    // new Function
+                    target = new Function(int40targetAddress, "", "", Function.Type.STANDARD);
+                    functions.put(int40targetAddress, target);
+                    try {
+                        followFunction(target, int40targetAddress, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
+                    }
+                    catch (DisassemblyException e) {
+                        debugPrintWriter.println("Error : INT40 at 0x" + Format.asHex(address, 8) + " with value R12=0x" + Format.asHex(r12, 8) + " targets address 0x" + Format.asHex(int40targetAddress, 8) + " where no code can be found.");
+                    }
+                }
+                else {
+                    // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
+                    if (target.getType() == Function.Type.UNKNOWN) {
+                        target.setType(Function.Type.STANDARD);
+                    }
+                }
+                target.getCalledBy().put(interrupt40Call, currentFunction);
             }
         }
     }
