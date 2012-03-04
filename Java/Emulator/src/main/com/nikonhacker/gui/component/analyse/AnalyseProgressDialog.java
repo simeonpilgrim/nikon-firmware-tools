@@ -72,7 +72,8 @@ public class AnalyseProgressDialog extends JDialog {
                         debugPrintWriter.println("You may now use the 'Code Structure' window");
                     }
                 } catch (Exception e) {
-                    debugPrintWriter.println("ERROR : " + e.getMessage());
+                    e.printStackTrace();
+                    debugPrintWriter.println("ERROR : " + e.getClass().getName() + ": " + e.getMessage());
                 }
                 emulatorUI.getPrefs().setOutputOption(OutputOption.VERBOSE, wasVerbose);
                 setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
