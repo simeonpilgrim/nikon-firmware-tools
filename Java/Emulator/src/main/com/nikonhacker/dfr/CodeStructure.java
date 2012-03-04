@@ -100,8 +100,19 @@ public class CodeStructure {
      */
     public void postProcess(SortedSet<Range> ranges, Memory memory, Map<Integer, Symbol> symbols, boolean useOrdinalNames, PrintWriter debugPrintWriter) throws IOException {
 
-
         Set<Integer> processedInstructions = new HashSet<Integer>();
+
+        debugPrintWriter.println("Preprocessing interrupt table...");
+        Map<Integer, Integer> interruptTable = new HashMap<Integer, Integer>();
+        for (Range range : ranges) {
+            if (range instanceof InterruptVectorRange) {
+                for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
+                    interruptTable.put(interruptNumber, memory.load32(range.getStart() + 4 * (0x100 - interruptNumber - 1)));
+                }
+                break;
+            }
+        }
+
 
         debugPrintWriter.println("Following functions, starting at entry point...");
         Function main = new Function(entryPoint, "main", "", Function.Type.MAIN);
@@ -110,16 +121,17 @@ public class CodeStructure {
 
 
         debugPrintWriter.println("Following functions, starting at each interrupt...");
-        for (Range range : ranges) {
-            if (range instanceof InterruptVectorRange) {
-                for (int interruptNumber = 0; interruptNumber < INTERRUPT_VECTOR_LENGTH / 4; interruptNumber++) {
-                    Integer address = memory.load32(range.getStart() + 4 * (0x100 - interruptNumber - 1));
-                    if (!functions.containsKey(address)) {
-                        Function function = new Function(address, "interrupt_0x" + Format.asHex(interruptNumber,2) + "_", "");
-                        functions.put(address, function);
-                        followFunction(function, address, processedInstructions, debugPrintWriter);
-                    }
-                }
+        for (Integer interruptNumber : interruptTable.keySet()) {
+            Integer address = interruptTable.get(interruptNumber);
+            String name = "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_";
+            Function function = functions.get(address);
+            if (function == null) {
+                function = new Function(address, name, "");
+                functions.put(address, function);
+                followFunction(function, address, processedInstructions, debugPrintWriter);
+            }
+            else {
+                function.addAlias(name);
             }
         }
 
@@ -189,6 +201,9 @@ public class CodeStructure {
                         }
                     }
                 }
+                if (match) {
+                    break;
+                }
             }
             if (!match) {
                 String label;
@@ -226,6 +241,7 @@ public class CodeStructure {
 
     }
 
+
     void followFunction(Function currentFunction, Integer address, Set<Integer> processedInstructions, PrintWriter debugPrintWriter) throws IOException {
         if (instructions.get(address) == null) {
             debugPrintWriter.println("ERROR : no decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
@@ -239,52 +255,59 @@ public class CodeStructure {
             DisassembledInstruction instruction = instructions.get(address);
             processedInstructions.add(address);
             currentSegment.setEnd(address);
-            if (instruction.opcode.isReturn) {
-//                    labels.put(address, new Symbol(address, "", ""));
-                returns.put(address, currentFunction.getAddress());
-                ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
-            }
-            if (instruction.opcode.isCall) {
-                if (instruction.opcode.hasDelaySlot) {
-                    currentSegment.setEnd(address + 2);
-                    processedInstructions.add(address + 2);
-                }
-                Integer targetAddress = instruction.decodedX;
-                Jump call = new Jump(address, targetAddress, false);
-                currentFunction.getCalls().add(call);
-                if (targetAddress == null || targetAddress == 0) {
-                    debugPrintWriter.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
-                }
-                else {
-                    Function function = functions.get(targetAddress);
-                    if (function == null) {
-                        // new Function
-                        function = new Function(targetAddress, "", "", Function.Type.STANDARD);
-                        functions.put(targetAddress, function);
-                        followFunction(function, targetAddress, processedInstructions, debugPrintWriter);
+            switch (instruction.opcode.type) {
+                case RET:
+                    returns.put(address, currentFunction.getAddress());
+                    ends.put(address + (instruction.opcode.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+                    break;
+                case CALL:
+                    if (instruction.opcode.hasDelaySlot) {
+                        currentSegment.setEnd(address + 2);
+                        processedInstructions.add(address + 2);
+                    }
+                    Integer targetAddress = instruction.decodedX;
+                    Jump call = new Jump(address, targetAddress, instruction.opcode);
+                    currentFunction.getCalls().add(call);
+                    if (targetAddress == null || targetAddress == 0) {
+                        debugPrintWriter.println("WARNING : Cannot determine target of call made at 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
                     }
                     else {
-                        // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
-                        if (function.getType() == Function.Type.UNKNOWN) {
-                            function.setType(Function.Type.STANDARD);
+                        Function function = functions.get(targetAddress);
+                        if (function == null) {
+                            // new Function
+                            function = new Function(targetAddress, "", "", Function.Type.STANDARD);
+                            functions.put(targetAddress, function);
+                            followFunction(function, targetAddress, processedInstructions, debugPrintWriter);
                         }
+                        else {
+                            // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
+                            if (function.getType() == Function.Type.UNKNOWN) {
+                                function.setType(Function.Type.STANDARD);
+                            }
+                        }
+                        function.getCalledBy().put(call, currentFunction);
                     }
-                    function.getCalledBy().put(call, currentFunction);
-                }
+                    break;
+                case JMP:
+                case BRA:
+                    if (instruction.decodedX != 0) {
+                        labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
+                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode);
+                        jumps.add(jump);
+                        currentFunction.getJumps().add(jump);
+                    }
+                    break;
+                case INT:
+                    if (instruction.decodedX == 0x40) {
+                        // Specific case of 
+                    }
             }
-            if (instruction.opcode.isJumpOrBranch) {
-                if (instruction.decodedX != 0) {
-                    labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
-                    Jump jump = new Jump(address, instruction.decodedX, instruction.opcode.isConditional);
-                    jumps.add(jump);
-                    currentFunction.getJumps().add(jump);
-                }
-            }
-            if (instruction.opcode.isReturn || (instruction.opcode.isJumpOrBranch && !instruction.opcode.isConditional)) {
+            if (instruction.opcode.type == OpCode.Type.RET || instruction.opcode.type == OpCode.Type.JMP) {
                 if (instruction.opcode.hasDelaySlot) {
                     currentSegment.setEnd(address + 2);
                     processedInstructions.add(address + 2);
                 }
+                // End of segment
                 break;
             }
             address = instructions.higherKey(address);
@@ -302,7 +325,10 @@ public class CodeStructure {
                     // So we should consider we're really in a processed segment if
                     // - either it's a jump/call/return
                     DisassembledInstruction instruction = instructions.get(jump.target);
-                    if (instruction != null && (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch || instruction.opcode.isReturn)) {
+                    if (instruction != null && (instruction.opcode.type == OpCode.Type.CALL
+                                             || instruction.opcode.type == OpCode.Type.JMP
+                                             || instruction.opcode.type == OpCode.Type.BRA
+                                             || instruction.opcode.type == OpCode.Type.RET)) {
                         inProcessedSegment = true;
                         break;
                     }
@@ -370,13 +396,15 @@ public class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
-        if (instruction.opcode.isCall || instruction.opcode.isJumpOrBranch) {
+        if (instruction.opcode.type == OpCode.Type.CALL
+         || instruction.opcode.type == OpCode.Type.JMP
+         || instruction.opcode.type == OpCode.Type.BRA) {
             // replace address by label
             if (instruction.comment.length() > 0) {
                 try {
                     int targetAddress = Format.parseUnsigned(instruction.comment);
                     Symbol symbol;
-                    if (instruction.opcode.isCall) {
+                    if (instruction.opcode.type == OpCode.Type.CALL) {
                         symbol = functions.get(targetAddress);
                     }
                     else {
@@ -385,7 +413,7 @@ public class CodeStructure {
                     if (symbol != null) {
                         instruction.comment = symbol.getName();
                     }
-                    if (instruction.opcode.isJumpOrBranch) {
+                    if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
                         //if (areInSameRange(functions,  address, targetAddress))
                         instruction.comment += (targetAddress>address?" (skip)":" (loop)");
                     }
@@ -396,7 +424,7 @@ public class CodeStructure {
             else {
                 try {
                     int targetAddress = Format.parseUnsigned(instruction.operands);
-                    if (instruction.opcode.isCall) {
+                    if (instruction.opcode.type == OpCode.Type.CALL) {
                         Function function = functions.get(targetAddress);
                         if (function != null) {
                             instruction.operands = function.getName();
@@ -408,7 +436,7 @@ public class CodeStructure {
                             instruction.operands = label.getName();
                         }
                     }
-                    if (instruction.opcode.isJumpOrBranch) {
+                    if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
                         //TODO only if(areInSameRange(address, targetAddress))
                         instruction.comment =  targetAddress>address?"(skip)":"(loop)";
                     }
