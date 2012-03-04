@@ -2,10 +2,14 @@ package com.nikonhacker.dfr;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Symbol {
     int address;
     String name;
     String comment;
+    List<String> aliases;
 
     public Symbol(int address, String name, String comment) {
         this.address = address;
@@ -35,6 +39,17 @@ public class Symbol {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public List<String> getAliases() {
+        return aliases;
+    }
+
+    public void addAlias(String alias) {
+        if (aliases == null) {
+            aliases = new ArrayList<String>();
+        }
+        aliases.add(alias);
     }
 
     @Override
