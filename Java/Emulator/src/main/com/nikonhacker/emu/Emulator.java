@@ -82,7 +82,7 @@ public class Emulator {
 
 
     /**
-     * Provide a printstream to send disassembled form of executed instructions to
+     * Provide a PrintWriter to send disassembled form of executed instructions to
      * @param instructionPrintWriter
      */
     public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
