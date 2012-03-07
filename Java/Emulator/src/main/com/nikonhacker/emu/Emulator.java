@@ -9,10 +9,7 @@ import com.nikonhacker.emu.trigger.BreakCondition;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Emulator {
 
@@ -29,7 +26,8 @@ public class Emulator {
     private int sleepIntervalMs = 0;
     private boolean sleepIntervalChanged = false;
     private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-    
+    private final List<InterruptRequest> interruptRequests = new ArrayList<InterruptRequest>();
+
     private Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
@@ -1293,14 +1291,9 @@ public class Emulator {
                         break;
     
                     case 0x1F00: /* INT #u8 */
-                        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
-                        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.getPS());
-                        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
-                        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.pc + 2);
+                        processInterrupt(disassembledInstruction.x, cpuState.pc + 2);
                         cpuState.I = 0;
-                        cpuState.setS(0);
-                        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - disassembledInstruction.x * 4);
-    
+
                         /* No change to NZVC */
     
                         cycles = 3 + 3 * a;
@@ -2198,21 +2191,6 @@ public class Emulator {
                         throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
                 }
 
-                /* Delay slot processing */
-                if (nextPC != null) {
-                    if (delaySlotDone) {
-                        cpuState.pc = nextPC;
-                        nextPC = null;
-                        if (nextRP != null) {
-                            cpuState.setReg(CPUState.RP, nextRP);
-                            nextRP = null;
-                        }
-                    }
-                    else {
-                        delaySlotDone = true;
-                    }
-                }
-    
                 /* Pause if requested */
                 if (sleepIntervalMs != 0) {
                     if (sleepIntervalMs < 100) {
@@ -2239,22 +2217,55 @@ public class Emulator {
 
                 cycleRemaining -= cycles;
 
-                if (cycleRemaining <= 0) {
-                    // TODO : Check for interrupts
-
-                    /* Break if requested */
-                    for (BreakCondition breakCondition : breakConditions) {
-                        if(breakCondition.matches(cpuState, memory)) {
-                            exitRequired = true;
-                            return breakCondition;
+                /* Delay slot processing */
+                if (nextPC != null) {
+                    if (delaySlotDone) {
+                        cpuState.pc = nextPC;
+                        nextPC = null;
+                        if (nextRP != null) {
+                            cpuState.setReg(CPUState.RP, nextRP);
+                            nextRP = null;
                         }
                     }
-
-
-                    totalCycles += interruptPeriod;
-                    cycleRemaining += interruptPeriod;
-                    if (exitRequired) return null;
+                    else {
+                        delaySlotDone = true;
+                    }
                 }
+                else {
+                    // If not in a delay slot, see if it's time to check interrupts
+                    if (cycleRemaining <= 0) {
+                        /* Time to process waiting interrupts, if any */
+                        synchronized (interruptRequests) {
+                            if(!interruptRequests.isEmpty()) {
+                                InterruptRequest interruptRequest = interruptRequests.get(0);
+                                if (cpuState.accepts(interruptRequest)){
+                                    if (instructionPrintWriter != null) {
+                                        instructionPrintWriter.println("------------------------- Accepting " + interruptRequest);
+                                    }
+                                    interruptRequests.remove(0);
+                                    processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc);
+                                    cpuState.setILM(interruptRequest.getICR());
+                                }
+                            }
+                        }
+
+                        totalCycles += interruptPeriod;
+                        cycleRemaining += interruptPeriod;
+                    }
+                }
+
+                /* Break if requested */
+                if (!breakConditions.isEmpty()) {
+                    synchronized (breakConditions) {
+                        for (BreakCondition breakCondition : breakConditions) {
+                            if(breakCondition.matches(cpuState, memory)) {
+                                exitRequired = true;
+                                return breakCondition;
+                            }
+                        }
+                    }
+                }
+                if (exitRequired) return null;
 
             }
         }
@@ -2274,6 +2285,15 @@ public class Emulator {
         }
     }
 
+    private void processInterrupt(int interruptNumber, int pcToStore) {
+        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
+        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.getPS());
+        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
+        memory.store32(cpuState.getReg(CPUState.SSP), pcToStore);
+        cpuState.setS(0);
+        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - interruptNumber * 4);
+    }
+
     private void setDelayedChanges(Integer nextPC, Integer nextRP) {
         this.nextPC = nextPC;
         this.nextRP = nextRP;
@@ -2283,4 +2303,33 @@ public class Emulator {
     public void setBreakConditions(List<BreakCondition> breakConditions) {
         this.breakConditions = breakConditions;
     }
+
+    public boolean addInterruptRequest(InterruptRequest newInterruptRequest) {
+        synchronized (interruptRequests) {
+            for (InterruptRequest currentInterruptRequest : interruptRequests) {
+                if (currentInterruptRequest.getInterruptNumber() == newInterruptRequest.getInterruptNumber()) {
+                    // Same number. Keep highest priority one
+                    if ((newInterruptRequest.isNMI() && !currentInterruptRequest.isNMI())
+                            || (newInterruptRequest.getICR() < currentInterruptRequest.getICR())) {
+                        // New is better. Remove old one then go on adding
+                        interruptRequests.remove(currentInterruptRequest);
+                        break;
+                    }
+                    else {
+                        // Old is better. No change to the list. Exit
+                        return false;
+                    }
+                }
+            }
+            interruptRequests.add(newInterruptRequest);
+            Collections.sort(interruptRequests, new Comparator<InterruptRequest>() {
+                public int compare(InterruptRequest o1, InterruptRequest o2) {
+                    // Lower ICR => higher priority
+                    return o2.getICR() - o1.getICR();
+                }
+            });
+            return true;
+        }
+    }
+
 }

@@ -27,6 +27,7 @@ import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
+import com.nikonhacker.gui.component.interruptController.InterruptControllerFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
@@ -76,6 +77,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_SAVE_LOAD_MEMORY = "SAVE_LOAD_MEMORY";
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
+    private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
@@ -118,6 +120,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
+    private JCheckBoxMenuItem interruptControllerMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
     private JMenuItem optionsMenuItem;
 
@@ -137,6 +140,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton component4006Button;
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
+    private JButton interruptControllerButton;
     private JButton saveLoadMemoryButton;
     private JButton optionsButton;
 
@@ -149,6 +153,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private Component4006Frame component4006Frame;
     private CodeStructureFrame codeStructureFrame;
     private SourceCodeFrame sourceCodeFrame;
+    private InterruptControllerFrame interruptControllerFrame;
     private final Insets toolbarButtonMargin;
     private final JPanel toolBar;
     private JLabel statusBar;
@@ -321,6 +326,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(screenEmulatorButton);
         component4006Button = makeButton("4006", COMMAND_TOGGLE_COMPONENT_4006_WINDOW, "Component 4006", "Component 4006");
         bar.add(component4006Button);
+        interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
+        bar.add(interruptControllerButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -548,6 +555,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.addActionListener(this);
         viewMenu.add(component4006MenuItem);
 
+        //Interrupt controller
+        interruptControllerMenuItem = new JCheckBoxMenuItem("Interrupt controller");
+        interruptControllerMenuItem.setMnemonic(KeyEvent.VK_I);
+        interruptControllerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
+        interruptControllerMenuItem.setActionCommand(COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW);
+        interruptControllerMenuItem.addActionListener(this);
+        viewMenu.add(interruptControllerMenuItem);
+
+
         viewMenu.add(new JSeparator());
 
         //code structure
@@ -676,6 +692,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
             toggleComponent4006();
+        }
+        else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
+            toggleInterruptControllerWindow();
         }
         else if (COMMAND_DECODE.equals(e.getActionCommand())) {
             openDecodeDialog();
@@ -1045,6 +1064,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             sourceCodeFrame.dispose();
             sourceCodeFrame = null;
         }
+        if (interruptControllerFrame != null) {
+            interruptControllerFrame.dispose();
+            interruptControllerFrame = null;
+        }
+        
     }
 
     private void toggleBreakTriggerList() {
@@ -1167,6 +1191,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         updateStates();
     }
+    
+    private void toggleInterruptControllerWindow() {
+        if (interruptControllerFrame == null) {
+            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, this);
+            addDocumentFrame(interruptControllerFrame);
+            interruptControllerFrame.display(true);
+        }
+        else {
+            interruptControllerFrame.dispose();
+            interruptControllerFrame = null;
+        }
+        updateStates();
+    }
 
 
 
@@ -1198,6 +1235,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == component4006Frame) {
             toggleComponent4006();
         }
+        else if (frame == interruptControllerFrame) {
+            toggleInterruptControllerWindow();
+        }
         else if (frame == codeStructureFrame) {
             toggleCodeStructureWindow();
         }
@@ -1213,15 +1253,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public void updateStates() {
+        // CheckboxMenuItem checked or not
         disassemblyMenuItem.setSelected(disassemblyLogFrame != null);
         cpuStateMenuItem.setSelected(cpuStateEditorFrame != null);
         screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
         memoryActivityViewerMenuItem.setSelected(memoryActivityViewerFrame != null);
         memoryHexEditorMenuItem.setSelected(memoryHexEditorFrame != null);
         component4006MenuItem.setSelected(component4006Frame != null);
+        interruptControllerMenuItem.setSelected(interruptControllerFrame != null);
+
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
         sourceCodeMenuItem.setSelected(sourceCodeFrame != null);
 
+        // Menus and buttons enabled or not
+        codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
+        sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
         if (isImageLoaded) {
             analyseMenuItem.setEnabled(true); analyseButton.setEnabled(true);
 
@@ -1231,7 +1277,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerMenuItem.setEnabled(true); memoryActivityViewerButton.setEnabled(true);
             memoryHexEditorMenuItem.setEnabled(true); memoryHexEditorButton.setEnabled(true);
             component4006MenuItem.setEnabled(true); component4006Button.setEnabled(true);
-            
+            interruptControllerMenuItem.setEnabled(true); interruptControllerButton.setEnabled(true);
+
             saveLoadMemoryMenuItem.setEnabled(true); saveLoadMemoryButton.setEnabled(true);
 
             stopMenuItem.setEnabled(true); stopButton.setEnabled(true);
@@ -1244,6 +1291,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
                 breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
                 optionsMenuItem.setEnabled(false); optionsButton.setEnabled(false);
+
+                // Editable components
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(false);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(false);
             }
@@ -1255,6 +1304,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 stepMenuItem.setEnabled(true); stepButton.setEnabled(true);
                 breakpointMenuItem.setEnabled(true); breakpointButton.setEnabled(true);
                 optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
+
+                // Editable components
                 if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
                 if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
             }
@@ -1268,6 +1319,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerMenuItem.setEnabled(false); memoryActivityViewerButton.setEnabled(false);
             memoryHexEditorMenuItem.setEnabled(false); memoryHexEditorButton.setEnabled(false);
             component4006MenuItem.setEnabled(false); component4006Button.setEnabled(false);
+            interruptControllerMenuItem.setEnabled(false); interruptControllerButton.setEnabled(false);
 
             saveLoadMemoryMenuItem.setEnabled(false); saveLoadMemoryButton.setEnabled(false);
 
@@ -1281,13 +1333,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             stopMenuItem.setEnabled(false); stopButton.setEnabled(false);
 
+            // Editable components
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
         }
-
-        codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
-        sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
-
     }
 
 
@@ -1391,7 +1440,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // And we put a breakpoint on the instruction after the call
         List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
         breakConditions.add(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
-        
+
         emulator.setBreakConditions(breakConditions);
 
         cpuState.pc = FUNCTION_CALL_BASE_ADDRESS;
@@ -1436,18 +1485,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public void jumpToSource(Function function) {
-        if (sourceCodeFrame == null && codeStructure != null) {
-            toggleSourceCodeWindow();
+        if (codeStructure != null) {
+            if (sourceCodeFrame == null) {
+                toggleSourceCodeWindow();
+            }
+            sourceCodeFrame.writeFunction(function);
         }
-        sourceCodeFrame.writeFunction(function);
     }
 
     public void jumpToSource(int address) {
-        if (sourceCodeFrame == null && codeStructure != null) {
-            toggleSourceCodeWindow();
-        }
-        if (!sourceCodeFrame.exploreAddress(address)) {
-            JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+        if (codeStructure != null) {
+            if (sourceCodeFrame == null) {
+                toggleSourceCodeWindow();
+            }
+            if (!sourceCodeFrame.exploreAddress(address)) {
+                JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 

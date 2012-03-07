@@ -1,6 +1,7 @@
 package com.nikonhacker.dfr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -299,6 +300,13 @@ public class CPUState {
 
     public int getReg(int registerNumber) {
         return regValue[registerNumber].value;
+    }
+
+    public boolean accepts(InterruptRequest interruptRequest) {
+        return(
+                (getILM() > interruptRequest.getICR() && I == 1)
+             || (getILM() > 15 && interruptRequest.isNMI())
+              );
     }
 
     private static class Register32 {
