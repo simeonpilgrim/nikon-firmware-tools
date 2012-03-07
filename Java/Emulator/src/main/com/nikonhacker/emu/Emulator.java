@@ -14,8 +14,7 @@ import java.util.*;
 public class Emulator {
 
     private long totalCycles;
-    private int interruptPeriod;
-    private boolean exitRequired = false;
+    private int interruptPeriod = 1; // By default, check interrupts at each instruction
     private Memory memory;
     private CPUState cpuState;
 
@@ -24,8 +23,8 @@ public class Emulator {
     private boolean delaySlotDone = false;
     private PrintWriter instructionPrintWriter;
     private int sleepIntervalMs = 0;
-    private boolean sleepIntervalChanged = false;
-    private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+    private boolean exitSleepLoop = false;
+    private final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
     private final List<InterruptRequest> interruptRequests = new ArrayList<InterruptRequest>();
 
     private Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
@@ -50,6 +49,8 @@ public class Emulator {
         emulator.play();
     }
 
+    public Emulator() {
+    }
 
     public Emulator(int interruptPeriod) {
         this.interruptPeriod = interruptPeriod;
@@ -60,10 +61,6 @@ public class Emulator {
         return totalCycles;
     }
 
-    public void setTotalCycles(long totalCycles) {
-        this.totalCycles = totalCycles;
-    }
-
     /**
      * Sets how often external interrupts are checked
      * @param interruptPeriod the period, in CPU cycles
@@ -71,15 +68,6 @@ public class Emulator {
     public void setInterruptPeriod(int interruptPeriod) {
         this.interruptPeriod = interruptPeriod;
     }
-
-    /**
-     * Call this to request a stop/pause of the emulator
-     * @param exitRequired
-     */
-    public void setExitRequired(boolean exitRequired) {
-        this.exitRequired = exitRequired;
-    }
-
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -97,8 +85,8 @@ public class Emulator {
         this.sleepIntervalMs = sleepIntervalMs;
     }
 
-    public void setSleepIntervalChanged() {
-        this.sleepIntervalChanged = true;
+    public void exitSleepLoop() {
+        this.exitSleepLoop = true;
     }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
@@ -119,7 +107,7 @@ public class Emulator {
 
     /**
      * Starts emulating
-     * @return the BreakCondition that made the emulator stop, or null if it didn't stop for a BreakCondition
+     * @return the BreakCondition that made the emulator stop
      * @throws EmulationException
      */
     public BreakCondition play() throws EmulationException {
@@ -2191,31 +2179,8 @@ public class Emulator {
                         throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
                 }
 
-                /* Pause if requested */
-                if (sleepIntervalMs != 0) {
-                    if (sleepIntervalMs < 100) {
-                        try {
-                            Thread.sleep(sleepIntervalMs);
-                        } catch (InterruptedException e) {
-                            // noop
-                        }
-                    }
-                    else {
-                        for (int i = 0; i < sleepIntervalMs /100; i++) {
-                            try {
-                                Thread.sleep(100);
-                                if (sleepIntervalChanged) {
-                                    break;
-                                }
-                            } catch (InterruptedException e) {
-                                // noop
-                            }
-                        }
-                    }
-                    sleepIntervalChanged = false;
-                }
-
                 cycleRemaining -= cycles;
+                totalCycles += cycles;
 
                 /* Delay slot processing */
                 if (nextPC != null) {
@@ -2249,7 +2214,6 @@ public class Emulator {
                             }
                         }
 
-                        totalCycles += interruptPeriod;
                         cycleRemaining += interruptPeriod;
                     }
                 }
@@ -2259,14 +2223,35 @@ public class Emulator {
                     synchronized (breakConditions) {
                         for (BreakCondition breakCondition : breakConditions) {
                             if(breakCondition.matches(cpuState, memory)) {
-                                exitRequired = true;
                                 return breakCondition;
                             }
                         }
                     }
                 }
-                if (exitRequired) return null;
 
+                /* Pause if requested */
+                if (sleepIntervalMs != 0) {
+                    exitSleepLoop = false;
+                    if (sleepIntervalMs < 100) {
+                        try {
+                            Thread.sleep(sleepIntervalMs);
+                        } catch (InterruptedException e) {
+                            // noop
+                        }
+                    }
+                    else {
+                        for (int i = 0; i < sleepIntervalMs /100; i++) {
+                            try {
+                                Thread.sleep(100);
+                                if (exitSleepLoop) {
+                                    break;
+                                }
+                            } catch (InterruptedException e) {
+                                // noop
+                            }
+                        }
+                    }
+                }
             }
         }
         catch (Exception e) {
@@ -2300,8 +2285,16 @@ public class Emulator {
         this.delaySlotDone = false;
     }
 
-    public void setBreakConditions(List<BreakCondition> breakConditions) {
-        this.breakConditions = breakConditions;
+    public void clearBreakConditions() {
+        synchronized (breakConditions) {
+            breakConditions.clear();
+        }
+    }
+
+    public void addBreakCondition(BreakCondition breakCondition) {
+        synchronized (breakConditions) {
+            breakConditions.add(breakCondition);
+        }
     }
 
     public boolean addInterruptRequest(InterruptRequest newInterruptRequest) {

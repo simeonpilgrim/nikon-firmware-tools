@@ -171,7 +171,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
-        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 createAndShowGUI();
             }
@@ -843,7 +843,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void openLoadImageDialog() {
         final JFileChooser fc = new JFileChooser();
 
-        fc.setCurrentDirectory(new java.io.File("."));
+        fc.setCurrentDirectory(new File("."));
 
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
@@ -984,7 +984,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void setEmulatorSleepCode(int value) {
-        emulator.setSleepIntervalChanged();
+        emulator.exitSleepLoop();
         switch (value) {
             case 0:
                 emulator.setSleepIntervalMs(0);
@@ -1015,7 +1015,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             cpuState = new CPUState(BASE_ADDRESS);
 
-            emulator = new Emulator(1); // We stop at each instruction to allow for pause and other debugging
+            emulator = new Emulator();
             emulator.setMemory(memory);
             emulator.setCpuState(cpuState);
 
@@ -1361,17 +1361,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             throw new RuntimeException("No Image loaded !");
         }
 
-        List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+        emulator.clearBreakConditions();
+
         if (stepMode) {
-            breakConditions.add(new AlwaysBreakCondition());
+            emulator.addBreakCondition(new AlwaysBreakCondition());
         }
         else {
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                     if (breakTrigger.isEnabled()) {
-                        breakConditions.add(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+                        emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
                     }
                 }
+            }
+            else {
+                emulator.setInterruptPeriod(1000);
             }
             if (endAddress != null) {
                 CPUState values = new CPUState(endAddress);
@@ -1380,11 +1384,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 flags.setILM(0);
                 flags.setReg(CPUState.TBR, 0);
                 BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags);
-                breakConditions.add(new BreakPointCondition(endAddress, breakTrigger));
+                emulator.addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
         }
-        emulator.setBreakConditions(breakConditions);
-
         startEmulator();
     }
 
@@ -1394,7 +1396,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void startEmulator() {
-        emulator.setExitRequired(false);
         isEmulatorPlaying = true;
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
@@ -1438,10 +1439,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memory.store16(FUNCTION_CALL_BASE_ADDRESS + 8, 0xe0ff);  // HALT, infinite loop
 
         // And we put a breakpoint on the instruction after the call
-        List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-        breakConditions.add(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
-
-        emulator.setBreakConditions(breakConditions);
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
 
         cpuState.pc = FUNCTION_CALL_BASE_ADDRESS;
 
@@ -1450,14 +1449,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private void pauseEmulator() {
-        emulator.setExitRequired(true);
+        emulator.addBreakCondition(new AlwaysBreakCondition());
+        emulator.exitSleepLoop();
     }
 
     private void stopEmulator() {
-        emulator.setExitRequired(true);
+        emulator.addBreakCondition(new AlwaysBreakCondition());
+        emulator.exitSleepLoop();
         try {
             // Wait for emulator to stop
-            Thread.sleep(10);
+            Thread.sleep(120);
         } catch (InterruptedException e) {}
         loadImage();
     }
