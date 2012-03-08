@@ -2317,8 +2317,15 @@ public class Emulator {
             interruptRequests.add(newInterruptRequest);
             Collections.sort(interruptRequests, new Comparator<InterruptRequest>() {
                 public int compare(InterruptRequest o1, InterruptRequest o2) {
-                    // Lower ICR => higher priority
-                    return o2.getICR() - o1.getICR();
+                    // returns a negative number if o1 has higher priority (NMI or lower ICR) and should appear first
+                    if (o2.isNMI() != o1.isNMI()) {
+                        // If only one is NMI, it has to come on top
+                        return (o1.isNMI()?-1:1);
+                    }
+                    else {
+                        // Lower ICR gets a higher priority
+                        return o1.getICR() - o2.getICR();
+                    }
                 }
             });
             return true;
