@@ -1364,10 +1364,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulator.clearBreakConditions();
 
         if (stepMode) {
+            emulator.setInterruptPeriod(1);
             emulator.addBreakCondition(new AlwaysBreakCondition());
         }
         else {
             if (debugMode) {
+                emulator.setInterruptPeriod(1);
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                     if (breakTrigger.isEnabled()) {
                         emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
