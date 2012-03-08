@@ -1194,7 +1194,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     
     private void toggleInterruptControllerWindow() {
         if (interruptControllerFrame == null) {
-            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, this);
+            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, memory, this);
             addDocumentFrame(interruptControllerFrame);
             interruptControllerFrame.display(true);
         }

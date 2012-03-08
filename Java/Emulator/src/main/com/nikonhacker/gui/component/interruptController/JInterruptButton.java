@@ -72,7 +72,8 @@ public class JInterruptButton extends JButton {
         }
 
         if (interruptNumber >= 0x10 && interruptNumber <= 0x2F) {
-            tooltip += " or IR" + (interruptNumber<10?"0":"") + interruptNumber;
+            int irNumber = interruptNumber - InterruptControllerFrame.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
+            tooltip += " or IR" + (irNumber <10?"0":"") + irNumber;
         }
 
         setToolTipText(tooltip);
