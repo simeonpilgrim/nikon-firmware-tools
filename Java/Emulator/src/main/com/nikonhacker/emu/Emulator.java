@@ -9,16 +9,12 @@ import com.nikonhacker.emu.trigger.BreakCondition;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class Emulator {
 
     private long totalCycles;
-    private int interruptPeriod;
-    private boolean exitRequired = false;
+    private int interruptPeriod = 1; // By default, check interrupts at each instruction
     private Memory memory;
     private CPUState cpuState;
 
@@ -27,9 +23,10 @@ public class Emulator {
     private boolean delaySlotDone = false;
     private PrintWriter instructionPrintWriter;
     private int sleepIntervalMs = 0;
-    private boolean sleepIntervalChanged = false;
-    private List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-    
+    private boolean exitSleepLoop = false;
+    private final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+    private final List<InterruptRequest> interruptRequests = new ArrayList<InterruptRequest>();
+
     private Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
@@ -52,6 +49,8 @@ public class Emulator {
         emulator.play();
     }
 
+    public Emulator() {
+    }
 
     public Emulator(int interruptPeriod) {
         this.interruptPeriod = interruptPeriod;
@@ -60,10 +59,6 @@ public class Emulator {
 
     public long getTotalCycles() {
         return totalCycles;
-    }
-
-    public void setTotalCycles(long totalCycles) {
-        this.totalCycles = totalCycles;
     }
 
     /**
@@ -75,16 +70,7 @@ public class Emulator {
     }
 
     /**
-     * Call this to request a stop/pause of the emulator
-     * @param exitRequired
-     */
-    public void setExitRequired(boolean exitRequired) {
-        this.exitRequired = exitRequired;
-    }
-
-
-    /**
-     * Provide a printstream to send disassembled form of executed instructions to
+     * Provide a PrintWriter to send disassembled form of executed instructions to
      * @param instructionPrintWriter
      */
     public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
@@ -99,8 +85,8 @@ public class Emulator {
         this.sleepIntervalMs = sleepIntervalMs;
     }
 
-    public void setSleepIntervalChanged() {
-        this.sleepIntervalChanged = true;
+    public void exitSleepLoop() {
+        this.exitSleepLoop = true;
     }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
@@ -121,7 +107,7 @@ public class Emulator {
 
     /**
      * Starts emulating
-     * @return the BreakCondition that made the emulator stop, or null if it didn't stop for a BreakCondition
+     * @return the BreakCondition that made the emulator stop
      * @throws EmulationException
      */
     public BreakCondition play() throws EmulationException {
@@ -1293,14 +1279,9 @@ public class Emulator {
                         break;
     
                     case 0x1F00: /* INT #u8 */
-                        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
-                        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.getPS());
-                        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
-                        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.pc + 2);
+                        processInterrupt(disassembledInstruction.x, cpuState.pc + 2);
                         cpuState.I = 0;
-                        cpuState.setS(0);
-                        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - disassembledInstruction.x * 4);
-    
+
                         /* No change to NZVC */
     
                         cycles = 3 + 3 * a;
@@ -2198,6 +2179,9 @@ public class Emulator {
                         throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
                 }
 
+                cycleRemaining -= cycles;
+                totalCycles += cycles;
+
                 /* Delay slot processing */
                 if (nextPC != null) {
                     if (delaySlotDone) {
@@ -2212,9 +2196,42 @@ public class Emulator {
                         delaySlotDone = true;
                     }
                 }
-    
+                else {
+                    // If not in a delay slot, see if it's time to check interrupts
+                    if (cycleRemaining <= 0) {
+                        /* Time to process waiting interrupts, if any */
+                        synchronized (interruptRequests) {
+                            if(!interruptRequests.isEmpty()) {
+                                InterruptRequest interruptRequest = interruptRequests.get(0);
+                                if (cpuState.accepts(interruptRequest)){
+                                    if (instructionPrintWriter != null) {
+                                        instructionPrintWriter.println("------------------------- Accepting " + interruptRequest);
+                                    }
+                                    interruptRequests.remove(0);
+                                    processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc);
+                                    cpuState.setILM(interruptRequest.getICR());
+                                }
+                            }
+                        }
+
+                        cycleRemaining += interruptPeriod;
+                    }
+                }
+
+                /* Break if requested */
+                if (!breakConditions.isEmpty()) {
+                    synchronized (breakConditions) {
+                        for (BreakCondition breakCondition : breakConditions) {
+                            if(breakCondition.matches(cpuState, memory)) {
+                                return breakCondition;
+                            }
+                        }
+                    }
+                }
+
                 /* Pause if requested */
                 if (sleepIntervalMs != 0) {
+                    exitSleepLoop = false;
                     if (sleepIntervalMs < 100) {
                         try {
                             Thread.sleep(sleepIntervalMs);
@@ -2226,7 +2243,7 @@ public class Emulator {
                         for (int i = 0; i < sleepIntervalMs /100; i++) {
                             try {
                                 Thread.sleep(100);
-                                if (sleepIntervalChanged) {
+                                if (exitSleepLoop) {
                                     break;
                                 }
                             } catch (InterruptedException e) {
@@ -2234,28 +2251,7 @@ public class Emulator {
                             }
                         }
                     }
-                    sleepIntervalChanged = false;
                 }
-
-                cycleRemaining -= cycles;
-
-                if (cycleRemaining <= 0) {
-                    // TODO : Check for interrupts
-
-                    /* Break if requested */
-                    for (BreakCondition breakCondition : breakConditions) {
-                        if(breakCondition.matches(cpuState, memory)) {
-                            exitRequired = true;
-                            return breakCondition;
-                        }
-                    }
-
-
-                    totalCycles += interruptPeriod;
-                    cycleRemaining += interruptPeriod;
-                    if (exitRequired) return null;
-                }
-
             }
         }
         catch (Exception e) {
@@ -2274,13 +2270,66 @@ public class Emulator {
         }
     }
 
+    private void processInterrupt(int interruptNumber, int pcToStore) {
+        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
+        memory.store32(cpuState.getReg(CPUState.SSP), cpuState.getPS());
+        cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
+        memory.store32(cpuState.getReg(CPUState.SSP), pcToStore);
+        cpuState.setS(0);
+        cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3FC - interruptNumber * 4);
+    }
+
     private void setDelayedChanges(Integer nextPC, Integer nextRP) {
         this.nextPC = nextPC;
         this.nextRP = nextRP;
         this.delaySlotDone = false;
     }
 
-    public void setBreakConditions(List<BreakCondition> breakConditions) {
-        this.breakConditions = breakConditions;
+    public void clearBreakConditions() {
+        synchronized (breakConditions) {
+            breakConditions.clear();
+        }
     }
+
+    public void addBreakCondition(BreakCondition breakCondition) {
+        synchronized (breakConditions) {
+            breakConditions.add(breakCondition);
+        }
+    }
+
+    public boolean addInterruptRequest(InterruptRequest newInterruptRequest) {
+        synchronized (interruptRequests) {
+            for (InterruptRequest currentInterruptRequest : interruptRequests) {
+                if (currentInterruptRequest.getInterruptNumber() == newInterruptRequest.getInterruptNumber()) {
+                    // Same number. Keep highest priority one
+                    if ((newInterruptRequest.isNMI() && !currentInterruptRequest.isNMI())
+                            || (newInterruptRequest.getICR() < currentInterruptRequest.getICR())) {
+                        // New is better. Remove old one then go on adding
+                        interruptRequests.remove(currentInterruptRequest);
+                        break;
+                    }
+                    else {
+                        // Old is better. No change to the list. Exit
+                        return false;
+                    }
+                }
+            }
+            interruptRequests.add(newInterruptRequest);
+            Collections.sort(interruptRequests, new Comparator<InterruptRequest>() {
+                public int compare(InterruptRequest o1, InterruptRequest o2) {
+                    // returns a negative number if o1 has higher priority (NMI or lower ICR) and should appear first
+                    if (o2.isNMI() != o1.isNMI()) {
+                        // If only one is NMI, it has to come on top
+                        return (o1.isNMI()?-1:1);
+                    }
+                    else {
+                        // Lower ICR gets a higher priority
+                        return o1.getICR() - o2.getICR();
+                    }
+                }
+            });
+            return true;
+        }
+    }
+
 }

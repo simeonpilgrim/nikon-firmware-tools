@@ -1,6 +1,7 @@
 package com.nikonhacker.dfr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -113,7 +114,7 @@ public class CPUState {
     }
 
     /**
-     * Rebuilds CCR from individual bits
+     * Returns CCR part of the PS register (built from individual bits)
      * @return CCR
      */
     public int getCCR() {
@@ -121,7 +122,7 @@ public class CPUState {
     }
 
     /**
-     * Splits CCR into individual bits
+     * Sets CCR part of the PS register (splits it into individual bits)
      * @param ccr
      */
     public void setCCR(int ccr) {
@@ -133,6 +134,19 @@ public class CPUState {
         C = ccr & 0x01;
     }
 
+    /**
+     * Returns S bit of the PS register (built from individual bits)
+     * @return CCR
+     */
+    public int getS() {
+        return S;
+    }
+
+
+    /**
+     * Sets S bit of the PS register (switching R15 to USP or SSP behaviour accordingly)
+     * @param newS
+     */
     public void setS(int newS) {
         S = newS;
         if (S == 0) {
@@ -143,12 +157,8 @@ public class CPUState {
         }
     }
 
-    public int getS() {
-        return S;
-    }
-
     /**
-     * Rebuilds SCR from individual bits
+     * Returns SCR part of the PS register (built from individual bits)
      * @return SCR
      */
     public int getSCR() {
@@ -156,7 +166,7 @@ public class CPUState {
     }
 
     /**
-     * Splits SCR into individual bits
+     * Sets SCR part of the PS register (splits it into individual bits)
      * @param scr
      */
     public void setSCR(int scr) {
@@ -167,7 +177,7 @@ public class CPUState {
 
 
     /**
-     * Rebuilds ILM from individual bits
+     * Returns ILM part of the PS register (built from individual bits)
      * @return ILM
      */
     public int getILM() {
@@ -175,7 +185,7 @@ public class CPUState {
     }
 
     /**
-     * Splits ILM into individual bits
+     * Sets ILM part of the PS register (splits it into individual bits)
      * @param ilm
      */
     public void setILM(int ilm) {
@@ -290,6 +300,13 @@ public class CPUState {
 
     public int getReg(int registerNumber) {
         return regValue[registerNumber].value;
+    }
+
+    public boolean accepts(InterruptRequest interruptRequest) {
+        return(
+                (getILM() > interruptRequest.getICR() && I == 1)
+             || (getILM() > 15 && interruptRequest.isNMI())
+              );
     }
 
     private static class Register32 {

@@ -3,6 +3,8 @@ package com.nikonhacker.emu;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.trigger.AlwaysBreakCondition;
+import com.nikonhacker.emu.trigger.BreakPointCondition;
 import junit.framework.TestCase;
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,7 +30,9 @@ public class EmulatorTest extends TestCase {
     static Memory memory;
 
     static {
-        emulator = new Emulator(1); // Pause after every instruction to see if exit is required
+        emulator = new Emulator();
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new AlwaysBreakCondition());
 
         cpuState = new CPUState(BASE_ADDRESS);
         emulator.setCpuState(cpuState);
@@ -46,8 +50,8 @@ public class EmulatorTest extends TestCase {
     private void initCpu() {
         cpuState.reset();
         cpuState.pc = BASE_ADDRESS;
-        emulator.setInterruptPeriod(1); // default max cycles : 1
-        emulator.setExitRequired(true); // Exit at first interrupt period
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new AlwaysBreakCondition()); // Exit at first interrupt period
     }
 
     private void setInstruction(int instruction) {
@@ -983,8 +987,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testFullDIVS");
         initCpu();
 
-        emulator.setInterruptPeriod(36);
-
         memory.store16(BASE_ADDRESS     , 0x9742); // 0b1001011101000010 DIV0S R2
         memory.store16(BASE_ADDRESS +  2, 0x9762); // 0b1001011101100010 DIV1  R2
         memory.store16(BASE_ADDRESS +  4, 0x9762); // 0b1001011101100010 DIV1  R2
@@ -1026,6 +1028,8 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.MDL, 0xFEDCBA98);
         cpuState.setSCR(0); // 0b000
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS + 72, null));
         emulator.play();
 
         checkRegister(2, 0x01234567);
@@ -1037,8 +1041,6 @@ public class EmulatorTest extends TestCase {
 
     public void testOneSignedDivision(int dividend, int divisor) throws EmulationException {
         initCpu();
-
-        emulator.setInterruptPeriod(36);
 
         memory.store16(BASE_ADDRESS     , 0x9742); // 0b1001011101000010 DIV0S R2
         memory.store16(BASE_ADDRESS +  2, 0x9762); // 0b1001011101100010 DIV1  R2
@@ -1080,6 +1082,9 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(2, divisor);
         cpuState.setReg(CPUState.MDL, dividend);
         cpuState.setSCR(0); // 0b000
+
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS + 72, null));
 
         emulator.play();
 
@@ -1114,8 +1119,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testFullDIVU");
         initCpu();
 
-        emulator.setInterruptPeriod(33);
-
         memory.store16(BASE_ADDRESS     , 0x9752); // 0b1001011101010010 DIV0U R2
         memory.store16(BASE_ADDRESS +  2, 0x9762); // 0b1001011101100010 DIV1  R2
         memory.store16(BASE_ADDRESS +  4, 0x9762); // 0b1001011101100010 DIV1  R2
@@ -1154,6 +1157,8 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.MDL, 0xFEDCBA98);
         cpuState.setSCR(0); // 0b000
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS + 66, null));
         emulator.play();
 
         checkRegister(2, 0x01234567);
@@ -1165,8 +1170,6 @@ public class EmulatorTest extends TestCase {
 
     public void testOneUnsignedDivision(int dividend, int divisor) throws EmulationException {
         initCpu();
-
-        emulator.setInterruptPeriod(33);
 
         memory.store16(BASE_ADDRESS     , 0x9752); // 0b1001011101010010 DIV0U R2
         memory.store16(BASE_ADDRESS +  2, 0x9762); // 0b1001011101100010 DIV1  R2
@@ -1206,6 +1209,8 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.MDL, dividend);
         cpuState.setSCR(0); // 0b000
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS + 66, null));
         emulator.play();
 
         long foundQuotient = cpuState.getReg(CPUState.MDL) & 0xFFFFFFFFL;
@@ -2143,14 +2148,14 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testJMP_D");
         initCpu();
 
-        emulator.setInterruptPeriod(2);
-
         memory.store16(0xFF800000, 0x9f01); // 0b1001111100000001 JMP:D @Ri
         memory.store16(0xFF800002, 0xcff1); // 0b1100111111110001 LDI:8 #0FFH, R1
 
         cpuState.setReg(1, 0xC0008000);
         cpuState.pc=0xFF800000;
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(0xC0008000, null));
         emulator.play();
 
         checkRegister(1, 0x000000FF);
@@ -2161,8 +2166,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testCALL_D_D8");
         initCpu();
 
-        emulator.setInterruptPeriod(2);
-
         memory.store16(0xFF800000, 0xd890); // 0b1101100010010000 CALL:D (+0x122)
         memory.store16(0xFF800002, 0xc002); // 0b1100000000000010 LDI:8 #0, R2
 
@@ -2170,6 +2173,8 @@ public class EmulatorTest extends TestCase {
         cpuState.pc=0xFF800000;
         cpuState.setReg(CPUState.RP, RANDOM_32);
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(0xFF800122, null));
         emulator.play();
 
         checkRegister(2, 0);
@@ -2181,8 +2186,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testCALL_D_97");
         initCpu();
 
-        emulator.setInterruptPeriod(2);
-
         memory.store16(0x8000FFFE, 0x9f11); // 0b1001111100010001 CALL:D @R1
         memory.store16(0x80010000, 0xc011); // 0b1100000000010001 LDI:8 #1, R1
 
@@ -2190,6 +2193,8 @@ public class EmulatorTest extends TestCase {
         cpuState.pc=0x8000FFFE;
         cpuState.setReg(CPUState.RP, RANDOM_32);
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(0xFFFFF800, null));
         emulator.play();
 
         checkRegister(1, 0x00000001);
@@ -2201,8 +2206,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testRET_D");
         initCpu();
 
-        emulator.setInterruptPeriod(2);
-
         memory.store16(0xFFF08820, 0x9f20); // 0b1001111100100000 RET:D
         memory.store16(0xFFF08822, 0x8b01); // 0b1100000000010001 MOV R0, R1
 
@@ -2211,6 +2214,8 @@ public class EmulatorTest extends TestCase {
         cpuState.pc=0xFFF08820;
         cpuState.setReg(CPUState.RP, 0x8000AE86);
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(0x8000AE86, null));
         emulator.play();
 
         checkRegister(0, 0x00112233);
@@ -2223,8 +2228,6 @@ public class EmulatorTest extends TestCase {
         System.out.println("EmulatorTest.testBcc_D");
         initCpu();
 
-        emulator.setInterruptPeriod(2);
-
         memory.store16(0xFF800000, 0xff28); // 0b1111111100101000 CALL:D (+0x50)
         memory.store16(0xFF800002, 0xcff1); // 0b1100111111110001 LDI:8 #FF, R1
 
@@ -2232,6 +2235,8 @@ public class EmulatorTest extends TestCase {
         cpuState.pc=0xFF800000;
         cpuState.setCCR(0xa); // 0b1010
 
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(0xFF800052, null));
         emulator.play();
 
         checkRegister(1, 0x000000FF);
