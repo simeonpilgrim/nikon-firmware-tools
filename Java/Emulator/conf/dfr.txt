@@ -1,0 +1,321 @@
+############################### File map: D5100
+-i 0x00040000-0x00BFFFFF=0x00000000
+ 
+############################### Memory map:
+
+-m 0x00040000-0x00040709=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x0004070A-0x00040869=DATA:W
+
+
+-m 0x0004086A-0x00040947=CODE
+
+
+# Softune RTOS Copyright :
+#-m 0x00040948-0x000409b3=DATA:L
+
+
+-m 0x000409b4-0x000504E1=CODE
+
+
+# Unknown :
+#-m 0x000504E2-0x0005425F=DATA:L
+# FotoNation RedEye library Copyright :
+#-m 0x00054200-0x00054255=DATA:L
+#-m 0x00054256-0x00055eeb=DATA:L
+#JPEG till the end ?
+#-m 0x00055eec-0x00081d5f=DATA:L
+#JPEGs
+#-m 0x00081d60-0x0008a15f=DATA:L
+# Unknown :
+#-m 0x0008a160-0x000A10E2=DATA:L
+# 0xFF :
+#-m 0x000A10E4-0x000A3F3B=DATA:L
+# Unknown :
+#-m 0x000A3F3C-0x000A4513=DATA:L
+# 0xFF :
+#-m 0x000A4514-0x000AA2BB=DATA:L
+# Unknown :
+#-m 0x000AA2BC-0x000AB875=DATA:L
+# 0xAA276 is 0xFF
+# so 000AA2C4 is data
+# AA2CA-AA34A is data (00 - 07)
+# AA34C is data
+# AA38E is data (00 - 07)
+# AA3A0 is data (DW)
+# AA3A2-AA3B3 could be code
+# AA3B6-AA433 is data (increasing bytes)
+# AA434-AA45F is data
+# AA460-AA48B is data (00 01 02 03 04 ...)
+# AA48C-AA503 is data (increasing 17-1A, 26-2A, 35-3A, 43-4A, 53-5A, 63-6A, 82-8A, 92-9A, A2-AA, B2-BA, ...)
+# AA5A8 is data (meaningless call)
+# AA5AC is data (meaningless call)
+
+# Probably data :
+#-m 0x000AB876-0x000ABB39=DATA:L
+
+
+# Code for sure (meaningfull calls)
+-m 0x000ABB3A-0x000DAA29=CODE
+
+
+# Unknown
+-m 0x000DAA2A-0x000DAA2F=DATA:L
+# Table of function reached from 0x000B04FA (target range 000B04FC-000B9F58)
+# Table of addresses reached from 0x000B04FA is stored at 0x000DAA30
+# Table of addresses reached from 0x000B0EDA is stored at 0x000DAA40
+# Table of addresses reached from 0x000B1F98 is stored at 0x000DAA8C
+# Table of addresses reached from 0x000B2D98 is stored at 0x000DAAAC
+# Table of addresses reached from 0x000B2F3C is stored at 0x000DAAC8
+# Table of addresses reached from 0x000B30C0 is stored at 0x000DAAE8
+# Table of addresses reached from 0x000B315E is stored at 0x000DAB08
+# Table of addresses reached from 0x000B324C is stored at 0x000DAB28
+# Table of addresses reached from 0x000B331E is stored at 0x000DAB38
+# Table of addresses reached from 0x000B3816 is stored at 0x000DAB48
+# Table of addresses reached from 0x000B3D00 is stored at 0x000DAB58
+# Table of addresses reached from 0x000B4442 is stored at 0x000DAB74
+# Table of addresses reached from 0x000B445C is stored at 0x000DAB84
+# Table of addresses reached from 0x000B453A is stored at 0x000DABA0
+# Table of addresses reached from 0x000B4618 is stored at 0x000DABBC
+# Table of addresses reached from 0x000B46EC is stored at 0x000DABD8
+# Table of addresses reached from 0x000B49DC is stored at 0x000DABF4
+# Table of addresses reached from 0x000B5766 is stored at 0x000DAC10
+# Table of addresses reached from 0x000B586C is stored at 0x000DAC2C
+# Table of addresses reached from 0x000B5DB4 is stored at 0x000DAC48
+# Table of addresses reached from 0x000B6610 is stored at 0x000DAC64
+# Table of addresses reached from 0x000B6B04 is stored at 0x000DAC88
+# Table of addresses reached from 0x000B6B90 is stored at 0x000DACA4
+# Table of addresses reached from 0x000B6BCE is stored at 0x000DACC0
+# Table of addresses reached from 0x000B6C78 is stored at 0x000DACDC
+# Table of addresses reached from 0x000B994C is stored at 0x000DACF0
+# Table of addresses reached from 0x000B9BBA is stored at 0x000DAD14
+# Table of addresses reached from 0x000B9C14 is stored at 0x000DAD24
+# ...
+#-m 0x000DAA30-0x000DAD6C=DATA:L
+# Unknown
+#-m 0x000DAD6C-0x000DAF7B=DATA:L
+# Table of addresses (target range 000BA676-000BCB70)
+# ...
+#-m 0x000DAF7C-0x000DB03F=DATA:L
+# Unknown
+#-m 0x000DB040-0x000DB263=DATA:L
+# Table of addresses reached from 0x000BD256 (target range 000BD258-000BEBD6, except one at 0x00340401)
+#-m 0x000DB264-0x000DB3E3=DATA:L
+# Unknown
+#-m 0x000DB3E4-0x000DB8DB=DATA:L
+# Table of addresses reached from 0x000BEAE2 (target range 000BEAE4-000BF6F2, except one at 0x00330301)
+#-m 0x000DB8DC-0x000DBA29=DATA:L
+# Unknown
+#-m 0x000DBA30-0x000DBC8f=DATA:L
+# Table of addresses reached from 0x000C1A42 (target range 000C1A44-000CD7DE)
+#-m 0x000DBC90-0x000DBEDB=DATA:L
+# Unknown
+#-m 0x000DBEDC-0x000DFBFF=DATA:L
+# Table of addresses reached from 0x000D97CE (target range 000D97DC-000D9E62)
+#-m 0x000DC114-0x000DC303=DATA:L
+# Unknown
+#-m 0x000DC304-0x000DC30F=DATA:L
+# 32b header + Table of 0x3C records of 0x1C bytes, containing among other things language menu function address
+#-m 0x000DC310-0x000DC9A3=DATA:L
+# Unknown
+#-m 0x000DC9A4-0x000DD357=DATA:L
+# 0xFF
+#-m 0x000DD358-0x000DFBEF=DATA:L
+# Unknown
+#-m 0x000DFBF0-0x000DFBFF=DATA:L
+
+
+# Interrupt vector table.
+-t 0x000dfc00
+#-m 0x000dfc00-0x000dffff=DATA:L
+
+
+# 0xFF
+#-m 0x000e0000-0x000fffff=DATA:L
+
+
+-m 0x00100000-0x002376A3=CODE
+
+
+# Unknown
+#-m 0x002376A4-0x00242CCD=DATA
+# Table of addresses reached from 0x0010A724 is stored at 0x00240684
+
+# 0x00
+#-m 0x00242CCE-0x0024453F=DATA:L
+
+# Unknown
+#-m 0x00244540-0x00245886=DATA:L
+
+# 0x00
+#-m 0x00245886-0x002470F7=DATA:L
+
+# Unknown
+#-m 0x002470F8-0x0026C17=DATA:L
+
+# Table used when rendering strings
+# Each record is 8 bytes long, byte0=0, byte1:01/02/03, byte2=0, byte3=0 and int offset to data below (0x0026c44c)
+#-m 0x0026C178-0x0026c3df=DATA:L
+# Unknown
+#-m 0x0026c3e0-0x0026c44b=DATA:L
+# Offsets pointed to by the table at 0x0026C178
+#-m 0x0026c44c-0x0026c83b=DATA:L
+
+#-m 0x0026c83c-0x00283000=DATA:L
+
+# 0x00
+#-m 0x00283000-0x0028D5BB=DATA:L
+
+# Unknown
+#-m 0x0028D5BC-0x00291687=DATA:L
+# 0x00
+#-m 0x00291688-0x00292CA1=DATA:L
+# Unknown
+#-m 0x00292CA2-0x00292CB3=DATA:L
+# 0xFF
+#-m 0x00292CB4-0x00297AD3=DATA:L
+# 0x00
+#-m 0x00297AD4-0x00297ADB=DATA:L
+# 0xFF
+#-m 0x00297ADC-0x0029C8FB=DATA:L
+# 0x00
+#-m 0x0029C8FC-0x002A1CA7=DATA:L
+# Unknown :
+#-m 0x002A1CA8-0x002BF51F=DATA:L
+# Table of addresses reached from 0x000ABB76 is stored at 0x002A5384
+# Table of addresses reached from 0x000AC39A is stored at 0x002A53A0
+# Table of addresses reached from 0x000AE9DE is stored at 0x002A53D8
+
+# code for sure
+-m 0x002BF520-0x002C4A0F=CODE
+
+# code probably
+-m 0x002C4A10-0x00313173=CODE
+
+# at 002C53A6, jump to a table stored at 0x0079F1A8 (?!)
+
+-m 0x00313174-0x0037BDE1=CODE
+
+# ------- no decoding done in this area yet -------
+
+# String resources - see Google Doc
+#-m 0x005EA9A0-0x00775763=DATA:L
+
+# Unknown :
+#-m 0x00775763-0x007C6253=DATA:L
+
+#JPEG :
+#-m 0x007C6254-0x00863334=DATA:L
+#one more JPEG ? :
+#-m 0x00863335-0x0088189F=DATA:L
+
+# Unknown :
+#-m 0x008818A0-0x00883A9D=DATA:L
+
+-m 0x00883A9e-0x00889B17=CODE
+
+# Unknown
+#-m 0x00889B18-0x008a64af=DATA:L
+
+# JPEG
+#-m 0x008a64b0-0x00908cf9=DATA:L
+
+# 0xFF
+#-m 0x00908cfa-0x00a80000=DATA:L
+
+
+
+
+
+############################### Symbols
+
+-s 0x406EC=NOP_406EC
+-s 0x406EE=NOP_406EE
+-s 0x406F0=NOP_406F0
+-s 0x406F2=NOP_406F2
+-s 0x406F4=NOP_406F4
+-s 0x406F6=NOP_406F6
+-s 0x406F8=NOP_406F8
+
+-s 0x41A4A=table_offset_load(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
+
+-s 0x1074F2=linked_list_init(R4 [IN, pointer to list entity])
+-s 0x1074FA=linked_list_compare_previous(R4->prev == R4)
+-s 0x107506=linked_list_insert_before(insert R5 before R4)
+-s 0x107516=linked_list_insert_after(insert R5 after R4)
+-s 0x107526=linked_list_remove_item(remove R4)
+-s 0x107536=linked_list_remove_previous(remove item before R4)
+-s 0x10754C=linked_list_remove_next(remove item after R4)
+
+-s 0x107C80=memcpy_fast
+-s 0x107CB2=memset_fast
+
+-s 0x164CBE=trace(debug string is passed)
+
+-s 0x1AA60E=NCP_CreateSaveData
+-s 0x1AA778=NCP_SaveFile
+-s 0x1C0E5A=set_double_buffer(R4 [IN boolean])
+-s 0x1C1D6E=text_load_XX(R6 [IN string index tttiiiiiiiiiiiii])
+-s 0x1C1F68=bigtable_xx_04
+-s 0x1C3CD2=color_fill(R4 [IN RECT*], R5 [IN color_table_idx])
+-s 0x1C97BA=color_fill(R4 [IN RECT*], R5 [IN p_color_tuple])
+
+-s 0x101802=put10at7EF
+-s 0x1D5A1C=getR4from0x8F960EAC(R4 [OUT])
+-s 0x1D953C=INT40_w_AB(calls INT40 with 0xAB in R12)
+-s 0x1c07e8=poll_until_8f8a1864!8004
+
+-s 0x23495E=DIV_int(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x234b3c=MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+-s 0x234DC4=DIV_uint(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x234edc=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+
+-s 0x23514E=ceil
+-s 0x235234=floor
+-s 0x23532A=neg(R4 [IN, OUT])
+-s 0x235338=log_or_log10
+-s 0x23559C=pow
+
+-s 0x235542=memcmp(R4 [IN source1], R5 [IN source2], R6 [IN count])
+-s 0x23555C=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
+-s 0x23556C=memmove(R4 [IN dest], R5 [IN source], R6 [IN count])
+-s 0x23558E=memset(R4 [IN dest], R5 [IN val], R6 [IN count])
+
+-s 0x235D2A=rand
+-s 0x235D56=srand
+-s 0x235D62=sprintf
+-s 0x235DFC=sqrt
+-s 0x235FDA=strcat
+-s 0x235FF4=strchr
+-s 0x236006=strcmp
+-s 0x23601A=strcpy
+-s 0x236028=strlen
+-s 0x236038=strncat
+-s 0x23605C=strncmp
+-s 0x23607A=strncpy
+-s 0x23609A=strstr
+-s 0x2361EC=vsprintf
+
+-s 0x2E1D3A=timezone_setup
+
+-s 0x2FA790=NCP_Save_2FA790
+
+-s 0x2FDBA4=confirm_card_fmt_b
+
+-s 0x2FEA5E=draw_menu_string
+
+-s 0x3013BA=show_popup_message
+
+-s 0x30B3AC=draw_menu_rows
+-s 0x30BB22=draw_menu_rectangle
+
+-s 0x311942=Lang_TOP_LEVEL
+
+-s 0x311A08=err_wrong_battery
+-s 0x311A1E=err_eye_fi_locked
+-s 0x311A4A=err_card_locked
+-s 0x311A60=err_card_not_fmtd
+-s 0x311A34=err_card_bad
+-s 0x3129F2=confirm_card_fmt_a
