@@ -153,7 +153,7 @@
 #-m 0x00245886-0x002470F7=DATA:L
 
 # Unknown
-#-m 0x002470F8-0x0026C17=DATA:L
+#-m 0x002470F8-0x0026C178=DATA:L
 
 # Table used when rendering strings
 # Each record is 8 bytes long, byte0=0, byte1:01/02/03, byte2=0, byte3=0 and int offset to data below (0x0026c44c)
@@ -163,7 +163,13 @@
 # Offsets pointed to by the table at 0x0026C178
 #-m 0x0026c44c-0x0026c83b=DATA:L
 
-#-m 0x0026c83c-0x00283000=DATA:L
+#-m 0x0026c83c-0x00271A5F=DATA:L
+
+# Table of functions addresses, some of which displaying error messages
+#-m 0x00271A60-0x002713B3=DATA:L
+
+# Unknown
+#-m 0x002713B4-0x00282FFF=DATA:L
 
 # 0x00
 #-m 0x00283000-0x0028D5BB=DATA:L

@@ -1,4 +1,4 @@
-/* The real source is in source/template and is preprocessed during the build to produce a version in src/main */
+/* The real source is in source/template and is preprocessed during the build to produce a version in ant-gen */
 package com.nikonhacker;
 
 public class ApplicationInfo {
