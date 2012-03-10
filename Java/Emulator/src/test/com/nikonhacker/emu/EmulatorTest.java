@@ -3,8 +3,8 @@ package com.nikonhacker.emu;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.trigger.AlwaysBreakCondition;
-import com.nikonhacker.emu.trigger.BreakPointCondition;
+import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
+import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import junit.framework.TestCase;
 import org.apache.commons.lang3.StringUtils;
 

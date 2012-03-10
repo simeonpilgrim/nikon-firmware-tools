@@ -3,6 +3,7 @@ package com.nikonhacker.gui.component.breakTrigger;
 
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -10,6 +11,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BreakTriggerListFrame extends DocumentFrame {
@@ -120,8 +122,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private void editTrigger(int index) {
         if (index != -1) {
-            BreakTrigger trigger = breakTriggers.get(index);
-            editTrigger(trigger);
+            editTrigger(breakTriggers.get(index));
             triggerList.setSelectedIndex(index);
         }
     }
@@ -129,7 +130,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void addTrigger() {
         CPUState cpuStateFlags = new CPUState();
         cpuStateFlags.clear();
-        BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags);
+        BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange();
         triggerList.setSelectedIndex(breakTriggers.size() - 1);
@@ -171,7 +172,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void saveTriggers() {
-        dispose();
+        super.dispose();
     }
 
     public void updateBreaktriggers() {

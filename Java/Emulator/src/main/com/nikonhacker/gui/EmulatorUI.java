@@ -16,7 +16,8 @@ import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
-import com.nikonhacker.emu.trigger.*;
+import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
@@ -1385,7 +1386,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 flags.pc = 1;
                 flags.setILM(0);
                 flags.setReg(CPUState.TBR, 0);
-                BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags);
+                BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
                 emulator.addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
         }
@@ -1416,15 +1417,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     }
                     JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
                 }
-                isEmulatorPlaying = false;
-                if (sourceCodeFrame != null) {
-                    sourceCodeFrame.onPcChanged();
+                try {
+                    isEmulatorPlaying = false;
+                    if (sourceCodeFrame != null) {
+                        sourceCodeFrame.onPcChanged();
+                    }
+                    if (stopCause != null && stopCause.getBreakTrigger() != null) {
+                        setStatusText("Break trigger matched : " + stopCause.getBreakTrigger().getName());
+                    }
+                    else {
+                        setStatusText("Emulation complete");
+                    }
                 }
-                if (stopCause != null && stopCause.getBreakTrigger() != null) {
-                    setStatusText("Break trigger matched : " + stopCause.getBreakTrigger().getName());
-                }
-                else {
-                    setStatusText("Emulation complete");
+                catch (Throwable t) {
+                    t.printStackTrace();
                 }
                 updateStates();
             }
