@@ -45,6 +45,6 @@ public class InterruptRequest {
 
     @Override
     public String toString() {
-        return (isNMI?"Non-maskable ":"") + "InterruptRequest #" + interruptNumber + " with ICR=0b" + Format.asBinary(icr,5);
+        return (isNMI?"Non-maskable ":"") + "InterruptRequest 0x" + Format.asHex(interruptNumber,2) + " with ICR=0b" + Format.asBinary(icr,5);
     }
 }
