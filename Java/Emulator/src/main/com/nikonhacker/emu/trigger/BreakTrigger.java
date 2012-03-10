@@ -1,20 +1,22 @@
 package com.nikonhacker.emu.trigger;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.emu.trigger.condition.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class BreakTrigger {
     private String name;
-    private boolean enabled = true;
     private CPUState cpuStateValues;
     private CPUState cpuStateFlags;
+    private List<MemoryValueBreakCondition> memoryValueBreakConditions;
+    private boolean enabled = true;
 
-    public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags) {
+    public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
+        this.name = name;
         this.cpuStateValues = cpuStateValues;
         this.cpuStateFlags = cpuStateFlags;
-
-        this.name = name;
+        this.memoryValueBreakConditions = memoryValueBreakConditions;
     }
 
     public String getName() {
@@ -49,6 +51,13 @@ public class BreakTrigger {
         this.cpuStateFlags = cpuStateFlags;
     }
 
+    public List<MemoryValueBreakCondition> getMemoryValueBreakConditions() {
+        if (memoryValueBreakConditions == null) {
+            memoryValueBreakConditions = new ArrayList<MemoryValueBreakCondition>();
+        }
+        return memoryValueBreakConditions;
+    }
+
     public List<BreakCondition> getBreakConditions() {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
@@ -68,6 +77,9 @@ public class BreakTrigger {
         if (cpuStateFlags.getILM() != 0) {
             conditions.add(new ILMBreakCondition(cpuStateValues.getILM(), cpuStateFlags.getILM(), this));
         }
+
+        conditions.addAll(memoryValueBreakConditions);
+
         return conditions;
     }
 

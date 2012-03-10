@@ -3,6 +3,7 @@ package com.nikonhacker.gui.component.sourceCode;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import org.fife.ui.rsyntaxtextarea.*;
@@ -546,7 +547,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             flags.pc = 1;
             flags.setILM(0);
             flags.setReg(CPUState.TBR, 0);
-            ui.getPrefs().getTriggers().add(new BreakTrigger("Breakpoint at 0x" + Format.asHex(addressFromLine, 8), values, flags));
+            ui.getPrefs().getTriggers().add(new BreakTrigger("Breakpoint at 0x" + Format.asHex(addressFromLine, 8), values, flags, new ArrayList<MemoryValueBreakCondition>()));
         }
 
         ui.onBreaktriggersChange();

@@ -4,7 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.trigger.BreakCondition;
+import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
 import java.io.File;
 import java.io.IOException;
