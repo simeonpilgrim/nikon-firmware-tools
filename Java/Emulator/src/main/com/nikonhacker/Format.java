@@ -41,6 +41,7 @@ public class Format {
             if (textField.getText().toLowerCase().startsWith("0x")) {
                 textField.setText(textField.getText().substring(2));
             }
+            textField.setText(textField.getText().replace(" ",""));
             long value = Long.parseLong(textField.getText(), 16);
             if (value < 0 || value > 0xFFFFFFFFL) {
                 throw new NumberFormatException("Value out of range");
@@ -58,6 +59,7 @@ public class Format {
             if (textField.getText().toLowerCase().startsWith("0b")) {
                 textField.setText(textField.getText().substring(2));
             }
+            textField.setText(textField.getText().replace(" ",""));
             String text = textField.getText();
             if (maskMode) {
                 text = text.replace('?', '0');
