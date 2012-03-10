@@ -11,6 +11,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 /**
@@ -23,6 +25,8 @@ public class InterruptControllerFrame extends DocumentFrame {
     private static final int ICR0_BASE_ADDRESS = 0x400;
 
     private Emulator emulator;
+
+    Timer timer;
 
     public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final Emulator emulator, final DebuggableMemory memory, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -89,6 +93,7 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         tabbedPane.addTab("Standard", null, standardInterruptControllerPanel);
 
+
         // Custom 256 button panel
 
         JPanel customInterruptControllerPanel = new JPanel(new BorderLayout());
@@ -112,10 +117,10 @@ public class InterruptControllerFrame extends DocumentFrame {
                 JInterruptButton button = (JInterruptButton) e.getSource();
                 int interruptNumber = button.getInterruptNumber();
                 if (emulator.addInterruptRequest(new InterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
-                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber,2) + " was requested.");
+                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
                 }
                 else {
-                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber,2) + " was rejected (already requested).");
+                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was rejected (already requested).");
                 }
             }
         };
@@ -133,15 +138,100 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         customInterruptControllerPanel.add(customButtonGrid, BorderLayout.CENTER);
 
-
         tabbedPane.addTab("Custom", null, customInterruptControllerPanel);
+
+
+        // Timer panel
+        
+        JPanel timerPanel = new JPanel(new BorderLayout());
+        
+        JPanel timerIntermediaryPanel = new JPanel(new FlowLayout());
+
+        JPanel timerParamPanel = new JPanel(new GridLayout(0, 3));
+
+        timerParamPanel.add(new JLabel("Request INT"));
+        Vector<String> timerInterruptNumber = new Vector<String>();
+        for (int i = 0; i < 255; i++) {
+            timerInterruptNumber.add("0x" + Format.asHex(i, 2));
+        }
+        final JComboBox timerInterruptComboBox = new JComboBox(timerInterruptNumber);
+        timerParamPanel.add(timerInterruptComboBox);
+        timerParamPanel.add(new JLabel(""));
+
+        timerParamPanel.add(new JLabel("with ICR : "));
+        Vector<String> timerIcrLabels = new Vector<String>();
+        for (int i = 0; i < 32; i++) {
+            timerIcrLabels.add(Format.asBinary(i, 5));
+        }
+        final JComboBox timerIcrComboBox = new JComboBox(timerIcrLabels);
+        timerParamPanel.add(timerIcrComboBox);        
+        timerParamPanel.add(new JLabel(""));
+
+        timerParamPanel.add(new JLabel("NMI"));
+        final JCheckBox timerNmiCheckBox = new JCheckBox();
+        timerParamPanel.add(timerNmiCheckBox);
+        timerParamPanel.add(new JLabel(""));
+
+        timerParamPanel.add(new JLabel("every "));
+        Vector<String> intervals = new Vector<String>();
+        intervals.add("1000");
+        intervals.add("100");
+        intervals.add("10");
+        intervals.add("1");
+        final JComboBox intervalsComboBox = new JComboBox(intervals);
+        timerParamPanel.add(intervalsComboBox);
+        timerParamPanel.add(new JLabel("ms"));
+
+        timerParamPanel.add(new JLabel(""));
+        JButton button = new JButton("Start");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                stopTimer();
+                startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
+            }
+        });
+        timerParamPanel.add(button);
+        button = new JButton("Stop");
+        button.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                stopTimer();
+            }
+        });
+        timerParamPanel.add(button);
+        
+        timerIntermediaryPanel.add(timerParamPanel);
+        
+        timerPanel.add(timerIntermediaryPanel,BorderLayout.CENTER);
+        
+        timerPanel.add(new JLabel("WARNING: Use 'debug' and not 'play' otherwise interrupts are only checked every 1000 cycles"), BorderLayout.SOUTH);
+
+        tabbedPane.addTab("Timer", null, timerPanel);
 
         getContentPane().add(tabbedPane);
         pack();
     }
 
+    private void stopTimer() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
+        ui.setStatusText("Stopped interrupt timer");
+    }
+
+    private void startTimer(final int interruptNumber, final boolean isNmi, final int icr, int interval) {
+        timer = new Timer(false);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                emulator.addInterruptRequest(new InterruptRequest(interruptNumber, isNmi, icr));
+            }
+        }, 0, interval);
+        ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
+    }
+
     public void dispose() {
-        emulator.setInstructionPrintWriter(null);
+        stopTimer();
         super.dispose();
     }
 
