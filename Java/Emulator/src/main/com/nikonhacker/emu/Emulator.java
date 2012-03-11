@@ -22,6 +22,7 @@ public class Emulator {
     private Integer nextRP = null;
     private boolean delaySlotDone = false;
     private PrintWriter instructionPrintWriter;
+    private Deque<CallStackItem> callStack;
     private int sleepIntervalMs = 0;
     private boolean exitSleepLoop = false;
     private final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
@@ -75,6 +76,15 @@ public class Emulator {
      */
     public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
         this.instructionPrintWriter = instructionPrintWriter;
+    }
+
+
+    /**
+     * Provide a call stack to write stack entries to it
+     * @param callStack
+     */
+    public void setCallStack(Deque<CallStackItem> callStack) {
+        this.callStack = callStack;
     }
 
     /**
@@ -1252,9 +1262,17 @@ public class Emulator {
                         break;
     
                     case 0xD000: /* CALL label12 */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                }
+                            }
+                        }
                         cpuState.setReg(CPUState.RP, cpuState.pc + 2);
                         cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2; // TODO check *2 ?
-
 
                         /* No change to NZVC */
     
@@ -1262,6 +1280,15 @@ public class Emulator {
                         break;
     
                     case 0x9710: /* CALL @Ri */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                }
+                            }
+                        }
                         cpuState.setReg(CPUState.RP, cpuState.pc + 2);
                         cpuState.pc = cpuState.getReg(disassembledInstruction.i);
     
@@ -1271,6 +1298,15 @@ public class Emulator {
                         break;
     
                     case 0x9720: /* RET */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null && !callStack.isEmpty()) {
+                                    callStack.pop();
+                                }
+                            }
+                        }
                         cpuState.pc = cpuState.getReg(CPUState.RP);
     
                         /* No change to NZVC */
@@ -1279,6 +1315,15 @@ public class Emulator {
                         break;
     
                     case 0x1F00: /* INT #u8 */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                }
+                            }
+                        }
                         processInterrupt(disassembledInstruction.x, cpuState.pc + 2);
                         cpuState.I = 0;
 
@@ -1288,6 +1333,15 @@ public class Emulator {
                         break;
     
                     case 0x9F30: /* INTE */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                }
+                            }
+                        }
                         cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
                         memory.store32(cpuState.getReg(CPUState.SSP), cpuState.getPS());
                         cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
@@ -1302,6 +1356,15 @@ public class Emulator {
                         break;
     
                     case 0x9730: /* RETI */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null && !callStack.isEmpty()) {
+                                    callStack.pop();
+                                }                                    
+                            }
+                        }
                         cpuState.pc = memory.load32(cpuState.getReg(15));
                         cpuState.setReg(15, cpuState.getReg(15) + 8);
                         /* note : this is the order given in the spec but loading PS below could switch the USP<>SSP,
@@ -1539,6 +1602,15 @@ public class Emulator {
                         break;
     
                     case 0xD800: /* CALL:D label12 */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                }
+                            }
+                        }
                         setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2, cpuState.pc + 4);  // TODO check *2
     
                         /* No change to NZVC */
@@ -1549,6 +1621,15 @@ public class Emulator {
                         break;
     
                     case 0x9F10: /* CALL:D @Ri */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                }
+                            }
+                        }
                         setDelayedChanges(cpuState.getReg(disassembledInstruction.i), cpuState.pc + 4);
     
                         /* No change to NZVC */
@@ -1559,6 +1640,15 @@ public class Emulator {
                         break;
     
                     case 0x9F20: /* RET:D */
+                        if (callStack != null) {
+                            synchronized (callStack) {
+                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
+                                // but still guarantees synchronized access when it's open
+                                if (callStack != null && !callStack.isEmpty()) {
+                                    callStack.pop();
+                                }
+                            }
+                        }
                         setDelayedChanges(cpuState.getReg(CPUState.RP), null);
     
                         /* No change to NZVC */
