@@ -16,6 +16,8 @@ import java.util.List;
 
 public class BreakTriggerListFrame extends DocumentFrame {
 
+    private static final int WINDOW_WIDTH = 250;
+    private static final int WINDOW_HEIGHT = 300;
     private List<BreakTrigger> breakTriggers;
     private final JList triggerList;
 
@@ -32,7 +34,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         triggerList.setLayoutOrientation(JList.VERTICAL);
         triggerList.setVisibleRowCount(10);
         JScrollPane listScroller = new JScrollPane(triggerList);
-        listScroller.setPreferredSize(new Dimension(250, 300));
+        listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         mainPanel.add(listScroller, BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
