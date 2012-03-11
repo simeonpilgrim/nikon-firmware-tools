@@ -89,6 +89,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final int FUNCTION_CALL_BASE_ADDRESS = 0xFFFFFFF0;
 
     private static File imageFile;
+    private static final int CAMERA_SCREEN_MEMORY_Y = 0xCE57DC60;
+    private static final int CAMERA_SCREEN_MEMORY_U = CAMERA_SCREEN_MEMORY_Y + 0x64000;
+    private static final int CAMERA_SCREEN_MEMORY_V = CAMERA_SCREEN_MEMORY_Y + 2 * 0x64000;
+    private static final int CAMERA_SCREEN_WIDTH = 640;
+    private static final int CAMERA_SCREEN_HEIGHT = 480;
 
 
     private DebuggableMemory memory;
@@ -1169,7 +1174,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory, 0xCE57DC60, 0xCE57DC60 + 0x64000, 0xCE57DC60 + 0xC8000, 640, 480, this);
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory, CAMERA_SCREEN_MEMORY_Y, CAMERA_SCREEN_MEMORY_U, CAMERA_SCREEN_MEMORY_V, CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, this);
             addDocumentFrame(screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
