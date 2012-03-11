@@ -863,9 +863,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
-            AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
-            analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
-            analyseProgressDialog.setVisible(true);
+            String outputFilename = writeOutputCheckbox.isSelected() ? destinationField.getText() : null;
+            boolean cancel = false;
+            if (outputFilename != null) {
+                if (new File(outputFilename).exists()) {
+                    if (JOptionPane.showConfirmDialog(this, "File '" + outputFilename + "' already exists.\nDo you really want to overwrite it ?", "File exists", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
+                        cancel = true;
+                    }
+                }
+            }
+            if (!cancel) {
+                AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
+                analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), outputFilename);
+                analyseProgressDialog.setVisible(true);
+            }
         }
     }
 
