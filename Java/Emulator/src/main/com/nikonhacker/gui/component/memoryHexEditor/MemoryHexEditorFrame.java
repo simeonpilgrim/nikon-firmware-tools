@@ -253,13 +253,16 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         }
         
         // other cases mean it was just the "GO" button or Return key in the text field
-        jumpToAddress(selectionLength);
+        jumpToAddressField(selectionLength);
     }
 
-    private void jumpToAddress(int selectionLength) {
+    private void jumpToAddressField(int selectionLength) {
         // read address in field and load corresponding page
-        int address;
-        address = Format.parseIntHexField(addressField);
+        int address = Format.parseIntHexField(addressField);
+        jumpToAddress(address, selectionLength);
+    }
+
+    public void jumpToAddress(int address, int selectionLength) {
         int baseAddress = address & 0xFFFF0000;
         loadPage(baseAddress);
         int offset = address & 0x0000FFFF;

@@ -25,6 +25,7 @@ import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
+import com.nikonhacker.gui.component.callStack.CallStackFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
@@ -79,6 +80,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
+    private static final String COMMAND_TOGGLE_CALL_STACK_WINDOW = "TOGGLE_CALL_STACK_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
@@ -122,6 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
+    private JCheckBoxMenuItem callStackMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
     private JMenuItem optionsMenuItem;
 
@@ -142,6 +145,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
     private JButton interruptControllerButton;
+    private JButton callStackButton;
     private JButton saveLoadMemoryButton;
     private JButton optionsButton;
 
@@ -155,6 +159,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private CodeStructureFrame codeStructureFrame;
     private SourceCodeFrame sourceCodeFrame;
     private InterruptControllerFrame interruptControllerFrame;
+    private CallStackFrame callStackFrame;
     private final Insets toolbarButtonMargin;
     private final JPanel toolBar;
     private JLabel statusBar;
@@ -329,6 +334,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(component4006Button);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
+        callStackButton = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW, "Call Stack window", "CallStack");
+        bar.add(callStackButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -564,6 +571,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         viewMenu.add(interruptControllerMenuItem);
 
+        //Call Stack
+        callStackMenuItem = new JCheckBoxMenuItem("Call stack");
+//        callStackMenuItem.setMnemonic(KeyEvent.VK_C);
+//        callStackMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
+        callStackMenuItem.setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW);
+        callStackMenuItem.addActionListener(this);
+        viewMenu.add(callStackMenuItem);
+
 
         viewMenu.add(new JSeparator());
 
@@ -695,7 +710,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             toggleComponent4006();
         }
         else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
-            toggleInterruptControllerWindow();
+            toggleInterruptController();
+        }
+        else if (COMMAND_TOGGLE_CALL_STACK_WINDOW.equals(e.getActionCommand())) {
+            toggleCallStack();
         }
         else if (COMMAND_DECODE.equals(e.getActionCommand())) {
             openDecodeDialog();
@@ -947,6 +965,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>HexEditor & RSyntaxTextArea swing components, Copyright (c) Robert Futrell - " + makeLink("http://fifesoft.com/hexeditor/") + "</li>"
                 + "<li>JGraphX graph drawing library, Copyright (c) JGraph Ltd - " + makeLink("http://www.jgraph.com/jgraph.html") + "</li>"
                 + "<li>Apache commons libraries, Copyright (c) The Apache Software Foundation - " + makeLink("http://commons.apache.org/") + "</li>"
+                + "<li>VerticalLayout, Copyright (c) Cellspark - " + makeLink("http://www.cellspark.com/vl.html") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
                 + "</ul></body></html>");
 
@@ -1033,6 +1052,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void closeAllFrames() {
+        if (breakTriggerListFrame != null) {
+            breakTriggerListFrame.dispose();
+            breakTriggerListFrame = null;
+        }
+
+        if (disassemblyLogFrame != null) {
+            disassemblyLogFrame.dispose();
+            disassemblyLogFrame = null;
+        }
+        if (cpuStateEditorFrame != null) {
+            cpuStateEditorFrame.dispose();
+            cpuStateEditorFrame = null;
+        }
         if (screenEmulatorFrame != null) {
             screenEmulatorFrame.dispose();
             screenEmulatorFrame = null;
@@ -1045,18 +1077,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryHexEditorFrame.dispose();
             memoryHexEditorFrame = null;
         }
-        if (disassemblyLogFrame != null) {
-            disassemblyLogFrame.dispose();
-            disassemblyLogFrame = null;
-        }
-        if (cpuStateEditorFrame != null) {
-            cpuStateEditorFrame.dispose();
-            cpuStateEditorFrame = null;
-        }
         if (component4006Frame != null) {
             component4006Frame.dispose();
             component4006Frame = null;
         }
+        if (interruptControllerFrame != null) {
+            interruptControllerFrame.dispose();
+            interruptControllerFrame = null;
+        }
+        if (callStackFrame != null) {
+            callStackFrame.dispose();
+            callStackFrame = null;
+        }
+
         if (codeStructureFrame != null) {
             codeStructureFrame.dispose();
             codeStructureFrame = null;
@@ -1065,11 +1098,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             sourceCodeFrame.dispose();
             sourceCodeFrame = null;
         }
-        if (interruptControllerFrame != null) {
-            interruptControllerFrame.dispose();
-            interruptControllerFrame = null;
-        }
-        
+
     }
 
     private void toggleBreakTriggerList() {
@@ -1081,6 +1110,33 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             breakTriggerListFrame.dispose();
             breakTriggerListFrame = null;
+        }
+        updateStates();
+    }
+
+    private void toggleDisassemblyLog() {
+        if (disassemblyLogFrame == null) {
+            disassemblyLogFrame = new DisassemblyFrame("Real-time disassembly log", true, true, true, true, emulator, this);
+            addDocumentFrame(disassemblyLogFrame);
+            disassemblyLogFrame.display(true);
+        }
+        else {
+            disassemblyLogFrame.dispose();
+            disassemblyLogFrame = null;
+        }
+        updateStates();
+    }
+
+    private void toggleCPUState() {
+        if (cpuStateEditorFrame == null) {
+            cpuStateEditorFrame = new CPUStateEditorFrame("CPU State", false, true, false, true, cpuState, this);
+            cpuStateEditorFrame.setEnabled(!isEmulatorPlaying);
+            addDocumentFrame(cpuStateEditorFrame);
+            cpuStateEditorFrame.display(true);
+        }
+        else {
+            cpuStateEditorFrame.dispose();
+            cpuStateEditorFrame = null;
         }
         updateStates();
     }
@@ -1107,34 +1163,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             memoryHexEditorFrame.dispose();
             memoryHexEditorFrame = null;
-        }
-        updateStates();
-    }
-
-    private void toggleDisassemblyLog() {
-        if (disassemblyLogFrame == null) {
-            disassemblyLogFrame = new DisassemblyFrame("Real-time disassembly log", true, true, true, true, emulator, this);
-            addDocumentFrame(disassemblyLogFrame);
-            disassemblyLogFrame.display(true);
-        }
-        else {
-            disassemblyLogFrame.dispose();
-            disassemblyLogFrame = null;
-        }
-        updateStates();
-    }
-
-    private void toggleCPUState() {
-        if (cpuStateEditorFrame == null) {
-            cpuStateEditorFrame = new CPUStateEditorFrame("CPU State", false, true, false, true, cpuState, this);
-            cpuStateEditorFrame.setEnabled(!isEmulatorPlaying);
-            //cpuStateFrame = new CPUStateFrame("CPU State", false, true, false, true, cpuState, this);
-            addDocumentFrame(cpuStateEditorFrame);
-            cpuStateEditorFrame.display(true);
-        }
-        else {
-            cpuStateEditorFrame.dispose();
-            cpuStateEditorFrame = null;
         }
         updateStates();
     }
@@ -1167,6 +1195,34 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
+    private void toggleInterruptController() {
+        if (interruptControllerFrame == null) {
+            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, memory, this);
+            addDocumentFrame(interruptControllerFrame);
+            interruptControllerFrame.display(true);
+        }
+        else {
+            interruptControllerFrame.dispose();
+            interruptControllerFrame = null;
+        }
+        updateStates();
+    }
+
+    private void toggleCallStack() {
+        if (callStackFrame == null) {
+            callStackFrame = new CallStackFrame("Call Stack", true, true, false, true, emulator, cpuState, codeStructure, this);
+            callStackFrame.setAutoRefresh(!isEmulatorPlaying);
+            addDocumentFrame(callStackFrame);
+            callStackFrame.display(true);
+        }
+        else {
+            callStackFrame.dispose();
+            callStackFrame = null;
+        }
+        updateStates();
+    }
+
+
     private void toggleCodeStructureWindow() {
         if (codeStructureFrame == null) {
             codeStructureFrame = new CodeStructureFrame("Code structure", true, true, true, true, cpuState, codeStructure, this);
@@ -1192,20 +1248,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         updateStates();
     }
-    
-    private void toggleInterruptControllerWindow() {
-        if (interruptControllerFrame == null) {
-            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, memory, this);
-            addDocumentFrame(interruptControllerFrame);
-            interruptControllerFrame.display(true);
-        }
-        else {
-            interruptControllerFrame.dispose();
-            interruptControllerFrame = null;
-        }
-        updateStates();
-    }
-
 
 
     public void addDocumentFrame(DocumentFrame frame) {
@@ -1218,7 +1260,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @param frame
      */
     public void frameClosing(DocumentFrame frame) {
-        if (frame == disassemblyLogFrame) {
+        if (frame == breakTriggerListFrame) {
+            toggleBreakTriggerList();
+        }
+        else if (frame == disassemblyLogFrame) {
             toggleDisassemblyLog();
         }
         else if (frame == cpuStateEditorFrame) {
@@ -1237,16 +1282,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             toggleComponent4006();
         }
         else if (frame == interruptControllerFrame) {
-            toggleInterruptControllerWindow();
+            toggleInterruptController();
+        }
+        else if (frame == callStackFrame) {
+            toggleCallStack();
         }
         else if (frame == codeStructureFrame) {
             toggleCodeStructureWindow();
         }
         else if (frame == sourceCodeFrame) {
             toggleSourceCodeWindow();
-        }
-        else if (frame == breakTriggerListFrame) {
-            toggleBreakTriggerList();
         }
         else {
             System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
@@ -1269,61 +1314,37 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Menus and buttons enabled or not
         codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
         sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
+
+        analyseMenuItem.setEnabled(isImageLoaded); analyseButton.setEnabled(isImageLoaded);
+
+        disassemblyMenuItem.setEnabled(isImageLoaded); disassemblyButton.setEnabled(isImageLoaded);
+        cpuStateMenuItem.setEnabled(isImageLoaded); cpuStateButton.setEnabled(isImageLoaded);
+        screenEmulatorMenuItem.setEnabled(isImageLoaded); screenEmulatorButton.setEnabled(isImageLoaded);
+        memoryActivityViewerMenuItem.setEnabled(isImageLoaded); memoryActivityViewerButton.setEnabled(isImageLoaded);
+        memoryHexEditorMenuItem.setEnabled(isImageLoaded); memoryHexEditorButton.setEnabled(isImageLoaded);
+        component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
+        interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
+        callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
+
+        saveLoadMemoryMenuItem.setEnabled(isImageLoaded); saveLoadMemoryButton.setEnabled(isImageLoaded);
+
+        stopMenuItem.setEnabled(isImageLoaded); stopButton.setEnabled(isImageLoaded);
+
         if (isImageLoaded) {
-            analyseMenuItem.setEnabled(true); analyseButton.setEnabled(true);
-
-            disassemblyMenuItem.setEnabled(true); disassemblyButton.setEnabled(true);
-            cpuStateMenuItem.setEnabled(true); cpuStateButton.setEnabled(true);
-            screenEmulatorMenuItem.setEnabled(true); screenEmulatorButton.setEnabled(true);
-            memoryActivityViewerMenuItem.setEnabled(true); memoryActivityViewerButton.setEnabled(true);
-            memoryHexEditorMenuItem.setEnabled(true); memoryHexEditorButton.setEnabled(true);
-            component4006MenuItem.setEnabled(true); component4006Button.setEnabled(true);
-            interruptControllerMenuItem.setEnabled(true); interruptControllerButton.setEnabled(true);
-
-            saveLoadMemoryMenuItem.setEnabled(true); saveLoadMemoryButton.setEnabled(true);
-
-            stopMenuItem.setEnabled(true); stopButton.setEnabled(true);
-
-            if (isEmulatorPlaying) {
-                loadMenuItem.setEnabled(false); loadButton.setEnabled(false);
-                playMenuItem.setEnabled(false); playButton.setEnabled(false);
-                debugMenuItem.setEnabled(false); debugButton.setEnabled(false);
-                pauseMenuItem.setEnabled(true); pauseButton.setEnabled(true);
-                stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
-                breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
-                optionsMenuItem.setEnabled(false); optionsButton.setEnabled(false);
-
-                // Editable components
-                if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(false);
-                if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(false);
-            }
-            else {
-                loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
-                playMenuItem.setEnabled(true); playButton.setEnabled(true);
-                debugMenuItem.setEnabled(true); debugButton.setEnabled(true);
-                pauseMenuItem.setEnabled(false); pauseButton.setEnabled(false);
-                stepMenuItem.setEnabled(true); stepButton.setEnabled(true);
-                breakpointMenuItem.setEnabled(true); breakpointButton.setEnabled(true);
-                optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
-
-                // Editable components
-                if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
-                if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
-            }
+            // Depends whether emulator is playing or not
+            loadMenuItem.setEnabled(!isEmulatorPlaying); loadButton.setEnabled(!isEmulatorPlaying);
+            playMenuItem.setEnabled(!isEmulatorPlaying); playButton.setEnabled(!isEmulatorPlaying);
+            debugMenuItem.setEnabled(!isEmulatorPlaying); debugButton.setEnabled(!isEmulatorPlaying);
+            pauseMenuItem.setEnabled(isEmulatorPlaying); pauseButton.setEnabled(isEmulatorPlaying);
+            stepMenuItem.setEnabled(!isEmulatorPlaying); stepButton.setEnabled(!isEmulatorPlaying);
+            breakpointMenuItem.setEnabled(!isEmulatorPlaying); breakpointButton.setEnabled(!isEmulatorPlaying);
+            optionsMenuItem.setEnabled(!isEmulatorPlaying); optionsButton.setEnabled(!isEmulatorPlaying);
+            // Editable components
+            if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(!isEmulatorPlaying);
+            if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(!isEmulatorPlaying);
+            if (callStackFrame != null) callStackFrame.setAutoRefresh(!isEmulatorPlaying);
         }
         else {
-            analyseMenuItem.setEnabled(false); analyseButton.setEnabled(false);
-
-            disassemblyMenuItem.setEnabled(false); disassemblyButton.setEnabled(false);
-            cpuStateMenuItem.setEnabled(false); cpuStateButton.setEnabled(false);
-            screenEmulatorMenuItem.setEnabled(false); screenEmulatorButton.setEnabled(false);
-            memoryActivityViewerMenuItem.setEnabled(false); memoryActivityViewerButton.setEnabled(false);
-            memoryHexEditorMenuItem.setEnabled(false); memoryHexEditorButton.setEnabled(false);
-            component4006MenuItem.setEnabled(false); component4006Button.setEnabled(false);
-            interruptControllerMenuItem.setEnabled(false); interruptControllerButton.setEnabled(false);
-
-            saveLoadMemoryMenuItem.setEnabled(false); saveLoadMemoryButton.setEnabled(false);
-
             loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
             playMenuItem.setEnabled(false); playButton.setEnabled(false);
             debugMenuItem.setEnabled(false); debugButton.setEnabled(false);
@@ -1331,12 +1352,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
             breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
             optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
-
-            stopMenuItem.setEnabled(false); stopButton.setEnabled(false);
-
             // Editable components
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
+            if (callStackFrame != null) callStackFrame.setAutoRefresh(true);
         }
     }
 
@@ -1511,6 +1530,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    public void jumpToMemory(int address) {
+        if (memoryHexEditorFrame == null) {
+            toggleMemoryHexEditor();
+        }
+        memoryHexEditorFrame.jumpToAddress(address, 4);
     }
 
     public void onBreaktriggersChange() {
