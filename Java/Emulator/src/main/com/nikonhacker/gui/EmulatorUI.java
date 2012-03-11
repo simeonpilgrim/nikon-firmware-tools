@@ -561,10 +561,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         componentsMenu.add(interruptControllerMenuItem);
 
 
-        //Set up the spy menu.
-        JMenu spyMenu = new JMenu("Trace");
-        spyMenu.setMnemonic(KeyEvent.VK_C);
-        menuBar.add(spyMenu);
+        //Set up the trace menu.
+        JMenu traceMenu = new JMenu("Trace");
+        traceMenu.setMnemonic(KeyEvent.VK_C);
+        menuBar.add(traceMenu);
 
         //disassembly
         disassemblyMenuItem = new JCheckBoxMenuItem("Real-time disassembly log");
@@ -572,7 +572,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         disassemblyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
         disassemblyMenuItem.setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW);
         disassemblyMenuItem.addActionListener(this);
-        spyMenu.add(disassemblyMenuItem);
+        traceMenu.add(disassemblyMenuItem);
 
         //memory activity viewer
         memoryActivityViewerMenuItem = new JCheckBoxMenuItem("Memory activity viewer");
@@ -580,7 +580,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryActivityViewerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK));
         memoryActivityViewerMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER);
         memoryActivityViewerMenuItem.addActionListener(this);
-        spyMenu.add(memoryActivityViewerMenuItem);
+        traceMenu.add(memoryActivityViewerMenuItem);
 
         //Component 4006
         component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window");
@@ -588,7 +588,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
         component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
         component4006MenuItem.addActionListener(this);
-        spyMenu.add(component4006MenuItem);
+        traceMenu.add(component4006MenuItem);
 
         //Call Stack
         callStackMenuItem = new JCheckBoxMenuItem("Call stack");
@@ -596,7 +596,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        callStackMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
         callStackMenuItem.setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW);
         callStackMenuItem.addActionListener(this);
-        spyMenu.add(callStackMenuItem);
+        traceMenu.add(callStackMenuItem);
 
 
         //Set up the tools menu.
