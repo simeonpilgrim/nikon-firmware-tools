@@ -66,7 +66,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_EMULATOR_STEP = "EMULATOR_STEP";
     private static final String COMMAND_EMULATOR_STOP = "EMULATOR_STOP";
     private static final String COMMAND_SETUP_BREAKPOINTS = "SETUP_BREAKPOINTS";
-    private static final String COMMAND_TEST = "TEST";
     private static final String COMMAND_QUIT = "QUIT";
     private static final String COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER = "TOGGLE_MEMORY_ACTIVITY_VIEWER";
     private static final String COMMAND_TOGGLE_MEMORY_HEX_EDITOR = "TOGGLE_MEMORY_HEX_EDITOR";
@@ -325,20 +324,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(makeSlider());
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        disassemblyButton = makeButton("disassembly_log", COMMAND_TOGGLE_DISASSEMBLY_WINDOW, "Real time disassembly log", "Disassembly");
-        bar.add(disassemblyButton);
         cpuStateButton = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW, "CPU State window", "CPU");
         bar.add(cpuStateButton);
-        memoryActivityViewerButton = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER, "Memory activity viewer", "Activity");
-        bar.add(memoryActivityViewerButton);
         memoryHexEditorButton = makeButton("memory_editor", COMMAND_TOGGLE_MEMORY_HEX_EDITOR, "Memory hex editor", "Hex Editor");
         bar.add(memoryHexEditorButton);
         screenEmulatorButton = makeButton("screen", COMMAND_TOGGLE_SCREEN_EMULATOR, "Screen emulator", "Screen");
         bar.add(screenEmulatorButton);
-        component4006Button = makeButton("4006", COMMAND_TOGGLE_COMPONENT_4006_WINDOW, "Component 4006", "Component 4006");
-        bar.add(component4006Button);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
+
+        bar.add(Box.createRigidArea(new Dimension(10, 0)));
+
+        disassemblyButton = makeButton("disassembly_log", COMMAND_TOGGLE_DISASSEMBLY_WINDOW, "Real time disassembly log", "Disassembly");
+        bar.add(disassemblyButton);
+        memoryActivityViewerButton = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER, "Memory activity viewer", "Activity");
+        bar.add(memoryActivityViewerButton);
+        component4006Button = makeButton("4006", COMMAND_TOGGLE_COMPONENT_4006_WINDOW, "Component 4006", "Component 4006");
+        bar.add(component4006Button);
         callStackButton = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW, "Call Stack window", "CallStack");
         bar.add(callStackButton);
 
@@ -351,12 +353,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         sourceCodeButton = makeButton("source", COMMAND_TOGGLE_SOURCE_CODE_WINDOW, "Source code", "Source");
         bar.add(sourceCodeButton);
 
-        bar.add(Box.createRigidArea(new Dimension(10, 0)));
+        bar.add(Box.createHorizontalGlue());
 
         saveLoadMemoryButton = makeButton("save_load_memory", COMMAND_SAVE_LOAD_MEMORY, "Save/Load memory area", "Save/Load memory");
         bar.add(saveLoadMemoryButton);
 
-        bar.add(Box.createHorizontalGlue());
+        bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
         optionsButton = makeButton("options", COMMAND_OPTIONS, "Options", "Options");
         bar.add(optionsButton);
@@ -437,72 +439,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         fileMenu.add(new JSeparator());
 
-        //analyse / disassemble
-        analyseMenuItem = new JMenuItem("Analyse / Disassemble");
-        analyseMenuItem.setMnemonic(KeyEvent.VK_A);
-        analyseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
-        analyseMenuItem.setActionCommand(COMMAND_ANALYSE_DISASSEMBLE);
-        analyseMenuItem.addActionListener(this);
-        fileMenu.add(analyseMenuItem);
+        //decoder
+        tmpMenuItem = new JMenuItem("Decode firmware");
+        tmpMenuItem.setMnemonic(KeyEvent.VK_D);
+//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
+        tmpMenuItem.setActionCommand(COMMAND_DECODE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
 
-        fileMenu.add(new JSeparator());
-
-        //emulator play
-        playMenuItem = new JMenuItem("Start (or resume) emulator");
-        playMenuItem.setMnemonic(KeyEvent.VK_E);
-        playMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
-        playMenuItem.setActionCommand(COMMAND_EMULATOR_PLAY);
-        playMenuItem.addActionListener(this);
-        fileMenu.add(playMenuItem);
-
-        //emulator debug
-        debugMenuItem = new JMenuItem("Debug emulator");
-        debugMenuItem.setMnemonic(KeyEvent.VK_G);
-        debugMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, ActionEvent.ALT_MASK));
-        debugMenuItem.setActionCommand(COMMAND_EMULATOR_DEBUG);
-        debugMenuItem.addActionListener(this);
-        fileMenu.add(debugMenuItem);
-
-        //emulator pause
-        pauseMenuItem = new JMenuItem("Pause emulator");
-        pauseMenuItem.setMnemonic(KeyEvent.VK_P);
-        pauseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
-        pauseMenuItem.setActionCommand(COMMAND_EMULATOR_PAUSE);
-        pauseMenuItem.addActionListener(this);
-        fileMenu.add(pauseMenuItem);
-
-        //emulator step
-        stepMenuItem = new JMenuItem("Step emulator");
-//        stepMenuItem.setMnemonic(KeyEvent.VK_P);
-//        stepMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
-        stepMenuItem.setActionCommand(COMMAND_EMULATOR_STEP);
-        stepMenuItem.addActionListener(this);
-        fileMenu.add(stepMenuItem);
-
-        //emulator stop
-        stopMenuItem = new JMenuItem("Stop emulator");
-//        stopMenuItem.setMnemonic(KeyEvent.VK_P);
-//        stopMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.ALT_MASK));
-        stopMenuItem.setActionCommand(COMMAND_EMULATOR_STOP);
-        stopMenuItem.addActionListener(this);
-        fileMenu.add(stopMenuItem);
-
-        //setup breakpoints
-        breakpointMenuItem = new JMenuItem("Setup breakpoints");
-        breakpointMenuItem.setMnemonic(KeyEvent.VK_B);
-        breakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK));
-        breakpointMenuItem.setActionCommand(COMMAND_SETUP_BREAKPOINTS);
-        breakpointMenuItem.addActionListener(this);
-        fileMenu.add(breakpointMenuItem);
-
-
-//        //test
-//        tmpMenuItem = new JMenuItem("Test");
-//        tmpMenuItem.setMnemonic(KeyEvent.VK_T);
-//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK));
-//        tmpMenuItem.setActionCommand(COMMAND_TEST);
-//        tmpMenuItem.addActionListener(this);
-//        fileMenu.add(tmpMenuItem);
+        //encoder
+        tmpMenuItem = new JMenuItem("Encode firmware (alpha)");
+        tmpMenuItem.setMnemonic(KeyEvent.VK_E);
+//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
+        tmpMenuItem.setActionCommand(COMMAND_ENCODE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
 
         fileMenu.add(new JSeparator());
 
@@ -515,42 +466,67 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         fileMenu.add(tmpMenuItem);
 
 
-        //Set up the view menu.
-        JMenu viewMenu = new JMenu("View");
-        fileMenu.setMnemonic(KeyEvent.VK_W);
-        menuBar.add(viewMenu);
+        //Set up the run menu.
+        JMenu runMenu = new JMenu("Run");
+        runMenu.setMnemonic(KeyEvent.VK_R);
+        menuBar.add(runMenu);
 
-        //memory activity viewer
-        memoryActivityViewerMenuItem = new JCheckBoxMenuItem("Memory activity viewer");
-        memoryActivityViewerMenuItem.setMnemonic(KeyEvent.VK_M);
-        memoryActivityViewerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK));
-        memoryActivityViewerMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER);
-        memoryActivityViewerMenuItem.addActionListener(this);
-        viewMenu.add(memoryActivityViewerMenuItem);
 
-        //memory hex editor
-        memoryHexEditorMenuItem = new JCheckBoxMenuItem("Memory hex editor");
-        memoryHexEditorMenuItem.setMnemonic(KeyEvent.VK_H);
-        memoryHexEditorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK));
-        memoryHexEditorMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_HEX_EDITOR);
-        memoryHexEditorMenuItem.addActionListener(this);
-        viewMenu.add(memoryHexEditorMenuItem);
+        //emulator play
+        playMenuItem = new JMenuItem("Start (or resume) emulator");
+        playMenuItem.setMnemonic(KeyEvent.VK_E);
+        playMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, ActionEvent.CTRL_MASK));
+        playMenuItem.setActionCommand(COMMAND_EMULATOR_PLAY);
+        playMenuItem.addActionListener(this);
+        runMenu.add(playMenuItem);
 
-        //screen emulator
-        screenEmulatorMenuItem = new JCheckBoxMenuItem("Screen emulator");
-        screenEmulatorMenuItem.setMnemonic(KeyEvent.VK_S);
-        screenEmulatorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
-        screenEmulatorMenuItem.setActionCommand(COMMAND_TOGGLE_SCREEN_EMULATOR);
-        screenEmulatorMenuItem.addActionListener(this);
-        viewMenu.add(screenEmulatorMenuItem);
+        //emulator debug
+        debugMenuItem = new JMenuItem("Debug emulator");
+        debugMenuItem.setMnemonic(KeyEvent.VK_G);
+        debugMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+        debugMenuItem.setActionCommand(COMMAND_EMULATOR_DEBUG);
+        debugMenuItem.addActionListener(this);
+        runMenu.add(debugMenuItem);
 
-        //disassembly
-        disassemblyMenuItem = new JCheckBoxMenuItem("Real-time disassembly log");
-        disassemblyMenuItem.setMnemonic(KeyEvent.VK_D);
-        disassemblyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
-        disassemblyMenuItem.setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW);
-        disassemblyMenuItem.addActionListener(this);
-        viewMenu.add(disassemblyMenuItem);
+        //emulator pause
+        pauseMenuItem = new JMenuItem("Pause emulator");
+        pauseMenuItem.setMnemonic(KeyEvent.VK_P);
+        pauseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.ALT_MASK));
+        pauseMenuItem.setActionCommand(COMMAND_EMULATOR_PAUSE);
+        pauseMenuItem.addActionListener(this);
+        runMenu.add(pauseMenuItem);
+
+        //emulator step
+        stepMenuItem = new JMenuItem("Step emulator");
+        stepMenuItem.setMnemonic(KeyEvent.VK_T);
+        stepMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0));
+        stepMenuItem.setActionCommand(COMMAND_EMULATOR_STEP);
+        stepMenuItem.addActionListener(this);
+        runMenu.add(stepMenuItem);
+
+        //emulator stop
+        stopMenuItem = new JMenuItem("Stop and reset emulator");
+        stopMenuItem.setMnemonic(KeyEvent.VK_R);
+        playMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, ActionEvent.SHIFT_MASK));
+        stopMenuItem.setActionCommand(COMMAND_EMULATOR_STOP);
+        stopMenuItem.addActionListener(this);
+        runMenu.add(stopMenuItem);
+
+        runMenu.add(new JSeparator());
+
+        //setup breakpoints
+        breakpointMenuItem = new JMenuItem("Setup breakpoints");
+        breakpointMenuItem.setMnemonic(KeyEvent.VK_B);
+        breakpointMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK));
+        breakpointMenuItem.setActionCommand(COMMAND_SETUP_BREAKPOINTS);
+        breakpointMenuItem.addActionListener(this);
+        runMenu.add(breakpointMenuItem);
+
+
+        //Set up the components menu.
+        JMenu componentsMenu = new JMenu("Components");
+        componentsMenu.setMnemonic(KeyEvent.VK_O);
+        menuBar.add(componentsMenu);
 
         //CPU state
         cpuStateMenuItem = new JCheckBoxMenuItem("CPU State window");
@@ -558,15 +534,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         cpuStateMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
         cpuStateMenuItem.setActionCommand(COMMAND_TOGGLE_CPUSTATE_WINDOW);
         cpuStateMenuItem.addActionListener(this);
-        viewMenu.add(cpuStateMenuItem);
+        componentsMenu.add(cpuStateMenuItem);
 
-        //Component 4006
-        component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window");
-        component4006MenuItem.setMnemonic(KeyEvent.VK_4);
-        component4006MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
-        component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
-        component4006MenuItem.addActionListener(this);
-        viewMenu.add(component4006MenuItem);
+        //memory hex editor
+        memoryHexEditorMenuItem = new JCheckBoxMenuItem("Memory hex editor");
+        memoryHexEditorMenuItem.setMnemonic(KeyEvent.VK_H);
+        memoryHexEditorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK));
+        memoryHexEditorMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_HEX_EDITOR);
+        memoryHexEditorMenuItem.addActionListener(this);
+        componentsMenu.add(memoryHexEditorMenuItem);
+
+        //screen emulator
+        screenEmulatorMenuItem = new JCheckBoxMenuItem("Screen emulator");
+        screenEmulatorMenuItem.setMnemonic(KeyEvent.VK_S);
+        screenEmulatorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
+        screenEmulatorMenuItem.setActionCommand(COMMAND_TOGGLE_SCREEN_EMULATOR);
+        screenEmulatorMenuItem.addActionListener(this);
+        componentsMenu.add(screenEmulatorMenuItem);
 
         //Interrupt controller
         interruptControllerMenuItem = new JCheckBoxMenuItem("Interrupt controller");
@@ -574,7 +558,37 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
         interruptControllerMenuItem.setActionCommand(COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW);
         interruptControllerMenuItem.addActionListener(this);
-        viewMenu.add(interruptControllerMenuItem);
+        componentsMenu.add(interruptControllerMenuItem);
+
+
+        //Set up the spy menu.
+        JMenu spyMenu = new JMenu("Trace");
+        spyMenu.setMnemonic(KeyEvent.VK_C);
+        menuBar.add(spyMenu);
+
+        //disassembly
+        disassemblyMenuItem = new JCheckBoxMenuItem("Real-time disassembly log");
+        disassemblyMenuItem.setMnemonic(KeyEvent.VK_D);
+        disassemblyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
+        disassemblyMenuItem.setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW);
+        disassemblyMenuItem.addActionListener(this);
+        spyMenu.add(disassemblyMenuItem);
+
+        //memory activity viewer
+        memoryActivityViewerMenuItem = new JCheckBoxMenuItem("Memory activity viewer");
+        memoryActivityViewerMenuItem.setMnemonic(KeyEvent.VK_M);
+        memoryActivityViewerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK));
+        memoryActivityViewerMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER);
+        memoryActivityViewerMenuItem.addActionListener(this);
+        spyMenu.add(memoryActivityViewerMenuItem);
+
+        //Component 4006
+        component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window");
+        component4006MenuItem.setMnemonic(KeyEvent.VK_4);
+        component4006MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
+        component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
+        component4006MenuItem.addActionListener(this);
+        spyMenu.add(component4006MenuItem);
 
         //Call Stack
         callStackMenuItem = new JCheckBoxMenuItem("Call stack");
@@ -582,26 +596,39 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        callStackMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
         callStackMenuItem.setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW);
         callStackMenuItem.addActionListener(this);
-        viewMenu.add(callStackMenuItem);
+        spyMenu.add(callStackMenuItem);
 
 
-        viewMenu.add(new JSeparator());
+        //Set up the tools menu.
+        JMenu sourceMenu = new JMenu("Source");
+        sourceMenu.setMnemonic(KeyEvent.VK_S);
+        menuBar.add(sourceMenu);
+
+        //analyse / disassemble
+        analyseMenuItem = new JMenuItem("Analyse / Disassemble");
+        analyseMenuItem.setMnemonic(KeyEvent.VK_A);
+        analyseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
+        analyseMenuItem.setActionCommand(COMMAND_ANALYSE_DISASSEMBLE);
+        analyseMenuItem.addActionListener(this);
+        sourceMenu.add(analyseMenuItem);
+
+        sourceMenu.add(new JSeparator());
 
         //code structure
         codeStructureMenuItem = new JCheckBoxMenuItem("Code structure");
-//        codeStructureMenuItem.setMnemonic(KeyEvent.VK_S);
+        codeStructureMenuItem.setMnemonic(KeyEvent.VK_C);
 //        codeStructureMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         codeStructureMenuItem.setActionCommand(COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW);
         codeStructureMenuItem.addActionListener(this);
-        viewMenu.add(codeStructureMenuItem);
+        sourceMenu.add(codeStructureMenuItem);
 
         //source code
         sourceCodeMenuItem = new JCheckBoxMenuItem("Source code");
-//        sourceCodeMenuItem.setMnemonic(KeyEvent.VK_S);
+        sourceCodeMenuItem.setMnemonic(KeyEvent.VK_S);
 //        sourceCodeMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         sourceCodeMenuItem.setActionCommand(COMMAND_TOGGLE_SOURCE_CODE_WINDOW);
         sourceCodeMenuItem.addActionListener(this);
-        viewMenu.add(sourceCodeMenuItem);
+        sourceMenu.add(sourceCodeMenuItem);
 
 
         //Set up the tools menu.
@@ -609,27 +636,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         toolsMenu.setMnemonic(KeyEvent.VK_T);
         menuBar.add(toolsMenu);
 
-        //decoder
-        tmpMenuItem = new JMenuItem("Decode firmware");
-//        tmpMenuItem.setMnemonic(KeyEvent.VK_M);
-//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK));
-        tmpMenuItem.setActionCommand(COMMAND_DECODE);
-        tmpMenuItem.addActionListener(this);
-        toolsMenu.add(tmpMenuItem);
-
-        //encoder
-        tmpMenuItem = new JMenuItem("Encode firmware");
-//        tmpMenuItem.setMnemonic(KeyEvent.VK_S);
-//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
-        tmpMenuItem.setActionCommand(COMMAND_ENCODE);
-        tmpMenuItem.addActionListener(this);
-        toolsMenu.add(tmpMenuItem);
-
-        toolsMenu.add(new JSeparator());
-
         // save/load memory area
         saveLoadMemoryMenuItem = new JMenuItem("Save/Load memory area");
-//        saveLoadMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
+        saveLoadMemoryMenuItem.setMnemonic(KeyEvent.VK_S);
 //        saveLoadMemoryMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
         saveLoadMemoryMenuItem.setActionCommand(COMMAND_SAVE_LOAD_MEMORY);
         saveLoadMemoryMenuItem.addActionListener(this);
@@ -650,10 +659,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         menuBar.add(helpMenu);
 
         //about
-        saveLoadMemoryMenuItem = new JMenuItem("About");
-        saveLoadMemoryMenuItem.setActionCommand(COMMAND_ABOUT);
-        saveLoadMemoryMenuItem.addActionListener(this);
-        helpMenu.add(saveLoadMemoryMenuItem);
+        JMenuItem aboutMenuItem = new JMenuItem("About");
+        aboutMenuItem.setActionCommand(COMMAND_ABOUT);
+        aboutMenuItem.addActionListener(this);
+        helpMenu.add(aboutMenuItem);
 
         return menuBar;
     }
@@ -689,9 +698,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_SETUP_BREAKPOINTS.equals(e.getActionCommand())) {
             toggleBreakTriggerList();
-        }
-        else if (COMMAND_TEST.equals(e.getActionCommand())) {
-
         }
         else if (COMMAND_QUIT.equals(e.getActionCommand())) {
             quit();
