@@ -16,6 +16,7 @@
     <property name="lib-dir"          location="lib"/>
     <property name="batch-dir"        location="batch"/>
     <property name="conf-dir"         location="conf"/>
+    <property name="tools-dir"        location="tools"/>
 	<property name="debug"            value="true"/>
 	<property name="debuglevel"       value="lines,var,source"/>
 	<property name="java-level"       value="1.6"/>
@@ -111,7 +112,7 @@
              update="true"
              basedir="."
              includes="lib/**/*.*"
-                />
+                />                
     </target>
 
 
@@ -120,6 +121,17 @@
         <delete dir="${class-dir}"/>
         <delete dir="${gen-dir}"/>
         <delete dir="${dist-dir}"/>
+    </target>
+    
+    <!-- Process Jflex file -->
+    <target name="process-jflex" description="Create a Java Syntax Highlighting from the Flex file">
+        <java jar="${tools-dir}/jflex/lib/JFlex.jar" fork="true" failonerror="true" maxmemory="128m">
+            <arg value="${source-dir}/com/nikonhacker/gui/component/sourceCode/syntaxHighlighter/AssemblerFrTokenMaker.flex"/>
+            <classpath>
+                <pathelement location="${tools-dir}/jflex/lib/classes.zip"/>
+                <pathelement location="${tools-dir}/jflex/lib/JFlex.jar"/>
+            </classpath>
+        </java>
     </target>
 
 
