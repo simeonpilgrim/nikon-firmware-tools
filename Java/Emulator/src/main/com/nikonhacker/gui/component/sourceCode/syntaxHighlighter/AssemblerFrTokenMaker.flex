@@ -158,6 +158,28 @@ import org.fife.ui.rsyntaxtextarea.*;
 
 	}
 
+	/**
+	 * Returns whether tokens of the specified type should have "mark
+	 * occurrences" enabled for the current programming language.
+	 * Basically, we return true for everything except blanks
+	 *
+	 * @param type The token type.
+	 * @return Whether tokens of this type should have "mark occurrences"
+	 *         enabled.
+	 */
+	public boolean getMarkOccurrencesOfTokenType(int type) {
+        return     type == Token.IDENTIFIER
+                || type == Token.FUNCTION
+                || type == Token.RESERVED_WORD
+                || type == Token.RESERVED_WORD_2
+                || type == Token.DATA_TYPE
+                || type == Token.LITERAL_CHAR
+                || type == Token.LITERAL_NUMBER_HEXADECIMAL
+                || type == Token.ANNOTATION
+                || type == Token.OPERATOR
+                || type == Token.VARIABLE;
+	}
+
 
 	/**
 	 * Refills the input buffer.
@@ -428,7 +450,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 	/* Labels. */
 	{Label}						{ addToken(Token.PREPROCESSOR); }
 
-/*	^%({Letter}|{Digit})*			{ addToken(Token.FUNCTION); } */
 	{Address}                       { addToken(Token.LITERAL_NUMBER_HEXADECIMAL); }
 	{Instruction}                       { addToken(Token.ANNOTATION); }
 
@@ -438,9 +459,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 
 	/* Operators. */
 	{Operator}					{ addToken(Token.OPERATOR); }
-
-	/* Numbers */
-/*	{Number}						{ addToken(Token.LITERAL_NUMBER_DECIMAL_INT); } */
 
 	/* Ended with a line not in a string or comment. */
 	<<EOF>>						{ addNullToken(); return firstToken; }
