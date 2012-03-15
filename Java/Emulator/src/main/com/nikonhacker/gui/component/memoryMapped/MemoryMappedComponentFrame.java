@@ -25,7 +25,7 @@ public class MemoryMappedComponentFrame extends DocumentFrame {
         listener = new PageAccessLoggerActivityListener(textArea.getPrintWriter(), page);
         memory.addActivityListener(listener);
         setLayout(new BorderLayout());
-        add(new JScrollPane(textArea), BorderLayout.PAGE_START);
+        add(new JScrollPane(textArea), BorderLayout.CENTER);
     }
     
     public void dispose() {
