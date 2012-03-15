@@ -9,7 +9,10 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.CodeStructure;
+import com.nikonhacker.dfr.Function;
+import com.nikonhacker.dfr.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -71,15 +74,14 @@ public class CodeStructureFrame extends DocumentFrame
             }
         });
         toolbar.add(orientationCombo);
-        
-        final JTextField targetAddressField = new JTextField(7);
-        toolbar.add(targetAddressField);
 
-        final JButton exploreButton = new JButton("Explore");
-        exploreButton.addActionListener(new ActionListener() {
+        toolbar.add(new JLabel("0x"));
+        final JTextField targetAddressField = new JTextField(7);
+
+        ActionListener exploreActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    int address = Format.parseUnsigned(targetAddressField.getText());
+                    int address = Format.parseIntHexField(targetAddressField);
                     Function function = codeStructure.getFunctions().get(address);
                     if (function == null) {
                         function = codeStructure.findFunctionIncluding(address);
@@ -87,20 +89,26 @@ public class CodeStructureFrame extends DocumentFrame
                     if (function == null) {
                         JOptionPane.showMessageDialog(CodeStructureFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
-                    else{
+                    else {
                         graph.expandFunction(function, codeStructure, true, true);
                     }
-                } catch (ParsingException ex) {
+                } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(CodeStructureFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
                 }
             }
-        });
+        };
+
+        targetAddressField.addActionListener(exploreActionListener);
+        toolbar.add(targetAddressField);
+
+        final JButton exploreButton = new JButton("Explore");
+        exploreButton.addActionListener(exploreActionListener);
         toolbar.add(exploreButton);
         JButton goToPcButton = new JButton("Go to PC");
         toolbar.add(goToPcButton);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                targetAddressField.setText("0x" + Format.asHex(CodeStructureFrame.this.cpuState.pc, 8));
+                targetAddressField.setText(Format.asHex(CodeStructureFrame.this.cpuState.pc, 8));
                 exploreButton.doClick(0);
             }
         });
