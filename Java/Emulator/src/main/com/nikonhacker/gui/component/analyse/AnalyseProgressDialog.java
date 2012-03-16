@@ -69,7 +69,7 @@ public class AnalyseProgressDialog extends JDialog {
                     debugPrintWriter.println();
                     debugPrintWriter.println("Disassembly complete.");
                     if (emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.STRUCTURE)) {
-                        debugPrintWriter.println("You may now use the 'Code Structure' window");
+                        debugPrintWriter.println("You may now use the 'Code Structure' and 'Source Code' windows");
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
