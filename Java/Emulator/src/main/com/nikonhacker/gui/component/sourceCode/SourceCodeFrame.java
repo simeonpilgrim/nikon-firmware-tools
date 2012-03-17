@@ -60,6 +60,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
+        topToolbar.add(new JLabel("0x"));
         targetAddressField = new JTextField(7);
         topToolbar.add(targetAddressField);
         final JButton exploreButton = new JButton("Explore");
@@ -74,12 +75,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    int address = Format.parseUnsigned(targetAddressField.getText());
+                    int address = Format.parseIntHexField(targetAddressField);
                     if (!exploreAddress(address)) {
                         JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (ParsingException ex) {
-                    JOptionPane.showMessageDialog(SourceCodeFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
+                } catch (NumberFormatException ex) {
+                    // do nothing. Field is highlighted
                 }
             }
         };
@@ -165,7 +166,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             Integer line = getLineFromAddress(address);
             if (line != null) {
                 try {
-                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
+                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line) + 30); // adding 30 to set the caret in the blanks, avoiding automatic highlight of all occurrences
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
@@ -287,7 +288,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
-                listingArea.setCaretPosition(listingArea.getLineStartOffset(lineFromAddress));
+                listingArea.setCaretPosition(listingArea.getLineStartOffset(lineFromAddress) + 30); // adding 30 to set the caret in the blanks, avoiding automatic highlight of all occurrences
             }
         } catch (BadLocationException e) {
             pcHighlightTag = null;
