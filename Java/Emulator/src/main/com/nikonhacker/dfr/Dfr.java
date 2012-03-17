@@ -433,7 +433,7 @@ public class Dfr
         }
         if (matchingFileRange == null) {
             debugPrintWriter.println("WARNING : No matching file range ('-i' option) found for address 0x" + Format.asHex(memRange.start, 8) + "...");
-            debugPrintWriter.println("ssuming no offset between file and memory for now.");
+            debugPrintWriter.println("Assuming no offset between file and memory for now.");
             return memRange;
         }
         return matchingFileRange;
