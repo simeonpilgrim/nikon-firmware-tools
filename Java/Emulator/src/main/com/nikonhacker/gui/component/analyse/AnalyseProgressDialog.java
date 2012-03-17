@@ -2,6 +2,7 @@ package com.nikonhacker.gui.component.analyse;
 
 import com.nikonhacker.dfr.Dfr;
 import com.nikonhacker.dfr.OutputOption;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.SearchableTextAreaPanel;
@@ -18,10 +19,12 @@ public class AnalyseProgressDialog extends JDialog {
     JButton closeButton;
     final JDialog frame = this;
     private EmulatorUI emulatorUI;
+    private DebuggableMemory memory;
 
-    public AnalyseProgressDialog(EmulatorUI emulatorUI, Frame owner) {
-        super(owner, "Disassembly progress", true);
+    public AnalyseProgressDialog(EmulatorUI emulatorUI, DebuggableMemory memory) {
+        super(emulatorUI, "Disassembly progress", true);
         this.emulatorUI = emulatorUI;
+        this.memory = memory;
 
         JPanel panel = new JPanel(new BorderLayout());
 
@@ -61,7 +64,7 @@ public class AnalyseProgressDialog extends JDialog {
                     disassembler.setOutputFileName(outputFilename);
                     disassembler.readOptions(optionsFilename);
                     disassembler.setOutputOptions(emulatorUI.getPrefs().getOutputOptions());
-                    disassembler.setInputFileName(inputFilename);
+                    disassembler.setMemory(memory);
                     disassembler.initialize();
                     debugPrintWriter.println("Starting disassembly...");
                     emulatorUI.setCodeStructure(disassembler.disassembleMemRanges());

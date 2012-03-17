@@ -873,7 +873,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             if (!cancel) {
-                AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
+                AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, memory);
                 analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), outputFilename);
                 analyseProgressDialog.setVisible(true);
             }
