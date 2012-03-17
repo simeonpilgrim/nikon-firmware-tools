@@ -69,7 +69,7 @@ public class Dfr
     boolean optLittleEndian = false;
     boolean optSplitPerMemoryRange = false;
 
-    Memory memory = new FastMemory();
+    Memory memory = null;
 
     Writer outWriter;
     PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
@@ -114,8 +114,12 @@ public class Dfr
         this.outputOptions = outputOptions;
     }
 
-    public void setInputFileName(String inputFileName) {
+    public void setInputFileName(String inputFileName) throws IOException {
         this.inputFileName = inputFileName;
+    }
+
+    public void setMemory(Memory memory) {
+        this.memory = memory;
     }
 
     public void setOutputFileName(String outputFileName) {
@@ -226,7 +230,9 @@ public class Dfr
     private void writeHeader(Writer writer) throws IOException {
         writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + ", disassembler based on Dfr v1.03 by Kevin Schoedel\n");
         writer.write(";   Date:   " + startTime + "\n");
-        writer.write(";   Input:  " + inputFileName + "\n");
+        if (inputFileName != null) {
+            writer.write(";   Input:  " + inputFileName + "\n");
+        }
         writer.write(";   Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");
         writer.write("\n");
     }
@@ -439,8 +445,7 @@ public class Dfr
     public void initialize() throws IOException {
         startTime = new Date().toString();
 
-        if (inputFileName == null)
-        {
+        if (inputFileName == null && memory == null) {
             log(getClass().getSimpleName() + ": no input file");
             usage();
             System.exit(-1);
@@ -459,10 +464,10 @@ public class Dfr
             }
 //        }
 
-        File binaryFile = new File(inputFileName);
-
-        memory.loadFile(binaryFile, fileMap.ranges);
-
+        if (memory == null) {
+            memory = new FastMemory();
+            memory.loadFile(new File(inputFileName), fileMap.ranges);
+        }
 
         //    fixmap(&filemap, 0);
 //            if (outOptions.fileMap)
