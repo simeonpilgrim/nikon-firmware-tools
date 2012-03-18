@@ -522,8 +522,8 @@ public class CodeStructure {
         if (instruction.opcode.type == OpCode.Type.CALL
          || instruction.opcode.type == OpCode.Type.JMP
          || instruction.opcode.type == OpCode.Type.BRA) {
-            // replace address by label
             if (instruction.comment.length() > 0) {
+                // replace address by label in comment
                 try {
                     int targetAddress = Format.parseUnsigned(instruction.comment);
                     Symbol symbol;
@@ -538,7 +538,7 @@ public class CodeStructure {
                     }
                     if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
                         //if (areInSameRange(functions,  address, targetAddress))
-                        instruction.comment += (targetAddress>address?" (skip)":" (loop)");
+                        instruction.comment += " " + skipOrLoop(address, targetAddress);
                     }
                 } catch (ParsingException e) {
                     // noop
@@ -546,6 +546,7 @@ public class CodeStructure {
             }
             else {
                 try {
+                    // add label to comment if operand
                     int targetAddress = Format.parseUnsigned(instruction.operands);
                     if (instruction.opcode.type == OpCode.Type.CALL) {
                         Function function = functions.get(targetAddress);
@@ -561,7 +562,7 @@ public class CodeStructure {
                     }
                     if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
                         //TODO only if(areInSameRange(address, targetAddress))
-                        instruction.comment =  targetAddress>address?"(skip)":"(loop)";
+                        instruction.comment = skipOrLoop(address, targetAddress);
                     }
                 } catch (ParsingException e) {
                     // noop
@@ -583,6 +584,12 @@ public class CodeStructure {
             }
             writer.write("; ------------------------------------------------------------------------\n\n");
         }
+    }
+
+    private String skipOrLoop(Integer address, int targetAddress) {
+        long target = targetAddress & 0xFFFFFFFFL;
+        long addr = address & 0xFFFFFFFFL;
+        return target > addr ?"(skip)":"(loop)";
     }
 
     public Function findFunctionIncluding(int address) {
