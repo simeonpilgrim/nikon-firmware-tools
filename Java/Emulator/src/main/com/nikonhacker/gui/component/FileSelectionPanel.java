@@ -51,8 +51,10 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
 
         this.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-        jlabel = new JLabel(label);
-        this.add(jlabel);
+        if (StringUtils.isNotBlank(label)) {
+            jlabel = new JLabel(label);
+            this.add(jlabel);
+        }
 
         textField.setPreferredSize(new Dimension(400, (int) textField.getPreferredSize().getHeight()));
         this.add(textField);
