@@ -156,7 +156,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      * @return
      */
     public boolean exploreAddress(int address) {
-        targetAddressField.setText("0x" + Format.asHex(address, 8));
+        targetAddressField.setText(Format.asHex(address, 8));
         Function function = codeStructure.getFunctions().get(address);
         if (function == null) {
             function = codeStructure.findFunctionIncluding(address);
