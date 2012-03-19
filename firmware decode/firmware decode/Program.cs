@@ -22,6 +22,11 @@ namespace Nikon_Decode
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
+            DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
+            DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
+
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
 
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
@@ -326,6 +331,7 @@ namespace Nikon_Decode
                         {
                             byte[] data = br.ReadBytes((int)count);
                             byte[] datab = (byte[])data.Clone();
+                            byte[] check = { 0xff, 0xd8, 0xff, 0xE0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46 };
 
                             for (int m = 0; m < 256; m++)
                             {
@@ -342,10 +348,11 @@ namespace Nikon_Decode
 
                                 for (int ii = 0; ii < count - 4; ii++)
                                 {
-                                    if (datab[ii + 0] == 0x4a &&
-                                          datab[ii + 1] == 0x46 &&
-                                          datab[ii + 2] == 0x49 &&
-                                          datab[ii + 3] == 0x46)
+                                    bool match = true;
+                                    for (int jj = 0; (jj < check.Length) && match; jj++)
+                                        match &= datab[ii + jj] == check[jj];
+
+                                    if( match )
                                     {
                                         sw.WriteLine("0x{0:x6} mask: 0x{1:x2} {2}{3}{4}{5}", base_pos, m,
                                             (char)datab[ii + 0], (char)datab[ii + 1], (char)datab[ii + 2], (char)datab[ii + 3]);
