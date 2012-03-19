@@ -26,7 +26,7 @@ public class InterruptControllerFrame extends DocumentFrame {
 
     private Emulator emulator;
 
-    Timer timer;
+    Timer timer = null;
 
     public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final Emulator emulator, final DebuggableMemory memory, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -183,22 +183,22 @@ public class InterruptControllerFrame extends DocumentFrame {
         timerParamPanel.add(new JLabel("ms"));
 
         timerParamPanel.add(new JLabel(""));
-        JButton button = new JButton("Start");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stopTimer();
-                startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
-            }
-        });
-        timerParamPanel.add(button);
-        button = new JButton("Stop");
-        button.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                stopTimer();
-            }
-        });
-        timerParamPanel.add(button);
         
+        JButton toggleTimerButton = new JButton("Start");
+        toggleTimerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (timer == null) {
+                    startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
+                    ((JButton) e.getSource()).setText("Stop");
+                }
+                else {
+                    stopTimer();
+                    ((JButton) e.getSource()).setText("Start");
+                }
+            }
+        });
+        timerParamPanel.add(toggleTimerButton);
+
         timerIntermediaryPanel.add(timerParamPanel);
         
         timerPanel.add(timerIntermediaryPanel,BorderLayout.CENTER);
