@@ -12,6 +12,8 @@ import java.util.*;
 public class CodeStructure {
 
     public static final int INTERRUPT_VECTOR_LENGTH = 0x400;
+    private static final String FUNCTION_PREFIX = "sub";
+    private static final String UNKNOWN_PREFIX = "unknown";
 
     private int entryPoint;
 
@@ -190,10 +192,10 @@ public class CodeStructure {
             if (StringUtils.isBlank(function.getName())) {
                 String functionId = outputOptions.contains(OutputOption.ORDINAL)?("" + functionNumber):Integer.toHexString(address);
                 if (function.getType() == Function.Type.UNKNOWN) {
-                    function.setName("unknown_" + functionId + "_");
+                    function.setName(UNKNOWN_PREFIX + "_" + functionId + "_");
                 }
                 else {
-                    function.setName("function_" + functionId + "_");
+                    function.setName(FUNCTION_PREFIX + "_" + functionId + "_");
                 }
             }
             // increment even if unused, to make output stable no matter what future replacements will occur
