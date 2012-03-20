@@ -184,8 +184,8 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         timerParamPanel.add(new JLabel(""));
         
-        JButton toggleTimerButton = new JButton("Start");
-        toggleTimerButton.addActionListener(new ActionListener() {
+        JButton startTimerButton = new JButton("Start");
+        startTimerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (timer == null) {
                     startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
@@ -197,7 +197,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                 }
             }
         });
-        timerParamPanel.add(toggleTimerButton);
+        timerParamPanel.add(startTimerButton);
 
         timerIntermediaryPanel.add(timerParamPanel);
         
