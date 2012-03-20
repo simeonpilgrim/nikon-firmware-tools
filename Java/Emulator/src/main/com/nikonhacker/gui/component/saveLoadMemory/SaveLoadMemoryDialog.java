@@ -42,6 +42,7 @@ public class SaveLoadMemoryDialog extends JDialog {
         final JRadioButton withLengthButton = new JRadioButton("Length");
         final JLabel lengthLabel = new JLabel("0x");
         final JTextField lengthField = new JTextField(10);
+        final FileSelectionPanel fileSelectionPanel = new FileSelectionPanel(null, filenameField, false);
 
         ButtonGroup endOrLengthGroup = new ButtonGroup();
         endOrLengthGroup.add(withEndButton);
@@ -59,6 +60,7 @@ public class SaveLoadMemoryDialog extends JDialog {
                 endAddressField.setEnabled(withEndButton.isSelected() && saveButton.isSelected());
                 lengthLabel.setEnabled(withLengthButton.isSelected() && saveButton.isSelected());
                 lengthField.setEnabled(withLengthButton.isSelected() && saveButton.isSelected());
+                fileSelectionPanel.setDialogTitle(saveButton.isSelected()?"Select file to dump memory to":"Select file to load memory from");
             }
         };
         withEndButton.addActionListener(buttonListener);
@@ -110,8 +112,8 @@ public class SaveLoadMemoryDialog extends JDialog {
         optionsPanel.add(lengthField, "wrap");
 
         addSeparator(optionsPanel, "File");
-        
-        optionsPanel.add(new FileSelectionPanel(null, filenameField, false), "span 5, wrap");
+
+        optionsPanel.add(fileSelectionPanel, "span 5, wrap");
 
 //        JPanel bottomPanel = new JPanel(new FlowLayout());
 //        bottomPanel.add(okButton);
