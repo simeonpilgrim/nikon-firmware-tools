@@ -17,10 +17,11 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
     JTextField textField;
     boolean directoryMode;
     private List<DependentField> dependentFields;
+    private String dialogTitle;
 
     public FileSelectionPanel(String label, JTextField textField, boolean directoryMode) {
         super();
-        init(label, textField, directoryMode, new ArrayList<DependentField>());
+        init(label, textField, directoryMode, new ArrayList<DependentField>(), dialogTitle);
     }
 
     @Override
@@ -40,14 +41,28 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
      */
     public FileSelectionPanel(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
         super();
-        init(label, textField, directoryMode, dependentFields);
+        init(label, textField, directoryMode, dependentFields, null);
     }
 
-    private void init(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields) {
+    /**
+     *
+     * @param label
+     * @param textField
+     * @param directoryMode
+     * @param dependentFields : a list of text fields that will be filled based on this one. Each field is associated with a suffix to customize secondary field filename. If it contains a dot, it replaces the extension, otherwise it replaces the full filename
+     *   
+     */
+    public FileSelectionPanel(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields, String dialogTitle) {
+        super();
+        init(label, textField, directoryMode, dependentFields, dialogTitle);
+    }
+
+    private void init(String label, JTextField textField, boolean directoryMode, List<DependentField> dependentFields, String dialogTitle) {
         this.label = label;
         this.textField = textField;
         this.directoryMode = directoryMode;
         this.dependentFields = dependentFields;
+        this.dialogTitle = dialogTitle;
 
         this.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
@@ -69,7 +84,7 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         final JFileChooser fc = new JFileChooser();
 
-        fc.setDialogTitle("Select " + label);
+        fc.setDialogTitle(StringUtils.isNotBlank(dialogTitle)?dialogTitle:(StringUtils.isNotBlank(label)?("Select " + label):"Select file"));
         fc.setCurrentDirectory(new java.io.File("."));
 
         if (directoryMode) {
@@ -115,5 +130,7 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
         }
     }
 
-
+    public void setDialogTitle(String dialogTitle) {
+        this.dialogTitle = dialogTitle;
+    }
 }
