@@ -74,28 +74,31 @@ namespace Nikon_Decode
 
                 using (var sw = new StreamWriter(File.Open(fileName + ".menu.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    MenuDump(sw, "", startAddr);
-                    MenuDump(sw, "", 0x8F9C8F50);
-                    MenuDump(sw, "", 0x8F9CFBC0);
-                    MenuDump(sw, "", 0x8F9CD060);
-                    MenuDump(sw, "", 0x8F9CE870);
-                    MenuDump(sw, "", 0x8F9CC210);
+                    using (var sw2 = new StreamWriter(File.Open(fileName + ".menu_sym.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                    {
+                        MenuDump(sw, sw2, "", startAddr);
+                        MenuDump(sw, sw2, "", 0x8F9C8F50);
+                        MenuDump(sw, sw2, "", 0x8F9CFBC0);
+                        MenuDump(sw, sw2, "", 0x8F9CD060);
+                        MenuDump(sw, sw2, "", 0x8F9CE870);
+                        MenuDump(sw, sw2, "", 0x8F9CC210);
 
-                    MenuDump(sw, "", 0x8F9CA060);
+                        MenuDump(sw, sw2, "", 0x8F9CA060);
 
-                    MenuDump(sw, "", 0x8F9C9FB0);
+                        MenuDump(sw, sw2, "", 0x8F9C9FB0);
+                    }
                 }
                 
             }      
         }
 
-        private static void MenuDump(TextWriter tw, string p, long addr)
+        private static void MenuDump(TextWriter tw_txt, TextWriter tw_sym, string p, long addr)
         {
             Struct6 menu;
 
             if (menus.TryGetValue(addr, out menu))
             {
-                menu.Dump(tw, p);
+                menu.Dump(tw_txt, tw_sym, p);
             }
         }
 
@@ -170,7 +173,7 @@ namespace Nikon_Decode
             public UInt32 field_18; // WORD* - list count
             public UInt32 field_1C; // elements_addr
 
-            internal void Dump(TextWriter tw, string p)
+            internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
                 tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, headingTxt);
 
@@ -189,6 +192,10 @@ namespace Nikon_Decode
                 tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
+                var sym = NameToSymbol(headingTxt);
+                if( sym != "" )
+                    tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym);
+
                 if (field_12_item != null)
                 {
                     field_12_item.Dump(tw, p);
@@ -196,7 +203,7 @@ namespace Nikon_Decode
 
                 foreach (var el in menu_elements)
                 {
-                    el.Dump(tw, p);
+                    el.Dump(tw, tw_sym, p);
                 }
 
                 //tw.WriteLine();
@@ -313,7 +320,7 @@ namespace Nikon_Decode
                 return string.Format("{0} - {1}", txt_0, txt_2);
             }
 
-            internal void Dump(TextWriter tw, string p)
+            internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
                 tw.WriteLine("{0}Element: 0x{1:X8} {2}", p, mem_loc, txt_2);
                 //tw.WriteLine("{0}  field_0: 0x{1:X4}", p, field_0);
@@ -324,9 +331,13 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  field_A: 0x{1:X4}", p, field_A);
                 //tw.WriteLine("{0}  menu_ptr: 0x{1:X8}", p, menu_ptr);
 
+                var sym = NameToSymbol(txt_2);
+                if (sym != "")
+                    tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
+
                 if (menu_ptr != 0)
                 {
-                    MenuDump(tw, p + "  ", menu_ptr);
+                    MenuDump(tw, tw_sym, p + "  ", menu_ptr);
                 }
             }
         }
@@ -357,6 +368,40 @@ namespace Nikon_Decode
                 }
             }
 
+        }
+
+        static List<string> Symbols = new List<string>();
+        static string NameToSymbol(string text)
+        {
+            const int maxIn = 14;
+            StringBuilder sb = new StringBuilder();
+
+            char[] skips = { ' ', '/', '-', '(', ')' };
+
+            for (int i = 0; i < text.Length && sb.Length < maxIn; i++)
+            {
+                //if (Array.IndexOf(skips, text[i]) == -1)
+                char c = text[i];
+                if ((c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z'))
+                {
+                    sb.Append(text[i]);
+                }
+            }
+
+            if (sb.Length == 0) sb.Append("empty_");
+
+            string basetxt = sb.ToString();
+            string trytxt = basetxt;
+            int next = 0;
+            while (Symbols.Contains(trytxt))
+            {
+                trytxt = string.Format("{0}_{1}", basetxt, next++);
+            }
+
+            Symbols.Add(trytxt);
+            return trytxt;
         }
 
         static string ResolveFuncName(uint addr)
