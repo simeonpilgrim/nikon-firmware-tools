@@ -22,11 +22,11 @@ namespace Nikon_Decode
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
-            DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
-            DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
+            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
+            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
 
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
 
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
