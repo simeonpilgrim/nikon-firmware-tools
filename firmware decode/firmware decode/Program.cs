@@ -70,7 +70,7 @@ namespace Nikon_Decode
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
-            DumpMenus(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x8F9CA140, (0x8F9C4E78 - 0x37BDE4)+0x40000);
+            DumpMenus5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
         }
 
 
