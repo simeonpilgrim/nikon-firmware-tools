@@ -3,6 +3,8 @@ package com.nikonhacker.dfr;
 import com.nikonhacker.Format;
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
@@ -204,6 +206,17 @@ public class OptionHandler
             value = value.substring(0, commentStart).trim();
         }
         symbols.put(address, new Symbol(address, value, comment));
+    }
+
+    public static void parseJumpHint(Map<Integer, List<Integer>> jumpHints, String argument) throws ParsingException {
+        Integer source = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
+        String targets = StringUtils.substringAfter(argument, "=").trim();
+        List<Integer> targetList = new ArrayList<Integer>();
+        StringTokenizer t = new StringTokenizer(targets, ",");
+        while (t.hasMoreTokens()) {
+            targetList.add(Format.parseUnsigned(t.nextToken().trim()));
+        }
+        jumpHints.put(source, targetList);
     }
 }
 

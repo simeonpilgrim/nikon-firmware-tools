@@ -80,6 +80,7 @@ public class Dfr
 
     String startTime = "";
     private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
+    private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
 
     private void usage()
     {
@@ -89,6 +90,7 @@ public class Dfr
                         + "-f range=address  (not implemented) map range of input file to memory address\n"
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
+                        + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
                         + "-l                (not implemented) little-endian input file\n"
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file\n"
@@ -376,7 +378,7 @@ public class Dfr
             }
 
             debugPrintWriter.println("Post processing...");
-            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions, debugPrintWriter);
+            new CodeAnalyzer(codeStructure, memMap.ranges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getInstructions().size() + " instructions");
@@ -578,6 +580,16 @@ public class Dfr
                     fileMap.add(range);
                     break;
 
+                case 'J':
+                case 'j':
+                    argument = optionHandler.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    OptionHandler.parseJumpHint(jumpHints, argument);
+                    break;
+
                 case 'L':
                 case 'l':
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
@@ -622,7 +634,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeStructure.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
+                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeAnalyzer.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
                     break;
 
                 case 'V':
