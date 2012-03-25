@@ -187,6 +187,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         
         listingArea.setMarkOccurrences(true);
         listingArea.setMarkOccurrencesColor(Color.GREEN);
+//        // When one clicks on a term, highlight all occurrences (not only the ones within the same syntactic group)
+//        MarkAllOccurrencesSupport support = new MarkAllOccurrencesSupport();
+//        support.setColor(Color.GREEN);
+//        support.install(listingArea);
 
         // Make current line transparent so PC line highlight passes through
         listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
