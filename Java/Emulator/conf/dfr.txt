@@ -633,7 +633,7 @@
 -s 0x157E60=call_int40_05
 -s 0x15C7C8=set_8F86BF40
 -s 0x164CBC=nullsub_177
--s 0x164CBE=trace(debug string is passed)
+-s 0x164CBE=trace(R4 [IN ptr to debug string])
 -s 0x168688=setPointerValue
 -s 0x16869C=getPointerValue
 -s 0x16A8B8=WhiteBal_txt_xx
@@ -1029,12 +1029,12 @@
 -s 0x234DC4=DIV_uint(R4 [IN dividend, OUT quotient], R5 [IN divisor])
 -s 0x234E3A=double_XX_1
 -s 0x234ED6=swap_234ED6
--s 0x234edc=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+-s 0x234EDC=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
 -s 0x234F5E=ABS
 -s 0x23514E=ceil
 -s 0x235234=floor
 -s 0x23531A=getNth_2BED14_bit6
--s 0x23532A=neg(R4 [IN, OUT])
+-s 0x23532A=abs_0(R4 [IN, OUT])
 -s 0x235338=log_or_log10
 -s 0x235542=memcmp(R4 [IN source1], R5 [IN source2], R6 [IN count])
 -s 0x23555C=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
