@@ -18,7 +18,8 @@ namespace Nikon_Decode
         const long EngLastAddr = 0x5ECC64;
 
         private static Dictionary<long, Struct6> menus;
-        private static void DumpMenus(string fileName, uint startAddr, uint addrOffset)
+
+        private static void DumpMenus5100(string fileName)
         {
             LoadFuncNames(@"C:\Users\spilgrim\Downloads\FrEmu\dfr_sim.txt");
 
@@ -41,17 +42,25 @@ namespace Nikon_Decode
 
                 resolved.Add(0);
 
-                q.Enqueue(startAddr);
-                q.Enqueue(0x8F9C8F50);
-                q.Enqueue(0x8F9CFBC0);
-                q.Enqueue(0x8F9CD060);
-                q.Enqueue(0x8F9CE870);
-                q.Enqueue(0x8F9CC210);
+                long[] startList = { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870, 
+                                     0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0, 
+                                     0x8F9CA120, 0x8F9CA020, 0x8F9C9F30, 0x8F9C9D20, 0x8F9C9C10, 0x8F9C9B90,
+                                     0x8F9C9B20, 0x8F9C9AA0, 0x8F9C9860, 0x8F9C9ED0, 0x8F9C9C90, 0x8F9C9800,
+                                     0x8F9C97C0, 0x8F9C9750, 0x8F9C96D0, 0x8F9C9650, 0x8F9C8DB0, 0x8F9C8CD0,
+                                     0x8F9C8A30, 0x8F9C9560, 0x8F9C95E0, 0x8F9CC120, 0x8F9C8540, 0x8F9C8DF0, 
+                                     0x8F9C8420, 0x8F9C7C70, 0x8F9C7A30, 0x8F9C7A60, 0x8F9C72A0, 0x8F9C71E0,
+                                     0x8F9C7190, 0x8F9C6F90, 0x8F9C6F70, 0x8F9C6F20, 0x8F9C6EE0, 0x8F9C6EA0,
+                                     0x8F9C6E80, 0x8F9C6E60, 0x8F9C6E40, 0x8F9C6E20, 0x8F9C6E00, 0x8F9C6DE0,
+                                     0x8F9C6DC0};
 
-                q.Enqueue(0x8F9CA060);
 
-                q.Enqueue(0x8F9C9FB0);
+                uint addrOffset = (0x8F9C4E78 - 0x37BDE4) + 0x40000;
 
+                foreach (var l in startList)
+                {
+                    q.Enqueue(l);
+                }
+                
 
                 while (q.Count > 0)
                 {
@@ -60,9 +69,14 @@ namespace Nikon_Decode
                     var s6 = new Struct6(data, addr, addrOffset);
                     s6.ReadElements(data);
 
+                    resolved.Add(addr);
                     menus.Add(addr, s6);
                     foreach (var s14 in s6.menu_elements)
                     {
+                        if (Array.IndexOf(startList, s14.menu_ptr) != -1)
+                        {
+
+                        }
                         if (resolved.Contains(s14.menu_ptr) == false &&
                             q.Contains(s14.menu_ptr) == false)
                         {
@@ -74,28 +88,25 @@ namespace Nikon_Decode
 
                 using (var sw = new StreamWriter(File.Open(fileName + ".menu.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    MenuDump(sw, "", startAddr);
-                    MenuDump(sw, "", 0x8F9C8F50);
-                    MenuDump(sw, "", 0x8F9CFBC0);
-                    MenuDump(sw, "", 0x8F9CD060);
-                    MenuDump(sw, "", 0x8F9CE870);
-                    MenuDump(sw, "", 0x8F9CC210);
-
-                    MenuDump(sw, "", 0x8F9CA060);
-
-                    MenuDump(sw, "", 0x8F9C9FB0);
+                    using (var sw2 = new StreamWriter(File.Open(fileName + ".menu_sym.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                    {
+                        foreach (var l in startList)
+                        {
+                            MenuDump(sw, sw2, "", l);
+                        }
+                    }
                 }
                 
             }      
         }
 
-        private static void MenuDump(TextWriter tw, string p, long addr)
+        private static void MenuDump(TextWriter tw_txt, TextWriter tw_sym, string p, long addr)
         {
             Struct6 menu;
 
             if (menus.TryGetValue(addr, out menu))
             {
-                menu.Dump(tw, p);
+                menu.Dump(tw_txt, tw_sym, p);
             }
         }
 
@@ -170,7 +181,7 @@ namespace Nikon_Decode
             public UInt32 field_18; // WORD* - list count
             public UInt32 field_1C; // elements_addr
 
-            internal void Dump(TextWriter tw, string p)
+            internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
                 tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, headingTxt);
 
@@ -189,6 +200,12 @@ namespace Nikon_Decode
                 tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
+                var sym = NameToSymbol(headingTxt);
+                if (sym != "")
+                {
+                    tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym);
+                }
+
                 if (field_12_item != null)
                 {
                     field_12_item.Dump(tw, p);
@@ -196,7 +213,7 @@ namespace Nikon_Decode
 
                 foreach (var el in menu_elements)
                 {
-                    el.Dump(tw, p);
+                    el.Dump(tw, tw_sym, p);
                 }
 
                 //tw.WriteLine();
@@ -313,7 +330,7 @@ namespace Nikon_Decode
                 return string.Format("{0} - {1}", txt_0, txt_2);
             }
 
-            internal void Dump(TextWriter tw, string p)
+            internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
                 tw.WriteLine("{0}Element: 0x{1:X8} {2}", p, mem_loc, txt_2);
                 //tw.WriteLine("{0}  field_0: 0x{1:X4}", p, field_0);
@@ -324,9 +341,15 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  field_A: 0x{1:X4}", p, field_A);
                 //tw.WriteLine("{0}  menu_ptr: 0x{1:X8}", p, menu_ptr);
 
+                var sym = NameToSymbol(txt_2);
+                if (sym != "")
+                {
+                    tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
+                }
+
                 if (menu_ptr != 0)
                 {
-                    MenuDump(tw, p + "  ", menu_ptr);
+                    MenuDump(tw, tw_sym, p + "  ", menu_ptr);
                 }
             }
         }
@@ -357,6 +380,40 @@ namespace Nikon_Decode
                 }
             }
 
+        }
+
+        static List<string> Symbols = new List<string>();
+        static string NameToSymbol(string text)
+        {
+            const int maxIn = 14;
+            StringBuilder sb = new StringBuilder();
+
+            char[] skips = { ' ', '/', '-', '(', ')' };
+
+            for (int i = 0; i < text.Length && sb.Length < maxIn; i++)
+            {
+                //if (Array.IndexOf(skips, text[i]) == -1)
+                char c = text[i];
+                if ((c >= '0' && c <= '9') ||
+                    (c >= 'a' && c <= 'z') ||
+                    (c >= 'A' && c <= 'Z'))
+                {
+                    sb.Append(text[i]);
+                }
+            }
+
+            if (sb.Length == 0) sb.Append("empty_");
+
+            string basetxt = sb.ToString();
+            string trytxt = basetxt;
+            int next = 0;
+            while (Symbols.Contains(trytxt))
+            {
+                trytxt = string.Format("{0}_{1}", basetxt, next++);
+            }
+
+            Symbols.Add(trytxt);
+            return trytxt;
         }
 
         static string ResolveFuncName(uint addr)
@@ -407,11 +464,11 @@ namespace Nikon_Decode
                 if (state == 0 && (data[i] < 0x20 || data[i] > 0x7F))
                 {
                     state = 1;
-                    sb.AppendFormat("\\0x{0:X2}", data[i]);
+                    sb.AppendFormat("/0x{0:X2}", data[i]);
                 }
                 else if (state == 1)
                 {
-                    sb.AppendFormat("\\0x{0:X2}", data[i]);
+                    sb.AppendFormat("/0x{0:X2}", data[i]);
                 }
                 else
                 {
