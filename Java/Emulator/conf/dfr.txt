@@ -1,3 +1,9 @@
+# The main part of this file describes the D5100 firmware, ver 1.01
+# Two special parts are also included but commented out :
+# - the ROM part at 0x000E0000
+# - the copy of code to 0x80080000 performed by the ROM bootup
+#
+
 ############################### File map: D5100
 -i 0x00040000-0x00BFFFFF=0x00000000
  
@@ -132,8 +138,29 @@
 #-m 0x000dfc00-0x000dffff=DATA:L
 
 
-# 0xFF
-#-m 0x000e0000-0x000fffff=DATA:L
+#####################################################
+## ROM Bootloader Area 0x000e0000-0x000fffff - filled with 0xFF in normal FW
+#
+#-m 0x000E0000-0x000E064B=CODE
+##-m 0x000E064C-0x000E08C7=DATA:L
+#-m 0x000E08C8-0x000E09A5=CODE
+## Copyright message
+##-m 0x000E09A6-0x000E0A11=DATA:L
+#-m 0x000E0A12-0x000E1A3B=CODE
+##-m 0x000E1A3C-0x000E1BC7=DATA:L
+#-m 0x000E1BC8-0x000E1C0B=CODE
+##-m 0x000E1C0C-0x000E1FA7=DATA:L
+#-m 0x000E1FA8-0x000E2767=CODE
+##probably not code :
+#-m 0x000E2768-0x000ED479=CODE
+## 0xFF
+##-m 0x000ED47A-0x000FFBBF=DATA:L
+## version number etc.
+##-m 0x000FFBC0-0x000FFBF0=DATA:L
+## Interrupt vector table BL.
+#-t 0x000FFC00
+#
+#####################################################
 
 
 -m 0x00100000-0x002376A3=CODE
@@ -153,7 +180,18 @@
 #-m 0x00245886-0x002470F7=DATA:L
 
 # Unknown
-#-m 0x002470F8-0x0026C178=DATA:L
+#-m 0x002470F8-0x0026B14F=DATA:L
+
+# Firmware decoding XOR tables
+# Table 1
+# -m 0x0026B150-0x0026B24F=DATA:L
+# Table 2
+# -m 0x0026B250-0x0026B34F=DATA:L
+# Table 3
+# -m 0x0026B350-0x0026B44F=DATA:L
+
+# Unknown
+# -m 0x0026B450-0x0026C177=DATA:L
 
 # Table used when rendering strings
 # Each record is 8 bytes long, byte0=0, byte1:01/02/03, byte2=0, byte3=0 and int offset to data below (0x0026c44c)
@@ -190,9 +228,9 @@
 #-m 0x0029C8FC-0x002A1CA7=DATA:L
 # Unknown :
 #-m 0x002A1CA8-0x002BF51F=DATA:L
-# Table of addresses reached from 0x000ABB76 is stored at 0x002A5384
-# Table of addresses reached from 0x000AC39A is stored at 0x002A53A0
-# Table of addresses reached from 0x000AE9DE is stored at 0x002A53D8
+# 0x002A5384 : Table of addresses reached from 0x000ABB76
+# 0x002A53A0 : Table of addresses reached from 0x000AC39A
+# 0x002A53D8 : Table of addresses reached from 0x000AE9DE
 
 # code for sure
 -m 0x002BF520-0x002C4A0F=CODE
@@ -204,7 +242,15 @@
 
 -m 0x00313174-0x0037BDE1=CODE
 
+# 2 bytes of 0xFF stuffing
+
+# Area copied to 0x8F9C4E78 by the loop at 0x40574
+# -m 0x0037BDE4-0x00393CFB=DATA:L
+# 0x0038DF3C : Dispatch table copied to 0x8F9D6FD0 used by function_1d994a_ which is called by many interrupts
+
 # ------- no decoding done in this area yet -------
+# -m 0x00393CFC-0x005EA99F=DATA:L
+# -------------------------------------------------
 
 # String resources - see Google Doc
 #-m 0x005EA9A0-0x00775763=DATA:L
@@ -232,11 +278,26 @@
 #-m 0x00908cfa-0x00a80000=DATA:L
 
 
+#####################################################
+## Copy of Bootloader Area to RAM
+#
+##-m 0x80080000-0x800800DF=DATA:L
+#-m 0x800800E0-0x800800FB=CODE
+##-m 0x800800FC-0x8008025B=DATA:L
+#-m 0x8008025C-0x8008C8A3=CODE
+##-m 0x8008C8A4-0x8008CE0D=DATA:L
+#
+## Interrupt vector table copied from ROM
+#-t 0x8008CE10
+#####################################################
 
 
 
 ############################### Symbols
 
+
+
+-s 0x4065E=get_6800914
 -s 0x406EC=NOP_406EC
 -s 0x406EE=NOP_406EE
 -s 0x406F0=NOP_406F0
@@ -261,7 +322,7 @@
 -s 0x40B70=SetupTable1
 -s 0x40BBC=SetupTable3
 -s 0x40C02=SetupTableEmpty1
--s 0x40C28=SetopTable2
+-s 0x40C28=SetupTable2
 -s 0x410E8=sys_set_tim
 -s 0x41106=sys_get_tim
 -s 0x41124=sys_dly_tsk
@@ -880,6 +941,7 @@
 -s 0x1F53E6=DmaT_TEvent
 -s 0x1F587C=DmaT_SoftCopy
 -s 0x1F5DA6=Timer_Int_01
+-s 0x1F5E3E=Tbl0x8F9D8E54_setField_1_clrField_C(R4 [IN index])
 -s 0x1F5EDE=nullsub_21
 -s 0x1F5F50=Tsk29_1F5F50
 -s 0x1F64B4=Tsk2D_1F64B4
@@ -1118,8 +1180,8 @@
 -s 0x2FD134=nullsub_107
 -s 0x2FD8CC=call_graphic_XX04_0
 -s 0x2FDBA4=confirm_card_fmt_b
--s 0x2FF440=nullsub_68
 -s 0x2FEA5E=draw_menu_string
+-s 0x2FF440=nullsub_68
 -s 0x300266=DoPopup
 -s 0x300908=text_func_xx2
 -s 0x3013BA=show_popup_message
@@ -1130,8 +1192,10 @@
 -s 0x30A51E=lang_xx_13
 -s 0x30A5C2=lang_xx_11
 -s 0x30B3AA=nullsub_64
+#-s 0x30B3AC=LangSelect_xx
 -s 0x30B3AC=draw_menu_rows
 -s 0x30B496=MenuDrawSelected
+#-s 0x30BB22=LangSelectFillBK_xx
 -s 0x30BB22=draw_menu_rectangle
 
 -s 0x30BE38=lang_xx_12
