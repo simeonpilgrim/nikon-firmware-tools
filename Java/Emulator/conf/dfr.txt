@@ -63,67 +63,221 @@
 #-m 0x000AB876-0x000ABB39=DATA:L
 
 
-# Code for sure (meaningfull calls)
+# Code for sure (meaningful calls)
 -m 0x000ABB3A-0x000DAA29=CODE
 
 
 # Unknown
--m 0x000DAA2A-0x000DAA2F=DATA:L
-# Table of function reached from 0x000B04FA (target range 000B04FC-000B9F58)
-# Table of addresses reached from 0x000B04FA is stored at 0x000DAA30
-# Table of addresses reached from 0x000B0EDA is stored at 0x000DAA40
-# Table of addresses reached from 0x000B1F98 is stored at 0x000DAA8C
-# Table of addresses reached from 0x000B2D98 is stored at 0x000DAAAC
+# Table for jump at 000B04FA
+#-m 0x000DAA30-0x000DAA3F=DATA:L
+# Table for jump at 000B0EDA
+#-m 0x000DAA40-0x000DAA8B=DATA:L
+# Table for jump at 000B1F98
+#-m 0x000DAA8C-0x000DAA9B=DATA:L
+# Table for jump at 000B2234
+#-m 0x000DAA9C-0x000DAAAB=DATA:L
+# Table for jump at 000B2D98
+#-m 0x000DAAAC-0x000DAAC7=DATA:L
 # Table of addresses reached from 0x000B2F3C is stored at 0x000DAAC8
-# Table of addresses reached from 0x000B30C0 is stored at 0x000DAAE8
+
+# Table for jump at 000B30C0
+#-m 0x000DAAE8-0x000DAB07=DATA:L
 # Table of addresses reached from 0x000B315E is stored at 0x000DAB08
-# Table of addresses reached from 0x000B324C is stored at 0x000DAB28
-# Table of addresses reached from 0x000B331E is stored at 0x000DAB38
-# Table of addresses reached from 0x000B3816 is stored at 0x000DAB48
-# Table of addresses reached from 0x000B3D00 is stored at 0x000DAB58
+
+# Table for jump at 000B324C
+#-m 0x000DAB28-0x000DAB37=DATA:L
+# Table for jump at 000B331E
+#-m 0x000DAB38-0x000DAB47=DATA:L
+# Table for jump at 000B3816
+#-m 0x000DAB48-0x000DAB57=DATA:L
+# Table for jump at 000B3D00
+#-m 0x000DAB58-0x000DAB73=DATA:L
 # Table of addresses reached from 0x000B4442 is stored at 0x000DAB74
 # Table of addresses reached from 0x000B445C is stored at 0x000DAB84
 # Table of addresses reached from 0x000B453A is stored at 0x000DABA0
 # Table of addresses reached from 0x000B4618 is stored at 0x000DABBC
-# Table of addresses reached from 0x000B46EC is stored at 0x000DABD8
-# Table of addresses reached from 0x000B49DC is stored at 0x000DABF4
-# Table of addresses reached from 0x000B5766 is stored at 0x000DAC10
-# Table of addresses reached from 0x000B586C is stored at 0x000DAC2C
+
+# Table for jump at 000B46EC
+#-m 0x000DABD8-0x000DABF3=DATA:L
+# Table for jump at 000B49DC
+#-m 0x000DABF4-0x000DAC0F=DATA:L
+# Table for jump at 000B5766
+#-m 0x000DAC10-0x000DAC2B=DATA:L
+# Table for jump at 000B586C
+#-m 0x000DAC2C-0x000DAC47=DATA:L
 # Table of addresses reached from 0x000B5DB4 is stored at 0x000DAC48
-# Table of addresses reached from 0x000B6610 is stored at 0x000DAC64
-# Table of addresses reached from 0x000B6B04 is stored at 0x000DAC88
-# Table of addresses reached from 0x000B6B90 is stored at 0x000DACA4
-# Table of addresses reached from 0x000B6BCE is stored at 0x000DACC0
-# Table of addresses reached from 0x000B6C78 is stored at 0x000DACDC
-# Table of addresses reached from 0x000B994C is stored at 0x000DACF0
-# Table of addresses reached from 0x000B9BBA is stored at 0x000DAD14
-# Table of addresses reached from 0x000B9C14 is stored at 0x000DAD24
-# ...
-#-m 0x000DAA30-0x000DAD6C=DATA:L
+
+# Table for jump at 000B6610
+#-m 0x000DAC64-0x000DAC7F=DATA:L
+
+# Table for jump at 000B6B04
+#-m 0x000DAC88-0x000DACA3=DATA:L
+# Table for jump at 000B6B90
+#-m 0x000DACA4-0x000DACBF=DATA:L
+
+# Table for jump at 000B6BCE
+#-m 0x000DACC0-0x000DACDB=DATA:L
+# Table for jump at 000B6C78
+#-m 0x000DACDC-0x000DACEB=DATA:L
+
+# Table for jump at 000B994C
+#-m 0x000DACF0-0x000DAD13=DATA:L
+# Table for jump at 000B9BBA
+#-m 0x000DAD14-0x000DAD23=DATA:L
+# Table for jump at 000B9C14
+#-m 0x000DAD24-0x000DAD3F=DATA:L
+# Table for jump at 000B9F1A
+#-m 0x000DAD40-0x000DAD4F=DATA:L
+# Table for jump at 000B9F3E
+#-m 0x000DAD50-0x000DAD6B=DATA:L
+
+# Table for jump at 000BA674
+#-m 0x000DAF7C-0x000DAF97=DATA:L
+# Table for jump at 000BA72A
+#-m 0x000DAF98-0x000DAFA7=DATA:L
+# Table for jump at 000BB540
+#-m 0x000DAFA8-0x000DAFCF=DATA:L
+# Table for jump at 000BC7BC
+#-m 0x000DAFD0-0x000DAFF7=DATA:L
+# Table for jump at 000BC86C
+#-m 0x000DAFF8-0x000DB01F=DATA:L
+
 # Unknown
-#-m 0x000DAD6C-0x000DAF7B=DATA:L
-# Table of addresses (target range 000BA676-000BCB70)
-# ...
-#-m 0x000DAF7C-0x000DB03F=DATA:L
+#-m 0x000DB020-0x000DB263=DATA:L
+
+# Table for jump at 000BD256
+#-m 0x000DB264-0x000DB27B=DATA:L
+# Table for jump at 000BD9DA
+#-m 0x000DB27C-0x000DB2A3=DATA:L
+# Table for jump at 000BDB0E
+#-m 0x000DB2A4-0x000DB2B3=DATA:L
+# Table for jump at 000BDB6E
+#-m 0x000DB2B4-0x000DB2C3=DATA:L
+# Table for jump at 000BE402
+#-m 0x000DB2C4-0x000DB2D3=DATA:L
+# Table for jump at 000BE438
+#-m 0x000DB2D4-0x000DB2EB=DATA:L
+# Table for jump at 000BE4A6
+#-m 0x000DB2EC-0x000DB2FF=DATA:L
+# Table for jump at 000BE4FC
+#-m 0x000DB300-0x000DB327=DATA:L
+# Table for jump at 000BE566
+#-m 0x000DB328-0x000DB33B=DATA:L
+# Table for jump at 000BE644
+#-m 0x000DB33C-0x000DB363=DATA:L
+# Table for jump at 000BE6E8
+#-m 0x000DB364-0x000DB377=DATA:L
+# Table for jump at 000BE732
+#-m 0x000DB378-0x000DB38B=DATA:L
+# Table for jump at 000BE8AC
+#-m 0x000DB38C-0x000DB3B3=DATA:L
+# Table for jump at 000BEA16
+#-m 0x000DB3B4-0x000DB3DB=DATA:L
+# Table for jump at 000BEAE2
+#-m 0x000DB8DC-0x000DB8F7=DATA:L
+# Table for jump at 000BEB06
+#-m 0x000DB8F8-0x000DB907=DATA:L
+# Table for jump at 000BEC96
+#-m 0x000DB908-0x000DB923=DATA:L
+# Table for jump at 000BECD8
+#-m 0x000DB924-0x000DB93B=DATA:L
+# Table for jump at 000BED4A
+#-m 0x000DB93C-0x000DB953=DATA:L
+# Table for jump at 000BED8C
+#-m 0x000DB954-0x000DB96B=DATA:L
+# Table for jump at 000BEDD2
+#-m 0x000DB96C-0x000DB983=DATA:L
+# Table for jump at 000BEE98
+#-m 0x000DB984-0x000DB99B=DATA:L
+# Table for jump at 000BEEE0
+#-m 0x000DB99C-0x000DB9B3=DATA:L
+# Table for jump at 000BF334
+#-m 0x000DB9B4-0x000DB9C3=DATA:L
+# Table for jump at 000BF350
+#-m 0x000DB9C4-0x000DB9DF=DATA:L
+# Table for jump at 000BF472
+#-m 0x000DB9E0-0x000DB9EF=DATA:L
+# Table for jump at 000BF4A8
+#-m 0x000DB9F0-0x000DBA0B=DATA:L
+# Table for jump at 000BF524
+#-m 0x000DBA0C-0x000DBA27=DATA:L
+
 # Unknown
-#-m 0x000DB040-0x000DB263=DATA:L
-# Table of addresses reached from 0x000BD256 (target range 000BD258-000BEBD6, except one at 0x00340401)
-#-m 0x000DB264-0x000DB3E3=DATA:L
+#-m 0x000DBA28-0x000DBBBF=DATA:L
+
+# Table for jump at 000C0C74
+#-m 0x000DBBC0-0x000DBBE7=DATA:L
+
+# Table for jump at 000C1A42
+#-m 0x000DBC90-0x000DBCBB=DATA:L
+# Table for jump at 000C1EA0
+#-m 0x000DBCBC-0x000DBCCB=DATA:L
+
+# Table for jump at 000C3954
+#-m 0x000DBD60-0x000DBD83=DATA:L
+
+# Table for jump at 000C3C0E
+#-m 0x000DBDA4-0x000DBDB7=DATA:L
+# Table for jump at 000C3E2E
+#-m 0x000DBDB8-0x000DBDC7=DATA:L
+
+# Table for jump at 000C46CC
+#-m 0x000DBDEC-0x000DBDFB=DATA:L
+# Table for jump at 000C46E2
+#-m 0x000DBDFC-0x000DBE17=DATA:L
+# Table for jump at 000C46FE
+#-m 0x000DBE18-0x000DBE33=DATA:L
+# Table for jump at 000C471A
+#-m 0x000DBE34-0x000DBE4F=DATA:L
+# Table for jump at 000C4736
+#-m 0x000DBE50-0x000DBE6B=DATA:L
+# Table for jump at 000C54E8
+#-m 0x000DBE6C-0x000DBE87=DATA:L
+# Table for jump at 000C7C9A
+#-m 0x000DBE88-0x000DBE9F=DATA:L
+# Table for jump at 000C7CEA
+#-m 0x000DBEA0-0x000DBEAF=DATA:L
+
+# Table for jump at 000C7DBC
+#-m 0x000DBEB0-0x000DBECB=DATA:L
+
 # Unknown
-#-m 0x000DB3E4-0x000DB8DB=DATA:L
-# Table of addresses reached from 0x000BEAE2 (target range 000BEAE4-000BF6F2, except one at 0x00330301)
-#-m 0x000DB8DC-0x000DBA29=DATA:L
-# Unknown
-#-m 0x000DBA30-0x000DBC8f=DATA:L
-# Table of addresses reached from 0x000C1A42 (target range 000C1A44-000CD7DE)
-#-m 0x000DBC90-0x000DBEDB=DATA:L
-# Unknown
-#-m 0x000DBEDC-0x000DFBFF=DATA:L
-# Table of addresses reached from 0x000D97CE (target range 000D97DC-000D9E62)
-#-m 0x000DC114-0x000DC303=DATA:L
+#-m 0x000DBECC-0x000DC043=DATA:L
+
+# Table for jump at 000D74FC
+#-m 0x000DC044-0x000DC05B=DATA:L
+
+# Table for jump at 000D97CE
+#-m 0x000DC114-0x000DC12B=DATA:L
+# Table for jump at 000D9818
+#-m 0x000DC12C-0x000DC153=DATA:L
+
+# Table for jump at 000D996C
+#-m 0x000DC16C-0x000DC193=DATA:L
+# Table for jump at 000D9A74
+#-m 0x000DC194-0x000DC1BB=DATA:L
+# Table for jump at 000D9B60
+#-m 0x000DC1BC-0x000DC1E3=DATA:L
+# Table for jump at 000D9C40
+#-m 0x000DC1E4-0x000DC20B=DATA:L
+# Table for jump at 000D9D48
+#-m 0x000DC20C-0x000DC223=DATA:L
+# Table for jump at 000D9D66
+#-m 0x000DC224-0x000DC24B=DATA:L
+
+# Table for jump at 000D9DA0
+#-m 0x000DC264-0x000DC28B=DATA:L
+# Table for jump at 000D9DDE
+#-m 0x000DC28C-0x000DC2B3=DATA:L
+# Table for jump at 000D9E1C
+#-m 0x000DC2B4-0x000DC2DB=DATA:L
+# Table for jump at 000D9E5A
+#-m 0x000DC2DC-0x000DC303=DATA:L
+
 # Unknown
 #-m 0x000DC304-0x000DC30F=DATA:L
-# 32b header + Table of 0x3C records of 0x1C bytes, containing among other things language menu function address
+
+# Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
 #-m 0x000DC310-0x000DC9A3=DATA:L
 # Unknown
 #-m 0x000DC9A4-0x000DD357=DATA:L
@@ -323,7 +477,7 @@
 -s 0x40BBC=SetupTable3
 -s 0x40C02=SetupTableEmpty1
 -s 0x40C28=SetupTable2
--s 0x410E8=sys_set_tim
+-s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code])
 -s 0x41106=sys_get_tim
 -s 0x41124=sys_dly_tsk
 -s 0x41180=sys_def_cyc
@@ -1290,6 +1444,9 @@
 -s 0x394792=nullsub_33
 -s 0x8F800A9A=nullsub_212
 
+########## Global variables
+
+-s 0x68000910=Real_Time_Clock
 
 ########## Menu Data Symbols
 
