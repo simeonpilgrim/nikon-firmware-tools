@@ -51,7 +51,7 @@ namespace Firmware_Patch
 
         static void Usage()
         {
-            Console.WriteLine("FirmwarePatch {0}.{1}", 1, 0);
+            Console.WriteLine("FirmwarePatch {0}.{1}", 1, 1);
             Console.WriteLine("  Usage:");
             Console.WriteLine("  FirmwarePatch [firmware] [options]");
             Console.WriteLine("     [firmware] - the name of the firmware you would like to patch");
@@ -74,7 +74,7 @@ namespace Firmware_Patch
             Debug.Write("byte[] HASH = {");
             foreach (var b in h)
             {
-                Debug.Write(String.Format("{0:X2}, ", b));
+                Debug.Write(String.Format("0x{0:X2}, ", b));
             }
             Debug.WriteLine("} ;");
         }
@@ -83,6 +83,7 @@ namespace Firmware_Patch
         static Firmware FirmwareMatch(string file_name)
         {
             byte[] d5100_0101Hash = { 0x21, 0x84, 0xF8, 0x65, 0x82, 0xB2, 0x7A, 0x80, 0x49, 0xDC, 0x8C, 0x7D, 0x91, 0x8A, 0xDA, 0x50 };
+            byte[] d3100_0101Hash = { 0x16, 0xA0, 0x50, 0x50, 0xCA, 0xB2, 0x60, 0x2F, 0x99, 0x63, 0x36, 0xAC, 0x86, 0x9A, 0xD8, 0xE0 };
 
             var hash = GetMD5HashFromFile(file_name);
 
@@ -91,6 +92,10 @@ namespace Firmware_Patch
             if(HashSame( hash, d5100_0101Hash) )
             {
                 return new D5100_0101(file_name);
+            }
+            if (HashSame(hash, d3100_0101Hash))
+            {
+                return new D3100_0101(file_name);
             }
             return null;
         }
@@ -166,53 +171,6 @@ namespace Firmware_Patch
         public byte[] patch;
     }
 
-    class D5100_0101 : Firmware
-    {
-        string in_filename;
-        Package p = null;
-
-        Patch[] patches = {
-            new Patch(1, 0x74AD4, new byte[] { 0xE4, 0x03 }, new byte[] { 0xE0, 0x03 }), // unlimited recording 1/2
-            new Patch(1, 0x755A8, new byte[] { 0xE2, 0x0B }, new byte[] { 0xE0, 0x0B }), // unlimited recording 2/2
-                          };
-
-        public D5100_0101(string filename)
-        {
-            in_filename = filename;
-            p = new Package();
-        }
-
-        public bool ParseOptions(string[] options) 
-        {
-            // open file           
-            // de-XOR
-            // pull apart
-            if (p.TryOpen(in_filename) == false)
-            {
-                return false;
-            }
-
-            foreach (Patch pp in patches)
-            {
-                if (p.PatchCheck(pp.block, pp.start, pp.orig) == false)
-                {
-                    return false;
-                }
-            }
-
-            return true;      
-        }
-
-        public void Patch(string outfilename)
-        {
-            foreach (Patch pp in patches)
-            {
-                p.Patch(pp.block, pp.start, pp.patch);
-            }
-
-            p.Repackage(outfilename);
-        }
-    }
 
     class Package
     {
