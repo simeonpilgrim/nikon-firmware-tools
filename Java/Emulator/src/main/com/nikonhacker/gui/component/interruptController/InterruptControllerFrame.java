@@ -203,7 +203,7 @@ public class InterruptControllerFrame extends DocumentFrame {
         
         timerPanel.add(timerIntermediaryPanel,BorderLayout.CENTER);
         
-        timerPanel.add(new JLabel("WARNING: Use 'debug' and not 'play' otherwise interrupts are only checked every 1000 cycles"), BorderLayout.SOUTH);
+//        timerPanel.add(new JLabel("WARNING: Use 'debug' and not 'play' otherwise interrupts are only checked every 1000 cycles"), BorderLayout.SOUTH);
 
         tabbedPane.addTab("Timer", null, timerPanel);
 

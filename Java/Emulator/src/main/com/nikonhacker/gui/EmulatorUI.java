@@ -1420,7 +1420,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             else {
-                emulator.setInterruptPeriod(1000);
+                // This is silly. Check interrupt after each instruction
+                // emulator.setInterruptPeriod(1000);
+                emulator.setInterruptPeriod(1);
             }
             if (endAddress != null) {
                 CPUState values = new CPUState(endAddress);
