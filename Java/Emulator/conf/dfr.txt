@@ -309,6 +309,35 @@
 #-m 0x000E2768-0x000ED479=CODE
 ## 0xFF
 ##-m 0x000ED47A-0x000FFBBF=DATA:L
+
+## Table for jump at 008849EE
+##-m 0x000F528C-0x000F52A3=DATA:L
+## Table for jump at 00884A56
+##-m 0x000F52A4-0x000F52CF=DATA:L
+## Table for jump at 00884A8C
+##-m 0x000F52D0-0x000F5383=DATA:L
+## Table for jump at 00884AD4
+##-m 0x000F5384-0x000F53B3=DATA:L
+## Table for jump at 00884AEC
+##-m 0x000F53B4-0x000F5467=DATA:L
+## Table for jump at 00884DE0
+##-m 0x000F5468-0x000F5497=DATA:L
+## Table for jump at 00884EAA
+##-m 0x000F5498-0x000F54C7=DATA:L
+## Table for jump at 008855C2
+##-m 0x000F54C8-0x000F54DF=DATA:L
+## Table for jump at 00885698
+##-m 0x000F54E0-0x000F54F7=DATA:L
+#
+## Table for jump at 00885A28
+##-m 0x000F5508-0x000F5537=DATA:L
+#
+## Table for jump at 00887206
+##-m 0x000F5C54-0x000F5C83=DATA:L
+#
+## Table for jump at 00888DD0
+##-m 0x000F5CF4-0x000F5D0B=DATA:L
+
 ## version number etc.
 ##-m 0x000FFBC0-0x000FFBF0=DATA:L
 ## Interrupt vector table BL.
@@ -321,9 +350,33 @@
 
 
 # Unknown
-#-m 0x002376A4-0x00242CCD=DATA
+#-m 0x002376A4-0x00240683
+# Table for jump at 0010A724
+#-m 0x00240684-0x002406E7=DATA:L
+
+# Table for jump at 00113F0A
+#-m 0x0024070C-0x0024071B=DATA:L
+# Table for jump at 00114456
+#-m 0x0024071C-0x0024072B=DATA:L
+# Table for jump at 0011666A
+#-m 0x0024072C-0x00240757=DATA:L
+# Table for jump at 001169C2
+#-m 0x00240758-0x00240773=DATA:L
+
+# Table for jump at 0011B872
+#-m 0x00241844-0x0024186B=DATA:L
+# Table for jump at 0011B94E
+#-m 0x0024186C-0x00241893=DATA:L
+# Table for jump at 0011BA48
+#-m 0x00241894-0x002418BB=DATA:L
+# Table for jump at 0011DFE0
+#-m 0x002418BC-0x002418E3=DATA:L
+# Table for jump at 0011E07C
+#-m 0x002418E4-0x0024190B=DATA:L
+
 # Table of addresses reached from 0x0010A724 is stored at 0x00240684
 
+#-m 0x00242CCC-0x00242CCD=DATA
 # 0x00
 #-m 0x00242CCE-0x0024453F=DATA:L
 
@@ -386,6 +439,535 @@
 # 0x002A53A0 : Table of addresses reached from 0x000AC39A
 # 0x002A53D8 : Table of addresses reached from 0x000AE9DE
 
+# Table for jump at 00129870
+#-m 0x0024A678-0x0024A68B=DATA:L
+
+# Table for jump at 00131402
+#-m 0x0024AAB0-0x0024AAC7=DATA:L
+
+# Table for jump at 0013AC6A
+#-m 0x0024B05C-0x0024B06F=DATA:L
+# Table for jump at 0013C20E
+#-m 0x0024B070-0x0024B09B=DATA:L
+# Table for jump at 0013D18C
+#-m 0x0024B09C-0x0024B0B3=DATA:L
+# Table for jump at 0013E7E2
+#-m 0x0024B0B4-0x0024B0CB=DATA:L
+# Table for jump at 0013E9FA
+#-m 0x0024B0CC-0x0024B0E3=DATA:L
+# Table for jump at 0013F00C
+#-m 0x0024B0E4-0x0024B0F7=DATA:L
+
+# Table for jump at 0014020E
+#-m 0x0024B18C-0x0024B1BB=DATA:L
+
+# Table for jump at 0015174A
+#-m 0x0024BF94-0x0024BFAB=DATA:L
+
+# Table for jump at 00168B22
+#-m 0x0024E478-0x0024E487=DATA:L
+# Table for jump at 00169352
+#-m 0x0024E488-0x0024E497=DATA:L
+# Table for jump at 00169480
+#-m 0x0024E498-0x0024E4AF=DATA:L
+# Table for jump at 00169F16
+#-m 0x0024E4B0-0x0024E4D3=DATA:L
+# Table for jump at 00169F32
+#-m 0x0024E4D4-0x0024E4E3=DATA:L
+# Table for jump at 0016A002
+#-m 0x0024E4E4-0x0024E4F3=DATA:L
+# Table for jump at 0016A1EC
+#-m 0x0024E4F4-0x0024E503=DATA:L
+# Table for jump at 0016A2A2
+#-m 0x0024E504-0x0024E51F=DATA:L
+# Table for jump at 0016A2EC
+#-m 0x0024E520-0x0024E53B=DATA:L
+# Table for jump at 0016A32E
+#-m 0x0024E53C-0x0024E563=DATA:L
+# Table for jump at 0016A7AE
+#-m 0x0024E564-0x0024E573=DATA:L
+
+# Table for jump at 0016AA56
+#-m 0x0024E598-0x0024E5A7=DATA:L
+# Table for jump at 0016AB26
+#-m 0x0024E5A8-0x0024E5BF=DATA:L
+# Table for jump at 0016AC50
+#-m 0x0024E5C0-0x0024E5E3=DATA:L
+# Table for jump at 0016B258
+#-m 0x0024E5E4-0x0024E5FB=DATA:L
+# Table for jump at 0016B4EA
+#-m 0x0024E5FC-0x0024E61B=DATA:L
+# Table for jump at 0016B8DC
+#-m 0x0024E61C-0x0024E62B=DATA:L
+# Table for jump at 0016C330
+#-m 0x0024E62C-0x0024E63B=DATA:L
+# Table for jump at 0016C3D0
+#-m 0x0024E63C-0x0024E67F=DATA:L
+# Table for jump at 0016CE04
+#-m 0x0024E680-0x0024E68F=DATA:L
+
+# Table for jump at 0016D5AC
+#-m 0x0024E6A0-0x0024E6AF=DATA:L
+# Table for jump at 0016D838
+#-m 0x0024E6B0-0x0024E6BF=DATA:L
+
+# Table for jump at 00170168
+#-m 0x00250104-0x00250113=DATA:L
+# Table for jump at 0017018A
+#-m 0x00250114-0x00250123=DATA:L
+
+# Table for jump at 00170C42
+#-m 0x00250250-0x0025026B=DATA:L
+# Table for jump at 00170E6C
+#-m 0x0025026C-0x0025027B=DATA:L
+
+# Table for jump at 00175B26
+#-m 0x00251C4C-0x00251C6F=DATA:L
+# Table for jump at 00175D64
+#-m 0x00251C70-0x00251C93=DATA:L
+# Table for jump at 00176148
+#-m 0x00251C94-0x00251CA3=DATA:L
+# Table for jump at 00176172
+#-m 0x00251CA4-0x00251CB3=DATA:L
+# Table for jump at 0017DA9E
+#-m 0x00251CB4-0x00251CD3=DATA:L
+
+# Table for jump at 0017DEF2
+#-m 0x00251CEC-0x00251D0F=DATA:L
+
+# Table for jump at 0018E5CE
+#-m 0x00265CEC-0x00265D03=DATA:L
+
+# Table for jump at 0019604E
+#-m 0x00265EDC-0x00265EEB=DATA:L
+# Table for jump at 00196194
+#-m 0x00265EEC-0x00265EFB=DATA:L
+
+# Table for jump at 0019C112
+#-m 0x00267B44-0x00267B53=DATA:L
+# Table for jump at 0019DD04
+#-m 0x00267B54-0x00267B7B=DATA:L
+# Table for jump at 0019E230
+#-m 0x00267B7C-0x00267B9B=DATA:L
+# Table for jump at 0019EB36
+#-m 0x00267B9C-0x00267BAB=DATA:L
+
+# Table for jump at 0019F78E
+#-m 0x00267BD0-0x00267BFB=DATA:L
+# Table for jump at 0019F8D4
+#-m 0x00267BFC-0x00267C0B=DATA:L
+# Table for jump at 0019FD1C
+#-m 0x00267C0C-0x00267C1B=DATA:L
+# Table for jump at 001A0436
+#-m 0x00267C1C-0x00267C2B=DATA:L
+# Table for jump at 001A0A8C
+#-m 0x00267C2C-0x00267C53=DATA:L
+# Table for jump at 001A0B4A
+#-m 0x00267C54-0x00267C6B=DATA:L
+# Table for jump at 001A446E
+#-m 0x00267C6C-0x00267C7B=DATA:L
+# Table for jump at 001A44B6
+#-m 0x00267C7C-0x00267C8B=DATA:L
+
+# Table for jump at 001AC484
+#-m 0x0026A4AC-0x0026A4BB=DATA:L
+# Table for jump at 001ACE1E
+#-m 0x0026A4BC-0x0026A4CB=DATA:L
+
+# Table for jump at 001B3952
+#-m 0x0026AE98-0x0026AED3=DATA:L
+# Table for jump at 001B39BE
+#-m 0x0026AED4-0x0026AEE3=DATA:L
+# Table for jump at 001B3A1E
+#-m 0x0026AEE4-0x0026AF0F=DATA:L
+# Table for jump at 001B3A92
+#-m 0x0026AF10-0x0026AF3B=DATA:L
+
+# Table for jump at 001BB642
+#-m 0x0026B798-0x0026B7A7=DATA:L
+
+# Table for jump at 001BBF28
+#-m 0x0026BB74-0x0026BB83=DATA:L
+
+# Table for jump at 001BE3FA
+#-m 0x0026C108-0x0026C117=DATA:L
+# Table for jump at 001BE44E
+#-m 0x0026C118-0x0026C12B=DATA:L
+
+# Table for jump at 002CDFDA
+#-m 0x0026E9C8-0x0026E9DF=DATA:L
+# Table for jump at 002CE248
+#-m 0x0026E9E0-0x0026E9FF=DATA:L
+# Table for jump at 002CE26A
+#-m 0x0026EA00-0x0026EA17=DATA:L
+# Table for jump at 002D12A6
+#-m 0x0026EA18-0x0026EA57=DATA:L
+# Table for jump at 002D23DE
+#-m 0x0026EA58-0x0026EABB=DATA:L
+
+# Table for jump at 002D4504
+#-m 0x0026EFA4-0x0026EFB3=DATA:L
+# Table for jump at 002D460C
+#-m 0x0026EFB4-0x0026EFC3=DATA:L
+# Table for jump at 002D4A0C
+#-m 0x0026EFC4-0x0026EFD3=DATA:L
+
+# Table for jump at 002D4D74
+#-m 0x0026EFE4-0x0026EFF3=DATA:L
+# Table for jump at 002D4E48
+#-m 0x0026EFF4-0x0026F003=DATA:L
+
+# Table for jump at 002D6AB2
+#-m 0x0026F044-0x0026F053=DATA:L
+# Table for jump at 002D6AEC
+#-m 0x0026F054-0x0026F063=DATA:L
+# Table for jump at 002D6B9A
+#-m 0x0026F064-0x0026F087=DATA:L
+# Table for jump at 002D7048
+#-m 0x0026F088-0x0026F0AB=DATA:L
+# Table for jump at 002D7758
+#-m 0x0026F0AC-0x0026F0BB=DATA:L
+# Table for jump at 002D78F0
+#-m 0x0026F0BC-0x0026F0CB=DATA:L
+# Table for jump at 002D7A84
+#-m 0x0026F0CC-0x0026F0E7=DATA:L
+# Table for jump at 002D85E2
+#-m 0x0026F0E8-0x0026F10B=DATA:L
+
+# Table for jump at 002D902A
+#-m 0x0026F154-0x0026F163=DATA:L
+# Table for jump at 002D9E1E
+#-m 0x0026F164-0x0026F17B=DATA:L
+
+# Table for jump at 002DEECE
+#-m 0x0026F308-0x0026F317=DATA:L
+# Table for jump at 002DEFBC
+#-m 0x0026F318-0x0026F327=DATA:L
+# Table for jump at 002DF168
+#-m 0x0026F328-0x0026F337=DATA:L
+
+# Table for jump at 002E2C08
+#-m 0x0026FF7C-0x0026FF93=DATA:L
+
+# Table for jump at 002E8A3E
+#-m 0x0027067C-0x00270697=DATA:L
+
+# Table for jump at 002E8CC2
+#-m 0x002706D8-0x002706EF=DATA:L
+# Table for jump at 002E8DA4
+#-m 0x002706F0-0x002706FF=DATA:L
+# Table for jump at 002E8E52
+#-m 0x00270700-0x0027071B=DATA:L
+# Table for jump at 002E8EF8
+#-m 0x0027071C-0x0027073F=DATA:L
+# Table for jump at 002EB1F4
+#-m 0x00270740-0x00270763=DATA:L
+# Table for jump at 002EBED0
+#-m 0x00270764-0x00270787=DATA:L
+
+# Table for jump at 002EC284
+#-m 0x002707AC-0x002707CF=DATA:L
+# Table for jump at 002EC30C
+#-m 0x002707D0-0x002707EB=DATA:L
+# Table for jump at 002ED1DC
+#-m 0x002707EC-0x002707FB=DATA:L
+# Table for jump at 002ED47C
+#-m 0x002707FC-0x0027080B=DATA:L
+# Table for jump at 002ED746
+#-m 0x0027080C-0x00270823=DATA:L
+# Table for jump at 002EDC3C
+#-m 0x00270824-0x00270833=DATA:L
+# Table for jump at 002EDE1E
+#-m 0x00270834-0x0027084F=DATA:L
+
+# Table for jump at 002EF96C
+#-m 0x002708B0-0x002708D7=DATA:L
+# Table for jump at 002EFA10
+#-m 0x002708D8-0x002708FF=DATA:L
+# Table for jump at 002EFB3E
+#-m 0x00270900-0x0027090F=DATA:L
+# Table for jump at 002EFBD6
+#-m 0x00270910-0x00270937=DATA:L
+# Table for jump at 002EFC56
+#-m 0x00270938-0x0027095F=DATA:L
+# Table for jump at 002F02D6
+#-m 0x00270960-0x00270973=DATA:L
+# Table for jump at 002F046E
+#-m 0x00270974-0x0027098F=DATA:L
+# Table for jump at 002F0A34
+#-m 0x00270990-0x0027099F=DATA:L
+# Table for jump at 002F174A
+#-m 0x002709A0-0x002709B7=DATA:L
+# Table for jump at 002F5E44
+#-m 0x002709B8-0x002709C7=DATA:L
+# Table for jump at 002F7C1A
+#-m 0x002709C8-0x002709DF=DATA:L
+
+# Table for jump at 002FCA8C
+#-m 0x00270A40-0x00270A53=DATA:L
+# Table for jump at 002FCB26
+#-m 0x00270A54-0x00270A73=DATA:L
+
+# Table for jump at 00300684
+#-m 0x00271038-0x0027104F=DATA:L
+# Table for jump at 003007B4
+#-m 0x00271050-0x00271067=DATA:L
+# Table for jump at 00301552
+#-m 0x00271068-0x00271077=DATA:L
+# Table for jump at 00303E8C
+#-m 0x00271078-0x0027108B=DATA:L
+# Table for jump at 0030A44C
+#-m 0x0027108C-0x002710CB=DATA:L
+# Table for jump at 0030A466
+#-m 0x002710CC-0x0027110B=DATA:L
+# Table for jump at 0030A480
+#-m 0x0027110C-0x0027114B=DATA:L
+
+# Table for jump at 00311A06
+#-m 0x00271160-0x00271173=DATA:L
+# Table for jump at 00311B46
+#-m 0x00271174-0x002711AB=DATA:L
+# Table for jump at 00312D5A
+#-m 0x002711AC-0x002713B3=DATA:L
+
+# Table for jump at 001CF4CA
+#-m 0x002717E0-0x002717F3=DATA:L
+# Table for jump at 001CFCF8
+#-m 0x002717F4-0x00271803=DATA:L
+# Table for jump at 001CFDB4
+#-m 0x00271804-0x0027182B=DATA:L
+# Table for jump at 001D1316
+#-m 0x0027182C-0x0027185B=DATA:L
+
+# Table for jump at 001D6052
+#-m 0x00272B50-0x00272B7F=DATA:L
+# Table for jump at 001D616A
+#-m 0x00272B80-0x00272BAB=DATA:L
+# Table for jump at 001D6210
+#-m 0x00272BAC-0x00272BEF=DATA:L
+
+# Table for jump at 001DADE6
+#-m 0x002A1CB4-0x002A1CD3=DATA:L
+# Table for jump at 001DD21A
+#-m 0x002A1CD4-0x002A1CE3=DATA:L
+# Table for jump at 001DDECA
+#-m 0x002A1CE4-0x002A1CF3=DATA:L
+# Table for jump at 001DEC16
+#-m 0x002A1CF4-0x002A1D03=DATA:L
+
+# Table for jump at 001E2FF8
+#-m 0x002A224C-0x002A225B=DATA:L
+# Table for jump at 001E4FDE
+#-m 0x002A225C-0x002A2277=DATA:L
+
+# Table for jump at 001E501C
+#-m 0x002A2278-0x002A2287=DATA:L
+# Table for jump at 001E53BA
+#-m 0x002A2288-0x002A2297=DATA:L
+
+# Table for jump at 001E6150
+#-m 0x002A2414-0x002A2423=DATA:L
+
+# Table for jump at 001E9274
+#-m 0x002A2BE8-0x002A2BF7=DATA:L
+
+# Table for jump at 001EAE44
+#-m 0x002A4D0C-0x002A4D1F=DATA:L
+
+# Table for jump at 001EDFF2
+#-m 0x002A5350-0x002A5383=DATA:L
+# Table for jump at 000ABB76
+#-m 0x002A5384-0x002A5397=DATA:L
+
+# Table for jump at 000AC39A
+#-m 0x002A53A0-0x002A53B7=DATA:L
+
+# Table for jump at 000AE9DE
+#-m 0x002A53D8-0x002A53EB=DATA:L
+
+# Table for jump at 0031C6D8
+#-m 0x002A65A8-0x002A65B7=DATA:L
+# Table for jump at 0031D9DE
+#-m 0x002A65B8-0x002A65CB=DATA:L
+# Table for jump at 0031EA48
+#-m 0x002A65CC-0x002A65F3=DATA:L
+# Table for jump at 0031F66A
+#-m 0x002A65F4-0x002A6617=DATA:L
+
+# Table for jump at 003259FC
+#-m 0x002A6FF4-0x002A700B=DATA:L
+
+# Table for jump at 0032967C
+#-m 0x002A7044-0x002A705F=DATA:L
+
+# Table for jump at 0032BEE2
+#-m 0x002A7094-0x002A70BF=DATA:L
+
+# Table for jump at 0032C1C0
+#-m 0x002A70E8-0x002A710B=DATA:L
+# Table for jump at 0032D37A
+#-m 0x002A710C-0x002A7143=DATA:L
+
+# Table for jump at 0032E2C0
+#-m 0x002A7168-0x002A7193=DATA:L
+# Table for jump at 0032E362
+#-m 0x002A7194-0x002A71AF=DATA:L
+
+# Table for jump at 00332538
+#-m 0x002A7E98-0x002A7ED7=DATA:L
+
+# Table for jump at 00335222
+#-m 0x002A7F14-0x002A7F37=DATA:L
+# Table for jump at 003366C8
+#-m 0x002A7F38-0x002A7F5B=DATA:L
+
+# Table for jump at 00338A5C
+#-m 0x002A8024-0x002A8037=DATA:L
+
+# Table for jump at 00340B74
+#-m 0x002A8568-0x002A85BF=DATA:L
+# Table for jump at 00340C68
+#-m 0x002A85C0-0x002A85EF=DATA:L
+
+# Table for jump at 0034A684
+#-m 0x002A89E8-0x002A8A03=DATA:L
+# Table for jump at 0034A7C8
+#-m 0x002A8A04-0x002A8A1F=DATA:L
+# Table for jump at 0034A8F8
+#-m 0x002A8A20-0x002A8A3B=DATA:L
+# Table for jump at 0034C1A0
+#-m 0x002A8A3C-0x002A8ABB=DATA:L
+# Table for jump at 0034C286
+#-m 0x002A8ABC-0x002A8AD3=DATA:L
+# Table for jump at 0034C604
+#-m 0x002A8AD4-0x002A8AEB=DATA:L
+
+# Table for jump at 0034F3B0
+#-m 0x002A8F94-0x002A8FC7=DATA:L
+
+# Table for jump at 003557D6
+#-m 0x002A9054-0x002A9087=DATA:L
+
+# Table for jump at 0035BAA0
+#-m 0x002AA4FC-0x002AA50B=DATA:L
+# Table for jump at 0035E316
+#-m 0x002AA50C-0x002AA52B=DATA:L
+# Table for jump at 0035E402
+#-m 0x002AA52C-0x002AA54B=DATA:L
+# Table for jump at 0035E46E
+#-m 0x002AA54C-0x002AA56B=DATA:L
+
+# Table for jump at 0035F5EE
+#-m 0x002AA57C-0x002AA58F=DATA:L
+
+# Table for jump at 0035F96E
+#-m 0x002AA590-0x002AA5A3=DATA:L
+
+# Table for jump at 003617A6
+#-m 0x002AA5CC-0x002AA5DF=DATA:L
+
+# Table for jump at 00362840
+#-m 0x002AA5E0-0x002AA62F=DATA:L
+
+# Table for jump at 00368702
+#-m 0x002AA914-0x002AA93B=DATA:L
+# Table for jump at 00368720
+#-m 0x002AA93C-0x002AA963=DATA:L
+# Table for jump at 00368756
+#-m 0x002AA964-0x002AA98B=DATA:L
+# Table for jump at 0036AA20
+#-m 0x002AA98C-0x002AA99B=DATA:L
+# Table for jump at 0036AA60
+#-m 0x002AA99C-0x002AA9AB=DATA:L
+
+# Table for jump at 00379360
+#-m 0x002AAC64-0x002AACBB=DATA:L
+
+# Table for jump at 001F0A7C
+#-m 0x002AB2D0-0x002AB30B=DATA:L
+
+# Table for jump at 001F199A
+#-m 0x002AB338-0x002AB347=DATA:L
+
+# Table for jump at 001F3198
+#-m 0x002AB3B0-0x002AB3BF=DATA:L
+
+# Table for jump at 001F5AD4
+#-m 0x002AC258-0x002AC273=DATA:L
+
+# Table for jump at 001FE3E2
+#-m 0x002AD908-0x002AD917=DATA:L
+# Table for jump at 001FE4AE
+#-m 0x002AD918-0x002AD927=DATA:L
+# Table for jump at 001FE53A
+#-m 0x002AD928-0x002AD937=DATA:L
+# Table for jump at 001FE560
+#-m 0x002AD938-0x002AD947=DATA:L
+# Table for jump at 001FEFD4
+#-m 0x002AD948-0x002AD957=DATA:L
+
+# Table for jump at 001FFAA8
+#-m 0x002AD97C-0x002AD997=DATA:L
+
+# Table for jump at 001FFBE4
+#-m 0x002AD9BC-0x002AD9FF=DATA:L
+
+# Table for jump at 001FFDCE
+#-m 0x002ADA24-0x002ADA3B=DATA:L
+
+# Table for jump at 00206D8A
+#-m 0x002AE270-0x002AE29B=DATA:L
+
+# Table for jump at 0020900E
+#-m 0x002AE2A4-0x002AE2E3=DATA:L
+
+# Table for jump at 0020D17C
+#-m 0x002BAC24-0x002BAC3B=DATA:L
+
+# Table for jump at 0020F0DE
+#-m 0x002BB248-0x002BB267=DATA:L
+# Table for jump at 0020F10E
+#-m 0x002BB268-0x002BB277=DATA:L
+# Table for jump at 0020F14E
+#-m 0x002BB278-0x002BB287=DATA:L
+# Table for jump at 0020FBA8
+#-m 0x002BB288-0x002BB297=DATA:L
+
+# Table for jump at 0021401E
+#-m 0x002BBE20-0x002BBE6B=DATA:L
+
+# Table for jump at 0022408E
+#-m 0x002BDFDC-0x002BE053=DATA:L
+
+# Table for jump at 00225424
+#-m 0x002BE05C-0x002BE1A7=DATA:L
+# Table for jump at 002254CE
+#-m 0x002BE1A8-0x002BE31F=DATA:L
+
+# Table for jump at 00229AD6
+#-m 0x002BEBA0-0x002BEBB3=DATA:L
+# Table for jump at 00229B5C
+#-m 0x002BEBB4-0x002BEBD3=DATA:L
+# Table for jump at 00229B96
+#-m 0x002BEBD4-0x002BEBEB=DATA:L
+# Table for jump at 00229C7E
+#-m 0x002BEBEC-0x002BEBFB=DATA:L
+# Table for jump at 0022A1A6
+#-m 0x002BEBFC-0x002BECB3=DATA:L
+
+# Table for jump at 0022ECAC
+#-m 0x002BECC4-0x002BECD3=DATA:L
+
+# Table for jump at 0022FF38
+#-m 0x002BECE4-0x002BECF3=DATA:L
+# Table for jump at 00232678
+#-m 0x002BECF4-0x002BED13=DATA:L
+
+# Table for jump at 002361A8
+#-m 0x002BEFE4-0x002BEFF7=DATA:L
+
+
+
 # code for sure
 -m 0x002BF520-0x002C4A0F=CODE
 
@@ -410,7 +992,19 @@
 #-m 0x005EA9A0-0x00775763=DATA:L
 
 # Unknown :
-#-m 0x00775763-0x007C6253=DATA:L
+#-m 0x00775763-0x0079F1A7=DATA:L
+# Table for jump at 002C53A6
+#-m 0x0079F1A8-0x0079F1BF=DATA:L
+# Table for jump at 002C53C0
+#-m 0x0079F1C0-0x0079F1DB=DATA:L
+# Table for jump at 002C5420
+#-m 0x0079F1DC-0x0079F203=DATA:L
+
+# Table for jump at 002C69EA
+#-m 0x0079F25C-0x0079F293=DATA:L
+
+# Unknown :
+#-m 0x0079F292-0x007C6253=DATA:L
 
 #JPEG :
 #-m 0x007C6254-0x00863334=DATA:L
@@ -451,7 +1045,7 @@
 
 
 
--s 0x4065E=get_68000914
+-s 0x4065E=time(R4 [OUT time_in_ms])
 -s 0x406EC=NOP_406EC
 -s 0x406EE=NOP_406EE
 -s 0x406F0=NOP_406F0
@@ -477,6 +1071,7 @@
 -s 0x40BBC=SetupTable3
 -s 0x40C02=SetupTableEmpty1
 -s 0x40C28=SetupTable2
+-s 0x40CDE=MillisecondTimer
 -s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code])
 -s 0x41106=sys_get_tim
 -s 0x41124=sys_dly_tsk
