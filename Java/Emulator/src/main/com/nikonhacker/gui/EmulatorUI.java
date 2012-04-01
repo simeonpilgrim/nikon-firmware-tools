@@ -24,6 +24,7 @@ import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
+import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
 import com.nikonhacker.gui.component.callStack.CallStackFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
@@ -59,6 +60,7 @@ import java.util.Set;
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
     private static final String COMMAND_IMAGE_LOAD = "IMAGE_LOAD";
+    private static final String COMMAND_GENERATE_SYS_SYMBOLS = "GENERATE_SYS_SYMBOLS";
     private static final String COMMAND_ANALYSE_DISASSEMBLE = "ANALYSE_DISASSEMBLE";
     private static final String COMMAND_EMULATOR_PLAY = "EMULATOR_PLAY";
     private static final String COMMAND_EMULATOR_DEBUG = "EMULATOR_DEBUG";
@@ -118,6 +120,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JMenuItem stepMenuItem;
     private JMenuItem stopMenuItem;
     private JMenuItem breakpointMenuItem;
+    private JMenuItem generateSysSymbolsMenuItem;
     private JMenuItem analyseMenuItem;
     private JCheckBoxMenuItem disassemblyMenuItem;
     private JCheckBoxMenuItem cpuStateMenuItem;
@@ -605,6 +608,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         menuBar.add(sourceMenu);
 
         //analyse / disassemble
+        generateSysSymbolsMenuItem = new JMenuItem("Generate system call symbols");
+//        generateSysSymbolsMenuItem.setMnemonic(KeyEvent.VK_A);
+//        generateSysSymbolsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
+        generateSysSymbolsMenuItem.setActionCommand(COMMAND_GENERATE_SYS_SYMBOLS);
+        generateSysSymbolsMenuItem.addActionListener(this);
+        sourceMenu.add(generateSysSymbolsMenuItem);
+
+        sourceMenu.add(new JSeparator());
+
+        //analyse / disassemble
         analyseMenuItem = new JMenuItem("Analyse / Disassemble");
         analyseMenuItem.setMnemonic(KeyEvent.VK_A);
         analyseMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
@@ -677,6 +690,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void actionPerformed(ActionEvent e) {
         if (COMMAND_IMAGE_LOAD.equals(e.getActionCommand())) {
             openLoadImageDialog();
+        }
+        else if (COMMAND_GENERATE_SYS_SYMBOLS.equals(e.getActionCommand())) {
+            openGenerateSysSymbolsDialog();
         }
         else if (COMMAND_ANALYSE_DISASSEMBLE.equals(e.getActionCommand())) {
             openAnalyseDialog();
@@ -810,7 +826,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    
+    private void openGenerateSysSymbolsDialog() {
+        GenerateSysSymbolsDialog generateSysSymbolsDialog = new GenerateSysSymbolsDialog(this, memory);
+        generateSysSymbolsDialog.startGeneration();
+        generateSysSymbolsDialog.setVisible(true);
+    }
+
+
     private void openAnalyseDialog() {
         JTextField dfrField = new JTextField();
         JTextField destinationField = new JTextField();
@@ -1338,6 +1360,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
         sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
 
+        generateSysSymbolsMenuItem.setEnabled(isImageLoaded);
         analyseMenuItem.setEnabled(isImageLoaded); analyseButton.setEnabled(isImageLoaded);
 
         disassemblyMenuItem.setEnabled(isImageLoaded); disassemblyButton.setEnabled(isImageLoaded);
