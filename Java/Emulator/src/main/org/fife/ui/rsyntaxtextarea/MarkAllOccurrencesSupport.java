@@ -49,6 +49,7 @@ public class MarkAllOccurrencesSupport implements CaretListener, ActionListener 
     private Timer timer;
     private MarkOccurrencesHighlightPainter p;
     private List tags;
+    private boolean timerRestartEnabled = true;
 
     /**
      * The default color used to mark occurrences.
@@ -121,9 +122,12 @@ public class MarkAllOccurrencesSupport implements CaretListener, ActionListener 
         try {
             int start = Utilities.getWordStart(textArea, c.getDot());
             int end = Utilities.getWordEnd(textArea, c.getDot());
-            String word = textArea.getText(start, end-start+1); // May need to be just (end-start), not sure
+            String word = textArea.getText(start, end-start+1);
+            // Disable highlight timer upon caret position change during markAll()
+            timerRestartEnabled = false;
             textArea.markAll(word, false, true, false);
-
+            // Reenable highlight timer upon caret position change
+            timerRestartEnabled = true;
         } catch (BadLocationException ble) {
             ble.printStackTrace();
         } finally {
@@ -204,7 +208,7 @@ public class MarkAllOccurrencesSupport implements CaretListener, ActionListener 
      * @param e The event.
      */
     public void caretUpdate(CaretEvent e) {
-        timer.restart();
+        if (timerRestartEnabled) timer.restart();
     }
 
 
