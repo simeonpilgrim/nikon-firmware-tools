@@ -14,7 +14,6 @@ import java.util.*;
 public class Emulator {
 
     private long totalCycles;
-    private int interruptPeriod = 1; // By default, check interrupts at each instruction
     private Memory memory;
     private CPUState cpuState;
 
@@ -42,7 +41,7 @@ public class Emulator {
         EmulatorOptions.debugMemory = false;
 
         CPUState cpuState = new CPUState(initialPc);
-        Emulator emulator = new Emulator(1000);
+        Emulator emulator = new Emulator();
         emulator.setMemory(memory);
         emulator.setCpuState(cpuState);
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
@@ -53,21 +52,9 @@ public class Emulator {
     public Emulator() {
     }
 
-    public Emulator(int interruptPeriod) {
-        this.interruptPeriod = interruptPeriod;
-    }
-
 
     public long getTotalCycles() {
         return totalCycles;
-    }
-
-    /**
-     * Sets how often external interrupts are checked
-     * @param interruptPeriod the period, in CPU cycles
-     */
-    public void setInterruptPeriod(int interruptPeriod) {
-        this.interruptPeriod = interruptPeriod;
     }
 
     /**
@@ -122,7 +109,6 @@ public class Emulator {
      */
     public BreakCondition play() throws EmulationException {
         /* temporary variables */
-        int cycleRemaining = interruptPeriod;
         int result32, S1, S2, Sr, n;
         long result64;
 
@@ -1263,9 +1249,8 @@ public class Emulator {
     
                     case 0xD000: /* CALL label12 */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
                                 }
@@ -1281,9 +1266,8 @@ public class Emulator {
     
                     case 0x9710: /* CALL @Ri */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
                                 }
@@ -1299,9 +1283,8 @@ public class Emulator {
     
                     case 0x9720: /* RET */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null && !callStack.isEmpty()) {
                                     callStack.pop();
                                 }
@@ -1316,9 +1299,8 @@ public class Emulator {
     
                     case 0x1F00: /* INT #u8 */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
                                 }
@@ -1334,9 +1316,8 @@ public class Emulator {
     
                     case 0x9F30: /* INTE */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
                                 }
@@ -1357,9 +1338,8 @@ public class Emulator {
     
                     case 0x9730: /* RETI */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null && !callStack.isEmpty()) {
                                     callStack.pop();
                                 }                                    
@@ -1603,9 +1583,8 @@ public class Emulator {
     
                     case 0xD800: /* CALL:D label12 */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
                                 }
@@ -1622,9 +1601,8 @@ public class Emulator {
     
                     case 0x9F10: /* CALL:D @Ri */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null) {
                                     callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
                                 }
@@ -1641,9 +1619,8 @@ public class Emulator {
     
                     case 0x9F20: /* RET:D */
                         if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
-                                // test again. This avoids the cost of synchronisation when running with call stack window closed,
-                                // but still guarantees synchronized access when it's open
                                 if (callStack != null && !callStack.isEmpty()) {
                                     callStack.pop();
                                 }
@@ -2269,7 +2246,6 @@ public class Emulator {
                         throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
                 }
 
-                cycleRemaining -= cycles;
                 totalCycles += cycles;
 
                 /* Delay slot processing */
@@ -2287,9 +2263,9 @@ public class Emulator {
                     }
                 }
                 else {
-                    // If not in a delay slot, see if it's time to check interrupts
-                    if (cycleRemaining <= 0) {
-                        /* Time to process waiting interrupts, if any */
+                    // If not in a delay slot, check interrupts
+                    if(!interruptRequests.isEmpty()) {
+                        //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (rare)
                         synchronized (interruptRequests) {
                             if(!interruptRequests.isEmpty()) {
                                 InterruptRequest interruptRequest = interruptRequests.get(0);
@@ -2303,13 +2279,12 @@ public class Emulator {
                                 }
                             }
                         }
-
-                        cycleRemaining += interruptPeriod;
                     }
                 }
 
                 /* Break if requested */
                 if (!breakConditions.isEmpty()) {
+                    //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (debug)
                     synchronized (breakConditions) {
                         for (BreakCondition breakCondition : breakConditions) {
                             if(breakCondition.matches(cpuState, memory)) {

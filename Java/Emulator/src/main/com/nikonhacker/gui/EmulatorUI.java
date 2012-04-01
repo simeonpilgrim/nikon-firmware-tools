@@ -1430,22 +1430,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulator.clearBreakConditions();
 
         if (stepMode) {
-            emulator.setInterruptPeriod(1);
             emulator.addBreakCondition(new AlwaysBreakCondition());
         }
         else {
             if (debugMode) {
-                emulator.setInterruptPeriod(1);
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                     if (breakTrigger.isEnabled()) {
                         emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
                     }
                 }
-            }
-            else {
-                // This is silly. Check interrupt after each instruction
-                // emulator.setInterruptPeriod(1000);
-                emulator.setInterruptPeriod(1);
             }
             if (endAddress != null) {
                 CPUState values = new CPUState(endAddress);
