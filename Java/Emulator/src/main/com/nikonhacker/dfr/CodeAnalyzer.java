@@ -170,7 +170,7 @@ public class CodeAnalyzer {
         }
 
 
-        debugPrintWriter.println("Generating names for labels (this can take some time)...");
+        debugPrintWriter.println("Generating names for labels...");
         long start = System.currentTimeMillis();
         int labelNumber = 1;
         // Temporary storage for names given to returns to make sure they are unique
