@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+
+
+<project name="FR Emulator" default="all" basedir=".">
+
+	<description>FR Emulator build file</description>
+
+	<!-- Set global properties for this build. -->
+    <property name="app-name"         value="FrEmulator"/>
+    <property name="app-version"      value="1.73"/>
+    <property name="source-dir"       location="src/main"/>
+    <property name="template-dir"     location="src/template"/>
+    <property name="class-dir"        location="ant-classes"/>
+    <property name="gen-dir"          location="ant-gen"/>
+    <property name="dist-dir"         location="dist"/>
+    <property name="lib-dir"          location="lib"/>
+    <property name="batch-dir"        location="batch"/>
+    <property name="conf-dir"         location="conf"/>
+    <property name="tools-dir"        location="tools"/>
+	<property name="debug"            value="true"/>
+	<property name="debuglevel"       value="lines,var,source"/>
+	<property name="java-level"       value="1.6"/>
+
+
+    <target name="preprocess" description="Substitute values for symbolic names in template files">
+        <tstamp>
+            <format property="build-time" pattern="yyyy-MM-dd HH:mm:ss" />
+        </tstamp>
+
+        <copy todir="${gen-dir}">
+            <fileset dir="${template-dir}"/>
+            <filterchain>
+                <replacetokens>
+                    <token key="APPNAME" value="${app-name}"/>
+                    <token key="APPVERSION" value="${app-version}"/>
+                    <token key="BUILDTIME" value="${build-time}"/>
+                </replacetokens>
+            </filterchain>
+        </copy>
+    </target>
+
+	<!-- Compiles all classes.  -->
+	<target name="compile" description="Compile the source." depends="preprocess">
+		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
+		<mkdir dir="${class-dir}"/>
+		<javac destdir="${class-dir}" deprecation="yes"
+                classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar;${lib-dir}/jgraphx.jar;${lib-dir}/rsyntaxtextarea.jar;${lib-dir}/miglayout-4.0.jar"
+				debug="${debug}" debuglevel="${debuglevel}"
+				source="${java-level}" target="${java-level}">
+            <src path="${source-dir}"/>
+            <src path="${gen-dir}"/>
+        </javac>
+        <copy todir="${class-dir}" >
+            <fileset dir="${source-dir}">
+                <include name="/**/*.png"/>
+                <include name="/**/*.properties"/>
+            </fileset>
+        </copy>
+	</target>
+
+
+	<!-- Build the executable jar.  -->
+	<target name="make-jar" depends="compile" description="Create the Fr Emulator jar">
+		<delete includeEmptyDirs="true" quiet="true">
+			<fileset dir="${dist-dir}"/>
+		</delete>
+		<mkdir dir="${dist-dir}/jar"/>
+		<jar destfile="${dist-dir}/jar/${app-name}.jar">
+			<fileset dir="${class-dir}"/>
+		</jar>
+	</target>
+
+
+    <!-- Prepare the distribution -->
+    <target name="dist" depends="make-jar" description="Prepare files for distribution">
+        <!-- Binary dist -->
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             basedir="."
+             includes="lib/**/*.jar"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${dist-dir}/jar"
+             includes="${app-name}.jar"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${batch-dir}"
+             includes="*.bat"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="."
+             includes="*.txt"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${conf-dir}"
+             includes="*.*"
+                />
+
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             basedir="."
+             includes="build.xml"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             update="true"
+             basedir="."
+             includes="src/**/*.*"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             update="true"
+             basedir="."
+             includes="lib/**/*.*"
+                />                
+    </target>
+
+
+    <!-- Clean dirs -->
+    <target name="clean" description="cleanup module">
+        <delete dir="${class-dir}"/>
+        <delete dir="${gen-dir}"/>
+        <delete dir="${dist-dir}"/>
+    </target>
+    
+    <!-- Process Jflex file -->
+    <target name="process-jflex" description="Create a Java Syntax Highlighting from the Flex file">
+        <java jar="${tools-dir}/jflex/lib/JFlex.jar" fork="true" failonerror="true" maxmemory="128m">
+            <arg value="${source-dir}/com/nikonhacker/gui/component/sourceCode/syntaxHighlighter/AssemblerFrTokenMaker.flex"/>
+            <classpath>
+                <pathelement location="${tools-dir}/jflex/lib/classes.zip"/>
+                <pathelement location="${tools-dir}/jflex/lib/JFlex.jar"/>
+            </classpath>
+        </java>
+    </target>
+
+
+    <!-- default target -->
+    <target name="all" depends="clean,dist" description="Default target to build all"/>
+
+</project>

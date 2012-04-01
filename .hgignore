@@ -1,0 +1,9 @@
+syntax: glob
+*.suo
+*.user
+dfr/dfr/bin/
+dfr/dfr/obj/
+firmware decode/firmware decode/bin
+firmware decode/firmware decode/obj
+JpegDetails/JpegDetails/obj
+JpegDetails/JpegDetails/bin
