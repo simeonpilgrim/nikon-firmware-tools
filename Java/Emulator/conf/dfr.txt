@@ -1060,7 +1060,7 @@
 -s 0x40872=int_40
 -s 0x408F0=int_07
 -s 0x408FC=Setup_OS
--s 0x409E4=infinite_loop
+-s 0x409E6=infinite_loop
 -s 0x40A70=set_x440_x10
 -s 0x40A98=Setupx68000918
 -s 0x40AB6=SetupAllTopLevlFuncs
