@@ -121,12 +121,15 @@ public class CodeAnalyzer {
         Map.Entry<Integer, DisassembledInstruction> entry = codeStructure.instructions.firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
-            if (!processedInstructions.contains(address)) {
+            if (!processedInstructions.contains(address)
+                && codeStructure.instructions.get(address).opcode.encoding != 0x9FA0 // NOP stuffing
+                && memory.loadInstruction16(address) != 0x0000 // 0x0000 stuffing
+                ) {
+                // Not a 0000 nor a NOP
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 codeStructure.functions.put(address, function);
                 try {
-                    // Follow, but stop if joining a "known" function
-                    followFunction(function, address, true);
+                    followFunction(function, address, false);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
