@@ -1100,8 +1100,8 @@
 -s 0x419F6=sys_ref_tsk
 -s 0x41A4A=TableLoadOffset(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
 -s 0x41A66=TopLevel_sub1
--s 0x41ACA=Tab78_41ACA
--s 0x41B0C=Tab78_41B0C
+-s 0x41ACA=sys_sig_sem
+-s 0x41B0C=sys_wai_sem
 -s 0x41B74=ret_R12_xBB
 -s 0x41B7A=ret_R12_xAB
 -s 0x41B82=sys_twai_sem
