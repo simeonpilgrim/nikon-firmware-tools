@@ -89,7 +89,7 @@ public class CodeAnalyzer {
         Function main = new Function(codeStructure.entryPoint, "main", "", Function.Type.MAIN);
         codeStructure.functions.put(codeStructure.entryPoint, main);
         try {
-            followFunction(main, codeStructure.entryPoint);
+            followFunction(main, codeStructure.entryPoint, false);
         }
         catch (DisassemblyException e) {
             debugPrintWriter.println("Error disassembling 'main' code at 0x" + Format.asHex(codeStructure.entryPoint, 2) + ": " + e.getMessage());
@@ -105,7 +105,7 @@ public class CodeAnalyzer {
                 function = new Function(address, name, "", Function.Type.INTERRUPT);
                 codeStructure.functions.put(address, function);
                 try {
-                    followFunction(function, address);
+                    followFunction(function, address, false);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("Error disassembling interrupt 0x" + Format.asHex(interruptNumber, 2) + ": " + e.getMessage());
@@ -125,7 +125,8 @@ public class CodeAnalyzer {
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 codeStructure.functions.put(address, function);
                 try {
-                    followFunction(function, address);
+                    // Follow, but stop if joining a "known" function
+                    followFunction(function, address, true);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
@@ -171,28 +172,24 @@ public class CodeAnalyzer {
         int labelNumber = 1;
         // Temporary storage for names given to returns to make sure they are unique
         Set<String> usedReturnLabels = new HashSet<String>();
-        for (Integer address : codeStructure.labels.keySet()) {
-            boolean match = false;
-            for (Function function : codeStructure.functions.values()) {
-                if (function.getAddress() == address) {
-                    codeStructure.labels.put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address), null));
-                    match = true;
-                }
-                else {
-                    for (int i = 0; i < function.getCodeSegments().size(); i++) {
-                        CodeSegment codeSegment = function.getCodeSegments().get(i);
-                        if (codeSegment.getStart() == address) {
-                            codeStructure.labels.put(address, new Symbol(address, "part_" + (i+1) + "_of_" + function.getName(), null));
-                            match = true;
-                            break;
-                        }
-                    }
-                }
-                if (match) {
-                    break;
+
+        // Give names to labels linked to function start/parts (if they were spotted as targets already)
+        for (Integer address : codeStructure.functions.keySet()) {
+            Function function = codeStructure.functions.get(address);
+            if (codeStructure.getLabels().containsKey(address)) {
+                codeStructure.labels.put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address), null));
+            }
+            for (int i = 0; i < function.getCodeSegments().size(); i++) {
+                CodeSegment codeSegment = function.getCodeSegments().get(i);
+                int startAddress = codeSegment.getStart();
+                if (codeStructure.getLabels().containsKey(startAddress)) {
+                    codeStructure.labels.put(startAddress, new Symbol(startAddress, "part_" + (i+1) + "_of_" + function.getName(), null));
                 }
             }
-            if (!match) {
+        }
+
+        for (Integer address : codeStructure.labels.keySet()) {
+            if (codeStructure.labels.get(address).getName().length() == 0) {
                 String label;
                 if (codeStructure.isReturn(address)) {
                     Integer matchingFunctionStart = codeStructure.returns.get(address);
@@ -233,7 +230,7 @@ public class CodeAnalyzer {
 
     }
 
-    void followFunction(Function currentFunction, Integer address) throws IOException, DisassemblyException {
+    void followFunction(Function currentFunction, Integer address, boolean stopAtFirstProcessedInstruction) throws IOException, DisassemblyException {
         if (codeStructure.instructions.get(address) == null) {
             throw new DisassemblyException("No decoded instruction at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
         }
@@ -242,6 +239,13 @@ public class CodeAnalyzer {
         List<Jump> jumps = new ArrayList<Jump>();
         currentSegment.setStart(address);
         while(address != null) {
+            if (stopAtFirstProcessedInstruction && processedInstructions.contains(address)) {
+                Integer previousAddress = codeStructure.instructions.lowerKey(address);
+                // Check we're not in delay slot. We shouldn't stop on delay slot
+                if (previousAddress == null || !codeStructure.instructions.get(previousAddress).opcode.hasDelaySlot) {
+                    break;
+                }
+            }
             DisassembledInstruction instruction = codeStructure.instructions.get(address);
             processedInstructions.add(address);
             currentSegment.setEnd(address);
@@ -351,7 +355,7 @@ public class CodeAnalyzer {
                             function = new Function(targetAddress, "", "", Function.Type.STANDARD);
                             codeStructure.functions.put(targetAddress, function);
                             try {
-                                followFunction(function, targetAddress);
+                                followFunction(function, targetAddress, false);
                             }
                             catch (DisassemblyException e) {
                                 debugPrintWriter.println("Error following call at 0x" + Format.asHex(address, 8) + ": " + e.getMessage());
@@ -427,7 +431,7 @@ public class CodeAnalyzer {
             }
             if (!inProcessedSegment) {
                 try {
-                    followFunction(currentFunction, jump.target);
+                    followFunction(currentFunction, jump.target, false);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("Error following jump at 0x" + Format.asHex(jump.getSource(), 8) + ": " + e.getMessage());
@@ -501,7 +505,7 @@ public class CodeAnalyzer {
                     target = new Function(int40targetAddress, "", "", Function.Type.STANDARD);
                     codeStructure.functions.put(int40targetAddress, target);
                     try {
-                        followFunction(target, int40targetAddress);
+                        followFunction(target, int40targetAddress, false);
                     }
                     catch (DisassemblyException e) {
                         debugPrintWriter.println("Error : INT40 at 0x" + Format.asHex(address, 8) + " with value R12=0x" + Format.asHex(r12, 8) + " targets address 0x" + Format.asHex(int40targetAddress, 8) + " where no code can be found.");
