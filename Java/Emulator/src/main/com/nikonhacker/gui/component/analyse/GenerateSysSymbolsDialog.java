@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.analyse;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.dfr.Dfr;
-import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;
@@ -13,16 +13,20 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
+import java.net.URL;
+import java.util.Properties;
 
-public class AnalyseProgressDialog extends JDialog {
+public class GenerateSysSymbolsDialog extends JDialog {
+    private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
+
     private PrintWriterArea printWriterArea;
     JButton closeButton;
     final JDialog frame = this;
     private EmulatorUI emulatorUI;
     private DebuggableMemory memory;
 
-    public AnalyseProgressDialog(EmulatorUI emulatorUI, DebuggableMemory memory) {
-        super(emulatorUI, "Disassembly progress", true);
+    public GenerateSysSymbolsDialog(EmulatorUI emulatorUI, DebuggableMemory memory) {
+        super(emulatorUI, "System call Symbols generation", true);
         this.emulatorUI = emulatorUI;
         this.memory = memory;
 
@@ -51,35 +55,39 @@ public class AnalyseProgressDialog extends JDialog {
         setLocationRelativeTo(null);
     }
 
-    public void startBackgroundAnalysis(final String optionsFilename, final String inputFilename, final String outputFilename) {
-        final Dfr disassembler = new Dfr();
+    public void startGeneration() {
         Thread disassemblerThread = new Thread(new Runnable() {
             public void run() {
-                boolean wasVerbose = emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.VERBOSE);
-                emulatorUI.getPrefs().getOutputOptions().add(OutputOption.VERBOSE);
                 PrintWriter debugPrintWriter = printWriterArea.getPrintWriter();
                 try {
-                    debugPrintWriter.println("Initializing disassembler...");
-                    disassembler.setDebugPrintWriter(debugPrintWriter);
-                    disassembler.setOutputFileName(outputFilename);
-                    disassembler.readOptions(optionsFilename);
-                    disassembler.setOutputOptions(emulatorUI.getPrefs().getOutputOptions());
-                    disassembler.setMemory(memory);
-                    disassembler.initialize();
-                    debugPrintWriter.println("Starting disassembly...");
-                    emulatorUI.setCodeStructure(disassembler.disassembleMemRanges());
-                    disassembler.cleanup();
+                    debugPrintWriter.println("Assuming interrupt vector at 0x" + Format.asHex(INTERRUPT_VECTOR_BASE_ADDRESS, 8) + "...");
+                    int int40address = memory.load32(INTERRUPT_VECTOR_BASE_ADDRESS + 0x3FC - 0x40 * 4);
+                    debugPrintWriter.println("INT 0x40 is at 0x" + Format.asHex(int40address, 8) + "...");
+                    debugPrintWriter.println("Assuming the layout of D5100 is standard, the base address for system calls computation is stored at 0x" + Format.asHex(int40address + 64, 8) + "...");
+                    int baseAddress = memory.loadInstruction32(int40address + 64);
+                    debugPrintWriter.println("Base address is thus 0x" + Format.asHex(baseAddress, 8) + "...");
+
+                    Properties properties = new Properties() ;
+                    URL url = GenerateSysSymbolsDialog.class.getResource("realos-systemcalls.properties");
+                    //properties.load(new FileInputStream(new File(url.getFile())));
+                    properties.load(url.openStream());
+
+                    debugPrintWriter.println("The following lines can be pasted to a dfr.txt file :");
                     debugPrintWriter.println();
-                    debugPrintWriter.println("Disassembly complete.");
-                    if (emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.STRUCTURE)) {
-                        debugPrintWriter.println("You may now use the 'Code Structure' and 'Source Code' windows");
+
+                    for (Object o : properties.keySet()) {
+                        int offset = Format.parseUnsigned((String) o);
+                        String value = (String) properties.get(o);
+                        int sysFunctionAddress = baseAddress + Dfr.signExtend(16, memory.loadInstruction16(baseAddress + offset * 2));
+                        debugPrintWriter.println("-s 0x" + Format.asHex(sysFunctionAddress, 8) + "=" + value);
                     }
+                    debugPrintWriter.println();
+                    debugPrintWriter.println("The lines above can be pasted to a dfr.txt file :");
                 } catch (Exception e) {
                     e.printStackTrace();
                     debugPrintWriter.println("ERROR : " + e.getClass().getName() + ": " + e.getMessage());
                     debugPrintWriter.println("See console for more information");
                 }
-                emulatorUI.getPrefs().setOutputOption(OutputOption.VERBOSE, wasVerbose);
                 setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 closeButton.setEnabled(true);
                 emulatorUI.updateStates();
@@ -87,4 +95,5 @@ public class AnalyseProgressDialog extends JDialog {
         });
         disassemblerThread.start();
     }
+
 }

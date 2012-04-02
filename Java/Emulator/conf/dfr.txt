@@ -1,3 +1,9 @@
+# The main part of this file describes the D5100 firmware, ver 1.01
+# Two special parts are also included but commented out :
+# - the ROM part at 0x000E0000
+# - the copy of code to 0x80080000 performed by the ROM bootup
+#
+
 ############################### File map: D5100
 -i 0x00040000-0x00BFFFFF=0x00000000
  
@@ -57,67 +63,221 @@
 #-m 0x000AB876-0x000ABB39=DATA:L
 
 
-# Code for sure (meaningfull calls)
+# Code for sure (meaningful calls)
 -m 0x000ABB3A-0x000DAA29=CODE
 
 
 # Unknown
--m 0x000DAA2A-0x000DAA2F=DATA:L
-# Table of function reached from 0x000B04FA (target range 000B04FC-000B9F58)
-# Table of addresses reached from 0x000B04FA is stored at 0x000DAA30
-# Table of addresses reached from 0x000B0EDA is stored at 0x000DAA40
-# Table of addresses reached from 0x000B1F98 is stored at 0x000DAA8C
-# Table of addresses reached from 0x000B2D98 is stored at 0x000DAAAC
+# Table for jump at 000B04FA
+#-m 0x000DAA30-0x000DAA3F=DATA:L
+# Table for jump at 000B0EDA
+#-m 0x000DAA40-0x000DAA8B=DATA:L
+# Table for jump at 000B1F98
+#-m 0x000DAA8C-0x000DAA9B=DATA:L
+# Table for jump at 000B2234
+#-m 0x000DAA9C-0x000DAAAB=DATA:L
+# Table for jump at 000B2D98
+#-m 0x000DAAAC-0x000DAAC7=DATA:L
 # Table of addresses reached from 0x000B2F3C is stored at 0x000DAAC8
-# Table of addresses reached from 0x000B30C0 is stored at 0x000DAAE8
+
+# Table for jump at 000B30C0
+#-m 0x000DAAE8-0x000DAB07=DATA:L
 # Table of addresses reached from 0x000B315E is stored at 0x000DAB08
-# Table of addresses reached from 0x000B324C is stored at 0x000DAB28
-# Table of addresses reached from 0x000B331E is stored at 0x000DAB38
-# Table of addresses reached from 0x000B3816 is stored at 0x000DAB48
-# Table of addresses reached from 0x000B3D00 is stored at 0x000DAB58
+
+# Table for jump at 000B324C
+#-m 0x000DAB28-0x000DAB37=DATA:L
+# Table for jump at 000B331E
+#-m 0x000DAB38-0x000DAB47=DATA:L
+# Table for jump at 000B3816
+#-m 0x000DAB48-0x000DAB57=DATA:L
+# Table for jump at 000B3D00
+#-m 0x000DAB58-0x000DAB73=DATA:L
 # Table of addresses reached from 0x000B4442 is stored at 0x000DAB74
 # Table of addresses reached from 0x000B445C is stored at 0x000DAB84
 # Table of addresses reached from 0x000B453A is stored at 0x000DABA0
 # Table of addresses reached from 0x000B4618 is stored at 0x000DABBC
-# Table of addresses reached from 0x000B46EC is stored at 0x000DABD8
-# Table of addresses reached from 0x000B49DC is stored at 0x000DABF4
-# Table of addresses reached from 0x000B5766 is stored at 0x000DAC10
-# Table of addresses reached from 0x000B586C is stored at 0x000DAC2C
+
+# Table for jump at 000B46EC
+#-m 0x000DABD8-0x000DABF3=DATA:L
+# Table for jump at 000B49DC
+#-m 0x000DABF4-0x000DAC0F=DATA:L
+# Table for jump at 000B5766
+#-m 0x000DAC10-0x000DAC2B=DATA:L
+# Table for jump at 000B586C
+#-m 0x000DAC2C-0x000DAC47=DATA:L
 # Table of addresses reached from 0x000B5DB4 is stored at 0x000DAC48
-# Table of addresses reached from 0x000B6610 is stored at 0x000DAC64
-# Table of addresses reached from 0x000B6B04 is stored at 0x000DAC88
-# Table of addresses reached from 0x000B6B90 is stored at 0x000DACA4
-# Table of addresses reached from 0x000B6BCE is stored at 0x000DACC0
-# Table of addresses reached from 0x000B6C78 is stored at 0x000DACDC
-# Table of addresses reached from 0x000B994C is stored at 0x000DACF0
-# Table of addresses reached from 0x000B9BBA is stored at 0x000DAD14
-# Table of addresses reached from 0x000B9C14 is stored at 0x000DAD24
-# ...
-#-m 0x000DAA30-0x000DAD6C=DATA:L
+
+# Table for jump at 000B6610
+#-m 0x000DAC64-0x000DAC7F=DATA:L
+
+# Table for jump at 000B6B04
+#-m 0x000DAC88-0x000DACA3=DATA:L
+# Table for jump at 000B6B90
+#-m 0x000DACA4-0x000DACBF=DATA:L
+
+# Table for jump at 000B6BCE
+#-m 0x000DACC0-0x000DACDB=DATA:L
+# Table for jump at 000B6C78
+#-m 0x000DACDC-0x000DACEB=DATA:L
+
+# Table for jump at 000B994C
+#-m 0x000DACF0-0x000DAD13=DATA:L
+# Table for jump at 000B9BBA
+#-m 0x000DAD14-0x000DAD23=DATA:L
+# Table for jump at 000B9C14
+#-m 0x000DAD24-0x000DAD3F=DATA:L
+# Table for jump at 000B9F1A
+#-m 0x000DAD40-0x000DAD4F=DATA:L
+# Table for jump at 000B9F3E
+#-m 0x000DAD50-0x000DAD6B=DATA:L
+
+# Table for jump at 000BA674
+#-m 0x000DAF7C-0x000DAF97=DATA:L
+# Table for jump at 000BA72A
+#-m 0x000DAF98-0x000DAFA7=DATA:L
+# Table for jump at 000BB540
+#-m 0x000DAFA8-0x000DAFCF=DATA:L
+# Table for jump at 000BC7BC
+#-m 0x000DAFD0-0x000DAFF7=DATA:L
+# Table for jump at 000BC86C
+#-m 0x000DAFF8-0x000DB01F=DATA:L
+
 # Unknown
-#-m 0x000DAD6C-0x000DAF7B=DATA:L
-# Table of addresses (target range 000BA676-000BCB70)
-# ...
-#-m 0x000DAF7C-0x000DB03F=DATA:L
+#-m 0x000DB020-0x000DB263=DATA:L
+
+# Table for jump at 000BD256
+#-m 0x000DB264-0x000DB27B=DATA:L
+# Table for jump at 000BD9DA
+#-m 0x000DB27C-0x000DB2A3=DATA:L
+# Table for jump at 000BDB0E
+#-m 0x000DB2A4-0x000DB2B3=DATA:L
+# Table for jump at 000BDB6E
+#-m 0x000DB2B4-0x000DB2C3=DATA:L
+# Table for jump at 000BE402
+#-m 0x000DB2C4-0x000DB2D3=DATA:L
+# Table for jump at 000BE438
+#-m 0x000DB2D4-0x000DB2EB=DATA:L
+# Table for jump at 000BE4A6
+#-m 0x000DB2EC-0x000DB2FF=DATA:L
+# Table for jump at 000BE4FC
+#-m 0x000DB300-0x000DB327=DATA:L
+# Table for jump at 000BE566
+#-m 0x000DB328-0x000DB33B=DATA:L
+# Table for jump at 000BE644
+#-m 0x000DB33C-0x000DB363=DATA:L
+# Table for jump at 000BE6E8
+#-m 0x000DB364-0x000DB377=DATA:L
+# Table for jump at 000BE732
+#-m 0x000DB378-0x000DB38B=DATA:L
+# Table for jump at 000BE8AC
+#-m 0x000DB38C-0x000DB3B3=DATA:L
+# Table for jump at 000BEA16
+#-m 0x000DB3B4-0x000DB3DB=DATA:L
+# Table for jump at 000BEAE2
+#-m 0x000DB8DC-0x000DB8F7=DATA:L
+# Table for jump at 000BEB06
+#-m 0x000DB8F8-0x000DB907=DATA:L
+# Table for jump at 000BEC96
+#-m 0x000DB908-0x000DB923=DATA:L
+# Table for jump at 000BECD8
+#-m 0x000DB924-0x000DB93B=DATA:L
+# Table for jump at 000BED4A
+#-m 0x000DB93C-0x000DB953=DATA:L
+# Table for jump at 000BED8C
+#-m 0x000DB954-0x000DB96B=DATA:L
+# Table for jump at 000BEDD2
+#-m 0x000DB96C-0x000DB983=DATA:L
+# Table for jump at 000BEE98
+#-m 0x000DB984-0x000DB99B=DATA:L
+# Table for jump at 000BEEE0
+#-m 0x000DB99C-0x000DB9B3=DATA:L
+# Table for jump at 000BF334
+#-m 0x000DB9B4-0x000DB9C3=DATA:L
+# Table for jump at 000BF350
+#-m 0x000DB9C4-0x000DB9DF=DATA:L
+# Table for jump at 000BF472
+#-m 0x000DB9E0-0x000DB9EF=DATA:L
+# Table for jump at 000BF4A8
+#-m 0x000DB9F0-0x000DBA0B=DATA:L
+# Table for jump at 000BF524
+#-m 0x000DBA0C-0x000DBA27=DATA:L
+
 # Unknown
-#-m 0x000DB040-0x000DB263=DATA:L
-# Table of addresses reached from 0x000BD256 (target range 000BD258-000BEBD6, except one at 0x00340401)
-#-m 0x000DB264-0x000DB3E3=DATA:L
+#-m 0x000DBA28-0x000DBBBF=DATA:L
+
+# Table for jump at 000C0C74
+#-m 0x000DBBC0-0x000DBBE7=DATA:L
+
+# Table for jump at 000C1A42
+#-m 0x000DBC90-0x000DBCBB=DATA:L
+# Table for jump at 000C1EA0
+#-m 0x000DBCBC-0x000DBCCB=DATA:L
+
+# Table for jump at 000C3954
+#-m 0x000DBD60-0x000DBD83=DATA:L
+
+# Table for jump at 000C3C0E
+#-m 0x000DBDA4-0x000DBDB7=DATA:L
+# Table for jump at 000C3E2E
+#-m 0x000DBDB8-0x000DBDC7=DATA:L
+
+# Table for jump at 000C46CC
+#-m 0x000DBDEC-0x000DBDFB=DATA:L
+# Table for jump at 000C46E2
+#-m 0x000DBDFC-0x000DBE17=DATA:L
+# Table for jump at 000C46FE
+#-m 0x000DBE18-0x000DBE33=DATA:L
+# Table for jump at 000C471A
+#-m 0x000DBE34-0x000DBE4F=DATA:L
+# Table for jump at 000C4736
+#-m 0x000DBE50-0x000DBE6B=DATA:L
+# Table for jump at 000C54E8
+#-m 0x000DBE6C-0x000DBE87=DATA:L
+# Table for jump at 000C7C9A
+#-m 0x000DBE88-0x000DBE9F=DATA:L
+# Table for jump at 000C7CEA
+#-m 0x000DBEA0-0x000DBEAF=DATA:L
+
+# Table for jump at 000C7DBC
+#-m 0x000DBEB0-0x000DBECB=DATA:L
+
 # Unknown
-#-m 0x000DB3E4-0x000DB8DB=DATA:L
-# Table of addresses reached from 0x000BEAE2 (target range 000BEAE4-000BF6F2, except one at 0x00330301)
-#-m 0x000DB8DC-0x000DBA29=DATA:L
-# Unknown
-#-m 0x000DBA30-0x000DBC8f=DATA:L
-# Table of addresses reached from 0x000C1A42 (target range 000C1A44-000CD7DE)
-#-m 0x000DBC90-0x000DBEDB=DATA:L
-# Unknown
-#-m 0x000DBEDC-0x000DFBFF=DATA:L
-# Table of addresses reached from 0x000D97CE (target range 000D97DC-000D9E62)
-#-m 0x000DC114-0x000DC303=DATA:L
+#-m 0x000DBECC-0x000DC043=DATA:L
+
+# Table for jump at 000D74FC
+#-m 0x000DC044-0x000DC05B=DATA:L
+
+# Table for jump at 000D97CE
+#-m 0x000DC114-0x000DC12B=DATA:L
+# Table for jump at 000D9818
+#-m 0x000DC12C-0x000DC153=DATA:L
+
+# Table for jump at 000D996C
+#-m 0x000DC16C-0x000DC193=DATA:L
+# Table for jump at 000D9A74
+#-m 0x000DC194-0x000DC1BB=DATA:L
+# Table for jump at 000D9B60
+#-m 0x000DC1BC-0x000DC1E3=DATA:L
+# Table for jump at 000D9C40
+#-m 0x000DC1E4-0x000DC20B=DATA:L
+# Table for jump at 000D9D48
+#-m 0x000DC20C-0x000DC223=DATA:L
+# Table for jump at 000D9D66
+#-m 0x000DC224-0x000DC24B=DATA:L
+
+# Table for jump at 000D9DA0
+#-m 0x000DC264-0x000DC28B=DATA:L
+# Table for jump at 000D9DDE
+#-m 0x000DC28C-0x000DC2B3=DATA:L
+# Table for jump at 000D9E1C
+#-m 0x000DC2B4-0x000DC2DB=DATA:L
+# Table for jump at 000D9E5A
+#-m 0x000DC2DC-0x000DC303=DATA:L
+
 # Unknown
 #-m 0x000DC304-0x000DC30F=DATA:L
-# 32b header + Table of 0x3C records of 0x1C bytes, containing among other things language menu function address
+
+# Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
 #-m 0x000DC310-0x000DC9A3=DATA:L
 # Unknown
 #-m 0x000DC9A4-0x000DD357=DATA:L
@@ -132,17 +292,91 @@
 #-m 0x000dfc00-0x000dffff=DATA:L
 
 
-# 0xFF
-#-m 0x000e0000-0x000fffff=DATA:L
+#####################################################
+## ROM Bootloader Area 0x000e0000-0x000fffff - filled with 0xFF in normal FW
+#
+#-m 0x000E0000-0x000E064B=CODE
+##-m 0x000E064C-0x000E08C7=DATA:L
+#-m 0x000E08C8-0x000E09A5=CODE
+## Copyright message
+##-m 0x000E09A6-0x000E0A11=DATA:L
+#-m 0x000E0A12-0x000E1A3B=CODE
+##-m 0x000E1A3C-0x000E1BC7=DATA:L
+#-m 0x000E1BC8-0x000E1C0B=CODE
+##-m 0x000E1C0C-0x000E1FA7=DATA:L
+#-m 0x000E1FA8-0x000E2767=CODE
+##probably not code :
+#-m 0x000E2768-0x000ED479=CODE
+## 0xFF
+##-m 0x000ED47A-0x000FFBBF=DATA:L
+
+## Table for jump at 008849EE
+##-m 0x000F528C-0x000F52A3=DATA:L
+## Table for jump at 00884A56
+##-m 0x000F52A4-0x000F52CF=DATA:L
+## Table for jump at 00884A8C
+##-m 0x000F52D0-0x000F5383=DATA:L
+## Table for jump at 00884AD4
+##-m 0x000F5384-0x000F53B3=DATA:L
+## Table for jump at 00884AEC
+##-m 0x000F53B4-0x000F5467=DATA:L
+## Table for jump at 00884DE0
+##-m 0x000F5468-0x000F5497=DATA:L
+## Table for jump at 00884EAA
+##-m 0x000F5498-0x000F54C7=DATA:L
+## Table for jump at 008855C2
+##-m 0x000F54C8-0x000F54DF=DATA:L
+## Table for jump at 00885698
+##-m 0x000F54E0-0x000F54F7=DATA:L
+#
+## Table for jump at 00885A28
+##-m 0x000F5508-0x000F5537=DATA:L
+#
+## Table for jump at 00887206
+##-m 0x000F5C54-0x000F5C83=DATA:L
+#
+## Table for jump at 00888DD0
+##-m 0x000F5CF4-0x000F5D0B=DATA:L
+
+## version number etc.
+##-m 0x000FFBC0-0x000FFBF0=DATA:L
+## Interrupt vector table BL.
+#-t 0x000FFC00
+#
+#####################################################
 
 
 -m 0x00100000-0x002376A3=CODE
 
 
 # Unknown
-#-m 0x002376A4-0x00242CCD=DATA
+#-m 0x002376A4-0x00240683
+# Table for jump at 0010A724
+#-m 0x00240684-0x002406E7=DATA:L
+
+# Table for jump at 00113F0A
+#-m 0x0024070C-0x0024071B=DATA:L
+# Table for jump at 00114456
+#-m 0x0024071C-0x0024072B=DATA:L
+# Table for jump at 0011666A
+#-m 0x0024072C-0x00240757=DATA:L
+# Table for jump at 001169C2
+#-m 0x00240758-0x00240773=DATA:L
+
+# Table for jump at 0011B872
+#-m 0x00241844-0x0024186B=DATA:L
+# Table for jump at 0011B94E
+#-m 0x0024186C-0x00241893=DATA:L
+# Table for jump at 0011BA48
+#-m 0x00241894-0x002418BB=DATA:L
+# Table for jump at 0011DFE0
+#-m 0x002418BC-0x002418E3=DATA:L
+# Table for jump at 0011E07C
+#-m 0x002418E4-0x0024190B=DATA:L
+
 # Table of addresses reached from 0x0010A724 is stored at 0x00240684
 
+#-m 0x00242CCC-0x00242CCD=DATA
 # 0x00
 #-m 0x00242CCE-0x0024453F=DATA:L
 
@@ -153,7 +387,18 @@
 #-m 0x00245886-0x002470F7=DATA:L
 
 # Unknown
-#-m 0x002470F8-0x0026C178=DATA:L
+#-m 0x002470F8-0x0026B14F=DATA:L
+
+# Firmware decoding XOR tables
+# Table 1
+# -m 0x0026B150-0x0026B24F=DATA:L
+# Table 2
+# -m 0x0026B250-0x0026B34F=DATA:L
+# Table 3
+# -m 0x0026B350-0x0026B44F=DATA:L
+
+# Unknown
+# -m 0x0026B450-0x0026C177=DATA:L
 
 # Table used when rendering strings
 # Each record is 8 bytes long, byte0=0, byte1:01/02/03, byte2=0, byte3=0 and int offset to data below (0x0026c44c)
@@ -190,9 +435,538 @@
 #-m 0x0029C8FC-0x002A1CA7=DATA:L
 # Unknown :
 #-m 0x002A1CA8-0x002BF51F=DATA:L
-# Table of addresses reached from 0x000ABB76 is stored at 0x002A5384
-# Table of addresses reached from 0x000AC39A is stored at 0x002A53A0
-# Table of addresses reached from 0x000AE9DE is stored at 0x002A53D8
+# 0x002A5384 : Table of addresses reached from 0x000ABB76
+# 0x002A53A0 : Table of addresses reached from 0x000AC39A
+# 0x002A53D8 : Table of addresses reached from 0x000AE9DE
+
+# Table for jump at 00129870
+#-m 0x0024A678-0x0024A68B=DATA:L
+
+# Table for jump at 00131402
+#-m 0x0024AAB0-0x0024AAC7=DATA:L
+
+# Table for jump at 0013AC6A
+#-m 0x0024B05C-0x0024B06F=DATA:L
+# Table for jump at 0013C20E
+#-m 0x0024B070-0x0024B09B=DATA:L
+# Table for jump at 0013D18C
+#-m 0x0024B09C-0x0024B0B3=DATA:L
+# Table for jump at 0013E7E2
+#-m 0x0024B0B4-0x0024B0CB=DATA:L
+# Table for jump at 0013E9FA
+#-m 0x0024B0CC-0x0024B0E3=DATA:L
+# Table for jump at 0013F00C
+#-m 0x0024B0E4-0x0024B0F7=DATA:L
+
+# Table for jump at 0014020E
+#-m 0x0024B18C-0x0024B1BB=DATA:L
+
+# Table for jump at 0015174A
+#-m 0x0024BF94-0x0024BFAB=DATA:L
+
+# Table for jump at 00168B22
+#-m 0x0024E478-0x0024E487=DATA:L
+# Table for jump at 00169352
+#-m 0x0024E488-0x0024E497=DATA:L
+# Table for jump at 00169480
+#-m 0x0024E498-0x0024E4AF=DATA:L
+# Table for jump at 00169F16
+#-m 0x0024E4B0-0x0024E4D3=DATA:L
+# Table for jump at 00169F32
+#-m 0x0024E4D4-0x0024E4E3=DATA:L
+# Table for jump at 0016A002
+#-m 0x0024E4E4-0x0024E4F3=DATA:L
+# Table for jump at 0016A1EC
+#-m 0x0024E4F4-0x0024E503=DATA:L
+# Table for jump at 0016A2A2
+#-m 0x0024E504-0x0024E51F=DATA:L
+# Table for jump at 0016A2EC
+#-m 0x0024E520-0x0024E53B=DATA:L
+# Table for jump at 0016A32E
+#-m 0x0024E53C-0x0024E563=DATA:L
+# Table for jump at 0016A7AE
+#-m 0x0024E564-0x0024E573=DATA:L
+
+# Table for jump at 0016AA56
+#-m 0x0024E598-0x0024E5A7=DATA:L
+# Table for jump at 0016AB26
+#-m 0x0024E5A8-0x0024E5BF=DATA:L
+# Table for jump at 0016AC50
+#-m 0x0024E5C0-0x0024E5E3=DATA:L
+# Table for jump at 0016B258
+#-m 0x0024E5E4-0x0024E5FB=DATA:L
+# Table for jump at 0016B4EA
+#-m 0x0024E5FC-0x0024E61B=DATA:L
+# Table for jump at 0016B8DC
+#-m 0x0024E61C-0x0024E62B=DATA:L
+# Table for jump at 0016C330
+#-m 0x0024E62C-0x0024E63B=DATA:L
+# Table for jump at 0016C3D0
+#-m 0x0024E63C-0x0024E67F=DATA:L
+# Table for jump at 0016CE04
+#-m 0x0024E680-0x0024E68F=DATA:L
+
+# Table for jump at 0016D5AC
+#-m 0x0024E6A0-0x0024E6AF=DATA:L
+# Table for jump at 0016D838
+#-m 0x0024E6B0-0x0024E6BF=DATA:L
+
+# Table for jump at 00170168
+#-m 0x00250104-0x00250113=DATA:L
+# Table for jump at 0017018A
+#-m 0x00250114-0x00250123=DATA:L
+
+# Table for jump at 00170C42
+#-m 0x00250250-0x0025026B=DATA:L
+# Table for jump at 00170E6C
+#-m 0x0025026C-0x0025027B=DATA:L
+
+# Table for jump at 00175B26
+#-m 0x00251C4C-0x00251C6F=DATA:L
+# Table for jump at 00175D64
+#-m 0x00251C70-0x00251C93=DATA:L
+# Table for jump at 00176148
+#-m 0x00251C94-0x00251CA3=DATA:L
+# Table for jump at 00176172
+#-m 0x00251CA4-0x00251CB3=DATA:L
+# Table for jump at 0017DA9E
+#-m 0x00251CB4-0x00251CD3=DATA:L
+
+# Table for jump at 0017DEF2
+#-m 0x00251CEC-0x00251D0F=DATA:L
+
+# Table for jump at 0018E5CE
+#-m 0x00265CEC-0x00265D03=DATA:L
+
+# Table for jump at 0019604E
+#-m 0x00265EDC-0x00265EEB=DATA:L
+# Table for jump at 00196194
+#-m 0x00265EEC-0x00265EFB=DATA:L
+
+# Table for jump at 0019C112
+#-m 0x00267B44-0x00267B53=DATA:L
+# Table for jump at 0019DD04
+#-m 0x00267B54-0x00267B7B=DATA:L
+# Table for jump at 0019E230
+#-m 0x00267B7C-0x00267B9B=DATA:L
+# Table for jump at 0019EB36
+#-m 0x00267B9C-0x00267BAB=DATA:L
+
+# Table for jump at 0019F78E
+#-m 0x00267BD0-0x00267BFB=DATA:L
+# Table for jump at 0019F8D4
+#-m 0x00267BFC-0x00267C0B=DATA:L
+# Table for jump at 0019FD1C
+#-m 0x00267C0C-0x00267C1B=DATA:L
+# Table for jump at 001A0436
+#-m 0x00267C1C-0x00267C2B=DATA:L
+# Table for jump at 001A0A8C
+#-m 0x00267C2C-0x00267C53=DATA:L
+# Table for jump at 001A0B4A
+#-m 0x00267C54-0x00267C6B=DATA:L
+# Table for jump at 001A446E
+#-m 0x00267C6C-0x00267C7B=DATA:L
+# Table for jump at 001A44B6
+#-m 0x00267C7C-0x00267C8B=DATA:L
+
+# Table for jump at 001AC484
+#-m 0x0026A4AC-0x0026A4BB=DATA:L
+# Table for jump at 001ACE1E
+#-m 0x0026A4BC-0x0026A4CB=DATA:L
+
+# Table for jump at 001B3952
+#-m 0x0026AE98-0x0026AED3=DATA:L
+# Table for jump at 001B39BE
+#-m 0x0026AED4-0x0026AEE3=DATA:L
+# Table for jump at 001B3A1E
+#-m 0x0026AEE4-0x0026AF0F=DATA:L
+# Table for jump at 001B3A92
+#-m 0x0026AF10-0x0026AF3B=DATA:L
+
+# Table for jump at 001BB642
+#-m 0x0026B798-0x0026B7A7=DATA:L
+
+# Table for jump at 001BBF28
+#-m 0x0026BB74-0x0026BB83=DATA:L
+
+# Table for jump at 001BE3FA
+#-m 0x0026C108-0x0026C117=DATA:L
+# Table for jump at 001BE44E
+#-m 0x0026C118-0x0026C12B=DATA:L
+
+# Table for jump at 002CDFDA
+#-m 0x0026E9C8-0x0026E9DF=DATA:L
+# Table for jump at 002CE248
+#-m 0x0026E9E0-0x0026E9FF=DATA:L
+# Table for jump at 002CE26A
+#-m 0x0026EA00-0x0026EA17=DATA:L
+# Table for jump at 002D12A6
+#-m 0x0026EA18-0x0026EA57=DATA:L
+# Table for jump at 002D23DE
+#-m 0x0026EA58-0x0026EABB=DATA:L
+
+# Table for jump at 002D4504
+#-m 0x0026EFA4-0x0026EFB3=DATA:L
+# Table for jump at 002D460C
+#-m 0x0026EFB4-0x0026EFC3=DATA:L
+# Table for jump at 002D4A0C
+#-m 0x0026EFC4-0x0026EFD3=DATA:L
+
+# Table for jump at 002D4D74
+#-m 0x0026EFE4-0x0026EFF3=DATA:L
+# Table for jump at 002D4E48
+#-m 0x0026EFF4-0x0026F003=DATA:L
+
+# Table for jump at 002D6AB2
+#-m 0x0026F044-0x0026F053=DATA:L
+# Table for jump at 002D6AEC
+#-m 0x0026F054-0x0026F063=DATA:L
+# Table for jump at 002D6B9A
+#-m 0x0026F064-0x0026F087=DATA:L
+# Table for jump at 002D7048
+#-m 0x0026F088-0x0026F0AB=DATA:L
+# Table for jump at 002D7758
+#-m 0x0026F0AC-0x0026F0BB=DATA:L
+# Table for jump at 002D78F0
+#-m 0x0026F0BC-0x0026F0CB=DATA:L
+# Table for jump at 002D7A84
+#-m 0x0026F0CC-0x0026F0E7=DATA:L
+# Table for jump at 002D85E2
+#-m 0x0026F0E8-0x0026F10B=DATA:L
+
+# Table for jump at 002D902A
+#-m 0x0026F154-0x0026F163=DATA:L
+# Table for jump at 002D9E1E
+#-m 0x0026F164-0x0026F17B=DATA:L
+
+# Table for jump at 002DEECE
+#-m 0x0026F308-0x0026F317=DATA:L
+# Table for jump at 002DEFBC
+#-m 0x0026F318-0x0026F327=DATA:L
+# Table for jump at 002DF168
+#-m 0x0026F328-0x0026F337=DATA:L
+
+# Table for jump at 002E2C08
+#-m 0x0026FF7C-0x0026FF93=DATA:L
+
+# Table for jump at 002E8A3E
+#-m 0x0027067C-0x00270697=DATA:L
+
+# Table for jump at 002E8CC2
+#-m 0x002706D8-0x002706EF=DATA:L
+# Table for jump at 002E8DA4
+#-m 0x002706F0-0x002706FF=DATA:L
+# Table for jump at 002E8E52
+#-m 0x00270700-0x0027071B=DATA:L
+# Table for jump at 002E8EF8
+#-m 0x0027071C-0x0027073F=DATA:L
+# Table for jump at 002EB1F4
+#-m 0x00270740-0x00270763=DATA:L
+# Table for jump at 002EBED0
+#-m 0x00270764-0x00270787=DATA:L
+
+# Table for jump at 002EC284
+#-m 0x002707AC-0x002707CF=DATA:L
+# Table for jump at 002EC30C
+#-m 0x002707D0-0x002707EB=DATA:L
+# Table for jump at 002ED1DC
+#-m 0x002707EC-0x002707FB=DATA:L
+# Table for jump at 002ED47C
+#-m 0x002707FC-0x0027080B=DATA:L
+# Table for jump at 002ED746
+#-m 0x0027080C-0x00270823=DATA:L
+# Table for jump at 002EDC3C
+#-m 0x00270824-0x00270833=DATA:L
+# Table for jump at 002EDE1E
+#-m 0x00270834-0x0027084F=DATA:L
+
+# Table for jump at 002EF96C
+#-m 0x002708B0-0x002708D7=DATA:L
+# Table for jump at 002EFA10
+#-m 0x002708D8-0x002708FF=DATA:L
+# Table for jump at 002EFB3E
+#-m 0x00270900-0x0027090F=DATA:L
+# Table for jump at 002EFBD6
+#-m 0x00270910-0x00270937=DATA:L
+# Table for jump at 002EFC56
+#-m 0x00270938-0x0027095F=DATA:L
+# Table for jump at 002F02D6
+#-m 0x00270960-0x00270973=DATA:L
+# Table for jump at 002F046E
+#-m 0x00270974-0x0027098F=DATA:L
+# Table for jump at 002F0A34
+#-m 0x00270990-0x0027099F=DATA:L
+# Table for jump at 002F174A
+#-m 0x002709A0-0x002709B7=DATA:L
+# Table for jump at 002F5E44
+#-m 0x002709B8-0x002709C7=DATA:L
+# Table for jump at 002F7C1A
+#-m 0x002709C8-0x002709DF=DATA:L
+
+# Table for jump at 002FCA8C
+#-m 0x00270A40-0x00270A53=DATA:L
+# Table for jump at 002FCB26
+#-m 0x00270A54-0x00270A73=DATA:L
+
+# Table for jump at 00300684
+#-m 0x00271038-0x0027104F=DATA:L
+# Table for jump at 003007B4
+#-m 0x00271050-0x00271067=DATA:L
+# Table for jump at 00301552
+#-m 0x00271068-0x00271077=DATA:L
+# Table for jump at 00303E8C
+#-m 0x00271078-0x0027108B=DATA:L
+# Table for jump at 0030A44C
+#-m 0x0027108C-0x002710CB=DATA:L
+# Table for jump at 0030A466
+#-m 0x002710CC-0x0027110B=DATA:L
+# Table for jump at 0030A480
+#-m 0x0027110C-0x0027114B=DATA:L
+
+# Table for jump at 00311A06
+#-m 0x00271160-0x00271173=DATA:L
+# Table for jump at 00311B46
+#-m 0x00271174-0x002711AB=DATA:L
+# Table for jump at 00312D5A
+#-m 0x002711AC-0x002713B3=DATA:L
+
+# Table for jump at 001CF4CA
+#-m 0x002717E0-0x002717F3=DATA:L
+# Table for jump at 001CFCF8
+#-m 0x002717F4-0x00271803=DATA:L
+# Table for jump at 001CFDB4
+#-m 0x00271804-0x0027182B=DATA:L
+# Table for jump at 001D1316
+#-m 0x0027182C-0x0027185B=DATA:L
+
+# Table for jump at 001D6052
+#-m 0x00272B50-0x00272B7F=DATA:L
+# Table for jump at 001D616A
+#-m 0x00272B80-0x00272BAB=DATA:L
+# Table for jump at 001D6210
+#-m 0x00272BAC-0x00272BEF=DATA:L
+
+# Table for jump at 001DADE6
+#-m 0x002A1CB4-0x002A1CD3=DATA:L
+# Table for jump at 001DD21A
+#-m 0x002A1CD4-0x002A1CE3=DATA:L
+# Table for jump at 001DDECA
+#-m 0x002A1CE4-0x002A1CF3=DATA:L
+# Table for jump at 001DEC16
+#-m 0x002A1CF4-0x002A1D03=DATA:L
+
+# Table for jump at 001E2FF8
+#-m 0x002A224C-0x002A225B=DATA:L
+# Table for jump at 001E4FDE
+#-m 0x002A225C-0x002A2277=DATA:L
+
+# Table for jump at 001E501C
+#-m 0x002A2278-0x002A2287=DATA:L
+# Table for jump at 001E53BA
+#-m 0x002A2288-0x002A2297=DATA:L
+
+# Table for jump at 001E6150
+#-m 0x002A2414-0x002A2423=DATA:L
+
+# Table for jump at 001E9274
+#-m 0x002A2BE8-0x002A2BF7=DATA:L
+
+# Table for jump at 001EAE44
+#-m 0x002A4D0C-0x002A4D1F=DATA:L
+
+# Table for jump at 001EDFF2
+#-m 0x002A5350-0x002A5383=DATA:L
+# Table for jump at 000ABB76
+#-m 0x002A5384-0x002A5397=DATA:L
+
+# Table for jump at 000AC39A
+#-m 0x002A53A0-0x002A53B7=DATA:L
+
+# Table for jump at 000AE9DE
+#-m 0x002A53D8-0x002A53EB=DATA:L
+
+# Table for jump at 0031C6D8
+#-m 0x002A65A8-0x002A65B7=DATA:L
+# Table for jump at 0031D9DE
+#-m 0x002A65B8-0x002A65CB=DATA:L
+# Table for jump at 0031EA48
+#-m 0x002A65CC-0x002A65F3=DATA:L
+# Table for jump at 0031F66A
+#-m 0x002A65F4-0x002A6617=DATA:L
+
+# Table for jump at 003259FC
+#-m 0x002A6FF4-0x002A700B=DATA:L
+
+# Table for jump at 0032967C
+#-m 0x002A7044-0x002A705F=DATA:L
+
+# Table for jump at 0032BEE2
+#-m 0x002A7094-0x002A70BF=DATA:L
+
+# Table for jump at 0032C1C0
+#-m 0x002A70E8-0x002A710B=DATA:L
+# Table for jump at 0032D37A
+#-m 0x002A710C-0x002A7143=DATA:L
+
+# Table for jump at 0032E2C0
+#-m 0x002A7168-0x002A7193=DATA:L
+# Table for jump at 0032E362
+#-m 0x002A7194-0x002A71AF=DATA:L
+
+# Table for jump at 00332538
+#-m 0x002A7E98-0x002A7ED7=DATA:L
+
+# Table for jump at 00335222
+#-m 0x002A7F14-0x002A7F37=DATA:L
+# Table for jump at 003366C8
+#-m 0x002A7F38-0x002A7F5B=DATA:L
+
+# Table for jump at 00338A5C
+#-m 0x002A8024-0x002A8037=DATA:L
+
+# Table for jump at 00340B74
+#-m 0x002A8568-0x002A85BF=DATA:L
+# Table for jump at 00340C68
+#-m 0x002A85C0-0x002A85EF=DATA:L
+
+# Table for jump at 0034A684
+#-m 0x002A89E8-0x002A8A03=DATA:L
+# Table for jump at 0034A7C8
+#-m 0x002A8A04-0x002A8A1F=DATA:L
+# Table for jump at 0034A8F8
+#-m 0x002A8A20-0x002A8A3B=DATA:L
+# Table for jump at 0034C1A0
+#-m 0x002A8A3C-0x002A8ABB=DATA:L
+# Table for jump at 0034C286
+#-m 0x002A8ABC-0x002A8AD3=DATA:L
+# Table for jump at 0034C604
+#-m 0x002A8AD4-0x002A8AEB=DATA:L
+
+# Table for jump at 0034F3B0
+#-m 0x002A8F94-0x002A8FC7=DATA:L
+
+# Table for jump at 003557D6
+#-m 0x002A9054-0x002A9087=DATA:L
+
+# Table for jump at 0035BAA0
+#-m 0x002AA4FC-0x002AA50B=DATA:L
+# Table for jump at 0035E316
+#-m 0x002AA50C-0x002AA52B=DATA:L
+# Table for jump at 0035E402
+#-m 0x002AA52C-0x002AA54B=DATA:L
+# Table for jump at 0035E46E
+#-m 0x002AA54C-0x002AA56B=DATA:L
+
+# Table for jump at 0035F5EE
+#-m 0x002AA57C-0x002AA58F=DATA:L
+
+# Table for jump at 0035F96E
+#-m 0x002AA590-0x002AA5A3=DATA:L
+
+# Table for jump at 003617A6
+#-m 0x002AA5CC-0x002AA5DF=DATA:L
+
+# Table for jump at 00362840
+#-m 0x002AA5E0-0x002AA62F=DATA:L
+
+# Table for jump at 00368702
+#-m 0x002AA914-0x002AA93B=DATA:L
+# Table for jump at 00368720
+#-m 0x002AA93C-0x002AA963=DATA:L
+# Table for jump at 00368756
+#-m 0x002AA964-0x002AA98B=DATA:L
+# Table for jump at 0036AA20
+#-m 0x002AA98C-0x002AA99B=DATA:L
+# Table for jump at 0036AA60
+#-m 0x002AA99C-0x002AA9AB=DATA:L
+
+# Table for jump at 00379360
+#-m 0x002AAC64-0x002AACBB=DATA:L
+
+# Table for jump at 001F0A7C
+#-m 0x002AB2D0-0x002AB30B=DATA:L
+
+# Table for jump at 001F199A
+#-m 0x002AB338-0x002AB347=DATA:L
+
+# Table for jump at 001F3198
+#-m 0x002AB3B0-0x002AB3BF=DATA:L
+
+# Table for jump at 001F5AD4
+#-m 0x002AC258-0x002AC273=DATA:L
+
+# Table for jump at 001FE3E2
+#-m 0x002AD908-0x002AD917=DATA:L
+# Table for jump at 001FE4AE
+#-m 0x002AD918-0x002AD927=DATA:L
+# Table for jump at 001FE53A
+#-m 0x002AD928-0x002AD937=DATA:L
+# Table for jump at 001FE560
+#-m 0x002AD938-0x002AD947=DATA:L
+# Table for jump at 001FEFD4
+#-m 0x002AD948-0x002AD957=DATA:L
+
+# Table for jump at 001FFAA8
+#-m 0x002AD97C-0x002AD997=DATA:L
+
+# Table for jump at 001FFBE4
+#-m 0x002AD9BC-0x002AD9FF=DATA:L
+
+# Table for jump at 001FFDCE
+#-m 0x002ADA24-0x002ADA3B=DATA:L
+
+# Table for jump at 00206D8A
+#-m 0x002AE270-0x002AE29B=DATA:L
+
+# Table for jump at 0020900E
+#-m 0x002AE2A4-0x002AE2E3=DATA:L
+
+# Table for jump at 0020D17C
+#-m 0x002BAC24-0x002BAC3B=DATA:L
+
+# Table for jump at 0020F0DE
+#-m 0x002BB248-0x002BB267=DATA:L
+# Table for jump at 0020F10E
+#-m 0x002BB268-0x002BB277=DATA:L
+# Table for jump at 0020F14E
+#-m 0x002BB278-0x002BB287=DATA:L
+# Table for jump at 0020FBA8
+#-m 0x002BB288-0x002BB297=DATA:L
+
+# Table for jump at 0021401E
+#-m 0x002BBE20-0x002BBE6B=DATA:L
+
+# Table for jump at 0022408E
+#-m 0x002BDFDC-0x002BE053=DATA:L
+
+# Table for jump at 00225424
+#-m 0x002BE05C-0x002BE1A7=DATA:L
+# Table for jump at 002254CE
+#-m 0x002BE1A8-0x002BE31F=DATA:L
+
+# Table for jump at 00229AD6
+#-m 0x002BEBA0-0x002BEBB3=DATA:L
+# Table for jump at 00229B5C
+#-m 0x002BEBB4-0x002BEBD3=DATA:L
+# Table for jump at 00229B96
+#-m 0x002BEBD4-0x002BEBEB=DATA:L
+# Table for jump at 00229C7E
+#-m 0x002BEBEC-0x002BEBFB=DATA:L
+# Table for jump at 0022A1A6
+#-m 0x002BEBFC-0x002BECB3=DATA:L
+
+# Table for jump at 0022ECAC
+#-m 0x002BECC4-0x002BECD3=DATA:L
+
+# Table for jump at 0022FF38
+#-m 0x002BECE4-0x002BECF3=DATA:L
+# Table for jump at 00232678
+#-m 0x002BECF4-0x002BED13=DATA:L
+
+# Table for jump at 002361A8
+#-m 0x002BEFE4-0x002BEFF7=DATA:L
+
+
 
 # code for sure
 -m 0x002BF520-0x002C4A0F=CODE
@@ -204,13 +978,33 @@
 
 -m 0x00313174-0x0037BDE1=CODE
 
+# 2 bytes of 0xFF stuffing
+
+# Area copied to 0x8F9C4E78 by the loop at 0x40574
+# -m 0x0037BDE4-0x00393CFB=DATA:L
+# 0x0038DF3C : Dispatch table copied to 0x8F9D6FD0 used by function_1d994a_ which is called by many interrupts
+
 # ------- no decoding done in this area yet -------
+# -m 0x00393CFC-0x005EA99F=DATA:L
+# -------------------------------------------------
 
 # String resources - see Google Doc
 #-m 0x005EA9A0-0x00775763=DATA:L
 
 # Unknown :
-#-m 0x00775763-0x007C6253=DATA:L
+#-m 0x00775763-0x0079F1A7=DATA:L
+# Table for jump at 002C53A6
+#-m 0x0079F1A8-0x0079F1BF=DATA:L
+# Table for jump at 002C53C0
+#-m 0x0079F1C0-0x0079F1DB=DATA:L
+# Table for jump at 002C5420
+#-m 0x0079F1DC-0x0079F203=DATA:L
+
+# Table for jump at 002C69EA
+#-m 0x0079F25C-0x0079F293=DATA:L
+
+# Unknown :
+#-m 0x0079F292-0x007C6253=DATA:L
 
 #JPEG :
 #-m 0x007C6254-0x00863334=DATA:L
@@ -232,11 +1026,25 @@
 #-m 0x00908cfa-0x00a80000=DATA:L
 
 
+#####################################################
+## Copy of Bootloader Area to RAM
+#
+##-m 0x80080000-0x800800DF=DATA:L
+#-m 0x800800E0-0x800800FB=CODE
+##-m 0x800800FC-0x8008025B=DATA:L
+#-m 0x8008025C-0x8008C8A3=CODE
+##-m 0x8008C8A4-0x8008CE0D=DATA:L
+#
+## Interrupt vector table copied from ROM
+#-t 0x8008CE10
+#####################################################
 
 
 
 ############################### Symbols
 
+
+-s 0x4065E=time(R4 [OUT time_in_ms])
 -s 0x406EC=NOP_406EC
 -s 0x406EE=NOP_406EE
 -s 0x406F0=NOP_406F0
@@ -246,12 +1054,12 @@
 -s 0x406F8=NOP_406F8
 -s 0x406FA=int40_xF5
 -s 0x40702=int_01
--s 0x4086A=sys_unspport_func
--s 0x4086E=sys_reserved_func
+-s 0x4086A=sys_ret_EF(/*_int or _tmr Return from Interrupt or Timer Handler */)
+-s 0x4086E=sys_reserved_ret_EC
 -s 0x40872=int_40
 -s 0x408F0=int_07
 -s 0x408FC=Setup_OS
--s 0x409E4=infinite_loop
+-s 0x409E6=infinite_loop
 -s 0x40A70=set_x440_x10
 -s 0x40A98=Setupx68000918
 -s 0x40AB6=SetupAllTopLevlFuncs
@@ -261,59 +1069,74 @@
 -s 0x40B70=SetupTable1
 -s 0x40BBC=SetupTable3
 -s 0x40C02=SetupTableEmpty1
--s 0x40C28=SetopTable2
--s 0x410E8=sys_set_tim
--s 0x41106=sys_get_tim
--s 0x41124=sys_dly_tsk
--s 0x41180=sys_def_cyc
--s 0x411FE=sys_act_cyc
--s 0x41264=sys_ref_cyc
--s 0x412E6=sys_def_alm
--s 0x41374=sys_ref_alm
--s 0x413E6=TopLevel_xx1
--s 0x4146A=sys_rsm_tsk
--s 0x414F2=TopLevel_xx3
--s 0x41552=sys_slp_tsk
--s 0x41588=sys_tslp_tsk
--s 0x4160C=sys_wup_tsk
--s 0x4166E=sys_can_wup
--s 0x416D2=sys_sta_tsk
--s 0x41750=sys_ext_tsk
+-s 0x40C28=SetupTable2
+-s 0x40CDE=MillisecondTimer
+-s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
+-s 0x41106=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
+-s 0x41124=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
+-s 0x41180=sys_def_cyc(R4 [IN cycno], R5 [IN ptr_to_pk_dcyc], R12 [OUT err_code] /* Define Cyclic Handler */)
+-s 0x411FE=sys_act_cyc(R4 [IN cycno], R5 [IN cycact], R12 [OUT err_code] /* Activate Cyclic Handler */)
+-s 0x41264=sys_ref_cyc(R5 [IN ptr_to_pk_rcyc], R5 [IN cycno], R12 [OUT err_code] /* Get Cyclic Handler Status */)
+-s 0x412E6=sys_def_alm(R4 [IN almno], R5 [IN ptr_to_pk_dalm], R12 [OUT err_code] /* Define Alarm Handler */)
+-s 0x41374=sys_ref_alm(R4 [IN ptr_to_pk_ralm], R5 [IN almno], R12 [OUT err_code] /* Get Alarm Handler Status */)
+-s 0x413E6=sys_sus_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Suspend Other Task */)
+-s 0x4146A=sys_rsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Resume Suspended Task */)
+-s 0x414F2=sys_frsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Forcibly Resume suspended Task */)
+-s 0x41552=sys_slp_tsk(R12 [OUT err_code] /* Sleep Task */)
+-s 0x41588=sys_tslp_tsk(R4 [IN timeout], R12 [OUT err_code] /* Sleep Task with Timeout */)
+-s 0x4160C=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
+-s 0x4166E=sys_can_wup(R4 [IN tsk_id], R12 [OUT err_code], R13 [OUT wakeup_count] /* Cancel Wakeup Request */)
+-s 0x416D2=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
+-s 0x41750=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
 -s 0x41770=SetupTopLevelStack
 -s 0x4179A=gbl_ret_02
--s 0x417AA=sys_ter_tsk
--s 0x41848=sys_dis_dsp
--s 0x4186A=sys_ena_dsp
--s 0x41886=sys_chg_pri
--s 0x41954=sys_rel_wai
+-s 0x417AA=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
+-s 0x41848=sys_dis_dsp(R12 [OUT err_code] /* Disable Dispatch */)
+-s 0x4186A=sys_ena_dsp(R12 [OUT err_code] /* Enable Dispatch */)
+-s 0x41886=sys_chg_pri(R4 [IN tsk_id], R5 [IN tsk_prio], R12 [OUT err_code] /* Change Task Priority */)
+-s 0x418EE=sys_rot_rdq(R4 [IN tsk_prio], R12 [OUT err_code] /* Rotate Tasks on the Ready Queue */)
+-s 0x41954=sys_rel_wai(R4 [IN tsk_id], R12 [OUT err_code] /* Release Wait of Other Task */)
+-s 0x419D6=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
 -s 0x419F2=gbl_ret_01
--s 0x419F6=sys_ref_tsk
+-s 0x419F6=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
 -s 0x41A4A=TableLoadOffset(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
 -s 0x41A66=TopLevel_sub1
--s 0x41ACA=Tab78_41ACA
--s 0x41B0C=Tab78_41B0C
+-s 0x41ACA=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
+-s 0x41B0C=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
+-s 0x41B4E=sys_preq_sem(R4 [IN sem_id], R12 [OUT err_code] /* Poll and request Semaphore */)
 -s 0x41B74=ret_R12_xBB
 -s 0x41B7A=ret_R12_xAB
--s 0x41B82=sys_twai_sem
--s 0x41C08=sys_ref_sym
--s 0x41D9C=pol_flg
--s 0x41EE8=Tab19_41EE8
--s 0x41F42=Tab19_41F42
--s 0x41F92=sys_prcv_msg
--s 0x420E6=sys_get_blk
--s 0x421DA=sys_pget_blk
+-s 0x41B82=sys_twai_sem(R4 [IN sem_id], R5 [IN timeout], R12 [OUT err_code] /* Wait on Semaphore with Timeout */)
+-s 0x41C08=sys_ref_sem(R4 [IN ptr_to_pk_rsem], R5 [IN sem_id], R12 [OUT err_code] /* Get Semaphore Status */)
+-s 0x41C52=sys_set_flg(R4 [IN flag_id], R5 [IN set_pattern], R12 [OUT err_code] /* Set Eventflag */)
+-s 0x41CEC=sys_clr_flg(R4 [IN flag_id], R5 [IN clr_pattern], R12 [OUT err_code] /* Clear Eventflag */)
+-s 0x41D9C=sys_pol_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag, polling */)
+-s 0x41D14=sys_wai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag */)
+-s 0x41DF4=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout, OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
+-s 0x41EB2=sys_ref_flg(R4 [IN ptr_to_pk_rflg], R5 [IN flag_id], R12 [OUT err_code] /* Get Eventflag Status */)
+-s 0x41EE8=sys_snd_msg(R4 [IN mailbox_id], R5 [IN ptr_to_pk_msg], R12 [OUT err_code] /* Send Message to Mailbox */)
+-s 0x41F42=sys_rcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox */)
+-s 0x41F92=sys_prcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, polling */)
+-s 0x41FE0=sys_trcv_msg(R5 [IN mailbox_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, with Timeout */)
+-s 0x42062=sys_ref_mbx(R4 [IN ptr_to_pk_rmbx], R5 [IN mailbox_id], R12 [OUT err_code] /* Get Mailbox Status */)
+-s 0x420E6=sys_get_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block */)
+-s 0x421DA=sys_pget_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block, polling */)
 -s 0x422CE=table1_422CE
--s 0x42498=sys_ref_mpl
--s 0x42512=table3_42512
--s 0x4256E=table3_4256E
--s 0x425B2=sys_tget_blf
--s 0x42654=table3_42654
--s 0x42722=table3_42722
--s 0x42786=sys_chg_ilm
--s 0x427AE=sys_ref_ilm
+-s 0x422DA=sys_rel_blk(R4 [IN mempool_id], R5 [OUT blk_start], R12 [OUT err_code] /* Release Variable-Sized Memory Block */)
+-s 0x42498=sys_ref_mpl(R4 [IN ptr_to_pk_rmempool], R5 [IN mempool_id], R12 [OUT err_code] /* Get Variable-Sized Memorypool Status */)
+-s 0x42512=sys_get_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block */)
+-s 0x4256E=sys_pget_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Poll and Get Fixed-Sized Memory Block */)
+-s 0x425B2=sys_tget_blf(R5 [IN mempool_f_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block with Timeout */)
+-s 0x42654=sys_rel_blf(R4 [IN mempool_f_id], R5 [OUT blk_f_start], R12 [OUT err_code] /* Release Fixed-Sized Memory Block */)
+-s 0x42722=sys_ref_mpf(R4 [IN ptr_to_pk_rmempool_f], R5 [IN mempool_f_id], R12 [OUT err_code] /* Get Fixed-Sized Memorypool Status */)
+-s 0x4275E=sys_loc_cpu(R12 [OUT err_code] /* Lock CPU */)
+-s 0x42772=sys_unl_cpu(R12 [OUT err_code] /* Unlock CPU */)
+-s 0x42786=sys_chg_ilm(R4 [IN ilmask], R12 [OUT err_code] /* Change Interrupt Level Mask */)
+-s 0x427AE=sys_ref_ilm(R12 [OUT err_code], R13 [OUT ilmask] /* Get Interrupt Level Mask */)
 -s 0x427B6=ret_BB
 -s 0x427BA=ret_DF
--s 0x4280E=sys_ref_sys
+-s 0x427D2=sys_get_ver(R4 [IN ptr_to_pk_ver], R12 [OUT err_code] /* Get Version Information */)
+-s 0x4280E=sys_ref_sys(R4 [IN ptr_to_pk_rsys], R12 [OUT err_code] /* Get System Status */)
 -s 0x42832=int_10
 -s 0x42852=int_11
 -s 0x42872=int_12
@@ -572,7 +1395,7 @@
 -s 0x157E60=call_int40_05
 -s 0x15C7C8=set_8F86BF40
 -s 0x164CBC=nullsub_177
--s 0x164CBE=trace(debug string is passed)
+-s 0x164CBE=trace(R4 [IN ptr to debug string])
 -s 0x168688=setPointerValue
 -s 0x16869C=getPointerValue
 -s 0x16A8B8=WhiteBal_txt_xx
@@ -880,6 +1703,7 @@
 -s 0x1F53E6=DmaT_TEvent
 -s 0x1F587C=DmaT_SoftCopy
 -s 0x1F5DA6=Timer_Int_01
+-s 0x1F5E3E=Tbl0x8F9D8E54_setField_1_clrField_C(R4 [IN index])
 -s 0x1F5EDE=nullsub_21
 -s 0x1F5F50=Tsk29_1F5F50
 -s 0x1F64B4=Tsk2D_1F64B4
@@ -967,12 +1791,12 @@
 -s 0x234DC4=DIV_uint(R4 [IN dividend, OUT quotient], R5 [IN divisor])
 -s 0x234E3A=double_XX_1
 -s 0x234ED6=swap_234ED6
--s 0x234edc=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+-s 0x234EDC=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
 -s 0x234F5E=ABS
 -s 0x23514E=ceil
 -s 0x235234=floor
 -s 0x23531A=getNth_2BED14_bit6
--s 0x23532A=neg(R4 [IN, OUT])
+-s 0x23532A=abs_0(R4 [IN, OUT])
 -s 0x235338=log_or_log10
 -s 0x235542=memcmp(R4 [IN source1], R5 [IN source2], R6 [IN count])
 -s 0x23555C=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
@@ -1118,8 +1942,8 @@
 -s 0x2FD134=nullsub_107
 -s 0x2FD8CC=call_graphic_XX04_0
 -s 0x2FDBA4=confirm_card_fmt_b
--s 0x2FF440=nullsub_68
 -s 0x2FEA5E=draw_menu_string
+-s 0x2FF440=nullsub_68
 -s 0x300266=DoPopup
 -s 0x300908=text_func_xx2
 -s 0x3013BA=show_popup_message
@@ -1130,8 +1954,10 @@
 -s 0x30A51E=lang_xx_13
 -s 0x30A5C2=lang_xx_11
 -s 0x30B3AA=nullsub_64
+#-s 0x30B3AC=LangSelect_xx
 -s 0x30B3AC=draw_menu_rows
 -s 0x30B496=MenuDrawSelected
+#-s 0x30BB22=LangSelectFillBK_xx
 -s 0x30BB22=draw_menu_rectangle
 
 -s 0x30BE38=lang_xx_12
@@ -1226,6 +2052,9 @@
 -s 0x394792=nullsub_33
 -s 0x8F800A9A=nullsub_212
 
+########## Global variables
+
+-s 0x68000910=Real_Time_Clock
 
 ########## Menu Data Symbols
 
@@ -4271,3 +5100,7 @@
 -s 0x8F9C95B0=ME_Brightness_15
 -s 0x8F9C95C0=ME_Saturation_8
 -s 0x8F9C95D0=ME_Hue_8
+
+# Jump hints
+
+-j 0x1F14A0=0x1F14A2, 0x1F14AE, 0x1F14BA, 0x1F14C0, 0x1F150E, 0x1F151A, 0x1F1520, 0x1F154E, 0x1F156E, 0x1F1566, 0x1F156A
