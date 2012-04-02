@@ -61,6 +61,7 @@
     <Compile Include="CRC.cs" />
     <Compile Include="D3100.cs" />
     <Compile Include="D5100.cs" />
+    <Compile Include="D7000.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
