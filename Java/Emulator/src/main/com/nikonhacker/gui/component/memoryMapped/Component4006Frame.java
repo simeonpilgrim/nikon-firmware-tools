@@ -4,6 +4,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -18,7 +19,7 @@ public class Component4006Frame extends MemoryMappedComponentFrame {
                 memory.store16(0x40060010, 0x1000);
             }
         });
-        getContentPane().add(addButton);
+        add(addButton, BorderLayout.SOUTH);
     }
     
     public void dispose() {

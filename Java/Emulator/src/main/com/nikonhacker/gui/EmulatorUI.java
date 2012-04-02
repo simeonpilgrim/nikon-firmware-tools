@@ -24,6 +24,7 @@ import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
+import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
 import com.nikonhacker.gui.component.callStack.CallStackFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
@@ -59,6 +60,7 @@ import java.util.Set;
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
     private static final String COMMAND_IMAGE_LOAD = "IMAGE_LOAD";
+    private static final String COMMAND_GENERATE_SYS_SYMBOLS = "GENERATE_SYS_SYMBOLS";
     private static final String COMMAND_ANALYSE_DISASSEMBLE = "ANALYSE_DISASSEMBLE";
     private static final String COMMAND_EMULATOR_PLAY = "EMULATOR_PLAY";
     private static final String COMMAND_EMULATOR_DEBUG = "EMULATOR_DEBUG";
@@ -118,6 +120,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JMenuItem stepMenuItem;
     private JMenuItem stopMenuItem;
     private JMenuItem breakpointMenuItem;
+    private JMenuItem generateSysSymbolsMenuItem;
     private JMenuItem analyseMenuItem;
     private JCheckBoxMenuItem disassemblyMenuItem;
     private JCheckBoxMenuItem cpuStateMenuItem;
@@ -561,10 +564,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         componentsMenu.add(interruptControllerMenuItem);
 
 
-        //Set up the spy menu.
-        JMenu spyMenu = new JMenu("Trace");
-        spyMenu.setMnemonic(KeyEvent.VK_C);
-        menuBar.add(spyMenu);
+        //Set up the trace menu.
+        JMenu traceMenu = new JMenu("Trace");
+        traceMenu.setMnemonic(KeyEvent.VK_C);
+        menuBar.add(traceMenu);
 
         //disassembly
         disassemblyMenuItem = new JCheckBoxMenuItem("Real-time disassembly log");
@@ -572,7 +575,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         disassemblyMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
         disassemblyMenuItem.setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW);
         disassemblyMenuItem.addActionListener(this);
-        spyMenu.add(disassemblyMenuItem);
+        traceMenu.add(disassemblyMenuItem);
 
         //memory activity viewer
         memoryActivityViewerMenuItem = new JCheckBoxMenuItem("Memory activity viewer");
@@ -580,7 +583,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryActivityViewerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK));
         memoryActivityViewerMenuItem.setActionCommand(COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER);
         memoryActivityViewerMenuItem.addActionListener(this);
-        spyMenu.add(memoryActivityViewerMenuItem);
+        traceMenu.add(memoryActivityViewerMenuItem);
 
         //Component 4006
         component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window");
@@ -588,7 +591,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
         component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
         component4006MenuItem.addActionListener(this);
-        spyMenu.add(component4006MenuItem);
+        traceMenu.add(component4006MenuItem);
 
         //Call Stack
         callStackMenuItem = new JCheckBoxMenuItem("Call stack");
@@ -596,13 +599,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        callStackMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
         callStackMenuItem.setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW);
         callStackMenuItem.addActionListener(this);
-        spyMenu.add(callStackMenuItem);
+        traceMenu.add(callStackMenuItem);
 
 
         //Set up the tools menu.
         JMenu sourceMenu = new JMenu("Source");
         sourceMenu.setMnemonic(KeyEvent.VK_S);
         menuBar.add(sourceMenu);
+
+        //analyse / disassemble
+        generateSysSymbolsMenuItem = new JMenuItem("Generate system call symbols");
+//        generateSysSymbolsMenuItem.setMnemonic(KeyEvent.VK_A);
+//        generateSysSymbolsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK));
+        generateSysSymbolsMenuItem.setActionCommand(COMMAND_GENERATE_SYS_SYMBOLS);
+        generateSysSymbolsMenuItem.addActionListener(this);
+        sourceMenu.add(generateSysSymbolsMenuItem);
+
+        sourceMenu.add(new JSeparator());
 
         //analyse / disassemble
         analyseMenuItem = new JMenuItem("Analyse / Disassemble");
@@ -677,6 +690,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void actionPerformed(ActionEvent e) {
         if (COMMAND_IMAGE_LOAD.equals(e.getActionCommand())) {
             openLoadImageDialog();
+        }
+        else if (COMMAND_GENERATE_SYS_SYMBOLS.equals(e.getActionCommand())) {
+            openGenerateSysSymbolsDialog();
         }
         else if (COMMAND_ANALYSE_DISASSEMBLE.equals(e.getActionCommand())) {
             openAnalyseDialog();
@@ -810,7 +826,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    
+    private void openGenerateSysSymbolsDialog() {
+        GenerateSysSymbolsDialog generateSysSymbolsDialog = new GenerateSysSymbolsDialog(this, memory);
+        generateSysSymbolsDialog.startGeneration();
+        generateSysSymbolsDialog.setVisible(true);
+    }
+
+
     private void openAnalyseDialog() {
         JTextField dfrField = new JTextField();
         JTextField destinationField = new JTextField();
@@ -863,9 +885,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
-            AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, this);
-            analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), writeOutputCheckbox.isSelected() ? destinationField.getText() : null);
-            analyseProgressDialog.setVisible(true);
+            String outputFilename = writeOutputCheckbox.isSelected() ? destinationField.getText() : null;
+            boolean cancel = false;
+            if (outputFilename != null) {
+                if (new File(outputFilename).exists()) {
+                    if (JOptionPane.showConfirmDialog(this, "File '" + outputFilename + "' already exists.\nDo you really want to overwrite it ?", "File exists", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE) != JOptionPane.YES_OPTION) {
+                        cancel = true;
+                    }
+                }
+            }
+            if (!cancel) {
+                AnalyseProgressDialog analyseProgressDialog = new AnalyseProgressDialog(this, memory);
+                analyseProgressDialog.startBackgroundAnalysis(dfrField.getText(), imageFile.getAbsolutePath(), outputFilename);
+                analyseProgressDialog.setVisible(true);
+            }
         }
     }
 
@@ -977,6 +1010,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>JGraphX graph drawing library, Copyright (c) JGraph Ltd - " + makeLink("http://www.jgraph.com/jgraph.html") + "</li>"
                 + "<li>Apache commons libraries, Copyright (c) The Apache Software Foundation - " + makeLink("http://commons.apache.org/") + "</li>"
                 + "<li>VerticalLayout, Copyright (c) Cellspark - " + makeLink("http://www.cellspark.com/vl.html") + "</li>"
+                + "<li>MigLayout, Copyright (c) MigInfoCom - " + makeLink("http://www.miginfocom.com/") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
                 + "</ul></body></html>");
 
@@ -1326,6 +1360,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         codeStructureMenuItem.setEnabled(codeStructure != null); codeStructureButton.setEnabled(codeStructure != null);
         sourceCodeMenuItem.setEnabled(codeStructure != null); sourceCodeButton.setEnabled(codeStructure != null);
 
+        generateSysSymbolsMenuItem.setEnabled(isImageLoaded);
         analyseMenuItem.setEnabled(isImageLoaded); analyseButton.setEnabled(isImageLoaded);
 
         disassemblyMenuItem.setEnabled(isImageLoaded); disassemblyButton.setEnabled(isImageLoaded);
@@ -1408,7 +1443,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             else {
-                emulator.setInterruptPeriod(1000);
+                // This is silly. Check interrupt after each instruction
+                // emulator.setInterruptPeriod(1000);
+                emulator.setInterruptPeriod(1);
             }
             if (endAddress != null) {
                 CPUState values = new CPUState(endAddress);

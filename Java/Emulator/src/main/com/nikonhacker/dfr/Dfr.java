@@ -69,7 +69,7 @@ public class Dfr
     boolean optLittleEndian = false;
     boolean optSplitPerMemoryRange = false;
 
-    Memory memory = new FastMemory();
+    Memory memory = null;
 
     Writer outWriter;
     PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
@@ -80,6 +80,7 @@ public class Dfr
 
     String startTime = "";
     private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
+    private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
 
     private void usage()
     {
@@ -89,6 +90,7 @@ public class Dfr
                         + "-f range=address  (not implemented) map range of input file to memory address\n"
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
+                        + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
                         + "-l                (not implemented) little-endian input file\n"
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file\n"
@@ -114,8 +116,12 @@ public class Dfr
         this.outputOptions = outputOptions;
     }
 
-    public void setInputFileName(String inputFileName) {
+    public void setInputFileName(String inputFileName) throws IOException {
         this.inputFileName = inputFileName;
+    }
+
+    public void setMemory(Memory memory) {
+        this.memory = memory;
     }
 
     public void setOutputFileName(String outputFileName) {
@@ -226,7 +232,9 @@ public class Dfr
     private void writeHeader(Writer writer) throws IOException {
         writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + ", disassembler based on Dfr v1.03 by Kevin Schoedel\n");
         writer.write(";   Date:   " + startTime + "\n");
-        writer.write(";   Input:  " + inputFileName + "\n");
+        if (inputFileName != null) {
+            writer.write(";   Input:  " + inputFileName + "\n");
+        }
         writer.write(";   Output: " + (outputFileName == null ? "(default)" : outputFileName) + "\n");
         writer.write("\n");
     }
@@ -370,7 +378,7 @@ public class Dfr
             }
 
             debugPrintWriter.println("Post processing...");
-            codeStructure.postProcess(memMap.ranges, memory, symbols, outputOptions, debugPrintWriter);
+            new CodeAnalyzer(codeStructure, memMap.ranges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getInstructions().size() + " instructions");
@@ -427,7 +435,7 @@ public class Dfr
         }
         if (matchingFileRange == null) {
             debugPrintWriter.println("WARNING : No matching file range ('-i' option) found for address 0x" + Format.asHex(memRange.start, 8) + "...");
-            debugPrintWriter.println("ssuming no offset between file and memory for now.");
+            debugPrintWriter.println("Assuming no offset between file and memory for now.");
             return memRange;
         }
         return matchingFileRange;
@@ -439,8 +447,7 @@ public class Dfr
     public void initialize() throws IOException {
         startTime = new Date().toString();
 
-        if (inputFileName == null)
-        {
+        if (inputFileName == null && memory == null) {
             log(getClass().getSimpleName() + ": no input file");
             usage();
             System.exit(-1);
@@ -459,10 +466,10 @@ public class Dfr
             }
 //        }
 
-        File binaryFile = new File(inputFileName);
-
-        memory.loadFile(binaryFile, fileMap.ranges);
-
+        if (memory == null) {
+            memory = new FastMemory();
+            memory.loadFile(new File(inputFileName), fileMap.ranges);
+        }
 
         //    fixmap(&filemap, 0);
 //            if (outOptions.fileMap)
@@ -573,6 +580,16 @@ public class Dfr
                     fileMap.add(range);
                     break;
 
+                case 'J':
+                case 'j':
+                    argument = optionHandler.getArgument();
+                    if (StringUtils.isBlank(argument)) {
+                        log("option \"-" + option + "\" requires an argument");
+                        return false;
+                    }
+                    OptionHandler.parseJumpHint(jumpHints, argument);
+                    break;
+
                 case 'L':
                 case 'l':
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
@@ -617,7 +634,7 @@ public class Dfr
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeStructure.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
+                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeAnalyzer.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
                     break;
 
                 case 'V':
