@@ -71,7 +71,7 @@ public class CodeAnalyzer {
             // Determine base address to which offsets will be added
             Integer int40address = interruptTable.get(0x40);
             if (int40address == null) {
-                debugPrintWriter.println("INT 0x40 cannot be resolved because no recognized interrupt vector is declared in dfr.txt (e.g. '-t 0x000dfc00'). INT40 following will be disabled");
+                debugPrintWriter.println("INT 0x40 cannot be resolved because interrupt vector declaration in dfr.txt is missing or invalid (e.g. '-t 0x000dfc00'). INT40 following will be disabled");
             }
             else {
                 if (memory.loadInstruction16(int40address + 0x3E) != 0x9F8D /* LDI:32 #i32, R13 */) {
