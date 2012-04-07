@@ -70,16 +70,21 @@ public class CodeAnalyzer {
         if (outputOptions.contains(OutputOption.INT40)) {
             // Determine base address to which offsets will be added
             Integer int40address = interruptTable.get(0x40);
-            if (memory.loadInstruction16(int40address + 0x3E) != 0x9F8D /* LDI:32 #i32, R13 */) {
-                debugPrintWriter.println("INT 0x40 does not have the expected structure. INT40 following will be disabled");
+            if (int40address == null) {
+                debugPrintWriter.println("INT 0x40 cannot be resolved because no recognized interrupt vector is declared in dfr.txt (e.g. '-t 0x000dfc00'). INT40 following will be disabled");
             }
             else {
-                DisassembledInstruction instruction = codeStructure.instructions.get(int40address + 0x3E);
-                int baseAddress = instruction.decodedX;
-                int40mapping = new TreeMap<Integer, Integer>();
-                /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
-                for (int r12 = 0; r12 > -0xB0; r12--) {
-                    int40mapping.put(r12, baseAddress + Dfr.signExtend(16, memory.loadUnsigned16(baseAddress + (r12 << 1))));
+                if (memory.loadInstruction16(int40address + 0x3E) != 0x9F8D /* LDI:32 #i32, R13 */) {
+                    debugPrintWriter.println("INT 0x40 does not have the expected structure. INT40 following will be disabled");
+                }
+                else {
+                    DisassembledInstruction instruction = codeStructure.instructions.get(int40address + 0x3E);
+                    int baseAddress = instruction.decodedX;
+                    int40mapping = new TreeMap<Integer, Integer>();
+                    /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
+                    for (int r12 = 0; r12 > -0xB0; r12--) {
+                        int40mapping.put(r12, baseAddress + Dfr.signExtend(16, memory.loadUnsigned16(baseAddress + (r12 << 1))));
+                    }
                 }
             }
         }
