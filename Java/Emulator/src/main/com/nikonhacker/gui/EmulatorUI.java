@@ -15,6 +15,7 @@ import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
@@ -23,6 +24,7 @@ import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
+import com.nikonhacker.gui.component.VerticalLayout;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
@@ -39,8 +41,10 @@ import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
@@ -51,11 +55,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
@@ -921,15 +925,87 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         JTabbedPane optionsTabbedPane = new JTabbedPane();
 
         // Output options panel
-        JPanel outputOptionsPanel = new JPanel(new GridLayout(0,1));
+        JPanel outputOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
         outputOptionsPanel.setName("Disassembler output");
-        List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
+
+        // Prepare sample code area
+        final RSyntaxTextArea listingArea = new RSyntaxTextArea(15, 90);
+        SourceCodeFrame.prepareAreaFormat(listingArea);
+
+        final List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
+        ActionListener areaRefresherListener = new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Set<OutputOption> sampleOptions = EnumSet.noneOf(OutputOption.class);
+                    dumpOptionCheckboxes(outputOptionsCheckBoxes, sampleOptions);
+                    int baseAddress = 0x40000;
+                    int lastAddress = baseAddress;
+                    Memory sampleMemory = new DebuggableMemory();
+                    sampleMemory.map(baseAddress, 0x100, true, true, true);
+                    CPUState sampleCpuState = new CPUState();
+                    sampleCpuState.setAllRegistersValid();
+
+
+                    sampleMemory.store16(lastAddress, 0x1781); // PUSH    RP
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x8FFE); // PUSH    (FP,AC,R12,R11,R10,R9,R8)
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x83EF); // ANDCCR  #0xEF
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x9F80); // LDI:32  #0x68000000,R0
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x6800);
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x0000);
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x2031); // LD      @(FP,0x00C),R1
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0xB581); // LSL     #24,R1
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x1A40); // DMOVB   R13,@0x40
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x9310); // ORCCR   #0x10
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x8D7F); // POP     (R8,R9,R10,R11,R12,AC,FP)
+                    lastAddress += 2;
+                    sampleMemory.store16(lastAddress, 0x0781); // POP    RP
+                    lastAddress += 2;
+
+                    StringWriter writer = new StringWriter();
+
+                    Dfr disassembler = new Dfr();
+                    disassembler.setDebugPrintWriter(new PrintWriter(new StringWriter())); // Ignore
+                    disassembler.setOutputFileName(null);
+                    disassembler.processOptions(new String[]{"-m", "" + baseAddress + "-" + lastAddress + "=CODE"});
+                    disassembler.setOutputOptions(sampleOptions);
+                    disassembler.setMemory(sampleMemory);
+                    disassembler.initialize();
+                    disassembler.setOutWriter(writer);
+                    disassembler.disassembleMemRanges();
+                    disassembler.cleanup();
+                    listingArea.setText("");
+                    listingArea.append(writer.toString());
+                    listingArea.setCaretPosition(0);
+
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        };
         for (OutputOption outputOption : OutputOption.formatOptions) {
             JCheckBox checkBox = makeOutputOptionCheckBox(outputOption, prefs.getOutputOptions(), false);
             outputOptionsCheckBoxes.add(checkBox);
             outputOptionsPanel.add(checkBox);
+            checkBox.addActionListener(areaRefresherListener);
         }
-        outputOptionsPanel.add(new JLabel("(hover over the options for help)", SwingConstants.CENTER));
+
+        // Force a refresh
+        areaRefresherListener.actionPerformed(new ActionEvent(outputOptionsCheckBoxes.get(0), 0, ""));
+
+        outputOptionsPanel.add(new JLabel("Sample output:"));
+        outputOptionsPanel.add(new JScrollPane(listingArea));
+        outputOptionsPanel.add(new JLabel("Tip: hover over the option checkboxes for help"));
+
         optionsTabbedPane.add(outputOptionsPanel);
 
         // UI options panel
@@ -951,17 +1027,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 JOptionPane.DEFAULT_OPTION)) 
         {
             // save
-            for (JCheckBox checkBox : outputOptionsCheckBoxes) {
-                try {
-                    OutputOption.setOption(prefs.getOutputOptions(), checkBox.getText(), checkBox.isSelected());
-                } catch (ParsingException e) {
-                    e.printStackTrace();
-                }
-            }
+            dumpOptionCheckboxes(outputOptionsCheckBoxes, prefs.getOutputOptions());
             prefs.setLargeToolbarButtons(largeButtonsCheckBox.isSelected());
             applyPrefsToUI();
         }
 
+    }
+
+    private void dumpOptionCheckboxes(List<JCheckBox> outputOptionsCheckBoxes, Set<OutputOption> outputOptions) {
+        for (JCheckBox checkBox : outputOptionsCheckBoxes) {
+            try {
+                OutputOption.setOption(outputOptions, checkBox.getText(), checkBox.isSelected());
+            } catch (ParsingException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
