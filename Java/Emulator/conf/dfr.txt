@@ -981,11 +981,13 @@
 # 2 bytes of 0xFF stuffing
 
 # Area copied to 0x8F9C4E78 by the loop at 0x40574
-# -m 0x0037BDE4-0x00393CFB=DATA:L
+# -m 0x0037BDE4-0x00393CF7=DATA:L
 # 0x0038DF3C : Dispatch table copied to 0x8F9D6FD0 used by function_1d994a_ which is called by many interrupts
 
+-m 0x00393CF8-0x00394793=CODE
+
 # ------- no decoding done in this area yet -------
-# -m 0x00393CFC-0x005EA99F=DATA:L
+# -m 0x00394794-0x005EA99F=DATA:L
 # -------------------------------------------------
 
 # String resources - see Google Doc
