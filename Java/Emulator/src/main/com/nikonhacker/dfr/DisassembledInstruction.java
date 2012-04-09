@@ -514,6 +514,36 @@ public class DisassembledInstruction {
         comment = commentBuffer.toString();
     }
 
+
+    /**
+     * Simple and fast version used by realtime disassembly trace
+     */
+    public String toString() {
+        String out = formatDataAsHex();
+
+        if ((flags & DF_DELAY) != 0) {
+            out += "               " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
+        }
+        else {
+            out += "              " + StringUtils.rightPad(opcode.name, 7) + " " + operands;
+        }
+
+        if (StringUtils.isNotBlank(comment)) {
+            out += StringUtils.leftPad("; " + comment, 22);
+        }
+        out += "\n";
+        if ((flags & DF_BREAK) != 0) {
+            out += "\n";
+        }
+        return out;
+    }
+
+
+    /**
+     * Full fledged version used for offline disassembly
+     * @param options
+     * @return
+     */
     public String toString(Set<OutputOption> options) {
         String out = "";
         if (options.contains(OutputOption.HEXCODE)) {

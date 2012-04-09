@@ -128,6 +128,10 @@ public class Dfr
         this.outputFileName = outputFileName;
     }
 
+    public void setOutWriter(Writer outWriter) {
+        this.outWriter = outWriter;
+    }
+
     public void setDebugPrintWriter(PrintWriter debugPrintWriter) {
         this.debugPrintWriter = debugPrintWriter;
     }
@@ -366,6 +370,8 @@ public class Dfr
                 else {
                     disassembleDataMemoryRange(range, matchingFileRange);
                 }
+
+                printRangeFooter(range);
             }
             return null;
         }
@@ -415,10 +421,19 @@ public class Dfr
             debugPrintWriter.println(msg);
         }
         if (outWriter != null) {
-            outWriter.write("\n");
             outWriter.write("; ########################################################################\n");
             outWriter.write("; " + msg + "\n");
             outWriter.write("; ########################################################################\n");
+        }
+    }
+
+    private void printRangeFooter(Range range) throws IOException {
+        String msg = "End disassembly of 0x" + Format.asHex(range.start, 8) + "-0x" + Format.asHex(range.end, 8);
+        if (outputOptions.contains(OutputOption.VERBOSE)) {
+            debugPrintWriter.println(msg);
+        }
+        if (outWriter != null) {
+            outWriter.write("; ############  " + msg + "  ############\n");
         }
     }
 
@@ -502,7 +517,7 @@ public class Dfr
      * @return
      * @throws ParsingException
      */
-    boolean processOptions(String[] args) throws ParsingException {
+    public boolean processOptions(String[] args) throws ParsingException {
         Character option;
         String argument;
         OptionHandler optionHandler = new OptionHandler(args);

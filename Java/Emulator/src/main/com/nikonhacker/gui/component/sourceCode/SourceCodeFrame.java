@@ -108,6 +108,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Create listing
 
         listingArea = new RSyntaxTextArea(50, 80);
+        prepareAreaFormat(listingArea);
         JComponent listingComponent = prepareListingPane();
 
 
@@ -178,13 +179,17 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    private JComponent prepareListingPane() {
+    /**
+     * Format as expected for Fr source display
+     * @param listingArea
+     */
+    public static void prepareAreaFormat(RSyntaxTextArea listingArea) {
         listingArea.setEditable(false);
         listingArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 
         listingArea.setCodeFoldingEnabled(true);
         listingArea.setAntiAliasingEnabled(true);
-        
+
         listingArea.setMarkOccurrences(true);
         listingArea.setMarkOccurrencesColor(Color.GREEN);
 //        // When one clicks on a term, highlight all occurrences (not only the ones within the same syntactic group)
@@ -203,7 +208,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         SyntaxScheme ss = listingArea.getSyntaxScheme();
         Style functionStyle = ss.getStyle(Token.FUNCTION);
-        
+
         Style addressStyle = (Style) functionStyle.clone();
         ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
         addressStyle.foreground = Color.BLACK;
@@ -226,7 +231,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         listingArea.setSyntaxEditingStyle("text/frasm");
         RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
         listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
+    }
 
+    /**
+     * Add behaviours
+     * @return
+     */
+    private JComponent prepareListingPane() {
         listingArea.addKeyListener(this); // For search keys
 
         // This is to make sure the right mouse button also moves the caret,
