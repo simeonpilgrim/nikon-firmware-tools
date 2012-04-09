@@ -240,7 +240,7 @@ public class Dfr
     }
 
 
-    int disassembleOneInstruction(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure) throws IOException {
+    int disassembleOneInstruction(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         DisassembledInstruction disassembledInstruction = new DisassembledInstruction(memRange.start);
         disassembledInstruction.getNextInstruction(memory, cpuState.pc);
         if ((disassembledInstruction.opcode = OpCode.opCodeMap[disassembledInstruction.data[0]]) == null)
@@ -250,7 +250,7 @@ public class Dfr
 
         disassembledInstruction.decodeInstructionOperands(cpuState.pc, memory);
 
-        disassembledInstruction.formatOperandsAndComment(cpuState, true, outputOptions);
+        disassembledInstruction.formatOperandsAndComment(cpuState, true, this.outputOptions);
         
         if (codeStructure != null) {
             codeStructure.getInstructions().put(cpuState.pc, disassembledInstruction);
@@ -258,7 +258,7 @@ public class Dfr
         else {
             // No structure analysis, output right now
             if (outWriter != null) {
-                printDisassembly(outWriter, disassembledInstruction, cpuState.pc, memoryFileOffset);
+                printDisassembly(outWriter, disassembledInstruction, cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
 
@@ -266,7 +266,7 @@ public class Dfr
     }
 
 
-    int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset) throws IOException {
+    int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
 
         int sizeInBytes = 0;
 
@@ -280,12 +280,12 @@ public class Dfr
 
             disassembledInstruction.decodeInstructionOperands(dummyCpuState.pc, memory);
 
-            disassembledInstruction.formatOperandsAndComment(dummyCpuState, true, outputOptions);
+            disassembledInstruction.formatOperandsAndComment(dummyCpuState, true, this.outputOptions);
 
             sizeInBytes += disassembledInstruction.n << 1;
 
             if (outWriter != null) {
-                printDisassembly(outWriter, disassembledInstruction, dummyCpuState.pc, memoryFileOffset);
+                printDisassembly(outWriter, disassembledInstruction, dummyCpuState.pc, memoryFileOffset, outputOptions);
             }
         }
 
@@ -300,14 +300,16 @@ public class Dfr
      * @param memoryFileOffset offset between memory and file (to print file position alongside memory address)
      * @throws IOException
      */
-    public static void printDisassembly(Writer writer, DisassembledInstruction disassembledInstruction, int address, int memoryFileOffset) throws IOException {
-        writer.write(Format.asHex(address, 8) + " ");
+    public static void printDisassembly(Writer writer, DisassembledInstruction disassembledInstruction, int address, int memoryFileOffset, Set<OutputOption> options) throws IOException {
+        if (options.contains(OutputOption.ADDRESS)) {
+            writer.write(Format.asHex(address, 8) + " ");
+        }
 
         if (memoryFileOffset != 0) {
             writer.write("(" + Format.asHex(address - memoryFileOffset, 8) + ") ");
         }
 
-        writer.write(disassembledInstruction.toString());
+        writer.write(disassembledInstruction.toString(options));
     }
 
 
@@ -320,7 +322,7 @@ public class Dfr
         CPUState dummyCpuState = new CPUState(memRange.start); // TODO : get rid of it (! take care, used for interrupt vector counter)
         while (dummyCpuState.pc < memRange.end)
         {
-            dummyCpuState.pc += disassembleOneDataRecord(dummyCpuState, memRange, memoryFileOffset);
+            dummyCpuState.pc += disassembleOneDataRecord(dummyCpuState, memRange, memoryFileOffset, outputOptions);
         }
     }
 
@@ -333,7 +335,7 @@ public class Dfr
 
         while (cpuState.pc < memRange.end)
         {
-            cpuState.pc += disassembleOneInstruction(cpuState, memRange, memoryFileOffset, codeStructure);
+            cpuState.pc += disassembleOneInstruction(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
         }
     }
 

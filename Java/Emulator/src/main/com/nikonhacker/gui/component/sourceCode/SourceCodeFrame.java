@@ -474,7 +474,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
                     try {
                         StringWriter writer = new StringWriter();
-                        codeStructure.writeInstruction(writer, address, instruction, 0);
+                        codeStructure.writeInstruction(writer, address, instruction, 0, ui.getPrefs().getOutputOptions());
                         String str = writer.toString();
                         for (String line : str.split("\n")) {
                             if (line.length() > 0 && Character.isDigit(line.charAt(0))) {
