@@ -514,19 +514,27 @@ public class DisassembledInstruction {
         comment = commentBuffer.toString();
     }
 
-    public String toString() {
-        String out = formatDataAsHex();
+    public String toString(Set<OutputOption> options) {
+        String out = "";
+        if (options.contains(OutputOption.HEXCODE)) {
+            out += formatDataAsHex();
+        }
+
+        if (options.contains(OutputOption.BLANKS)) {
+            out += "              ";
+        }
+
 
         if (opcode != null) {
             if ((flags & DF_DELAY) != 0) {
-                out += "                " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
+                out += "  " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
             }
             else {
-                out += "               " + StringUtils.rightPad(opcode.name, 7) + " " + operands;
+                out += " " + StringUtils.rightPad(opcode.name, 7) + " " + operands;
             }
         }
         else {
-            out += "               (no opcode)" + operands;
+            out += " (no opcode)" + operands;
         }
         
 //        for (int i = 0; i < 15-operands.length(); i++) {

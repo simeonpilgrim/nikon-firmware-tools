@@ -5,20 +5,23 @@ import java.util.Set;
 
 /** output options */
 public enum OutputOption {
-    REGISTER    ("register",        "use AC, FP, SP instead of R13, R14, R15"),
-    DMOV        ("dmov",            "use LD/ST for some DMOV operations"),
-    SHIFT       ("shift",           "use LSR, LSL, ASR instead of SR2, LSL2, ASR2 (adding 16 to shift)"),
-    STACK       ("stack",           "use PUSH/POP for stack operations"),
-    SPECIALS    ("specials",        "use AND, OR, ST, ADD instead of ANDCCR, ORCCR, STILM, ADDSP"),
+    REGISTER    ("register",        "use AC, FP, SP instead of R13, R14, R15", false),
+    DMOV        ("dmov",            "use LD/ST for some DMOV operations", false),
+    SHIFT       ("shift",           "use LSR, LSL, ASR instead of SR2, LSL2, ASR2 (adding 16 to shift)", false),
+    STACK       ("stack",           "use PUSH/POP for stack operations", false),
+    SPECIALS    ("specials",        "use AND, OR, ST, ADD instead of ANDCCR, ORCCR, STILM, ADDSP", false),
 
-    CSTYLE      ("cstyle",          "use C style operand syntax"),
-    DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers"),
+    CSTYLE      ("cstyle",          "use C style operand syntax", false),
+    DOLLAR      ("dollar",          "use $0 syntax for hexadecimal numbers", false),
 
-    OFFSET      ("offset",          "include file offset next to memory address"),
+    ADDRESS     ("address",         "include memory address", true),
+    OFFSET      ("offset",          "include file position (add offset)", false),
+    HEXCODE     ("hexcode",         "include hex version of instruction and operands", true),
+    BLANKS      ("blanks",          "include a large blank area before disassembled instruction", true),
 
-    STRUCTURE   ("structure",       "structural code analysis (code flow, symbols, etc). Needs more resources."),
-    ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address"),
-    INT40       ("int40",           "(if structure is enabled) resolve calls through INT40 wrapper"),
+    STRUCTURE   ("structure",       "structural code analysis (code flow, symbols, etc). Needs more resources.", true),
+    ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address", false),
+    INT40       ("int40",           "(if structure is enabled) resolve calls through INT40 wrapper", true),
 
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),
@@ -27,17 +30,19 @@ public enum OutputOption {
     //XREF1       ("crossreference",  "write cross reference"),
     //XREF2       ("xreference",      "write cross reference"),
 
-    VERBOSE     ("verbose",         "verbose messages"),
-    DEBUG       ("debug",           "debug disassembler")
+    VERBOSE     ("verbose",         "verbose messages", false),
+    DEBUG       ("debug",           "debug disassembler", false)
     ;
     private String key;
     private String help;
-    
-    public static EnumSet<OutputOption> formatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, CSTYLE, DOLLAR);
+    private boolean defaultValue;
 
-    OutputOption(String key, String help) {
+    public static EnumSet<OutputOption> formatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, CSTYLE, DOLLAR, ADDRESS, OFFSET, HEXCODE, BLANKS);
+
+    OutputOption(String key, String help, boolean defaultValue) {
         this.key = key;
         this.help = help;
+        this.defaultValue = defaultValue;
     }
 
     public String getKey() {
@@ -46,6 +51,10 @@ public enum OutputOption {
 
     public String getHelp() {
         return help;
+    }
+
+    public boolean isDefaultValue() {
+        return defaultValue;
     }
 
     public static String getFullHelp(Character option) {

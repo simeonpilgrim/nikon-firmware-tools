@@ -98,7 +98,7 @@ public class CodeStructure {
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.start - fileRange.fileOffset):0;
 
         while (instruction != null && address < memRange.getEnd()) {
-            writeInstruction(writer, address, instruction, memoryFileOffset);
+            writeInstruction(writer, address, instruction, memoryFileOffset, outputOptions);
 
             address = instructions.higherKey(address);
             instruction = address==null?null:instructions.get(address);
@@ -106,7 +106,7 @@ public class CodeStructure {
 
     }
 
-    public void writeInstruction(Writer writer, Integer address, DisassembledInstruction instruction, int memoryFileOffset) throws IOException {
+    public void writeInstruction(Writer writer, Integer address, DisassembledInstruction instruction, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
         // function
         if (isFunction(address)) {
             Function function = functions.get(address);
@@ -172,7 +172,7 @@ public class CodeStructure {
         }
 
         // print instruction
-        Dfr.printDisassembly(writer, instruction, address, memoryFileOffset);
+        Dfr.printDisassembly(writer, instruction, address, memoryFileOffset, outputOptions);
 
         // after return from function
         if (isEnd(address)) {

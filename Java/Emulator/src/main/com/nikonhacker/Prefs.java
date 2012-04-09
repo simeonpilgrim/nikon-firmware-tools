@@ -123,12 +123,20 @@ public class Prefs {
     }
 
     public Set<OutputOption> getOutputOptions() {
-        if (outputOptions==null) outputOptions = EnumSet.noneOf(OutputOption.class);
+        if (outputOptions==null) {
+            // Prepare a new outputOptions containing only default values
+            outputOptions = EnumSet.noneOf(OutputOption.class);
+            for (OutputOption option : EnumSet.allOf(OutputOption.class)) {
+                if (option.isDefaultValue()) {
+                    outputOptions.add(option);
+                }
+            }
+        }
         return outputOptions;
     }
 
     public void setOutputOption(OutputOption outputOption, boolean value) {
-        if (outputOptions==null) outputOptions = EnumSet.noneOf(OutputOption.class);
+        getOutputOptions();
         if (value) {
             outputOptions.add(outputOption);
         }
@@ -136,8 +144,6 @@ public class Prefs {
             outputOptions.remove(outputOption);
         }
     }
-
-
 
     public List<BreakTrigger> getTriggers() {
         if (triggers == null) triggers = new ArrayList<BreakTrigger>();
