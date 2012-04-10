@@ -840,12 +840,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void openAnalyseDialog() {
         JTextField dfrField = new JTextField();
         JTextField destinationField = new JTextField();
-        // compute default name for Dfr.txt
-        File optionsFile = new File(imageFile.getParentFile(), FilenameUtils.getBaseName(imageFile.getAbsolutePath()) + ".txt");
+
+        // compute and try default names for options file.
+        // In order : <firmware>.dfr.txt , <firmware>.txt , dfr.txt
+        File optionsFile = new File(imageFile.getParentFile(), FilenameUtils.getBaseName(imageFile.getAbsolutePath()) + ".dfr.txt");
         if (!optionsFile.exists()) {
-            optionsFile = new File(imageFile.getParentFile(), "Dfr.txt");
+            optionsFile = new File(imageFile.getParentFile(), FilenameUtils.getBaseName(imageFile.getAbsolutePath()) + ".txt");
             if (!optionsFile.exists()) {
-                optionsFile = null;
+                optionsFile = new File(imageFile.getParentFile(), "dfr.txt");
+                if (!optionsFile.exists()) {
+                    optionsFile = null;
+                }
             }
         }
         if (optionsFile != null) {
