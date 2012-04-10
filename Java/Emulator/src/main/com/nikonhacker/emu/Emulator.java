@@ -2243,7 +2243,27 @@ public class Emulator {
                         break;
                     
                     default:
-                        throw new EmulationException("Unknown opcode encoding : 0x" + Integer.toHexString(disassembledInstruction.opcode.encoding));
+                        String msg = "; Unknown instruction : " + Format.asHex(cpuState.pc, 8) + " " + Format.asHex(disassembledInstruction.x,4) + ". Triggering unknown instruction exception...";
+                        System.out.println(msg);
+                        if (instructionPrintWriter != null) {
+                            instructionPrintWriter.println(msg);
+                        }
+                        if (callStack != null) {
+                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
+                            synchronized (callStack) {
+                                if (callStack != null) {
+                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                }
+                            }
+                        }
+
+                        processInterrupt(0x0E, cpuState.pc);
+
+                        /* No change to NZVC */
+
+                        cycles = 7;
+                        break;
+
                 }
 
                 totalCycles += cycles;

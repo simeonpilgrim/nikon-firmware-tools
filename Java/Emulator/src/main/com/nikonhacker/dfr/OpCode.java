@@ -246,6 +246,14 @@ public class OpCode {
     };
 
     /**
+     * This is a "catch-all" opcode used as a safety net for unknown instructions
+     */
+    static OpCode[] defaultOpCode = {
+        new OpCode( 0x97DD, 0x0000, FORMAT_W, 0, 0, "UNK",    "",             ""         , Type.NONE, false, false),
+    };
+
+
+    /**
      * These are replacement names for all stack-related operations
      */
     static OpCode[] altStackOpCodes = {
@@ -344,7 +352,11 @@ public class OpCode {
      */
     public static void initOpcodeMap(Set<OutputOption> options) {
         /* opcode decoding */
+        // First, fill everything with a default dummy code as a safety net for unknown instructions
+        expandOpCodes(opCodeMap, defaultOpCode);
+        // Then overwrite with actual instructions
         expandOpCodes(opCodeMap, baseOpCodes);
+        // And optionally replace some opcodes with alternate versions
         if (options.contains(OutputOption.STACK))
             expandOpCodes(opCodeMap, altStackOpCodes);
         if (options.contains(OutputOption.SHIFT))
