@@ -11,6 +11,12 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 
+/**
+ * This Emulator was first based on :
+ * - FR Family instruction manual for the basics - http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-00101-5E.pdf
+ * - FR80 Family programming manual for specifics - http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-00104-3E.pdf
+ * All implemented operations can be tested with the EmulatorTest class
+ */
 public class Emulator {
 
     private long totalCycles;
@@ -2132,7 +2138,41 @@ public class Emulator {
 
                         cycles = 1;
                         break;
-                    
+
+                    case 0x97C0: /* SRCH0 Ri */
+                        // Search for the first 0
+                        cpuState.setReg(disassembledInstruction.i, bitSearch(cpuState.getReg(disassembledInstruction.i), 0));
+
+                        /* No change to NZVC */
+
+                        cpuState.pc += 2;
+
+                        cycles = 1;
+                        break;
+
+                    case 0x97D0: /* SRCH1 Ri */
+                        // Search for the first 1
+                        cpuState.setReg(disassembledInstruction.i, bitSearch(cpuState.getReg(disassembledInstruction.i), 1));
+
+                        /* No change to NZVC */
+
+                        cpuState.pc += 2;
+
+                        cycles = 1;
+                        break;
+
+                    case 0x97E0: /* SRCHC Ri */
+                        // Search for the first bit different from the MSB
+                        result32 = cpuState.getReg(disassembledInstruction.i);
+                        cpuState.setReg(disassembledInstruction.i, bitSearch(result32, (result32 & 0x80000000)==0?1:0));
+
+                        /* No change to NZVC */
+
+                        cpuState.pc += 2;
+
+                        cycles = 1;
+                        break;
+
                     case 0x8C00: /* LDM0 (reglist) */
                         n = 0;
                         for (int r = 0; r <= 7; r++) {
@@ -2353,6 +2393,16 @@ public class Emulator {
             System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
             throw new EmulationException(e);
         }
+    }
+
+    private int bitSearch(int value, int testBit) {
+        if (testBit == 0) value = ~value;
+        int mask = 0x80000000;
+        for (int i = 0; i < 31; i++) {
+            if ((value & mask) != 0) return i;
+            mask >>= 1;
+        }
+        return 32;
     }
 
     private void processInterrupt(int interruptNumber, int pcToStore) {
