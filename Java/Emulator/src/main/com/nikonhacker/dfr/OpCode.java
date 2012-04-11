@@ -147,6 +147,9 @@ public class OpCode {
         new OpCode( 0x9790, 0xFFF0, FORMAT_E, 0, 0, "EXTUB",  "i",            "iw"       , Type.NONE, false, false),
         new OpCode( 0x97A0, 0xFFF0, FORMAT_E, 0, 0, "EXTSH",  "i",            "iw"       , Type.NONE, false, false),
         new OpCode( 0x97B0, 0xFFF0, FORMAT_E, 0, 0, "EXTUH",  "i",            "iw"       , Type.NONE, false, false),
+        new OpCode( 0x97C0, 0xFFF0, FORMAT_E, 0, 0, "SRCH0",  "i",            "iw"       , Type.NONE, false, false), // FR80/FR81 only
+        new OpCode( 0x97D0, 0xFFF0, FORMAT_E, 0, 0, "SRCH1",  "i",            "iw"       , Type.NONE, false, false), // FR80/FR81 only
+        new OpCode( 0x97E0, 0xFFF0, FORMAT_E, 0, 0, "SRCHC",  "i",            "iw"       , Type.NONE, false, false), // FR80/FR81 only
         new OpCode( 0x9800, 0xFF00, FORMAT_C, 0, 0, "BEORL",  "#u,@i;Iu",     ""         , Type.NONE, false, false),
         new OpCode( 0x9900, 0xFF00, FORMAT_C, 0, 0, "BEORH",  "#u,@i;Iu",     ""         , Type.NONE, false, false),
         new OpCode( 0x9A00, 0xFF00, FORMAT_A, 0, 0, "EOR",    "j,i",          "iw"       , Type.NONE, false, false),
@@ -163,10 +166,10 @@ public class OpCode {
         new OpCode( 0x9F80, 0xFFF0, FORMAT_E, 2, 0, "LDI:32", "#u,i",         "iv"       , Type.NONE, false, false),
         new OpCode( 0x9F90, 0xFFFF, FORMAT_Z, 0, 0, "LEAVE",  "",             ""         , Type.NONE, false, false),
         new OpCode( 0x9FA0, 0xFFFF, FORMAT_Z, 0, 0, "NOP",    "",             ""         , Type.NONE, false, false),
-        new OpCode( 0x9FC0, 0xFFF0, FORMAT_E, 0, 1, "COPOP",  "#u,#c,l,k",    ""         , Type.NONE, false, false),
-        new OpCode( 0x9FD0, 0xFFF0, FORMAT_E, 0, 1, "COPLD",  "#u,#c,j,k",    ""         , Type.NONE, false, false),
-        new OpCode( 0x9FE0, 0xFFF0, FORMAT_E, 0, 1, "COPST",  "#u,#c,l,i",    "iw"       , Type.NONE, false, false),
-        new OpCode( 0x9FF0, 0xFFF0, FORMAT_E, 0, 1, "COPSV",  "#u,#c,l,i",    "iw"       , Type.NONE, false, false),
+        new OpCode( 0x9FC0, 0xFFF0, FORMAT_E, 0, 1, "COPOP",  "#u,#c,l,k",    ""         , Type.NONE, false, false), // not in FR80/FR81
+        new OpCode( 0x9FD0, 0xFFF0, FORMAT_E, 0, 1, "COPLD",  "#u,#c,j,k",    ""         , Type.NONE, false, false), // not in FR80/FR81
+        new OpCode( 0x9FE0, 0xFFF0, FORMAT_E, 0, 1, "COPST",  "#u,#c,l,i",    "iw"       , Type.NONE, false, false), // not in FR80/FR81
+        new OpCode( 0x9FF0, 0xFFF0, FORMAT_E, 0, 1, "COPSV",  "#u,#c,l,i",    "iw"       , Type.NONE, false, false), // not in FR80/FR81
         new OpCode( 0xA000, 0xFF00, FORMAT_C, 0, 0, "ADDN",   "#u,i",         "iw"       , Type.NONE, false, false),
         new OpCode( 0xA100, 0xFF00, FORMAT_C, 0, 0, "ADDN2",  "#n,i",         "iw"       , Type.NONE, false, false),
         new OpCode( 0xA200, 0xFF00, FORMAT_A, 0, 0, "ADDN",   "j,i",          "iw"       , Type.NONE, false, false),
@@ -205,8 +208,8 @@ public class OpCode {
         new OpCode( 0xB900, 0xFF00, FORMAT_C, 0, 0, "ASR2",   "#d,i",         "iw"       , Type.NONE, false, false),
         new OpCode( 0xBA00, 0xFF00, FORMAT_A, 0, 0, "ASR",    "j,i",          "iw"       , Type.NONE, false, false),
         new OpCode( 0xBB00, 0xFF00, FORMAT_A, 0, 0, "MULUH",  "j,i",          "iw"       , Type.NONE, false, false),
-        new OpCode( 0xBC00, 0xFF00, FORMAT_C, 0, 0, "LDRES",  "@i+,#u;Iu",    ""         , Type.NONE, false, false),
-        new OpCode( 0xBD00, 0xFF00, FORMAT_C, 0, 0, "STRES",  "#u,@i+;Iu",    ""         , Type.NONE, false, false),
+        new OpCode( 0xBC00, 0xFF00, FORMAT_C, 0, 0, "LDRES",  "@i+,#u;Iu",    ""         , Type.NONE, false, false), // not in FR80/FR81
+        new OpCode( 0xBD00, 0xFF00, FORMAT_C, 0, 0, "STRES",  "#u,@i+;Iu",    ""         , Type.NONE, false, false), // not in FR80/FR81
         new OpCode( 0xBF00, 0xFF00, FORMAT_A, 0, 0, "MULH",   "j,i",          "iw"       , Type.NONE, false, false),
         new OpCode( 0xC000, 0xF000, FORMAT_B, 0, 0, "LDI:8",  "#u,i",         "iw"       , Type.NONE, false, false),
         new OpCode( 0xD000, 0xF800, FORMAT_F, 0, 0, "CALL",   "2ru",          "("        , Type.CALL, false, false),
@@ -249,7 +252,7 @@ public class OpCode {
      * This is a "catch-all" opcode used as a safety net for unknown instructions
      */
     static OpCode[] defaultOpCode = {
-        new OpCode( 0x97DD, 0x0000, FORMAT_W, 0, 0, "UNK",    "",             ""         , Type.NONE, false, false),
+        new OpCode( 0x97FF, 0x0000, FORMAT_W, 0, 0, "UNK",    "",             ""         , Type.NONE, false, false),
     };
 
 
