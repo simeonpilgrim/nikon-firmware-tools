@@ -12,20 +12,146 @@ namespace Nikon_Decode
 {
     partial class Program
     {
-        const long MaxIndex = 0x8b1;
-        const long EngTableAddr = 0x5EA9A0;
-        const long EngPlaybackTextAddr = 0x5EB6FC;
-        const long EngLastAddr = 0x5ECC64;
-
         private static Dictionary<long, Struct6> menus;
 
-        private static void DumpMenus5100(string fileName)
+        internal class FirmConsts
         {
-            LoadFuncNames(@"C:\Users\spilgrim\Downloads\FrEmu\dfr_sim.txt");
+            public uint BFT_start;
+            public uint BFT_end;
+            public long BFT_Count { get { return (BFT_end - BFT_start) / Unknown_xx.size_of; } }
+            public uint File_offset;
 
+            public long EngTableAddr;
+            public long EngPlaybackTextAddr;
+            public long EngLastAddr;
 
+            public uint Copy_From;
+            public uint Copy_To;
+            public uint Copy_Offset { get { return (Copy_To - Copy_From) + File_offset; } }
+
+            public string DFR_file;
+
+            public long[] MenuRootList = {};
+        }
+
+        internal static FirmConsts firmConsts = null;
+
+        internal class D5100_0101_Const : FirmConsts
+        {
+            public D5100_0101_Const()
+            {
+                BFT_start = 0x8F9D1934;
+                BFT_end = 0x8F9D555C;
+                File_offset = 0x40000;
+
+                EngTableAddr = 0x5EA9A0;
+                EngPlaybackTextAddr = 0x5EB6FC;
+                EngLastAddr = 0x5ECC64;
+
+                Copy_From = 0x37BDE4;
+                Copy_To = 0x8F9C4E78;
+
+                DFR_file = @"C:\Users\spilgrim\Downloads\FrEmu\dfr_sim.txt";
+
+                MenuRootList = new long[] { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870, 
+                                     0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0, 
+                                     0x8F9CA120, 0x8F9CA020, 0x8F9C9F30, 0x8F9C9D20, 0x8F9C9C10, 0x8F9C9B90,
+                                     0x8F9C9B20, 0x8F9C9AA0, 0x8F9C9860, 0x8F9C9ED0, 0x8F9C9C90, 0x8F9C9800,
+                                     0x8F9C97C0, 0x8F9C9750, 0x8F9C96D0, 0x8F9C9650, 0x8F9C8DB0, 0x8F9C8CD0,
+                                     0x8F9C8A30, 0x8F9C9560, 0x8F9C95E0, 0x8F9CC120, 0x8F9C8540, 0x8F9C8DF0, 
+                                     0x8F9C8420, 0x8F9C7C70, 0x8F9C7A30, 0x8F9C7A60, 0x8F9C72A0, 0x8F9C71E0,
+                                     0x8F9C7190, 0x8F9C6F90, 0x8F9C6F70, 0x8F9C6F20, 0x8F9C6EE0, 0x8F9C6EA0,
+                                     0x8F9C6E80, 0x8F9C6E60, 0x8F9C6E40, 0x8F9C6E20, 0x8F9C6E00, 0x8F9C6DE0,
+                                     0x8F9C6DC0};
+            }
+        }
+
+        internal class D3S_0101_Const : FirmConsts
+        {
+            public D3S_0101_Const()
+            {
+                BFT_start = 0; // not known yet.
+                BFT_end = 0; // not known yet.
+                File_offset = 0x40000;
+
+                EngTableAddr = 0x46ABC8;
+                EngPlaybackTextAddr = 0x46B564;
+                EngLastAddr = 0x46D3D0;
+
+                Copy_From = 0x2FF8A4;
+                Copy_To = 0x877DD99C;
+
+                DFR_file = @"";
+
+                MenuRootList = new long[] { 0x877E8348, 0x877E8CB8, 0x877EA0A8, 0x877EA088, 0x877ECAD8,
+                                0x877ECA28, 0x877EF9C8, 0x877F1868, 0x877F2E68, 0x877EF908, 0x877EF818, 
+                                0x877EF578, 0x877EF348, 0x877EF1E8, 0x877EF158, 0x877EF0B8, 0x877EEE48, 
+                                0x877EEF18, 0x877EEEB8, 0x877EEED8, 0x877E9C98, 0x877E9BE8, 0x877E9B08, 
+                                0x877E9A58, 0x877E9948, 0x877E9878, 0x877E9728, 0x877E96E8, 0x877E9678, 
+                                0x877E95F8, 0x877E9598, 0x877E93E8, 0x877E8FB8, 0x877E9168, 0x877E91E8, 
+                                0x877E9258, 0x877E92D8, 0x877E8F58, 0x877E8F18, 0x877E8E28, 0x877E8EA8, 
+                                0x877E8DA8, 0x877E8D38, 0x877E9358, 0x877E8C78, 0x877E81C8, 0x877E8168,
+                                0x877E8128, 0x877E8018, 0x877E7E78, 0x877E7EC8, 0x877E7F78, 0x877E7CB8, 
+                                0x877E7D18, 0x877E7D38, 0x877E7BB8, 0x877E7BD8, 0x877E7BF8, 0x877E7C18, 
+                                0x877E7C38, 0x877E7C58, 0x877E7C78, 0x877E7C98, 0x877E7CD8, 0x877E7CF8 };
+            }
+        }
+        internal class D7000_0103_Const : FirmConsts
+        {
+            public D7000_0103_Const()
+            {
+                BFT_start = 0x8F9BF0E8;
+                BFT_end = 0x8F9C4470;
+                File_offset = 0x40000;
+
+                EngTableAddr = 0x52A790;
+                EngPlaybackTextAddr = 0x52B484;
+                EngLastAddr = 0x52D49C;
+
+                Copy_From = 0x367E74;
+                Copy_To = 0x8F9ACE44;
+
+                DFR_file = @"";
+
+                MenuRootList = new long[] { 0x8F9B5518, 0x8F9BBB48, 0x8F9BB608, 0x8F9BA338, 0x8F9BA0D8, 
+                                0x8F9B82A8, 0x8F9BA158, 0x8F9B7448, 0x8F9B74E8, 0x8F9B7488, 0x8F9B74A8, 
+                                0x8F9B7688, 0x8F9B7728, 0x8F9B77B8, 0x8F9B80E8, 0x8F9B81D8, 0x8F9B7E48, 
+                                0x8F9B7948, 0x8F9B52F8, 0x8F9B2CD8, 0x8F9B2CB8, 0x8F9B2C18, 0x8F9B2AE8, 
+                                0x8F9B2AA8, 0x8F9B2A38, 0x8F9B29B8, 0x8F9B2958, 0x8F9B27A8, 0x8F9B2718, 
+                                0x8F9B2698, 0x8F9B2618, 0x8F9B25A8, 0x8F9B2528, 0x8F9B22E8, 0x8F9B2288,
+                                0x8F9B2248, 0x8F9B21D8, 0x8F9B2158, 0x8F9B20D8, 0x8F9B2068, 0x8F9B1FE8, 
+                                0x8F9B1368, 0x8F9B11E8, 0x8F9B1188, 0x8F9B1168, 0x8F9B1148, 0x8F9B1108,
+                                0x8F9B0FC8, 0x8F9B0F28, 0x8F9B0758, 0x8F9B0588, 0x8F9B0558, 0x8F9AFDC8, 
+                                0x8F9AFD08, 0x8F9AFCB8, 0x8F9AFAB8, 0x8F9AFA98, 0x8F9AFA48, 0x8F9AFA08,
+                                0x8F9AF9E8, 0x8F9AF9C8 ,0x8F9AF9A8, 0x8F9AF988, 0x8F9AF968, 0x8F9AF948,
+                                0x8F9AF928, 0x8F9AF908, 0x8F9AF8E8, 0x8F9AF8C8, 0x8F9AF8A8, 0x8F9AF888};
+            }
+        }
+
+        private static void DumpMenusD5100(string fileName)
+        {
+            firmConsts = new D5100_0101_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenusD3s(string fileName)
+        {
+            firmConsts = new D3S_0101_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenusD7000(string fileName)
+        {
+            firmConsts = new D7000_0103_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenus(string fileName)
+        {
             if (File.Exists(fileName))
             {
+                LoadFuncNames(firmConsts.DFR_file);
+
                 BinaryReader br = null;
 
                 byte[] data;
@@ -42,21 +168,10 @@ namespace Nikon_Decode
 
                 resolved.Add(0);
 
-                long[] startList = { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870, 
-                                     0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0, 
-                                     0x8F9CA120, 0x8F9CA020, 0x8F9C9F30, 0x8F9C9D20, 0x8F9C9C10, 0x8F9C9B90,
-                                     0x8F9C9B20, 0x8F9C9AA0, 0x8F9C9860, 0x8F9C9ED0, 0x8F9C9C90, 0x8F9C9800,
-                                     0x8F9C97C0, 0x8F9C9750, 0x8F9C96D0, 0x8F9C9650, 0x8F9C8DB0, 0x8F9C8CD0,
-                                     0x8F9C8A30, 0x8F9C9560, 0x8F9C95E0, 0x8F9CC120, 0x8F9C8540, 0x8F9C8DF0, 
-                                     0x8F9C8420, 0x8F9C7C70, 0x8F9C7A30, 0x8F9C7A60, 0x8F9C72A0, 0x8F9C71E0,
-                                     0x8F9C7190, 0x8F9C6F90, 0x8F9C6F70, 0x8F9C6F20, 0x8F9C6EE0, 0x8F9C6EA0,
-                                     0x8F9C6E80, 0x8F9C6E60, 0x8F9C6E40, 0x8F9C6E20, 0x8F9C6E00, 0x8F9C6DE0,
-                                     0x8F9C6DC0};
 
+                uint addrOffset = firmConsts.Copy_Offset;
 
-                uint addrOffset = (0x8F9C4E78 - 0x37BDE4) + 0x40000;
-
-                foreach (var l in startList)
+                foreach (var l in firmConsts.MenuRootList)
                 {
                     q.Enqueue(l);
                 }
@@ -73,13 +188,17 @@ namespace Nikon_Decode
                     menus.Add(addr, s6);
                     foreach (var s14 in s6.menu_elements)
                     {
-                        if (Array.IndexOf(startList, s14.menu_ptr) != -1)
+                        if (Array.IndexOf(firmConsts.MenuRootList, s14.menu_ptr) != -1)
                         {
 
                         }
                         if (resolved.Contains(s14.menu_ptr) == false &&
                             q.Contains(s14.menu_ptr) == false)
                         {
+                            if (s14.menu_ptr < firmConsts.Copy_To)
+                            {
+                                int az = 0;
+                            }
                             q.Enqueue(s14.menu_ptr);   
                         }
                     }
@@ -90,7 +209,7 @@ namespace Nikon_Decode
                 {
                     using (var sw2 = new StreamWriter(File.Open(fileName + ".menu_sym.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                     {
-                        foreach (var l in startList)
+                        foreach (var l in firmConsts.MenuRootList)
                         {
                             MenuDump(sw, sw2, "", l);
                         }
@@ -121,7 +240,7 @@ namespace Nikon_Decode
 
                 Read(data, mem_loc, addrOffset);
 
-                headingTxt = ResolveString(data, field_0, EngPlaybackTextAddr);
+                headingTxt = ResolveString(data, field_0, firmConsts.EngPlaybackTextAddr);
 
             }
 
@@ -141,7 +260,7 @@ namespace Nikon_Decode
                 field_18 = ReadUint32(data, file_loc + 0x18);
                 field_1C = ReadUint32(data, file_loc + 0x1C);
 
-                if (field_12 < Unknown_xx.table_count)
+                if (field_12 < firmConsts.BFT_Count)
                 {
                     field_12_item = new Unknown_xx(data, field_12, addrOffset);
                 }        
@@ -159,7 +278,6 @@ namespace Nikon_Decode
 
             public const int size_of = 0x20;
 
-            // (sizeof=0x20)
             public long mem_loc;
             public long file_loc;
             public long addr_off;
@@ -185,19 +303,19 @@ namespace Nikon_Decode
             {
                 tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, headingTxt);
 
-                tw.WriteLine("{0}  00 field_00: 0x{1:X4}", p, field_0);
-                tw.WriteLine("{0}  02 field_02: 0x{1:X4}", p, field_2);
-                tw.WriteLine("{0}  04 field_04: 0x{1:X4}", p, field_4);
-                tw.WriteLine("{0}  06 field_06: 0x{1:X4}", p, field_6);
-                tw.WriteLine("{0}  08 field_08: 0x{1:X4} - 'Num Fixed Elements'", p, field_8);
+                //tw.WriteLine("{0}  00 field_00: 0x{1:X4}", p, field_0);
+                //tw.WriteLine("{0}  02 field_02: 0x{1:X4}", p, field_2);
+                //tw.WriteLine("{0}  04 field_04: 0x{1:X4}", p, field_4);
+                //tw.WriteLine("{0}  06 field_06: 0x{1:X4}", p, field_6);
+                //tw.WriteLine("{0}  08 field_08: 0x{1:X4} - 'Num Fixed Elements'", p, field_8);
                 //tw.WriteLine("{0}  0A Total Elements: 0x{1:X4}", p, field_A);
-                tw.WriteLine("{0}  0C field_0C: 0x{1:X4}", p, field_C);
-                tw.WriteLine("{0}  0E field_0E: 0x{1:X4}", p, field_E);
-                tw.WriteLine("{0}  10 field_10: 0x{1:X4}", p, field_10);
-                tw.WriteLine("{0}  12 field_12: 0x{1:X4}", p, field_12);
+                //tw.WriteLine("{0}  0C field_0C: 0x{1:X4}", p, field_C);
+                //tw.WriteLine("{0}  0E field_0E: 0x{1:X4}", p, field_E);
+                //tw.WriteLine("{0}  10 field_10: 0x{1:X4}", p, field_10);
+                //tw.WriteLine("{0}  12 field_12: 0x{1:X4}", p, field_12);
 
                 //tw.WriteLine("{0}  14 parentAddr  : 0x{1:X8}", p, field_14);
-                tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
+                //tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
                 var sym = NameToSymbol(headingTxt);
@@ -222,21 +340,21 @@ namespace Nikon_Decode
 
         internal class Unknown_xx
         {
-            const long table_start = 0x8F9D1934;
-            const long table_end = 0x8F9D555C;
-            public const long table_count = (table_end - table_start) / size_of;
-            const long size_of = 0x2C;
+            public const long size_of = 0x2C;
             long mem_loc;
             long file_loc;
 
             public Unknown_xx(byte[] data, int index, long addrOffset)
             {
-                long startAddr = ((index * size_of) + table_start);
+                if (firmConsts.BFT_start != 0)
+                {
+                    long startAddr = ((index * size_of) + firmConsts.BFT_start);
 
-                mem_loc = startAddr;
-                file_loc = startAddr - addrOffset;
+                    mem_loc = startAddr;
+                    file_loc = startAddr - addrOffset;
 
-                Read(data, mem_loc, file_loc);
+                    Read(data, mem_loc, file_loc);
+                }
             }
 
             UInt16 field_0;
@@ -270,19 +388,22 @@ namespace Nikon_Decode
 
             internal void Dump(TextWriter tw, string p)
             {
-                tw.WriteLine("{0}BigFuncTable: 0x{1:X8} {2}", p, mem_loc, (mem_loc - table_start) / size_of);
-                tw.WriteLine("{0}  field_00: 0x{1:X4}", p, field_0);
-                tw.WriteLine("{0}  field_02: 0x{1:X4}", p, field_2);
-                tw.WriteLine("{0}  field_04: 0x{1:X8} - {2}", p, field_4, ResolveFuncName(field_4));
-                tw.WriteLine("{0}  field_08: 0x{1:X8} - {2}", p, field_8, ResolveFuncName(field_8));
-                tw.WriteLine("{0}  field_0C: 0x{1:X8} - {2}", p, field_C, ResolveFuncName(field_C));
-                tw.WriteLine("{0}  field_10: 0x{1:X8} - {2}", p, field_10, ResolveFuncName(field_10));
-                tw.WriteLine("{0}  field_14: 0x{1:X8} - {2}", p, field_14, ResolveFuncName(field_14));
-                tw.WriteLine("{0}  field_18: 0x{1:X8} - {2}", p, field_18, ResolveFuncName(field_18));
-                tw.WriteLine("{0}  field_1C: 0x{1:X8} - {2}", p, field_1C, ResolveFuncName(field_1C));
-                tw.WriteLine("{0}  field_20: 0x{1:X8} - {2}", p, field_20, ResolveFuncName(field_20));
-                tw.WriteLine("{0}  field_24: 0x{1:X8} - {2}", p, field_24, ResolveFuncName(field_24));
-                tw.WriteLine("{0}  field_28: 0x{1:X8} - {2}", p, field_28, ResolveFuncName(field_28));
+                if (firmConsts.BFT_start != 0)
+                {
+                    tw.WriteLine("{0}BigFuncTable: 0x{1:X8} {2}", p, mem_loc, (mem_loc - firmConsts.BFT_start) / size_of);
+                    tw.WriteLine("{0}  field_00: 0x{1:X4}", p, field_0);
+                    tw.WriteLine("{0}  field_02: 0x{1:X4}", p, field_2);
+                    tw.WriteLine("{0}  field_04: 0x{1:X8} - {2}", p, field_4, ResolveFuncName(field_4));
+                    tw.WriteLine("{0}  field_08: 0x{1:X8} - {2}", p, field_8, ResolveFuncName(field_8));
+                    tw.WriteLine("{0}  field_0C: 0x{1:X8} - {2}", p, field_C, ResolveFuncName(field_C));
+                    tw.WriteLine("{0}  field_10: 0x{1:X8} - {2}", p, field_10, ResolveFuncName(field_10));
+                    tw.WriteLine("{0}  field_14: 0x{1:X8} - {2}", p, field_14, ResolveFuncName(field_14));
+                    tw.WriteLine("{0}  field_18: 0x{1:X8} - {2}", p, field_18, ResolveFuncName(field_18));
+                    tw.WriteLine("{0}  field_1C: 0x{1:X8} - {2}", p, field_1C, ResolveFuncName(field_1C));
+                    tw.WriteLine("{0}  field_20: 0x{1:X8} - {2}", p, field_20, ResolveFuncName(field_20));
+                    tw.WriteLine("{0}  field_24: 0x{1:X8} - {2}", p, field_24, ResolveFuncName(field_24));
+                    tw.WriteLine("{0}  field_28: 0x{1:X8} - {2}", p, field_28, ResolveFuncName(field_28));
+                }
             }
         }
 
@@ -297,8 +418,8 @@ namespace Nikon_Decode
 
                 Read(data, mem_loc, file_loc);
 
-                //txt_0 = ResolveString(data, field_0, EngPlaybackTextAddr);
-                txt_2 = ResolveString(data, field_2, EngPlaybackTextAddr);
+                //txt_0 = ResolveString(data, field_0, firmConsts.EngPlaybackTextAddr);
+                txt_2 = ResolveString(data, field_2, firmConsts.EngPlaybackTextAddr);
             }
 
             public void Read(byte[] data, long startAddr, long addrOffset)
@@ -314,7 +435,7 @@ namespace Nikon_Decode
 
             long mem_loc;
             long file_loc;
-            string txt_0;
+            //string txt_0;
             string txt_2;
 
             public UInt16 field_0;
@@ -344,7 +465,8 @@ namespace Nikon_Decode
                 var sym = NameToSymbol(txt_2);
                 if (sym != "")
                 {
-                    tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
+                    //tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
+                    tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"ME_{1}\", 1);", mem_loc, sym);
                 }
 
                 if (menu_ptr != 0)
@@ -358,24 +480,29 @@ namespace Nikon_Decode
 
         static void LoadFuncNames(string dfr_file)
         {
-            using (var sr = new StreamReader(File.Open(dfr_file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            FuncNames.Clear();
+
+            if (dfr_file != "")
             {
-                while (sr.EndOfStream == false)
+                using (var sr = new StreamReader(File.Open(dfr_file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
                 {
-                    var line = sr.ReadLine();
-
-                    if (line.Length > 2 && line[0] == '-' && line[1] == 's')
+                    while (sr.EndOfStream == false)
                     {
-                        int x_idx = line.IndexOf('x');
-                        int eq_idx = line.IndexOf('=');
-                        var hex = line.Substring(x_idx + 1, eq_idx - x_idx - 1);
-                        var name = line.Substring(eq_idx + 1);
-                        var addr = long.Parse(hex, System.Globalization.NumberStyles.HexNumber);
+                        var line = sr.ReadLine();
 
-                        FuncNames.Add(addr, name);
-                        //Console.WriteLine("{0:X} {1:X}", hex, addr);
+                        if (line.Length > 2 && line[0] == '-' && line[1] == 's')
+                        {
+                            int x_idx = line.IndexOf('x');
+                            int eq_idx = line.IndexOf('=');
+                            var hex = line.Substring(x_idx + 1, eq_idx - x_idx - 1);
+                            var name = line.Substring(eq_idx + 1);
+                            var addr = long.Parse(hex, System.Globalization.NumberStyles.HexNumber);
 
-                        
+                            FuncNames.Add(addr, name);
+                            //Console.WriteLine("{0:X} {1:X}", hex, addr);
+
+
+                        }
                     }
                 }
             }
@@ -439,23 +566,23 @@ namespace Nikon_Decode
             switch (masked)
             {
                 case 0x8000:
-                    baseAddr = EngTableAddr;
+                    baseAddr = firmConsts.EngTableAddr;
                     break;
 
                 case 0x0000:
                 default:
-                    baseAddr = EngPlaybackTextAddr;
+                    baseAddr = firmConsts.EngPlaybackTextAddr;
                     break;
             }
 
-            if ((baseAddr + (offset * 4)) > EngLastAddr)
+            if ((baseAddr + (offset * 4)) > firmConsts.EngLastAddr)
             {
 
             }
-            long addr = baseAddr + (offset * 4) - 0x40000;
+            long addr = baseAddr + (offset * 4) - firmConsts.File_offset;
 
-            long saddr = ReadUint32(data, addr) - 0x40000;
-            long eaddr = ReadUint32(data, addr + 4) - 0x40000;
+            long saddr = ReadUint32(data, addr) - firmConsts.File_offset;
+            long eaddr = ReadUint32(data, addr + 4) - firmConsts.File_offset;
 
             StringBuilder sb = new StringBuilder();
             int state = 0;
