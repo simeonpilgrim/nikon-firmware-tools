@@ -12,6 +12,7 @@ import java.util.Random;
 
 /**
  * This class tests all examples provided in the Fujitsu specification
+ *
  * Look for the word "spec" for failed tests or differences compared to the examples in the tests
  */
 public class EmulatorTest extends TestCase {
@@ -2632,6 +2633,45 @@ public class EmulatorTest extends TestCase {
         checkRegister(1, 0x0000FFFF);
     }
 
+    public void testSRCH0() throws EmulationException {
+        System.out.println("EmulatorTest.testSRCH0");
+        initCpu();
+
+        setInstruction(0x97c2); // 0b1001011111000010
+
+        cpuState.setReg(2, 0xFC345678);
+
+        emulator.play();
+
+        checkRegister(2, 0x00000006);
+    }
+
+    public void testSRCH1() throws EmulationException {
+        System.out.println("EmulatorTest.testSRCH1");
+        initCpu();
+
+        setInstruction(0x97d2); // 0b1001011111010010
+
+        cpuState.setReg(2, 0x00345678);
+
+        emulator.play();
+
+        checkRegister(2, 0x0000000A);
+    }
+
+    public void testSRCHC() throws EmulationException {
+        System.out.println("EmulatorTest.testSRCHC");
+        initCpu();
+
+        setInstruction(0x97e2); // 0b1001011111100010
+
+        cpuState.setReg(2, 0xFF345678);
+
+        emulator.play();
+
+        checkRegister(2, 0x00000008);
+    }
+
     public void testLDM0() throws EmulationException {
         System.out.println("EmulatorTest.testLDM0");
         initCpu();
@@ -2989,6 +3029,9 @@ public class EmulatorTest extends TestCase {
         testEXTUB();
         testEXTSH();
         testEXTUH();
+        testSRCH0();
+        testSRCH1();
+        testSRCHC();
         testLDM0();
         testLDM1();
         testSTM0();
