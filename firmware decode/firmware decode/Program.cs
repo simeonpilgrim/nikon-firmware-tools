@@ -70,7 +70,9 @@ namespace Nikon_Decode
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
-            DumpMenus5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
+            DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
         }
 
 
@@ -425,7 +427,6 @@ namespace Nikon_Decode
                 }
 
 
-                int min = 0x10;
                 int max = data.Length + 0x40000;
                 RefSet tab = new RefSet();
 
