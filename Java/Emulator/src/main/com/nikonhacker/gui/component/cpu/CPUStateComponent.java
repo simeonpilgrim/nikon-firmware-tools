@@ -55,7 +55,7 @@ public class CPUStateComponent extends JComponent {
         int value = validity?1:0;
 
         cpuStateFlags.pc = value;
-        cpuStateFlags.setPS(validity ? 0xFFFFFFFF : 0);
+        cpuStateFlags.setPS(validity ? 0xFFFFFFFF : 0, false);
         cpuStateFlags.setReg(CPUState.TBR, value);
         cpuStateFlags.setReg(CPUState.RP, value);
         cpuStateFlags.setReg(CPUState.SSP, value);
@@ -316,7 +316,7 @@ public class CPUStateComponent extends JComponent {
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
             cpuState.pc = pc;
-            cpuState.setILM(ilm);
+            cpuState.setILM(ilm, false);
             cpuState.setSCR(scr);
             cpuState.setCCR(ccr);
             cpuState.setReg(CPUState.TBR, tbr);
@@ -349,11 +349,11 @@ public class CPUStateComponent extends JComponent {
             }
 
             if (StringUtils.isBlank(ilmTextField.getText())) {
-                cpuStateValidityFlags.setILM(0);
+                cpuStateValidityFlags.setILM(0, false);
             }
             else {
-                cpuState.setILM(Format.parseIntBinaryField(ilmTextField, true));
-                cpuStateValidityFlags.setILM(Integer.parseInt(ilmTextField.getText().replace('0', '1').replace('?', '0'), 2));
+                cpuState.setILM(Format.parseIntBinaryField(ilmTextField, true), false);
+                cpuStateValidityFlags.setILM(Integer.parseInt(ilmTextField.getText().replace('0', '1').replace('?', '0'), 2), false);
             }
 
             if (StringUtils.isBlank(scrTextField.getText())) {

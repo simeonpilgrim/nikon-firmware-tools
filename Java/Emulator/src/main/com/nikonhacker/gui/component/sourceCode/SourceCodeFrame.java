@@ -561,7 +561,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             CPUState values = new CPUState(addressFromLine);
             CPUState flags = new CPUState();
             flags.pc = 1;
-            flags.setILM(0);
+            flags.setILM(0, false);
             flags.setReg(CPUState.TBR, 0);
             ui.getPrefs().getTriggers().add(new BreakTrigger("Breakpoint at 0x" + Format.asHex(addressFromLine, 8), values, flags, new ArrayList<MemoryValueBreakCondition>()));
         }
