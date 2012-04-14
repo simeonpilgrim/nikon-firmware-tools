@@ -2,7 +2,7 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
 
-public class InterruptRequest {
+public class InterruptRequest implements Comparable {
     private int interruptNumber;
     private boolean isNMI;
     private int icr;
@@ -46,5 +46,21 @@ public class InterruptRequest {
     @Override
     public String toString() {
         return (isNMI?"Non-maskable ":"") + "InterruptRequest 0x" + Format.asHex(interruptNumber,2) + " with ICR=0b" + Format.asBinary(icr,5);
+    }
+
+    public int compareTo(Object o) {
+        InterruptRequest i = (InterruptRequest) o;
+        // returns a negative number if this object has higher priority (NMI or lower ICR) than o and should appear first
+        if (i.isNMI != this.isNMI) {
+            // If only one is NMI (should be the case), it comes first
+            return (isNMI ? -1 : 1);
+        }
+        else if (icr != i.icr) {
+            // Lower ICR gets a higher priority
+            return icr - i.icr;
+        }
+        else {
+            return interruptNumber - i.interruptNumber;
+        }
     }
 }

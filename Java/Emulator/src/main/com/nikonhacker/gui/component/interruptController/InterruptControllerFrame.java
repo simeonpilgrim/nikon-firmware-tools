@@ -1,8 +1,8 @@
 package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -21,16 +21,14 @@ import java.util.Vector;
  * See http://mcu.emea.fujitsu.com/document/products_mcu/mb91350/documentation/ds91350a-ds07-16503-5e.pdf, p55-62
  */
 public class InterruptControllerFrame extends DocumentFrame {
-    protected static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
-    private static final int ICR0_BASE_ADDRESS = 0x400;
 
-    private Emulator emulator;
+    private InterruptController interruptController;
 
     Timer timer = null;
 
-    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final Emulator emulator, final DebuggableMemory memory, final EmulatorUI ui) {
+    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final InterruptController interruptController, final DebuggableMemory memory, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
-        this.emulator = emulator;
+        this.interruptController = interruptController;
 
         Insets buttonInsets = new Insets(1,1,1,1);
 
@@ -54,14 +52,14 @@ public class InterruptControllerFrame extends DocumentFrame {
                     isNMI = true;
                 }
                 else {
-                    int irNumber = interruptNumber - INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
+                    int irNumber = interruptNumber - InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
                     interruptName = "IR" + (irNumber < 10 ? "0" : "") + irNumber;
-                    int icrAddress = irNumber + ICR0_BASE_ADDRESS;
+                    int icrAddress = irNumber + InterruptController.ICR0_BASE_ADDRESS;
                     icr = memory.loadUnsigned8(icrAddress) & 0x1F;
                     isNMI = false;
                 }
                 InterruptRequest interruptRequest = new InterruptRequest(interruptNumber, isNMI, icr);
-                if (emulator.addInterruptRequest(interruptRequest)) {
+                if (interruptController.request(interruptRequest)) {
                     ui.setStatusText(interruptName + " (" +  interruptRequest + ") was requested.");
                 }
                 else {
@@ -75,7 +73,7 @@ public class InterruptControllerFrame extends DocumentFrame {
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 16; j++) {
                 final int value = i * 16 + j;
-                JInterruptButton button = new JInterruptButton("IR" + (value<10?"0":"") + value, value + INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
+                JInterruptButton button = new JInterruptButton("IR" + (value<10?"0":"") + value, value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
                 button.setMargin(buttonInsets);
                 button.addActionListener(standardInterruptButtonListener);
                 standardButtonGrid.add(button);
@@ -116,7 +114,7 @@ public class InterruptControllerFrame extends DocumentFrame {
             public void actionPerformed(ActionEvent e) {
                 JInterruptButton button = (JInterruptButton) e.getSource();
                 int interruptNumber = button.getInterruptNumber();
-                if (emulator.addInterruptRequest(new InterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
+                if (interruptController.request(new InterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
                     ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
                 }
                 else {
@@ -224,7 +222,7 @@ public class InterruptControllerFrame extends DocumentFrame {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                emulator.addInterruptRequest(new InterruptRequest(interruptNumber, isNmi, icr));
+                interruptController.request(new InterruptRequest(interruptNumber, isNmi, icr));
             }
         }, 0, interval);
         ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");

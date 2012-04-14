@@ -186,10 +186,17 @@ public class CPUState {
 
     /**
      * Sets ILM part of the PS register (splits it into individual bits)
-     * @param ilm
+     * @param ilm new ILM value. According to the spec : "A limited range of values can be set from programs.
+     *            If the original value is in a range of 16 to 31, a value ranging from 16 to 31 can be specified
+     *            as a new value. If a value ranging from 0 to 15 is set for an instruction, (specified-value + 16)
+     *            is transferred when the instruction is executed.
+     *            If the original value is in a range of 0 to 15, any value ranging from 0 to 31 can be specified.
+     * @param isFromPrograms true if the instruction is called by a program instruction
      */
-    public void setILM(int ilm) {
-        ILM4 = (ilm & 0x10) >> 4;
+    public void setILM(int ilm, boolean isFromPrograms) {
+        if (ILM4 == 0 || !isFromPrograms) {
+            ILM4 = (ilm & 0x10) >> 4;
+        }
         ILM3 = (ilm & 0x08) >> 3;
         ILM2 = (ilm & 0x04) >> 2;
         ILM1 = (ilm & 0x02) >> 1;
@@ -202,27 +209,28 @@ public class CPUState {
      * @return PS
      */
     public int getPS() {
-        /* According to the Fujitsu Spec progfr-cm71-00101-5e.pdf , p. 19:
-         * Unused bits are all reserved for future system expansion. Write values should always be "0".
-         * The read value of these bits is always "0".
+        /* According to the Fujitsu Spec CM71-00104-3E.pdf, p29 (or progfr-cm71-00101-5e.pdf , p. 19):
+         * The read value of reserved bits is always "0". Write values should always be written as "0"
          * So :
          */
         // return (getILM() << 16) | (getSCR() << 8) | getCCR();
 
         /* Although, all examples write the unused bits as "1" and expect to read them back as 1
-         * Ex : Page 158 (§7.62)
+         * Ex : CM71-00104-3E.pdf, page 321 (§7.119) (or progfr-cm71-00101-5e.pdf, page 158 (§7.62))
          * So :
          */
 
-        return 0xffe0f8c0 /* 0b 11111111 11100000 11111000 11000000 */ | (getILM() << 16) | (getSCR() << 8) | getCCR();
+        return 0xffe0f8c0 /* 0b 11111111 11100000 11111000 11000000 */
+                | (getILM() << 16) | (getSCR() << 8) | getCCR();
     }
 
     /**
-     * Splits PS into individual parts
-     * @param ps
+     * Sets PS by splitting it into its individual parts
+     * @param ps new PS value
+     * @param isFromPrograms true if the instruction is called by a program instruction. See setILM
      */
-    public void setPS(int ps) {
-        setILM((ps >> 16) & 0xFF);
+    public void setPS(int ps, boolean isFromPrograms) {
+        setILM((ps >> 16) & 0xFF, isFromPrograms);
         setSCR((ps >> 8) & 0xFF);
         setCCR(ps & 0xFF);
     }
@@ -270,7 +278,7 @@ public class CPUState {
             regValue[i] = new Register32(0);
         }
         regValue[15] = regValue[SSP];
-        setILM(0xf); // 0b1111
+        setILM(0xf, false); // 0b1111
         T = 0;
         I = 0;
         setS(0);
@@ -284,7 +292,7 @@ public class CPUState {
             regValue[i] = new Register32(0);
         }
         regValue[15] = regValue[SSP];
-        setILM(0);
+        setILM(0, false);
         T = 0;
         I = 0;
         setS(0);
@@ -304,7 +312,7 @@ public class CPUState {
 
     public boolean accepts(InterruptRequest interruptRequest) {
         return(
-                (getILM() > interruptRequest.getICR() && I == 1)
+                (I == 1 && interruptRequest.getICR() < getILM())
              || (getILM() > 15 && interruptRequest.isNMI())
               );
     }

@@ -9,6 +9,7 @@
  */
 package com.nikonhacker.emu.memory;
 
+import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 
 import java.util.ArrayList;
@@ -27,6 +28,30 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
     private List<MemoryActivityListener> activityListeners = new ArrayList<MemoryActivityListener>();
 
+    private List<IoActivityListener> ioActivityListeners = new ArrayList<IoActivityListener>();
+
+    /**
+     * This is the memory page at 0x0000-0xFFFF, which contains all microcontroller registers
+     * It is not part of the main table to cause a NullPointerException upon write
+     * so that accesses are caught without a performance impact on the rest of the memory
+     */
+    byte[] ioPage = new byte[getPageSize()];
+
+    private byte loadIO8(int offset) {
+        byte value = ioPage[offset];
+        for (IoActivityListener ioActivityListener : ioActivityListeners) {
+            ioActivityListener.onIoLoad8(ioPage, offset, value);
+        }
+        return value;
+    }
+
+    private void storeIO(int offset, byte value) {
+        for (IoActivityListener ioActivityListener : ioActivityListeners) {
+            ioActivityListener.onIoStore8(ioPage, offset, value);
+        }
+        ioPage[offset] = value;
+    }
+
     /** Constructor - used when this is the instantiated class */
     public DebuggableMemory() {
         clear();
@@ -44,6 +69,17 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return activityListeners.remove(activityListener);
     }
 
+    public List<IoActivityListener> getIoActivityListeners() {
+        return ioActivityListeners;
+    }
+
+    public void addIoActivityListener(IoActivityListener ioActivityListener) {
+        ioActivityListeners.add(ioActivityListener);
+    }
+
+    public boolean removeIoActivityListener(IoActivityListener ioActivityListener) {
+        return ioActivityListeners.remove(ioActivityListener);
+    }
 
     /**
      * Perform a byte load where the sign extended result fills the return value
@@ -55,18 +91,22 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadSigned8(addr, true);
     }
     
-    final public int loadSigned8(int addr, boolean mustLog) {
+    final public int loadSigned8(int addr, boolean enableListeners) {
+        int page = getPTE(addr);
+        int offset = getOffset(addr);
         try {
-            int page = getPTE(addr);
-            int offset = getOffset(addr);
-
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
-                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-                pageData = readableMemory[page];
+                if (page == 0) {
+                    return loadIO8(offset);
+                }
+                else {
+                    map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+                    pageData = readableMemory[page];
+                }
             }
 
-            if (mustLog) {
+            if (enableListeners) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData8(addr, pageData[offset]);
                 }
@@ -74,8 +114,8 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
             return pageData[offset];
         } catch (NullPointerException e) {
-            System.err.println("Null pointer exception at address: 0x" + Integer.toHexString(addr));
-            throw e;
+             System.err.println("Null pointer exception loading from address: 0x" + Integer.toHexString(addr));
+             throw e;
         }
     }
 
@@ -89,18 +129,22 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadUnsigned8(addr, true);
     }
     
-    final public int loadUnsigned8(int addr, boolean mustLog) {
+    final public int loadUnsigned8(int addr, boolean enableListeners) {
+        int page = getPTE(addr);
+        int offset = getOffset(addr);
         try {
-            int page = getPTE(addr);
-            int offset = getOffset(addr);
-
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
-                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-                pageData = readableMemory[page];
+                if (page == 0) {
+                    return loadIO8(offset) & 0xFF;
+                }
+                else {
+                    map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+                    pageData = readableMemory[page];
+                }
             }
 
-            if (mustLog) {
+            if (enableListeners) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData8(addr, pageData[offset]);
                 }
@@ -108,7 +152,8 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
             return pageData[offset] & 0xFF;
         } catch (NullPointerException e) {
-            throw new MemoryException("Memory not initialized trying to read data from address: 0x" + Integer.toHexString(addr));
+            System.err.println("Null pointer exception loading from address: 0x" + Integer.toHexString(addr));
+            throw e;
         }
     }
 
@@ -122,9 +167,9 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadSigned16(addr, true);
     }
     
-    public int loadSigned16(int addr, boolean mustLog) {
+    public int loadSigned16(int addr, boolean enableListeners) {
         int value = (loadSigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadData16(addr, value);
             }
@@ -143,9 +188,9 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadUnsigned16(addr, true);   
     }
     
-    public int loadUnsigned16(int addr, boolean mustLog) {
+    public int loadUnsigned16(int addr, boolean enableListeners) {
         int value = (loadUnsigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadData16(addr, value);
             }
@@ -163,11 +208,11 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return load32(addr, true);
     }
 
-    public int load32(int addr, boolean mustLog) {
+    public int load32(int addr, boolean enableListeners) {
         try {
             int value = (loadSigned8(addr, false) << 24) | (loadUnsigned8(addr + 1, false) << 16)
                     | (loadUnsigned8(addr + 2, false) << 8) | loadUnsigned8(addr + 3, false);
-            if (mustLog) {
+            if (enableListeners) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData32(addr, value);
                 }
@@ -189,10 +234,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadInstruction8(addr, true);
     }
 
-    public int loadInstruction8(int addr, boolean mustLog) {
+    public int loadInstruction8(int addr, boolean enableListeners) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadInstruction8(addr, executableMemory[page][offset]);
             }
@@ -224,11 +269,11 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadInstruction32(addr, true);
     }
 
-    public int loadInstruction32(int addr, boolean mustLog) {
+    public int loadInstruction32(int addr, boolean enableListeners) {
         int value = (loadInstruction8(addr, false) << 24)
                 | (loadInstruction8(addr + 1, false) << 16)
                 | (loadInstruction8(addr + 2, false) << 8) | loadInstruction8(addr + 3, false);
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadInstruction32(addr, value);
             }
@@ -246,16 +291,22 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         store8(addr, value, true);
     }
 
-    public final void store8(int addr, int value, boolean mustLog) {
+    public final void store8(int addr, int value, boolean enableListeners) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
 
         byte[] pageData = writableMemory[page];
         if (pageData == null) {
-            map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-            pageData = writableMemory[page];
+            if (page == 0) {
+                storeIO(offset, (byte) value);
+                return;
+            }
+            else {
+                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+                pageData = writableMemory[page];
+            }
         }
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onStore8(addr, (byte) value);
             }
@@ -273,8 +324,8 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         store16(addr, value, true);
     }
 
-    public void store16(int addr, int value, boolean mustLog) {
-        if (mustLog) {
+    public void store16(int addr, int value, boolean enableListeners) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onStore16(addr, value);
             }
@@ -293,9 +344,9 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         store32(addr, value, true);
     }
 
-    public void store32(int addr, int value, boolean mustLog) {
+    public void store32(int addr, int value, boolean enableListeners) {
         try {
-            if (mustLog) {
+            if (enableListeners) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onStore32(addr, value);
                 }
