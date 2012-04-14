@@ -190,13 +190,13 @@ public class CodeAnalyzer {
         // Give names to labels linked to function start/parts (if they were spotted as targets already)
         for (Integer address : codeStructure.functions.keySet()) {
             Function function = codeStructure.functions.get(address);
-            if (codeStructure.getLabels().containsKey(address)) {
+            if (codeStructure.labels.containsKey(address)) {
                 codeStructure.labels.put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address), null));
             }
             for (int i = 0; i < function.getCodeSegments().size(); i++) {
                 CodeSegment codeSegment = function.getCodeSegments().get(i);
                 int startAddress = codeSegment.getStart();
-                if (codeStructure.getLabels().containsKey(startAddress)) {
+                if (codeStructure.labels.containsKey(startAddress)) {
                     codeStructure.labels.put(startAddress, new Symbol(startAddress, "part_" + (i+1) + "_of_" + function.getName(), null));
                 }
             }
@@ -388,7 +388,7 @@ public class CodeAnalyzer {
                 case INTE:
                     Integer interruptAddress = interruptTable.get(instruction.decodedX);
                     if (instruction.decodedX == 0x40 && int40mapping != null) {
-                        processInt40Call(currentFunction, address, instruction, debugPrintWriter, processedInstructions, interruptTable, int40mapping, outputOptions);
+                        processInt40Call(currentFunction, address, instruction);
                     }
                     else {
                         Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
@@ -471,10 +471,10 @@ public class CodeAnalyzer {
         }
     }
 
-    private void processInt40Call(Function currentFunction, Integer address, DisassembledInstruction instruction, PrintWriter debugPrintWriter, Set<Integer> processedInstructions, Map<Integer, Integer> interruptTable, Map<Integer, Integer> int40mapping, Set<OutputOption> outputOptions) throws IOException {
-        // Specific interrupt used as a wrapper by RTOS
+    private void processInt40Call(Function currentFunction, Integer address, DisassembledInstruction instruction) throws IOException {
+        // REALOS System calls
         // Determine R12 before the call by reading the instructions up to 200 bytes backwards (168 needed for call at 0x001824D0)
-        // TODO : should follow program flow by climbing back function coderanges.
+        // TODO : ideally, should follow program flow by climbing back function coderanges and not addresses in a straight line.
         // TODO : Here, we run the risk of not catching the good R12 value...
         Integer r12 = null;
         boolean r12SignExtend = false;
@@ -532,6 +532,12 @@ public class CodeAnalyzer {
                     }
                 }
                 target.getCalledBy().put(interrupt40Call, currentFunction);
+                if (StringUtils.isBlank(instruction.comment)) {
+                    Symbol symbol = symbols.get(int40targetAddress);
+                    if (symbol != null) {
+                        instruction.comment = symbol.getName();
+                    }
+                }
             }
         }
     }
