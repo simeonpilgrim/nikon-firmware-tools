@@ -1538,7 +1538,7 @@ public class EmulatorTest extends TestCase {
 
         cpuState.setReg(15, 0x12345674);
         // Note : assume the samples in the spec are right (unused bits = 1), although §3.3.2 says they should be 0 (page 19)
-        cpuState.setPS(0xFFFFF8D5);
+        cpuState.setPS(0xFFFFF8D5, false);
         memory.store32(0x12345674, 0xFFF8F8C0);
 
         emulator.play();
@@ -1761,7 +1761,7 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x1790); // 0b0001011110010000
 
         cpuState.setReg(15, 0x12345678);
-        cpuState.setPS(0xFFF8F8C0);
+        cpuState.setPS(0xFFF8F8C0, false);
         memory.store32(0x12345674, RANDOM_32);
 
         emulator.play();
@@ -1916,7 +1916,7 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x1713); // 0b0001011100010011
 
         cpuState.setReg(3, RANDOM_32);
-        cpuState.setPS(0xFFF8F8C0);
+        cpuState.setPS(0xFFF8F8C0, false);
 
         emulator.play();
 
@@ -1946,7 +1946,7 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x713); // 0b0000011100010011
 
         cpuState.setReg(3, 0xFFF3F8D5);
-        cpuState.setPS(RANDOM_32);
+        cpuState.setPS(RANDOM_32, false);
 
         emulator.play();
 
@@ -2034,7 +2034,7 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.TBR, 0x000FFC00);
         cpuState.setReg(CPUState.USP, 0x40000000);
         cpuState.pc=0x80888086;
-        cpuState.setPS(0xFFFFF8F0);
+        cpuState.setPS(0xFFFFF8F0, false);
         cpuState.setCCR(0x30); // 0b110000
 
         memory.store32(0x000FFF7C, 0x68096800);
@@ -2069,8 +2069,8 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.USP, 0x40000000);
         cpuState.setReg(CPUState.TBR, 0x000FFC00);
         cpuState.pc=0x80888086;
-        cpuState.setPS(0xFFF5F8F0);
-        cpuState.setILM(0x15); // 0b10101
+        cpuState.setPS(0xFFF5F8F0, false);
+        cpuState.setILM(0x15, false); // 0b10101
         cpuState.setCCR(0x30); // 0b110000
 
         memory.store32(0x000FFFD8, 0x68096800);
@@ -2105,8 +2105,8 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(CPUState.SSP, 0x7FFFFFF8);
         cpuState.setReg(CPUState.USP, 0x40000000);
         cpuState.pc=0xFF0090BC;
-        cpuState.setPS(0xFFF0F8D4);
-        cpuState.setILM(0x10); // 0b10000
+        cpuState.setPS(0xFFF0F8D4, false);
+        cpuState.setILM(0x10, false); // 0b10000
         cpuState.setCCR(0x14); // 0b010100
 
         memory.store32(0x7FFFFFF8, 0x80888088);
@@ -2561,7 +2561,7 @@ public class EmulatorTest extends TestCase {
 
         setInstruction(0x8714); // 0b1000011100010100
 
-        cpuState.setILM(0x1f); // 0b11111
+        cpuState.setILM(0x1f, false); // 0b11111
 
         emulator.play();
 

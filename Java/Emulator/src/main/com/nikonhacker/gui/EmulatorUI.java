@@ -14,8 +14,10 @@ import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
+import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
@@ -175,6 +177,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private final JPanel toolBar;
     private JLabel statusBar;
     private String statusText = "Ready";
+    private InterruptController interruptController;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -1169,6 +1172,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator.setMemory(memory);
             emulator.setCpuState(cpuState);
 
+            interruptController = new InterruptController(memory);
+
+            emulator.setInterruptController(interruptController);
+
+            memory.addIoActivityListener(new ExpeedIoListener(cpuState, interruptController));
+
             setEmulatorSleepCode(prefs.getSleepTick());
 
             isImageLoaded = true;
@@ -1327,7 +1336,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleInterruptController() {
         if (interruptControllerFrame == null) {
-            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, emulator, memory, this);
+            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, interruptController, memory, this);
             addDocumentFrame(interruptControllerFrame);
             interruptControllerFrame.display(true);
         }
@@ -1507,6 +1516,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         this.codeStructure = codeStructure;
     }
 
+    /**
+     * Starts an emulating session
+     * @param stepMode if true, only execute one exception
+     * @param debugMode if true, defined user breakpoints are active
+     * @param endAddress if not null, stop when reaching this address
+     */
     private void playEmulator(boolean stepMode, boolean debugMode, Integer endAddress) {
         if (!isImageLoaded) {
             throw new RuntimeException("No Image loaded !");
@@ -1526,10 +1541,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             if (endAddress != null) {
+                // Set a temporary break condition at given endAddress
                 CPUState values = new CPUState(endAddress);
                 CPUState flags = new CPUState();
                 flags.pc = 1;
-                flags.setILM(0);
+                flags.setILM(0, false);
                 flags.setReg(CPUState.TBR, 0);
                 BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
                 emulator.addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));

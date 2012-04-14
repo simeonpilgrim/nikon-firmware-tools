@@ -2,6 +2,7 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
+import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -22,6 +23,7 @@ public class Emulator {
     private long totalCycles;
     private Memory memory;
     private CPUState cpuState;
+    private InterruptController interruptController;
 
     private Integer nextPC = null;
     private Integer nextRP = null;
@@ -31,7 +33,6 @@ public class Emulator {
     private int sleepIntervalMs = 0;
     private boolean exitSleepLoop = false;
     private final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-    private final List<InterruptRequest> interruptRequests = new ArrayList<InterruptRequest>();
 
     private Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
 
@@ -46,10 +47,10 @@ public class Emulator {
         memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
         EmulatorOptions.debugMemory = false;
 
-        CPUState cpuState = new CPUState(initialPc);
         Emulator emulator = new Emulator();
         emulator.setMemory(memory);
-        emulator.setCpuState(cpuState);
+        emulator.setCpuState(new CPUState(initialPc));
+        emulator.setInterruptController(new InterruptController(memory));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();
@@ -106,6 +107,10 @@ public class Emulator {
 
     public void setCpuState(CPUState cpuState) {
         this.cpuState = cpuState;
+    }
+
+    public void setInterruptController(InterruptController interruptController) {
+        this.interruptController = interruptController;
     }
 
     /**
@@ -971,7 +976,7 @@ public class Emulator {
                         break;
     
                     case 0x0790: /* LD @R15+, PS */
-                        cpuState.setPS(memory.load32(cpuState.getReg(15)));
+                        cpuState.setPS(memory.load32(cpuState.getReg(15)), true);
                         cpuState.setReg(15, cpuState.getReg(15) + 4);
     
                         /* NZVC is part of the PS !*/
@@ -1236,7 +1241,7 @@ public class Emulator {
                         break;
     
                     case 0x0710: /* MOV Ri, PS */
-                        cpuState.setPS(cpuState.getReg(disassembledInstruction.i));
+                        cpuState.setPS(cpuState.getReg(disassembledInstruction.i), true);
     
                         /* NZVC is part of the PS !*/
 
@@ -1334,7 +1339,7 @@ public class Emulator {
                         cpuState.setReg(CPUState.SSP, cpuState.getReg(CPUState.SSP) - 4);
                         memory.store32(cpuState.getReg(CPUState.SSP), cpuState.pc + 2);
                         cpuState.setS(0);
-                        cpuState.setILM(4);
+                        cpuState.setILM(4, false);
                         cpuState.pc = memory.load32(cpuState.getReg(CPUState.TBR) + 0x3D8);
     
                         /* No change to NZVC */
@@ -1356,7 +1361,7 @@ public class Emulator {
                         /* note : this is the order given in the spec but loading PS below could switch the USP<>SSP,
                         so the last SP increment would address the wrong stack
                         Doing it this way passes the test */
-                        cpuState.setPS(memory.load32(cpuState.getReg(15) - 4));
+                        cpuState.setPS(memory.load32(cpuState.getReg(15) - 4), false);
     
                         /* NZVC is part of the PS !*/
     
@@ -2080,8 +2085,8 @@ public class Emulator {
                         break;
                     
                     case 0x8700: /* STILM #u8 */
-                        cpuState.setILM(disassembledInstruction.x);
-    
+                        cpuState.setILM(disassembledInstruction.x, true);
+
                         /* No change to NZVC */
 
                         cpuState.pc += 2;
@@ -2324,19 +2329,17 @@ public class Emulator {
                 }
                 else {
                     // If not in a delay slot, check interrupts
-                    if(!interruptRequests.isEmpty()) {
-                        //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (rare)
-                        synchronized (interruptRequests) {
-                            if(!interruptRequests.isEmpty()) {
-                                InterruptRequest interruptRequest = interruptRequests.get(0);
-                                if (cpuState.accepts(interruptRequest)){
-                                    if (instructionPrintWriter != null) {
-                                        instructionPrintWriter.println("------------------------- Accepting " + interruptRequest);
-                                    }
-                                    interruptRequests.remove(0);
-                                    processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc);
-                                    cpuState.setILM(interruptRequest.getICR());
+                    if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
+                        InterruptRequest interruptRequest = interruptController.getNextRequest();
+                        //Double test because lack of synchronization means the status could have changed in between
+                        if (interruptRequest != null) {
+                            if (cpuState.accepts(interruptRequest)){
+                                if (instructionPrintWriter != null) {
+                                    instructionPrintWriter.println("------------------------- Accepting " + interruptRequest);
                                 }
+                                interruptController.removeRequest(interruptRequest);
+                                processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc);
+                                cpuState.setILM(interruptRequest.getICR(), false);
                             }
                         }
                     }
@@ -2429,41 +2432,6 @@ public class Emulator {
     public void addBreakCondition(BreakCondition breakCondition) {
         synchronized (breakConditions) {
             breakConditions.add(breakCondition);
-        }
-    }
-
-    public boolean addInterruptRequest(InterruptRequest newInterruptRequest) {
-        synchronized (interruptRequests) {
-            for (InterruptRequest currentInterruptRequest : interruptRequests) {
-                if (currentInterruptRequest.getInterruptNumber() == newInterruptRequest.getInterruptNumber()) {
-                    // Same number. Keep highest priority one
-                    if ((newInterruptRequest.isNMI() && !currentInterruptRequest.isNMI())
-                            || (newInterruptRequest.getICR() < currentInterruptRequest.getICR())) {
-                        // New is better. Remove old one then go on adding
-                        interruptRequests.remove(currentInterruptRequest);
-                        break;
-                    }
-                    else {
-                        // Old is better. No change to the list. Exit
-                        return false;
-                    }
-                }
-            }
-            interruptRequests.add(newInterruptRequest);
-            Collections.sort(interruptRequests, new Comparator<InterruptRequest>() {
-                public int compare(InterruptRequest o1, InterruptRequest o2) {
-                    // returns a negative number if o1 has higher priority (NMI or lower ICR) and should appear first
-                    if (o2.isNMI() != o1.isNMI()) {
-                        // If only one is NMI, it has to come on top
-                        return (o1.isNMI()?-1:1);
-                    }
-                    else {
-                        // Lower ICR gets a higher priority
-                        return o1.getICR() - o2.getICR();
-                    }
-                }
-            });
-            return true;
         }
     }
 
