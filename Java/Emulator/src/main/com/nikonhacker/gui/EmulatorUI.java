@@ -352,7 +352,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(screenEmulatorButton);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
-        clockButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Clock timer", "Clock");
+        clockButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Toggle clock timer", "Clock");
         bar.add(clockButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -1673,7 +1673,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
-    public void playOneFunction(int address) {
+    public void playOneFunction(int address, boolean debugMode) {
         // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
         memory.store16(FUNCTION_CALL_BASE_ADDRESS, 0x9f8c);      // LD R12,
         memory.store32(FUNCTION_CALL_BASE_ADDRESS + 2, address); //         address
@@ -1685,6 +1685,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulator.addBreakCondition(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
 
         cpuState.pc = FUNCTION_CALL_BASE_ADDRESS;
+
+        if (debugMode) {
+            for (BreakTrigger breakTrigger : prefs.getTriggers()) {
+                if (breakTrigger.isEnabled()) {
+                    emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+                }
+            }
+        }
+
 
         startEmulator();
     }

@@ -50,14 +50,22 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         popupMenu.add(removeMenuItem);
 
         popupMenu.add(new JSeparator());
-        
-        final JMenuItem executeMenuItem = new JMenuItem("Execute");
-        executeMenuItem.addActionListener(new ActionListener() {
+
+        final JMenuItem runMenuItem = new JMenuItem("Run");
+        runMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.playOneFunction(currentlySelectedFunction.getAddress());
+                ui.playOneFunction(currentlySelectedFunction.getAddress(), false);
             }
         });
-        popupMenu.add(executeMenuItem);
+        popupMenu.add(runMenuItem);
+
+        final JMenuItem debugMenuItem = new JMenuItem("Debug");
+        debugMenuItem.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                ui.playOneFunction(currentlySelectedFunction.getAddress(), true);
+            }
+        });
+        popupMenu.add(debugMenuItem);
 
 
         // This handles only mouse click events
@@ -102,7 +110,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         Object value = ((mxCell) cell).getValue();
                         if (value instanceof Function) {
                             currentlySelectedFunction = (Function) value;
-                            executeMenuItem.setEnabled(ui.isEmulatorReady());
+                            debugMenuItem.setEnabled(ui.isEmulatorReady());
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
                     }
