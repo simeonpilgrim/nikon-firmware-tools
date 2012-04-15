@@ -51,7 +51,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
 
         popupMenu.add(new JSeparator());
 
-        final JMenuItem runMenuItem = new JMenuItem("Run");
+        final JMenuItem runMenuItem = new JMenuItem("Run then pause");
         runMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ui.playOneFunction(currentlySelectedFunction.getAddress(), false);
@@ -59,7 +59,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         });
         popupMenu.add(runMenuItem);
 
-        final JMenuItem debugMenuItem = new JMenuItem("Debug");
+        final JMenuItem debugMenuItem = new JMenuItem("Debug then pause");
         debugMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 ui.playOneFunction(currentlySelectedFunction.getAddress(), true);
