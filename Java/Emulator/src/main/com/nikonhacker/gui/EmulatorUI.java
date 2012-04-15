@@ -87,6 +87,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
+    private static final String COMMAND_TOGGLE_CLOCK_TIMER = "TOGGLE CLOCK TIMER";
     private static final String COMMAND_TOGGLE_CALL_STACK_WINDOW = "TOGGLE_CALL_STACK_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
@@ -102,10 +103,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final int CAMERA_SCREEN_WIDTH = 640;
     private static final int CAMERA_SCREEN_HEIGHT = 480;
 
+    private static final int CLOCK_INTERRUPT_NUMBER = 0x18;
 
-    private DebuggableMemory memory;
-    private CPUState cpuState;
+
     private Emulator emulator;
+    private CPUState cpuState;
+    private DebuggableMemory memory;
+    private InterruptController interruptController;
+    private java.util.Timer clockTimer;
+    private java.util.Timer clockAnimationTimer;
 
     private CodeStructure codeStructure = null;
 
@@ -137,6 +143,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
+    private JCheckBoxMenuItem clockMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
     private JMenuItem optionsMenuItem;
@@ -158,6 +165,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
     private JButton interruptControllerButton;
+    private JButton clockButton;
     private JButton callStackButton;
     private JButton saveLoadMemoryButton;
     private JButton optionsButton;
@@ -177,7 +185,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private final JPanel toolBar;
     private JLabel statusBar;
     private String statusText = "Ready";
-    private InterruptController interruptController;
+
+    private static ImageIcon[] clockIcons;
+    private int clockAnimationCounter = 0;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -342,6 +352,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(screenEmulatorButton);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
+        clockButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Clock timer", "Clock");
+        bar.add(clockButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -570,6 +582,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         componentsMenu.add(interruptControllerMenuItem);
 
+        //Timer interrupt
+        clockMenuItem = new JCheckBoxMenuItem("Timer interrupt");
+//        clockMenuItem.setMnemonic(KeyEvent.VK_T);
+//        clockMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK));
+        clockMenuItem.setActionCommand(COMMAND_TOGGLE_CLOCK_TIMER);
+        clockMenuItem.addActionListener(this);
+        componentsMenu.add(clockMenuItem);
+
 
         //Set up the trace menu.
         JMenu traceMenu = new JMenu("Trace");
@@ -745,6 +765,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
             toggleInterruptController();
+        }
+        else if (COMMAND_TOGGLE_CLOCK_TIMER.equals(e.getActionCommand())) {
+            toggleClockTimer();
         }
         else if (COMMAND_TOGGLE_CALL_STACK_WINDOW.equals(e.getActionCommand())) {
             toggleCallStack();
@@ -1347,6 +1370,54 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
+    private void toggleClockTimer() {
+        if (clockTimer == null) {
+            clockTimer = new java.util.Timer(false);
+            clockTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    interruptController.request(CLOCK_INTERRUPT_NUMBER);
+                }
+            }, 0, 1 /*ms*/);
+            setStatusText("Interrupt 0x" + Format.asHex(CLOCK_INTERRUPT_NUMBER, 2) + " will be requested every millisecond");
+
+            clockAnimationTimer = new java.util.Timer(false);
+            clockAnimationTimer.scheduleAtFixedRate(new TimerTask() {
+                @Override
+                public void run() {
+                    clockAnimationCounter++;
+                    if (clockAnimationCounter == clockIcons.length) {
+                        clockAnimationCounter = 1;
+                    }
+                    clockButton.setIcon(clockIcons[clockAnimationCounter]);
+                }
+            }, 0, 300 /*ms*/);
+        }
+        else {
+            clockTimer.cancel();
+            clockTimer = null;
+            clockAnimationTimer.cancel();
+            clockAnimationTimer = null;
+            clockButton.setIcon(clockIcons[0]);
+        }
+    }
+
+    static {
+        clockIcons = new ImageIcon[25];
+        for (int i = 0; i < clockIcons.length; i++) {
+            String imgLocation = "images/clock";
+            String text;
+            if (i == 0) {
+                text = "Start timer";
+            }
+            else {
+                imgLocation += "_" + i;
+                text = "Stop timer";
+            }
+            clockIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
+        }
+    }
+
     private void toggleCallStack() {
         if (callStackFrame == null) {
             callStackFrame = new CallStackFrame("Call Stack", true, true, false, true, emulator, cpuState, codeStructure, this);
@@ -1446,6 +1517,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryHexEditorMenuItem.setSelected(memoryHexEditorFrame != null);
         component4006MenuItem.setSelected(component4006Frame != null);
         interruptControllerMenuItem.setSelected(interruptControllerFrame != null);
+        clockMenuItem.setSelected(clockTimer != null);
 
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
         sourceCodeMenuItem.setSelected(sourceCodeFrame != null);
@@ -1464,6 +1536,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryHexEditorMenuItem.setEnabled(isImageLoaded); memoryHexEditorButton.setEnabled(isImageLoaded);
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
+        clockMenuItem.setEnabled(isImageLoaded); clockButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
 
         saveLoadMemoryMenuItem.setEnabled(isImageLoaded); saveLoadMemoryButton.setEnabled(isImageLoaded);
