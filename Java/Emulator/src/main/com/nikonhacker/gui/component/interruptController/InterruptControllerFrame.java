@@ -8,6 +8,8 @@ import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -24,7 +26,12 @@ public class InterruptControllerFrame extends DocumentFrame {
 
     private InterruptController interruptController;
 
-    Timer timer = null;
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
+
+    private javax.swing.Timer _timer;
+    private final JList interruptList;
+
+    Timer interruptTimer = null;
 
     public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final InterruptController interruptController, final DebuggableMemory memory, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -185,7 +192,7 @@ public class InterruptControllerFrame extends DocumentFrame {
         JButton startTimerButton = new JButton("Start");
         startTimerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (timer == null) {
+                if (interruptTimer == null) {
                     startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
                     ((JButton) e.getSource()).setText("Stop");
                 }
@@ -205,21 +212,92 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         tabbedPane.addTab("Timer", null, timerPanel);
 
+
+        // Queue panel
+
+        JPanel queuePanel = new JPanel(new BorderLayout());
+
+        interruptList = new JList();
+        interruptList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        interruptList.setLayoutOrientation(JList.VERTICAL);
+        interruptList.setVisibleRowCount(10);
+
+        JScrollPane listScroller = new JScrollPane(interruptList);
+
+        queuePanel.add(listScroller, BorderLayout.CENTER);
+
+        tabbedPane.addTab("Queue", null, queuePanel);
+
+
+        // Add tab panel
+
         getContentPane().add(tabbedPane);
-        pack();
+
+
+        // Prepare update timer
+
+        _timer = new javax.swing.Timer(UPDATE_INTERVAL_MS*10, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                updateList();
+            }
+        });
+
+
+        // Event upon tab change
+
+        tabbedPane.addChangeListener(new ChangeListener() {
+            // This method is called whenever the selected tab changes
+            public void stateChanged(ChangeEvent evt) {
+                JTabbedPane pane = (JTabbedPane)evt.getSource();
+                // Only refresh if corresponding tab is selected
+                if (pane.getSelectedIndex() == 3) {
+                    setQueueAutoRefresh(true);
+                }
+                else {
+                    setQueueAutoRefresh(false);
+                }
+            }
+        });
+
     }
 
+    private void updateList() {
+        synchronized (interruptController.getInterruptRequestQueue()) {
+            DefaultListModel model = new DefaultListModel();
+            // Real stack
+            for (InterruptRequest request : interruptController.getInterruptRequestQueue()) {
+                model.addElement(request.toString());
+            }
+            interruptList.setModel(model);
+        }
+    }
+
+    public void setQueueAutoRefresh(boolean enabled) {
+        updateList();
+        if (enabled) {
+            if (!_timer.isRunning()) {
+                _timer.start();
+            }
+        }
+        else {
+            if (_timer.isRunning()) {
+                _timer.stop();
+            }
+        }
+    }
+
+
     private void stopTimer() {
-        if (timer != null) {
-            timer.cancel();
-            timer = null;
+        if (interruptTimer != null) {
+            interruptTimer.cancel();
+            interruptTimer = null;
         }
         ui.setStatusText("Stopped interrupt timer");
     }
 
     private void startTimer(final int interruptNumber, final boolean isNmi, final int icr, int interval) {
-        timer = new Timer(false);
-        timer.scheduleAtFixedRate(new TimerTask() {
+        interruptTimer = new Timer(false);
+        interruptTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
                 interruptController.request(new InterruptRequest(interruptNumber, isNmi, icr));
