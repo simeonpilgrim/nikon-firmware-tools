@@ -361,6 +361,12 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public byte[] getPageForAddress(int addr) {
-        return getPage(getPTE(addr));
+        int pte = getPTE(addr);
+        if (pte == 0) {
+            return ioPage;
+        }
+        else {
+            return getPage(pte);
+        }
     }
 }
