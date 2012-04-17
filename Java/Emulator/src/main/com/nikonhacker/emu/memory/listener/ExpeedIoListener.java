@@ -22,15 +22,21 @@ public class ExpeedIoListener implements IoActivityListener {
     }
 
     public void onIoStore8(byte[] ioPage, int offset, byte value) {
-        switch (offset) {
-            case REGISTER_DICR:
-                if ((value & 0x1) == 0) {
-                    interruptController.removeRequest(DELAY_INTERRUPT_REQUEST_NR);
-                }
-                else {
-                    interruptController.request(DELAY_INTERRUPT_REQUEST_NR);
-                }
-                break;
+        if (offset >= InterruptController.ICR00_ADDRESS && offset <= InterruptController.ICR47_ADDRESS) {
+            interruptController.updateRequestICR(offset - InterruptController.ICR00_ADDRESS, value);
         }
+        else {
+            switch (offset) {
+                case REGISTER_DICR:
+                    if ((value & 0x1) == 0) {
+                        interruptController.removeRequest(DELAY_INTERRUPT_REQUEST_NR);
+                    }
+                    else {
+                        interruptController.request(DELAY_INTERRUPT_REQUEST_NR);
+                    }
+                    break;
+            }
+        }
+        //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 }

@@ -1,11 +1,12 @@
 package com.nikonhacker.emu.interruptController;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
 
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf (and for some better understanding hm90360-cm44-10136-1e.pdf)
@@ -13,15 +14,18 @@ import java.util.TreeSet;
 public class InterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
-    public static final int ICR0_BASE_ADDRESS = 0x400;
-    private final SortedSet<InterruptRequest> interruptRequestQueue = new TreeSet<InterruptRequest>();
+
+    public static final int ICR00_ADDRESS = 0x440;
+    public static final int ICR47_ADDRESS = ICR00_ADDRESS + 4 * 47;
+
+    private final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
     private Memory memory;
 
     public InterruptController(Memory memory) {
         this.memory = memory;
     }
 
-    public Set<InterruptRequest> getInterruptRequestQueue() {
+    public List<InterruptRequest> getInterruptRequestQueue() {
         return interruptRequestQueue;
     }
 
@@ -31,8 +35,8 @@ public class InterruptController {
      * TODO : Note that it means that once an interrupt has been requested, its level cannot change,
      * TODO : although a real CPU would recompute priority if the ICRxx change in between
      * TODO : The listener on the ICR should update the InterruptRequest and re-sort the queue
-     * @param interruptNumber The number of the interrupt to request
-     * @return
+     * @param interruptNumber The number of the interrupt to request (0x0F - 0x3F)
+     * @return true if request was queued. false otherwise.
      */
     public boolean request(int interruptNumber) {
         int icr;
@@ -41,12 +45,15 @@ public class InterruptController {
             icr = 0xF;
             isNMI = true;
         }
-        else {
+        else if (interruptNumber >= 0x10 && interruptNumber <= 0x3F) {
             int irNumber = interruptNumber - INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
-            int icrAddress = irNumber + ICR0_BASE_ADDRESS;
+            int icrAddress = irNumber + ICR00_ADDRESS;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, §10.3.1)
             icr = memory.loadUnsigned8(icrAddress) & 0x1F | 0x10;
+        }
+        else {
+            throw new InterruptControllerException("Cannot determine ICR value for interrupt 0x" + Format.asHex(interruptNumber, 2));
         }
         if (icr == 0x1F) {
             /* ICR = 0b11111 is Interrupt disabled. See page 259 */
@@ -80,6 +87,7 @@ public class InterruptController {
                 }
             }
             interruptRequestQueue.add(newInterruptRequest);
+            Collections.sort(interruptRequestQueue);
             return true;
         }
     }
@@ -131,9 +139,23 @@ public class InterruptController {
                 return null;
             }
             else {
-                return interruptRequestQueue.first();
+                return interruptRequestQueue.get(0);
             }
         }
     }
 
+    public void updateRequestICR(int interruptNumber, byte icr) {
+        synchronized (interruptRequestQueue) {
+            for (InterruptRequest request : interruptRequestQueue) {
+                if (request.getInterruptNumber() == interruptNumber) {
+                    if (icr == 0x1F) {
+                        System.err.println("Disabling interrupt 0x" + Format.asHex(interruptNumber, 2));
+                    }
+                    request.setICR(icr & 0x1F | 0x10);
+                    Collections.sort(interruptRequestQueue);
+                    break;
+                }
+            }
+        }
+    }
 }

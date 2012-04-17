@@ -61,7 +61,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                 else {
                     int irNumber = interruptNumber - InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
                     interruptName = "IR" + (irNumber < 10 ? "0" : "") + irNumber;
-                    int icrAddress = irNumber + InterruptController.ICR0_BASE_ADDRESS;
+                    int icrAddress = irNumber + InterruptController.ICR00_ADDRESS;
                     icr = memory.loadUnsigned8(icrAddress) & 0x1F;
                     isNMI = false;
                 }
