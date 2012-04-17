@@ -242,6 +242,31 @@ public class CodeAnalyzer {
         }
         debugPrintWriter.println("Label generation took " + (System.currentTimeMillis() - start) + "ms");
 
+
+        //int target = 0x00041C52;
+//        int target = 0x00041CEC;
+//        for (Integer interruptNumber : interruptTable.keySet()) {
+//            Integer address = interruptTable.get(interruptNumber);
+//            testIfFunctionCallsTarget(address, target, "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_");
+//        }
+
+    }
+
+    private void testIfFunctionCallsTarget(Integer address, int target, String path) {
+        Function function = codeStructure.functions.get(address);
+        if (function == null) {
+            debugPrintWriter.println("Error following " + path + " : no function at 0x" + Format.asHex(address, 8));
+        }
+        else {
+            for (Jump call : function.getCalls()) {
+                if (call.getTarget() == target) {
+                    debugPrintWriter.println("! Match at 0x" + Format.asHex(address, 8) + " in " + path);
+                }
+                else {
+                    testIfFunctionCallsTarget(call.getTarget(), target, path + " > 0x" + Format.asHex(address, 8) + " "+ function.getName());
+                }
+            }
+        }
     }
 
     void followFunction(Function currentFunction, Integer address, boolean stopAtFirstProcessedInstruction) throws IOException, DisassemblyException {
