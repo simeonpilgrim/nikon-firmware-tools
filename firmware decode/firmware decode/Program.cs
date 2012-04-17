@@ -70,9 +70,12 @@ namespace Nikon_Decode
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
-            //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
-            DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
+            //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
+            //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
+
+            InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
         }
 
 
