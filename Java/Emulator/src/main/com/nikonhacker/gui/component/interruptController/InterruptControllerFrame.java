@@ -77,7 +77,7 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         JPanel standardButtonGrid = new JPanel(new GridLayout(0,4));
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 3; i++) {
             for (int j = 0; j < 16; j++) {
                 final int value = i * 16 + j;
                 JInterruptButton button = new JInterruptButton("IR" + (value<10?"0":"") + value, value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
