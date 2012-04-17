@@ -213,15 +213,15 @@ public class CPUState {
          * The read value of reserved bits is always "0". Write values should always be written as "0"
          * So :
          */
-        // return (getILM() << 16) | (getSCR() << 8) | getCCR();
+         return (getILM() << 16) | (getSCR() << 8) | getCCR();
 
         /* Although, all examples write the unused bits as "1" and expect to read them back as 1
          * Ex : CM71-00104-3E.pdf, page 321 (§7.119) (or progfr-cm71-00101-5e.pdf, page 158 (§7.62))
          * So :
          */
 
-        return 0xffe0f8c0 /* 0b 11111111 11100000 11111000 11000000 */
-                | (getILM() << 16) | (getSCR() << 8) | getCCR();
+//        return 0xffe0f8c0 /* 0b 11111111 11100000 11111000 11000000 */
+//                | (getILM() << 16) | (getSCR() << 8) | getCCR();
     }
 
     /**
