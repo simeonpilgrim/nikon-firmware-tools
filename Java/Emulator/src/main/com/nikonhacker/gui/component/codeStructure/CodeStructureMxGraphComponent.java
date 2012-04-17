@@ -110,6 +110,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         Object value = ((mxCell) cell).getValue();
                         if (value instanceof Function) {
                             currentlySelectedFunction = (Function) value;
+                            runMenuItem.setEnabled(ui.isEmulatorReady());
                             debugMenuItem.setEnabled(ui.isEmulatorReady());
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
