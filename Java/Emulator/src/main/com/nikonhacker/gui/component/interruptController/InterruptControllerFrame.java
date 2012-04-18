@@ -77,27 +77,23 @@ public class InterruptControllerFrame extends DocumentFrame {
 
         JPanel standardButtonGrid = new JPanel(new GridLayout(0,4));
 
-        for (int i = 0; i < 3; i++) {
-            for (int j = 0; j < 16; j++) {
-                final int value = i * 16 + j;
-                JInterruptButton button = new JInterruptButton("IR" + (value<10?"0":"") + value, value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
-                button.setMargin(buttonInsets);
-                button.addActionListener(standardInterruptButtonListener);
-                standardButtonGrid.add(button);
-            }
-        }
-        
-        standardInterruptControllerPanel.add(standardButtonGrid, BorderLayout.CENTER);
-        
         JInterruptButton nmiButton = new JInterruptButton("INT 0x0F = NMI", 0x0F);
+        nmiButton.setForeground(Color.RED);
         nmiButton.setMargin(buttonInsets);
         nmiButton.addActionListener(standardInterruptButtonListener);
+        standardButtonGrid.add(nmiButton);
 
-        standardInterruptControllerPanel.add(nmiButton, BorderLayout.SOUTH);
+        for (int value = 0; value < 47; value++) {
+            JInterruptButton button = new JInterruptButton("INT 0x" + Format.asHex(value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
+                    + " = IR" + (value<10?"0":"") + value, value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
+            button.setMargin(buttonInsets);
+            button.addActionListener(standardInterruptButtonListener);
+            standardButtonGrid.add(button);
+        }
 
+        standardInterruptControllerPanel.add(standardButtonGrid, BorderLayout.CENTER);
 
         tabbedPane.addTab("Standard", null, standardInterruptControllerPanel);
-
 
         // Custom 256 button panel
 
