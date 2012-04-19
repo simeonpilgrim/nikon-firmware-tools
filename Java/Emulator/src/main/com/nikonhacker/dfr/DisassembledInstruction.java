@@ -34,6 +34,9 @@ public class DisassembledInstruction {
     /** decoded opcode */
     public OpCode opcode = null;
 
+    /** cached CPUState, for CALLs and INTs */
+    public CPUState cpuState = null;
+
     /** data read */
     public int[] data = new int[3];
 
@@ -486,7 +489,7 @@ public class DisassembledInstruction {
                     }
                     break;
                 case 'v':
-                    if (updateRegisters && cpuState.isOkRegisterNumber(r))
+                    if (updateRegisters && cpuState.registerExists(r))
                     {
                         cpuState.setRegisterValid(r);
                         cpuState.setReg(r, decodedX);

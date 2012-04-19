@@ -92,6 +92,7 @@ public class CodeAnalyzer {
             catch (Exception e) {
                 debugPrintWriter.println("Error processing INT40. Please check the interrupt vector address in dfr.txt.");
                 debugPrintWriter.println("Continuing without INT40 processing...");
+                int40mapping = null;
             }
         }
 
@@ -172,10 +173,12 @@ public class CodeAnalyzer {
         if (symbols != null) {
             for (Integer address : symbols.keySet()) {
                 if (codeStructure.isFunction(address)) {
+                    // TODO This is ugly. A function is a symbol...
                     Function function = codeStructure.functions.get(address);
                     Symbol symbol = symbols.get(address);
                     function.setName(symbol.getName());
                     function.setComment(symbol.getComment());
+                    function.setParameterList(symbol.getParameterList());
                 }
             }
         }
@@ -500,7 +503,7 @@ public class CodeAnalyzer {
         // REALOS System calls
         // Determine R12 before the call by reading the instructions up to 200 bytes backwards (168 needed for call at 0x001824D0)
         // TODO : ideally, should follow program flow by climbing back function coderanges and not addresses in a straight line.
-        // TODO : Here, we run the risk of not catching the good R12 value...
+        // TODO : Here, we run the risk of not catching the good R12 value (not the case in practice)...
         Integer r12 = null;
         boolean r12SignExtend = false;
         for (int offset = 1; offset < 100; offset++) {
@@ -560,7 +563,8 @@ public class CodeAnalyzer {
                 if (StringUtils.isBlank(instruction.comment)) {
                     Symbol symbol = symbols.get(int40targetAddress);
                     if (symbol != null) {
-                        instruction.comment = symbol.getName();
+                        instruction.comment = ""+int40targetAddress;
+//                        instruction.comment = symbol.getName();
                     }
                 }
             }

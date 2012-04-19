@@ -235,25 +235,45 @@ public class CPUState {
         setCCR(ps & 0xFF);
     }
 
-
-    public boolean isOkRegisterNumber(int reg) {
-        return (reg >= 0) && (reg < regValue.length);
+    /**
+     * Tests if such a register number exists
+     * @param regNumber
+     * @return
+     */
+    public boolean registerExists(int regNumber) {
+        return (regNumber >= 0) && (regNumber < regValue.length);
     }
 
-    public boolean isRegisterValid(int reg) {
-        return isOkRegisterNumber(reg) && ((regValidityBitmap & (1 << reg)) != 0);
+    /**
+     * Tests if the given register number is valid in the current disassembly context
+     * @param regNumber
+     * @return
+     */
+    public boolean isRegisterValid(int regNumber) {
+        return registerExists(regNumber) && ((regValidityBitmap & (1 << regNumber)) != 0);
     }
 
-    public void setRegisterValid(int reg) {
-        if (isOkRegisterNumber(reg))
-            regValidityBitmap |= (1L << reg);
+    /**
+     * Declares the given register number as valid in the current disassembly context
+     * @param regNumber
+     */
+    public void setRegisterValid(int regNumber) {
+        if (registerExists(regNumber))
+            regValidityBitmap |= (1L << regNumber);
     }
 
-    public void setRegisterInvalid(int reg) {
-        if (isOkRegisterNumber(reg))
-            regValidityBitmap &= (~(1L << reg));
+    /**
+     * Declares the given register number as invalid in the current disassembly context
+     * @param regNumber
+     */
+    public void setRegisterInvalid(int regNumber) {
+        if (registerExists(regNumber))
+            regValidityBitmap &= (~(1L << regNumber));
     }
 
+    /**
+     * Declares all register numbers as valid in the current disassembly context
+     */
     public void setAllRegistersValid() {
         regValidityBitmap = -1L;
     }
@@ -330,4 +350,14 @@ public class CPUState {
         }
     }
 
+    public CPUState clone() {
+        CPUState cloneCpuState = new CPUState();
+        for (int i = 0; i <= CPUState.CCR; i++) {
+            cloneCpuState.regValue[i] = new Register32(regValue[i].value);
+        }
+        cloneCpuState.flags = flags;
+        cloneCpuState.regValidityBitmap = regValidityBitmap;
+        cloneCpuState.pc = pc;
+        return cloneCpuState;
+    }
 }

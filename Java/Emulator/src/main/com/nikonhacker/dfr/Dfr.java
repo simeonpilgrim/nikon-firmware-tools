@@ -255,8 +255,12 @@ public class Dfr
         disassembledInstruction.decodeInstructionOperands(cpuState.pc, memory);
 
         disassembledInstruction.formatOperandsAndComment(cpuState, true, this.outputOptions);
-        
+
         if (codeStructure != null) {
+            if ((disassembledInstruction.opcode.type == OpCode.Type.CALL || disassembledInstruction.opcode.type == OpCode.Type.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
+                disassembledInstruction.cpuState = cpuState.clone();
+            }
+
             codeStructure.getInstructions().put(cpuState.pc, disassembledInstruction);
         }
         else {

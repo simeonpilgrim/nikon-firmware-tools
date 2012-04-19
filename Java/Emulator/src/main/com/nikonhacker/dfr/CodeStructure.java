@@ -4,10 +4,7 @@ import com.nikonhacker.Format;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 public class CodeStructure {
 
@@ -120,54 +117,86 @@ public class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
-        if (instruction.opcode.type == OpCode.Type.CALL
-         || instruction.opcode.type == OpCode.Type.JMP
-         || instruction.opcode.type == OpCode.Type.BRA) {
-            if (instruction.comment.length() > 0) {
-                // replace address by label in comment
-                try {
-                    int targetAddress = Format.parseUnsigned(instruction.comment);
-                    Symbol symbol;
-                    if (instruction.opcode.type == OpCode.Type.CALL) {
-                        symbol = functions.get(targetAddress);
-                    }
-                    else {
-                        symbol = labels.get(targetAddress);
-                    }
-                    if (symbol != null) {
-                        instruction.comment = symbol.getName();
-                    }
-                    if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
-                        //if (areInSameRange(functions,  address, targetAddress))
-                        instruction.comment += " " + skipOrLoop(address, targetAddress);
-                    }
-                } catch (ParsingException e) {
-                    // noop
+        if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA, OpCode.Type.CALL, OpCode.Type.INT).contains(instruction.opcode.type)) {
+            try {
+                int targetAddress;
+                // get address in comment (if any) or in operand
+                if (instruction.comment.length() > 0) {
+                    targetAddress = Format.parseUnsigned(instruction.comment);
                 }
-            }
-            else {
-                try {
-                    // add label to comment if operand
-                    int targetAddress = Format.parseUnsigned(instruction.operands);
-                    if (instruction.opcode.type == OpCode.Type.CALL) {
-                        Function function = functions.get(targetAddress);
-                        if (function != null) {
-                            instruction.operands = function.getName();
-                        }
+                else {
+                    targetAddress = Format.parseUnsigned(instruction.operands);
+                }
+
+                // fetch corresponding symbol
+                Symbol symbol;
+                if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA).contains(instruction.opcode.type)) {
+                    symbol = labels.get(targetAddress);
+                }
+                else { // CALLs
+                    symbol = functions.get(targetAddress);
+                }
+
+                // If found, replace target address by label
+                String text = "";
+                if (symbol != null) {
+                    text = symbol.getName();
+                }
+
+                if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA).contains(instruction.opcode.type)) {
+                    // Add (skip) or (loop) according to jump direction
+                    //TODO only if(areInSameRange(address, targetAddress))
+                    if (instruction.comment.length() > 0) {
+                        instruction.comment = (text + " " + skipOrLoop(address, targetAddress)).trim();
                     }
                     else {
-                        Symbol label = labels.get(targetAddress);
-                        if (label != null) {
-                            instruction.operands = label.getName();
-                        }
-                    }
-                    if (instruction.opcode.type == OpCode.Type.JMP || instruction.opcode.type == OpCode.Type.BRA) {
-                        //TODO only if(areInSameRange(address, targetAddress))
+                        instruction.operands = text;
                         instruction.comment = skipOrLoop(address, targetAddress);
                     }
-                } catch (ParsingException e) {
-                    // noop
                 }
+                else { // CALL or INT
+                    if (outputOptions.contains(OutputOption.PARAMETERS)) {
+                        // Add function parameters
+                        Function function = (Function)symbol;
+                        if (function != null && function.getParameterList() != null) {
+                            text +="(";
+                            String prefix = "";
+                            for (Symbol.Parameter parameter : function.getParameterList()) {
+                                if (parameter.getInVariable() != null) {
+                                    if(!text.endsWith("(")) {
+                                        text+=", ";
+                                    }
+                                    text+=parameter.getInVariable() + "=";
+                                    if (instruction.cpuState.isRegisterValid(parameter.getRegister())) {
+                                        text+="0x" + Integer.toHexString(instruction.cpuState.getReg(parameter.getRegister()));
+                                    }
+                                    else {
+                                        text+=CPUState.REG_LABEL[parameter.getRegister()];
+                                    }
+                                }
+                                else if (parameter.getOutVariable() != null) {
+                                    if (prefix.length() > 0) {
+                                        prefix += ",";
+                                    }
+                                    prefix+=CPUState.REG_LABEL[parameter.getRegister()];
+                                }
+                            }
+                            text += ")";
+                            if (prefix.length() > 0) {
+                                text = prefix + "=" + text;
+                            }
+                        }
+                    }
+
+                    if (instruction.comment.length() > 0) {
+                        instruction.comment = text;
+                    }
+                    else {
+                        instruction.operands = text;
+                    }
+                }
+            } catch(ParsingException e){
+                // noop
             }
         }
 

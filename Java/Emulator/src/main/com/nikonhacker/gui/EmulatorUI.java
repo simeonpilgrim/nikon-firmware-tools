@@ -908,6 +908,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 destinationFileSelectionPanel,
                 makeOutputOptionCheckBox(OutputOption.STRUCTURE, prefs.getOutputOptions(), true),
                 makeOutputOptionCheckBox(OutputOption.ORDINAL, prefs.getOutputOptions(), true),
+                makeOutputOptionCheckBox(OutputOption.PARAMETERS, prefs.getOutputOptions(), true),
                 makeOutputOptionCheckBox(OutputOption.INT40, prefs.getOutputOptions(), true),
                 new JLabel("(hover over the options for help. See also 'Tools/Options/Disassembler output')", SwingConstants.CENTER)
         };
