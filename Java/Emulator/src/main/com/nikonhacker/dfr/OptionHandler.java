@@ -195,17 +195,8 @@ public class OptionHandler
 
     public static void parseSymbol(Map<Integer, Symbol> symbols, String argument) throws ParsingException {
         Integer address = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
-        String value = StringUtils.substringAfter(argument, "=").trim();
-        int commentStart = value.indexOf("(");
-        String comment = null;
-        if (commentStart != -1) {
-            if (!value.endsWith(")")) {
-                throw new ParsingException("Invalid symbol '" + argument + "' : no closing parenthesis");
-            }
-            comment = value.substring(commentStart + 1, value.length() - 1).trim();
-            value = value.substring(0, commentStart).trim();
-        }
-        symbols.put(address, new Symbol(address, value, comment));
+        String text = StringUtils.substringAfter(argument, "=").trim();
+        symbols.put(address, new Symbol(address, text));
     }
 
     public static void parseJumpHint(Map<Integer, List<Integer>> jumpHints, String argument) throws ParsingException {
