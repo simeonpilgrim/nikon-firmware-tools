@@ -211,7 +211,7 @@ public class OpCode {
         new OpCode( 0xBC00, 0xFF00, FORMAT_C, 0, 0, "LDRES",  "@i+,#u;Iu",    ""         , Type.NONE, false, false), // not in FR80/FR81
         new OpCode( 0xBD00, 0xFF00, FORMAT_C, 0, 0, "STRES",  "#u,@i+;Iu",    ""         , Type.NONE, false, false), // not in FR80/FR81
         new OpCode( 0xBF00, 0xFF00, FORMAT_A, 0, 0, "MULH",   "j,i",          "iw"       , Type.NONE, false, false),
-        new OpCode( 0xC000, 0xF000, FORMAT_B, 0, 0, "LDI:8",  "#u,i",         "iw"       , Type.NONE, false, false),
+        new OpCode( 0xC000, 0xF000, FORMAT_B, 0, 0, "LDI:8",  "#u,i",         "iv"       , Type.NONE, false, false),
         new OpCode( 0xD000, 0xF800, FORMAT_F, 0, 0, "CALL",   "2ru",          "("        , Type.CALL, false, false),
         new OpCode( 0xD800, 0xF800, FORMAT_F, 0, 0, "CALL:D", "2ru",          "_("       , Type.CALL, false, true ),
         new OpCode( 0xE000, 0xFF00, FORMAT_D, 0, 0, "BRA",    "2ru",          "!"        , Type.JMP, false, false),
