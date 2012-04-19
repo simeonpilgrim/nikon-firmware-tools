@@ -1101,7 +1101,7 @@
 -s 0x419D6=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
 -s 0x419F2=gbl_ret_01
 -s 0x419F6=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
--s 0x41A4A=TableLoadOffset(R14 [IN ptr to a table header, OUT ptr to the R4th record], R4 [IN index in the table, 1-based])
+-s 0x41A4A=TableLoadOffset(R14 [IN ptr_to_table; OUT ptr to the R4th record], R4 [IN index in table /*1-based*/])
 -s 0x41A66=TopLevel_sub1
 -s 0x41ACA=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
 -s 0x41B0C=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
@@ -1114,7 +1114,7 @@
 -s 0x41CEC=sys_clr_flg(R4 [IN flag_id], R5 [IN clr_pattern], R12 [OUT err_code] /* Clear Eventflag */)
 -s 0x41D9C=sys_pol_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag, polling */)
 -s 0x41D14=sys_wai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag */)
--s 0x41DF4=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout, OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
+-s 0x41DF4=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout; OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
 -s 0x41EB2=sys_ref_flg(R4 [IN ptr_to_pk_rflg], R5 [IN flag_id], R12 [OUT err_code] /* Get Eventflag Status */)
 -s 0x41EE8=sys_snd_msg(R4 [IN mailbox_id], R5 [IN ptr_to_pk_msg], R12 [OUT err_code] /* Send Message to Mailbox */)
 -s 0x41F42=sys_rcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox */)
@@ -1216,7 +1216,7 @@
 -s 0xB8E8A=Tsk37_B8E8A
 -s 0xB8EB0=Tsk35_B8EB0
 -s 0xB8ED6=Tsk36_B8ED6
--s 0xB8EF2=memset_2
+-s 0xB8EF2=memset_2(R4 [IN dest], R5 [IN val], R6 [IN count])
 -s 0xB8F94=call_nullsub_34
 -s 0xB8FA2=call_nullsub_35
 -s 0xB8FB0=call_nullsub_36
@@ -1332,13 +1332,13 @@
 -s 0x102306=lists_setup_02
 -s 0x1026B8=lists_setup_03
 -s 0x10276C=lists_setup_05
--s 0x1074F2=dlist_init(R4 [IN, pointer to list entity])
--s 0x1074FA=dlist_compare_previous(R4->prev == R4)
--s 0x107506=dlist_insert_before(insert R5 before R4)
--s 0x107516=dlist_insert_after(insert R5 after R4)
--s 0x107526=dist_remove(remove R4)
--s 0x107536=dlist_remove_previous(remove item before R4)
--s 0x10754C=dlist_remove_next(remove item after R4)
+-s 0x1074F2=dlist_init(R4 [IN ptr_to_list])
+-s 0x1074FA=dlist_compare_previous(R4 [IN ptr_to_element; OUT is_equal] /*R4->prev == R4*/)
+-s 0x107506=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
+-s 0x107516=dlist_insert_after(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 after R4*/)
+-s 0x107526=dlist_remove(R4 [IN ptr_to_element] /*remove R4 element*/)
+-s 0x107536=dlist_remove_previous(R4 [IN ptr_to_element] /*remove item before R4*/)
+-s 0x10754C=dlist_remove_next(R4 [IN ptr_to_element] /*remove item after R4*/)
 -s 0x1075EA=call_int40_01
 -s 0x107626=signal_semaphores
 -s 0x107650=get_8F805A5C
@@ -1785,20 +1785,20 @@
 -s 0x2345EE=ADD_uint64
 -s 0x2345F4=AND_uint64
 -s 0x2345FA=exp_sub_01
--s 0x23495E=DIV_int(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x23495E=DIV_int(R4 [IN dividend; OUT quotient], R5 [IN divisor])
 -s 0x234AFE=double_something_XX
 -s 0x234B32=roll_left_r4
 -s 0x234B38=set_234B38
--s 0x234B3C=MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])
--s 0x234DC4=DIV_uint(R4 [IN dividend, OUT quotient], R5 [IN divisor])
+-s 0x234B3C=MOD_int(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x234DC4=DIV_uint(R4 [IN dividend; OUT quotient], R5 [IN divisor])
 -s 0x234E3A=double_XX_1
 -s 0x234ED6=swap_234ED6
--s 0x234EDC=MOD_uint(R4 [IN dividend, OUT remainder], R5 [IN divisor])
+-s 0x234EDC=MOD_uint(R4 [IN dividend; OUT remainder], R5 [IN divisor])
 -s 0x234F5E=ABS
 -s 0x23514E=ceil
 -s 0x235234=floor
 -s 0x23531A=getNth_2BED14_bit6
--s 0x23532A=abs_0(R4 [IN, OUT])
+-s 0x23532A=abs_0(R4 [IN value; OUT abs_value])
 -s 0x235338=log_or_log10
 -s 0x235542=memcmp(R4 [IN source1], R5 [IN source2], R6 [IN count])
 -s 0x23555C=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
