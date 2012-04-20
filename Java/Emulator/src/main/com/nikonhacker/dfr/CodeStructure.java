@@ -167,7 +167,7 @@ public class CodeStructure {
                                         text+=", ";
                                     }
                                     text+=parameter.getInVariable() + "=";
-                                    if (instruction.cpuState.isRegisterValid(parameter.getRegister())) {
+                                    if (instruction.cpuState.isRegisterDefined(parameter.getRegister())) {
                                         text+="0x" + Integer.toHexString(instruction.cpuState.getReg(parameter.getRegister()));
                                     }
                                     else {

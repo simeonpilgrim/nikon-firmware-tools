@@ -245,36 +245,36 @@ public class CPUState {
     }
 
     /**
-     * Tests if the given register number is valid in the current disassembly context
+     * Tests if the given register number is defined in the current disassembly context
      * @param regNumber
      * @return
      */
-    public boolean isRegisterValid(int regNumber) {
+    public boolean isRegisterDefined(int regNumber) {
         return registerExists(regNumber) && ((regValidityBitmap & (1 << regNumber)) != 0);
     }
 
     /**
-     * Declares the given register number as valid in the current disassembly context
+     * Declares the given register number as defined in the current disassembly context
      * @param regNumber
      */
-    public void setRegisterValid(int regNumber) {
+    public void setRegisterDefined(int regNumber) {
         if (registerExists(regNumber))
             regValidityBitmap |= (1L << regNumber);
     }
 
     /**
-     * Declares the given register number as invalid in the current disassembly context
+     * Declares the given register number as undefined in the current disassembly context
      * @param regNumber
      */
-    public void setRegisterInvalid(int regNumber) {
+    public void setRegisterUndefined(int regNumber) {
         if (registerExists(regNumber))
             regValidityBitmap &= (~(1L << regNumber));
     }
 
     /**
-     * Declares all register numbers as valid in the current disassembly context
+     * Declares all register numbers as defined in the current disassembly context
      */
-    public void setAllRegistersValid() {
+    public void setAllRegistersDefined() {
         regValidityBitmap = -1L;
     }
 

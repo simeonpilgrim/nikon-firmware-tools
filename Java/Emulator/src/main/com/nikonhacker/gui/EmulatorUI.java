@@ -975,7 +975,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
                     CPUState sampleCpuState = new CPUState();
-                    sampleCpuState.setAllRegistersValid();
+                    sampleCpuState.setAllRegistersDefined();
 
 
                     sampleMemory.store16(lastAddress, 0x1781); // PUSH    RP
