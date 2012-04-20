@@ -263,7 +263,7 @@ public class DisassembledInstruction {
                     currentBuffer.append(CPUState.REG_LABEL[CPUState.FP]);
                     break;
                 case 'J':
-                    if (cpuState.isRegisterValid(decodedJ))
+                    if (cpuState.isRegisterDefined(decodedJ))
                     {
                         decodedX = cpuState.getReg(decodedJ);
                         xBitWidth = 32;
@@ -275,7 +275,7 @@ public class DisassembledInstruction {
                     }
                     break;
                 case 'I':
-                    if (cpuState.isRegisterValid(decodedI))
+                    if (cpuState.isRegisterDefined(decodedI))
                     {
                         decodedX = cpuState.getReg(decodedI);
                         xBitWidth = 32;
@@ -485,13 +485,13 @@ public class DisassembledInstruction {
                     break;
                 case 'w':
                     if (updateRegisters) {
-                        cpuState.setRegisterInvalid(r);
+                        cpuState.setRegisterUndefined(r);
                     }
                     break;
                 case 'v':
                     if (updateRegisters && cpuState.registerExists(r))
                     {
-                        cpuState.setRegisterValid(r);
+                        cpuState.setRegisterDefined(r);
                         cpuState.setReg(r, decodedX);
                     }
                     break;

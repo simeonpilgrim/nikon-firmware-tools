@@ -140,7 +140,7 @@ public class Emulator {
 
         DisassembledInstruction disassembledInstruction = new DisassembledInstruction();
 
-        cpuState.setAllRegistersValid();
+        cpuState.setAllRegistersDefined();
 
         try {
             for (;;) {
