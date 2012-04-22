@@ -326,7 +326,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    public void onPcChanged() {
+    public void onEmulatorStop() {
         if (followPcCheckBox.isSelected()) {
             reachAndHighlightPc();
         }
