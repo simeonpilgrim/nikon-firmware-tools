@@ -100,7 +100,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         eventFlagInformationList = GlazedLists.threadSafeList(new BasicEventList<EventFlagInformation>());
         eventFlagPanel = new JPanel(new BorderLayout());
         SortedList<EventFlagInformation> sortedEventFlagInformationList = new SortedList<EventFlagInformation>(eventFlagInformationList, null);
-        JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(eventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
+        JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(sortedEventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
                 new String[]{"objectId", "waitTaskInformation", "flagPattern", "extendedInformation"},
                 new String[]{"EventFlag", "First Waiting Task", "Pattern", "Extended Information"})));
         TableComparatorChooser.install(eventFlagTable, sortedEventFlagInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
@@ -116,7 +116,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         mailboxInformationList = GlazedLists.threadSafeList(new BasicEventList<MailboxInformation>());
         mailboxPanel = new JPanel(new BorderLayout());
         SortedList<MailboxInformation> sortedMailboxInformationList = new SortedList<MailboxInformation>(mailboxInformationList, null);
-        JTable mailboxTable = new JTable(new EventTableModel<MailboxInformation>(mailboxInformationList, GlazedLists.tableFormat(MailboxInformation.class,
+        JTable mailboxTable = new JTable(new EventTableModel<MailboxInformation>(sortedMailboxInformationList, GlazedLists.tableFormat(MailboxInformation.class,
                 new String[]{"objectId", "waitTaskInformation", "pkMsg", "extendedInformation"},
                 new String[]{"Mailbox", "First Waiting Task", "pkMsg", "Extended Information"})));
         TableComparatorChooser.install(mailboxTable, sortedMailboxInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
