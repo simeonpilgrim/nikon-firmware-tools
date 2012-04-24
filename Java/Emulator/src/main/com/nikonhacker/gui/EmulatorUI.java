@@ -1756,10 +1756,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new TaskInformation(errorCode, 0, 0, 0);
+            return new TaskInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new TaskInformation(errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new TaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
 
@@ -1770,10 +1770,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new SemaphoreInformation(errorCode, 0, 0, 0);
+            return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new SemaphoreInformation(errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new SemaphoreInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
 
@@ -1784,10 +1784,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new EventFlagInformation(errorCode, 0, 0, 0);
+            return new EventFlagInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new EventFlagInformation(errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new EventFlagInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
 
@@ -1798,10 +1798,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new MailboxInformation(errorCode, 0, 0, 0);
+            return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new MailboxInformation(errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new MailboxInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
 

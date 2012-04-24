@@ -31,8 +31,11 @@ public class TaskInformation extends RealOsObject {
     private int taskPriority;
     private TaskState taskState;
 
-    public TaskInformation(ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
-        super(extendedInformation, errorCode);
+    public TaskInformation() {
+    }
+
+    public TaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
+        super(objectId, errorCode, extendedInformation);
         this.taskPriority = taskPriority;
         this.taskState = TaskState.fromValue(stateValue);
     }
@@ -50,6 +53,6 @@ public class TaskInformation extends RealOsObject {
         if (getErrorCode() != ErrorCode.E_OK) {
             return getErrorCode().toString();
         }
-        return "State " + taskState.name() + ", priority=" + taskPriority + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
+        return "Task 0x" + Format.asHex(objectId, 2) + ": State " + taskState.name() + ", priority=" + taskPriority + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
     }
 }

@@ -7,8 +7,8 @@ public class MailboxInformation extends RealOsObject {
     private int waitTaskInformation;
     private int pkMsg;
 
-    public MailboxInformation(ErrorCode errorCode, int extendedInformation, int waitTaskInformation, int pkMsg) {
-        super(extendedInformation, errorCode);
+    public MailboxInformation(int objectId, ErrorCode errorCode, int extendedInformation, int waitTaskInformation, int pkMsg) {
+        super(objectId, errorCode, extendedInformation);
         this.waitTaskInformation = waitTaskInformation;
         this.pkMsg = pkMsg;
     }
@@ -17,11 +17,15 @@ public class MailboxInformation extends RealOsObject {
         return waitTaskInformation;
     }
 
+    public int getPkMsg() {
+        return pkMsg;
+    }
+
     @Override
     public String toString() {
         if (getErrorCode() != ErrorCode.E_OK) {
             return getErrorCode().toString();
         }
-        return "pk_msg=0x" + Format.asHex(pkMsg, 8) + ", " + ((waitTaskInformation==0)?"no waiting task":"first waiting task=0x" + Format.asHex(waitTaskInformation, 2)) + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
+        return "Mailbox 0x" + Format.asHex(objectId, 2) + ": pk_msg=0x" + Format.asHex(pkMsg, 8) + ", " + ((waitTaskInformation==0)?"no waiting task":"first waiting task=0x" + Format.asHex(waitTaskInformation, 2)) + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
     }
 }

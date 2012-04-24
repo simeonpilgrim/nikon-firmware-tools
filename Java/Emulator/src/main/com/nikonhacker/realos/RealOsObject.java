@@ -1,10 +1,15 @@
 package com.nikonhacker.realos;
 
-public class RealOsObject {
+public abstract class RealOsObject {
+    protected int objectId;
     protected ErrorCode errorCode;
     protected int extendedInformation;
 
-    public RealOsObject(int extendedInformation, ErrorCode errorCode) {
+    protected RealOsObject() {
+    }
+
+    public RealOsObject(int objectId, ErrorCode errorCode, int extendedInformation) {
+        this.objectId = objectId;
         this.extendedInformation = extendedInformation;
         this.errorCode = errorCode;
     }
@@ -15,5 +20,9 @@ public class RealOsObject {
 
     public int getExtendedInformation() {
         return extendedInformation;
+    }
+
+    public int getObjectId() {
+        return objectId;
     }
 }
