@@ -1,6 +1,12 @@
 package com.nikonhacker.gui.component.realos;
 
-import com.nikonhacker.Format;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
+import ca.odell.glazedlists.swing.EventTableModel;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.realos.*;
@@ -17,9 +23,14 @@ public class RealOsObjectFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
-    private JList taskList, semaphoreList, eventFlagList, mailboxList;
     private JButton updateAllButton;
     private JCheckBox autoUpdateCheckbox;
+    private final EventList<TaskInformation> taskInformationList;
+    private final EventList<SemaphoreInformation> semaphoreInformationList;
+    private final EventList<EventFlagInformation> eventFlagInformationList;
+    private final EventList<MailboxInformation> mailboxInformationList;
+    private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
+    private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
     public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -52,57 +63,65 @@ public class RealOsObjectFrame extends DocumentFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Tasks
-        JPanel taskPanel = new JPanel(new BorderLayout());
-        taskList = new JList();
-        taskList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        taskList.setLayoutOrientation(JList.VERTICAL);
-        taskList.setVisibleRowCount(10);
+        taskInformationList = GlazedLists.threadSafeList(new BasicEventList<TaskInformation>());
+        taskPanel = new JPanel(new BorderLayout());
+        SortedList<TaskInformation> sortedTaskInformationList = new SortedList<TaskInformation>(taskInformationList, null);
+        JTable taskTable = new JTable(new EventTableModel<TaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(TaskInformation.class,
+                new String[]{"objectId", "taskState", "taskPriority", "extendedInformation"},
+                new String[]{"Task Id", "State", "Priority", "Extended Information"})));
+        TableComparatorChooser.install(taskTable, sortedTaskInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
-        JScrollPane listScroller = new JScrollPane(taskList);
-        listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        taskPanel.add(listScroller, BorderLayout.CENTER);
+        taskScroller = new JScrollPane(taskTable);
+        taskScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        taskPanel.add(taskScroller, BorderLayout.CENTER);
 
         tabbedPane.addTab("Tasks", null, taskPanel);
 
 
         // Semaphores
-        JPanel semaphorePanel = new JPanel(new BorderLayout());
-        semaphoreList = new JList();
-        semaphoreList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        semaphoreList.setLayoutOrientation(JList.VERTICAL);
-        semaphoreList.setVisibleRowCount(10);
+        semaphoreInformationList = GlazedLists.threadSafeList(new BasicEventList<SemaphoreInformation>());
+        semaphorePanel = new JPanel(new BorderLayout());
+        SortedList<SemaphoreInformation> sortedSemaphoreInformationList = new SortedList<SemaphoreInformation>(semaphoreInformationList, null);
+        JTable semaphoreTable = new JTable(new EventTableModel<SemaphoreInformation>(sortedSemaphoreInformationList, GlazedLists.tableFormat(SemaphoreInformation.class,
+                new String[]{"objectId", "waitTaskInformation", "semaphoreCount", "extendedInformation"},
+                new String[]{"Semaphore", "First Waiting Task", "Count", "Extended Information"})));
+        TableComparatorChooser.install(semaphoreTable, sortedSemaphoreInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
-        listScroller = new JScrollPane(semaphoreList);
-        listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        semaphorePanel.add(listScroller, BorderLayout.CENTER);
+        semaphoreScroller = new JScrollPane(semaphoreTable);
+        semaphoreScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        semaphorePanel.add(semaphoreScroller, BorderLayout.CENTER);
 
         tabbedPane.addTab("Semaphores", null, semaphorePanel);
 
 
-        // EventFlag
-        JPanel eventFlagPanel = new JPanel(new BorderLayout());
-        eventFlagList = new JList();
-        eventFlagList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        eventFlagList.setLayoutOrientation(JList.VERTICAL);
-        eventFlagList.setVisibleRowCount(10);
+        // EventFlags
+        eventFlagInformationList = GlazedLists.threadSafeList(new BasicEventList<EventFlagInformation>());
+        eventFlagPanel = new JPanel(new BorderLayout());
+        SortedList<EventFlagInformation> sortedEventFlagInformationList = new SortedList<EventFlagInformation>(eventFlagInformationList, null);
+        JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(eventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
+                new String[]{"objectId", "waitTaskInformation", "flagPattern", "extendedInformation"},
+                new String[]{"EventFlag", "First Waiting Task", "Pattern", "Extended Information"})));
+        TableComparatorChooser.install(eventFlagTable, sortedEventFlagInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
-        listScroller = new JScrollPane(eventFlagList);
-        listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        eventFlagPanel.add(listScroller, BorderLayout.CENTER);
+        eventFlagScroller = new JScrollPane(eventFlagTable);
+        eventFlagScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        eventFlagPanel.add(eventFlagScroller, BorderLayout.CENTER);
 
         tabbedPane.addTab("EventFlags", null, eventFlagPanel);
 
 
-        // Mailbox
-        JPanel mailboxPanel = new JPanel(new BorderLayout());
-        mailboxList = new JList();
-        mailboxList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        mailboxList.setLayoutOrientation(JList.VERTICAL);
-        mailboxList.setVisibleRowCount(10);
+        // Mailboxes
+        mailboxInformationList = GlazedLists.threadSafeList(new BasicEventList<MailboxInformation>());
+        mailboxPanel = new JPanel(new BorderLayout());
+        SortedList<MailboxInformation> sortedMailboxInformationList = new SortedList<MailboxInformation>(mailboxInformationList, null);
+        JTable mailboxTable = new JTable(new EventTableModel<MailboxInformation>(mailboxInformationList, GlazedLists.tableFormat(MailboxInformation.class,
+                new String[]{"objectId", "waitTaskInformation", "pkMsg", "extendedInformation"},
+                new String[]{"Mailbox", "First Waiting Task", "pkMsg", "Extended Information"})));
+        TableComparatorChooser.install(mailboxTable, sortedMailboxInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
-        listScroller = new JScrollPane(mailboxList);
-        listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        mailboxPanel.add(listScroller, BorderLayout.CENTER);
+        mailboxScroller = new JScrollPane(mailboxTable);
+        mailboxScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        mailboxPanel.add(mailboxScroller, BorderLayout.CENTER);
 
         tabbedPane.addTab("Mailboxes", null, mailboxPanel);
 
@@ -116,63 +135,93 @@ public class RealOsObjectFrame extends DocumentFrame {
     }
 
     public void updateTaskList() {
-        DefaultListModel model = new DefaultListModel();
+        taskInformationList.clear();
         int taskNumber = 1;
         TaskInformation taskInformation = ui.getTaskInformation(taskNumber);
         while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(taskInformation.getErrorCode())) {
-            model.addElement("Task 0x" + Format.asHex(taskNumber, 2) + ": " + taskInformation.toString());
+            taskInformationList.add(taskInformation);
             taskNumber++;
             taskInformation = ui.getTaskInformation(taskNumber);
         }
+
+        taskPanel.removeAll();
         if (taskInformation.getErrorCode() == ErrorCode.E_FREMU) {
-            JOptionPane.showMessageDialog(this, "Error\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
+            comp.setHorizontalAlignment(SwingConstants.CENTER);
+            taskPanel.add(comp, BorderLayout.CENTER);
         }
-        taskList.setModel(model);
+        else {
+            taskPanel.add(taskScroller, BorderLayout.CENTER);
+        }
+        taskPanel.revalidate();
     }
 
     public void updateSemaphoreList() {
-        DefaultListModel model = new DefaultListModel();
+        semaphoreInformationList.clear();
         int semaphoreNumber = 1;
         SemaphoreInformation semaphoreInformation = ui.getSemaphoreInformation(semaphoreNumber);
         while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(semaphoreInformation.getErrorCode())) {
-            model.addElement("Task 0x" + Format.asHex(semaphoreNumber, 2) + ": " + semaphoreInformation.toString());
+            semaphoreInformationList.add(semaphoreInformation);
             semaphoreNumber++;
             semaphoreInformation = ui.getSemaphoreInformation(semaphoreNumber);
         }
+
+        semaphorePanel.removeAll();
         if (semaphoreInformation.getErrorCode() == ErrorCode.E_FREMU) {
-            JOptionPane.showMessageDialog(this, "Error\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
+            comp.setHorizontalAlignment(SwingConstants.CENTER);
+            semaphorePanel.add(comp, BorderLayout.CENTER);
         }
-        semaphoreList.setModel(model);
+        else {
+            semaphorePanel.add(semaphoreScroller, BorderLayout.CENTER);
+        }
+        semaphorePanel.revalidate();
     }
 
+
     public void updateEventFlagList() {
-        DefaultListModel model = new DefaultListModel();
+        eventFlagInformationList.clear();
         int eventFlagNumber = 1;
         EventFlagInformation eventFlagInformation = ui.getEventFlagInformation(eventFlagNumber);
         while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(eventFlagInformation.getErrorCode())) {
-            model.addElement("Task 0x" + Format.asHex(eventFlagNumber, 2) + ": " + eventFlagInformation.toString());
+            eventFlagInformationList.add(eventFlagInformation);
             eventFlagNumber++;
             eventFlagInformation = ui.getEventFlagInformation(eventFlagNumber);
         }
+
+        eventFlagPanel.removeAll();
         if (eventFlagInformation.getErrorCode() == ErrorCode.E_FREMU) {
-            JOptionPane.showMessageDialog(this, "Error\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
+            comp.setHorizontalAlignment(SwingConstants.CENTER);
+            eventFlagPanel.add(comp, BorderLayout.CENTER);
         }
-        eventFlagList.setModel(model);
+        else {
+            eventFlagPanel.add(eventFlagScroller, BorderLayout.CENTER);
+        }
+        eventFlagPanel.revalidate();
     }
 
+
     public void updateMailboxList() {
-        DefaultListModel model = new DefaultListModel();
+        mailboxInformationList.clear();
         int mailboxNumber = 1;
         MailboxInformation mailboxInformation = ui.getMailboxInformation(mailboxNumber);
         while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(mailboxInformation.getErrorCode())) {
-            model.addElement("Task 0x" + Format.asHex(mailboxNumber, 2) + ": " + mailboxInformation.toString());
+            mailboxInformationList.add(mailboxInformation);
             mailboxNumber++;
             mailboxInformation = ui.getMailboxInformation(mailboxNumber);
         }
+
+        mailboxPanel.removeAll();
         if (mailboxInformation.getErrorCode() == ErrorCode.E_FREMU) {
-            JOptionPane.showMessageDialog(this, "Error\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
+            comp.setHorizontalAlignment(SwingConstants.CENTER);
+            mailboxPanel.add(comp, BorderLayout.CENTER);
         }
-        mailboxList.setModel(model);
+        else {
+            mailboxPanel.add(mailboxScroller, BorderLayout.CENTER);
+        }
+        mailboxPanel.revalidate();
     }
 
     public void updateAllLists() {
