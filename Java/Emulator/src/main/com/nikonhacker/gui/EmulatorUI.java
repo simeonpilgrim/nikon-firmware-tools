@@ -38,9 +38,11 @@ import com.nikonhacker.gui.component.interruptController.InterruptControllerFram
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
+import com.nikonhacker.gui.component.realos.RealOsObjectFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
+import com.nikonhacker.realos.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -89,12 +91,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
     private static final String COMMAND_TOGGLE_CLOCK_TIMER = "TOGGLE CLOCK TIMER";
     private static final String COMMAND_TOGGLE_CALL_STACK_WINDOW = "TOGGLE_CALL_STACK_WINDOW";
+    private static final String COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = "TOGGLE_REALOS_OBJECT_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
     private static final String COMMAND_ABOUT = "ABOUT";
 
     private static final int BASE_ADDRESS = 0x40000; // TODO de-hardcode this
 
-    private static final int FUNCTION_CALL_BASE_ADDRESS = 0xFFFFFFF0;
+    private static final int BASE_ADDRESS_FUNCTION_CALL = 0xFFFFFFF0;
+    private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
 
     private static File imageFile;
     private static final int CAMERA_SCREEN_MEMORY_Y = 0xCE57DC60;
@@ -145,6 +149,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem interruptControllerMenuItem;
     private JCheckBoxMenuItem clockMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
+    private JCheckBoxMenuItem realosObjectMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
     private JMenuItem optionsMenuItem;
 
@@ -167,6 +172,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton interruptControllerButton;
     private JButton clockButton;
     private JButton callStackButton;
+    private JButton realosObjectButton;
     private JButton saveLoadMemoryButton;
     private JButton optionsButton;
 
@@ -181,6 +187,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private SourceCodeFrame sourceCodeFrame;
     private InterruptControllerFrame interruptControllerFrame;
     private CallStackFrame callStackFrame;
+    private RealOsObjectFrame realOsObjectFrame;
     private final Insets toolbarButtonMargin;
     private final JPanel toolBar;
     private JLabel statusBar;
@@ -365,6 +372,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(component4006Button);
         callStackButton = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW, "Call Stack window", "CallStack");
         bar.add(callStackButton);
+        realosObjectButton = makeButton("os", COMMAND_TOGGLE_REALOS_OBJECT_WINDOW, "RealOS Object window", "RealOS Object");
+        bar.add(realosObjectButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -628,6 +637,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         callStackMenuItem.addActionListener(this);
         traceMenu.add(callStackMenuItem);
 
+        //RealOS Object
+        realosObjectMenuItem = new JCheckBoxMenuItem("RealOS Objects");
+//        realosObjectMenuItem.setMnemonic(KeyEvent.VK_C);
+//        realosObjectMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK));
+        realosObjectMenuItem.setActionCommand(COMMAND_TOGGLE_REALOS_OBJECT_WINDOW);
+        realosObjectMenuItem.addActionListener(this);
+        traceMenu.add(realosObjectMenuItem);
+
 
         //Set up the tools menu.
         JMenu sourceMenu = new JMenu("Source");
@@ -771,6 +788,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_CALL_STACK_WINDOW.equals(e.getActionCommand())) {
             toggleCallStack();
+        }
+        else if (COMMAND_TOGGLE_REALOS_OBJECT_WINDOW.equals(e.getActionCommand())) {
+            toggleRealOsObject();
         }
         else if (COMMAND_DECODE.equals(e.getActionCommand())) {
             openDecodeDialog();
@@ -975,7 +995,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
                     CPUState sampleCpuState = new CPUState();
-                    sampleCpuState.setAllRegistersValid();
+                    sampleCpuState.setAllRegistersDefined();
 
 
                     sampleMemory.store16(lastAddress, 0x1781); // PUSH    RP
@@ -1110,6 +1130,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // html content
         JEditorPane editorPane = new JEditorPane("text/html", "<html><body style=\"" + style + "\">"
                 + "<font size=\"+1\">" + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + "</font><br/>"
+                + "<i>A Fujitsu FR microcontroller Emulator in Java</i><br/>"
                 + "<font size=\"-2\">Built on " + ApplicationInfo.getBuildTime() + "</font><br/><br/>"
                 + "This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.<br/>"
                 + "This software is provided under the GNU General Public License, version 3 - " + makeLink("http://www.gnu.org/licenses/gpl-3.0.txt") + "<br/>"
@@ -1123,6 +1144,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>Apache commons libraries, Copyright (c) The Apache Software Foundation - " + makeLink("http://commons.apache.org/") + "</li>"
                 + "<li>VerticalLayout, Copyright (c) Cellspark - " + makeLink("http://www.cellspark.com/vl.html") + "</li>"
                 + "<li>MigLayout, Copyright (c) MigInfoCom - " + makeLink("http://www.miginfocom.com/") + "</li>"
+                + "<li>Glazed Lists, Copyright (c) 2003-2006, publicobject.com, O'Dell Engineering Ltd - " + makeLink("http://www.glazedlists.com/") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
                 + "</ul></body></html>");
 
@@ -1192,15 +1214,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             cpuState = new CPUState(BASE_ADDRESS);
 
-            emulator = new Emulator();
-            emulator.setMemory(memory);
-            emulator.setCpuState(cpuState);
-
             interruptController = new InterruptController(memory);
 
-            emulator.setInterruptController(interruptController);
-
             memory.addIoActivityListener(new ExpeedIoListener(cpuState, interruptController));
+
+            emulator = new Emulator();
+            emulator.setMemory(memory);
+            emulator.setInterruptController(interruptController);
 
             setEmulatorSleepCode(prefs.getSleepTick());
 
@@ -1433,6 +1453,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
+    private void toggleRealOsObject() {
+        if (realOsObjectFrame == null) {
+            realOsObjectFrame = new RealOsObjectFrame("µITRON Object Status", true, true, false, true, this);
+            realOsObjectFrame.enableUpdate(!isEmulatorPlaying);
+            if (!isEmulatorPlaying()) {
+                realOsObjectFrame.updateAllLists();
+            }
+            addDocumentFrame(realOsObjectFrame);
+            realOsObjectFrame.display(true);
+        }
+        else {
+            realOsObjectFrame.dispose();
+            realOsObjectFrame = null;
+        }
+        updateStates();
+    }
+
 
     private void toggleCodeStructureWindow() {
         if (codeStructureFrame == null) {
@@ -1498,6 +1535,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == callStackFrame) {
             toggleCallStack();
         }
+        else if (frame == realOsObjectFrame) {
+            toggleRealOsObject();
+        }
         else if (frame == codeStructureFrame) {
             toggleCodeStructureWindow();
         }
@@ -1539,6 +1579,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
         clockMenuItem.setEnabled(isImageLoaded); clockButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
+        realosObjectMenuItem.setEnabled(isImageLoaded); realosObjectButton.setEnabled(isImageLoaded);
 
         saveLoadMemoryMenuItem.setEnabled(isImageLoaded); saveLoadMemoryButton.setEnabled(isImageLoaded);
 
@@ -1557,6 +1598,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(!isEmulatorPlaying);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(!isEmulatorPlaying);
             if (callStackFrame != null) callStackFrame.setAutoRefresh(!isEmulatorPlaying);
+            if (realOsObjectFrame != null) realOsObjectFrame.enableUpdate(!isEmulatorPlaying);
         }
         else {
             loadMenuItem.setEnabled(true); loadButton.setEnabled(true);
@@ -1566,10 +1608,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             stepMenuItem.setEnabled(false); stepButton.setEnabled(false);
             breakpointMenuItem.setEnabled(false); breakpointButton.setEnabled(false);
             optionsMenuItem.setEnabled(true); optionsButton.setEnabled(true);
-            // Editable components
+            // Editable components  TODO does it make sense ? And why true ?
             if (memoryHexEditorFrame != null) memoryHexEditorFrame.setEditable(true);
             if (cpuStateEditorFrame != null) cpuStateEditorFrame.setEditable(true);
             if (callStackFrame != null) callStackFrame.setAutoRefresh(true);
+            if (realOsObjectFrame != null) realOsObjectFrame.enableUpdate(true);
         }
     }
 
@@ -1638,6 +1681,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
             public void run() {
+                emulator.setCpuState(cpuState);
                 emulator.setOutputOptions(prefs.getOutputOptions());
                 setStatusText("Emulator is running...");
                 BreakCondition stopCause = null;
@@ -1654,9 +1698,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
                 try {
                     isEmulatorPlaying = false;
-                    if (sourceCodeFrame != null) {
-                        sourceCodeFrame.onPcChanged();
-                    }
+                    signalEmulatorStopped();
                     if (stopCause != null && stopCause.getBreakTrigger() != null) {
                         setStatusText("Break trigger matched : " + stopCause.getBreakTrigger().getName());
                     }
@@ -1673,19 +1715,30 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulatorThread.start();
     }
 
+    private void signalEmulatorStopped() {
+        // TODO this should iterate on all windows. A NOP onEmulatorStop() should exist in DocumentFrame
+        if (sourceCodeFrame != null) {
+            sourceCodeFrame.onEmulatorStop();
+        }
+        if (realOsObjectFrame != null) {
+            realOsObjectFrame.onEmulatorStop();
+        }
+    }
+
 
     public void playOneFunction(int address, boolean debugMode) {
+        // TODO : make the call transparent by cloning CPUState
         // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
-        memory.store16(FUNCTION_CALL_BASE_ADDRESS, 0x9f8c);      // LD R12,
-        memory.store32(FUNCTION_CALL_BASE_ADDRESS + 2, address); //         address
-        memory.store16(FUNCTION_CALL_BASE_ADDRESS + 6, 0x971c);  // CALL @R12
-        memory.store16(FUNCTION_CALL_BASE_ADDRESS + 8, 0xe0ff);  // HALT, infinite loop
+        memory.store16(BASE_ADDRESS_FUNCTION_CALL, 0x9f8c);      // LD          ,R12
+        memory.store32(BASE_ADDRESS_FUNCTION_CALL + 2, address); //     address
+        memory.store16(BASE_ADDRESS_FUNCTION_CALL + 6, 0x971c);  // CALL @R12
+        memory.store16(BASE_ADDRESS_FUNCTION_CALL + 8, 0xe0ff);  // HALT, infinite loop
 
         // And we put a breakpoint on the instruction after the call
         emulator.clearBreakConditions();
-        emulator.addBreakCondition(new BreakPointCondition(FUNCTION_CALL_BASE_ADDRESS + 8, null));
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS_FUNCTION_CALL + 8, null));
 
-        cpuState.pc = FUNCTION_CALL_BASE_ADDRESS;
+        cpuState.pc = BASE_ADDRESS_FUNCTION_CALL;
 
         if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
@@ -1695,8 +1748,104 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
         }
 
-
         startEmulator();
+    }
+
+    public TaskInformation getTaskInformation(int objId) {
+        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
+
+        ErrorCode errorCode = runSysCall(objId, 0xEC, pk_robj);
+
+        // Interpret result
+        if (errorCode != ErrorCode.E_OK) {
+            return new TaskInformation(objId, errorCode, 0, 0, 0);
+        }
+        else {
+            return new TaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+        }
+    }
+
+    public SemaphoreInformation getSemaphoreInformation(int objId) {
+        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
+
+        ErrorCode errorCode = runSysCall(objId, 0xCC, pk_robj);
+
+        // Interpret result
+        if (errorCode != ErrorCode.E_OK) {
+            return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
+        }
+        else {
+            return new SemaphoreInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+        }
+    }
+
+    public EventFlagInformation getEventFlagInformation(int objId) {
+        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
+
+        ErrorCode errorCode = runSysCall(objId, 0xD4, pk_robj);
+
+        // Interpret result
+        if (errorCode != ErrorCode.E_OK) {
+            return new EventFlagInformation(objId, errorCode, 0, 0, 0);
+        }
+        else {
+            return new EventFlagInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+        }
+    }
+
+    public MailboxInformation getMailboxInformation(int objId) {
+        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
+
+        ErrorCode errorCode = runSysCall(objId, 0xC4, pk_robj);
+
+        // Interpret result
+        if (errorCode != ErrorCode.E_OK) {
+            return new MailboxInformation(objId, errorCode, 0, 0, 0);
+        }
+        else {
+            return new MailboxInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+        }
+    }
+
+    private ErrorCode runSysCall(int objId, int syscallNumber, int pk_robj) {
+        // Prepare code
+        memory.store16(BASE_ADDRESS_SYSCALL    , 0x9F84);                      // 9F84           LDI:32          ,R4
+        memory.store32(BASE_ADDRESS_SYSCALL + 2, pk_robj);                     //      xxxx xxxx         address
+        memory.store16(BASE_ADDRESS_SYSCALL + 6, 0xC005 | objId << 4);         // Cxx5           LDI:8   #objId,R5
+        memory.store16(BASE_ADDRESS_SYSCALL + 8, 0xC00C | syscallNumber << 4); // CECC           LDI:8   #0xEC,R12
+        memory.store16(BASE_ADDRESS_SYSCALL + 10,0x978C);                      // 978C           EXTSB   R12
+        memory.store16(BASE_ADDRESS_SYSCALL + 12,0x1F40);                      // 1F40           INT     #0x40; R12=sys_ref_obj(pk_robj=R4, obj_id=R5)
+        memory.store16(BASE_ADDRESS_SYSCALL + 14,0xE0FF);                      // HALT, infinite loop
+
+        // And we put a breakpoint on the instruction after the call
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 14, null));
+
+        // Use alternate cpuState
+        CPUState tmpCpuState = cpuState.clone();
+        // Tweak alt cpuState
+        tmpCpuState.I = 0; // prevent interruptions
+        tmpCpuState.setILM(0, false);
+        tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
+
+        emulator.setCpuState(tmpCpuState);
+
+        // Start emulator synchronously
+        try {
+            emulator.play();
+
+            // Read error code
+            return ErrorCode.fromValue(tmpCpuState.getReg(12));
+
+        }
+        catch (Throwable t) {
+            t.printStackTrace();
+            String message = t.getMessage();
+            if (StringUtils.isEmpty(message)) {
+                message = t.getClass().getName();
+            }
+            return ErrorCode.E_FREMU;
+        }
     }
 
 

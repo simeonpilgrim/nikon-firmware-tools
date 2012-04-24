@@ -24,6 +24,7 @@ public class Prefs {
 
     private String codeStructureGraphOrientation;
 
+    private boolean autoUpdateRealOsObjects = true;
 
     public static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -194,6 +195,14 @@ public class Prefs {
 
     public void setCodeStructureGraphOrientation(String codeStructureGraphOrientation) {
         this.codeStructureGraphOrientation = codeStructureGraphOrientation;
+    }
+
+    public void setAutoUpdateRealOsObjects(boolean autoUpdateRealOsObjects) {
+        this.autoUpdateRealOsObjects = autoUpdateRealOsObjects;
+    }
+
+    public boolean isAutoUpdateRealOsObjects() {
+        return autoUpdateRealOsObjects;
     }
 
     /**
