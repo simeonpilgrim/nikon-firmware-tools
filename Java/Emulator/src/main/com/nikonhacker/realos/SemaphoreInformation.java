@@ -17,6 +17,13 @@ public class SemaphoreInformation extends RealOsObject {
         return waitTaskInformation;
     }
 
+    public String getWaitTaskInformationHex() {
+        if (waitTaskInformation == 0) {
+            return "(none)";
+        }
+        return "0x" + Format.asHex(waitTaskInformation, 2);
+    }
+
     public int getSemaphoreCount() {
         return semaphoreCount;
     }

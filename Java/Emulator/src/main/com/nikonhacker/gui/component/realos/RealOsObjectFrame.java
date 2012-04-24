@@ -69,7 +69,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         taskPanel = new JPanel(new BorderLayout());
         SortedList<TaskInformation> sortedTaskInformationList = new SortedList<TaskInformation>(taskInformationList, null);
         JTable taskTable = new JTable(new EventTableModel<TaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(TaskInformation.class,
-                new String[]{"objectId", "taskState", "taskPriority", "extendedInformation"},
+                new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex"},
                 new String[]{"Task Id", "State", "Priority", "Extended Information"})));
         TableComparatorChooser.install(taskTable, sortedTaskInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
@@ -85,7 +85,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         semaphorePanel = new JPanel(new BorderLayout());
         SortedList<SemaphoreInformation> sortedSemaphoreInformationList = new SortedList<SemaphoreInformation>(semaphoreInformationList, null);
         JTable semaphoreTable = new JTable(new EventTableModel<SemaphoreInformation>(sortedSemaphoreInformationList, GlazedLists.tableFormat(SemaphoreInformation.class,
-                new String[]{"objectId", "waitTaskInformation", "semaphoreCount", "extendedInformation"},
+                new String[]{"objectIdHex", "waitTaskInformationHex", "semaphoreCount", "extendedInformationHex"},
                 new String[]{"Semaphore", "First Waiting Task", "Count", "Extended Information"})));
         TableComparatorChooser.install(semaphoreTable, sortedSemaphoreInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
@@ -101,7 +101,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         eventFlagPanel = new JPanel(new BorderLayout());
         SortedList<EventFlagInformation> sortedEventFlagInformationList = new SortedList<EventFlagInformation>(eventFlagInformationList, null);
         JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(sortedEventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
-                new String[]{"objectId", "waitTaskInformation", "flagPattern", "extendedInformation"},
+                new String[]{"objectIdHex", "waitTaskInformationHex", "flagPatternHex", "extendedInformationHex"},
                 new String[]{"EventFlag", "First Waiting Task", "Pattern", "Extended Information"})));
         TableComparatorChooser.install(eventFlagTable, sortedEventFlagInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
@@ -117,7 +117,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         mailboxPanel = new JPanel(new BorderLayout());
         SortedList<MailboxInformation> sortedMailboxInformationList = new SortedList<MailboxInformation>(mailboxInformationList, null);
         JTable mailboxTable = new JTable(new EventTableModel<MailboxInformation>(sortedMailboxInformationList, GlazedLists.tableFormat(MailboxInformation.class,
-                new String[]{"objectId", "waitTaskInformation", "pkMsg", "extendedInformation"},
+                new String[]{"objectIdHex", "waitTaskInformationHex", "pkMsgHex", "extendedInformationHex"},
                 new String[]{"Mailbox", "First Waiting Task", "pkMsg", "Extended Information"})));
         TableComparatorChooser.install(mailboxTable, sortedMailboxInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
