@@ -32,7 +32,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
     private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
-    public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, EmulatorUI ui) {
+    public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -47,8 +47,10 @@ public class RealOsObjectFrame extends DocumentFrame {
         topPanel.add(updateAllButton);
 
         autoUpdateCheckbox = new JCheckBox("Auto-update all");
+        autoUpdateCheckbox.setSelected(ui.getPrefs().isAutoUpdateRealOsObjects());
         autoUpdateCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                ui.getPrefs().setAutoUpdateRealOsObjects(autoUpdateCheckbox.isSelected());
                 if (autoUpdateCheckbox.isSelected()) {
                     if (updateAllButton.isEnabled()) {
                         updateAllLists();
