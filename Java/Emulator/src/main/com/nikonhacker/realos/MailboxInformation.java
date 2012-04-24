@@ -17,8 +17,19 @@ public class MailboxInformation extends RealOsObject {
         return waitTaskInformation;
     }
 
+    public String getWaitTaskInformationHex() {
+        if (waitTaskInformation == 0) {
+            return "(none)";
+        }
+        return "0x" + Format.asHex(waitTaskInformation, 2);
+    }
+
     public int getPkMsg() {
         return pkMsg;
+    }
+
+    public String getPkMsgHex() {
+        return "0x" + Format.asHex(pkMsg, 8);
     }
 
     @Override

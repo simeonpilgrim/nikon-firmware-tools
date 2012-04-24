@@ -17,8 +17,19 @@ public class EventFlagInformation extends RealOsObject {
         return waitTaskInformation;
     }
 
+    public String getWaitTaskInformationHex() {
+        if (waitTaskInformation == 0) {
+            return "(none)";
+        }
+        return "0x" + Format.asHex(waitTaskInformation, 2);
+    }
+
     public int getFlagPattern() {
         return flagPattern;
+    }
+
+    public String getFlagPatternHex() {
+        return "0x" + Format.asHex(flagPattern, 8);
     }
 
     @Override

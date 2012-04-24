@@ -1,5 +1,7 @@
 package com.nikonhacker.realos;
 
+import com.nikonhacker.Format;
+
 public abstract class RealOsObject {
     protected int objectId;
     protected ErrorCode errorCode;
@@ -22,7 +24,16 @@ public abstract class RealOsObject {
         return extendedInformation;
     }
 
+    public String getExtendedInformationHex() {
+        return "0x" + Format.asHex(extendedInformation, 8);
+    }
+
     public int getObjectId() {
         return objectId;
     }
+
+    public String getObjectIdHex() {
+        return "0x" + Format.asHex(objectId, 2);
+    }
+
 }
