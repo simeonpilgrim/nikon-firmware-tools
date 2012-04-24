@@ -45,7 +45,7 @@
 		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
 		<mkdir dir="${class-dir}"/>
 		<javac destdir="${class-dir}" deprecation="yes"
-                classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar;${lib-dir}/jgraphx.jar;${lib-dir}/rsyntaxtextarea.jar;${lib-dir}/miglayout-4.0.jar"
+                classpath="${lib-dir}/commons-io-2.1.jar;${lib-dir}/commons-lang3-3.1.jar;${lib-dir}/jacksum.jar;${lib-dir}/xstream-1.4.2.jar;${lib-dir}/jgraphx.jar;${lib-dir}/rsyntaxtextarea.jar;${lib-dir}/miglayout-4.0.jar;${lib-dir}/glazedlists-1.8.0_java15.jar"
 				debug="${debug}" debuglevel="${debuglevel}"
 				source="${java-level}" target="${java-level}">
             <src path="${source-dir}"/>
