@@ -1847,7 +1847,7 @@
 -s 0x1D9914=call_WaitForMsg_CallFunc
 -s 0x1D9946=nullsub_52
 -s 0x1D9948=nullsub_199
--s 0x1D994A=CallsLongCallTab
+-s 0x1D994A=CallsLongCallTab(R4 [IN fn_idx])
 -s 0x1D9A0A=inttab_0_int10
 -s 0x1D9A26=nullsub_71
 -s 0x1D9A28=nullsub_72
