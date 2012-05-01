@@ -7,14 +7,18 @@ import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
+import com.nikonhacker.Format;
+import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.realos.*;
 
 import javax.swing.*;
+import javax.swing.event.MouseInputAdapter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 
 
@@ -100,10 +104,36 @@ public class RealOsObjectFrame extends DocumentFrame {
         eventFlagInformationList = GlazedLists.threadSafeList(new BasicEventList<EventFlagInformation>());
         eventFlagPanel = new JPanel(new BorderLayout());
         SortedList<EventFlagInformation> sortedEventFlagInformationList = new SortedList<EventFlagInformation>(eventFlagInformationList, null);
-        JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(sortedEventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
+        final JTable eventFlagTable = new JTable(new EventTableModel<EventFlagInformation>(sortedEventFlagInformationList, GlazedLists.tableFormat(EventFlagInformation.class,
                 new String[]{"objectIdHex", "waitTaskInformationHex", "flagPatternHex", "extendedInformationHex"},
                 new String[]{"EventFlag", "First Waiting Task", "Pattern", "Extended Information"})));
         TableComparatorChooser.install(eventFlagTable, sortedEventFlagInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
+
+        eventFlagTable.addMouseListener(new MouseInputAdapter() {
+
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2
+                        && e.getButton() == MouseEvent.BUTTON1) {
+                    String strFlagId = (String) eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 0);
+                    try {
+                        int flagId = Format.parseUnsigned(strFlagId);
+                        String newValue = JOptionPane.showInputDialog(RealOsObjectFrame.this, "New value for Pattern",  eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 2));
+                        try {
+                            int value = Format.parseUnsigned(newValue);
+                            ErrorCode errorCode = ui.setFlagIdPattern(flagId, value);
+                            if (errorCode != ErrorCode.E_OK) {
+                                JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Setting flag returned " + errorCode);
+                            }
+                            updateAllLists();
+                        } catch (ParsingException e1) {
+                            JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Cannot parse new value " + newValue);
+                        }
+                    } catch (ParsingException e1) {
+                        JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Cannot parse flag ID " + strFlagId);
+                    }
+                }
+            }
+        });
 
         eventFlagScroller = new JScrollPane(eventFlagTable);
         eventFlagScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));

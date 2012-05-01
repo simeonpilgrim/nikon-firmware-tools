@@ -1754,7 +1754,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public TaskInformation getTaskInformation(int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall(objId, 0xEC, pk_robj);
+        ErrorCode errorCode = runSysCall(0xEC, pk_robj, objId);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -1768,7 +1768,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public SemaphoreInformation getSemaphoreInformation(int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall(objId, 0xCC, pk_robj);
+        ErrorCode errorCode = runSysCall(0xCC, pk_robj, objId);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -1782,7 +1782,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public EventFlagInformation getEventFlagInformation(int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall(objId, 0xD4, pk_robj);
+        ErrorCode errorCode = runSysCall(0xD4, pk_robj, objId);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -1796,7 +1796,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public MailboxInformation getMailboxInformation(int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall(objId, 0xC4, pk_robj);
+        ErrorCode errorCode = runSysCall(0xC4, pk_robj, objId);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -1807,28 +1807,41 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    private ErrorCode runSysCall(int objId, int syscallNumber, int pk_robj) {
-        // Prepare code
-        memory.store16(BASE_ADDRESS_SYSCALL    , 0x9F84);                      // 9F84           LDI:32          ,R4
-        memory.store32(BASE_ADDRESS_SYSCALL + 2, pk_robj);                     //      xxxx xxxx         address
-        memory.store16(BASE_ADDRESS_SYSCALL + 6, 0xC005 | objId << 4);         // Cxx5           LDI:8   #objId,R5
-        memory.store16(BASE_ADDRESS_SYSCALL + 8, 0xC00C | syscallNumber << 4); // CECC           LDI:8   #0xEC,R12
-        memory.store16(BASE_ADDRESS_SYSCALL + 10,0x978C);                      // 978C           EXTSB   R12
-        memory.store16(BASE_ADDRESS_SYSCALL + 12,0x1F40);                      // 1F40           INT     #0x40; R12=sys_ref_obj(pk_robj=R4, obj_id=R5)
-        memory.store16(BASE_ADDRESS_SYSCALL + 14,0xE0FF);                      // HALT, infinite loop
 
-        // And we put a breakpoint on the instruction after the call
-        emulator.clearBreakConditions();
-        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 14, null));
+    public ErrorCode setFlagIdPattern(int flagId, int pattern) {
+        ErrorCode errorCode;
+        // Set
+        errorCode = runSysCall(0xD0, flagId, pattern);
+        if (errorCode == ErrorCode.E_OK) {
+            // Clr
+            errorCode = runSysCall(0xD1, flagId, pattern);
+        }
+        return errorCode;
+    }
 
-        // Use alternate cpuState
+    private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
+        // Create alternate cpuState
         CPUState tmpCpuState = cpuState.clone();
+
         // Tweak alt cpuState
-        tmpCpuState.I = 0; // prevent interruptions
+        tmpCpuState.I = 0; // prevent interrupts
         tmpCpuState.setILM(0, false);
         tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
 
+        // Set params for call
+        tmpCpuState.setReg(4, r4);
+        tmpCpuState.setReg(5, r5);
+        tmpCpuState.setReg(12, Dfr.signExtend(8, syscallNumber));
+
         emulator.setCpuState(tmpCpuState);
+
+        // Prepare code
+        memory.store16(BASE_ADDRESS_SYSCALL    ,0x1F40);                      // 1F40           INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
+        memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                      // HALT, infinite loop
+
+        // Put a breakpoint on the instruction after the call
+        emulator.clearBreakConditions();
+        emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 2, null));
 
         // Start emulator synchronously
         try {
@@ -1836,7 +1849,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             // Read error code
             return ErrorCode.fromValue(tmpCpuState.getReg(12));
-
         }
         catch (Throwable t) {
             t.printStackTrace();
