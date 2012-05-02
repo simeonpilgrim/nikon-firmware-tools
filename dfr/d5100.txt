@@ -1,0 +1,17 @@
+# File map: D5100
+
+-i 0x00040000-0x00BFFFFF=0x00000000
+
+# Split output into one file for each memory range
+-r
+
+# Memory map:
+
+# crc code
+# -m 0x00107696-0x001076c0=CODE 
+
+
+-m 0x040000-0x0504e0=CODE
+-m 0x0ABBeA-0x0DAA28=CODE
+-m 0x100000-0x2376a2=CODE
+-m 0x2bf520-0x37bde0=CODE
