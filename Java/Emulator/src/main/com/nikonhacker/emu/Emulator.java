@@ -1884,7 +1884,7 @@ public class Emulator {
                         cycles = 2 * a;
                         break;
     
-                    case 0x0B00: /* DMOV @dir10, @–R15 */
+                    case 0x0B00: /* DMOV @dir10, @-R15 */
                         cpuState.setReg(15, cpuState.getReg(15) - 4);
                         memory.store32(cpuState.getReg(15), memory.load32(disassembledInstruction.x * 4));
     

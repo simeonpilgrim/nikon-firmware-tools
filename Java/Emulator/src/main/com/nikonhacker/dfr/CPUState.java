@@ -216,7 +216,7 @@ public class CPUState {
          return (getILM() << 16) | (getSCR() << 8) | getCCR();
 
         /* Although, all examples write the unused bits as "1" and expect to read them back as 1
-         * Ex : CM71-00104-3E.pdf, page 321 (§7.119) (or progfr-cm71-00101-5e.pdf, page 158 (§7.62))
+         * Ex : CM71-00104-3E.pdf, page 321 (sect. 7.119) (or progfr-cm71-00101-5e.pdf, page 158 (sect. 7.62))
          * So :
          */
 

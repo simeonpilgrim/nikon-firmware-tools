@@ -49,7 +49,7 @@ public class InterruptController {
             int irNumber = interruptNumber - INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
             int icrAddress = irNumber + ICR00_ADDRESS;
             // only the 5 LSB are significant, but bit4 is always 1
-            // (see hm91660-cm71-10146-3e.pdf, page 257, §10.3.1)
+            // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
             icr = memory.loadUnsigned8(icrAddress) & 0x1F | 0x10;
         }
         else {
