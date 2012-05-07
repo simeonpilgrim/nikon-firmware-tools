@@ -1138,7 +1138,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>Simeon Pilgrim's deciphering of firmware encoding and lots of information shared on his blog - " + makeLink("http://simeonpilgrim.com/blog/") + "</li>"
                 + "<li>Dfr Fujitsu FR diassembler Copyright (c) Kevin Schoedel - " + makeLink("http://scratchpad.wikia.com/wiki/Disassemblers/DFR") + "<br/>and its port to C# by Simeon Pilgrim</li>"
                 + "<li>The PearColator x86 emulator project - " + makeLink("http://apt.cs.man.ac.uk/projects/jamaica/tools/PearColator/") + "</li>"
-                + "<li>The Jacksum checksum library Copyright (c) Dipl.-Inf. (FH) Johann Nepomuk Löfflmann  - " + makeLink("http://www.jonelo.de/java/jacksum/") + "</li>"
+                + "<li>The Jacksum checksum library Copyright (c) Dipl.-Inf. (FH) Johann Nepomuk LÃ¶fflmann  - " + makeLink("http://www.jonelo.de/java/jacksum/") + "</li>"
                 + "<li>HexEditor & RSyntaxTextArea swing components, Copyright (c) Robert Futrell - " + makeLink("http://fifesoft.com/hexeditor/") + "</li>"
                 + "<li>JGraphX graph drawing library, Copyright (c) JGraph Ltd - " + makeLink("http://www.jgraph.com/jgraph.html") + "</li>"
                 + "<li>Apache commons libraries, Copyright (c) The Apache Software Foundation - " + makeLink("http://commons.apache.org/") + "</li>"
@@ -1455,7 +1455,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleRealOsObject() {
         if (realOsObjectFrame == null) {
-            realOsObjectFrame = new RealOsObjectFrame("µITRON Object Status", true, true, false, true, this);
+            realOsObjectFrame = new RealOsObjectFrame("ÂµITRON Object Status", true, true, false, true, this);
             realOsObjectFrame.enableUpdate(!isEmulatorPlaying);
             if (!isEmulatorPlaying()) {
                 realOsObjectFrame.updateAllLists();
