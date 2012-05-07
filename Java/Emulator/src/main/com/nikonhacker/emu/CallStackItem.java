@@ -5,11 +5,12 @@ import com.nikonhacker.Format;
 public class CallStackItem {
     int address;
     int sp;
-    String customLabel;
+    private String instruction;
 
-    public CallStackItem(int address, int sp) {
+    public CallStackItem(int address, int sp, String instruction) {
         this.address = address;
         this.sp = sp;
+        this.instruction = instruction;
     }
 
     public int getAddress() {
@@ -28,22 +29,10 @@ public class CallStackItem {
         this.sp = sp;
     }
 
-    public String getCustomLabel() {
-        return customLabel;
-    }
-
-    public void setCustomLabel(String customLabel) {
-        this.customLabel = customLabel;
-    }
 
     @Override
     public String toString() {
-        if (customLabel != null) {
-            return customLabel;
-        }
-        else {
-            return "0x" + Format.asHex(address,8) + " - SP=0x" + Format.asHex(sp,8);
-        }
+        return "0x" + Format.asHex(address,8) + " " + (instruction==null?"":instruction);
     }
     
 }

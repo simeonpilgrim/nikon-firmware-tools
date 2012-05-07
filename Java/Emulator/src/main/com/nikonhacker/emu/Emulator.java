@@ -6,6 +6,7 @@ import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +29,7 @@ public class Emulator {
     private Integer nextPC = null;
     private Integer nextRP = null;
     private boolean delaySlotDone = false;
-    private PrintWriter instructionPrintWriter;
+    private PrintWriter instructionPrintWriter, breakLogPrintWriter;
     private Deque<CallStackItem> callStack;
     private int sleepIntervalMs = 0;
     private boolean exitSleepLoop = false;
@@ -72,6 +73,13 @@ public class Emulator {
         this.instructionPrintWriter = instructionPrintWriter;
     }
 
+    /**
+     * Provide a PrintWriter to send break triggers log to
+     * @param breakLogPrintWriter
+     */
+    public void setBreakLogPrintWriter(PrintWriter breakLogPrintWriter) {
+        this.breakLogPrintWriter = breakLogPrintWriter;
+    }
 
     /**
      * Provide a call stack to write stack entries to it
@@ -1263,7 +1271,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -1280,7 +1288,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -1313,7 +1321,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -1330,7 +1338,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -1597,7 +1605,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -1615,7 +1623,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP)));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -2297,7 +2305,7 @@ public class Emulator {
                             //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
                             synchronized (callStack) {
                                 if (callStack != null) {
-                                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP) /* +8 ? */));
+                                    pushInstruction(disassembledInstruction);
                                 }
                             }
                         }
@@ -2335,7 +2343,10 @@ public class Emulator {
                         if (interruptRequest != null) {
                             if (cpuState.accepts(interruptRequest)){
                                 if (instructionPrintWriter != null) {
-                                    instructionPrintWriter.println("------------------------- Accepting " + interruptRequest);
+                                    PrintWriter printWriter = instructionPrintWriter;
+                                    if (printWriter != null) {
+                                        printWriter.println("------------------------- Accepting " + interruptRequest);
+                                    }
                                 }
                                 interruptController.removeRequest(interruptRequest);
                                 processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc);
@@ -2351,7 +2362,25 @@ public class Emulator {
                     synchronized (breakConditions) {
                         for (BreakCondition breakCondition : breakConditions) {
                             if(breakCondition.matches(cpuState, memory)) {
-                                return breakCondition;
+                                if (breakCondition.getBreakTrigger() != null && breakCondition.getBreakTrigger().mustBeLogged() && breakLogPrintWriter != null) {
+                                    // copying to make sure we keep a reference even if breakLogPrintWriter gets set to null in between but still avoid costly synchronization
+                                    PrintWriter printWriter = breakLogPrintWriter;
+                                    if (printWriter != null) {
+                                        // OK. Copy is still not null
+                                        disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
+
+                                        String msg = breakCondition.getBreakTrigger().getName() + " triggered at 0x" + Format.asHex(cpuState.pc, 8) + " " + StringUtils.strip(disassembledInstruction.toString()).replaceAll("\\s+", " ");
+                                        if (callStack != null && callStack.size() > 1) {
+                                            for (CallStackItem callStackItem : callStack) {
+                                                msg += " << " + StringUtils.strip(callStackItem.toString()).replaceAll("\\s+", " ");
+                                            }
+                                        }
+                                        printWriter.print(msg + "\n");
+                                    }
+                                }
+                                if (breakCondition.getBreakTrigger() == null || breakCondition.getBreakTrigger().mustBreak()) {
+                                    return breakCondition;
+                                }
                             }
                         }
                     }
@@ -2396,6 +2425,11 @@ public class Emulator {
             System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
             throw new EmulationException(e);
         }
+    }
+
+    private void pushInstruction(DisassembledInstruction disassembledInstruction) {
+        disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
+        callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(CPUState.SP), disassembledInstruction.toString()));
     }
 
     private int bitSearch(int value, int testBit) {

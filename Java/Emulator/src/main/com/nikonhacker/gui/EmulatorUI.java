@@ -1286,7 +1286,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleBreakTriggerList() {
         if (breakTriggerListFrame == null) {
-            breakTriggerListFrame = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, prefs.getTriggers(), this);
+            breakTriggerListFrame = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, emulator, prefs.getTriggers(), this);
             addDocumentFrame(breakTriggerListFrame);
             breakTriggerListFrame.display(true);
         }
@@ -1652,7 +1652,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
-                    if (breakTrigger.isEnabled()) {
+                    if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
                         emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
                     }
                 }
@@ -1742,7 +1742,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
-                if (breakTrigger.isEnabled()) {
+                if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
                     emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
                 }
             }

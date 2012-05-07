@@ -1,17 +1,26 @@
 package com.nikonhacker.gui.component.breakTrigger;
 
 
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.gui.AdvancedTableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
+import ca.odell.glazedlists.swing.EventTableModel;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.component.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class BreakTriggerListFrame extends DocumentFrame {
@@ -19,26 +28,36 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
     private List<BreakTrigger> breakTriggers;
-    private final JList triggerList;
+    private final EventList<BreakTrigger> triggerList;
+    private final JTable triggerTable;
+    private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, List<BreakTrigger> breakTriggers, EmulatorUI ui) {
+    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, List<BreakTrigger> breakTriggers, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
+        this.emulator = emulator;
         this.breakTriggers = breakTriggers;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
-        DefaultListModel listModel = createListModel(breakTriggers);
-        
-        triggerList = new JList(listModel);
-        triggerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        triggerList.setLayoutOrientation(JList.VERTICAL);
-        triggerList.setVisibleRowCount(10);
-        JScrollPane listScroller = new JScrollPane(triggerList);
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        JPanel editPanel = new JPanel(new BorderLayout());
+
+        triggerList = GlazedLists.threadSafeList(new BasicEventList<BreakTrigger>());
+        updateBreaktriggers();
+
+        EventTableModel<BreakTrigger> etm = new EventTableModel<BreakTrigger>(triggerList, new BreakTriggerTableFormat());
+        triggerTable = new JTable(etm);
+        triggerTable.getColumnModel().getColumn(0).setPreferredWidth(1000);
+        triggerTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+        triggerTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+
+        JScrollPane listScroller = new JScrollPane(triggerTable);
         listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        mainPanel.add(listScroller, BorderLayout.CENTER);
+        editPanel.add(listScroller, BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(4, 1));
+        rightPanel.setLayout(new GridLayout(3, 1));
 
         JButton addButton = new JButton("Add");
         addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -53,71 +72,59 @@ public class BreakTriggerListFrame extends DocumentFrame {
         editButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                editTrigger(triggerList.getSelectedIndex());
+                editTrigger(triggerTable.getSelectedRow());
             }
         });
         rightPanel.add(editButton);
-
-        JButton toggleButton = new JButton("Toggle");
-        toggleButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        toggleButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                toggleTrigger(triggerList.getSelectedIndex());
-            }
-        });
-        rightPanel.add(toggleButton);
 
         JButton deleteButton = new JButton("Delete");
         deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                deleteTrigger(triggerList.getSelectedIndex());
+                deleteTrigger(triggerTable.getSelectedRow());
             }
         });
         rightPanel.add(deleteButton);
 
-        mainPanel.add(rightPanel, BorderLayout.EAST);
+        editPanel.add(rightPanel, BorderLayout.EAST);
 
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.setLayout(new FlowLayout());
-        JButton okButton = new JButton("Close");
-        okButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                saveTriggers();
-            }
-        });
-        bottomPanel.add(okButton);
-//        JButton closeButton = new JButton("Close");
-//        closeButton.addActionListener(new ActionListener() {
-//            public void actionPerformed(ActionEvent e) {
-//                dispose();
-//            }
-//        });
-//        bottomPanel.add(closeButton);
-//
+        tabbedPane.addTab("Trigger list", null, editPanel);
 
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        PrintWriterArea triggerLog = new PrintWriterArea(30, 40);
+
+        tabbedPane.addTab("Trigger log", null, new JScrollPane(triggerLog));
+
+        emulator.setBreakLogPrintWriter(triggerLog.getPrintWriter());
+
+
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
 
         setContentPane(mainPanel);
         pack();
-        //setLocationRelativeTo(null);
     }
 
-    private DefaultListModel createListModel(List<BreakTrigger> breakTriggers) {
-        DefaultListModel model = new DefaultListModel();
+    @Override
+    public void dispose() {
+        emulator.setBreakLogPrintWriter(null);
+        super.dispose();
+    }
+
+    public void updateBreaktriggers() {
+        triggerList.clear();
         for (BreakTrigger breakTrigger : breakTriggers) {
-            model.addElement(breakTrigger);
+            triggerList.add(breakTrigger);
         }
-        return model;
     }
-
 
     private void deleteTrigger(int index) {
         if (index != -1) {
             breakTriggers.remove(index);
             ui.onBreaktriggersChange();
             if (!breakTriggers.isEmpty()) {
-                triggerList.setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+                int newIndex = Math.min(index, breakTriggers.size() - 1);
+                triggerTable.getSelectionModel().clearSelection();
+                triggerTable.getSelectionModel().addSelectionInterval(newIndex, newIndex);
             }
         }
     }
@@ -125,7 +132,9 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void editTrigger(int index) {
         if (index != -1) {
             editTrigger(breakTriggers.get(index));
-            triggerList.setSelectedIndex(index);
+
+            triggerTable.getSelectionModel().clearSelection();
+            triggerTable.getSelectionModel().addSelectionInterval(index, index);
         }
     }
 
@@ -135,17 +144,12 @@ public class BreakTriggerListFrame extends DocumentFrame {
         BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange();
-        triggerList.setSelectedIndex(breakTriggers.size() - 1);
-        editTrigger(trigger);
-    }
 
-    private void toggleTrigger(int index) {
-        if (index != -1) {
-            BreakTrigger trigger = breakTriggers.get(index);
-            trigger.setEnabled(!trigger.isEnabled());
-            ui.onBreaktriggersChange();
-            triggerList.setSelectedIndex(index);
-        }
+        editTrigger(trigger);
+
+        int newIndex = breakTriggers.size() - 1;
+        triggerTable.getSelectionModel().clearSelection();
+        triggerTable.getSelectionModel().addSelectionInterval(newIndex, newIndex);
     }
 
     private void editTrigger(BreakTrigger trigger) {
@@ -173,11 +177,70 @@ public class BreakTriggerListFrame extends DocumentFrame {
         return false;
     }
 
-    private void saveTriggers() {
-        super.dispose();
-    }
+    private class BreakTriggerTableFormat implements AdvancedTableFormat<BreakTrigger>, WritableTableFormat<BreakTrigger> {
 
-    public void updateBreaktriggers() {
-        triggerList.setModel(createListModel(breakTriggers));
+        public boolean isEditable(BreakTrigger baseObject, int column) {
+            return true;
+        }
+
+
+        public BreakTrigger setColumnValue(BreakTrigger baseObject, Object editedValue, int column) {
+            switch (column) {
+                case 0:
+                    baseObject.setName((String) editedValue);
+                    return baseObject;
+                case 1:
+                    baseObject.setMustBeLogged((Boolean) editedValue);
+                    return baseObject;
+                case 2:
+                    baseObject.setMustBreak((Boolean) editedValue);
+                    return baseObject;
+            }
+            return baseObject;
+        }
+
+        public int getColumnCount() {
+            return 3;
+        }
+
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Name";
+                case 1:
+                    return "Log";
+                case 2:
+                    return "Break";
+            }
+            return null;
+        }
+
+        public Object getColumnValue(BreakTrigger baseObject, int column) {
+            switch (column) {
+                case 0:
+                    return baseObject.getName();
+                case 1:
+                    return baseObject.mustBeLogged();
+                case 2:
+                    return baseObject.mustBreak();
+            }
+            return null;
+        }
+
+        public Class getColumnClass(int column) {
+            switch (column) {
+                case 0:
+                    return String.class;
+                case 1:
+                    return Boolean.class;
+                case 2:
+                    return Boolean.class;
+            }
+            return null;
+        }
+
+        public Comparator getColumnComparator(int column) {
+            return null;
+        }
     }
 }

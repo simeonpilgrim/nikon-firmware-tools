@@ -10,7 +10,8 @@ public class BreakTrigger {
     private CPUState cpuStateValues;
     private CPUState cpuStateFlags;
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
-    private boolean enabled = true;
+    private boolean mustBeLogged = false;
+    private boolean mustBreak = true;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
         this.name = name;
@@ -27,16 +28,32 @@ public class BreakTrigger {
         this.name = name;
     }
 
-    public boolean isEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
     public CPUState getCpuStateValues() {
         return cpuStateValues;
+    }
+
+    public boolean mustBeLogged() {
+        return mustBeLogged;
+    }
+
+    public boolean getMustBeLogged() {
+        return mustBeLogged;
+    }
+
+    public void setMustBeLogged(boolean mustBeLogged) {
+        this.mustBeLogged = mustBeLogged;
+    }
+
+    public boolean mustBreak() {
+        return mustBreak;
+    }
+
+    public boolean getMustBreak() {
+        return mustBreak;
+    }
+
+    public void setMustBreak(boolean mustBreak) {
+        this.mustBreak = mustBreak;
     }
 
     public void setCpuStateValues(CPUState cpuStateValues) {
@@ -85,7 +102,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return name + (isEnabled()?"":" (disabled)");
+        return name + (getMustBreak()?"break":"") + (getMustBeLogged()?" log":"");
     }
 
 
