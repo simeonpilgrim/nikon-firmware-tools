@@ -1,10 +1,7 @@
 package com.nikonhacker.gui.component.callStack;
 
-import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.DisassembledInstruction;
-import com.nikonhacker.dfr.Function;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
@@ -27,7 +24,6 @@ public class CallStackFrame extends DocumentFrame {
 
     private Emulator emulator;
     private CPUState cpuState;
-    private CodeStructure codeStructure;
     private final LinkedList<CallStackItem> callStack;
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
@@ -39,7 +35,6 @@ public class CallStackFrame extends DocumentFrame {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;
-        this.codeStructure = codeStructure;
 
         setLayout(new BorderLayout());
 
@@ -94,7 +89,7 @@ public class CallStackFrame extends DocumentFrame {
         
         add(buttonPanel, BorderLayout.EAST);
 
-pack();
+        pack();
 
         // Prepare update timer
         _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
@@ -108,16 +103,10 @@ pack();
         synchronized (callStack) {
             DefaultListModel model = new DefaultListModel();
             // Pseudo stack element
-            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc);
-            if (codeStructure != null) {
-                computeCustomLabel(currentPositionItem);
-            }
+            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc, "");
             model.addElement(currentPositionItem);
             // Real stack
             for (CallStackItem callStackItem : callStack) {
-                if (codeStructure != null && callStackItem.getCustomLabel() == null) {
-                    computeCustomLabel(callStackItem);
-                }
                 model.addElement(callStackItem);
             }
             callStackList.setModel(model);
@@ -150,20 +139,6 @@ pack();
         }
     }
 
-    private void computeCustomLabel(CallStackItem callStackItem) {
-        DisassembledInstruction instruction = codeStructure.getInstructions().get(callStackItem.getAddress());
-        if (instruction != null) {
-            Function function = codeStructure.findFunctionIncluding(callStackItem.getAddress());
-
-            callStackItem.setCustomLabel("0x" + Format.asHex(callStackItem.getAddress(), 8)
-                    + " - " + function.getName()
-                    + "." + instruction.opcode.name
-                    + " " + instruction.operands
-                    + " - SP=0x" + Format.asHex(callStackItem.getSp(), 8));
-        }
-    }
-
-
     public void setAutoRefresh(boolean editable) {
         updateList();
         if (editable) {
@@ -184,6 +159,4 @@ pack();
         emulator.setCallStack(null);
         super.dispose();
     }
-
-
 }

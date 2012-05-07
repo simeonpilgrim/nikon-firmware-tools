@@ -518,7 +518,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 try {
                     Integer lineFromAddress = getLineFromAddress(breakTrigger.getCpuStateValues().pc);
                     if (lineFromAddress != null) {
-                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.isEnabled() ? enabledBreakPointIcon : disabledBreakPointIcon);
+                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? enabledBreakPointIcon : disabledBreakPointIcon);
                     }
                 } catch (BadLocationException e) {
                     e.printStackTrace();
@@ -550,7 +550,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             if (breakTrigger.getCpuStateFlags().pc != 0) {
                 if (breakTrigger.getCpuStateValues().pc == addressFromLine) {
                     // We found a matching breakpoint, toggle it
-                    breakTrigger.setEnabled(!breakTrigger.isEnabled());
+                    breakTrigger.setMustBreak(!breakTrigger.mustBreak());
                     matchedTrigger = breakTrigger;
                     break;
                 }

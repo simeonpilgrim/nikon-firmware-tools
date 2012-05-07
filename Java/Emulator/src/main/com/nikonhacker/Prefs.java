@@ -5,6 +5,7 @@ import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
+import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 import java.io.*;
 import java.nio.charset.Charset;
@@ -64,7 +65,22 @@ public class Prefs {
     public static Object load(File file) {
         if (file.exists()) {
             Object object = null;
-            XStream xStream = new XStream(new StaxDriver());
+            XStream xStream = new XStream(new StaxDriver()) {
+                @Override
+                protected MapperWrapper wrapMapper(MapperWrapper next) {
+                    return new MapperWrapper(next) {
+                        @Override
+                        public boolean shouldSerializeMember(Class definedIn, String fieldName) {
+                            if (definedIn == Object.class) {
+                                return false;
+                            }
+                            return super.shouldSerializeMember(definedIn, fieldName);
+                        }
+                    };
+                }
+            };
+
+
             InputStream inputStream = null;
             Reader reader = null;
 
