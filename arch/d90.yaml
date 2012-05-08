@@ -20,7 +20,6 @@
 -   from: dg
     to: cm
     label: 39-pin\n(1023)
-
 -   name: sb
     label: SB/IF PCB\n(1041)
     ports:
