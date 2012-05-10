@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.memoryMapped;
 
+import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 
@@ -10,8 +11,8 @@ import java.awt.event.ActionListener;
 
 
 public class Component4006Frame extends MemoryMappedComponentFrame {
-    public Component4006Frame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final DebuggableMemory memory, int page, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, memory, page, ui);
+    public Component4006Frame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final DebuggableMemory memory, int page, CPUState cpuState, EmulatorUI ui) {
+        super(title, resizable, closable, maximizable, iconifiable, memory, page, cpuState, ui);
 
         JButton addButton = new JButton("Store 0x1000 at 0x40060010");
         addButton.addActionListener(new ActionListener() {
