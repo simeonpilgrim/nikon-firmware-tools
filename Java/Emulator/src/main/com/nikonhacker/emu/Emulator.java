@@ -2367,8 +2367,6 @@ public class Emulator {
                                     PrintWriter printWriter = breakLogPrintWriter;
                                     if (printWriter != null) {
                                         // OK. Copy is still not null
-                                        disassembledInstruction.formatOperandsAndComment(cpuState, false, outputOptions);
-
                                         String msg = breakCondition.getBreakTrigger().getName() + " triggered at 0x" + Format.asHex(cpuState.pc, 8);
                                         if (callStack != null && callStack.size() > 1) {
                                             for (CallStackItem callStackItem : callStack) {
