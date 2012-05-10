@@ -1388,7 +1388,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private void toggleComponent4006() {
-        if (customMemoryRangeLoggerFrame == null) {
+        if (component4006Frame == null) {
             component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, memory, 0x4006, cpuState, this);
             addDocumentFrame(component4006Frame);
             component4006Frame.display(true);
@@ -1402,7 +1402,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCustomMemoryRangeLoggerComponentFrame() {
         if (customMemoryRangeLoggerFrame == null) {
-            customMemoryRangeLoggerFrame = new CustomMemoryRangeLoggerFrame("Component 4006", true, true, false, true, memory, cpuState, this);
+            customMemoryRangeLoggerFrame = new CustomMemoryRangeLoggerFrame("Custom Logger", true, true, false, true, memory, cpuState, this);
             addDocumentFrame(customMemoryRangeLoggerFrame);
             customMemoryRangeLoggerFrame.display(true);
         }
