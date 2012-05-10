@@ -9,29 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-public class Syscall {
+public class Syscall extends Symbol {
 
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
 
-    private int address;
-    private String name;
-
     static List<Syscall> syscallList;
 
-    public int getAddress() {
-        return address;
-    }
-
-    public void setAddress(int address) {
-        this.address = address;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public Syscall(Integer address, String rawText) throws ParsingException {
+        super(address, rawText);
     }
 
     public static List<Syscall> getList(Memory memory) throws ParsingException {
@@ -50,10 +35,8 @@ public class Syscall {
                 properties.load(url.openStream());
 
                 for (Object o : properties.keySet()) {
-                    Syscall syscall = new Syscall();
                     int offset = Format.parseUnsigned((String) o);
-                    syscall.setName((String) properties.get(o));
-                    syscall.setAddress(baseAddress + Dfr.signExtend(16, memory.loadInstruction16(baseAddress + offset * 2)));
+                    Syscall syscall = new Syscall(baseAddress + Dfr.signExtend(16, memory.loadInstruction16(baseAddress + offset * 2)), (String) properties.get(o));
                     syscallList.add(syscall);
                 }
             } catch (IOException e) {

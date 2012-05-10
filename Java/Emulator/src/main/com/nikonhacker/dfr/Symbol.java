@@ -11,6 +11,7 @@ public class Symbol {
     String comment;
     List<String> aliases;
     private List<Parameter> parameterList;
+    private String rawText;
 
     public Symbol(int address, String name, String comment) {
         this.address = address;
@@ -21,16 +22,17 @@ public class Symbol {
     /**
      * Parses text for the given address in its different elements
      * @param address
-     * @param text of the form "MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])" with optional comment between the parenthesis
+     * @param rawText of the form "MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])" with optional comment between the parenthesis
      * @throws ParsingException
      */
-    public Symbol(Integer address, String text) throws ParsingException {
+    public Symbol(Integer address, String rawText) throws ParsingException {
         this.address = address;
-        if (text.contains("(")) {
-            this.name = StringUtils.substringBefore(text, "(").trim();
-            this.comment = StringUtils.substringAfter(text, "(");
+        this.rawText = rawText;
+        if (rawText.contains("(")) {
+            this.name = StringUtils.substringBefore(rawText, "(").trim();
+            this.comment = StringUtils.substringAfter(rawText, "(");
             if (!comment.contains(")")) {
-                throw new ParsingException("Invalid symbol '" + text + "' : no closing parenthesis");
+                throw new ParsingException("Invalid symbol '" + rawText + "' : no closing parenthesis");
             }
             comment = StringUtils.substringBefore(comment, ")").trim();
             // Comment of the form R4 [IN dividend, OUT remainder], R5 [IN divisor]
@@ -46,7 +48,7 @@ public class Symbol {
 //            System.out.println("   Parameters:" + parameterList);
         }
         else {
-            this.name = text;
+            this.name = rawText;
         }
     }
 
@@ -54,8 +56,8 @@ public class Symbol {
         return address;
     }
 
-    public void setAddress(int address) {
-        this.address = address;
+    public String getRawText() {
+        return rawText;
     }
 
     public String getName() {

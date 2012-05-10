@@ -63,7 +63,7 @@ public class GenerateSysSymbolsDialog extends JDialog {
                     debugPrintWriter.println("The following lines can be pasted to a dfr.txt file :");
                     debugPrintWriter.println();
                     for (Syscall syscall : syscallList) {
-                        debugPrintWriter.println("-s 0x" + Format.asHex(syscall.getAddress(), 8) + "=" + syscall.getName());
+                        debugPrintWriter.println("-s 0x" + Format.asHex(syscall.getAddress(), 8) + "=" + syscall.getRawText());
                     }
                     debugPrintWriter.println();
                     debugPrintWriter.println("The lines above can be pasted to a dfr.txt file");
