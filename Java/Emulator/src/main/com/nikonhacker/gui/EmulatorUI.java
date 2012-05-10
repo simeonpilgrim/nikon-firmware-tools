@@ -1366,7 +1366,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleComponent4006() {
         if (component4006Frame == null) {
-            component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, memory, 0x4006, this);
+            component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, memory, 0x4006, cpuState, this);
             addDocumentFrame(component4006Frame);
             component4006Frame.display(true);
         }
