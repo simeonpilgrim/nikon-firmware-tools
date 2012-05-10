@@ -9,6 +9,7 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.ApplicationInfo;
+import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.dfr.*;
@@ -38,6 +39,7 @@ import com.nikonhacker.gui.component.interruptController.InterruptControllerFram
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
+import com.nikonhacker.gui.component.memoryMapped.CustomMemoryRangeLoggerFrame;
 import com.nikonhacker.gui.component.realos.RealOsObjectFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
@@ -83,6 +85,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_DISASSEMBLY_WINDOW = "TOGGLE_DISASSEMBLY_WINDOW";
     private static final String COMMAND_TOGGLE_CPUSTATE_WINDOW = "TOGGLE_CPUSTATE_WINDOW";
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
+    private static final String COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW = "COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW";
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_SAVE_LOAD_MEMORY = "SAVE_LOAD_MEMORY";
@@ -144,6 +147,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem memoryHexEditorMenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
     private JCheckBoxMenuItem component4006MenuItem;
+    private JCheckBoxMenuItem customMemoryRangeLoggerMenuItem;
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
@@ -167,6 +171,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton memoryHexEditorButton;
     private JButton screenEmulatorButton;
     private JButton component4006Button;
+    private JButton customMemoryRangeLoggerButton;
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
     private JButton interruptControllerButton;
@@ -183,6 +188,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private BreakTriggerListFrame breakTriggerListFrame;
     private MemoryHexEditorFrame memoryHexEditorFrame;
     private Component4006Frame component4006Frame;
+    private CustomMemoryRangeLoggerFrame customMemoryRangeLoggerFrame;
     private CodeStructureFrame codeStructureFrame;
     private SourceCodeFrame sourceCodeFrame;
     private InterruptControllerFrame interruptControllerFrame;
@@ -370,6 +376,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(memoryActivityViewerButton);
         component4006Button = makeButton("4006", COMMAND_TOGGLE_COMPONENT_4006_WINDOW, "Component 4006", "Component 4006");
         bar.add(component4006Button);
+        customMemoryRangeLoggerButton = makeButton("custom_logger", COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW, "Custom logger", "Custom logger");
+        bar.add(customMemoryRangeLoggerButton);
         callStackButton = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW, "Call Stack window", "CallStack");
         bar.add(callStackButton);
         realosObjectButton = makeButton("os", COMMAND_TOGGLE_REALOS_OBJECT_WINDOW, "RealOS Object window", "RealOS Object");
@@ -629,6 +637,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.addActionListener(this);
         traceMenu.add(component4006MenuItem);
 
+        //Custom logger
+        customMemoryRangeLoggerMenuItem = new JCheckBoxMenuItem("Custom logger window");
+//        customMemoryRangeLoggerMenuItem.setMnemonic(KeyEvent.VK_4);
+//        customMemoryRangeLoggerMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK));
+        customMemoryRangeLoggerMenuItem.setActionCommand(COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW);
+        customMemoryRangeLoggerMenuItem.addActionListener(this);
+        traceMenu.add(customMemoryRangeLoggerMenuItem);
+
         //Call Stack
         callStackMenuItem = new JCheckBoxMenuItem("Call stack");
 //        callStackMenuItem.setMnemonic(KeyEvent.VK_C);
@@ -779,6 +795,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
             toggleComponent4006();
+        }
+        else if (COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW.equals(e.getActionCommand())) {
+            toggleCustomMemoryRangeLoggerComponentFrame();
         }
         else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
             toggleInterruptController();
@@ -1264,6 +1283,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             component4006Frame.dispose();
             component4006Frame = null;
         }
+        if (customMemoryRangeLoggerFrame != null) {
+            customMemoryRangeLoggerFrame.dispose();
+            customMemoryRangeLoggerFrame = null;
+        }
         if (interruptControllerFrame != null) {
             interruptControllerFrame.dispose();
             interruptControllerFrame = null;
@@ -1365,7 +1388,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private void toggleComponent4006() {
-        if (component4006Frame == null) {
+        if (customMemoryRangeLoggerFrame == null) {
             component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, memory, 0x4006, cpuState, this);
             addDocumentFrame(component4006Frame);
             component4006Frame.display(true);
@@ -1373,6 +1396,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             component4006Frame.dispose();
             component4006Frame = null;
+        }
+        updateStates();
+    }
+
+    private void toggleCustomMemoryRangeLoggerComponentFrame() {
+        if (customMemoryRangeLoggerFrame == null) {
+            customMemoryRangeLoggerFrame = new CustomMemoryRangeLoggerFrame("Component 4006", true, true, false, true, memory, cpuState, this);
+            addDocumentFrame(customMemoryRangeLoggerFrame);
+            customMemoryRangeLoggerFrame.display(true);
+        }
+        else {
+            customMemoryRangeLoggerFrame.dispose();
+            customMemoryRangeLoggerFrame = null;
         }
         updateStates();
     }
@@ -1529,6 +1565,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == component4006Frame) {
             toggleComponent4006();
         }
+        else if (frame == customMemoryRangeLoggerFrame) {
+            toggleCustomMemoryRangeLoggerComponentFrame();
+        }
         else if (frame == interruptControllerFrame) {
             toggleInterruptController();
         }
@@ -1557,6 +1596,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryActivityViewerMenuItem.setSelected(memoryActivityViewerFrame != null);
         memoryHexEditorMenuItem.setSelected(memoryHexEditorFrame != null);
         component4006MenuItem.setSelected(component4006Frame != null);
+        customMemoryRangeLoggerMenuItem.setSelected(customMemoryRangeLoggerFrame != null);
         interruptControllerMenuItem.setSelected(interruptControllerFrame != null);
         clockMenuItem.setSelected(clockTimer != null);
 
@@ -1576,6 +1616,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         memoryActivityViewerMenuItem.setEnabled(isImageLoaded); memoryActivityViewerButton.setEnabled(isImageLoaded);
         memoryHexEditorMenuItem.setEnabled(isImageLoaded); memoryHexEditorButton.setEnabled(isImageLoaded);
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
+        customMemoryRangeLoggerMenuItem.setEnabled(isImageLoaded); customMemoryRangeLoggerButton.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
         clockMenuItem.setEnabled(isImageLoaded); clockButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
@@ -1831,7 +1872,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Set params for call
         tmpCpuState.setReg(4, r4);
         tmpCpuState.setReg(5, r5);
-        tmpCpuState.setReg(12, Dfr.signExtend(8, syscallNumber));
+        tmpCpuState.setReg(12, BinaryArithmetics.signExtend(8, syscallNumber));
 
         emulator.setCpuState(tmpCpuState);
 

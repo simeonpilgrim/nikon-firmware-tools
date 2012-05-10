@@ -10,7 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 
-public class Component4006Frame extends MemoryMappedComponentFrame {
+public class Component4006Frame extends MemoryPageMappedComponentFrame {
     public Component4006Frame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final DebuggableMemory memory, int page, CPUState cpuState, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, memory, page, cpuState, ui);
 

@@ -1,5 +1,6 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.interruptController.InterruptController;
@@ -211,7 +212,7 @@ public class Emulator {
                         break;
     
                     case 0xA500: /* ADD2 #i4, Ri */
-                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + (Dfr.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) + (BinaryArithmetics.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
                         result32 = (int) result64;
                         S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
@@ -269,7 +270,7 @@ public class Emulator {
                         break;
     
                     case 0xA100: /* ADDN2 #i4, Ri */
-                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) + Dfr.extn(4, disassembledInstruction.x));
+                        cpuState.setReg(disassembledInstruction.i, cpuState.getReg(disassembledInstruction.i) + BinaryArithmetics.extn(4, disassembledInstruction.x));
     
                         /* No change to NZVC */
 
@@ -358,7 +359,7 @@ public class Emulator {
                         break;
     
                     case 0xA900: /* CMP2 #i4, Ri */
-                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (Dfr.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
+                        result64 = (cpuState.getReg(disassembledInstruction.i) & 0xFFFFFFFFL) - (BinaryArithmetics.extn(4, disassembledInstruction.x) & 0xFFFFFFFFL);
                         S1 = (cpuState.getReg(disassembledInstruction.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
@@ -937,7 +938,7 @@ public class Emulator {
                         break;
     
                     case 0x2000: /* LD @(R14,disp10), Ri */
-                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 4));
+                        cpuState.setReg(disassembledInstruction.i, memory.load32(cpuState.getReg(14) + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 4));
     
                         /* No change to NZVC */
 
@@ -1015,7 +1016,7 @@ public class Emulator {
                         break;
     
                     case 0x4000: /* LDUH @(R14,disp9), Ri */
-                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned16(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 2));
+                        cpuState.setReg(disassembledInstruction.i, memory.loadUnsigned16(cpuState.getReg(14) + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2));
     
                         /* No change to NZVC */
 
@@ -1075,7 +1076,7 @@ public class Emulator {
                         break;
     
                     case 0x3000: /* ST Ri, @(R14,disp10) */
-                        memory.store32(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 4, cpuState.getReg(disassembledInstruction.i));
+                        memory.store32(cpuState.getReg(14) + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 4, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1159,7 +1160,7 @@ public class Emulator {
                         break;
     
                     case 0x5000: /* STH Ri, @(R14,disp9) */
-                        memory.store16(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x) * 2, cpuState.getReg(disassembledInstruction.i));
+                        memory.store16(cpuState.getReg(14) + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1189,7 +1190,7 @@ public class Emulator {
                         break;
     
                     case 0x7000: /* STB Ri, @(R14,disp8) */
-                        memory.store8(cpuState.getReg(14) + Dfr.signExtend(8, disassembledInstruction.x), cpuState.getReg(disassembledInstruction.i));
+                        memory.store8(cpuState.getReg(14) + BinaryArithmetics.signExtend(8, disassembledInstruction.x), cpuState.getReg(disassembledInstruction.i));
     
                         /* No change to NZVC */
 
@@ -1276,7 +1277,7 @@ public class Emulator {
                             }
                         }
                         cpuState.setReg(CPUState.RP, cpuState.pc + 2);
-                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2; // TODO check *2 ?
+                        cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(11, disassembledInstruction.x) * 2; // TODO check *2 ?
 
                         /* No change to NZVC */
     
@@ -1387,7 +1388,7 @@ public class Emulator {
                         break;
     
                     case 0xE000: /* BRA label9 */
-                        cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                        cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
     
                         /* No change to NZVC */
     
@@ -1396,7 +1397,7 @@ public class Emulator {
     
                     case 0xE200: /* BEQ label9 */
                         if (cpuState.Z == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1410,7 +1411,7 @@ public class Emulator {
     
                     case 0xE300: /* BNE label9 */
                         if (cpuState.Z == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1424,7 +1425,7 @@ public class Emulator {
     
                     case 0xE400: /* BC label9 */
                         if (cpuState.C == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1438,7 +1439,7 @@ public class Emulator {
     
                     case 0xE500: /* BNC label9 */
                         if (cpuState.C == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1452,7 +1453,7 @@ public class Emulator {
     
                     case 0xE600: /* BN label9 */
                         if (cpuState.N == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1466,7 +1467,7 @@ public class Emulator {
     
                     case 0xE700: /* BP label9 */
                         if (cpuState.N == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1480,7 +1481,7 @@ public class Emulator {
     
                     case 0xE800: /* BV label9 */
                         if (cpuState.V == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1494,7 +1495,7 @@ public class Emulator {
     
                     case 0xE900: /* BNV label9 */
                         if (cpuState.V == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1508,7 +1509,7 @@ public class Emulator {
     
                     case 0xEA00: /* BLT label9 */
                         if ((cpuState.V ^ cpuState.N) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1522,7 +1523,7 @@ public class Emulator {
     
                     case 0xEB00: /* BGE label9 */
                         if ((cpuState.V ^ cpuState.N) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1536,7 +1537,7 @@ public class Emulator {
     
                     case 0xEC00: /* BLE label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1550,7 +1551,7 @@ public class Emulator {
     
                     case 0xED00: /* BGT label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1564,7 +1565,7 @@ public class Emulator {
     
                     case 0xEE00: /* BLS label9 */
                         if ((cpuState.C | cpuState.Z) == 1) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1578,7 +1579,7 @@ public class Emulator {
     
                     case 0xEF00: /* BHI label9 */
                         if ((cpuState.C | cpuState.Z) == 0) {
-                            cpuState.pc = cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2;
+                            cpuState.pc = cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2;
                             cycles = 2;
                         }
                         else {
@@ -1609,7 +1610,7 @@ public class Emulator {
                                 }
                             }
                         }
-                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(11, disassembledInstruction.x) * 2, cpuState.pc + 4);  // TODO check *2
+                        setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(11, disassembledInstruction.x) * 2, cpuState.pc + 4);  // TODO check *2
     
                         /* No change to NZVC */
 
@@ -1665,7 +1666,7 @@ public class Emulator {
                         break;
     
                     case 0xF000: /* BRA:D label9 */
-                        setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                        setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
     
                         /* No change to NZVC */
 
@@ -1676,7 +1677,7 @@ public class Emulator {
     
                     case 0xF200: /* BEQ:D label9 */
                         if (cpuState.Z == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1688,7 +1689,7 @@ public class Emulator {
     
                     case 0xF300: /* BNE:D label9 */
                         if (cpuState.Z == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1700,7 +1701,7 @@ public class Emulator {
     
                     case 0xF400: /* BC:D label9 */
                         if (cpuState.C == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1712,7 +1713,7 @@ public class Emulator {
     
                     case 0xF500: /* BNC:D label9 */
                         if (cpuState.C == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1724,7 +1725,7 @@ public class Emulator {
     
                     case 0xF600: /* BN:D label9 */
                         if (cpuState.N == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1736,7 +1737,7 @@ public class Emulator {
     
                     case 0xF700: /* BP:D label9 */
                         if (cpuState.N == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1748,7 +1749,7 @@ public class Emulator {
     
                     case 0xF800: /* BV:D label9 */
                         if (cpuState.V == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1760,7 +1761,7 @@ public class Emulator {
     
                     case 0xF900: /* BNV:D label9 */
                         if (cpuState.V == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1772,7 +1773,7 @@ public class Emulator {
     
                     case 0xFA00: /* BLT:D label9 */
                         if ((cpuState.V ^ cpuState.N) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1784,7 +1785,7 @@ public class Emulator {
     
                     case 0xFB00: /* BGE:D label9 */
                         if ((cpuState.V ^ cpuState.N) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1796,7 +1797,7 @@ public class Emulator {
     
                     case 0xFC00: /* BLE:D label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1808,7 +1809,7 @@ public class Emulator {
     
                     case 0xFD00: /* BGT:D label9 */
                         if (((cpuState.V ^ cpuState.N) | cpuState.Z) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1820,7 +1821,7 @@ public class Emulator {
     
                     case 0xFE00: /* BLS:D label9 */
                         if ((cpuState.C | cpuState.Z) == 1) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -1832,7 +1833,7 @@ public class Emulator {
     
                     case 0xFF00: /* BHI:D label9 */
                         if ((cpuState.C | cpuState.Z) == 0) {
-                            setDelayedChanges(cpuState.pc + 2 + Dfr.signExtend(8, disassembledInstruction.x) * 2, null);
+                            setDelayedChanges(cpuState.pc + 2 + BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 2, null);
                         }
 
                         cpuState.pc += 2;
@@ -2103,7 +2104,7 @@ public class Emulator {
                         break;
                     
                     case 0xA300: /* ADDSP #s10 */
-                        cpuState.setReg(15, cpuState.getReg(15) + (Dfr.signExtend(8, disassembledInstruction.x) * 4));
+                        cpuState.setReg(15, cpuState.getReg(15) + (BinaryArithmetics.signExtend(8, disassembledInstruction.x) * 4));
                         
                         /* No change to NZVC */
 
@@ -2113,7 +2114,7 @@ public class Emulator {
                         break;
                     
                     case 0x9780: /* EXTSB Ri */
-                        cpuState.setReg(disassembledInstruction.i, Dfr.signExtend(8, cpuState.getReg(disassembledInstruction.i)));
+                        cpuState.setReg(disassembledInstruction.i, BinaryArithmetics.signExtend(8, cpuState.getReg(disassembledInstruction.i)));
                         
                         /* No change to NZVC */
 
@@ -2133,7 +2134,7 @@ public class Emulator {
                         break;
                     
                     case 0x97A0: /* EXTSH Ri */
-                        cpuState.setReg(disassembledInstruction.i, Dfr.signExtend(16, cpuState.getReg(disassembledInstruction.i)));
+                        cpuState.setReg(disassembledInstruction.i, BinaryArithmetics.signExtend(16, cpuState.getReg(disassembledInstruction.i)));
                         
                         /* No change to NZVC */
 
