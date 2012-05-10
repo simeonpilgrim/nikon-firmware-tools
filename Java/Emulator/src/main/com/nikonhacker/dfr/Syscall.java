@@ -1,5 +1,6 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 
@@ -48,7 +49,7 @@ public class Syscall extends Symbol {
 
                 for (Object o : properties.keySet()) {
                     int functionCode = Format.parseUnsigned((String) o);
-                    Syscall syscall = new Syscall(functionCode, baseAddress + Dfr.signExtend(16, memory.loadInstruction16(baseAddress + functionCode * 2)), (String) properties.get(o));
+                    Syscall syscall = new Syscall(functionCode, baseAddress + BinaryArithmetics.signExtend(16, memory.loadInstruction16(baseAddress + functionCode * 2)), (String) properties.get(o));
                     syscallList.add(syscall);
                 }
             } catch (IOException e) {

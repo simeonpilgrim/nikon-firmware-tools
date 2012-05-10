@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.memory.listener;
 
-public abstract class BaseMemoryActivityListener implements MemoryActivityListener {
+public abstract class Abstract8BitMemoryActivityListener implements MemoryActivityListener {
     public abstract void onLoadData8(int address, byte value);
 
     /**

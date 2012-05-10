@@ -166,46 +166,6 @@ public class Dfr
 
 
 
-    ///* misc definitions */
-
-    /**
-     * Extend with Negative sign
-     * @param i number of used bits in original number
-     * @param x original number
-     * @return
-     */
-    public static int extn(int i, int x) {
-        int mask = (1 << i) - 1;
-        return ~mask | x;
-    }
-
-    static int signExtendMask(int b, int x)
-    {
-        return ((-b) * ((b & x) != 0 ? 1 : 0));
-    }
-
-    /**
-     * Interpret value as a signed value based on its last numBits bits, and extend the higher bits
-     * so that return represents the same number, but on 32 bits
-     * @param numBits the number of bits to take into account
-     * @param value the original number
-     */
-    public static int signExtend(int numBits, int value)
-    {
-        return (value | signExtendMask((1 << (numBits - 1)), value));
-    }
-
-    public static int NEG(int n, int x)
-    {
-        return (-signExtend(n, x));
-    }
-
-    static boolean IsNeg(int n, int x)
-    {
-        return (x & (1 << (n - 1))) != 0;
-    }
-
-
     ///* output */
 
     void openOutput(int pc, boolean usePC, String ext) throws IOException {

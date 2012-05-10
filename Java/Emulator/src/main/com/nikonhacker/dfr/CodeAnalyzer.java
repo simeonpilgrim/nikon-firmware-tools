@@ -1,5 +1,6 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +86,7 @@ public class CodeAnalyzer {
                         int40mapping = new TreeMap<Integer, Integer>();
                         /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
                         for (int r12 = 0; r12 > -0xB0; r12--) {
-                            int40mapping.put(r12, baseAddress + Dfr.signExtend(16, memory.loadUnsigned16(baseAddress + (r12 << 1))));
+                            int40mapping.put(r12, baseAddress + BinaryArithmetics.signExtend(16, memory.loadUnsigned16(baseAddress + (r12 << 1))));
                         }
                     }
                 }
@@ -586,7 +587,7 @@ public class CodeAnalyzer {
                 if (candidateInstruction.opcode.encoding == 0xC000 && candidateInstruction.decodedI == 12) {
                     /* LDI:8 #i8, R12 */
                     if (r12SignExtend) {
-                        r12 = Dfr.signExtend(8, candidateInstruction.decodedX);
+                        r12 = BinaryArithmetics.signExtend(8, candidateInstruction.decodedX);
                     }
                     else {
                         r12 = candidateInstruction.decodedX;

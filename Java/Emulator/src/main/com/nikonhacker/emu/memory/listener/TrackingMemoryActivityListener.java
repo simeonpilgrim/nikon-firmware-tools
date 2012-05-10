@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.memory.listener;
 
-public class TrackingMemoryActivityListener extends BaseMemoryActivityListener implements MemoryActivityListener {
+public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityListener implements MemoryActivityListener {
 
     /** Arrays to track activity */
     private int[] pageActivityMap;

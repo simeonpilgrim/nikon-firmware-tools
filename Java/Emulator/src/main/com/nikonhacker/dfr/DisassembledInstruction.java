@@ -1,5 +1,6 @@
 package com.nikonhacker.dfr;
 
+import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
@@ -357,7 +358,7 @@ public class DisassembledInstruction {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (xBitWidth + 1)) - 1) & Dfr.NEG(xBitWidth, (1 << (xBitWidth)) | decodedX), xBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (xBitWidth + 1)) - 1) & BinaryArithmetics.NEG(xBitWidth, (1 << (xBitWidth)) | decodedX), xBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
@@ -375,18 +376,18 @@ public class DisassembledInstruction {
                     break;
                 case 'r':
                     /* relative */
-                    decodedX = cpuState.pc + 2 + Dfr.signExtend(xBitWidth, decodedX);
+                    decodedX = cpuState.pc + 2 + BinaryArithmetics.signExtend(xBitWidth, decodedX);
                     xBitWidth = 32;
                     break;
                 case 's':
                     /* signed constant */
-                    if (Dfr.IsNeg(xBitWidth, decodedX))
+                    if (BinaryArithmetics.IsNeg(xBitWidth, decodedX))
                     {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                         if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), Dfr.NEG(xBitWidth, decodedX), xBitWidth));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(xBitWidth, decodedX), xBitWidth));
                     }
                     else
                     {
