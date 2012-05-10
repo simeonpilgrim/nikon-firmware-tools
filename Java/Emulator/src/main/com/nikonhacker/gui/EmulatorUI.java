@@ -1286,7 +1286,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleBreakTriggerList() {
         if (breakTriggerListFrame == null) {
-            breakTriggerListFrame = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, emulator, prefs.getTriggers(), this);
+            breakTriggerListFrame = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, emulator, prefs.getTriggers(), memory, this);
             addDocumentFrame(breakTriggerListFrame);
             breakTriggerListFrame.display(true);
         }
