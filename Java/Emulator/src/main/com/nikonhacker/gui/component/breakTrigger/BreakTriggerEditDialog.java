@@ -135,7 +135,7 @@ public class BreakTriggerEditDialog extends JDialog {
         }
 
         void addCondition() {
-            MemoryValueBreakCondition condition = new MemoryValueBreakCondition();
+            MemoryValueBreakCondition condition = new MemoryValueBreakCondition(trigger);
             trigger.getMemoryValueBreakConditions().add(condition);
             memoryConditionJList.setSelectedIndex(trigger.getMemoryValueBreakConditions().size() - 1);
             new MemoryConditionEditDialog(BreakTriggerEditDialog.this, condition, "Edit memory value condition").setVisible(true);

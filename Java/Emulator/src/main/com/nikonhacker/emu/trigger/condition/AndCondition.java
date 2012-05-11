@@ -7,13 +7,12 @@ import com.nikonhacker.emu.trigger.BreakTrigger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AndCondition implements BreakCondition {
+public class AndCondition extends AbstractLoggingBreakCondition implements BreakCondition {
     List<BreakCondition> conditions = new ArrayList<BreakCondition>();
-    private BreakTrigger breakTrigger;
 
     public AndCondition(List<BreakCondition> conditions, BreakTrigger breakTrigger) {
+        super(breakTrigger);
         this.conditions = conditions;
-        this.breakTrigger = breakTrigger;
     }
 
     public List<BreakCondition> getConditions() {
@@ -26,10 +25,6 @@ public class AndCondition implements BreakCondition {
 
     public void addBreakCondition(BreakCondition condition) {
         conditions.add(condition);
-    }
-
-    public BreakTrigger getBreakTrigger() {
-        return breakTrigger;
     }
 
     public boolean matches(CPUState cpuState, Memory memory) {
