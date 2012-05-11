@@ -5,22 +5,14 @@ import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 
-public class MemoryValueBreakCondition implements BreakCondition {
-    private BreakTrigger breakTrigger = null;
+public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition implements BreakCondition {
     private int address = 0;
     private int value = 0;
     private int mask = 0xFFFFFFFF;
     private boolean negate = false;
 
-    public MemoryValueBreakCondition() {
-    }
-
-    public MemoryValueBreakCondition(int address, int value, int mask, boolean negate, BreakTrigger breakTrigger) {
-        this.address = address;
-        this.value = value;
-        this.mask = mask;
-        this.negate = negate;
-        this.breakTrigger = breakTrigger;
+    public MemoryValueBreakCondition(BreakTrigger breakTrigger) {
+        super(breakTrigger);
     }
 
     public int getAddress() {
@@ -53,10 +45,6 @@ public class MemoryValueBreakCondition implements BreakCondition {
 
     public void setNegate(boolean negate) {
         this.negate = negate;
-    }
-
-    public BreakTrigger getBreakTrigger() {
-        return breakTrigger;
     }
 
     public boolean matches(CPUState cpuState, Memory memory) {
