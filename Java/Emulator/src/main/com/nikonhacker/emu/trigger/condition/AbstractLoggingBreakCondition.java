@@ -12,10 +12,27 @@ import java.util.Deque;
 public abstract class AbstractLoggingBreakCondition implements BreakCondition {
     private BreakTrigger breakTrigger;
 
+    /**
+     * Construct a new BreakCondition
+     * @param breakTrigger the breaktrigger to which this condition belongs
+     */
     public AbstractLoggingBreakCondition(BreakTrigger breakTrigger) {
         this.breakTrigger = breakTrigger;
     }
 
+    /**
+     * @return the breaktrigger to which this condition belongs
+     */
+    public BreakTrigger getBreakTrigger() {
+        return breakTrigger;
+    }
+
+    /**
+     * This is the default logging behaviour
+     * @param printWriter printWriter to which the log must be output
+     * @param cpuState optional cpu state at the time the condition matches
+     * @param callStack optional call stack at the time the condition matches
+     */
     public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack) {
         String msg = getBreakTrigger().getName() + " triggered at 0x" + Format.asHex(cpuState.pc, 8);
         if (callStack != null && callStack.size() > 1) {
@@ -24,9 +41,5 @@ public abstract class AbstractLoggingBreakCondition implements BreakCondition {
             }
         }
         printWriter.print(msg + "\n");
-    }
-
-    public BreakTrigger getBreakTrigger() {
-        return breakTrigger;
     }
 }

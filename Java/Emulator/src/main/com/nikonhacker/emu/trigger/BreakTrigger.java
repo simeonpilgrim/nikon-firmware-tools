@@ -5,6 +5,10 @@ import com.nikonhacker.emu.trigger.condition.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A trigger represents a CPU state accompanied by memory conditions which,
+ * when matched together, will trigger a break or a log
+ */
 public class BreakTrigger {
     private String name;
     private CPUState cpuStateValues;
