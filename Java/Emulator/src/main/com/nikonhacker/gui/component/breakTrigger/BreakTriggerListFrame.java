@@ -71,7 +71,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         });
         rightPanel.add(addButton);
 
-        JButton addSyscallButton = new JButton("Add syscall trigger");
+        JButton addSyscallButton = new JButton("Add syscall");
         addSyscallButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         addSyscallButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -218,9 +218,11 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return baseObject;
                 case 1:
                     baseObject.setMustBeLogged((Boolean) editedValue);
+                    ui.onBreaktriggersChange();
                     return baseObject;
                 case 2:
                     baseObject.setMustBreak((Boolean) editedValue);
+                    ui.onBreaktriggersChange();
                     return baseObject;
             }
             return baseObject;
