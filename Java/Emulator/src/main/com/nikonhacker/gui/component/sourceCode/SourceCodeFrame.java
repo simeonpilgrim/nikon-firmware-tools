@@ -31,6 +31,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final RSyntaxTextArea listingArea;
     private final ImageIcon enabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointIcon.png"));
     private final ImageIcon disabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointIcon.png"));
+    private final ImageIcon enabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointLogIcon.png"));
+    private final ImageIcon disabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointLogIcon.png"));
 //    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
     
     private Gutter gutter;
@@ -518,7 +520,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 try {
                     Integer lineFromAddress = getLineFromAddress(breakTrigger.getCpuStateValues().pc);
                     if (lineFromAddress != null) {
-                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? enabledBreakPointIcon : disabledBreakPointIcon);
+                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? (breakTrigger.mustBeLogged()?enabledBreakPointLogIcon:enabledBreakPointIcon) : (breakTrigger.mustBeLogged()?disabledBreakPointLogIcon:disabledBreakPointIcon));
                     }
                 } catch (BadLocationException e) {
                     e.printStackTrace();
