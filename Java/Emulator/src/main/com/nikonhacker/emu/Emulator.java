@@ -6,8 +6,8 @@ import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
-import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -2363,22 +2363,11 @@ public class Emulator {
                     synchronized (breakConditions) {
                         for (BreakCondition breakCondition : breakConditions) {
                             if(breakCondition.matches(cpuState, memory)) {
-                                if (breakCondition.getBreakTrigger() != null && breakCondition.getBreakTrigger().mustBeLogged() && breakLogPrintWriter != null) {
-                                    // copying to make sure we keep a reference even if breakLogPrintWriter gets set to null in between but still avoid costly synchronization
-                                    PrintWriter printWriter = breakLogPrintWriter;
-                                    if (printWriter != null) {
-                                        // OK. Copy is still not null
-                                        breakCondition.log(breakLogPrintWriter, cpuState, callStack);
-                                        String msg = breakCondition.getBreakTrigger().getName() + " triggered at 0x" + Format.asHex(cpuState.pc, 8);
-                                        if (callStack != null && callStack.size() > 1) {
-                                            for (CallStackItem callStackItem : callStack) {
-                                                msg += " << " + StringUtils.strip(callStackItem.toString()).replaceAll("\\s+", " ");
-                                            }
-                                        }
-                                        printWriter.print(msg + "\n");
-                                    }
+                                BreakTrigger trigger = breakCondition.getBreakTrigger();
+                                if (trigger != null && trigger.mustBeLogged() && breakLogPrintWriter != null) {
+                                    trigger.log(breakLogPrintWriter, cpuState, callStack, memory);
                                 }
-                                if (breakCondition.getBreakTrigger() == null || breakCondition.getBreakTrigger().mustBreak()) {
+                                if (trigger == null || trigger.mustBreak()) {
                                     return breakCondition;
                                 }
                             }

@@ -1,8 +1,16 @@
 package com.nikonhacker.emu.trigger;
+import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.CodeStructure;
+import com.nikonhacker.dfr.Function;
+import com.nikonhacker.emu.CallStackItem;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.*;
+import org.apache.commons.lang3.StringUtils;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
 
 /**
@@ -16,6 +24,7 @@ public class BreakTrigger {
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
+    private Integer debugStringPointerRegisterNumber = null;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
         this.name = name;
@@ -79,9 +88,19 @@ public class BreakTrigger {
         return memoryValueBreakConditions;
     }
 
-    public List<BreakCondition> getBreakConditions() {
+    public List<BreakCondition> getBreakConditions(CodeStructure codeStructure) {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
+            if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc) && codeStructure.getFunctions().get(cpuStateValues.pc).getName().startsWith("trace")) {
+                // this is a trace function. Try to grasp and store the register number for its string pointer parameter
+                Function function = codeStructure.getFunctions().get(cpuStateValues.pc);
+                if (function.getParameterList().size() == 1) {
+                    debugStringPointerRegisterNumber = function.getParameterList().get(0).getRegister();
+                }
+                else {
+                    System.out.println("Breakpoint on function " + function.getName() + " cannot be made a trace breakpoint. It doesn't have exactly one parameter");
+                }
+            }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
         for (int i = 0; i <= CPUState.MDL; i++) {
@@ -107,6 +126,38 @@ public class BreakTrigger {
     @Override
     public String toString() {
         return name + (getMustBreak()?"break":"") + (getMustBeLogged()?" log":"");
+    }
+
+    /**
+     * This is the default logging behaviour
+     * @param printWriter printWriter to which the log must be output
+     * @param cpuState optional cpu state at the time the condition matches
+     * @param callStack optional call stack at the time the condition matches
+     * @param memory
+     */
+    public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
+        String msg;
+        if (debugStringPointerRegisterNumber != null) {
+            // This is a trace function call
+            int debugStringAddress = cpuState.getReg(debugStringPointerRegisterNumber);
+            String debugString = "";
+            int character = memory.loadUnsigned8(debugStringAddress++);
+            while (character > 0) {
+                debugString += (char)character;
+                character = memory.loadUnsigned8(debugStringAddress++);
+            }
+            msg = "TRACE '"+ debugString + "' ";
+        }
+        else {
+            msg = name + " triggered at 0x" + Format.asHex(cpuState.pc, 8);
+        }
+
+        if (callStack != null) {
+            for (CallStackItem callStackItem : callStack) {
+                msg += " << " + StringUtils.strip(callStackItem.toString()).replaceAll("\\s+", " ");
+            }
+        }
+        printWriter.print(msg + "\n");
     }
 
 
