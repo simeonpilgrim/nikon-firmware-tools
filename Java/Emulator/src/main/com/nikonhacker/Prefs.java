@@ -17,6 +17,8 @@ public class Prefs {
     Set<OutputOption> outputOptions;
 
     boolean largeToolbarButtons = false;
+    boolean closeAllWindowsOnStop = false;
+
     boolean writeDisassemblyToFile = true;
     boolean followPc = true;
 
@@ -113,6 +115,14 @@ public class Prefs {
 
     public void setLargeToolbarButtons(boolean largeToolbarButtons) {
         this.largeToolbarButtons = largeToolbarButtons;
+    }
+
+    public boolean isCloseAllWindowsOnStop() {
+        return closeAllWindowsOnStop;
+    }
+
+    public void setCloseAllWindowsOnStop(boolean closeAllWindowsOnStop) {
+        this.closeAllWindowsOnStop = closeAllWindowsOnStop;
     }
 
     public boolean isWriteDisassemblyToFile() {
