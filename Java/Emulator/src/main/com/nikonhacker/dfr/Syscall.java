@@ -6,8 +6,8 @@ import com.nikonhacker.emu.memory.Memory;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class Syscall extends Symbol {
@@ -15,7 +15,7 @@ public class Syscall extends Symbol {
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
 
     private static int int40address;
-    static List<Syscall> syscallList;
+    static Map<Integer,Syscall> syscallMap;
 
     int functionCode;
 
@@ -32,9 +32,9 @@ public class Syscall extends Symbol {
         return int40address;
     }
 
-    public static List<Syscall> getList(Memory memory) throws ParsingException {
-        if (syscallList == null) {
-            syscallList = new ArrayList<Syscall>();
+    public static Map<Integer, Syscall> getMap(Memory memory) throws ParsingException {
+        if (syscallMap == null) {
+            syscallMap = new HashMap<Integer,Syscall>();
             try {
                 System.out.println("Assuming interrupt vector at 0x" + Format.asHex(INTERRUPT_VECTOR_BASE_ADDRESS, 8) + "...");
                 int40address = memory.load32(INTERRUPT_VECTOR_BASE_ADDRESS + 0x3FC - 0x40 * 4);
@@ -50,7 +50,7 @@ public class Syscall extends Symbol {
                 for (Object o : properties.keySet()) {
                     int functionCode = Format.parseUnsigned((String) o);
                     Syscall syscall = new Syscall(functionCode, baseAddress + BinaryArithmetics.signExtend(16, memory.loadInstruction16(baseAddress + functionCode * 2)), (String) properties.get(o));
-                    syscallList.add(syscall);
+                    syscallMap.put(functionCode, syscall);
                 }
             } catch (IOException e) {
                 throw new ParsingException(e);
@@ -58,6 +58,6 @@ public class Syscall extends Symbol {
                 throw new ParsingException(e);
             }
         }
-        return syscallList;
+        return syscallMap;
     }
 }
