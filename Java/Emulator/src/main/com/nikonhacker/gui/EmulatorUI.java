@@ -1694,7 +1694,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                     if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
-                        emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+                        emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure), breakTrigger));
                     }
                 }
             }
@@ -1784,7 +1784,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                 if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
-                    emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(), breakTrigger));
+                    emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure), breakTrigger));
                 }
             }
         }
