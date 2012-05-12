@@ -135,28 +135,30 @@ public class BreakTrigger {
         if (function != null) {
             // This is a function call. Parse its arguments and log them
             msg = function.getName() + "(";
-            for (Symbol.Parameter parameter : function.getParameterList()) {
-                if (parameter.getInVariable() != null) {
-                    String paramString = parameter.getInVariable() + "=";
-                    int value = cpuState.getReg(parameter.getRegister());
-                    if (parameter.getInVariable().startsWith("sz")) {
-                        paramString+="\"";
-                        // Dump as String
-                        int character = memory.loadUnsigned8(value++);
-                        while (character > 0) {
-                            paramString += (char)character;
-                            character = memory.loadUnsigned8(value++);
+            if (function.getParameterList() != null) {
+                for (Symbol.Parameter parameter : function.getParameterList()) {
+                    if (parameter.getInVariable() != null) {
+                        String paramString = parameter.getInVariable() + "=";
+                        int value = cpuState.getReg(parameter.getRegister());
+                        if (parameter.getInVariable().startsWith("sz")) {
+                            paramString+="\"";
+                            // Dump as String
+                            int character = memory.loadUnsigned8(value++);
+                            while (character > 0) {
+                                paramString += (char)character;
+                                character = memory.loadUnsigned8(value++);
+                            }
+                            paramString+="\"";
                         }
-                        paramString+="\"";
+                        else {
+                            // Dump as Int
+                            paramString += "0x" + Format.asHex(value,8);
+                        }
+                        if (!msg.endsWith("(")) {
+                            msg+=", ";
+                        }
+                        msg += paramString;
                     }
-                    else {
-                        // Dump as Int
-                        paramString += "0x" + Format.asHex(value,8);
-                    }
-                    if (!msg.endsWith("(")) {
-                        msg+=", ";
-                    }
-                    msg += paramString;
                 }
             }
             msg +=") ";
