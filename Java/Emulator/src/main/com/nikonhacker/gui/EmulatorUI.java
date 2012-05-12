@@ -1083,8 +1083,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         JPanel uiOptionsPanel = new JPanel(new GridLayout(0,1));
         uiOptionsPanel.setName("User Interface");
         final JCheckBox largeButtonsCheckBox = new JCheckBox("Use large buttons");
+        final JCheckBox closeAllWindowsOnStopCheckBox = new JCheckBox("Close all windows on Stop");
         //largeButtonsCheckBox.setToolTipText();
         largeButtonsCheckBox.setSelected(prefs.isLargeToolbarButtons());
+        closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
         uiOptionsPanel.add(largeButtonsCheckBox);
         optionsTabbedPane.add(uiOptionsPanel);
 
@@ -1100,6 +1102,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             // save
             dumpOptionCheckboxes(outputOptionsCheckBoxes, prefs.getOutputOptions());
             prefs.setLargeToolbarButtons(largeButtonsCheckBox.isSelected());
+            prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
             applyPrefsToUI();
         }
 
@@ -1694,7 +1697,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                     if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
-                        emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure), breakTrigger));
+                        emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure, memory), breakTrigger));
                     }
                 }
             }
@@ -1784,7 +1787,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (debugMode) {
             for (BreakTrigger breakTrigger : prefs.getTriggers()) {
                 if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
-                    emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure), breakTrigger));
+                    emulator.addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure, memory), breakTrigger));
                 }
             }
         }

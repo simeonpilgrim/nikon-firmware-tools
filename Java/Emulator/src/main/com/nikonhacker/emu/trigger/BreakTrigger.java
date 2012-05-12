@@ -1,10 +1,8 @@
 package com.nikonhacker.emu.trigger;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Symbol;
+import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.CallStackItem;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.*;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +11,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A trigger represents a CPU state accompanied by memory conditions which,
@@ -89,12 +88,31 @@ public class BreakTrigger {
         return memoryValueBreakConditions;
     }
 
-    public List<BreakCondition> getBreakConditions(CodeStructure codeStructure) {
+    public List<BreakCondition> getBreakConditions(CodeStructure codeStructure, DebuggableMemory memory) {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
             if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc)) {
                 // this is a break on a function. Store it for later
                 function = codeStructure.getFunctions().get(cpuStateValues.pc);
+
+                // In case this is a syscall, we can replace it by the actual syscall name and params
+                if (cpuStateFlags.getReg(12) != 0) {
+                    try {
+                        Map<Integer,Syscall> syscallMap = Syscall.getMap(memory);
+                        int int40address = Syscall.getInt40address();
+                        if (int40address == cpuStateValues.pc) {
+                            // We're on a syscall. Use the given syscall
+                            Syscall syscall = syscallMap.get(cpuStateValues.getReg(12));
+                            if (syscall != null) {
+                                function = codeStructure.getFunctions().get(syscall.getAddress());
+                            }
+                        }
+                    }
+                    catch (ParsingException e) {
+                        System.err.println("Could not determine syscall list.");
+                        e.printStackTrace();
+                    }
+                }
             }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }

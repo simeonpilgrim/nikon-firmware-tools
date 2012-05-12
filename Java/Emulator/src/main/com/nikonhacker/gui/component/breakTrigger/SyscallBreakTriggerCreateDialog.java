@@ -39,7 +39,13 @@ public class SyscallBreakTriggerCreateDialog extends JDialog implements ActionLi
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         try {
-            syscallList = Syscall.getList(memory);
+            syscallList = new ArrayList<Syscall>();
+            syscallList.addAll(Syscall.getMap(memory).values());
+            Collections.sort(syscallList, new Comparator<Syscall>() {
+                public int compare(Syscall o1, Syscall o2) {
+                    return o1.getName().compareTo(o2.getName());
+                }
+            });
 
             topPanel.add(new JLabel("System call:"));
 

@@ -13,7 +13,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.PrintWriter;
-import java.util.List;
+import java.util.Map;
 
 public class GenerateSysSymbolsDialog extends JDialog {
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
@@ -59,10 +59,10 @@ public class GenerateSysSymbolsDialog extends JDialog {
             public void run() {
                 PrintWriter debugPrintWriter = printWriterArea.getPrintWriter();
                 try {
-                    List<Syscall> syscallList = Syscall.getList(memory);
+                    Map<Integer,Syscall> syscallMap = Syscall.getMap(memory);
                     debugPrintWriter.println("The following lines can be pasted to a dfr.txt file :");
                     debugPrintWriter.println();
-                    for (Syscall syscall : syscallList) {
+                    for (Syscall syscall : syscallMap.values()) {
                         debugPrintWriter.println("-s 0x" + Format.asHex(syscall.getAddress(), 8) + "=" + syscall.getRawText());
                     }
                     debugPrintWriter.println();
