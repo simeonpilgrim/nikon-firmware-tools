@@ -1088,6 +1088,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         largeButtonsCheckBox.setSelected(prefs.isLargeToolbarButtons());
         closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
         uiOptionsPanel.add(largeButtonsCheckBox);
+        uiOptionsPanel.add(closeAllWindowsOnStopCheckBox);
         optionsTabbedPane.add(uiOptionsPanel);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
@@ -1247,7 +1248,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             setEmulatorSleepCode(prefs.getSleepTick());
 
             isImageLoaded = true;
-            closeAllFrames();
+            if (prefs.isCloseAllWindowsOnStop()) {
+                closeAllFrames();
+            }
 
             updateStates();
 
