@@ -3,6 +3,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
 import com.nikonhacker.dfr.CodeStructure;
 import com.nikonhacker.dfr.Function;
+import com.nikonhacker.dfr.Symbol;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.*;
@@ -24,7 +25,7 @@ public class BreakTrigger {
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
-    private Integer debugStringPointerRegisterNumber = null;
+    private Function function;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
         this.name = name;
@@ -91,15 +92,9 @@ public class BreakTrigger {
     public List<BreakCondition> getBreakConditions(CodeStructure codeStructure) {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
-            if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc) && codeStructure.getFunctions().get(cpuStateValues.pc).getName().startsWith("trace")) {
-                // this is a trace function. Try to grasp and store the register number for its string pointer parameter
-                Function function = codeStructure.getFunctions().get(cpuStateValues.pc);
-                if (function.getParameterList().size() == 1) {
-                    debugStringPointerRegisterNumber = function.getParameterList().get(0).getRegister();
-                }
-                else {
-                    System.out.println("Breakpoint on function " + function.getName() + " cannot be made a trace breakpoint. It doesn't have exactly one parameter");
-                }
+            if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc)) {
+                // this is a break on a function. Store it for later
+                function = codeStructure.getFunctions().get(cpuStateValues.pc);
             }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
@@ -137,16 +132,34 @@ public class BreakTrigger {
      */
     public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
         String msg;
-        if (debugStringPointerRegisterNumber != null) {
-            // This is a trace function call
-            int debugStringAddress = cpuState.getReg(debugStringPointerRegisterNumber);
-            String debugString = "";
-            int character = memory.loadUnsigned8(debugStringAddress++);
-            while (character > 0) {
-                debugString += (char)character;
-                character = memory.loadUnsigned8(debugStringAddress++);
+        if (function != null) {
+            // This is a function call. Parse its arguments and log them
+            msg = function.getName() + "(";
+            for (Symbol.Parameter parameter : function.getParameterList()) {
+                if (parameter.getInVariable() != null) {
+                    String paramString = parameter.getInVariable() + "=";
+                    int value = cpuState.getReg(parameter.getRegister());
+                    if (parameter.getInVariable().startsWith("sz")) {
+                        paramString+="\"";
+                        // Dump as String
+                        int character = memory.loadUnsigned8(value++);
+                        while (character > 0) {
+                            paramString += (char)character;
+                            character = memory.loadUnsigned8(value++);
+                        }
+                        paramString+="\"";
+                    }
+                    else {
+                        // Dump as Int
+                        paramString += "0x" + Format.asHex(value,8);
+                    }
+                    if (!msg.endsWith("(")) {
+                        msg+=", ";
+                    }
+                    msg += paramString;
+                }
             }
-            msg = "TRACE '"+ debugString + "' ";
+            msg +=") ";
         }
         else {
             msg = name + " triggered at 0x" + Format.asHex(cpuState.pc, 8);

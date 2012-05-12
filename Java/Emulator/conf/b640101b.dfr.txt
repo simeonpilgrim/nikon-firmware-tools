@@ -1857,7 +1857,7 @@
 -s 0x15803C=call_sub_21AD48_GRD
 -s 0x15C7C8=set_8F86BF40
 -s 0x164CBC=nullsub_177
--s 0x164CBE=trace(R4 [IN ptr to debug string])
+-s 0x164CBE=trace(R4 [IN szDebugString])
 -s 0x168688=setPointerValue
 -s 0x16869C=getPointerValue
 -s 0x16A8B8=WhiteBal_txt_xx
