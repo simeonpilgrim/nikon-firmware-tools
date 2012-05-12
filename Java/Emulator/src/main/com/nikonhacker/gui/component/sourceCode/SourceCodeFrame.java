@@ -563,7 +563,14 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             flags.pc = 1;
             flags.setILM(0, false);
             flags.setReg(CPUState.TBR, 0);
-            ui.getPrefs().getTriggers().add(new BreakTrigger("Breakpoint at 0x" + Format.asHex(addressFromLine, 8), values, flags, new ArrayList<MemoryValueBreakCondition>()));
+            String triggerName;
+            if (codeStructure.getFunctions().containsKey(addressFromLine)) {
+                triggerName = codeStructure.getFunctions().get(addressFromLine).getName() + "()";
+            }
+            else {
+                triggerName = "Breakpoint at 0x" + Format.asHex(addressFromLine, 8);
+            }
+            ui.getPrefs().getTriggers().add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
         }
 
         ui.onBreaktriggersChange();
