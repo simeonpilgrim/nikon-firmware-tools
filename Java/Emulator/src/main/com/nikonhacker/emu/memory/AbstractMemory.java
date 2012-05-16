@@ -25,7 +25,7 @@ public abstract class AbstractMemory implements Memory {
     /** The number of pages */
     static final int NUM_PAGES = 0x10000;
     /** The maximum amount of RAM available */
-    protected static final long MAX_RAM = (long) PAGE_SIZE * (long) NUM_PAGES;
+    public static final long MAX_RAM = (long) PAGE_SIZE * (long) NUM_PAGES;
     /** The memory backing store */
     byte readableMemory[][];
     byte writableMemory[][];
@@ -285,11 +285,18 @@ public abstract class AbstractMemory implements Memory {
         return getPage(getPTE(addr)) != null;
     }
 
+    /**
+     *
+     * @return the number of pages in memory
+     */
     public int getNumPages() {
         return NUM_PAGES;
     }
 
-    /** @return the size of a page */
+    /**
+     *
+     * @return the size of a memory page
+     */
     public int getPageSize() {
         return PAGE_SIZE;
     }
@@ -418,5 +425,57 @@ public abstract class AbstractMemory implements Memory {
             offset = 0;
         }
         fos.close();
+    }
+
+    public int getNumUsedPages() {
+        int numPages = 0;
+        for (int i = 0; i < NUM_PAGES; i++) {
+            if ((readableMemory[i] != null) || (writableMemory[i] != null) || (executableMemory[i] != null)) {
+                numPages++;
+            }
+        }
+        return numPages;
+    }
+
+    public void saveAllToStream(OutputStream outputStream) throws IOException {
+        // Header contains one byte per page, each with the 3 LSB representing R/W/X
+        for (int i = 0; i < NUM_PAGES; i++) {
+            outputStream.write((byte) ((readableMemory[i] == null ? 0 : 0x4) | (writableMemory[i] == null ? 0 : 0x2) | (executableMemory[i] == null ? 0 : 0x1)));
+        }
+        // Then write the contents of used pages
+        for (int i = 0; i < NUM_PAGES; i++) {
+            byte[] values = readableMemory[i];
+            if (values == null) values = writableMemory[i];
+            if (values == null) values = executableMemory[i];
+            if (values != null) {
+                outputStream.write(values);
+            }
+        }
+    }
+
+    public void loadAllFromStream(InputStream inputStream) throws IOException {
+        clear();
+        // Header contains one byte per page, each with the 3 LSB representing R/W/X
+        for (int i = 0; i < NUM_PAGES; i++) {
+            byte b = (byte) inputStream.read();
+            if (b != 0) {
+                byte page[] = new byte[PAGE_SIZE];
+                readableMemory[i] = ((b & 0x4) != 0) ? page : null;
+                writableMemory[i] = ((b & 0x2) != 0) ? page : null;
+                executableMemory[i] = ((b & 0x1) != 0) ? page : null;
+            }
+        }
+        // Then write the contents of used pages
+        for (int i = 0; i < NUM_PAGES; i++) {
+            byte[] values = readableMemory[i];
+            if (values == null) values = writableMemory[i];
+            if (values == null) values = executableMemory[i];
+            if (values != null) {
+                int bytesRead = 0;
+                while (bytesRead != PAGE_SIZE) {
+                    bytesRead += inputStream.read(values, bytesRead, PAGE_SIZE - bytesRead);
+                }
+            }
+        }
     }
 }

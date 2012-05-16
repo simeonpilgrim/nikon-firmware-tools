@@ -8,10 +8,7 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
-import com.nikonhacker.ApplicationInfo;
-import com.nikonhacker.BinaryArithmetics;
-import com.nikonhacker.Format;
-import com.nikonhacker.Prefs;
+import com.nikonhacker.*;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
@@ -45,7 +42,10 @@ import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.realos.*;
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
@@ -59,13 +59,13 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
@@ -88,6 +88,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW = "COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW";
     private static final String COMMAND_DECODE = "DECODE";
     private static final String COMMAND_ENCODE = "ENCODE";
+    private static final String COMMAND_LOAD_STATE = "LOAD_STATE";
+    private static final String COMMAND_SAVE_STATE = "SAVE_STATE";
     private static final String COMMAND_SAVE_LOAD_MEMORY = "SAVE_LOAD_MEMORY";
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
@@ -111,6 +113,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final int CAMERA_SCREEN_HEIGHT = 480;
 
     private static final int CLOCK_INTERRUPT_NUMBER = 0x18;
+    private static final String CPUSTATE_ENTRY_NAME = "CPUState";
+    private static final String MEMORY_ENTRY_NAME = "Memory";
 
 
     private Emulator emulator;
@@ -496,6 +500,24 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         fileMenu.add(new JSeparator());
 
+        //decoder
+        tmpMenuItem = new JMenuItem("Load state");
+//        tmpMenuItem.setMnemonic(KeyEvent.VK_D);
+//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK));
+        tmpMenuItem.setActionCommand(COMMAND_LOAD_STATE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
+
+        //encoder
+        tmpMenuItem = new JMenuItem("Save state");
+//        tmpMenuItem.setMnemonic(KeyEvent.VK_E);
+//        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK));
+        tmpMenuItem.setActionCommand(COMMAND_SAVE_STATE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
+
+        fileMenu.add(new JSeparator());
+
         //quit
         tmpMenuItem = new JMenuItem("Quit");
         tmpMenuItem.setMnemonic(KeyEvent.VK_Q);
@@ -817,6 +839,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
         }
+        else if (COMMAND_LOAD_STATE.equals(e.getActionCommand())) {
+            loadState();
+        }
+        else if (COMMAND_SAVE_STATE.equals(e.getActionCommand())) {
+            saveState();
+        }
         else if (COMMAND_SAVE_LOAD_MEMORY.equals(e.getActionCommand())) {
             openSaveLoadMemoryDialog();
         }
@@ -891,6 +919,94 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 JOptionPane.showMessageDialog(this, "Encoding complete", "Done", JOptionPane.INFORMATION_MESSAGE);
             } catch (FirmwareFormatException e) {
                 JOptionPane.showMessageDialog(this, e.getMessage(), "Error encoding files", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void loadState() {
+        JTextField sourceFile = new JTextField();
+        final JComponent[] inputs = new JComponent[] {
+            new FileSelectionPanel("Source file", sourceFile, false),
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Choose state file",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+            try {
+                FileInputStream fileInputStream = new FileInputStream(new File(sourceFile.getText()));
+                ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(fileInputStream));
+
+                // Read CPU State
+                ZipEntry entry = zipInputStream.getNextEntry();
+                if (entry == null || !CPUSTATE_ENTRY_NAME.equals(entry.getName())) {
+                    JOptionPane.showMessageDialog(this, "Error loading state file\nFirst file not called " + CPUSTATE_ENTRY_NAME, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    cpuState = (CPUState) XStreamUtils.load(zipInputStream);
+
+                    // Read memory
+                    entry = zipInputStream.getNextEntry();
+                    if (entry == null || !MEMORY_ENTRY_NAME.equals(entry.getName())) {
+                        JOptionPane.showMessageDialog(this, "Error loading state file\nSecond file not called " + MEMORY_ENTRY_NAME, "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    else {
+                        memory.loadAllFromStream(zipInputStream);
+                        JOptionPane.showMessageDialog(this, "State loading complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                    }
+                }
+
+                zipInputStream.close();
+                fileInputStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error loading state file\n" + e.getClass().getName()+ "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void saveState() {
+        JTextField destinationFile = new JTextField();
+        final JComponent[] inputs = new JComponent[] {
+            new FileSelectionPanel("Destination file", destinationFile, false),
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Choose destination file",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+            try {
+                FileOutputStream fileOutputStream = new FileOutputStream(new File(destinationFile.getText()));
+                ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(fileOutputStream));
+
+                StringWriter writer = new StringWriter();
+                XStream xStream = new XStream(new StaxDriver());
+                xStream.toXML(cpuState, writer);
+                byte[] bytes = writer.toString().getBytes("UTF-8");
+
+                ZipEntry zipEntry = new ZipEntry(CPUSTATE_ENTRY_NAME);
+                zipEntry.setSize(bytes.length);
+                zipOutputStream.putNextEntry(zipEntry);
+                IOUtils.write(bytes, zipOutputStream);
+
+                zipEntry = new ZipEntry(MEMORY_ENTRY_NAME);
+                zipEntry.setSize(memory.getNumPages() + memory.getNumUsedPages() * memory.getPageSize());
+                zipOutputStream.putNextEntry(zipEntry);
+                memory.saveAllToStream(zipOutputStream);
+
+                zipOutputStream.close();
+                fileOutputStream.close();
+
+                JOptionPane.showMessageDialog(this, "State saving complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error saving state file\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
