@@ -2,9 +2,7 @@ package com.nikonhacker.emu.memory;
 
 import com.nikonhacker.dfr.Range;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.Collection;
 
 /*
@@ -27,8 +25,16 @@ public interface Memory {
 
     boolean isMapped(int addr);
 
+    /**
+     *
+     * @return the number of pages in memory
+     */
     int getNumPages();
 
+    /**
+     *
+     * @return the size of a memory page
+     */
     int getPageSize();
 
     boolean isPageAligned(int addr);
@@ -66,6 +72,10 @@ public interface Memory {
     void loadFile(File file, Collection<Range> ranges) throws IOException;
 
     void saveToFile(File file, int startAddress, int length) throws IOException;
+
+    void saveAllToStream(OutputStream outputStream) throws IOException;
+
+    void loadAllFromStream(InputStream inputStream) throws IOException;
 
     void clear();
 }

@@ -3,12 +3,11 @@ package com.nikonhacker;
 
 import com.nikonhacker.dfr.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
-import com.thoughtworks.xstream.mapper.MapperWrapper;
 
-import java.io.*;
-import java.nio.charset.Charset;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.*;
 
 public class Prefs {
@@ -34,79 +33,26 @@ public class Prefs {
     }
 
     public static void save(Prefs prefs) {
-        save(prefs, getPreferenceFile());
+        try {
+            XStreamUtils.save(prefs, new FileOutputStream(getPreferenceFile()));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public static Prefs load() {
-        return (Prefs) load(getPreferenceFile());
-    }
-
-    public static void save(Object object, File file) {
-        XStream xStream = new XStream(new StaxDriver());
-        OutputStream outputStream = null;
-        Writer writer = null;
-
         try {
-            outputStream = new FileOutputStream(file);
-            writer = new OutputStreamWriter(outputStream, Charset.forName("UTF-8"));
-            xStream.toXML(object, writer);
-        }
-        catch (Exception e) {
+            File preferenceFile = getPreferenceFile();
+            if (preferenceFile.exists()) {
+                FileInputStream inputStream = new FileInputStream(preferenceFile);
+                Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
+                inputStream.close();
+                return prefs;
+            }
+        } catch (Exception e) {
             e.printStackTrace();
         }
-        finally {
-            try {
-                if (writer!= null) writer.close();
-                if (outputStream!=null) outputStream.close();
-            } catch (IOException e) {
-                //noop
-            }
-        }
-    }
-
-    public static Object load(File file) {
-        if (file.exists()) {
-            Object object = null;
-            XStream xStream = new XStream(new StaxDriver()) {
-                @Override
-                protected MapperWrapper wrapMapper(MapperWrapper next) {
-                    return new MapperWrapper(next) {
-                        @Override
-                        public boolean shouldSerializeMember(Class definedIn, String fieldName) {
-                            if (definedIn == Object.class) {
-                                return false;
-                            }
-                            return super.shouldSerializeMember(definedIn, fieldName);
-                        }
-                    };
-                }
-            };
-
-
-            InputStream inputStream = null;
-            Reader reader = null;
-
-            try {
-                inputStream = new FileInputStream(file);
-                reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
-                object = xStream.fromXML(reader);
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
-            finally {
-                try {
-                    if (reader!= null) reader.close();
-                    if (inputStream!=null) inputStream.close();
-                } catch (IOException e) {
-                    //noop
-                }
-            }
-            return object;
-        }
-        else {
-            return new Prefs();
-        }
+        return new Prefs();
     }
 
     public boolean isLargeToolbarButtons() {
