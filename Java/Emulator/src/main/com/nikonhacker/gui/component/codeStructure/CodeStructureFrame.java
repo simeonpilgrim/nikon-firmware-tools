@@ -75,13 +75,17 @@ public class CodeStructureFrame extends DocumentFrame
         });
         toolbar.add(orientationCombo);
 
-        toolbar.add(new JLabel("0x"));
-        final JTextField targetAddressField = new JTextField(7);
+        toolbar.add(new JLabel("Target:"));
+        final JTextField targetField = new JTextField(7);
 
         ActionListener exploreActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    int address = Format.parseIntHexField(targetAddressField);
+                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                if (address == null) {
+                    targetField.setBackground(Color.RED);
+                }
+                else {
+                    targetField.setBackground(Color.WHITE);
                     Function function = codeStructure.getFunctions().get(address);
                     if (function == null) {
                         function = codeStructure.findFunctionIncluding(address);
@@ -92,14 +96,12 @@ public class CodeStructureFrame extends DocumentFrame
                     else {
                         graph.expandFunction(function, codeStructure, true, true);
                     }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(CodeStructureFrame.this, ex.getMessage(), "Error parsing address", JOptionPane.ERROR_MESSAGE);
                 }
             }
         };
 
-        targetAddressField.addActionListener(exploreActionListener);
-        toolbar.add(targetAddressField);
+        targetField.addActionListener(exploreActionListener);
+        toolbar.add(targetField);
 
         final JButton exploreButton = new JButton("Explore");
         exploreButton.addActionListener(exploreActionListener);
@@ -108,14 +110,14 @@ public class CodeStructureFrame extends DocumentFrame
         toolbar.add(goToPcButton);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                targetAddressField.setText(Format.asHex(CodeStructureFrame.this.cpuState.pc, 8));
+                targetField.setText(Format.asHex(CodeStructureFrame.this.cpuState.pc, 8));
                 exploreButton.doClick(0);
             }
         });
 
 
 
-        JButton svgButton = new JButton("Save as SVG");
+        JButton svgButton = new JButton("Save SVG");
         svgButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final JFileChooser fc = new JFileChooser();
@@ -136,7 +138,7 @@ public class CodeStructureFrame extends DocumentFrame
         });
         toolbar.add(svgButton);
 
-        JButton pngButton = new JButton("Save as PNG");
+        JButton pngButton = new JButton("Save PNG");
         pngButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 final JFileChooser fc = new JFileChooser();

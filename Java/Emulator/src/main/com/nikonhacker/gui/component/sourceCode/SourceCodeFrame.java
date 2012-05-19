@@ -45,7 +45,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     List<Integer> lineAddresses = new ArrayList<Integer>();
-    private final JTextField targetAddressField;
+    private final JTextField targetField;
     private int lastClickedTextPosition;
     private final JCheckBox followPcCheckBox;
 
@@ -62,9 +62,9 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        topToolbar.add(new JLabel("0x"));
-        targetAddressField = new JTextField(7);
-        topToolbar.add(targetAddressField);
+        topToolbar.add(new JLabel("Function name or address:"));
+        targetField = new JTextField(7);
+        topToolbar.add(targetField);
         final JButton exploreButton = new JButton("Explore");
         topToolbar.add(exploreButton);
         JButton goToPcButton = new JButton("Go to PC");
@@ -76,17 +76,19 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Add listeners
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                try {
-                    int address = Format.parseIntHexField(targetAddressField);
+                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                if (address == null) {
+                    targetField.setBackground(Color.RED);
+                }
+                else {
+                    targetField.setBackground(Color.WHITE);
                     if (!exploreAddress(address)) {
-                        JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found matching address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
-                } catch (NumberFormatException ex) {
-                    // do nothing. Field is highlighted
                 }
             }
         };
-        targetAddressField.addActionListener(exploreExecutor);
+        targetField.addActionListener(exploreExecutor);
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -95,7 +97,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 }
             }
         });
-        targetAddressField.addKeyListener(this);
+        targetField.addKeyListener(this);
         exploreButton.addKeyListener(this);
         followPcCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -159,7 +161,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      * @return
      */
     public boolean exploreAddress(int address) {
-        targetAddressField.setText(Format.asHex(address, 8));
+        targetField.setText(Format.asHex(address, 8));
         Function function = codeStructure.getFunctions().get(address);
         if (function == null) {
             function = codeStructure.findFunctionIncluding(address);
