@@ -1428,6 +1428,7 @@
 -s 0xBC96C=Tsk38_BC96C
 -s 0xBCB7A=start_task_x38
 -s 0xBCD3A=MB12_Send_xx
+-s 0xBCFD0=start_task_x3b
 -s 0xBD02C=Tsk3B_BD02C
 -s 0xBD3D2=set_flg_2E_10000
 -s 0xBD3E0=set_flg_2E_20000
@@ -1638,6 +1639,7 @@
 -s 0x11F990=nullsub_90
 -s 0x11FAB2=nullsub_211
 -s 0x11FDB0=Tsk1E_11FDB0
+-s 0x11FD7C=setEvtPtr_and_start_task_x1e
 -s 0x1254EC=nullsub_13
 -s 0x1254F0=nullsub_14
 -s 0x1254F2=nullsub_15
@@ -1844,6 +1846,7 @@
 -s 0x15180E=set_15180E
 -s 0x151DE0=start_task_x2A
 -s 0x151DFA=Tsk2A_151DFA
+-s 0x1565AC=start_task_x32
 -s 0x1565D4=Tsk32_1565D4
 -s 0x1579B0=start_task_x01
 -s 0x1579BC=Tsk01_1579BC
@@ -2160,6 +2163,7 @@
 -s 0x1E1944=Tsk08_1E1944
 -s 0x1E1992=call_sub_1E199E
 -s 0x1E19FC=Tsk08_mbx_cb_func
+-s 0x1E67D4=start_task_x20
 -s 0x1E67FA=Tsk20_1E67FA
 -s 0x1E683C=Tsk21_1E683C
 -s 0x1E684E=start_tsk39_and_recording
@@ -2273,6 +2277,7 @@
 -s 0x1F059C=nullsub_182
 -s 0x1F05B2=getBeep
 -s 0x1F05C0=setBeep
+-s 0x1F0810=start_task_x04xx
 -s 0x1F08D2=Tsk04_1F08D2
 -s 0x1F145E=Wait_Timer_xx
 -s 0x1F18E8=WaitTimer_Start
