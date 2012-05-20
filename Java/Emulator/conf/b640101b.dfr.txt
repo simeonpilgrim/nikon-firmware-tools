@@ -1384,6 +1384,7 @@
 -s 0xB4F7C=Video_PauseRec
 -s 0xB500C=get_FrameRateCode_w
 -s 0xB5062=mem_setup_xx
+-s 0xB53A2=starttasks_35_37
 -s 0xB56D2=WaitForSem_49
 -s 0xB5966=maxTimeLimitReached
 -s 0xB5982=maxFrameLimitReached
@@ -1622,6 +1623,7 @@
 -s 0x107C2E=encrypt_init_ci
 -s 0x107C80=memcpy_fast
 -s 0x107CB2=memset_fast
+-s 0x10896E=start_task_x18
 -s 0x108A86=Tsk18_108A86
 -s 0x10996E=Tsk1B_10996E
 -s 0x10A84E=nullsub_43
@@ -1903,7 +1905,7 @@
 -s 0x1A54C6=Avi_headers_xx
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19_1A87BC
--s 0x1A8908=getnextdlstix_value
+-s 0x1A8908=getnextdlstix_value /* get next dList index value */
 -s 0x1A90E0=init_dlist_2_dlist_1
 -s 0x1A9122=getnextdlistx_f8
 -s 0x1A9188=dlist_callxx
