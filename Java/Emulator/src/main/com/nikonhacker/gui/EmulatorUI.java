@@ -1351,7 +1351,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memory = new DebuggableMemory();
             memory.loadFile(imageFile, BASE_ADDRESS);
 
-            cpuState = new CPUState(BASE_ADDRESS);
+            if (cpuState == null) {
+                cpuState = new CPUState(BASE_ADDRESS);
+            }
+            else {
+                cpuState.reset();
+                cpuState.pc = BASE_ADDRESS;
+            }
 
             interruptController = new InterruptController(memory);
 
