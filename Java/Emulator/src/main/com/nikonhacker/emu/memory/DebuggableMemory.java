@@ -37,7 +37,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      */
     byte[] ioPage = new byte[getPageSize()];
 
-    private byte loadIO8(int offset) {
+    private byte loadIo8(int offset) {
         byte value = ioPage[offset];
         for (IoActivityListener ioActivityListener : ioActivityListeners) {
             ioActivityListener.onIoLoad8(ioPage, offset, value);
@@ -45,7 +45,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return value;
     }
 
-    private void storeIO(int offset, byte value) {
+    private void storeIo8(int offset, byte value) {
         for (IoActivityListener ioActivityListener : ioActivityListeners) {
             ioActivityListener.onIoStore8(ioPage, offset, value);
         }
@@ -98,7 +98,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
                 if (page == 0) {
-                    return loadIO8(offset);
+                    return loadIo8(offset);
                 }
                 else {
                     map(truncateToPage(addr), PAGE_SIZE, true, true, true);
@@ -136,7 +136,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
                 if (page == 0) {
-                    return loadIO8(offset) & 0xFF;
+                    return loadIo8(offset) & 0xFF;
                 }
                 else {
                     map(truncateToPage(addr), PAGE_SIZE, true, true, true);
@@ -298,7 +298,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         byte[] pageData = writableMemory[page];
         if (pageData == null) {
             if (page == 0) {
-                storeIO(offset, (byte) value);
+                storeIo8(offset, (byte) value);
                 return;
             }
             else {
