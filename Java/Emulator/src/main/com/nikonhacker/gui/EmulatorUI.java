@@ -16,6 +16,7 @@ import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
+import com.nikonhacker.emu.memory.listener.ReloadTimer;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
@@ -94,7 +95,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
-    private static final String COMMAND_TOGGLE_CLOCK_TIMER = "TOGGLE CLOCK TIMER";
+//    private static final String COMMAND_TOGGLE_CLOCK_TIMER = "TOGGLE_CLOCK_TIMER";
+    private static final String COMMAND_TOGGLE_RELOAD_TIMERS = "COMMAND_TOGGLE_RELOAD_TIMERS";
     private static final String COMMAND_TOGGLE_CALL_STACK_WINDOW = "TOGGLE_CALL_STACK_WINDOW";
     private static final String COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = "TOGGLE_REALOS_OBJECT_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
@@ -112,7 +114,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final int CAMERA_SCREEN_WIDTH = 640;
     private static final int CAMERA_SCREEN_HEIGHT = 480;
 
-    private static final int CLOCK_INTERRUPT_NUMBER = 0x18;
+//    private static final int CLOCK_INTERRUPT_NUMBER = 0x18;
+//    private static final int CLOCK_TIMER_INTERVAL_MS = 1;
+
     private static final String CPUSTATE_ENTRY_NAME = "CPUState";
     private static final String MEMORY_ENTRY_NAME = "Memory";
 
@@ -121,8 +125,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private CPUState cpuState;
     private DebuggableMemory memory;
     private InterruptController interruptController;
-    private java.util.Timer clockTimer;
-    private java.util.Timer clockAnimationTimer;
+//    private java.util.Timer clockTimer;
+//    private java.util.Timer clockAnimationTimer;
+    private java.util.Timer reloadAnimationTimer;
+    private ReloadTimer[] reloadTimers;
 
     private CodeStructure codeStructure = null;
 
@@ -155,7 +161,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
-    private JCheckBoxMenuItem clockMenuItem;
+//    private JCheckBoxMenuItem clockMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
     private JCheckBoxMenuItem realosObjectMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
@@ -179,7 +185,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
     private JButton interruptControllerButton;
-    private JButton clockButton;
+//    private JButton clockTimerButton;
+    private JButton reloadTimersButton;
     private JButton callStackButton;
     private JButton realosObjectButton;
     private JButton saveLoadMemoryButton;
@@ -203,8 +210,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JLabel statusBar;
     private String statusText = "Ready";
 
-    private static ImageIcon[] clockIcons;
-    private int clockAnimationCounter = 0;
+//    private static ImageIcon[] clockIcons;
+    private static ImageIcon[] reloadIcons;
+//    private int clockAnimationCounter = 0;
+    private int reloadAnimationCounter = 0;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -369,8 +378,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(screenEmulatorButton);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
-        clockButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Toggle clock timer", "Clock");
-        bar.add(clockButton);
+//        clockTimerButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Toggle clock timer", "Clock timer");
+//        bar.add(clockTimerButton);
+        reloadTimersButton = makeButton("reload", COMMAND_TOGGLE_RELOAD_TIMERS, "Toggle reload timers", "Reload timers");
+        bar.add(reloadTimersButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -621,13 +632,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         componentsMenu.add(interruptControllerMenuItem);
 
-        //Timer interrupt
-        clockMenuItem = new JCheckBoxMenuItem("Timer interrupt");
-//        clockMenuItem.setMnemonic(KeyEvent.VK_T);
-//        clockMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.ALT_MASK));
-        clockMenuItem.setActionCommand(COMMAND_TOGGLE_CLOCK_TIMER);
-        clockMenuItem.addActionListener(this);
-        componentsMenu.add(clockMenuItem);
+//        //Timer interrupt
+//        clockMenuItem = new JCheckBoxMenuItem("Timer interrupt");
+//        clockMenuItem.setActionCommand(COMMAND_TOGGLE_CLOCK_TIMER);
+//        clockMenuItem.addActionListener(this);
+//        componentsMenu.add(clockMenuItem);
 
 
         //Set up the trace menu.
@@ -824,8 +833,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
             toggleInterruptController();
         }
-        else if (COMMAND_TOGGLE_CLOCK_TIMER.equals(e.getActionCommand())) {
-            toggleClockTimer();
+//        else if (COMMAND_TOGGLE_CLOCK_TIMER.equals(e.getActionCommand())) {
+//            toggleClockTimer();
+//        }
+        else if (COMMAND_TOGGLE_RELOAD_TIMERS.equals(e.getActionCommand())) {
+            toggleReloadTimers();
         }
         else if (COMMAND_TOGGLE_CALL_STACK_WINDOW.equals(e.getActionCommand())) {
             toggleCallStack();
@@ -1360,8 +1372,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
 
             interruptController = new InterruptController(memory);
+            reloadTimers = new ReloadTimer[]{new ReloadTimer(0, interruptController), new ReloadTimer(1, interruptController), new ReloadTimer(2, interruptController)};
 
-            memory.addIoActivityListener(new ExpeedIoListener(cpuState, interruptController));
+            memory.setIoActivityListener(new ExpeedIoListener(cpuState, interruptController, reloadTimers));
 
             emulator = new Emulator();
             emulator.setMemory(memory);
@@ -1555,51 +1568,96 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
-    private void toggleClockTimer() {
-        if (clockTimer == null) {
-            clockTimer = new java.util.Timer(false);
-            clockTimer.scheduleAtFixedRate(new TimerTask() {
-                @Override
-                public void run() {
-                    interruptController.request(CLOCK_INTERRUPT_NUMBER);
-                }
-            }, 0, 1 /*ms*/);
-            setStatusText("Interrupt 0x" + Format.asHex(CLOCK_INTERRUPT_NUMBER, 2) + " will be requested every millisecond");
+//    private void toggleClockTimer() {
+//        if (clockTimer == null) {
+//            clockTimer = new java.util.Timer(false);
+//            clockTimer.scheduleAtFixedRate(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    interruptController.request(CLOCK_INTERRUPT_NUMBER);
+//                }
+//            }, 0, CLOCK_TIMER_INTERVAL_MS /*ms*/);
+//            setStatusText("Interrupt 0x" + Format.asHex(CLOCK_INTERRUPT_NUMBER, 2) + " will be requested every millisecond");
+//
+//            clockAnimationTimer = new java.util.Timer(false);
+//            clockAnimationTimer.scheduleAtFixedRate(new TimerTask() {
+//                @Override
+//                public void run() {
+//                    clockAnimationCounter++;
+//                    if (clockAnimationCounter == clockIcons.length) {
+//                        clockAnimationCounter = 1;
+//                    }
+//                    clockTimerButton.setIcon(clockIcons[clockAnimationCounter]);
+//                }
+//            }, 0, 300 /*ms*/);
+//        }
+//        else {
+//            clockTimer.cancel();
+//            clockTimer = null;
+//            clockAnimationTimer.cancel();
+//            clockAnimationTimer = null;
+//            clockTimerButton.setIcon(clockIcons[0]);
+//        }
+//    }
 
-            clockAnimationTimer = new java.util.Timer(false);
-            clockAnimationTimer.scheduleAtFixedRate(new TimerTask() {
+    private void toggleReloadTimers() {
+        if (!reloadTimers[0].isEnabled()) {
+            for (ReloadTimer reloadTimer : reloadTimers) {
+                reloadTimer.setEnabled(true);
+            }
+            setStatusText("Reload Timers enabled");
+            // Animate button
+            reloadAnimationTimer = new java.util.Timer(false);
+            reloadAnimationTimer.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    clockAnimationCounter++;
-                    if (clockAnimationCounter == clockIcons.length) {
-                        clockAnimationCounter = 1;
+                    reloadAnimationCounter++;
+                    if (reloadAnimationCounter == reloadIcons.length) {
+                        reloadAnimationCounter = 1;
                     }
-                    clockButton.setIcon(clockIcons[clockAnimationCounter]);
+                    reloadTimersButton.setIcon(reloadIcons[reloadAnimationCounter]);
                 }
             }, 0, 300 /*ms*/);
         }
         else {
-            clockTimer.cancel();
-            clockTimer = null;
-            clockAnimationTimer.cancel();
-            clockAnimationTimer = null;
-            clockButton.setIcon(clockIcons[0]);
+            for (ReloadTimer reloadTimer : reloadTimers) {
+                reloadTimer.setEnabled(false);
+            }
+            setStatusText("Reload Timers disabled");
+            // Stop button animation
+            reloadAnimationTimer.cancel();
+            reloadAnimationTimer = null;
+            reloadTimersButton.setIcon(reloadIcons[0]);
         }
+
     }
 
     static {
-        clockIcons = new ImageIcon[25];
-        for (int i = 0; i < clockIcons.length; i++) {
-            String imgLocation = "images/clock";
+//        clockIcons = new ImageIcon[25];
+//        for (int i = 0; i < clockIcons.length; i++) {
+//            String imgLocation = "images/clock";
+//            String text;
+//            if (i == 0) {
+//                text = "Start clock timer";
+//            }
+//            else {
+//                imgLocation += "_" + i;
+//                text = "Stop clock timer";
+//            }
+//            clockIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
+//        }
+        reloadIcons = new ImageIcon[17];
+        for (int i = 0; i < reloadIcons.length; i++) {
+            String imgLocation = "images/reload";
             String text;
             if (i == 0) {
-                text = "Start timer";
+                text = "Start reload timer";
             }
             else {
                 imgLocation += "_" + i;
-                text = "Stop timer";
+                text = "Stop reload timer";
             }
-            clockIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
+            reloadIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
         }
     }
 
@@ -1726,7 +1784,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setSelected(component4006Frame != null);
         customMemoryRangeLoggerMenuItem.setSelected(customMemoryRangeLoggerFrame != null);
         interruptControllerMenuItem.setSelected(interruptControllerFrame != null);
-        clockMenuItem.setSelected(clockTimer != null);
+//        clockMenuItem.setSelected(clockTimer != null);
 
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
         sourceCodeMenuItem.setSelected(sourceCodeFrame != null);
@@ -1746,7 +1804,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
         customMemoryRangeLoggerMenuItem.setEnabled(isImageLoaded); customMemoryRangeLoggerButton.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
-        clockMenuItem.setEnabled(isImageLoaded); clockButton.setEnabled(isImageLoaded);
+//        clockMenuItem.setEnabled(isImageLoaded); clockTimerButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
         realosObjectMenuItem.setEnabled(isImageLoaded); realosObjectButton.setEnabled(isImageLoaded);
 
@@ -2005,7 +2063,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulator.setCpuState(tmpCpuState);
 
         // Prepare code
-        memory.store16(BASE_ADDRESS_SYSCALL    ,0x1F40);                      // 1F40           INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
+        memory.store16(BASE_ADDRESS_SYSCALL    , 0x1F40);                      // 1F40    INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
         memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                      // HALT, infinite loop
 
         // Put a breakpoint on the instruction after the call
@@ -2021,10 +2079,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         catch (Throwable t) {
             t.printStackTrace();
-            String message = t.getMessage();
-            if (StringUtils.isEmpty(message)) {
-                message = t.getClass().getName();
-            }
             return ErrorCode.E_FREMU;
         }
     }
