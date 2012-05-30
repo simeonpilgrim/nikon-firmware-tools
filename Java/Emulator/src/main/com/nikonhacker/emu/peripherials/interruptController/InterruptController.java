@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.interruptController;
+package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;

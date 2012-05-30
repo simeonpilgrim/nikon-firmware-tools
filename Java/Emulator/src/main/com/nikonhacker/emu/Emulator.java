@@ -3,9 +3,9 @@ package com.nikonhacker.emu;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
-import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 

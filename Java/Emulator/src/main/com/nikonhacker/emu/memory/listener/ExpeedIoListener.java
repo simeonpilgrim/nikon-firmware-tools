@@ -1,7 +1,8 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.emu.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 
 public class ExpeedIoListener implements IoActivityListener {
 

@@ -2,8 +2,8 @@ package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
-import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
