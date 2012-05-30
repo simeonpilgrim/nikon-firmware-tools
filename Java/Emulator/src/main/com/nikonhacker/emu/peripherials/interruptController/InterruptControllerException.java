@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.interruptController;
+package com.nikonhacker.emu.peripherials.interruptController;
 
 public class InterruptControllerException extends RuntimeException {
     public InterruptControllerException() {
