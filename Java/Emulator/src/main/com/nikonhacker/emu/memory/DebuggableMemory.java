@@ -28,33 +28,15 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
     private List<MemoryActivityListener> activityListeners = new ArrayList<MemoryActivityListener>();
 
-    private List<IoActivityListener> ioActivityListeners = new ArrayList<IoActivityListener>();
-
-    /**
-     * This is the memory page at 0x0000-0xFFFF, which contains all microcontroller registers
-     * It is not part of the main table to cause a NullPointerException upon write
-     * so that accesses are caught without a performance impact on the rest of the memory
-     */
-    byte[] ioPage = new byte[getPageSize()];
-
-    private byte loadIO8(int offset) {
-        byte value = ioPage[offset];
-        for (IoActivityListener ioActivityListener : ioActivityListeners) {
-            ioActivityListener.onIoLoad8(ioPage, offset, value);
-        }
-        return value;
-    }
-
-    private void storeIO(int offset, byte value) {
-        for (IoActivityListener ioActivityListener : ioActivityListeners) {
-            ioActivityListener.onIoStore8(ioPage, offset, value);
-        }
-        ioPage[offset] = value;
-    }
+    private IoActivityListener ioActivityListener;
 
     /** Constructor - used when this is the instantiated class */
     public DebuggableMemory() {
         clear();
+    }
+
+    public void clear() {
+        super.clear();
     }
 
     public List<MemoryActivityListener> getActivityListeners() {
@@ -69,16 +51,12 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return activityListeners.remove(activityListener);
     }
 
-    public List<IoActivityListener> getIoActivityListeners() {
-        return ioActivityListeners;
+    public IoActivityListener getIoActivityListener() {
+        return ioActivityListener;
     }
 
-    public void addIoActivityListener(IoActivityListener ioActivityListener) {
-        ioActivityListeners.add(ioActivityListener);
-    }
-
-    public boolean removeIoActivityListener(IoActivityListener ioActivityListener) {
-        return ioActivityListeners.remove(ioActivityListener);
+    public void setIoActivityListener(IoActivityListener ioActivityListener) {
+        this.ioActivityListener = ioActivityListener;
     }
 
     /**
@@ -97,22 +75,26 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         try {
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
-                if (page == 0) {
-                    return loadIO8(offset);
-                }
-                else {
-                    map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-                    pageData = readableMemory[page];
-                }
+                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+                pageData = readableMemory[page];
             }
 
+            byte value = pageData[offset];
             if (enableListeners) {
                 for (MemoryActivityListener activityListener : activityListeners) {
-                    activityListener.onLoadData8(addr, pageData[offset]);
+                    activityListener.onLoadData8(addr, value);
+                }
+                if (getPTE(addr) == 0) {
+                    if (ioActivityListener != null) {
+                        Byte b = ioActivityListener.onIoLoad8(pageData, addr, value);
+                        if (b != null) {
+                            value = b;
+                        }
+                    }
                 }
             }
 
-            return pageData[offset];
+            return value;
         } catch (NullPointerException e) {
              System.err.println("Null pointer exception loading from address: 0x" + Integer.toHexString(addr));
              throw e;
@@ -135,22 +117,25 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         try {
             byte[] pageData = readableMemory[page];
             if (pageData == null) {
-                if (page == 0) {
-                    return loadIO8(offset) & 0xFF;
-                }
-                else {
-                    map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-                    pageData = readableMemory[page];
-                }
+                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+                pageData = readableMemory[page];
             }
 
+            int value = pageData[offset] & 0xFF;
             if (enableListeners) {
+                if (getPTE(addr) == 0) {
+                    if (ioActivityListener != null) {
+                        Byte b = ioActivityListener.onIoLoad8(pageData, addr, pageData[offset]);
+                        if (b != null) {
+                            value = b;
+                        }
+                    }
+                }
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData8(addr, pageData[offset]);
                 }
             }
-
-            return pageData[offset] & 0xFF;
+            return value;
         } catch (NullPointerException e) {
             System.err.println("Null pointer exception loading from address: 0x" + Integer.toHexString(addr));
             throw e;
@@ -170,6 +155,14 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     public int loadSigned16(int addr, boolean enableListeners) {
         int value = (loadSigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
         if (enableListeners) {
+            if (getPTE(addr) == 0) {
+                if (ioActivityListener != null) {
+                    Integer i = ioActivityListener.onIoLoad16(readableMemory[0], addr, value);
+                    if (i != null) {
+                        value = i;
+                    }
+                }
+            }
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadData16(addr, value);
             }
@@ -191,6 +184,14 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     public int loadUnsigned16(int addr, boolean enableListeners) {
         int value = (loadUnsigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
         if (enableListeners) {
+            if (getPTE(addr) == 0) {
+                if (ioActivityListener != null) {
+                    Integer i = ioActivityListener.onIoLoad16(readableMemory[0], addr, value);
+                    if (i != null) {
+                        value = i;
+                    }
+                }
+            }
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadData16(addr, value);
             }
@@ -213,6 +214,14 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             int value = (loadSigned8(addr, false) << 24) | (loadUnsigned8(addr + 1, false) << 16)
                     | (loadUnsigned8(addr + 2, false) << 8) | loadUnsigned8(addr + 3, false);
             if (enableListeners) {
+                if (getPTE(addr) == 0) {
+                    if (ioActivityListener != null) {
+                        Integer i = ioActivityListener.onIoLoad32(readableMemory[0], addr, value);
+                        if (i != null) {
+                            value = i;
+                        }
+                    }
+                }
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData32(addr, value);
                 }
@@ -249,9 +258,9 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return loadInstruction16(addr, true);
     }
 
-    public int loadInstruction16(int addr, boolean mustLog) {
+    public int loadInstruction16(int addr, boolean enableListeners) {
         int value = (loadInstruction8(addr, false) << 8) | loadInstruction8(addr + 1, false);
-        if (mustLog) {
+        if (enableListeners) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onLoadInstruction16(addr, value);
             }
@@ -297,16 +306,15 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
         byte[] pageData = writableMemory[page];
         if (pageData == null) {
-            if (page == 0) {
-                storeIO(offset, (byte) value);
-                return;
-            }
-            else {
-                map(truncateToPage(addr), PAGE_SIZE, true, true, true);
-                pageData = writableMemory[page];
-            }
+            map(truncateToPage(addr), PAGE_SIZE, true, true, true);
+            pageData = writableMemory[page];
         }
         if (enableListeners) {
+            if (page == 0) {
+                if (ioActivityListener != null) {
+                    ioActivityListener.onIoStore8(pageData, addr, (byte) value);
+                }
+            }
             for (MemoryActivityListener activityListener : activityListeners) {
                 activityListener.onStore8(addr, (byte) value);
             }
@@ -325,13 +333,22 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public void store16(int addr, int value, boolean enableListeners) {
-        if (enableListeners) {
-            for (MemoryActivityListener activityListener : activityListeners) {
-                activityListener.onStore16(addr, value);
+        try {
+            if (enableListeners) {
+                if (getPTE(addr) == 0) {
+                    if (ioActivityListener != null) {
+                        ioActivityListener.onIoStore16(writableMemory[0], addr, value);
+                    }
+                }
+                for (MemoryActivityListener activityListener : activityListeners) {
+                    activityListener.onStore16(addr, value);
+                }
             }
+            store8(addr, value >> 8, false);
+            store8(addr + 1, value, false);
+        } catch (Exception e) {
+            throw new SegmentationFault(addr, e);
         }
-        store8(addr, value >> 8, false);
-        store8(addr + 1, value, false);
     }
 
     /**
@@ -347,6 +364,11 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     public void store32(int addr, int value, boolean enableListeners) {
         try {
             if (enableListeners) {
+                if (getPTE(addr) == 0) {
+                    if (ioActivityListener != null) {
+                        ioActivityListener.onIoStore32(writableMemory[0], addr, value);
+                    }
+                }
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onStore32(addr, value);
                 }
@@ -362,11 +384,6 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
     public byte[] getPageForAddress(int addr) {
         int pte = getPTE(addr);
-        if (pte == 0) {
-            return ioPage;
-        }
-        else {
-            return getPage(pte);
-        }
+        return getPage(pte);
     }
 }

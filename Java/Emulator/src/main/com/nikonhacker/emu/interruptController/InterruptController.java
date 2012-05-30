@@ -18,6 +18,9 @@ public class InterruptController {
     public static final int ICR00_ADDRESS = 0x440;
     public static final int ICR47_ADDRESS = ICR00_ADDRESS + 4 * 47;
 
+    public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
+    public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
+
     private final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
     private Memory memory;
 
