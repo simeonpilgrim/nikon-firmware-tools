@@ -1384,6 +1384,7 @@
 -s 0xB4F7C=Video_PauseRec
 -s 0xB500C=get_FrameRateCode_w
 -s 0xB5062=mem_setup_xx
+-s 0xB53A2=starttasks_35_37
 -s 0xB56D2=WaitForSem_49
 -s 0xB5966=maxTimeLimitReached
 -s 0xB5982=maxFrameLimitReached
@@ -1427,6 +1428,7 @@
 -s 0xBC96C=Tsk38_BC96C
 -s 0xBCB7A=start_task_x38
 -s 0xBCD3A=MB12_Send_xx
+-s 0xBCFD0=start_task_x3b
 -s 0xBD02C=Tsk3B_BD02C
 -s 0xBD3D2=set_flg_2E_10000
 -s 0xBD3E0=set_flg_2E_20000
@@ -1463,14 +1465,14 @@
 -s 0xBE9C8=call_get_8F98AB10
 -s 0xBEA66=Tsk34_MovPlay
 -s 0xBEB56=DoPlayMovieActions
--s 0xBEBD6=emovie_PlayInit
--s 0xBEC06=emovie_PlayFinalize
--s 0xBEC44=emovie_PlayStart
+-s 0xBEBD6=eMovie_PlayInit
+-s 0xBEC06=eMovie_PlayFinalize
+-s 0xBEC44=eMovie_PlayStart
 -s 0xBEC76=eMovie_PlayStop
 -s 0xBECB8=eMovie_PlayPause
--s 0xBED00=emovie_AutoPauseAck
--s 0xBED2A=emovie_PlayResume
--s 0xBED6C=emovie_PlayFF
+-s 0xBED00=eMovie_AutoPauseAck
+-s 0xBED2A=eMovie_PlayResume
+-s 0xBED6C=eMovie_PlayFF
 -s 0xBEDB2=eMovie_PlayRew
 -s 0xBEDF8=eMovie_PlayKomaOkuri
 -s 0xBEE38=eMovie_PlayKomaModoshi
@@ -1496,8 +1498,8 @@
 -s 0xBF2D8=call_sub_BE470
 -s 0xBF5BE=Tsk33_MovRecord
 -s 0xBF676=DoMovieRecAction
--s 0xBF6F2=emovie_RecInit
--s 0xBF722=emovie_RecFinalize
+-s 0xBF6F2=eMovie_RecInit
+-s 0xBF722=eMovie_RecFinalize
 -s 0xBF760=eMovie_RecStart
 -s 0xBF792=eMovie_RecStop
 -s 0xBF7CE=eMovie_RecPause
@@ -1624,6 +1626,7 @@
 -s 0x107C2E=encrypt_init_ci
 -s 0x107C80=memcpy_fast
 -s 0x107CB2=memset_fast
+-s 0x10896E=start_task_x18
 -s 0x108A86=Tsk18_108A86
 -s 0x10996E=Tsk1B_10996E
 -s 0x10A84E=nullsub_43
@@ -1638,6 +1641,7 @@
 -s 0x11F990=nullsub_90
 -s 0x11FAB2=nullsub_211
 -s 0x11FDB0=Tsk1E_11FDB0
+-s 0x11FD7C=setEvtPtr_and_start_task_x1e
 -s 0x1254EC=nullsub_13
 -s 0x1254F0=nullsub_14
 -s 0x1254F2=nullsub_15
@@ -1845,6 +1849,7 @@
 -s 0x15180E=set_15180E
 -s 0x151DE0=start_task_x2A
 -s 0x151DFA=Tsk2A_151DFA
+-s 0x1565AC=start_task_x32
 -s 0x1565D4=Tsk32_1565D4
 -s 0x1579B0=start_task_x01
 -s 0x1579BC=Tsk01_1579BC
@@ -2044,7 +2049,7 @@
 -s 0x1A54C6=Avi_headers_xx
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19_1A87BC
--s 0x1A8908=getnextdlstix_value
+-s 0x1A8908=getnextdlstix_value /* get next dList index value */
 -s 0x1A90E0=init_dlist_2_dlist_1
 -s 0x1A9122=getnextdlistx_f8
 -s 0x1A9188=dlist_callxx
@@ -2300,6 +2305,7 @@
 -s 0x1E1944=Tsk08_1E1944
 -s 0x1E1992=call_sub_1E199E
 -s 0x1E19FC=Tsk08_mbx_cb_func
+-s 0x1E67D4=start_task_x20
 -s 0x1E67FA=Tsk20_1E67FA
 -s 0x1E683C=Tsk21_1E683C
 -s 0x1E684E=start_tsk39_and_recording
@@ -2459,6 +2465,7 @@
 -s 0x1F0696=get_1F0696
 -s 0x1F06A4=set_1F06A4
 -s 0x1F06AE=get_1F06AE
+-s 0x1F0810=start_task_x04xx
 -s 0x1F08D2=Tsk04_1F08D2
 -s 0x1F145E=Wait_Timer_xx
 -s 0x1F18E8=WaitTimer_Start

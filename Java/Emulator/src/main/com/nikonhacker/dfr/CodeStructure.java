@@ -1,6 +1,7 @@
 package com.nikonhacker.dfr;
 
 import com.nikonhacker.Format;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -231,5 +232,42 @@ public class CodeStructure {
             }
         }
         return null;
+    }
+
+    /**
+     * Try to convert given text to address
+     * @param text can be a (dfr.txt defined) function name, an address with or without 0x, of a fictious
+     *             function name of the form xxx_address[_]
+     * @return the converted address, or null if none matches
+     */
+    public Integer getAddressFromText(String text) {
+        Integer address = null;
+        if (StringUtils.isNotBlank(text)) {
+            // Try to find by name
+            for (Integer candidate : getFunctions().keySet()) {
+                Function f = getFunctions().get(candidate);
+                if (text.equalsIgnoreCase(f.getName())) {
+                    return candidate;
+                }
+            }
+            // No match by name
+            // Try to interpret as address, adding 0x if omitted
+            try {
+                address = Format.parseUnsigned((text.startsWith("0x")?"":"0x") + text);
+            } catch (ParsingException e) {
+                // Not parseable as address
+                // Try to interpret as name xxx_address[_]
+                while(text.endsWith("_")) {
+                    text = StringUtils.chop(text);
+                }
+                text = StringUtils.substringAfterLast(text, "_");
+                try {
+                    address = Format.parseUnsigned("0x" + text);
+                } catch (ParsingException e1) {
+                    // do nothing. address remains null
+                }
+            }
+        }
+        return address;
     }
 }
