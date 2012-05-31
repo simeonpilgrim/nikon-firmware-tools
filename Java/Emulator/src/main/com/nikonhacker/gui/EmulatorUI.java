@@ -1374,7 +1374,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             interruptController = new InterruptController(memory);
             reloadTimers = new ReloadTimer[]{new ReloadTimer(0, interruptController), new ReloadTimer(1, interruptController), new ReloadTimer(2, interruptController)};
 
-            memory.setIoActivityListener(new ExpeedIoListener(cpuState, interruptController, reloadTimers));
+            memory.setIoActivityListener(new ExpeedIoListener(cpuState, interruptController, reloadTimers, null));
 
             emulator = new Emulator();
             emulator.setMemory(memory);
