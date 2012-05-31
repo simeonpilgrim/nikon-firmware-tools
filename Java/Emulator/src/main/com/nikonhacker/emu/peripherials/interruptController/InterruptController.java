@@ -3,6 +3,7 @@ package com.nikonhacker.emu.peripherials.interruptController;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,9 +15,6 @@ import java.util.List;
 public class InterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
-
-    public static final int ICR00_ADDRESS = 0x440;
-    public static final int ICR47_ADDRESS = ICR00_ADDRESS + 4 * 47;
 
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
@@ -50,7 +48,7 @@ public class InterruptController {
         }
         else if (interruptNumber >= 0x10 && interruptNumber <= 0x3F) {
             int irNumber = interruptNumber - INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
-            int icrAddress = irNumber + ICR00_ADDRESS;
+            int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
             icr = memory.loadUnsigned8(icrAddress) & 0x1F | 0x10;
