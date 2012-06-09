@@ -10,7 +10,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf (and for some better understanding hm90360-cm44-10136-1e.pdf)
+ * Behaviour is Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf
+ * (and for some better understanding hm90360-cm44-10136-1e.pdf)
  */
 public class InterruptController {
 
@@ -18,6 +19,10 @@ public class InterruptController {
 
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
+
+    // Note that this number doesn't match RX0 request interrupt for any FR80 documented chip,
+    // but that is the case in the Expeed
+    public static final int SERIAL_IF_RX_0_REQUEST_NR = 0x1B;
 
     private final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
     private Memory memory;

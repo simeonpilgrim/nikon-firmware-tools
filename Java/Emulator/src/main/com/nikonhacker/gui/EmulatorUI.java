@@ -18,6 +18,7 @@ import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -41,6 +42,7 @@ import com.nikonhacker.gui.component.memoryMapped.CustomMemoryRangeLoggerFrame;
 import com.nikonhacker.gui.component.realos.RealOsObjectFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
+import com.nikonhacker.gui.component.serialInterface.SerialInterfaceFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.realos.*;
 import com.thoughtworks.xstream.XStream;
@@ -95,8 +97,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = "TOGGLE_CODE_STRUCTURE_WINDOW";
     private static final String COMMAND_TOGGLE_SOURCE_CODE_WINDOW = "TOGGLE_SOURCE_CODE_WINDOW";
     private static final String COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = "TOGGLE_INTERRUPT_CONTROLLER_WINDOW";
-//    private static final String COMMAND_TOGGLE_CLOCK_TIMER = "TOGGLE_CLOCK_TIMER";
     private static final String COMMAND_TOGGLE_RELOAD_TIMERS = "COMMAND_TOGGLE_RELOAD_TIMERS";
+    private static final String COMMAND_TOGGLE_SERIAL_INTERFACES = "COMMAND_TOGGLE_SERIAL_INTERFACES";
     private static final String COMMAND_TOGGLE_CALL_STACK_WINDOW = "TOGGLE_CALL_STACK_WINDOW";
     private static final String COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = "TOGGLE_REALOS_OBJECT_WINDOW";
     private static final String COMMAND_OPTIONS = "OPTIONS";
@@ -114,9 +116,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final int CAMERA_SCREEN_WIDTH = 640;
     private static final int CAMERA_SCREEN_HEIGHT = 480;
 
-//    private static final int CLOCK_INTERRUPT_NUMBER = 0x18;
-//    private static final int CLOCK_TIMER_INTERVAL_MS = 1;
-
     private static final String CPUSTATE_ENTRY_NAME = "CPUState";
     private static final String MEMORY_ENTRY_NAME = "Memory";
 
@@ -125,10 +124,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private CPUState cpuState;
     private DebuggableMemory memory;
     private InterruptController interruptController;
-//    private java.util.Timer clockTimer;
-//    private java.util.Timer clockAnimationTimer;
     private java.util.Timer reloadAnimationTimer;
     private ReloadTimer[] reloadTimers;
+    private SerialInterface[] serialInterfaces;
 
     private CodeStructure codeStructure = null;
 
@@ -161,7 +159,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
-//    private JCheckBoxMenuItem clockMenuItem;
+    private JCheckBoxMenuItem serialInterfacesMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
     private JCheckBoxMenuItem realosObjectMenuItem;
     private JMenuItem saveLoadMemoryMenuItem;
@@ -185,8 +183,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton codeStructureButton;
     private JButton sourceCodeButton;
     private JButton interruptControllerButton;
-//    private JButton clockTimerButton;
     private JButton reloadTimersButton;
+    private JButton serialInterfacesButton;
     private JButton callStackButton;
     private JButton realosObjectButton;
     private JButton saveLoadMemoryButton;
@@ -203,6 +201,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private CodeStructureFrame codeStructureFrame;
     private SourceCodeFrame sourceCodeFrame;
     private InterruptControllerFrame interruptControllerFrame;
+    private SerialInterfaceFrame serialInterfaceFrame;
     private CallStackFrame callStackFrame;
     private RealOsObjectFrame realOsObjectFrame;
     private final Insets toolbarButtonMargin;
@@ -210,9 +209,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JLabel statusBar;
     private String statusText = "Ready";
 
-//    private static ImageIcon[] clockIcons;
     private static ImageIcon[] reloadIcons;
-//    private int clockAnimationCounter = 0;
     private int reloadAnimationCounter = 0;
 
 
@@ -378,10 +375,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(screenEmulatorButton);
         interruptControllerButton = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW, "Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton);
-//        clockTimerButton = makeButton("clock", COMMAND_TOGGLE_CLOCK_TIMER, "Toggle clock timer", "Clock timer");
-//        bar.add(clockTimerButton);
         reloadTimersButton = makeButton("reload", COMMAND_TOGGLE_RELOAD_TIMERS, "Toggle reload timers", "Reload timers");
         bar.add(reloadTimersButton);
+        serialInterfacesButton = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES, "Toggle serial interfaces", "Serial interfaces");
+        bar.add(serialInterfacesButton);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -632,11 +629,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         componentsMenu.add(interruptControllerMenuItem);
 
-//        //Timer interrupt
-//        clockMenuItem = new JCheckBoxMenuItem("Timer interrupt");
-//        clockMenuItem.setActionCommand(COMMAND_TOGGLE_CLOCK_TIMER);
-//        clockMenuItem.addActionListener(this);
-//        componentsMenu.add(clockMenuItem);
+        //Serial interface
+        serialInterfacesMenuItem = new JCheckBoxMenuItem("Serial interfaces");
+//        serialInterfacesMenuItem.setMnemonic(KeyEvent.VK_I);
+//        serialInterfacesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
+        serialInterfacesMenuItem.setActionCommand(COMMAND_TOGGLE_SERIAL_INTERFACES);
+        serialInterfacesMenuItem.addActionListener(this);
+        componentsMenu.add(interruptControllerMenuItem);
 
 
         //Set up the trace menu.
@@ -833,11 +832,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW.equals(e.getActionCommand())) {
             toggleInterruptController();
         }
-//        else if (COMMAND_TOGGLE_CLOCK_TIMER.equals(e.getActionCommand())) {
-//            toggleClockTimer();
-//        }
         else if (COMMAND_TOGGLE_RELOAD_TIMERS.equals(e.getActionCommand())) {
             toggleReloadTimers();
+        }
+        else if (COMMAND_TOGGLE_SERIAL_INTERFACES.equals(e.getActionCommand())) {
+            toggleSerialInterfaces();
         }
         else if (COMMAND_TOGGLE_CALL_STACK_WINDOW.equals(e.getActionCommand())) {
             toggleCallStack();
@@ -1372,9 +1371,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
 
             interruptController = new InterruptController(memory);
-            reloadTimers = new ReloadTimer[]{new ReloadTimer(0, interruptController), new ReloadTimer(1, interruptController), new ReloadTimer(2, interruptController)};
+            reloadTimers = new ReloadTimer[]{
+                    new ReloadTimer(0, interruptController),
+                    new ReloadTimer(1, interruptController),
+                    new ReloadTimer(2, interruptController)
+            };
+            serialInterfaces = new SerialInterface[]{
+                    /** The number of actual serial interfaces is pure speculation. See ExpeedIoListener for more info */
+                    new SerialInterface(0, interruptController, 0x1B),
+                    new SerialInterface(1, interruptController, 0x1B),
+                    new SerialInterface(2, interruptController, 0x1B),
+                    new SerialInterface(3, interruptController, 0x1B),
+                    new SerialInterface(4, interruptController, 0x1B),
+                    new SerialInterface(5, interruptController, 0x1B)
+            };
 
-            memory.setIoActivityListener(new ExpeedIoListener(cpuState, interruptController, reloadTimers, null));
+            memory.setIoActivityListener(new ExpeedIoListener(cpuState, interruptController, reloadTimers, serialInterfaces));
 
             emulator = new Emulator();
             emulator.setMemory(memory);
@@ -1431,6 +1443,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (interruptControllerFrame != null) {
             interruptControllerFrame.dispose();
             interruptControllerFrame = null;
+        }
+        if (serialInterfaceFrame != null) {
+            serialInterfaceFrame.dispose();
+            serialInterfaceFrame = null;
         }
         if (callStackFrame != null) {
             callStackFrame.dispose();
@@ -1568,38 +1584,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
-//    private void toggleClockTimer() {
-//        if (clockTimer == null) {
-//            clockTimer = new java.util.Timer(false);
-//            clockTimer.scheduleAtFixedRate(new TimerTask() {
-//                @Override
-//                public void run() {
-//                    interruptController.request(CLOCK_INTERRUPT_NUMBER);
-//                }
-//            }, 0, CLOCK_TIMER_INTERVAL_MS /*ms*/);
-//            setStatusText("Interrupt 0x" + Format.asHex(CLOCK_INTERRUPT_NUMBER, 2) + " will be requested every millisecond");
-//
-//            clockAnimationTimer = new java.util.Timer(false);
-//            clockAnimationTimer.scheduleAtFixedRate(new TimerTask() {
-//                @Override
-//                public void run() {
-//                    clockAnimationCounter++;
-//                    if (clockAnimationCounter == clockIcons.length) {
-//                        clockAnimationCounter = 1;
-//                    }
-//                    clockTimerButton.setIcon(clockIcons[clockAnimationCounter]);
-//                }
-//            }, 0, 300 /*ms*/);
-//        }
-//        else {
-//            clockTimer.cancel();
-//            clockTimer = null;
-//            clockAnimationTimer.cancel();
-//            clockAnimationTimer = null;
-//            clockTimerButton.setIcon(clockIcons[0]);
-//        }
-//    }
-
     private void toggleReloadTimers() {
         if (!reloadTimers[0].isEnabled()) {
             for (ReloadTimer reloadTimer : reloadTimers) {
@@ -1633,19 +1617,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     static {
-//        clockIcons = new ImageIcon[25];
-//        for (int i = 0; i < clockIcons.length; i++) {
-//            String imgLocation = "images/clock";
-//            String text;
-//            if (i == 0) {
-//                text = "Start clock timer";
-//            }
-//            else {
-//                imgLocation += "_" + i;
-//                text = "Stop clock timer";
-//            }
-//            clockIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
-//        }
         reloadIcons = new ImageIcon[17];
         for (int i = 0; i < reloadIcons.length; i++) {
             String imgLocation = "images/reload";
@@ -1660,6 +1631,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             reloadIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
         }
     }
+
+    private void toggleSerialInterfaces() {
+        if (serialInterfaceFrame == null) {
+            serialInterfaceFrame = new SerialInterfaceFrame("Serial interfaces", true, true, false, true, serialInterfaces, this);
+            addDocumentFrame(serialInterfaceFrame);
+            serialInterfaceFrame.display(true);
+        }
+        else {
+            serialInterfaceFrame.dispose();
+            serialInterfaceFrame = null;
+        }
+        updateStates();
+    }
+
 
     private void toggleCallStack() {
         if (callStackFrame == null) {
@@ -1757,6 +1742,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == interruptControllerFrame) {
             toggleInterruptController();
         }
+        else if (frame == serialInterfaceFrame) {
+            toggleSerialInterfaces();
+        }
         else if (frame == callStackFrame) {
             toggleCallStack();
         }
@@ -1784,7 +1772,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setSelected(component4006Frame != null);
         customMemoryRangeLoggerMenuItem.setSelected(customMemoryRangeLoggerFrame != null);
         interruptControllerMenuItem.setSelected(interruptControllerFrame != null);
-//        clockMenuItem.setSelected(clockTimer != null);
+        serialInterfacesMenuItem.setSelected(serialInterfaceFrame != null);
 
         codeStructureMenuItem.setSelected(codeStructureFrame != null);
         sourceCodeMenuItem.setSelected(sourceCodeFrame != null);
@@ -1804,7 +1792,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
         customMemoryRangeLoggerMenuItem.setEnabled(isImageLoaded); customMemoryRangeLoggerButton.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
-//        clockMenuItem.setEnabled(isImageLoaded); clockTimerButton.setEnabled(isImageLoaded);
+        serialInterfacesMenuItem.setEnabled(isImageLoaded); serialInterfacesButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
         realosObjectMenuItem.setEnabled(isImageLoaded); realosObjectButton.setEnabled(isImageLoaded);
 
