@@ -1,25 +1,28 @@
-package com.nikonhacker.emu.interruptController;
+package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 /**
- * Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf (and for some better understanding hm90360-cm44-10136-1e.pdf)
+ * Behaviour is Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf
+ * (and for some better understanding hm90360-cm44-10136-1e.pdf)
  */
 public class InterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
 
-    public static final int ICR00_ADDRESS = 0x440;
-    public static final int ICR47_ADDRESS = ICR00_ADDRESS + 4 * 47;
-
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
+
+    // Note that this number doesn't match RX0 request interrupt for any FR80 documented chip,
+    // but that is the case in the Expeed
+    public static final int SERIAL_IF_RX_0_REQUEST_NR = 0x1B;
 
     private final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
     private Memory memory;
@@ -50,7 +53,7 @@ public class InterruptController {
         }
         else if (interruptNumber >= 0x10 && interruptNumber <= 0x3F) {
             int irNumber = interruptNumber - INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
-            int icrAddress = irNumber + ICR00_ADDRESS;
+            int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
             icr = memory.loadUnsigned8(icrAddress) & 0x1F | 0x10;

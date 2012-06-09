@@ -1,7 +1,7 @@
-package com.nikonhacker.emu.memory.listener;
+package com.nikonhacker.emu.peripherials.reloadTimer;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;

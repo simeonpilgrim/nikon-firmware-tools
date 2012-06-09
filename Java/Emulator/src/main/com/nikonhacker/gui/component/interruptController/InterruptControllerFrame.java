@@ -2,8 +2,9 @@ package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
-import com.nikonhacker.emu.interruptController.InterruptController;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -61,7 +62,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                 else {
                     int irNumber = interruptNumber - InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
                     interruptName = "IR" + (irNumber < 10 ? "0" : "") + irNumber;
-                    int icrAddress = irNumber + InterruptController.ICR00_ADDRESS;
+                    int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
                     icr = memory.loadUnsigned8(icrAddress) & 0x1F;
                     isNMI = false;
                 }

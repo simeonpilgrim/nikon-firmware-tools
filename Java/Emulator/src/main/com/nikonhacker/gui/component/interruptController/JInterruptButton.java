@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import javax.swing.*;
 import java.awt.*;
