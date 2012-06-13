@@ -165,6 +165,40 @@ namespace Nikon_Decode
             }
         }
 
+        internal class D700_0103_Const : FirmConsts
+        {
+            public D700_0103_Const()
+            {
+                BFT_start = 0x0;
+                BFT_end = 0x0;
+                File_offset = 0x40000;
+
+                EngTableAddr = 0x3FF7E0;
+                EngMenuTextAddr = 0x400220;
+                EngLastAddr = 0x401C20;
+
+                Copy_From = 0x2AC724;
+                Copy_To = 0x9F049094;;
+
+                DFR_file = @"";
+
+                MenuRootList = new long[] { 
+                    0x9F057D00, 0x9F0594F0, 0x9F054E20, 0x9F059B10,
+               
+
+                    0x9F0573F0, 0x9F057180, 0x9F059A90, 0x9F057B50, 0x9F057C40, 0x9F0578B0, 0x9F057680, 
+                    0x9F057490, 0x9F057520, 0x9F052710, 0x9F0526F0, 0x9F054C00, 0x9F0521E0, 0x9F052050,
+                    0x9F051FA0, 0x9F051E80, 0x9F051DF0, 0x9F052130, 0x9F051D00, 0x9F051CC0, 0x9F0519C0,
+                    0x9F051B70, 0x9F051BD0, 0x9F051C50, 0x9F051930, 0x9F0518B0, 0x9F0517C0, 0x9F051500,
+                    0x9F0514A0, 0x9F051460, 0x9F0513F0, 0x9F051370, 0x9F0512F0, 0x9F051740, 0x9F051830,
+                    0x9F051280, 0x9F051200, 0x9F0511C0,  
+
+                    0x9F050C40, 0x9F050AC0, 0x9F050A00, 0x9F0509B0, 0x9F0506E0, 0x9F0506A0,
+                    0x9F050660, 0x9F050680, 0x9F050640, 0x9F050620, 
+                };
+            }
+        }
+
         private static void InteractiveTextD5100(string fileName)
         {
             if (File.Exists(fileName))
@@ -213,6 +247,12 @@ namespace Nikon_Decode
         private static void DumpMenusD300S(string fileName)
         {
             firmConsts = new D300S_0101_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenusD700(string fileName)
+        {
+            firmConsts = new D700_0103_Const();
             DumpMenus(fileName);
         }
 
