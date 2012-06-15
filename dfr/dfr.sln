@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dfr", "dfr\dfr.csproj", "{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Release|Mixed Platforms = Release|Mixed Platforms
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Debug|x86.ActiveCfg = Debug|x86
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Debug|x86.Build.0 = Debug|x86
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{24E8C2D7-EB61-4B76-9DCB-D8418F5FDFF7}.Release|Mixed Platforms.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
