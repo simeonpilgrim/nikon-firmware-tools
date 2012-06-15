@@ -2049,7 +2049,7 @@
 -s 0x1A54C6=Avi_headers_xx
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19_1A87BC
--s 0x1A8908=getnextdlstix_value /* get next dList index value */
+-s 0x1A8908=getnextdlstix_value (/* get next dList index value */)
 -s 0x1A90E0=init_dlist_2_dlist_1
 -s 0x1A9122=getnextdlistx_f8
 -s 0x1A9188=dlist_callxx
