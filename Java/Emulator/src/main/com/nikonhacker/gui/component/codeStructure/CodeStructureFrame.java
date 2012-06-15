@@ -200,12 +200,12 @@ public class CodeStructureFrame extends DocumentFrame
             int address = i * 10;
             Function function = new Function(address, "Function" + i, "", Function.Type.STANDARD);
             codeStructure.getFunctions().put(address, function);
-            sourceFunction.getCalls().add(new Jump(0, address, null));
+            sourceFunction.getCalls().add(new Jump(0, address, null, false));
             for (int j = 1; i <= 10; i++) {
                 int address2 = i * 10 + j;
                 Function function2 = new Function(address2, "SubFunction" + j, "", Function.Type.STANDARD);
                 codeStructure.getFunctions().put(address2, function2);
-                function.getCalls().add(new Jump(address, address2, null));
+                function.getCalls().add(new Jump(address, address2, null, false));
             }
         }
     }
