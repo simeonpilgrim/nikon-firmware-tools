@@ -171,9 +171,25 @@ public class CodeStructureMxGraph extends mxGraph {
     }
 
     private void addCall(Function sourceFunction, Jump call, Object targetCell) {
-        String style = "noLabel=1;" + mxConstants.STYLE_STROKECOLOR + "=" + call.getStrokeColor();
+        String style = "noLabel=1;" + mxConstants.STYLE_STROKECOLOR + "=" + getStrokeColor(call) + (call.isDynamic()?";" + mxConstants.STYLE_DASHED + "=true":"");
         insertEdge(getDefaultParent(), null, call, cellObjects.get(sourceFunction.getAddress()), targetCell, style);
         renderedCalls.add(call);
+    }
+
+    private String getStrokeColor(Jump jump) {
+        if (jump.getOpcode() == null) {
+            // Should not happen
+            return "#FF0000";
+        }
+        switch (jump.getOpcode().type) {
+            case CALL:
+                return "#777777";
+            case INT:
+            case INTE:
+                return "#00CC00";
+            default:
+                return "#777700";
+        }
     }
 
     public void clear() {

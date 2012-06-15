@@ -5,11 +5,13 @@ public class Jump {
     int source;
     int target;
     private OpCode opcode;
+    boolean isDynamic;
 
-    public Jump(int source, int target, OpCode opcode) {
+    public Jump(int source, int target, OpCode opcode, boolean isDynamic) {
         this.source = source;
         this.target = target;
         this.opcode = opcode;
+        this.isDynamic = isDynamic;
     }
 
     public int getSource() {
@@ -28,24 +30,12 @@ public class Jump {
         return opcode != null && opcode.isConditional;
     }
 
-    @Override
-    public String toString() {
-        return (isConditional()?"Conditional":"Inconditional") + " jump from 0x" + Integer.toHexString(source) + " to 0x" + Integer.toHexString(target);
+    public boolean isDynamic() {
+        return isDynamic;
     }
 
-    public String getStrokeColor() {
-        if (opcode == null) {
-            // Should not happen
-            return "#FF0000";
-        }
-        switch (opcode.type) {
-            case CALL:
-                return "#777777";
-            case INT:
-            case INTE:
-                return "#00CC00";
-            default:
-                return "#777700";
-        }
+    @Override
+    public String toString() {
+        return (isConditional()?"Conditional":"Inconditional") + (isDynamic()?" dynamic":"") + " jump from 0x" + Integer.toHexString(source) + " to 0x" + Integer.toHexString(target);
     }
 }

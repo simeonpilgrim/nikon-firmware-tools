@@ -302,7 +302,7 @@ public class CodeAnalyzer {
                 case BRA:
                     if (instruction.decodedX != 0) {
                         codeStructure.labels.put(instruction.decodedX, new Symbol(instruction.decodedX, "", ""));
-                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode);
+                        Jump jump = new Jump(address, instruction.decodedX, instruction.opcode, false);
                         jumps.add(jump);
                         currentFunction.getJumps().add(jump);
                     }
@@ -312,7 +312,7 @@ public class CodeAnalyzer {
                         if (potentialTargets != null) {
                             int i = 0;
                             for (Integer potentialTarget : potentialTargets) {
-                                Jump jump = new Jump(address, potentialTarget, instruction.opcode);
+                                Jump jump = new Jump(address, potentialTarget, instruction.opcode, true);
                                 jumps.add(jump);
                                 currentFunction.getJumps().add(jump);
                                 codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
@@ -362,7 +362,7 @@ public class CodeAnalyzer {
                                     try {
                                         for (int i = 0; i < size; i++) {
                                             int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                            Jump jump = new Jump(address, potentialTarget, instruction.opcode);
+                                            Jump jump = new Jump(address, potentialTarget, instruction.opcode, true);
                                             jumps.add(jump);
                                             currentFunction.getJumps().add(jump);
                                             codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
@@ -427,7 +427,7 @@ public class CodeAnalyzer {
                                         try {
                                             for (int i = 0; i < size; i++) {
                                                 int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                                Jump jump = new Jump(address, potentialTarget, instruction.opcode);
+                                                Jump jump = new Jump(address, potentialTarget, instruction.opcode, true);
                                                 jumps.add(jump);
                                                 currentFunction.getJumps().add(jump);
                                                 codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
@@ -460,18 +460,17 @@ public class CodeAnalyzer {
                         if (potentialTargets != null) {
                             int i = 0;
                             for (Integer potentialTarget : potentialTargets) {
-                                addCall(currentFunction, instruction, address, potentialTarget, "call_target_" + Integer.toHexString(address) + "_" + i);
+                                addCall(currentFunction, instruction, address, potentialTarget, "call_target_" + Integer.toHexString(address) + "_" + i, true);
                                 i++;
                             }
                         }
                         else {
-                            Jump call = new Jump(address, targetAddress, instruction.opcode);
-                            currentFunction.getCalls().add(call);
+                            currentFunction.getCalls().add(new Jump(address, 0, instruction.opcode, true));
                             debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
                         }
                     }
                     else {
-                        addCall(currentFunction, instruction, address, targetAddress, "");
+                        addCall(currentFunction, instruction, address, targetAddress, "", false);
                     }
                     break;
                 case INT:
@@ -481,7 +480,7 @@ public class CodeAnalyzer {
                         processInt40Call(currentFunction, address, instruction);
                     }
                     else {
-                        Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode);
+                        Jump interruptCall = new Jump(address, interruptAddress, instruction.opcode, false);
                         currentFunction.getCalls().add(interruptCall);
                         Function interrupt = codeStructure.functions.get(interruptAddress);
                         if (interrupt != null) {
@@ -561,8 +560,8 @@ public class CodeAnalyzer {
         }
     }
 
-    private void addCall(Function currentFunction, DisassembledInstruction instruction, Integer sourceAddress, int targetAddress, String defaultName) throws IOException {
-        Jump call = new Jump(sourceAddress, targetAddress, instruction.opcode);
+    private void addCall(Function currentFunction, DisassembledInstruction instruction, Integer sourceAddress, int targetAddress, String defaultName, boolean isDynamic) throws IOException {
+        Jump call = new Jump(sourceAddress, targetAddress, instruction.opcode, isDynamic);
         currentFunction.getCalls().add(call);
         Function function = codeStructure.functions.get(targetAddress);
         if (function == null) {
@@ -625,7 +624,7 @@ public class CodeAnalyzer {
                 debugPrintWriter.println("Error : INT40 at 0x" + Format.asHex(address, 8) + " with value R12=0x" + Format.asHex(r12, 8) + " does not match a computed address...");
             }
             else {
-                Jump interrupt40Call = new Jump(address, int40targetAddress, instruction.opcode /* TODO should characterize that it is a INT40 call */);
+                Jump interrupt40Call = new Jump(address, int40targetAddress, instruction.opcode /* TODO should characterize that it is a INT40 call */, false);
                 currentFunction.getCalls().add(interrupt40Call);
                 Function target = codeStructure.functions.get(int40targetAddress);
                 if (target == null) {
