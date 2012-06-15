@@ -455,31 +455,23 @@ public class CodeAnalyzer {
                         processedInstructions.add(address + 2);
                     }
                     int targetAddress = instruction.decodedX;
-                    Jump call = new Jump(address, targetAddress, instruction.opcode);
-                    currentFunction.getCalls().add(call);
                     if (targetAddress == 0) {
-                        debugPrintWriter.println("WARNING : Cannot determine target of CALL/INT made from 0x" + Format.asHex(address, 8) + " (dynamic address ?)");
-                    }
-                    else {
-                        Function function = codeStructure.functions.get(targetAddress);
-                        if (function == null) {
-                            // new Function
-                            function = new Function(targetAddress, "", "", Function.Type.STANDARD);
-                            codeStructure.functions.put(targetAddress, function);
-                            try {
-                                followFunction(function, targetAddress, false);
-                            }
-                            catch (DisassemblyException e) {
-                                debugPrintWriter.println("Error following call at 0x" + Format.asHex(address, 8) + ": " + e.getMessage());
+                        List<Integer> potentialTargets = jumpHints.get(address);
+                        if (potentialTargets != null) {
+                            int i = 0;
+                            for (Integer potentialTarget : potentialTargets) {
+                                addCall(currentFunction, instruction, address, potentialTarget, "call_target_" + Integer.toHexString(address) + "_" + i);
+                                i++;
                             }
                         }
                         else {
-                            // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
-                            if (function.getType() == Function.Type.UNKNOWN) {
-                                function.setType(Function.Type.STANDARD);
-                            }
+                            Jump call = new Jump(address, targetAddress, instruction.opcode);
+                            currentFunction.getCalls().add(call);
+                            debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
                         }
-                        function.getCalledBy().put(call, currentFunction);
+                    }
+                    else {
+                        addCall(currentFunction, instruction, address, targetAddress, "");
                     }
                     break;
                 case INT:
@@ -567,6 +559,30 @@ public class CodeAnalyzer {
                 }
             }
         }
+    }
+
+    private void addCall(Function currentFunction, DisassembledInstruction instruction, Integer sourceAddress, int targetAddress, String defaultName) throws IOException {
+        Jump call = new Jump(sourceAddress, targetAddress, instruction.opcode);
+        currentFunction.getCalls().add(call);
+        Function function = codeStructure.functions.get(targetAddress);
+        if (function == null) {
+            // new Function
+            function = new Function(targetAddress, defaultName, "", Function.Type.STANDARD);
+            codeStructure.functions.put(targetAddress, function);
+            try {
+                followFunction(function, targetAddress, false);
+            }
+            catch (DisassemblyException e) {
+                debugPrintWriter.println("Error following call at 0x" + Format.asHex(sourceAddress, 8) + ": " + e.getMessage());
+            }
+        }
+        else {
+            // Already processed. If it was an unknown entry point, declare it a standard function now that some code calls it
+            if (function.getType() == Function.Type.UNKNOWN) {
+                function.setType(Function.Type.STANDARD);
+            }
+        }
+        function.getCalledBy().put(call, currentFunction);
     }
 
     private void processInt40Call(Function currentFunction, Integer address, DisassembledInstruction instruction) throws IOException {
