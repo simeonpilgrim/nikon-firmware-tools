@@ -1605,7 +1605,7 @@
 -s 0x1026B8=lists_setup_03
 -s 0x10276C=lists_setup_05
 -s 0x1074F2=dlist_init(R4 [IN ptr_to_list])
--s 0x1074FA=dlist_compare_previous(R4 [IN ptr_to_element; OUT is_equal] /*R4->prev == R4*/)
+-s 0x1074FA=dlist_is_head(R4 [IN ptr_to_element; OUT is_head] /*R4->prev == R4 ?*/)
 -s 0x107506=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
 -s 0x107516=dlist_insert_after(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 after R4*/)
 -s 0x107526=dlist_remove(R4 [IN ptr_to_element] /*remove R4 element*/)
@@ -2051,7 +2051,7 @@
 -s 0x1A87BC=Tsk19_1A87BC
 -s 0x1A8908=getnextdlstix_value (/* get next dList index value */)
 -s 0x1A90E0=init_dlist_2_dlist_1
--s 0x1A9122=getnextdlistx_f8
+-s 0x1A9122=getnextdlistx_f8(R4 [OUT element->payload], R0 [OUT element->next])
 -s 0x1A9188=dlist_callxx
 -s 0x1A9228=Enqueue_Dlist_Item
 -s 0x1A929C=setflag12_x20
