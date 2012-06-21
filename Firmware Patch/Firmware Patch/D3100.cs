@@ -21,10 +21,8 @@ namespace Firmware_Patch
         //                  };
 
         Patch[] patches = {
-            new Patch(1, 0x84C202, new byte[] { 0x9B, 0x94 }, new byte[] { 0x9B, 0xF4 }), // 17:28 limited recording 1/4
-            new Patch(1, 0x84C204, new byte[] { 0x27, 0xC0 }, new byte[] { 0xFF, 0xFF }), // 17:28 limited recording 2/4
-            new Patch(1, 0x84D0D0, new byte[] { 0x9B, 0x91 }, new byte[] { 0x9B, 0xF1 }), // 17:28 limited recording 3/4
-            new Patch(1, 0x84D0D2, new byte[] { 0x27, 0xC0 }, new byte[] { 0xFF, 0xFF }), // 17:28 limited recording 4/4
+            new Patch(1, 0x84C202, new byte[] { 0x9B, 0x94, 0x27, 0xC0 }, new byte[] { 0x9B, 0xF4, 0xFF, 0xFF }), // 17:28 limited recording 1/2
+            new Patch(1, 0x84D0D0, new byte[] { 0x9B, 0x91, 0x27, 0xC0 }, new byte[] { 0x9B, 0xF1, 0xFF, 0xFF }), // 17:28 limited recording 2/2
                           };
 
         public D3100_0101(string filename)
