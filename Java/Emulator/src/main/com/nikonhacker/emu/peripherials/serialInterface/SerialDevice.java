@@ -7,7 +7,7 @@ package com.nikonhacker.emu.peripherials.serialInterface;
  * - call SerialInterface.write() to transmit data back to the MCU
  */
 
-public interface SerialListener {
+public interface SerialDevice {
     public void onValueReady(SerialInterface serialInterface);
     public void onBitNumberChange(SerialInterface serialInterface, int nbBits);
 }

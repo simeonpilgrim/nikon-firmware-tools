@@ -1,9 +1,9 @@
 package com.nikonhacker.gui.component.serialInterface;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.NullSerialListener;
+import com.nikonhacker.emu.peripherials.serialInterface.NullSerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
-import com.nikonhacker.emu.peripherials.serialInterface.SerialListener;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.VerticalLayout;
@@ -50,7 +50,7 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 }
             };
 
-            serialInterface.setSerialListener(new SerialListener() {
+            serialInterface.connect(new SerialDevice() {
                 public void onValueReady(SerialInterface serialInterface) {
                     rxTextArea.append(Format.asHex(serialInterface.read(), 2) + " ");
                 }
@@ -94,7 +94,7 @@ public class SerialInterfaceFrame extends DocumentFrame {
         super.dispose();
         // To make sure bytes written by the MCU are consumed
         for (SerialInterface serialInterface : serialInterfaces) {
-            serialInterface.setSerialListener(new NullSerialListener());
+            serialInterface.connect(new NullSerialDevice());
         }
     }
 }

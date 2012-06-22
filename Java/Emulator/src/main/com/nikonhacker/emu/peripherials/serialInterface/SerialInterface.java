@@ -42,7 +42,7 @@ public class SerialInterface {
     private int savedReadPointer;
     private int fifoIdleCounter = 0; // TODO implement counter increment and detection
 
-    private SerialListener serialListener = new NullSerialListener();
+    private SerialDevice serialDevice = new NullSerialDevice();
 
     int rxInterruptNumber, txInterruptNumber;
 
@@ -115,10 +115,10 @@ public class SerialInterface {
     public void setEscrIbsr(int escrIbsr) {
         int oldNbBits = getNbBits();
         this.escrIbsr = escrIbsr;
-        if (serialListener != null) {
+        if (this.serialDevice != null) {
             int newNbBits = getNbBits();
             if (newNbBits != oldNbBits) {
-                serialListener.onBitNumberChange(this, newNbBits);
+                this.serialDevice.onBitNumberChange(this, newNbBits);
             }
         }
     }
@@ -161,8 +161,8 @@ public class SerialInterface {
                 fbyte2 = txFifo.size();
             }
         }
-        if (serialListener != null) {
-            serialListener.onValueReady(this);
+        if (this.serialDevice != null) {
+            this.serialDevice.onValueReady(this);
         }
     }
 
@@ -197,7 +197,7 @@ public class SerialInterface {
             return tdr;
         }
         else {
-            int value = txFifo.poll();
+            Integer value = txFifo.poll();
 
             if ((fcr1 & 0x1) == 0) {
                 fbyte1 = txFifo.size();
@@ -220,7 +220,7 @@ public class SerialInterface {
                 }
             }
 
-            return value;
+            return value==null?-1:value;
         }
     }
 
@@ -509,7 +509,7 @@ public class SerialInterface {
     }
 
 
-    public void setSerialListener(SerialListener serialListener) {
-        this.serialListener = serialListener;
+    public void connect(SerialDevice serialDevice) {
+        this.serialDevice = serialDevice;
     }
 }
