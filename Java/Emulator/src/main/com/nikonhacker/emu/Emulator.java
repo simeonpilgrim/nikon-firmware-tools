@@ -2364,8 +2364,16 @@ public class Emulator {
                         for (BreakCondition breakCondition : breakConditions) {
                             if(breakCondition.matches(cpuState, memory)) {
                                 BreakTrigger trigger = breakCondition.getBreakTrigger();
-                                if (trigger != null && trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                    trigger.log(breakLogPrintWriter, cpuState, callStack, memory);
+                                if (trigger != null) {
+                                    if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
+                                        trigger.log(breakLogPrintWriter, cpuState, callStack, memory);
+                                    }
+                                    if (trigger.getInterruptToRequest() != null) {
+                                        interruptController.request(trigger.getInterruptToRequest());
+                                    }
+                                    if (trigger.getPcToSet() != null) {
+                                        cpuState.pc = trigger.getPcToSet();
+                                    }
                                 }
                                 if (trigger == null || trigger.mustBreak()) {
                                     return breakCondition;

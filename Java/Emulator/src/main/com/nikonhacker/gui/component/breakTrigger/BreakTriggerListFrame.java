@@ -7,7 +7,9 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.EventTableModel;
+import com.nikonhacker.Format;
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.dfr.ParsingException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -54,6 +56,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
         triggerTable.getColumnModel().getColumn(0).setPreferredWidth(1000);
         triggerTable.getColumnModel().getColumn(1).setPreferredWidth(100);
         triggerTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+        triggerTable.getColumnModel().getColumn(3).setPreferredWidth(200);
+        triggerTable.getColumnModel().getColumn(4).setPreferredWidth(200);
 
         JScrollPane listScroller = new JScrollPane(triggerTable);
         listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -210,6 +214,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
             return true;
         }
 
+        public int getColumnCount() {
+            return 5;
+        }
+
 
         public BreakTrigger setColumnValue(BreakTrigger baseObject, Object editedValue, int column) {
             switch (column) {
@@ -217,19 +225,41 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     baseObject.setName((String) editedValue);
                     return baseObject;
                 case 1:
-                    baseObject.setMustBeLogged((Boolean) editedValue);
-                    ui.onBreaktriggersChange();
-                    return baseObject;
-                case 2:
                     baseObject.setMustBreak((Boolean) editedValue);
                     ui.onBreaktriggersChange();
                     return baseObject;
+                case 2:
+                    baseObject.setMustBeLogged((Boolean) editedValue);
+                    ui.onBreaktriggersChange();
+                    return baseObject;
+                case 3:
+                    if ("".equals(editedValue)) {
+                        baseObject.setInterruptToRequest(null);
+                    }
+                    else {
+                        try {
+                            int interrupt = Format.parseUnsigned("0x" + (String)editedValue);
+                            baseObject.setInterruptToRequest(interrupt);
+                        } catch (ParsingException e) {
+                            // ignore the change
+                        }
+                    }
+                    return baseObject;
+                case 4:
+                    if ("".equals(editedValue)) {
+                        baseObject.setPcToSet(null);
+                    }
+                    else {
+                        try {
+                            int pcToSet = Format.parseUnsigned("0x" + (String)editedValue);
+                            baseObject.setPcToSet(pcToSet);
+                        } catch (ParsingException e) {
+                            // ignore the change
+                        }
+                    }
+                    return baseObject;
             }
             return baseObject;
-        }
-
-        public int getColumnCount() {
-            return 3;
         }
 
         public String getColumnName(int column) {
@@ -237,9 +267,13 @@ public class BreakTriggerListFrame extends DocumentFrame {
                 case 0:
                     return "Name";
                 case 1:
-                    return "Log";
-                case 2:
                     return "Break";
+                case 2:
+                    return "Log";
+                case 3:
+                    return "Interrupt";
+                case 4:
+                    return "JMP to";
             }
             return null;
         }
@@ -249,9 +283,13 @@ public class BreakTriggerListFrame extends DocumentFrame {
                 case 0:
                     return baseObject.getName();
                 case 1:
-                    return baseObject.mustBeLogged();
-                case 2:
                     return baseObject.mustBreak();
+                case 2:
+                    return baseObject.mustBeLogged();
+                case 3:
+                    return baseObject.getInterruptToRequest()==null?"":Format.asHex(baseObject.getInterruptToRequest(), 2);
+                case 4:
+                    return baseObject.getPcToSet()==null?"":Format.asHex(baseObject.getPcToSet(), 8);
             }
             return null;
         }
@@ -264,6 +302,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return Boolean.class;
                 case 2:
                     return Boolean.class;
+                case 3:
+                    return String.class;
+                case 4:
+                    return String.class;
             }
             return null;
         }

@@ -24,6 +24,8 @@ public class BreakTrigger {
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
+    private Integer interruptToRequest = null;
+    private Integer pcToSet = null;
     private Function function;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
@@ -67,6 +69,22 @@ public class BreakTrigger {
 
     public void setMustBreak(boolean mustBreak) {
         this.mustBreak = mustBreak;
+    }
+
+    public Integer getInterruptToRequest() {
+        return interruptToRequest;
+    }
+
+    public void setInterruptToRequest(Integer interruptToRequest) {
+        this.interruptToRequest = interruptToRequest;
+    }
+
+    public Integer getPcToSet() {
+        return pcToSet;
+    }
+
+    public void setPcToSet(Integer pcToSet) {
+        this.pcToSet = pcToSet;
     }
 
     public void setCpuStateValues(CPUState cpuStateValues) {
