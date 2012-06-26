@@ -11,7 +11,11 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Random;
 
 /**
- * This class tests all examples provided in the Fujitsu specification
+ * This class tests all examples provided in the FR Family instruction manual  
+ * http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-00101-5E.pdf
+ * 
+ * Additionally, the bit search module example is taken from the FR80 Family programming manual 
+ * http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-00104-3E.pdf
  *
  * Look for the word "spec" for failed tests or differences compared to the examples in the tests
  */
@@ -1537,14 +1541,16 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x790); // 0b0000011110010000
 
         cpuState.setReg(15, 0x12345674);
-        // Note : assume the samples in the spec are right (unused bits = 1), although ง3.3.2 says they should be 0 (page 19)
         cpuState.setPS(0xFFFFF8D5, false);
         memory.store32(0x12345674, 0xFFF8F8C0);
 
         emulator.play();
 
         checkRegister(15, 0x12345678);
-        checkPS(0xFFF8F8C0);
+        // Note : The samples assume unused bits are 1, which is is wrong
+        // checkPS(0xFFF8F8C0);
+        // Reality shows that ยง3.3.2 of the spec (page 19) is right: unused bits should be 0.
+        checkPS(0x00180000);
         checkMemory32(0x12345674, 0xFFF8F8C0);
     }
 
@@ -1767,8 +1773,11 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(15, 0x12345674);
-        checkPS(0xFFF8F8C0);
-        checkMemory32(0x12345674, 0xFFF8F8C0);
+        // Spec is inconsistent. See comment for testLD_079
+        //checkPS(0xFFF8F8C0);
+        //checkMemory32(0x12345674, 0xFFF8F8C0);
+        checkPS(0x00180000);
+        checkMemory32(0x12345674, 0x00180000);
     }
 
     public void testSTH_15() throws EmulationException {
@@ -1920,8 +1929,11 @@ public class EmulatorTest extends TestCase {
 
         emulator.play();
 
-        checkRegister(3, 0xFFF8F8C0);
-        checkPS(0xFFF8F8C0);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkRegister(3, 0xFFF8F8C0);
+        // checkPS(0xFFF8F8C0);
+        checkRegister(3, 0x00180000);
+        checkPS(0x00180000);
     }
 
     public void testMOV_B3() throws EmulationException {
@@ -1951,7 +1963,9 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(3, 0xFFF3F8D5);
-        checkPS(0xFFF3F8D5);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkPS(0xFFF3F8D5);
+        checkPS(0x00130015);
     }
 
 
@@ -1985,10 +1999,10 @@ public class EmulatorTest extends TestCase {
         checkPC(0xFF800122);
         checkRegister(CPUState.RP, 0xFF800002); // Note : assume a typo in the spec which says it should be 0xFF800004
         // Contradictory information in spec :
-        // Page 25 ง3.3.4, text confirms it should be +2 for non-delay slot instructions
-        // Page 25 ง3.3.4, first sample says it is a non-delayed instruction, but stores RP=PC+4
-        // Page 185, ง7.8.8, text says operation is RP = PC + 2
-        // Page 185, ง7.8.8, sample shows operation is RP = PC + 4
+        // Page 25 ยง3.3.4, text confirms it should be +2 for non-delay slot instructions
+        // Page 25 ยง3.3.4, first sample says it is a non-delayed instruction, but stores RP=PC+4
+        // Page 185, ยง7.8.8, text says operation is RP = PC + 2
+        // Page 185, ยง7.8.8, sample shows operation is RP = PC + 4
     }
 
     public void testCALL_97() throws EmulationException {
@@ -2049,12 +2063,16 @@ public class EmulatorTest extends TestCase {
         checkRegister(CPUState.TBR, 0x000FFC00);
         checkRegister(CPUState.USP, 0x40000000);
         checkPC(0x68096800);
-        checkPS(0xFFFFF8C0);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkPS(0xFFFFF8C0);
+        checkPS(0x001f0000);
         checkCCR(0x0); // 0b000000
 
         checkMemory32(0x000FFF7C, 0x68096800);
         checkMemory32(0x7FFFFFF8, 0x80888088);
-        checkMemory32(0x7FFFFFFC, 0xFFFFF8F0);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkMemory32(0x7FFFFFFC, 0xFFFFF8F0);
+        checkMemory32(0x7FFFFFFC, 0x001F0030);
         checkMemory32(0x80000000, RANDOM_32);
     }
 
@@ -2085,13 +2103,17 @@ public class EmulatorTest extends TestCase {
         checkRegister(CPUState.USP, 0x40000000);
         checkRegister(CPUState.TBR, 0x000FFC00);
         checkPC(0x68096800);
-        checkPS(0xFFE4F8D0);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkPS(0xFFE4F8D0);
+        checkPS(0x00040010);
         checkILM(0x4); // 0b00100
         checkCCR(0x10); // 0b010000
 
         checkMemory32(0x000FFFD8, 0x68096800);
         checkMemory32(0x7FFFFFF8, 0x80888088);
-        checkMemory32(0x7FFFFFFC, 0xFFF5F8F0); // Note : assume a typo in the spec which says it should be 0xFFF5F8F0
+        // Spec is inconsistent. See comment for testLD_079
+        // checkMemory32(0x7FFFFFFC, 0xFFF5F8F0);
+        checkMemory32(0x7FFFFFFC, 0x00150030);
         checkMemory32(0x80000000, RANDOM_32);
     }
 
@@ -2119,7 +2141,9 @@ public class EmulatorTest extends TestCase {
         checkRegister(CPUState.SSP, 0x80000000);
         checkRegister(CPUState.USP, 0x40000000);
         checkPC(0x80888088);
-        checkPS(0xFFF3F8F1);
+        // Spec is inconsistent. See comment for testLD_079
+        // checkPS(0xFFF3F8F1);
+        checkPS(0x00130031);
         checkILM(0x13); // 0b10011
         checkCCR(0x31); // 0b110001
 
