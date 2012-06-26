@@ -5,6 +5,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.dfr.*;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -25,7 +27,7 @@ public class Emulator {
     private long totalCycles;
     private Memory memory;
     private CPUState cpuState;
-    private InterruptController interruptController;
+    private InterruptController interruptController = new DummyInterruptController();
 
     private Integer nextPC = null;
     private Integer nextRP = null;
@@ -52,7 +54,7 @@ public class Emulator {
         Emulator emulator = new Emulator();
         emulator.setMemory(memory);
         emulator.setCpuState(new CPUState(initialPc));
-        emulator.setInterruptController(new InterruptController(memory));
+        emulator.setInterruptController(new FrInterruptController(memory));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();

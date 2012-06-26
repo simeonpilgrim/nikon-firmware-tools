@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 
 import javax.swing.*;
 import java.awt.*;
@@ -73,7 +73,7 @@ public class JInterruptButton extends JButton {
         }
 
         if (interruptNumber >= 0x10 && interruptNumber <= 0x2F) {
-            int irNumber = interruptNumber - InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
+            int irNumber = interruptNumber - FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
             tooltip += " or IR" + (irNumber <10?"0":"") + irNumber;
         }
 

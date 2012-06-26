@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.reloadTimer;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import java.util.TimerTask;
@@ -164,7 +165,7 @@ public class ReloadTimer {
                         if (currentValue < 0) {
                             isInUnderflowCondition = true;
                             if (interruptEnabled) {
-                                interruptController.request(InterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+                                interruptController.request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
                             }
                             if (mustReload) {
                                 currentValue += reloadValue;

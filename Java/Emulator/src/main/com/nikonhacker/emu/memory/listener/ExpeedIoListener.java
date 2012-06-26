@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
@@ -221,10 +222,10 @@ public class ExpeedIoListener implements IoActivityListener {
                 // Delay interrupt register
                 case REGISTER_DICR:
                     if ((value & 0x1) == 0) {
-                        interruptController.removeRequest(InterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        interruptController.removeRequest(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     else {
-                        interruptController.request(InterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        interruptController.request(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     break;
 
