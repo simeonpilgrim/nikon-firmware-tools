@@ -189,10 +189,8 @@ public class CodeAnalyzer {
         debugPrintWriter.println("Generating names for labels...");
         long start = System.currentTimeMillis();
         int labelNumber = 1;
-        // Temporary storage for names given to returns to make sure they are unique
-        Set<String> usedReturnLabels = new HashSet<String>();
 
-        // Give names to labels linked to function start/parts (if they were spotted as targets already)
+        // First give names to labels linked to function start/segments (if they were spotted as targets already)
         for (Integer address : codeStructure.functions.keySet()) {
             Function function = codeStructure.functions.get(address);
             if (codeStructure.labels.containsKey(address)) {
@@ -207,6 +205,8 @@ public class CodeAnalyzer {
             }
         }
 
+        // Temporary storage for names given to returns to make sure they are unique
+        Set<String> usedReturnLabels = new HashSet<String>();
         for (Integer address : codeStructure.labels.keySet()) {
             if (codeStructure.labels.get(address).getName().length() == 0) {
                 String label;
@@ -245,6 +245,21 @@ public class CodeAnalyzer {
             // increment even if unused, to make output stable no matter what future replacements will occur
             labelNumber++;
         }
+
+        // Override label names by symbols in dfr.txt file
+        for (Integer labelAddress : symbols.keySet()) {
+            if (!codeStructure.functions.containsKey(labelAddress)) {
+                // This is not a function symbol, it's a code label or a variable
+                Symbol label = codeStructure.labels.get(labelAddress);
+                if (label != null) {
+                    // It matches an existing code label. Rename it if it is a generic "label", or add the name otherwise
+                    String newLabelName = (label.getName().startsWith("label_")?"":(label.getName() + "_/_")) + symbols.get(labelAddress).getName();
+                    debugPrintWriter.println("Renaming label @" + Format.asHex(labelAddress, 8) + " from '" + label.getName() + "' to '" + newLabelName + "'.");
+                    label.setName(newLabelName);
+                }
+            }
+        }
+
         debugPrintWriter.println("Label generation took " + (System.currentTimeMillis() - start) + "ms");
 
 
