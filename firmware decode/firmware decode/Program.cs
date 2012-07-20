@@ -25,6 +25,7 @@ namespace Nikon_Decode
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -39,6 +40,7 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -76,13 +78,13 @@ namespace Nikon_Decode
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
-            //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
             //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
-            DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
+            //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
 
-            //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
         }
 
 
