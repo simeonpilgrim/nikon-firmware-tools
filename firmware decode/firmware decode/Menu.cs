@@ -56,7 +56,7 @@ namespace Nikon_Decode
                 Copy_From = 0x37BDE4;
                 Copy_To = 0x8F9C4E78;
 
-                DFR_file = @"C:\Users\spilgrim\Downloads\FrEmu\dfr_sim.txt";
+                DFR_file = @"C:\Users\spilgrim\Downloads\FrEmu\b640101b.dfr.txt";
 
                 MenuRootList = new long[] { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870, 
                                      0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0, 
@@ -340,6 +340,8 @@ namespace Nikon_Decode
         }
 
 
+
+
         class Struct6
         {
             public Struct6(byte[] data, long startAddr, long addrOffset)
@@ -428,11 +430,11 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
-                var sym = NameToSymbol(headingTxt);
+                var sym = NameToSymbol(mem_loc, headingTxt);
                 if (sym != "")
                 {
-                    //tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym);
-                    tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"MN_{1}\", 0);", mem_loc, sym);
+                    tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym);
+                    //tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"MN_{1}\", 0);", mem_loc, sym);
                 }
 
                 if (field_12_item != null)
@@ -573,11 +575,11 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  field_A: 0x{1:X4}", p, field_A);
                 //tw.WriteLine("{0}  menu_ptr: 0x{1:X8}", p, menu_ptr);
 
-                var sym = NameToSymbol(txt_2);
+                var sym = NameToSymbol(mem_loc, txt_2);
                 if (sym != "")
                 {
-                    //tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
-                    tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"ME_{1}\", 1);", mem_loc, sym);
+                    tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
+                    //tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"ME_{1}\", 1);", mem_loc, sym);
                 }
 
                 if (menu_ptr != 0)
@@ -606,13 +608,24 @@ namespace Nikon_Decode
                             int x_idx = line.IndexOf('x');
                             int eq_idx = line.IndexOf('=');
                             var hex = line.Substring(x_idx + 1, eq_idx - x_idx - 1);
-                            var name = line.Substring(eq_idx + 1);
+                            var param = line.IndexOf('(');
+                            string name;
+                            if( param != -1 )
+                                name = line.Substring(eq_idx + 1, param - (eq_idx + 1) );
+                            else
+                                name = line.Substring(eq_idx + 1);
+
                             var addr = long.Parse(hex, System.Globalization.NumberStyles.HexNumber);
 
-                            FuncNames.Add(addr, name);
+                            if (FuncNames.ContainsKey(addr))
+                                Console.WriteLine("{0:X} already present: '{1}' '{2}'", addr, FuncNames[addr], name);
+                            else
+                            {
+                                FuncNames.Add(addr, name);
+                                //Symbols.Add(addr, name);
+                            }
+
                             //Console.WriteLine("{0:X} {1:X}", hex, addr);
-
-
                         }
                     }
                 }
@@ -620,9 +633,12 @@ namespace Nikon_Decode
 
         }
 
-        static List<string> Symbols = new List<string>();
-        static string NameToSymbol(string text)
+        static Dictionary<long, string> Symbols = new Dictionary<long, string>();
+        static string NameToSymbol(long addr, string text)
         {
+            if (Symbols.ContainsKey(addr))
+                return Symbols[addr];
+
             const int maxIn = 14;
             StringBuilder sb = new StringBuilder();
 
@@ -645,12 +661,12 @@ namespace Nikon_Decode
             string basetxt = sb.ToString();
             string trytxt = basetxt;
             int next = 0;
-            while (Symbols.Contains(trytxt))
+            while (Symbols.ContainsValue(trytxt))
             {
                 trytxt = string.Format("{0}_{1}", basetxt, next++);
             }
 
-            Symbols.Add(trytxt);
+            Symbols.Add(addr, trytxt);
             return trytxt;
         }
 
