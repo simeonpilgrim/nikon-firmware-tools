@@ -76,15 +76,15 @@ namespace Nikon_Decode
 
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35f218, 0x35fad8);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
-            //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
+            SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
-            DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
             //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
 
-            InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+            //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
         }
 
 
@@ -160,26 +160,44 @@ namespace Nikon_Decode
                 for (uint pos = (uint)start; pos < stop; pos += 16)
                 {
                     int dummy1 = (int)ReadUint32(data, pos);
-                    int width = data[pos + 6];
-                    int loc = (int)ReadUint32(data, pos + 8) - 0x040000; // Fix RAM space -> File space.
+                    int dis_width = data[pos + 0];
+                    int dis_height = data[pos + 1];
+                    int dis_step_x = data[pos + 2];
+                    int dis_step_y = data[pos + 3];
+
+
+                    int height = data[pos + 1];
+                    int decode_width = data[pos + 6];
+                    int flags = data[pos + 7];
+                    int ram = (int)ReadUint32(data, pos + 8);
+                    int loc = ram - 0x040000; // Fix RAM space -> File space.
                     int indextab = (int)ReadUint32(data, pos + 12);
 
-                    int ll = last_loc - loc;
-                    int v1 = dummy1 & 0x01ff;
-                    int v2 = (dummy1 >> 9) & 0x7f;
-                   // var ol = new Overlay(dummy1, loc, width, 
-                    Debug.WriteLine("D: {0:X8} W: {1:X2}  ({2:X8}) L: {3:X8} I: {4:X8} Len: {5:X8} {6:X8} {7:X8} {8} {9}",
-                        dummy1, width, ReadUint32(data, pos + 4), loc, indextab, ll, v1, v2, ((double)ll) / ((double)v1), ((double)ll) / ((double)width));
 
-                    //if (loc != 0 && width > 0 && last_loc != 0)
-                    //{
-                    //    int lenght = last_loc - loc;
-                    //    int height = (lenght * 8) / (width);
 
-                    //    var name = string.Format("{0}_{1:X8}_BW.png", Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "Overlays"), Path.GetFileNameWithoutExtension(fileName)), loc);
+                    int lenght = last_loc - loc;
 
-                    //    DumpRGBLineStrippedBig1BitBW(data, name, data.Length, loc, width, height);
-                    //}
+                    var var_wid = DecodeVarWidths(data, flags, indextab, dis_height, lenght);
+                    int total_height = (lenght * 8) / (decode_width);
+
+                    Debug.WriteLine("H: {8} ({0}) W: {1}  ({2:X8}) L: {3:X8} I: {4:X8} Len: {5:X8} Vari: {6} TH: {7} Count: {9}",
+                        string.Format("{0},{1} {2},{3}",
+                        dis_width, dis_height, dis_step_x, dis_step_y), decode_width, ReadUint32(data, pos + 4), loc, indextab, lenght, flags, total_height, height, total_height/height);
+
+                    if (loc != 0 && decode_width > 0 && last_loc != 0)
+                    {
+                        var name = string.Format("{0}_{1:X8}_BW.png", Path.Combine(Path.Combine(Path.GetDirectoryName(fileName), "Overlays"), Path.GetFileNameWithoutExtension(fileName)), loc);
+
+                        if (var_wid.Count > 0)
+                        {
+                            DumpLineStrippedVariWdith(data, var_wid, dis_height, name, data.Length, loc, decode_width, dis_height*var_wid.Count);
+
+                        }
+                        else
+                        {
+                            DumpRGBLineStrippedBig1BitBW(data, name, data.Length, loc, decode_width, total_height);
+                        }
+                    }
 
 
                     last_loc = loc;
@@ -187,39 +205,73 @@ namespace Nikon_Decode
             }
         }
 
-        static void DumpRGBLineStrippedBig1Bit(byte[] dataIn, string name, int fileSize, int offset, int Pix_X, int Pix_Y)
+        static List<int> DecodeVarWidths(byte[] data, int flags, int indextab, int dis_height, int length)
         {
-            var bitmap = new Bitmap(Pix_X, Pix_Y, PixelFormat.Format24bppRgb);
+            List<int> words = new List<int>();
+            List<int> var_wid = new List<int>();
 
-            int inWidth = (Pix_X + 7) / 8;
-
-            // 1 pixel
-            for (int j = 0; j < Pix_Y; j++)
+            if ((flags & 0x80) != 0)
             {
-                //int j_off = j * RowsStep;
+                int index_loc = indextab - 0x40000;
+                int last_word = -1;
+                int off = 0;
 
-                if (offset + (inWidth * 3) < fileSize)
+                int word = ReadUint16(data, index_loc);
+                while (word > last_word &&
+                    word < length)
                 {
-                    // RGB stripped by row.
-                    for (int i = 0; i < Pix_X; i++)
-                    {
-                        int shift = 7 - (i % 8);
-                        int in_off = i / 8;
-                        int c_scale = 255 / 1; // scale below values to 0 - 255 range;
-                        int r = ((dataIn[offset + in_off] >> shift) & 0x01) * c_scale;
-                        int g = ((dataIn[offset + in_off + inWidth] >> shift) & 0x01) * c_scale;
-                        int b = ((dataIn[offset + in_off + inWidth + inWidth] >> shift) & 0x01) * c_scale;
+                    words.Add(word);
+                    last_word = word;
+                    off += 2;
 
-                        bitmap.SetPixel(i, j, Color.FromArgb(r, g, b));
-                    }
-                    offset += inWidth * 3;
+                    word = ReadUint16(data, index_loc + off);
+                }
+                words.Add(length);
+
+                for (int i = 0; i < (words.Count - 1); i++)
+                {
+                    int diff = words[i + 1] - words[i];
+                    int width = (diff / dis_height) * 8;
+
+                    var_wid.Add(width);
                 }
             }
+            return var_wid;
+        }
 
+
+        static void DumpLineStrippedVariWdith(byte[] dataIn,List<int> widths, int height,  string name, int fileSize, int offset, int Pix_X, int Pix_Y)
+        {
+            var bitmap = new Bitmap(Pix_X*3, Pix_Y, PixelFormat.Format24bppRgb);
+
+
+            for (int v = 0; v < widths.Count; v++)
+            {
+ 
+                Pix_X = widths[v];
+                int inWidth = (Pix_X + 7) / 8;
+
+                for (int j = 0; j < height; j++)
+                {
+                    if (offset + inWidth < fileSize)
+                    {
+                        for (int i = 0; i < Pix_X; i++)
+                        {
+                            int shift = 7 - (i % 8);
+                            int in_off = i / 8;
+                            int c = ((dataIn[offset + in_off] >> shift) & 0x01) * 255;
+
+                            bitmap.SetPixel(i, j + (v * height), Color.FromArgb(c, c, c));
+                        }
+                        offset += inWidth;
+                    }
+                }
+            }
             if (File.Exists(name)) File.Delete(name);
 
             bitmap.Save(name, ImageFormat.Png);
         }
+
 
         static void DumpRGBLineStrippedBig1BitBW(byte[] dataIn, string name, int fileSize, int offset, int Pix_X, int Pix_Y)
         {
@@ -227,22 +279,17 @@ namespace Nikon_Decode
 
             int inWidth = (Pix_X + 7) / 8;
 
-            // 1 pixel
             for (int j = 0; j < Pix_Y; j++)
             {
                 if (offset + (inWidth * 3) < fileSize)
                 {
-                    // BW stripped by row.
                     for (int i = 0; i < Pix_X; i++)
                     {
                         int shift = 7 - (i % 8);
                         int in_off = i / 8;
-                        int c_scale = 255 / 1; // scale below values to 0 - 255 range;
-                        int r = ((dataIn[offset + in_off] >> shift) & 0x01) * c_scale;
-                        //int g = ((dataIn[offset + in_off + inWidth] >> shift) & 0x01) * c_scale;
-                        //int b = ((dataIn[offset + in_off + inWidth + inWidth] >> shift) & 0x01) * c_scale;
+                        int c = ((dataIn[offset + in_off] >> shift) & 0x01) * 255;
 
-                        bitmap.SetPixel(i, j, Color.FromArgb(r, r, r));
+                        bitmap.SetPixel(i, j, Color.FromArgb(c, c, c));
                     }
                     offset += inWidth;
                 }
