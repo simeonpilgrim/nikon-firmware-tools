@@ -9,7 +9,10 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.*;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;

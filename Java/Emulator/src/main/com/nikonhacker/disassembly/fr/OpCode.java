@@ -1,5 +1,7 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
+
+import com.nikonhacker.disassembly.OutputOption;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -318,7 +320,7 @@ public class OpCode {
 
     /**
      * Fake OPCodes for data reading
-     * Array index is a DATA.SpecType_XXX value
+     * Array index is a DataType.SpecType_XXX value
      */
     static OpCode[] opData = {
         new OpCode( 0x0000, 0x0000, FORMAT_W, 0, 0, "DW",     "u;a",         ""         , Type.NONE, false, false),

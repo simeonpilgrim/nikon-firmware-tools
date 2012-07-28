@@ -1,6 +1,6 @@
 package com.nikonhacker.gui.component.cpu;
 
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.CPUState;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 

@@ -1,7 +1,8 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.memory.Memory;
 
 import java.io.IOException;

@@ -1,6 +1,6 @@
 package com.nikonhacker.gui.component.memoryMapped;
 
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.PageAccessLoggerActivityListener;

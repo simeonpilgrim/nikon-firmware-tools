@@ -1,7 +1,8 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -510,7 +511,7 @@ public class CodeAnalyzer {
         for (Jump jump : jumps) {
             inProcessedSegment = false;
             for (CodeSegment segment : currentFunction.getCodeSegments()) {
-                if (jump.target >= segment.start && jump.target <= segment.end) {
+                if (jump.target >= segment.getStart() && jump.target <= segment.getEnd()) {
                     // At first look, this part of code has already been processed.
                     // However, it happens (eg 001B77A4) that a jump ends on the delay slot of an unconditional JMP
                     // So we should consider we're really in a processed segment if
@@ -525,7 +526,7 @@ public class CodeAnalyzer {
                     }
                     // - or the next instruction is also in the range
                     Integer addressFollowingTarget = codeStructure.instructions.higherKey(jump.target);
-                    if (addressFollowingTarget != null && addressFollowingTarget >= segment.start && addressFollowingTarget <= segment.end) {
+                    if (addressFollowingTarget != null && addressFollowingTarget >= segment.getStart() && addressFollowingTarget <= segment.getEnd()) {
                         inProcessedSegment = true;
                         break;
                     }
@@ -549,8 +550,8 @@ public class CodeAnalyzer {
             // and try to merge it with all following ones
             for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
                 CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
-                if ((segmentA.start >= segmentB.start - 2 && segmentA.start <= segmentB.end + 2)
-                        || (segmentA.end >= segmentB.start - 2 && segmentA.end <= segmentB.end + 2)) {
+                if ((segmentA.getStart() >= segmentB.getStart() - 2 && segmentA.getStart() <= segmentB.getEnd() + 2)
+                        || (segmentA.getEnd() >= segmentB.getStart() - 2 && segmentA.getEnd() <= segmentB.getEnd() + 2)) {
                     // merge
                     segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
                     segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));

@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.memoryHexEditor;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;

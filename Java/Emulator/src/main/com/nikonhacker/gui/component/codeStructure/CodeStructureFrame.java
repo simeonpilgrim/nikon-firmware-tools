@@ -9,10 +9,10 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.CodeStructure;
+import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.fr.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 

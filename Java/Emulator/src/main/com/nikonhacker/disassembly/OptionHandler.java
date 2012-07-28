@@ -1,6 +1,7 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.fr.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -35,7 +36,7 @@ public class OptionHandler
     }
 
 
-    Character getNextOption() {
+    public Character getNextOption() {
         if (StringUtils.isBlank(currentToken)) {
             if (index >= arguments.length) return null; // end of list
 
@@ -50,7 +51,7 @@ public class OptionHandler
         return c;
     }
 
-    String getArgument() {
+    public String getArgument() {
         if (StringUtils.isBlank(currentToken)) {
             if (index >= arguments.length) return null; // end of list
 
@@ -115,7 +116,7 @@ public class OptionHandler
             throw new ParsingException("-" + option + " has a malformed range : " + rangeString + " (expected '=' before last address)");
         }
 
-        DATA map = parseMemtype(rangeTokenizer.nextToken());
+        DataType map = parseMemtype(rangeTokenizer.nextToken());
 
         if (option == 't') {
             return new InterruptVectorRange(start, end, map);
@@ -125,25 +126,25 @@ public class OptionHandler
         }
     }
 
-    static DATA parseMemtype(String arg) throws ParsingException {
+    static DataType parseMemtype(String arg) throws ParsingException {
         if (StringUtils.isBlank(arg))  {
             throw new ParsingException("no memtype given");
         }
 
-        DATA memp = new DATA();
+        DataType memp = new DataType();
         String wtf = "memory type";
         switch (arg.charAt(0))
         {
             case 'C':
             case 'c':
-                memp.memType = DATA.MEMTYPE_CODE;
+                memp.memType = DataType.MEMTYPE_CODE;
                 break;
 
             case 'D':
             case 'd':
                 wtf = "data type";
-                memp.memType = DATA.MEMTYPE_DATA;
-                memp.spec.add(DATA.SpecType_MD_WORD);
+                memp.memType = DataType.MEMTYPE_DATA;
+                memp.spec.add(DataType.SpecType_MD_WORD);
 
                 int separator = arg.lastIndexOf(':');
                 if (separator != -1)
@@ -157,11 +158,11 @@ public class OptionHandler
                         int md;
                         switch ((c + "").toLowerCase().charAt(0))
                         {
-                            case 'l': md = DATA.SpecType_MD_LONG; break;
-                            case 'n': md = DATA.SpecType_MD_LONGNUM; break;
-                            case 'r': md = DATA.SpecType_MD_RATIONAL; break;
-                            case 'v': md = DATA.SpecType_MD_VECTOR; break;
-                            case 'w': md = DATA.SpecType_MD_WORD; break;
+                            case 'l': md = DataType.SpecType_MD_LONG; break;
+                            case 'n': md = DataType.SpecType_MD_LONGNUM; break;
+                            case 'r': md = DataType.SpecType_MD_RATIONAL; break;
+                            case 'v': md = DataType.SpecType_MD_VECTOR; break;
+                            case 'w': md = DataType.SpecType_MD_WORD; break;
                             default:
                                 throw new ParsingException("unrecognized " + wtf + " at '" + arg + "'\n" + memtypehelp + "'\n");
                         }
@@ -172,18 +173,18 @@ public class OptionHandler
 
             case 'n':
             case 'N':
-                memp.memType = DATA.MEMTYPE_NONE;
+                memp.memType = DataType.MEMTYPE_NONE;
                 break;
 
             case 'u':
             case 'U':
-                memp.memType = DATA.MEMTYPE_UNKNOWN;
+                memp.memType = DataType.MEMTYPE_UNKNOWN;
                 break;
 
             case 'v':
             case 'V':
-                memp.memType = DATA.MEMTYPE_DATA;
-                memp.spec.add(DATA.SpecType_MD_VECTOR);
+                memp.memType = DataType.MEMTYPE_DATA;
+                memp.spec.add(DataType.SpecType_MD_VECTOR);
                 break;
 
             default:

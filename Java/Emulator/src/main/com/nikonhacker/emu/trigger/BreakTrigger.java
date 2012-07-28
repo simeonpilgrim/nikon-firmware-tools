@@ -1,6 +1,9 @@
 package com.nikonhacker.emu.trigger;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.fr.Symbol;
+import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;

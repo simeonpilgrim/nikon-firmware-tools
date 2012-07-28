@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.trigger.condition;
 
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.CPUState;
 import com.nikonhacker.emu.memory.Memory;
 
 public class AlwaysBreakCondition extends AbstractLoggingBreakCondition implements BreakCondition {

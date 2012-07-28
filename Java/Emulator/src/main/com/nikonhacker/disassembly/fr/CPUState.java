@@ -1,6 +1,7 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.EnumSet;

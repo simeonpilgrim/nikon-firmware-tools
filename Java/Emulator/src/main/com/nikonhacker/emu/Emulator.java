@@ -2,7 +2,9 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;

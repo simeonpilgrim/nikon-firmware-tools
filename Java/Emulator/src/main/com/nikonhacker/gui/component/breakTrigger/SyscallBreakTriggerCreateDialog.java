@@ -1,10 +1,10 @@
 package com.nikonhacker.gui.component.breakTrigger;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.ParsingException;
-import com.nikonhacker.dfr.Symbol;
-import com.nikonhacker.dfr.Syscall;
+import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.Symbol;
+import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import org.apache.commons.lang3.StringUtils;
