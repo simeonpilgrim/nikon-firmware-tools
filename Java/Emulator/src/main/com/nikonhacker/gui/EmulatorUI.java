@@ -159,6 +159,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
+    private JCheckBoxMenuItem reloadTimersMenuItem;
     private JCheckBoxMenuItem serialInterfacesMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
     private JCheckBoxMenuItem realosObjectMenuItem;
@@ -629,13 +630,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         componentsMenu.add(interruptControllerMenuItem);
 
+        //Reload timers
+        reloadTimersMenuItem = new JCheckBoxMenuItem("Reload Timers");
+        //reloadTimersMenuItem.setMnemonic(KeyEvent.VK_I);
+        //reloadTimersMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
+        reloadTimersMenuItem.setActionCommand(COMMAND_TOGGLE_RELOAD_TIMERS);
+        reloadTimersMenuItem.addActionListener(this);
+        componentsMenu.add(reloadTimersMenuItem);
+
         //Serial interface
         serialInterfacesMenuItem = new JCheckBoxMenuItem("Serial interfaces");
 //        serialInterfacesMenuItem.setMnemonic(KeyEvent.VK_I);
 //        serialInterfacesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
         serialInterfacesMenuItem.setActionCommand(COMMAND_TOGGLE_SERIAL_INTERFACES);
         serialInterfacesMenuItem.addActionListener(this);
-        componentsMenu.add(interruptControllerMenuItem);
+        componentsMenu.add(serialInterfacesMenuItem);
 
 
         //Set up the trace menu.
@@ -1792,6 +1801,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
         customMemoryRangeLoggerMenuItem.setEnabled(isImageLoaded); customMemoryRangeLoggerButton.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
+        reloadTimersMenuItem.setEnabled(isImageLoaded); reloadTimersButton.setEnabled(isImageLoaded);
         serialInterfacesMenuItem.setEnabled(isImageLoaded); serialInterfacesButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
         realosObjectMenuItem.setEnabled(isImageLoaded); realosObjectButton.setEnabled(isImageLoaded);
