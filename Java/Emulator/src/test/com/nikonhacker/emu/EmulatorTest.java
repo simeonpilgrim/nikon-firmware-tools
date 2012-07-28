@@ -1537,7 +1537,7 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x790); // 0b0000011110010000
 
         cpuState.setReg(15, 0x12345674);
-        // Note : assume the samples in the spec are right (unused bits = 1), although §3.3.2 says they should be 0 (page 19)
+        // Note : assume the samples in the spec are right (unused bits = 1), although section 3.3.2 says they should be 0 (page 19)
         cpuState.setPS(0xFFFFF8D5, false);
         memory.store32(0x12345674, 0xFFF8F8C0);
 
@@ -1985,10 +1985,10 @@ public class EmulatorTest extends TestCase {
         checkPC(0xFF800122);
         checkRegister(CPUState.RP, 0xFF800002); // Note : assume a typo in the spec which says it should be 0xFF800004
         // Contradictory information in spec :
-        // Page 25 §3.3.4, text confirms it should be +2 for non-delay slot instructions
-        // Page 25 §3.3.4, first sample says it is a non-delayed instruction, but stores RP=PC+4
-        // Page 185, §7.8.8, text says operation is RP = PC + 2
-        // Page 185, §7.8.8, sample shows operation is RP = PC + 4
+        // Page 25 section 3.3.4, text confirms it should be +2 for non-delay slot instructions
+        // Page 25 section 3.3.4, first sample says it is a non-delayed instruction, but stores RP=PC+4
+        // Page 185, section 7.8.8, text says operation is RP = PC + 2
+        // Page 185, section 7.8.8, sample shows operation is RP = PC + 4
     }
 
     public void testCALL_97() throws EmulationException {
