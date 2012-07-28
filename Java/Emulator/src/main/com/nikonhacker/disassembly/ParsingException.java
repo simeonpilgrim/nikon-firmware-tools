@@ -1,4 +1,4 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly;
 
 public class ParsingException extends Exception {
     public ParsingException() {

@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.cpu;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.CPUState;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;

@@ -4,9 +4,9 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.disassembly.fr.CodeStructure;
+import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.fr.Jump;
 
 import java.util.HashMap;
 import java.util.HashSet;

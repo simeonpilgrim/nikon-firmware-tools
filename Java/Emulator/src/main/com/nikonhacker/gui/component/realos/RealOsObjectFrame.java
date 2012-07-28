@@ -8,7 +8,7 @@ import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.ParsingException;
+import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.realos.*;

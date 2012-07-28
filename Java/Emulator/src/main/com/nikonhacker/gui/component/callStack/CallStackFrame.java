@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.callStack;
 
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.CodeStructure;
+import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.CodeStructure;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;

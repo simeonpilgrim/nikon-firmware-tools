@@ -1,5 +1,6 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
+import com.nikonhacker.disassembly.ParsingException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ public class Symbol {
      * Parses text for the given address in its different elements
      * @param address
      * @param rawText of the form "MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])" with optional comment between the parenthesis
-     * @throws ParsingException
+     * @throws com.nikonhacker.disassembly.ParsingException
      */
     public Symbol(Integer address, String rawText) throws ParsingException {
         this.address = address;

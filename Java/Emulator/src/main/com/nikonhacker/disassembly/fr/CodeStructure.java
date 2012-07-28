@@ -1,6 +1,7 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.*;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -93,7 +94,7 @@ public class CodeStructure {
         Integer address = memRange.getStart();
         DisassembledInstruction instruction = instructions.get(address);
 
-        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.start - fileRange.fileOffset):0;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
 
         while (instruction != null && address < memRange.getEnd()) {
             writeInstruction(writer, address, instruction, memoryFileOffset, outputOptions);

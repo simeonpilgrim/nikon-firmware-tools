@@ -1,7 +1,9 @@
 package com.nikonhacker.gui.component.sourceCode;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.disassembly.CodeSegment;
+import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
