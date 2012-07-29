@@ -4,13 +4,13 @@ package com.nikonhacker.disassembly.fr;
 public class Jump {
     int source;
     int target;
-    private OpCode opcode;
+    private FrInstruction instruction;
     boolean isDynamic;
 
-    public Jump(int source, int target, OpCode opcode, boolean isDynamic) {
+    public Jump(int source, int target, FrInstruction instruction, boolean isDynamic) {
         this.source = source;
         this.target = target;
-        this.opcode = opcode;
+        this.instruction = instruction;
         this.isDynamic = isDynamic;
     }
 
@@ -22,12 +22,12 @@ public class Jump {
         return target;
     }
 
-    public OpCode getOpcode() {
-        return opcode;
+    public FrInstruction getInstruction() {
+        return instruction;
     }
 
     public boolean isConditional() {
-        return opcode != null && opcode.isConditional;
+        return instruction != null && instruction.isConditional;
     }
 
     public boolean isDynamic() {

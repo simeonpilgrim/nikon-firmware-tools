@@ -8,8 +8,8 @@ import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.EventTableModel;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.CPUState;
 import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -155,9 +155,9 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void addTrigger() {
-        CPUState cpuStateFlags = new CPUState();
+        FrCPUState cpuStateFlags = new FrCPUState();
         cpuStateFlags.clear();
-        BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
+        BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange();
 
@@ -169,9 +169,9 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void addSyscallTrigger() {
-        CPUState cpuStateFlags = new CPUState();
+        FrCPUState cpuStateFlags = new FrCPUState();
         cpuStateFlags.clear();
-        BreakTrigger trigger = new BreakTrigger(findNewName(), new CPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
+        BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange();
 

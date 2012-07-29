@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.memory.listener;
 
-import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
@@ -44,13 +44,13 @@ public class ExpeedIoListener implements IoActivityListener {
     public static final int REGISTER_ICR00 = 0x440;
 
 
-    private final CPUState cpuState;
+    private final FrCPUState cpuState;
     private final InterruptController interruptController;
 
     private final ReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
 
-    public ExpeedIoListener(CPUState cpuState, InterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
+    public ExpeedIoListener(FrCPUState cpuState, InterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
         this.interruptController = interruptController;
         this.reloadTimers = reloadTimers;

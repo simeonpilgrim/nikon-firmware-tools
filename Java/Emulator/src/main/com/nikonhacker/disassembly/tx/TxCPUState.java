@@ -1,4 +1,4 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.OutputOption;
@@ -7,7 +7,7 @@ import com.nikonhacker.emu.InterruptRequest;
 import java.util.EnumSet;
 import java.util.Set;
 
-public class CPUState {
+public class TxCPUState {
     /** registers names */
     public static String[] REG_LABEL;
     public final static int DEDICATED_REG_OFFSET =   16;
@@ -62,7 +62,7 @@ public class CPUState {
     public int C=0;
 
     /**
-     * Default instruction decoding upon class loading
+     * Default decoding upon class loading
      */
     static {
         initRegisterLabels(EnumSet.noneOf(OutputOption.class));
@@ -72,7 +72,7 @@ public class CPUState {
     /**
      * Constructor
      */
-    public CPUState() {
+    public TxCPUState() {
         reset();
     }
 
@@ -80,7 +80,7 @@ public class CPUState {
      * Constructor
      * @param startPc initial value for the Program Counter
      */
-    public CPUState(int startPc) {
+    public TxCPUState(int startPc) {
         reset();
         pc = startPc;
     }
@@ -108,9 +108,9 @@ public class CPUState {
 
         // Patch names if requested
         if (outputOptions.contains(OutputOption.REGISTER)) {
-            CPUState.REG_LABEL[CPUState.AC] = "AC";
-            CPUState.REG_LABEL[CPUState.FP] = "FP";
-            CPUState.REG_LABEL[CPUState.SP] = "SP";
+            TxCPUState.REG_LABEL[TxCPUState.AC] = "AC";
+            TxCPUState.REG_LABEL[TxCPUState.FP] = "FP";
+            TxCPUState.REG_LABEL[TxCPUState.SP] = "SP";
         }
     }
 
@@ -189,10 +189,10 @@ public class CPUState {
      * Sets ILM part of the PS register (splits it into individual bits)
      * @param ilm new ILM value. According to the spec : "A limited range of values can be set from programs.
      *            If the original value is in a range of 16 to 31, a value ranging from 16 to 31 can be specified
-     *            as a new value. If a value ranging from 0 to 15 is set for an instruction, (specified-value + 16)
-     *            is transferred when the instruction is executed.
+     *            as a new value. If a value ranging from 0 to 15 is set for an statement, (specified-value + 16)
+     *            is transferred when the statement is executed.
      *            If the original value is in a range of 0 to 15, any value ranging from 0 to 31 can be specified.
-     * @param isFromPrograms true if the instruction is called by a program instruction
+     * @param isFromPrograms true if the statement is called by a program
      */
     public void setILM(int ilm, boolean isFromPrograms) {
         if (ILM4 == 0 || !isFromPrograms) {
@@ -228,7 +228,7 @@ public class CPUState {
     /**
      * Sets PS by splitting it into its individual parts
      * @param ps new PS value
-     * @param isFromPrograms true if the instruction is called by a program instruction. See setILM
+     * @param isFromPrograms true if the statement is called by a program. See setILM
      */
     public void setPS(int ps, boolean isFromPrograms) {
         setILM((ps >> 16) & 0xFF, isFromPrograms);
@@ -351,9 +351,9 @@ public class CPUState {
         }
     }
 
-    public CPUState clone() {
-        CPUState cloneCpuState = new CPUState();
-        for (int i = 0; i <= CPUState.CCR; i++) {
+    public TxCPUState clone() {
+        TxCPUState cloneCpuState = new TxCPUState();
+        for (int i = 0; i <= TxCPUState.CCR; i++) {
             cloneCpuState.regValue[i] = new Register32(regValue[i].value);
         }
         cloneCpuState.flags = flags;

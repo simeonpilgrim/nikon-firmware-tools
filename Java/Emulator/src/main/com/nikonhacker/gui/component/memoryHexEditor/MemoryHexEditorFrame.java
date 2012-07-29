@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.memoryHexEditor;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
@@ -22,7 +22,7 @@ import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
     private DebuggableMemory memory;
-    private CPUState cpuState;
+    private FrCPUState cpuState;
     private String baseTitle;
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
@@ -38,7 +38,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JComboBox registerCombo;
     private JButton saveLoadButton;
 
-    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
+    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, FrCPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.baseTitle = title;
         this.memory = memory;
@@ -89,7 +89,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         selectionPanel.add(new JLabel("Go to reg"));
         Vector<String> labels = new Vector<String>();
         labels.add("--");
-        labels.addAll(Arrays.asList(CPUState.REG_LABEL));
+        labels.addAll(Arrays.asList(FrCPUState.REG_LABELS));
         registerCombo = new JComboBox(labels);
         registerCombo.setMaximumRowCount(17);
         registerCombo.addActionListener(this);
@@ -207,13 +207,13 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         int selectionLength = 1;
         // Handle "FP" button
         if (fpButton.equals(e.getSource())) {
-            addressField.setText(Format.asHex(cpuState.getReg(CPUState.FP), 8));
+            addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.FP), 8));
             registerCombo.setSelectedIndex(0);
             selectionLength = 4;
         }
         // Handle "SP" button
         else if (spButton.equals(e.getSource())) {
-            addressField.setText(Format.asHex(cpuState.getReg(CPUState.SP), 8));
+            addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.SP), 8));
             registerCombo.setSelectedIndex(0);
             selectionLength = 4;
         }

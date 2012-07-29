@@ -17,7 +17,7 @@ public enum OutputOption {
     ADDRESS     ("address",         "include memory address", true),
     OFFSET      ("offset",          "include file position (add offset)", false),
     HEXCODE     ("hexcode",         "include hex version of instruction and operands", true),
-    BLANKS      ("blanks",          "include a large blank area before disassembled instruction", true),
+    BLANKS      ("blanks",          "include a large blank area before disassembled statement", true),
 
     STRUCTURE   ("structure",       "structural code analysis (code flow, symbols, etc). Needs more resources.", true),
     ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address", false),

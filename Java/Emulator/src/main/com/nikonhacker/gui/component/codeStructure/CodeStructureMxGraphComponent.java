@@ -5,7 +5,7 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.fr.CodeStructure;
-import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.fr.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 

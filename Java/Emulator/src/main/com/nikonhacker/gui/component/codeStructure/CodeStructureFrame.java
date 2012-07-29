@@ -9,9 +9,9 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.CodeStructure;
-import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.fr.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -33,7 +33,7 @@ public class CodeStructureFrame extends DocumentFrame
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
-    private CPUState cpuState;
+    private FrCPUState cpuState;
 
     public enum Orientation{
         HORIZONTAL(SwingConstants.WEST),
@@ -50,7 +50,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, FrCPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;

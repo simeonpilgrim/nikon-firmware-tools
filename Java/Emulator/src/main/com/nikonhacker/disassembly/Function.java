@@ -1,8 +1,8 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CodeSegment;
+import com.nikonhacker.disassembly.fr.Jump;
 
 import java.util.ArrayList;
 import java.util.HashMap;

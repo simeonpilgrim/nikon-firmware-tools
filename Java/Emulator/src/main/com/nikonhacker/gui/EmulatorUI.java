@@ -10,7 +10,7 @@ package com.nikonhacker.gui;
 
 import com.nikonhacker.*;
 import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.EmulationException;
@@ -124,7 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private Emulator emulator;
-    private CPUState cpuState;
+    private FrCPUState cpuState;
     private DebuggableMemory memory;
     private InterruptController interruptController;
     private java.util.Timer reloadAnimationTimer;
@@ -969,7 +969,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     JOptionPane.showMessageDialog(this, "Error loading state file\nFirst file not called " + CPUSTATE_ENTRY_NAME, "Error", JOptionPane.ERROR_MESSAGE);
                 }
                 else {
-                    cpuState = (CPUState) XStreamUtils.load(zipInputStream);
+                    cpuState = (FrCPUState) XStreamUtils.load(zipInputStream);
 
                     // Read memory
                     entry = zipInputStream.getNextEntry();
@@ -1152,7 +1152,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     int lastAddress = baseAddress;
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
-                    CPUState sampleCpuState = new CPUState();
+                    FrCPUState sampleCpuState = new FrCPUState();
                     sampleCpuState.setAllRegistersDefined();
 
 
@@ -1375,7 +1375,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memory.loadFile(imageFile, BASE_ADDRESS);
 
             if (cpuState == null) {
-                cpuState = new CPUState(BASE_ADDRESS);
+                cpuState = new FrCPUState(BASE_ADDRESS);
             }
             else {
                 cpuState.reset();
@@ -1887,11 +1887,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
             if (endAddress != null) {
                 // Set a temporary break condition at given endAddress
-                CPUState values = new CPUState(endAddress);
-                CPUState flags = new CPUState();
+                FrCPUState values = new FrCPUState(endAddress);
+                FrCPUState flags = new FrCPUState();
                 flags.pc = 1;
                 flags.setILM(0, false);
-                flags.setReg(CPUState.TBR, 0);
+                flags.setReg(FrCPUState.TBR, 0);
                 BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
                 emulator.addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
@@ -2049,7 +2049,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
         // Create alternate cpuState
-        CPUState tmpCpuState = cpuState.clone();
+        FrCPUState tmpCpuState = cpuState.clone();
 
         // Tweak alt cpuState
         tmpCpuState.I = 0; // prevent interrupts
