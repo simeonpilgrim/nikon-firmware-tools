@@ -5,7 +5,7 @@ import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
 import com.nikonhacker.disassembly.fr.CodeStructure;
-import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.fr.Jump;
 
 import java.util.HashMap;
@@ -177,11 +177,11 @@ public class CodeStructureMxGraph extends mxGraph {
     }
 
     private String getStrokeColor(Jump jump) {
-        if (jump.getOpcode() == null) {
+        if (jump.getInstruction() == null) {
             // Should not happen
             return "#FF0000";
         }
-        switch (jump.getOpcode().type) {
+        switch (jump.getInstruction().type) {
             case CALL:
                 return "#777777";
             case INT:

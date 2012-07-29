@@ -194,10 +194,10 @@ public class OptionHandler
         return memp;
     }
 
-    public static void parseSymbol(Map<Integer, Symbol> symbols, String argument) throws ParsingException {
+    public static void parseSymbol(Map<Integer, Symbol> symbols, String argument, String[] registerLabels) throws ParsingException {
         Integer address = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
         String text = StringUtils.substringAfter(argument, "=").trim();
-        symbols.put(address, new Symbol(address, text));
+        symbols.put(address, new Symbol(address, text, registerLabels));
     }
 
     public static void parseJumpHint(Map<Integer, List<Integer>> jumpHints, String argument) throws ParsingException {

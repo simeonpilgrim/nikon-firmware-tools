@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.sourceCode;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CodeSegment;
-import com.nikonhacker.disassembly.fr.Function;
+import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
@@ -43,7 +43,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private JCheckBox regexCB;
     private JCheckBox matchCaseCB;
 
-    private CPUState cpuState;
+    private FrCPUState cpuState;
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     List<Integer> lineAddresses = new ArrayList<Integer>();
@@ -52,7 +52,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final FrCPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -487,11 +487,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     listingArea.append("; Segment " + (i + 1) + "/" + segments.size() + "\n");
                     lineAddresses.add(null);
                 }
-                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getInstructions().higherKey(address)) {
-                    DisassembledInstruction instruction = codeStructure.getInstructions().get(address);
+                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getStatements().higherKey(address)) {
+                    FrStatement instruction = codeStructure.getStatements().get(address);
                     try {
                         StringWriter writer = new StringWriter();
-                        codeStructure.writeInstruction(writer, address, instruction, 0, ui.getPrefs().getOutputOptions());
+                        codeStructure.writeStatement(writer, address, instruction, 0, ui.getPrefs().getOutputOptions());
                         String str = writer.toString();
                         for (String line : str.split("\n")) {
                             if (line.length() > 0 && Character.isDigit(line.charAt(0))) {
@@ -564,11 +564,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         if (matchedTrigger == null) {
             // No match. Create a new one
-            CPUState values = new CPUState(addressFromLine);
-            CPUState flags = new CPUState();
+            FrCPUState values = new FrCPUState(addressFromLine);
+            FrCPUState flags = new FrCPUState();
             flags.pc = 1;
             flags.setILM(0, false);
-            flags.setReg(CPUState.TBR, 0);
+            flags.setReg(FrCPUState.TBR, 0);
             String triggerName;
             if (codeStructure.getFunctions().containsKey(addressFromLine)) {
                 triggerName = codeStructure.getFunctions().get(addressFromLine).getName() + "()";

@@ -12,10 +12,10 @@ public class CodeStructure {
 
     protected int entryPoint;
 
-    // TODO : Optimize by merging instructions/labels/functions/returns/ends in a same table with various properties ?
+    // TODO : Optimize by merging statements/labels/functions/returns/ends in a same table with various properties ?
 
-    /** Map address -> Instruction */
-    TreeMap<Integer, DisassembledInstruction> instructions = new TreeMap<Integer, DisassembledInstruction>();
+    /** Map address -> Statement */
+    TreeMap<Integer, FrStatement> statements = new TreeMap<Integer, FrStatement>();
     
     /** Map address -> Labels */
     Map<Integer, Symbol> labels = new TreeMap<Integer, Symbol>();
@@ -39,8 +39,8 @@ public class CodeStructure {
         return entryPoint;
     }
 
-    public TreeMap<Integer, DisassembledInstruction> getInstructions() {
-        return instructions;
+    public TreeMap<Integer, FrStatement> getStatements() {
+        return statements;
     }
 
     
@@ -92,20 +92,20 @@ public class CodeStructure {
 
         // Start output
         Integer address = memRange.getStart();
-        DisassembledInstruction instruction = instructions.get(address);
+        FrStatement statement = statements.get(address);
 
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
 
-        while (instruction != null && address < memRange.getEnd()) {
-            writeInstruction(writer, address, instruction, memoryFileOffset, outputOptions);
+        while (statement != null && address < memRange.getEnd()) {
+            writeStatement(writer, address, statement, memoryFileOffset, outputOptions);
 
-            address = instructions.higherKey(address);
-            instruction = address==null?null:instructions.get(address);
+            address = statements.higherKey(address);
+            statement = address==null?null: statements.get(address);
         }
 
     }
 
-    public void writeInstruction(Writer writer, Integer address, DisassembledInstruction instruction, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
+    public void writeStatement(Writer writer, Integer address, FrStatement statement, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
         // function
         if (isFunction(address)) {
             Function function = functions.get(address);
@@ -119,20 +119,20 @@ public class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
-        if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA, OpCode.Type.CALL, OpCode.Type.INT).contains(instruction.opcode.type)) {
+        if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA, FrInstruction.Type.CALL, FrInstruction.Type.INT).contains(statement.instruction.type)) {
             try {
                 int targetAddress;
                 // get address in comment (if any) or in operand
-                if (instruction.comment.length() > 0) {
-                    targetAddress = Format.parseUnsigned(instruction.comment);
+                if (statement.comment.length() > 0) {
+                    targetAddress = Format.parseUnsigned(statement.comment);
                 }
                 else {
-                    targetAddress = Format.parseUnsigned(instruction.operands);
+                    targetAddress = Format.parseUnsigned(statement.operands);
                 }
 
                 // fetch corresponding symbol
                 Symbol symbol;
-                if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA).contains(instruction.opcode.type)) {
+                if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA).contains(statement.instruction.type)) {
                     symbol = labels.get(targetAddress);
                 }
                 else { // CALLs
@@ -145,15 +145,15 @@ public class CodeStructure {
                     text = symbol.getName();
                 }
 
-                if (EnumSet.of(OpCode.Type.JMP, OpCode.Type.BRA).contains(instruction.opcode.type)) {
+                if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA).contains(statement.instruction.type)) {
                     // Add (skip) or (loop) according to jump direction
                     //TODO only if(areInSameRange(address, targetAddress))
-                    if (instruction.comment.length() > 0) {
-                        instruction.comment = (text + " " + skipOrLoop(address, targetAddress)).trim();
+                    if (statement.comment.length() > 0) {
+                        statement.comment = (text + " " + skipOrLoop(address, targetAddress)).trim();
                     }
                     else {
-                        instruction.operands = text;
-                        instruction.comment = skipOrLoop(address, targetAddress);
+                        statement.operands = text;
+                        statement.comment = skipOrLoop(address, targetAddress);
                     }
                 }
                 else { // CALL or INT
@@ -169,18 +169,18 @@ public class CodeStructure {
                                         text+=", ";
                                     }
                                     text+=parameter.getInVariable() + "=";
-                                    if (instruction.cpuState.isRegisterDefined(parameter.getRegister())) {
-                                        text+="0x" + Integer.toHexString(instruction.cpuState.getReg(parameter.getRegister()));
+                                    if (statement.cpuState.isRegisterDefined(parameter.getRegister())) {
+                                        text+="0x" + Integer.toHexString(statement.cpuState.getReg(parameter.getRegister()));
                                     }
                                     else {
-                                        text+=CPUState.REG_LABEL[parameter.getRegister()];
+                                        text+= FrCPUState.REG_LABELS[parameter.getRegister()];
                                     }
                                 }
                                 else if (parameter.getOutVariable() != null) {
                                     if (prefix.length() > 0) {
                                         prefix += ",";
                                     }
-                                    prefix+=CPUState.REG_LABEL[parameter.getRegister()];
+                                    prefix+= FrCPUState.REG_LABELS[parameter.getRegister()];
                                 }
                             }
                             text += ")";
@@ -190,11 +190,11 @@ public class CodeStructure {
                         }
                     }
 
-                    if (instruction.comment.length() > 0) {
-                        instruction.comment = text;
+                    if (statement.comment.length() > 0) {
+                        statement.comment = text;
                     }
                     else {
-                        instruction.operands = text;
+                        statement.operands = text;
                     }
                 }
             } catch(ParsingException e){
@@ -202,8 +202,8 @@ public class CodeStructure {
             }
         }
 
-        // print instruction
-        Dfr.printDisassembly(writer, instruction, address, memoryFileOffset, outputOptions);
+        // print statement
+        Dfr.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
 
         // after return from function
         if (isEnd(address)) {

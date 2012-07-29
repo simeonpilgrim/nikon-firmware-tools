@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly.fr;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.Symbol;
 import com.nikonhacker.emu.memory.Memory;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class Syscall extends Symbol {
     int functionCode;
 
     public Syscall(int functionCode, Integer address, String rawText) throws ParsingException {
-        super(address, rawText);
+        super(address, rawText, FrCPUState.REG_LABELS);
         this.functionCode = functionCode;
     }
 

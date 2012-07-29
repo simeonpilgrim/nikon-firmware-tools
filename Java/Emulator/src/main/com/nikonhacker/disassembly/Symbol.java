@@ -1,4 +1,4 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 import com.nikonhacker.disassembly.ParsingException;
 import org.apache.commons.lang3.StringUtils;
@@ -14,6 +14,11 @@ public class Symbol {
     private List<Parameter> parameterList;
     private String rawText;
 
+    public Symbol(int address, String name) {
+        this.address = address;
+        this.name = name;
+    }
+
     public Symbol(int address, String name, String comment) {
         this.address = address;
         this.name = name;
@@ -26,7 +31,7 @@ public class Symbol {
      * @param rawText of the form "MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])" with optional comment between the parenthesis
      * @throws com.nikonhacker.disassembly.ParsingException
      */
-    public Symbol(Integer address, String rawText) throws ParsingException {
+    public Symbol(Integer address, String rawText, String[] registerLabels) throws ParsingException {
         this.address = address;
         this.rawText = rawText;
         if (rawText.contains("(")) {
@@ -40,7 +45,7 @@ public class Symbol {
             String cleanComment = comment.replaceAll("/\\*.*\\*/", "");
             String[] paramStrings = StringUtils.split(cleanComment, ',');
             for (String paramString : paramStrings) {
-                Parameter parameter = new Parameter(paramString);
+                Parameter parameter = new Parameter(paramString, registerLabels);
                 addParameter(parameter);
             }
 //            System.out.println("** Name:" + name);
@@ -123,10 +128,10 @@ public class Symbol {
          * Parses a param from a String
          * @param parameterString string of the form "R4 [IN dividend, OUT remainder]"
          */
-        public Parameter(String parameterString) throws ParsingException {
+        public Parameter(String parameterString, String[] registerLabels) throws ParsingException {
             String registerText = StringUtils.substringBefore(parameterString, "[").trim().toUpperCase();
-            for (int i = 0; i < CPUState.REG_LABEL.length; i++) {
-                if (CPUState.REG_LABEL[i].equals(registerText)) {
+            for (int i = 0; i < registerLabels.length; i++) {
+                if (registerLabels[i].equals(registerText)) {
                     register = i;
                     break;
                 }
@@ -144,19 +149,20 @@ public class Symbol {
             }
             details = StringUtils.substringBefore(details, "]").trim();
             for (String detail : StringUtils.split(details, ";")) {
-                parseDetail(detail.trim());
+                parseDetail(detail.trim(), registerLabels);
             }
         }
 
         /**
          * Parses a parameter detail
          * @param detail string of the form "IN variablename" or "OUT variable name
+         * @param registerLabels
          */
-        private void parseDetail(String detail) throws ParsingException {
+        private void parseDetail(String detail, String[] registerLabels) throws ParsingException {
             String type = StringUtils.substringBefore(detail, " ").toUpperCase().trim();
             String variable = StringUtils.replace(StringUtils.substringAfter(detail, " ").trim(), " ", "_");
             if (StringUtils.isEmpty(variable)) {
-                variable = CPUState.REG_LABEL[register];
+                variable = registerLabels[register];
             }
             if ("IN".equals(type)) {
                 inVariable = variable;

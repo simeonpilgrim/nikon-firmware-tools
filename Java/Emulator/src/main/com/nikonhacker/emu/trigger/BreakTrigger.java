@@ -1,8 +1,8 @@
 package com.nikonhacker.emu.trigger;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.fr.Function;
-import com.nikonhacker.disassembly.fr.Symbol;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.Symbol;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -22,8 +22,8 @@ import java.util.Map;
  */
 public class BreakTrigger {
     private String name;
-    private CPUState cpuStateValues;
-    private CPUState cpuStateFlags;
+    private FrCPUState cpuStateValues;
+    private FrCPUState cpuStateFlags;
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
@@ -31,7 +31,7 @@ public class BreakTrigger {
     private Integer pcToSet = null;
     private Function function;
 
-    public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
+    public BreakTrigger(String name, FrCPUState cpuStateValues, FrCPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
         this.name = name;
         this.cpuStateValues = cpuStateValues;
         this.cpuStateFlags = cpuStateFlags;
@@ -46,7 +46,7 @@ public class BreakTrigger {
         this.name = name;
     }
 
-    public CPUState getCpuStateValues() {
+    public FrCPUState getCpuStateValues() {
         return cpuStateValues;
     }
 
@@ -90,15 +90,15 @@ public class BreakTrigger {
         this.pcToSet = pcToSet;
     }
 
-    public void setCpuStateValues(CPUState cpuStateValues) {
+    public void setCpuStateValues(FrCPUState cpuStateValues) {
         this.cpuStateValues = cpuStateValues;
     }
 
-    public CPUState getCpuStateFlags() {
+    public FrCPUState getCpuStateFlags() {
         return cpuStateFlags;
     }
 
-    public void setCpuStateFlags(CPUState cpuStateFlags) {
+    public void setCpuStateFlags(FrCPUState cpuStateFlags) {
         this.cpuStateFlags = cpuStateFlags;
     }
 
@@ -137,7 +137,7 @@ public class BreakTrigger {
             }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
-        for (int i = 0; i <= CPUState.MDL; i++) {
+        for (int i = 0; i <= FrCPUState.MDL; i++) {
             if (cpuStateFlags.getReg(i) != 0) {
                 conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
             }
@@ -169,7 +169,7 @@ public class BreakTrigger {
      * @param callStack optional call stack at the time the condition matches
      * @param memory
      */
-    public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
+    public void log(PrintWriter printWriter, FrCPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
         String msg;
         if (function != null) {
             // This is a function call. Parse its arguments and log them

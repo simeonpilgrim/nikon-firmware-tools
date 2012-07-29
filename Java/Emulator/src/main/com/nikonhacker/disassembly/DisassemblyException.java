@@ -1,4 +1,4 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 public class DisassemblyException extends Exception {
     public DisassemblyException(String msg) {

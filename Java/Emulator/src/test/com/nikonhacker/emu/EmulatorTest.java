@@ -1,6 +1,6 @@
 package com.nikonhacker.emu;
 
-import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
@@ -27,7 +27,7 @@ public class EmulatorTest extends TestCase {
     private static final int RANDOM_8 = 0xB3;
 
     static Emulator emulator;
-    static CPUState cpuState;
+    static FrCPUState cpuState;
     static Memory memory;
 
     static {
@@ -35,7 +35,7 @@ public class EmulatorTest extends TestCase {
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new AlwaysBreakCondition());
 
-        cpuState = new CPUState(BASE_ADDRESS);
+        cpuState = new FrCPUState(BASE_ADDRESS);
         emulator.setCpuState(cpuState);
 
         memory = new AutoAllocatingMemory();
@@ -61,10 +61,10 @@ public class EmulatorTest extends TestCase {
 
     private void checkRegister(int registerNumber, int expectedValue) {
         if (cpuState.getReg(registerNumber)==expectedValue) {
-            if (!STAY_SILENT_IF_OK) System.out.println(" OK    : " + CPUState.REG_LABEL[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8));
+            if (!STAY_SILENT_IF_OK) System.out.println(" OK    : " + FrCPUState.REG_LABELS[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8));
         }
         else {
-            System.out.println(" ERROR : " + CPUState.REG_LABEL[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8)
+            System.out.println(" ERROR : " + FrCPUState.REG_LABELS[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8)
                     + ", should be " + toHexString(expectedValue, 8) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if (STOP_ON_ERROR) fail();
         }
@@ -795,8 +795,8 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(2, 0x00000002);
         checkRegister(3, 0x80000001);
-        checkRegister(CPUState.MDH, 0xFFFFFFFF);
-        checkRegister(CPUState.MDL, 0x00000002);
+        checkRegister(FrCPUState.MDH, 0xFFFFFFFF);
+        checkRegister(FrCPUState.MDL, 0x00000002);
         checkCCR(2); // 0b0010
     }
 
@@ -814,8 +814,8 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(2, 0x00000002);
         checkRegister(3, 0x80000001);
-        checkRegister(CPUState.MDH, 0x00000001);
-        checkRegister(CPUState.MDL, 0x00000002);
+        checkRegister(FrCPUState.MDH, 0x00000001);
+        checkRegister(FrCPUState.MDL, 0x00000002);
         checkCCR(2); // 0b0010
     }
 
@@ -833,7 +833,7 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(2, 0xFFDCBA98);
         checkRegister(3, 0x01234567);
-        checkRegister(CPUState.MDL, 0xED2F0B28);
+        checkRegister(FrCPUState.MDL, 0xED2F0B28);
         checkCCR(8); // 0b1000
     }
 
@@ -851,7 +851,7 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(2, 0xFFDCBA98);
         checkRegister(3, 0x01234567);
-        checkRegister(CPUState.MDL, 0x32960B28);
+        checkRegister(FrCPUState.MDL, 0x32960B28);
         checkCCR(0); // 0b0000
     }
 
@@ -862,15 +862,15 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x9742); // 0b1001011101000010
 
         cpuState.setReg(2, 0x0FFFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00000000);
-        cpuState.setReg(CPUState.MDL, 0xFFFFFFF0);
+        cpuState.setReg(FrCPUState.MDH, 0x00000000);
+        cpuState.setReg(FrCPUState.MDL, 0xFFFFFFF0);
         cpuState.setSCR(0); // 0b000
 
         emulator.play();
 
         checkRegister(2, 0x0FFFFFFF);
-        checkRegister(CPUState.MDH, 0xFFFFFFFF);
-        checkRegister(CPUState.MDL, 0xFFFFFFF0);
+        checkRegister(FrCPUState.MDH, 0xFFFFFFFF);
+        checkRegister(FrCPUState.MDL, 0xFFFFFFF0);
         checkSCR(0x6); // 0b110
     }
 
@@ -881,15 +881,15 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x9752); // 0b1001011101010010
 
         cpuState.setReg(2, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00000000);
-        cpuState.setReg(CPUState.MDL, 0x0FFFFFF0);
+        cpuState.setReg(FrCPUState.MDH, 0x00000000);
+        cpuState.setReg(FrCPUState.MDL, 0x0FFFFFF0);
         cpuState.setSCR(6); // 0b110
 
         emulator.play();
 
         checkRegister(2, 0x00FFFFFF);
-        checkRegister(CPUState.MDH, 0x00000000);
-        checkRegister(CPUState.MDL, 0x0FFFFFF0);
+        checkRegister(FrCPUState.MDH, 0x00000000);
+        checkRegister(FrCPUState.MDL, 0x0FFFFFF0);
         checkSCR(0); // 0b000
     }
 
@@ -903,16 +903,16 @@ public class EmulatorTest extends TestCase {
         // we shouldn't have the same value in divisor and MDH because the previous step should have subtracted it
 
         cpuState.setReg(2, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDL, 0x00000000);
+        cpuState.setReg(FrCPUState.MDH, 0x00FFFFFF);
+        cpuState.setReg(FrCPUState.MDL, 0x00000000);
         cpuState.setSCR(0); // 0b000
         cpuState.setCCR(0); // 0b0000
 
         emulator.play();
 
         checkRegister(2, 0x00FFFFFF);
-        checkRegister(CPUState.MDH, 0x00FFFFFF /*0x01000000*/); // See above. Changed for the test to succeed
-        checkRegister(CPUState.MDL, 0x00000001);
+        checkRegister(FrCPUState.MDH, 0x00FFFFFF /*0x01000000*/); // See above. Changed for the test to succeed
+        checkRegister(FrCPUState.MDL, 0x00000001);
         checkSCR(0); // 0b000
         checkCCR(0); // 0b0000
     }
@@ -925,16 +925,16 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x9772); // 0b1001011101110010
 
         cpuState.setReg(2, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDL, 0x0000000F);
+        cpuState.setReg(FrCPUState.MDH, 0x00FFFFFF);
+        cpuState.setReg(FrCPUState.MDL, 0x0000000F);
         cpuState.setSCR(0); // 0b000
         cpuState.setCCR(0); // 0b0000
 
         emulator.play();
 
         checkRegister(2, 0x00FFFFFF);
-        checkRegister(CPUState.MDH, 0x00000000);
-        checkRegister(CPUState.MDL, 0x0000000F);
+        checkRegister(FrCPUState.MDH, 0x00000000);
+        checkRegister(FrCPUState.MDL, 0x0000000F);
         checkSCR(0); // 0b000
         checkCCR(4); // 0b0100
     }
@@ -946,16 +946,16 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x9f60); // 0b1001111101100000
 
         cpuState.setReg(2, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00000000);
-        cpuState.setReg(CPUState.MDL, 0x0000000F);
+        cpuState.setReg(FrCPUState.MDH, 0x00000000);
+        cpuState.setReg(FrCPUState.MDL, 0x0000000F);
         cpuState.setSCR(0); // 0b000
         cpuState.setCCR(4); // 0b0100
 
         emulator.play();
 
         checkRegister(2, 0x00FFFFFF);
-        checkRegister(CPUState.MDH, 0x00000000);
-        checkRegister(CPUState.MDL, 0x00000010);
+        checkRegister(FrCPUState.MDH, 0x00000000);
+        checkRegister(FrCPUState.MDL, 0x00000010);
         checkSCR(0); // 0b000
         checkCCR(4); // 0b0100
     }
@@ -967,16 +967,16 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x9f70); // 0b1001111101110000
 
         cpuState.setReg(2, 0x00FFFFFF);
-        cpuState.setReg(CPUState.MDH, 0x00000000);
-        cpuState.setReg(CPUState.MDL, 0x0000000F);
+        cpuState.setReg(FrCPUState.MDH, 0x00000000);
+        cpuState.setReg(FrCPUState.MDL, 0x0000000F);
         cpuState.setSCR(6); // 0b110
         cpuState.setCCR(0); // 0b0000
 
         emulator.play();
 
         checkRegister(2, 0x00FFFFFF);
-        checkRegister(CPUState.MDH, 0x00000000);
-        checkRegister(CPUState.MDL, 0xFFFFFFF1);
+        checkRegister(FrCPUState.MDH, 0x00000000);
+        checkRegister(FrCPUState.MDL, 0xFFFFFFF1);
         checkSCR(6); // 0b110
         checkCCR(0); // 0b0000
     }
@@ -1026,7 +1026,7 @@ public class EmulatorTest extends TestCase {
         memory.store16(BASE_ADDRESS + 70, 0x9f70); // 0b1001111101110000 DIV4S
 
         cpuState.setReg(2, 0x01234567);
-        cpuState.setReg(CPUState.MDL, 0xFEDCBA98);
+        cpuState.setReg(FrCPUState.MDL, 0xFEDCBA98);
         cpuState.setSCR(0); // 0b000
 
         emulator.clearBreakConditions();
@@ -1034,8 +1034,8 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(2, 0x01234567);
-        checkRegister(CPUState.MDH, 0xFFFFFFFF);
-        checkRegister(CPUState.MDL, 0xFFFFFFFF);
+        checkRegister(FrCPUState.MDH, 0xFFFFFFFF);
+        checkRegister(FrCPUState.MDL, 0xFFFFFFFF);
         checkSCR(0x6); // 0b110
     }
 
@@ -1081,7 +1081,7 @@ public class EmulatorTest extends TestCase {
         memory.store16(BASE_ADDRESS + 70, 0x9f70); // 0b1001111101110000 DIV4S
 
         cpuState.setReg(2, divisor);
-        cpuState.setReg(CPUState.MDL, dividend);
+        cpuState.setReg(FrCPUState.MDL, dividend);
         cpuState.setSCR(0); // 0b000
 
         emulator.clearBreakConditions();
@@ -1089,8 +1089,8 @@ public class EmulatorTest extends TestCase {
 
         emulator.play();
 
-        int foundQuotient = cpuState.getReg(CPUState.MDL);
-        int foundRemainder = cpuState.getReg(CPUState.MDH);
+        int foundQuotient = cpuState.getReg(FrCPUState.MDL);
+        int foundRemainder = cpuState.getReg(FrCPUState.MDH);
 
         int correctQuotient = dividend / divisor;
         int correctRemainder = dividend % divisor;
@@ -1155,7 +1155,7 @@ public class EmulatorTest extends TestCase {
         memory.store16(BASE_ADDRESS + 64, 0x9762); // 0b1001011101100010 DIV1  R2
 
         cpuState.setReg(2, 0x01234567);
-        cpuState.setReg(CPUState.MDL, 0xFEDCBA98);
+        cpuState.setReg(FrCPUState.MDL, 0xFEDCBA98);
         cpuState.setSCR(0); // 0b000
 
         emulator.clearBreakConditions();
@@ -1163,8 +1163,8 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(2, 0x01234567);
-        checkRegister(CPUState.MDH, 0x00000078);
-        checkRegister(CPUState.MDL, 0x000000E0);
+        checkRegister(FrCPUState.MDH, 0x00000078);
+        checkRegister(FrCPUState.MDL, 0x000000E0);
         checkSCR(0x0); // 0b000
     }
 
@@ -1207,15 +1207,15 @@ public class EmulatorTest extends TestCase {
         memory.store16(BASE_ADDRESS + 64, 0x9762); // 0b1001011101100010 DIV1  R2
 
         cpuState.setReg(2, divisor);
-        cpuState.setReg(CPUState.MDL, dividend);
+        cpuState.setReg(FrCPUState.MDL, dividend);
         cpuState.setSCR(0); // 0b000
 
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new BreakPointCondition(BASE_ADDRESS + 66, null));
         emulator.play();
 
-        long foundQuotient = cpuState.getReg(CPUState.MDL) & 0xFFFFFFFFL;
-        long foundRemainder = cpuState.getReg(CPUState.MDH) & 0xFFFFFFFFL;
+        long foundQuotient = cpuState.getReg(FrCPUState.MDL) & 0xFFFFFFFFL;
+        long foundRemainder = cpuState.getReg(FrCPUState.MDH) & 0xFFFFFFFFL;
         
         long correctQuotient = (dividend & 0xFFFFFFFFL) / (divisor & 0xFFFFFFFFL);
         long correctRemainder = (dividend & 0xFFFFFFFFL) % (divisor & 0xFFFFFFFFL);
@@ -1521,13 +1521,13 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x784); // 0b0000011110000100
 
         cpuState.setReg(15, 0x12345674);
-        cpuState.setReg(CPUState.MDH,  RANDOM_32);
+        cpuState.setReg(FrCPUState.MDH,  RANDOM_32);
         memory.store32(0x12345674, 0x87654321);
 
         emulator.play();
 
         checkRegister(15, 0x12345678);
-        checkRegister(CPUState.MDH, 0x87654321);
+        checkRegister(FrCPUState.MDH, 0x87654321);
         checkMemory32(0x12345674, 0x87654321);
     }
 
@@ -1744,13 +1744,13 @@ public class EmulatorTest extends TestCase {
         setInstruction(0x1784); // 0b0001011110000100
 
         cpuState.setReg(15, 0x12345678);
-        cpuState.setReg(CPUState.MDH, 0x87654321);
+        cpuState.setReg(FrCPUState.MDH, 0x87654321);
         memory.store32(0x12345674, RANDOM_32);
 
         emulator.play();
 
         checkRegister(15, 0x12345674);
-        checkRegister(CPUState.MDH, 0x87654321);
+        checkRegister(FrCPUState.MDH, 0x87654321);
         checkMemory32(0x12345674, 0x87654321);
     }
 
@@ -1901,12 +1901,12 @@ public class EmulatorTest extends TestCase {
         setInstruction(0xb753); // 0b1011011101010011
 
         cpuState.setReg(3, RANDOM_32);
-        cpuState.setReg(CPUState.MDL, 0x87654321);
+        cpuState.setReg(FrCPUState.MDL, 0x87654321);
 
         emulator.play();
 
         checkRegister(3, 0x87654321);
-        checkRegister(CPUState.MDL, 0x87654321);
+        checkRegister(FrCPUState.MDL, 0x87654321);
     }
 
     public void testMOV_17() throws EmulationException {
@@ -1931,12 +1931,12 @@ public class EmulatorTest extends TestCase {
         setInstruction(0xb353); // 0b1011001101010011
 
         cpuState.setReg(3, 0x87654321);
-        cpuState.setReg(CPUState.MDL, RANDOM_32);
+        cpuState.setReg(FrCPUState.MDL, RANDOM_32);
 
         emulator.play();
 
         checkRegister(3, 0x87654321);
-        checkRegister(CPUState.MDL, 0x87654321);
+        checkRegister(FrCPUState.MDL, 0x87654321);
     }
 
     public void testMOV_07() throws EmulationException {
@@ -1978,12 +1978,12 @@ public class EmulatorTest extends TestCase {
         memory.store16(0xFF800000, 0xd090); // 0b1101000010010000
 
         cpuState.pc=0xFF800000;
-        cpuState.setReg(CPUState.RP, RANDOM_32);
+        cpuState.setReg(FrCPUState.RP, RANDOM_32);
 
         emulator.play();
 
         checkPC(0xFF800122);
-        checkRegister(CPUState.RP, 0xFF800002); // Note : assume a typo in the spec which says it should be 0xFF800004
+        checkRegister(FrCPUState.RP, 0xFF800002); // Note : assume a typo in the spec which says it should be 0xFF800004
         // Contradictory information in spec :
         // Page 25 section 3.3.4, text confirms it should be +2 for non-delay slot instructions
         // Page 25 section 3.3.4, first sample says it is a non-delayed instruction, but stores RP=PC+4
@@ -1999,13 +1999,13 @@ public class EmulatorTest extends TestCase {
 
         cpuState.setReg(1, 0xFFFFF800);
         cpuState.pc=0x8000FFFE;
-        cpuState.setReg(CPUState.RP, RANDOM_32);
+        cpuState.setReg(FrCPUState.RP, RANDOM_32);
 
         emulator.play();
 
         checkRegister(1, 0xFFFFF800);
         checkPC(0xFFFFF800);
-        checkRegister(CPUState.RP, 0x80010000);
+        checkRegister(FrCPUState.RP, 0x80010000);
     }
 
     public void testRET() throws EmulationException {
@@ -2015,12 +2015,12 @@ public class EmulatorTest extends TestCase {
         memory.store16(0xFFF08820, 0x9720); // 0b1001011100100000
 
         cpuState.pc=0xFFF08820;
-        cpuState.setReg(CPUState.RP, 0x8000AE86);
+        cpuState.setReg(FrCPUState.RP, 0x8000AE86);
 
         emulator.play();
 
         checkPC(0x8000AE86);
-        checkRegister(CPUState.RP, 0x8000AE86);
+        checkRegister(FrCPUState.RP, 0x8000AE86);
     }
 
     public void testINT() throws EmulationException {
@@ -2030,9 +2030,9 @@ public class EmulatorTest extends TestCase {
         memory.store16(0x80888086, 0x1f20); // 0b0001111100100000
 
         cpuState.setReg(15, 0x40000000);
-        cpuState.setReg(CPUState.SSP, 0x80000000);
-        cpuState.setReg(CPUState.TBR, 0x000FFC00);
-        cpuState.setReg(CPUState.USP, 0x40000000);
+        cpuState.setReg(FrCPUState.SSP, 0x80000000);
+        cpuState.setReg(FrCPUState.TBR, 0x000FFC00);
+        cpuState.setReg(FrCPUState.USP, 0x40000000);
         cpuState.pc=0x80888086;
         cpuState.setPS(0xFFFFF8F0, false);
         cpuState.setCCR(0x30); // 0b110000
@@ -2045,9 +2045,9 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(15, 0x7FFFFFF8);
-        checkRegister(CPUState.SSP, 0x7FFFFFF8);
-        checkRegister(CPUState.TBR, 0x000FFC00);
-        checkRegister(CPUState.USP, 0x40000000);
+        checkRegister(FrCPUState.SSP, 0x7FFFFFF8);
+        checkRegister(FrCPUState.TBR, 0x000FFC00);
+        checkRegister(FrCPUState.USP, 0x40000000);
         checkPC(0x68096800);
         checkPS(0xFFFFF8C0);
         checkCCR(0x0); // 0b000000
@@ -2065,9 +2065,9 @@ public class EmulatorTest extends TestCase {
         memory.store16(0x80888086, 0x9f30); // 0b1001111100110000
 
         cpuState.setReg(15, 0x40000000);
-        cpuState.setReg(CPUState.SSP, 0x80000000);
-        cpuState.setReg(CPUState.USP, 0x40000000);
-        cpuState.setReg(CPUState.TBR, 0x000FFC00);
+        cpuState.setReg(FrCPUState.SSP, 0x80000000);
+        cpuState.setReg(FrCPUState.USP, 0x40000000);
+        cpuState.setReg(FrCPUState.TBR, 0x000FFC00);
         cpuState.pc=0x80888086;
         cpuState.setPS(0xFFF5F8F0, false);
         cpuState.setILM(0x15, false); // 0b10101
@@ -2081,9 +2081,9 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(15, 0x7FFFFFF8);
-        checkRegister(CPUState.SSP, 0x7FFFFFF8);
-        checkRegister(CPUState.USP, 0x40000000);
-        checkRegister(CPUState.TBR, 0x000FFC00);
+        checkRegister(FrCPUState.SSP, 0x7FFFFFF8);
+        checkRegister(FrCPUState.USP, 0x40000000);
+        checkRegister(FrCPUState.TBR, 0x000FFC00);
         checkPC(0x68096800);
         checkPS(0xFFE4F8D0);
         checkILM(0x4); // 0b00100
@@ -2102,8 +2102,8 @@ public class EmulatorTest extends TestCase {
         memory.store16(0xFF0090BC, 0x9730); // 0b1001011100110000
 
         cpuState.setReg(15, 0x7FFFFFF8);
-        cpuState.setReg(CPUState.SSP, 0x7FFFFFF8);
-        cpuState.setReg(CPUState.USP, 0x40000000);
+        cpuState.setReg(FrCPUState.SSP, 0x7FFFFFF8);
+        cpuState.setReg(FrCPUState.USP, 0x40000000);
         cpuState.pc=0xFF0090BC;
         cpuState.setPS(0xFFF0F8D4, false);
         cpuState.setILM(0x10, false); // 0b10000
@@ -2116,8 +2116,8 @@ public class EmulatorTest extends TestCase {
         emulator.play();
 
         checkRegister(15, 0x40000000);
-        checkRegister(CPUState.SSP, 0x80000000);
-        checkRegister(CPUState.USP, 0x40000000);
+        checkRegister(FrCPUState.SSP, 0x80000000);
+        checkRegister(FrCPUState.USP, 0x40000000);
         checkPC(0x80888088);
         checkPS(0xFFF3F8F1);
         checkILM(0x13); // 0b10011
@@ -2172,7 +2172,7 @@ public class EmulatorTest extends TestCase {
 
         cpuState.setReg(2, RANDOM_32);
         cpuState.pc=0xFF800000;
-        cpuState.setReg(CPUState.RP, RANDOM_32);
+        cpuState.setReg(FrCPUState.RP, RANDOM_32);
 
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new BreakPointCondition(0xFF800122, null));
@@ -2180,7 +2180,7 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(2, 0);
         checkPC(0xFF800122);
-        checkRegister(CPUState.RP, 0xFF800004); // Note : here, the spec is correct contrary to non-delayed test
+        checkRegister(FrCPUState.RP, 0xFF800004); // Note : here, the spec is correct contrary to non-delayed test
     }
 
     public void testCALL_D_9F() throws EmulationException {
@@ -2192,7 +2192,7 @@ public class EmulatorTest extends TestCase {
 
         cpuState.setReg(1, 0xFFFFF800);
         cpuState.pc=0x8000FFFE;
-        cpuState.setReg(CPUState.RP, RANDOM_32);
+        cpuState.setReg(FrCPUState.RP, RANDOM_32);
 
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new BreakPointCondition(0xFFFFF800, null));
@@ -2200,7 +2200,7 @@ public class EmulatorTest extends TestCase {
 
         checkRegister(1, 0x00000001);
         checkPC(0xFFFFF800);
-        checkRegister(CPUState.RP, 0x80010002);
+        checkRegister(FrCPUState.RP, 0x80010002);
     }
 
     public void testRET_D() throws EmulationException {
@@ -2213,7 +2213,7 @@ public class EmulatorTest extends TestCase {
         cpuState.setReg(0, 0x00112233);
         cpuState.setReg(1, RANDOM_32);
         cpuState.pc=0xFFF08820;
-        cpuState.setReg(CPUState.RP, 0x8000AE86);
+        cpuState.setReg(FrCPUState.RP, 0x8000AE86);
 
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new BreakPointCondition(0x8000AE86, null));
@@ -2222,7 +2222,7 @@ public class EmulatorTest extends TestCase {
         checkRegister(0, 0x00112233);
         checkRegister(1, 0x00112233);
         checkPC(0x8000AE86);
-        checkRegister(CPUState.RP, 0x8000AE86);
+        checkRegister(FrCPUState.RP, 0x8000AE86);
     }
 
     public void testBcc_D() throws EmulationException {
@@ -2522,7 +2522,7 @@ public class EmulatorTest extends TestCase {
         initCpu();
 
         memory.store16(0x8343834A, 0x9fa0); // 0b1001111110100000
-        cpuState.pc = 0x8343834A; 
+        cpuState.pc = 0x8343834A;
 
         emulator.play();
 

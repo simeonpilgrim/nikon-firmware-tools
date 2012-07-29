@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.cpu;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -16,8 +16,8 @@ import java.awt.event.ActionListener;
  * - filter : in this case, both a CPUState and validityFlags are passed, and allow to setup a breakpoint by specifying only some fields
  */
 public class CPUStateComponent extends JComponent {
-    private CPUState cpuState;
-    private CPUState cpuStateValidityFlags;
+    private FrCPUState cpuState;
+    private FrCPUState cpuStateValidityFlags;
     private boolean filterMode;
 
     private JTextField[] regTextFields = new JTextField[15];
@@ -39,35 +39,35 @@ public class CPUStateComponent extends JComponent {
     private JButton saveButton;
     private JButton cancelButton = new JButton("Cancel");
 
-    public CPUStateComponent(final CPUState cpuState, boolean filterMode) {
-        CPUState allFlagsSet = new CPUState();
+    public CPUStateComponent(final FrCPUState cpuState, boolean filterMode) {
+        FrCPUState allFlagsSet = new FrCPUState();
         setAllCpuStateFlags(allFlagsSet, true);
 
         init(cpuState, allFlagsSet, filterMode);
     }
 
-    public CPUStateComponent(final CPUState cpuState, CPUState cpuStateValidityFlags, boolean filterMode) {
+    public CPUStateComponent(final FrCPUState cpuState, FrCPUState cpuStateValidityFlags, boolean filterMode) {
         init(cpuState, cpuStateValidityFlags, filterMode);
     }
 
-    private void setAllCpuStateFlags(CPUState cpuStateFlags, boolean validity) {
+    private void setAllCpuStateFlags(FrCPUState cpuStateFlags, boolean validity) {
 
         int value = validity?1:0;
 
         cpuStateFlags.pc = value;
         cpuStateFlags.setPS(validity ? 0xFFFFFFFF : 0, false);
-        cpuStateFlags.setReg(CPUState.TBR, value);
-        cpuStateFlags.setReg(CPUState.RP, value);
-        cpuStateFlags.setReg(CPUState.SSP, value);
-        cpuStateFlags.setReg(CPUState.USP, value);
-        cpuStateFlags.setReg(CPUState.MDH, value);
-        cpuStateFlags.setReg(CPUState.MDL, value);
+        cpuStateFlags.setReg(FrCPUState.TBR, value);
+        cpuStateFlags.setReg(FrCPUState.RP, value);
+        cpuStateFlags.setReg(FrCPUState.SSP, value);
+        cpuStateFlags.setReg(FrCPUState.USP, value);
+        cpuStateFlags.setReg(FrCPUState.MDH, value);
+        cpuStateFlags.setReg(FrCPUState.MDL, value);
         for (int i = 0; i < regTextFields.length; i++) {
             cpuStateFlags.setReg(i, value);
         }
     }
 
-    public void init(final CPUState cpuState, CPUState cpuStateValidityFlags, boolean filterMode) {
+    public void init(final FrCPUState cpuState, FrCPUState cpuStateValidityFlags, boolean filterMode) {
         this.cpuState = cpuState;
         this.cpuStateValidityFlags = cpuStateValidityFlags;
         this.filterMode = filterMode;
@@ -93,77 +93,77 @@ public class CPUStateComponent extends JComponent {
 
         add(new JLabel("PC = 0x", JLabel.RIGHT));
         add(pcTextField);
-        add(new JLabel(CPUState.REG_LABEL[0]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[0]+" = 0x", JLabel.RIGHT));
         add(regTextFields[0]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[1]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[1]+" = 0x", JLabel.RIGHT));
         add(regTextFields[1]);
 
         add(new JLabel());
         add(new JLabel("43210 ", JLabel.RIGHT));
-        add(new JLabel(CPUState.REG_LABEL[2]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[2]+" = 0x", JLabel.RIGHT));
         add(regTextFields[2]);
 
         add(new JLabel("ILM = 0b", JLabel.RIGHT));
         add(ilmTextField);
-        add(new JLabel(CPUState.REG_LABEL[3]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[3]+" = 0x", JLabel.RIGHT));
         add(regTextFields[3]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[4]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[4]+" = 0x", JLabel.RIGHT));
         add(regTextFields[4]);
 
         add(new JLabel());
         add(new JLabel("D01T ", JLabel.RIGHT));
-        add(new JLabel(CPUState.REG_LABEL[5]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[5]+" = 0x", JLabel.RIGHT));
         add(regTextFields[5]);
 
         add(new JLabel("SCR = 0b", JLabel.RIGHT));
         add(scrTextField);
-        add(new JLabel(CPUState.REG_LABEL[6]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[6]+" = 0x", JLabel.RIGHT));
         add(regTextFields[6]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[7]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[7]+" = 0x", JLabel.RIGHT));
         add(regTextFields[7]);
 
         add(new JLabel());
         add(new JLabel("SINZVC ", JLabel.RIGHT));
-        add(new JLabel(CPUState.REG_LABEL[8]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[8]+" = 0x", JLabel.RIGHT));
         add(regTextFields[8]);
 
         add(new JLabel("CCR = 0b", JLabel.RIGHT));
         add(ccrTextField);
-        add(new JLabel(CPUState.REG_LABEL[9]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[9]+" = 0x", JLabel.RIGHT));
         add(regTextFields[9]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[10]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[10]+" = 0x", JLabel.RIGHT));
         add(regTextFields[10]);
 
         add(new JLabel("TBR = 0x", JLabel.RIGHT));
         add(tbrTextField);
-        add(new JLabel(CPUState.REG_LABEL[11]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[11]+" = 0x", JLabel.RIGHT));
         add(regTextFields[11]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[12]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[12]+" = 0x", JLabel.RIGHT));
         add(regTextFields[12]);
 
         add(new JLabel("RP = 0x", JLabel.RIGHT));
         add(rpTextField);
-        add(new JLabel(CPUState.REG_LABEL[13]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[13]+" = 0x", JLabel.RIGHT));
         add(regTextFields[13]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(CPUState.REG_LABEL[14]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABELS[14]+" = 0x", JLabel.RIGHT));
         add(regTextFields[14]);
 
         add(new JLabel("SSP = 0x", JLabel.RIGHT));
@@ -219,12 +219,12 @@ public class CPUStateComponent extends JComponent {
             ilmTextField.setText((cpuStateValidityFlags.getILM() == 0)?"":maskValue(cpuState.getILM(), cpuStateValidityFlags.getILM(), 5));
             scrTextField.setText((cpuStateValidityFlags.getSCR() == 0)?"":maskValue(cpuState.getSCR(), cpuStateValidityFlags.getSCR(), 3));
             ccrTextField.setText((cpuStateValidityFlags.getCCR() == 0)?"":maskValue(cpuState.getCCR(), cpuStateValidityFlags.getCCR(), 6));
-            tbrTextField.setText((cpuStateValidityFlags.getReg(CPUState.TBR) == 0)?"":Format.asHex(cpuState.getReg(CPUState.TBR), 8));
-            rpTextField.setText((cpuStateValidityFlags.getReg(CPUState.RP) == 0)?"":Format.asHex(cpuState.getReg(CPUState.RP), 8));
-            sspTextField.setText((cpuStateValidityFlags.getReg(CPUState.SSP) == 0)?"":Format.asHex(cpuState.getReg(CPUState.SSP), 8));
-            uspTextField.setText((cpuStateValidityFlags.getReg(CPUState.USP) == 0)?"":Format.asHex(cpuState.getReg(CPUState.USP), 8));
-            mdhTextField.setText((cpuStateValidityFlags.getReg(CPUState.MDH) == 0)?"":Format.asHex(cpuState.getReg(CPUState.MDH), 8));
-            mdlTextField.setText((cpuStateValidityFlags.getReg(CPUState.MDL) == 0)?"":Format.asHex(cpuState.getReg(CPUState.MDL), 8));
+            tbrTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.TBR) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.TBR), 8));
+            rpTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.RP) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.RP), 8));
+            sspTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.SSP) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.SSP), 8));
+            uspTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.USP) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.USP), 8));
+            mdhTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.MDH) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.MDH), 8));
+            mdlTextField.setText((cpuStateValidityFlags.getReg(FrCPUState.MDL) == 0)?"":Format.asHex(cpuState.getReg(FrCPUState.MDL), 8));
 
 
             // General purpose registers
@@ -240,12 +240,12 @@ public class CPUStateComponent extends JComponent {
             ilmTextField.setText(Format.asBinary(cpuState.getILM(), 5));
             scrTextField.setText(Format.asBinary(cpuState.getSCR(), 3));
             ccrTextField.setText(Format.asBinary(cpuState.getCCR(), 6));
-            tbrTextField.setText(Format.asHex(cpuState.getReg(CPUState.TBR), 8));
-            rpTextField.setText(Format.asHex(cpuState.getReg(CPUState.RP), 8));
-            sspTextField.setText(Format.asHex(cpuState.getReg(CPUState.SSP), 8));
-            uspTextField.setText(Format.asHex(cpuState.getReg(CPUState.USP), 8));
-            mdhTextField.setText(Format.asHex(cpuState.getReg(CPUState.MDH), 8));
-            mdlTextField.setText(Format.asHex(cpuState.getReg(CPUState.MDL), 8));
+            tbrTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.TBR), 8));
+            rpTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.RP), 8));
+            sspTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.SSP), 8));
+            uspTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.USP), 8));
+            mdhTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDH), 8));
+            mdlTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDL), 8));
     
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
@@ -294,7 +294,7 @@ public class CPUStateComponent extends JComponent {
     }
 
 
-    private void validateAndSaveValues(CPUState cpuState) {
+    private void validateAndSaveValues(FrCPUState cpuState) {
         try {
             int pc = Format.parseIntHexField(pcTextField);
             int ilm = Format.parseIntBinaryField(ilmTextField, false);
@@ -319,12 +319,12 @@ public class CPUStateComponent extends JComponent {
             cpuState.setILM(ilm, false);
             cpuState.setSCR(scr);
             cpuState.setCCR(ccr);
-            cpuState.setReg(CPUState.TBR, tbr);
-            cpuState.setReg(CPUState.RP, rp);
-            cpuState.setReg(CPUState.SSP, ssp);
-            cpuState.setReg(CPUState.USP, usp);
-            cpuState.setReg(CPUState.MDH, mdh);
-            cpuState.setReg(CPUState.MDL, mdl);
+            cpuState.setReg(FrCPUState.TBR, tbr);
+            cpuState.setReg(FrCPUState.RP, rp);
+            cpuState.setReg(FrCPUState.SSP, ssp);
+            cpuState.setReg(FrCPUState.USP, usp);
+            cpuState.setReg(FrCPUState.MDH, mdh);
+            cpuState.setReg(FrCPUState.MDL, mdl);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 cpuState.setReg(i, regs[i]);
@@ -373,12 +373,12 @@ public class CPUStateComponent extends JComponent {
             }
 
 
-            dumpFieldToRegister(tbrTextField, CPUState.TBR);
-            dumpFieldToRegister(rpTextField, CPUState.RP);
-            dumpFieldToRegister(sspTextField, CPUState.SSP);
-            dumpFieldToRegister(uspTextField, CPUState.USP);
-            dumpFieldToRegister(mdhTextField, CPUState.MDH);
-            dumpFieldToRegister(mdlTextField, CPUState.MDL);
+            dumpFieldToRegister(tbrTextField, FrCPUState.TBR);
+            dumpFieldToRegister(rpTextField, FrCPUState.RP);
+            dumpFieldToRegister(sspTextField, FrCPUState.SSP);
+            dumpFieldToRegister(uspTextField, FrCPUState.USP);
+            dumpFieldToRegister(mdhTextField, FrCPUState.MDH);
+            dumpFieldToRegister(mdlTextField, FrCPUState.MDL);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 dumpFieldToRegister(regTextFields[i], i);
