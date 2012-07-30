@@ -140,7 +140,7 @@ public class Dfr
 
     private void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
         if (!new File(DEFAULT_OPTIONS_FILE).exists()) {
-            System.err.println("Default options file " + DEFAULT_OPTIONS_FILE + " not found.");
+            System.out.println("Default options file " + DEFAULT_OPTIONS_FILE + " not found.");
         }
         else {
             readOptions(DEFAULT_OPTIONS_FILE);
@@ -152,6 +152,8 @@ public class Dfr
         disassembleMemRanges();
 
         cleanup();
+
+        System.out.println("Done.");
     }
 
 
