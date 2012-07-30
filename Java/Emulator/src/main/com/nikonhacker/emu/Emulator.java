@@ -7,6 +7,7 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.ExpeedInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -54,7 +55,7 @@ public class Emulator {
         Emulator emulator = new Emulator();
         emulator.setMemory(memory);
         emulator.setCpuState(new FrCPUState(initialPc));
-        emulator.setInterruptController(new InterruptController(memory));
+        emulator.setInterruptController(new ExpeedInterruptController(memory));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();

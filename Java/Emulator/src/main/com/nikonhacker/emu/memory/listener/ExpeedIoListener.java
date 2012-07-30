@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.ExpeedInterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -45,12 +45,12 @@ public class ExpeedIoListener implements IoActivityListener {
 
 
     private final FrCPUState cpuState;
-    private final InterruptController interruptController;
+    private final ExpeedInterruptController interruptController;
 
     private final ReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
 
-    public ExpeedIoListener(FrCPUState cpuState, InterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
+    public ExpeedIoListener(FrCPUState cpuState, ExpeedInterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
         this.interruptController = interruptController;
         this.reloadTimers = reloadTimers;
@@ -221,10 +221,10 @@ public class ExpeedIoListener implements IoActivityListener {
                 // Delay interrupt register
                 case REGISTER_DICR:
                     if ((value & 0x1) == 0) {
-                        interruptController.removeRequest(InterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        interruptController.removeRequest(ExpeedInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     else {
-                        interruptController.request(InterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        interruptController.request(ExpeedInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     break;
 

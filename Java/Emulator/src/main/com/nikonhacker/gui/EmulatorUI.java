@@ -19,7 +19,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.ExpeedInterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -126,7 +126,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private Emulator emulator;
     private FrCPUState cpuState;
     private DebuggableMemory memory;
-    private InterruptController interruptController;
+    private ExpeedInterruptController interruptController;
     private java.util.Timer reloadAnimationTimer;
     private ReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
@@ -1382,7 +1382,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 cpuState.pc = BASE_ADDRESS;
             }
 
-            interruptController = new InterruptController(memory);
+            interruptController = new ExpeedInterruptController(memory);
             reloadTimers = new ReloadTimer[]{
                     new ReloadTimer(0, interruptController),
                     new ReloadTimer(1, interruptController),
