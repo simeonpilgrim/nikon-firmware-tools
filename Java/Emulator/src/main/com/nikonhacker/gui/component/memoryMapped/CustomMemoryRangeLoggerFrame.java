@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.memoryMapped;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.RangeAccessLoggerActivityListener;
@@ -20,12 +20,12 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
     private static final int COLUMNS = 80;
 
     DebuggableMemory memory;
-    private FrCPUState cpuState;
+    private CPUState cpuState;
     private MemoryActivityListener listener;
     private final JTextField minAddressField, maxAddressField;
     private final PrintWriterArea textArea;
 
-    public CustomMemoryRangeLoggerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, FrCPUState cpuState, EmulatorUI ui) {
+    public CustomMemoryRangeLoggerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
         this.cpuState = cpuState;

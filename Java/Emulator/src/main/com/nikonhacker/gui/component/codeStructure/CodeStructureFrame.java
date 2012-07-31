@@ -9,10 +9,11 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.disassembly.fr.CodeStructure;
+import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.Function;
-import com.nikonhacker.disassembly.fr.Jump;
+import com.nikonhacker.disassembly.Jump;
+import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -33,7 +34,7 @@ public class CodeStructureFrame extends DocumentFrame
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
-    private FrCPUState cpuState;
+    private CPUState cpuState;
 
     public enum Orientation{
         HORIZONTAL(SwingConstants.WEST),
@@ -50,7 +51,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, FrCPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -193,7 +194,7 @@ public class CodeStructureFrame extends DocumentFrame
 
     /** for debugging only */
     private void createFakeStructure() {
-        codeStructure = new CodeStructure(0);
+        codeStructure = new FrCodeStructure(0);
         Function sourceFunction = new Function(0, "main", "comment", Function.Type.MAIN);
         codeStructure.getFunctions().put(0, sourceFunction);
         for (int i = 1; i <= 10; i++) {

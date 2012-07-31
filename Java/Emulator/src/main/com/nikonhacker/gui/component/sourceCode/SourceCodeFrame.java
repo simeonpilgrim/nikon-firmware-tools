@@ -1,8 +1,7 @@
 package com.nikonhacker.gui.component.sourceCode;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CodeSegment;
-import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
@@ -43,7 +42,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private JCheckBox regexCB;
     private JCheckBox matchCaseCB;
 
-    private FrCPUState cpuState;
+    private CPUState cpuState;
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     List<Integer> lineAddresses = new ArrayList<Integer>();
@@ -52,7 +51,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final FrCPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -488,10 +487,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     lineAddresses.add(null);
                 }
                 for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getStatements().higherKey(address)) {
-                    FrStatement instruction = codeStructure.getStatements().get(address);
+                    Statement statement = codeStructure.getStatements().get(address);
                     try {
                         StringWriter writer = new StringWriter();
-                        codeStructure.writeStatement(writer, address, instruction, 0, ui.getPrefs().getOutputOptions());
+                        codeStructure.writeStatement(writer, address, statement, 0, ui.getPrefs().getOutputOptions());
                         String str = writer.toString();
                         for (String line : str.split("\n")) {
                             if (line.length() > 0 && Character.isDigit(line.charAt(0))) {

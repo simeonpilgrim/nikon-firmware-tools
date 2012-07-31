@@ -4,9 +4,9 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
-import com.nikonhacker.disassembly.fr.CodeStructure;
+import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.Function;
-import com.nikonhacker.disassembly.fr.Jump;
+import com.nikonhacker.disassembly.Jump;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -181,7 +181,7 @@ public class CodeStructureMxGraph extends mxGraph {
             // Should not happen
             return "#FF0000";
         }
-        switch (jump.getInstruction().type) {
+        switch (jump.getInstruction().flowType) {
             case CALL:
                 return "#777777";
             case INT:

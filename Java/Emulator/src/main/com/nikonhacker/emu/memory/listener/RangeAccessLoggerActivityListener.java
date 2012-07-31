@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.BinaryArithmetics;
-import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.CPUState;
 
 import java.io.PrintWriter;
 
@@ -10,7 +10,7 @@ public class RangeAccessLoggerActivityListener extends AbstractAccessLoggerActiv
     private final int minAddress;
     private final int maxAddress;
 
-    public RangeAccessLoggerActivityListener(PrintWriter printWriter, int minAddress, int maxAddress, FrCPUState cpuState) {
+    public RangeAccessLoggerActivityListener(PrintWriter printWriter, int minAddress, int maxAddress, CPUState cpuState) {
         super(printWriter, cpuState);
         this.minAddress = minAddress;
         this.maxAddress = maxAddress;

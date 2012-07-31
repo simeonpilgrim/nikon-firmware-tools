@@ -2,7 +2,9 @@ package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,7 +14,7 @@ import java.util.Set;
 /*
  * Statement : an instance of a specific Instruction with specific operands
  */
-public class FrStatement {
+public class FrStatement extends Statement {
     ///* disassembly */
     // [Flags]
     public final static int DF_FLOW = 0x01;
@@ -35,12 +37,6 @@ public class FrStatement {
     public static String fmt_mem;
     public static String fmt_par;
     public static String fmt_ens;
-
-    /** decoded instruction */
-    public FrInstruction instruction = null;
-
-    /** cached CPUState, for CALLs and INTs */
-    public FrCPUState cpuState = null;
 
     /** data read */
     public int[] data = new int[3];
@@ -67,15 +63,6 @@ public class FrStatement {
     /** number of significant bits in decodedX (for display only) */
     public int xBitWidth;
 
-    /** flags (for display only) */
-    public int flags;
-
-    /** formatted operand list */
-    public String operands;
-
-    /** optional comment */
-    public String comment;
-    
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
 
@@ -117,7 +104,7 @@ public class FrStatement {
     }
 
     public void decodeOperands(int pc, Memory memory) {
-        switch (instruction.instructionFormat)
+        switch (((FrInstruction) getInstruction()).instructionFormat)
         {
             case FrInstruction.FORMAT_A:
                 i = 0xF & data[0];
@@ -153,13 +140,13 @@ public class FrStatement {
                 break;
         }
 
-        for (int ii = 0; ii < instruction.numberExtraXWords; ii++) {
+        for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraXWords; ii++) {
             getNextStatement(memory, pc);
             x = (x << 16) + data[n - 1];
             xBitWidth += 16;
         }
 
-        for (int ii = 0; ii < instruction.numberExtraYWords; ii++) {
+        for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraYWords; ii++) {
             /* coprocessor extension word */
             getNextStatement(memory, pc);
             int tmp = data[n - 1];
@@ -180,8 +167,8 @@ public class FrStatement {
         i = FrCPUState.NOREG;
         j = FrCPUState.NOREG;
         x = 0;
-        operands = null;
-        comment = null;
+        operandString = null;
+        setComment(null);
     }
 
     public void getNextData(Memory memory, int address)
@@ -203,7 +190,7 @@ public class FrStatement {
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
      * @return the direct argument (x), after decoding (shifts, relative, ...)
      */
-    public void formatOperandsAndComment(FrCPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
+    public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
         int tmp;
         int pos;
 
@@ -219,7 +206,7 @@ public class FrStatement {
         flags = cpuState.flags;
         cpuState.flags = 0;
 
-        for (char formatChar : instruction.displayFormat.toCharArray())
+        for (char formatChar : ((FrInstruction) getInstruction()).displayFormat.toCharArray())
         {
             switch (formatChar)
             {
@@ -259,13 +246,13 @@ public class FrStatement {
                     xBitWidth += 2;
                     break;
                 case 'A':
-                    currentBuffer.append(FrCPUState.REG_LABELS[FrCPUState.AC]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.AC]);
                     break;
                 case 'C':
-                    currentBuffer.append(FrCPUState.REG_LABELS[FrCPUState.CCR]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.CCR]);
                     break;
                 case 'F':
-                    currentBuffer.append(FrCPUState.REG_LABELS[FrCPUState.FP]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.FP]);
                     break;
                 case 'J':
                     if (cpuState.isRegisterDefined(decodedJ))
@@ -295,10 +282,10 @@ public class FrStatement {
                     currentBuffer.append("ILM");
                     break;
                 case 'P':
-                    currentBuffer.append(FrCPUState.REG_LABELS[FrCPUState.PS]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.PS]);
                     break;
                 case 'S':
-                    currentBuffer.append(FrCPUState.REG_LABELS[FrCPUState.SP]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
                     break;
                 case 'T':
                     currentBuffer.append("INT");
@@ -339,17 +326,17 @@ public class FrStatement {
                     break;
                 case 'g':
                     decodedI += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.REG_LABELS[decodedI]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
                     break;
                 case 'h':
                     decodedJ += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.REG_LABELS[decodedJ]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'i':
-                    currentBuffer.append(FrCPUState.REG_LABELS[decodedI]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
                     break;
                 case 'j':
-                    currentBuffer.append(FrCPUState.REG_LABELS[decodedJ]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'k':
                     decodedI += FrCPUState.COPROCESSOR_REG_OFFSET;
@@ -426,9 +413,9 @@ public class FrStatement {
                                 currentBuffer.append(",");
 
                             if ((decodedX & 0x100) != 0)
-                                currentBuffer.append(FrCPUState.REG_LABELS[c + 7 - i]);
+                                currentBuffer.append(FrCPUState.REG_LABEL[c + 7 - i]);
                             else
-                                currentBuffer.append(FrCPUState.REG_LABELS[c + i]);
+                                currentBuffer.append(FrCPUState.REG_LABEL[c + i]);
                         }
                     }
                     currentBuffer.append(fmt_ens);
@@ -442,7 +429,7 @@ public class FrStatement {
 
         int r = FrCPUState.NOREG;
         int dflags = 0;
-        for (char s : instruction.action.toCharArray())
+        for (char s : ((FrInstruction) getInstruction()).action.toCharArray())
         {
             switch (s)
             {
@@ -517,27 +504,28 @@ public class FrStatement {
             flags |= dflags & DF_TO_DELAY;
 
         /*XXX*/
-        operands = operandBuffer.toString();
+        operandString = operandBuffer.toString();
 
-        comment = commentBuffer.toString();
+        setComment(commentBuffer.toString());
     }
 
 
     /**
      * Simple and fast version used by realtime disassembly trace
      */
+    @Override
     public String toString() {
         String out = formatDataAsHex();
 
         if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(instruction.name, 6) + " " + operands;
+            out += "               " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 6) + " " + operandString;
         }
         else {
-            out += "              " + StringUtils.rightPad(instruction.name, 7) + " " + operands;
+            out += "              " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 7) + " " + operandString;
         }
 
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
+        if (StringUtils.isNotBlank(getComment())) {
+            out += StringUtils.leftPad("; " + getComment(), 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
@@ -552,6 +540,7 @@ public class FrStatement {
      * @param options
      * @return
      */
+    @Override
     public String toString(Set<OutputOption> options) {
         String out = "";
         if (options.contains(OutputOption.HEXCODE)) {
@@ -563,24 +552,24 @@ public class FrStatement {
         }
 
 
-        if (instruction != null) {
+        if (getInstruction() != null) {
             if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(instruction.name, 6) + " " + operands;
+                out += "  " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 6) + " " + operandString;
             }
             else {
-                out += " " + StringUtils.rightPad(instruction.name, 7) + " " + operands;
+                out += " " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 7) + " " + operandString;
             }
         }
         else {
-            out += " (no instruction)" + operands;
+            out += " (no instruction)" + operandString;
         }
         
-//        for (int i = 0; i < 15-operands.length(); i++) {
+//        for (int i = 0; i < 15-operandString.length(); i++) {
 //            out += " ";
 //        }
 
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
+        if (StringUtils.isNotBlank(getComment())) {
+            out += StringUtils.leftPad("; " + getComment(), 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {

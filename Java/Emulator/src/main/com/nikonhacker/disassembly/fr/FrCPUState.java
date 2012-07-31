@@ -1,15 +1,15 @@
 package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-public class FrCPUState {
-    /** registers names */
-    public static String[] REG_LABELS;
+public class FrCPUState extends CPUState {
+    public static String[] REG_LABEL;
     public final static int DEDICATED_REG_OFFSET =   16;
     public final static int COPROCESSOR_REG_OFFSET = 32;
 
@@ -26,20 +26,6 @@ public class FrCPUState {
 
     public final static int PS = 48;
     public final static int CCR = 49;
-
-    public int flags = 0;
-
-    private long regValidityBitmap = 0;
-
-    /**
-     * Program Counter
-     */
-    public int pc;
-
-    /**
-     * Register values
-     */
-    private Register32 regValue[] = new Register32[50];
 
     /* bits of the PS register (ILM part) */
     public int ILM4 = 0;
@@ -85,32 +71,31 @@ public class FrCPUState {
         pc = startPc;
     }
 
-
     public static void initRegisterLabels(Set<OutputOption> outputOptions) {
-        REG_LABELS = new String[]{
-                "R0",       "R1",       "R2",       "R3",
-                "R4",       "R5",       "R6",       "R7",
-                "R8",       "R9",       "R10",      "R11",
-                "R12",      "R13",      "R14",      "R15",  /* standard names by default */
+        REG_LABEL = new String[]{
+                "R0", "R1", "R2", "R3",
+                "R4", "R5", "R6", "R7",
+                "R8", "R9", "R10", "R11",
+                "R12", "R13", "R14", "R15",  /* standard names by default */
 
-                "TBR",      "RP",       "SSP",      "USP",
-                "MDH",      "MDL",      "D6",       "D7",
-                "D8",       "D9",       "D10",      "D11",
-                "D12",      "D13",      "D14",      "D15",
+                "TBR", "RP", "SSP", "USP",
+                "MDH", "MDL", "D6", "D7",
+                "D8", "D9", "D10", "D11",
+                "D12", "D13", "D14", "D15",
 
-                "CR0",      "CR1",      "CR2",      "CR3",
-                "CR4",      "CR5",      "CR6",      "CR7",
-                "CR8",      "CR9",      "CR10",     "CR11",
-                "CR12",     "CR13",     "CR14",     "CR15",
+                "CR0", "CR1", "CR2", "CR3",
+                "CR4", "CR5", "CR6", "CR7",
+                "CR8", "CR9", "CR10", "CR11",
+                "CR12", "CR13", "CR14", "CR15",
 
-                "PS",       "CCR"
+                "PS", "CCR"
         };
 
         // Patch names if requested
         if (outputOptions.contains(OutputOption.REGISTER)) {
-            FrCPUState.REG_LABELS[FrCPUState.AC] = "AC";
-            FrCPUState.REG_LABELS[FrCPUState.FP] = "FP";
-            FrCPUState.REG_LABELS[FrCPUState.SP] = "SP";
+            REG_LABEL[AC] = "AC";
+            REG_LABEL[FP] = "FP";
+            REG_LABEL[SP] = "SP";
         }
     }
 
@@ -236,64 +221,6 @@ public class FrCPUState {
         setCCR(ps & 0xFF);
     }
 
-    /**
-     * Tests if such a register number exists
-     * @param regNumber
-     * @return
-     */
-    public boolean registerExists(int regNumber) {
-        return (regNumber >= 0) && (regNumber < regValue.length);
-    }
-
-    /**
-     * Tests if the given register number is defined in the current disassembly context
-     * @param regNumber
-     * @return
-     */
-    public boolean isRegisterDefined(int regNumber) {
-        return registerExists(regNumber) && ((regValidityBitmap & (1 << regNumber)) != 0);
-    }
-
-    /**
-     * Declares the given register number as defined in the current disassembly context
-     * @param regNumber
-     */
-    public void setRegisterDefined(int regNumber) {
-        if (registerExists(regNumber))
-            regValidityBitmap |= (1L << regNumber);
-    }
-
-    /**
-     * Declares the given register number as undefined in the current disassembly context
-     * @param regNumber
-     */
-    public void setRegisterUndefined(int regNumber) {
-        if (registerExists(regNumber))
-            regValidityBitmap &= (~(1L << regNumber));
-    }
-
-    /**
-     * Declares all register numbers as defined in the current disassembly context
-     */
-    public void setAllRegistersDefined() {
-        regValidityBitmap = -1L;
-    }
-
-    @Override
-    public String toString() {
-        String registers = "";
-        for (int i = 0; i < regValue.length; i++) {
-            registers += REG_LABELS[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
-        }
-        registers = registers.trim() + "]";
-        return "CPUState : " +
-                "flags=0b" + Integer.toString(flags,2) +
-                ", pc=0x" + Format.asHex(pc, 8) +
-                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
-                ", reg=" + registers +
-                '}';
-    }
-
     public void reset() {
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);
@@ -323,14 +250,6 @@ public class FrCPUState {
     }
 
 
-    public void setReg(int registerNumber, int newValue) {
-        regValue[registerNumber].value = newValue;
-    }
-
-    public int getReg(int registerNumber) {
-        return regValue[registerNumber].value;
-    }
-
     public boolean accepts(InterruptRequest interruptRequest) {
         return(
                 (I == 1 && interruptRequest.getICR() < getILM())
@@ -338,27 +257,34 @@ public class FrCPUState {
               );
     }
 
-    private static class Register32 {
-        private int value;
-
-        private Register32(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return "0x" + Integer.toHexString(value);
-        }
-    }
-
     public FrCPUState clone() {
         FrCPUState cloneCpuState = new FrCPUState();
         for (int i = 0; i <= FrCPUState.CCR; i++) {
-            cloneCpuState.regValue[i] = new Register32(regValue[i].value);
+            cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
         }
         cloneCpuState.flags = flags;
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
         return cloneCpuState;
     }
+
+    public String[] getRegisterLabels() {
+        return REG_LABEL;
+    }
+
+
+    public String toString() {
+        String registers = "";
+        for (int i = 0; i < regValue.length; i++) {
+            registers += REG_LABEL[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
+        }
+        registers = registers.trim() + "]";
+        return "CPUState : " +
+                "flags=0b" + Integer.toString(flags,2) +
+                ", pc=0x" + Format.asHex(pc, 8) +
+                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
+                ", reg=" + registers +
+                '}';
+    }
+
 }

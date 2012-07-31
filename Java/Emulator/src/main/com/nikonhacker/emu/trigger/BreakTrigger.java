@@ -1,8 +1,6 @@
 package com.nikonhacker.emu.trigger;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.Function;
-import com.nikonhacker.disassembly.Symbol;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -169,7 +167,7 @@ public class BreakTrigger {
      * @param callStack optional call stack at the time the condition matches
      * @param memory
      */
-    public void log(PrintWriter printWriter, FrCPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
+    public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack, Memory memory) {
         String msg;
         if (function != null) {
             // This is a function call. Parse its arguments and log them

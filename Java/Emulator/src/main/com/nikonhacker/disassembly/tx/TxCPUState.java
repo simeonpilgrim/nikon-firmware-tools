@@ -1,13 +1,14 @@
 package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-public class TxCPUState {
+public class TxCPUState extends CPUState {
     /** registers names */
     public static String[] REG_LABEL;
     public final static int DEDICATED_REG_OFFSET =   16;
@@ -279,7 +280,6 @@ public class TxCPUState {
         regValidityBitmap = -1L;
     }
 
-    @Override
     public String toString() {
         String registers = "";
         for (int i = 0; i < regValue.length; i++) {
@@ -336,6 +336,10 @@ public class TxCPUState {
                 (I == 1 && interruptRequest.getICR() < getILM())
              || (getILM() > 15 && interruptRequest.isNMI())
               );
+    }
+
+    public String[] getRegisterLabels() {
+        return REG_LABEL;
     }
 
     private static class Register32 {
