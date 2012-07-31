@@ -9,9 +9,7 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.*;
-import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.Function;
-import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
@@ -1152,7 +1150,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     int lastAddress = baseAddress;
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
-                    FrCPUState sampleCpuState = new FrCPUState();
+                    CPUState sampleCpuState = new FrCPUState();
                     sampleCpuState.setAllRegistersDefined();
 
 

@@ -1,35 +1,28 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.*;
+import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 
-public class CodeStructure {
+public abstract class CodeStructure {
 
-    protected int entryPoint;
+    private int entryPoint;
 
     // TODO : Optimize by merging statements/labels/functions/returns/ends in a same table with various properties ?
 
-    /** Map address -> Statement */
-    TreeMap<Integer, FrStatement> statements = new TreeMap<Integer, FrStatement>();
+    private TreeMap<Integer, Statement> statements = new TreeMap<Integer, Statement>();
     
-    /** Map address -> Labels */
-    Map<Integer, Symbol> labels = new TreeMap<Integer, Symbol>();
+    private Map<Integer, Symbol> labels = new TreeMap<Integer, Symbol>();
     
-    /** Map address -> Functions */
-    SortedMap<Integer, Function> functions = new TreeMap<Integer, Function>();
+    private SortedMap<Integer, Function> functions = new TreeMap<Integer, Function>();
 
-    /** Map address -> Start of corresponding function */
-    Map<Integer, Integer> returns = new TreeMap<Integer, Integer>();
+    private Map<Integer, Integer> returns = new TreeMap<Integer, Integer>();
 
-    /** Map address -> Start of corresponding function 
-     *  (This Map may differ from returns due to delay slots)
-     */
-    Map<Integer, Integer> ends = new TreeMap<Integer, Integer>();
+    private Map<Integer, Integer> ends = new TreeMap<Integer, Integer>();
 
     public CodeStructure(int address) {
         this.entryPoint = address;
@@ -39,11 +32,13 @@ public class CodeStructure {
         return entryPoint;
     }
 
-    public TreeMap<Integer, FrStatement> getStatements() {
+    /** Map address -> Statement */
+    public TreeMap<Integer, Statement> getStatements() {
         return statements;
     }
 
     
+    /** Map address -> Labels */
     public Map<Integer, Symbol> getLabels() {
         return labels;
     }
@@ -53,29 +48,34 @@ public class CodeStructure {
     }
 
     
+    /** Map address -> Functions */
     public SortedMap<Integer, Function> getFunctions() {
         return functions;
     }
 
-    protected boolean isFunction(Integer address) {
+    public boolean isFunction(Integer address) {
         return functions.containsKey(address);
     }
 
-    protected String getFunctionName(Integer address) {
+    public String getFunctionName(Integer address) {
         Symbol symbol = functions.get(address);
         return symbol==null?null:symbol.getName();
     }
 
 
+    /** Map address -> Start of corresponding function */
     public Map<Integer, Integer> getReturns() {
         return returns;
     }
 
-    protected boolean isReturn(Integer address) {
+    public boolean isReturn(Integer address) {
         return returns.containsKey(address);
     }
 
 
+    /** Map address -> Start of corresponding function
+     *  (This Map may differ from returns due to delay slots)
+     */
     public Map<Integer, Integer> getEnds() {
         return ends;
     }
@@ -92,7 +92,7 @@ public class CodeStructure {
 
         // Start output
         Integer address = memRange.getStart();
-        FrStatement statement = statements.get(address);
+        Statement statement = statements.get(address);
 
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
 
@@ -105,7 +105,7 @@ public class CodeStructure {
 
     }
 
-    public void writeStatement(Writer writer, Integer address, FrStatement statement, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
+    public void writeStatement(Writer writer, Integer address, Statement statement, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
         // function
         if (isFunction(address)) {
             Function function = functions.get(address);
@@ -119,20 +119,20 @@ public class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
-        if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA, FrInstruction.Type.CALL, FrInstruction.Type.INT).contains(statement.instruction.type)) {
+        if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA, Instruction.FlowType.CALL, Instruction.FlowType.INT).contains(statement.getInstruction().getFlowType())) {
             try {
                 int targetAddress;
                 // get address in comment (if any) or in operand
-                if (statement.comment.length() > 0) {
-                    targetAddress = Format.parseUnsigned(statement.comment);
+                if (statement.getComment().length() > 0) {
+                    targetAddress = Format.parseUnsigned(statement.getComment());
                 }
                 else {
-                    targetAddress = Format.parseUnsigned(statement.operands);
+                    targetAddress = Format.parseUnsigned(statement.operandString);
                 }
 
                 // fetch corresponding symbol
                 Symbol symbol;
-                if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA).contains(statement.instruction.type)) {
+                if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA).contains(statement.getInstruction().getFlowType())) {
                     symbol = labels.get(targetAddress);
                 }
                 else { // CALLs
@@ -145,15 +145,15 @@ public class CodeStructure {
                     text = symbol.getName();
                 }
 
-                if (EnumSet.of(FrInstruction.Type.JMP, FrInstruction.Type.BRA).contains(statement.instruction.type)) {
+                if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA).contains(statement.getInstruction().getFlowType())) {
                     // Add (skip) or (loop) according to jump direction
                     //TODO only if(areInSameRange(address, targetAddress))
-                    if (statement.comment.length() > 0) {
-                        statement.comment = (text + " " + skipOrLoop(address, targetAddress)).trim();
+                    if (statement.getComment().length() > 0) {
+                        statement.setComment((text + " " + skipOrLoop(address, targetAddress)).trim());
                     }
                     else {
-                        statement.operands = text;
-                        statement.comment = skipOrLoop(address, targetAddress);
+                        statement.operandString = text;
+                        statement.setComment(skipOrLoop(address, targetAddress));
                     }
                 }
                 else { // CALL or INT
@@ -169,18 +169,18 @@ public class CodeStructure {
                                         text+=", ";
                                     }
                                     text+=parameter.getInVariable() + "=";
-                                    if (statement.cpuState.isRegisterDefined(parameter.getRegister())) {
-                                        text+="0x" + Integer.toHexString(statement.cpuState.getReg(parameter.getRegister()));
+                                    if (statement.getCpuState().isRegisterDefined(parameter.getRegister())) {
+                                        text+="0x" + Integer.toHexString(statement.getCpuState().getReg(parameter.getRegister()));
                                     }
                                     else {
-                                        text+= FrCPUState.REG_LABELS[parameter.getRegister()];
+                                        text+= getRegisterLabels()[parameter.getRegister()];
                                     }
                                 }
                                 else if (parameter.getOutVariable() != null) {
                                     if (prefix.length() > 0) {
                                         prefix += ",";
                                     }
-                                    prefix+= FrCPUState.REG_LABELS[parameter.getRegister()];
+                                    prefix+= getRegisterLabels()[parameter.getRegister()];
                                 }
                             }
                             text += ")";
@@ -190,11 +190,11 @@ public class CodeStructure {
                         }
                     }
 
-                    if (statement.comment.length() > 0) {
-                        statement.comment = text;
+                    if (statement.getComment().length() > 0) {
+                        statement.setComment(text);
                     }
                     else {
-                        statement.operands = text;
+                        statement.operandString = text;
                     }
                 }
             } catch(ParsingException e){
@@ -203,7 +203,7 @@ public class CodeStructure {
         }
 
         // print statement
-        Dfr.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
+        Disassembler.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
 
         // after return from function
         if (isEnd(address)) {
@@ -217,6 +217,8 @@ public class CodeStructure {
             writer.write("; ------------------------------------------------------------------------\n\n");
         }
     }
+
+    public abstract String[] getRegisterLabels();
 
     private String skipOrLoop(Integer address, int targetAddress) {
         long target = targetAddress & 0xFFFFFFFFL;
@@ -270,5 +272,29 @@ public class CodeStructure {
             }
         }
         return address;
+    }
+
+    public void setEntryPoint(int entryPoint) {
+        this.entryPoint = entryPoint;
+    }
+
+    public void setStatements(TreeMap<Integer, Statement> statements) {
+        this.statements = statements;
+    }
+
+    public void setLabels(Map<Integer, Symbol> labels) {
+        this.labels = labels;
+    }
+
+    public void setFunctions(SortedMap<Integer, Function> functions) {
+        this.functions = functions;
+    }
+
+    public void setReturns(Map<Integer, Integer> returns) {
+        this.returns = returns;
+    }
+
+    public void setEnds(Map<Integer, Integer> ends) {
+        this.ends = ends;
     }
 }

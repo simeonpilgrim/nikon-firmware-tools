@@ -1,7 +1,8 @@
 package com.nikonhacker.gui.component.callStack;
 
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.disassembly.fr.CodeStructure;
+import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
@@ -23,7 +24,7 @@ public class CallStackFrame extends DocumentFrame {
     private static final int WINDOW_HEIGHT = 300;
 
     private Emulator emulator;
-    private FrCPUState cpuState;
+    private CPUState cpuState;
     private final LinkedList<CallStackItem> callStack;
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
@@ -31,7 +32,7 @@ public class CallStackFrame extends DocumentFrame {
     private Timer _timer;
     private final JList callStackList;
 
-    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, FrCPUState cpuState, CodeStructure codeStructure, EmulatorUI ui) {
+    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, CPUState cpuState, CodeStructure codeStructure, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;

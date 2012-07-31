@@ -82,7 +82,7 @@ public class CodeAnalyzer {
                         debugPrintWriter.println("INT 0x40 does not have the expected structure. INT40 following will be disabled");
                     }
                     else {
-                        FrStatement statement = codeStructure.statements.get(int40address + 0x3E);
+                        FrStatement statement = (FrStatement) codeStructure.getStatements().get(int40address + 0x3E);
                         int baseAddress = statement.decodedX;
                         int40mapping = new TreeMap<Integer, Integer>();
                         /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
@@ -101,13 +101,13 @@ public class CodeAnalyzer {
 
 
         debugPrintWriter.println("Following flow starting at entry point...");
-        Function main = new Function(codeStructure.entryPoint, "main", "", Function.Type.MAIN);
-        codeStructure.functions.put(codeStructure.entryPoint, main);
+        Function main = new Function(codeStructure.getEntryPoint(), "main", "", Function.Type.MAIN);
+        codeStructure.getFunctions().put(codeStructure.getEntryPoint(), main);
         try {
-            followFunction(main, codeStructure.entryPoint, false);
+            followFunction(main, codeStructure.getEntryPoint(), false);
         }
         catch (DisassemblyException e) {
-            debugPrintWriter.println("Error disassembling 'main' code at 0x" + Format.asHex(codeStructure.entryPoint, 2) + ": " + e.getMessage());
+            debugPrintWriter.println("Error disassembling 'main' code at 0x" + Format.asHex(codeStructure.getEntryPoint(), 2) + ": " + e.getMessage());
         }
 
 
@@ -115,10 +115,10 @@ public class CodeAnalyzer {
         for (Integer interruptNumber : interruptTable.keySet()) {
             Integer address = interruptTable.get(interruptNumber);
             String name = "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_";
-            Function function = codeStructure.functions.get(address);
+            Function function = codeStructure.getFunctions().get(address);
             if (function == null) {
                 function = new Function(address, name, "", Function.Type.INTERRUPT);
-                codeStructure.functions.put(address, function);
+                codeStructure.getFunctions().put(address, function);
                 try {
                     followFunction(function, address, false);
                 }
@@ -133,16 +133,16 @@ public class CodeAnalyzer {
 
 
         debugPrintWriter.println("Processing remaining statements as 'unknown' functions...");
-        Map.Entry<Integer, FrStatement> entry = codeStructure.statements.firstEntry();
+        Map.Entry<Integer, Statement> entry = codeStructure.getStatements().firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
             if (!processedStatements.contains(address)
-                && codeStructure.statements.get(address).instruction.encoding != 0x9FA0 // NOP stuffing
+                && ((FrInstruction)(codeStructure.getStatements().get(address).getInstruction())).encoding != 0x9FA0 // NOP stuffing
                 && memory.loadInstruction16(address) != 0x0000 // 0x0000 stuffing
                 ) {
                 // Not a 0000 nor a NOP
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
-                codeStructure.functions.put(address, function);
+                codeStructure.getFunctions().put(address, function);
                 try {
                     followFunction(function, address, false);
                 }
@@ -150,14 +150,14 @@ public class CodeAnalyzer {
                     debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
                 }
             }
-            entry = codeStructure.statements.higherEntry(address);
+            entry = codeStructure.getStatements().higherEntry(address);
         }
 
 
         debugPrintWriter.println("Generating names for functions...");
         int functionNumber = 1;
-        for (Integer address : codeStructure.functions.keySet()) {
-            Function function = codeStructure.functions.get(address);
+        for (Integer address : codeStructure.getFunctions().keySet()) {
+            Function function = codeStructure.getFunctions().get(address);
             if (StringUtils.isBlank(function.getName())) {
                 String functionId = outputOptions.contains(OutputOption.ORDINAL)?("" + functionNumber):Integer.toHexString(address);
                 if (function.getType() == Function.Type.UNKNOWN) {
@@ -177,7 +177,7 @@ public class CodeAnalyzer {
             for (Integer address : symbols.keySet()) {
                 if (codeStructure.isFunction(address)) {
                     // TODO This is ugly. A function is a symbol...
-                    Function function = codeStructure.functions.get(address);
+                    Function function = codeStructure.getFunctions().get(address);
                     Symbol symbol = symbols.get(address);
                     function.setName(symbol.getName());
                     function.setComment(symbol.getComment());
@@ -194,25 +194,25 @@ public class CodeAnalyzer {
         Set<String> usedReturnLabels = new HashSet<String>();
 
         // Give names to labels linked to function start/parts (if they were spotted as targets already)
-        for (Integer address : codeStructure.functions.keySet()) {
-            Function function = codeStructure.functions.get(address);
-            if (codeStructure.labels.containsKey(address)) {
-                codeStructure.labels.put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address)));
+        for (Integer address : codeStructure.getFunctions().keySet()) {
+            Function function = codeStructure.getFunctions().get(address);
+            if (codeStructure.getLabels().containsKey(address)) {
+                codeStructure.getLabels().put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address)));
             }
             for (int i = 0; i < function.getCodeSegments().size(); i++) {
                 CodeSegment codeSegment = function.getCodeSegments().get(i);
                 int startAddress = codeSegment.getStart();
-                if (codeStructure.labels.containsKey(startAddress)) {
-                    codeStructure.labels.put(startAddress, new Symbol(startAddress, "part_" + (i+1) + "_of_" + function.getName()));
+                if (codeStructure.getLabels().containsKey(startAddress)) {
+                    codeStructure.getLabels().put(startAddress, new Symbol(startAddress, "part_" + (i + 1) + "_of_" + function.getName()));
                 }
             }
         }
 
-        for (Integer address : codeStructure.labels.keySet()) {
-            if (codeStructure.labels.get(address).getName().length() == 0) {
+        for (Integer address : codeStructure.getLabels().keySet()) {
+            if (codeStructure.getLabels().get(address).getName().length() == 0) {
                 String label;
                 if (codeStructure.isReturn(address)) {
-                    Integer matchingFunctionStart = codeStructure.returns.get(address);
+                    Integer matchingFunctionStart = codeStructure.getReturns().get(address);
                     if (matchingFunctionStart != null) {
                         String functionName = codeStructure.getFunctionName(matchingFunctionStart);
                         if (functionName==null) {
@@ -236,12 +236,12 @@ public class CodeAnalyzer {
                 }
                 else {
                     // Only overwrite if none was present
-                    label = codeStructure.labels.get(address).getName();
+                    label = codeStructure.getLabels().get(address).getName();
                     if (StringUtils.isBlank(label)) {
                         label = "label_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
                     }
                 }
-                codeStructure.labels.put(address, new Symbol(address, label));
+                codeStructure.getLabels().put(address, new Symbol(address, label));
             }
             // increment even if unused, to make output stable no matter what future replacements will occur
             labelNumber++;
@@ -259,7 +259,7 @@ public class CodeAnalyzer {
     }
 
     private void testIfFunctionCallsTarget(Integer address, int target, String path) {
-        Function function = codeStructure.functions.get(address);
+        Function function = codeStructure.getFunctions().get(address);
         if (function == null) {
             debugPrintWriter.println("Error following " + path + " : no function at 0x" + Format.asHex(address, 8));
         }
@@ -276,7 +276,7 @@ public class CodeAnalyzer {
     }
 
     void followFunction(Function currentFunction, Integer address, boolean stopAtFirstProcessedStatement) throws IOException, DisassemblyException {
-        if (codeStructure.statements.get(address) == null) {
+        if (codeStructure.getStatements().get(address) == null) {
             throw new DisassemblyException("No decoded statement at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
         }
         CodeSegment currentSegment = new CodeSegment();
@@ -285,25 +285,25 @@ public class CodeAnalyzer {
         currentSegment.setStart(address);
         while(address != null) {
             if (stopAtFirstProcessedStatement && processedStatements.contains(address)) {
-                Integer previousAddress = codeStructure.statements.lowerKey(address);
+                Integer previousAddress = codeStructure.getStatements().lowerKey(address);
                 // Check we're not in delay slot. We shouldn't stop on delay slot
-                if (previousAddress == null || !codeStructure.statements.get(previousAddress).instruction.hasDelaySlot) {
+                if (previousAddress == null || !((FrInstruction)(codeStructure.getStatements().get(previousAddress).getInstruction())).hasDelaySlot) {
                     break;
                 }
             }
-            FrStatement statement = codeStructure.statements.get(address);
+            FrStatement statement = (FrStatement)(codeStructure.getStatements().get(address));
             processedStatements.add(address);
             currentSegment.setEnd(address);
-            switch (statement.instruction.type) {
+            switch (statement.getInstruction().getFlowType()) {
                 case RET:
-                    codeStructure.returns.put(address, currentFunction.getAddress());
-                    codeStructure.ends.put(address + (statement.instruction.hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+                    codeStructure.getReturns().put(address, currentFunction.getAddress());
+                    codeStructure.getEnds().put(address + (((FrInstruction) (statement.getInstruction())).hasDelaySlot ? 2 : 0), currentFunction.getAddress());
                     break;
                 case JMP:
                 case BRA:
                     if (statement.decodedX != 0) {
-                        codeStructure.labels.put(statement.decodedX, new Symbol(statement.decodedX, "", ""));
-                        Jump jump = new Jump(address, statement.decodedX, statement.instruction, false);
+                        codeStructure.getLabels().put(statement.decodedX, new Symbol(statement.decodedX, "", ""));
+                        Jump jump = new Jump(address, statement.decodedX, statement.getInstruction(), false);
                         jumps.add(jump);
                         currentFunction.getJumps().add(jump);
                     }
@@ -313,10 +313,10 @@ public class CodeAnalyzer {
                         if (potentialTargets != null) {
                             int i = 0;
                             for (Integer potentialTarget : potentialTargets) {
-                                Jump jump = new Jump(address, potentialTarget, statement.instruction, true);
+                                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                                 jumps.add(jump);
                                 currentFunction.getJumps().add(jump);
-                                codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
+                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
                                 i++;
                             }
                         }
@@ -363,10 +363,10 @@ public class CodeAnalyzer {
                                     try {
                                         for (int i = 0; i < size; i++) {
                                             int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                            Jump jump = new Jump(address, potentialTarget, statement.instruction, true);
+                                            Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                                             jumps.add(jump);
                                             currentFunction.getJumps().add(jump);
-                                            codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                                            codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
                                         }
                                         //debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
                                     }
@@ -428,10 +428,10 @@ public class CodeAnalyzer {
                                         try {
                                             for (int i = 0; i < size; i++) {
                                                 int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                                Jump jump = new Jump(address, potentialTarget, statement.instruction, true);
+                                                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                                                 jumps.add(jump);
                                                 currentFunction.getJumps().add(jump);
-                                                codeStructure.labels.put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
                                             }
 //                                          debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
                                         }
@@ -451,7 +451,7 @@ public class CodeAnalyzer {
                     }
                     break;
                 case CALL:
-                    if (statement.instruction.hasDelaySlot) {
+                    if (((FrInstruction)(statement.getInstruction())).hasDelaySlot) {
                         currentSegment.setEnd(address + 2);
                         processedStatements.add(address + 2);
                     }
@@ -466,7 +466,7 @@ public class CodeAnalyzer {
                             }
                         }
                         else {
-                            currentFunction.getCalls().add(new Jump(address, 0, statement.instruction, true));
+                            currentFunction.getCalls().add(new Jump(address, 0, statement.getInstruction(), true));
                             debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
                         }
                     }
@@ -481,9 +481,9 @@ public class CodeAnalyzer {
                         processInt40Call(currentFunction, address, statement);
                     }
                     else {
-                        Jump interruptCall = new Jump(address, interruptAddress, statement.instruction, false);
+                        Jump interruptCall = new Jump(address, interruptAddress, statement.getInstruction(), false);
                         currentFunction.getCalls().add(interruptCall);
-                        Function interrupt = codeStructure.functions.get(interruptAddress);
+                        Function interrupt = codeStructure.getFunctions().get(interruptAddress);
                         if (interrupt != null) {
                             interrupt.getCalledBy().put(interruptCall, currentFunction);
                         }
@@ -494,15 +494,15 @@ public class CodeAnalyzer {
                     break;
             }
 
-            if (statement.instruction.type == FrInstruction.Type.RET || statement.instruction.type == FrInstruction.Type.JMP) {
-                if (statement.instruction.hasDelaySlot) {
+            if (statement.getInstruction().flowType == Instruction.FlowType.RET || statement.getInstruction().flowType == Instruction.FlowType.JMP) {
+                if (statement.getInstruction().hasDelaySlot) {
                     currentSegment.setEnd(address + 2);
                     processedStatements.add(address + 2);
                 }
                 // End of segment
                 break;
             }
-            address = codeStructure.statements.higherKey(address);
+            address = codeStructure.getStatements().higherKey(address);
         }
 
         // Process jumps
@@ -511,21 +511,21 @@ public class CodeAnalyzer {
         for (Jump jump : jumps) {
             inProcessedSegment = false;
             for (CodeSegment segment : currentFunction.getCodeSegments()) {
-                if (jump.target >= segment.getStart() && jump.target <= segment.getEnd()) {
+                if (jump.getTarget() >= segment.getStart() && jump.getTarget() <= segment.getEnd()) {
                     // At first look, this part of code has already been processed.
                     // However, it happens (eg 001B77A4) that a jump ends on the delay slot of an unconditional JMP
                     // So we should consider we're really in a processed segment if
                     // - either it's a jump/call/return
-                    FrStatement statement = codeStructure.statements.get(jump.target);
-                    if (statement != null && (statement.instruction.type == FrInstruction.Type.CALL
-                            || statement.instruction.type == FrInstruction.Type.JMP
-                            || statement.instruction.type == FrInstruction.Type.BRA
-                            || statement.instruction.type == FrInstruction.Type.RET)) {
+                    Statement statement = codeStructure.getStatements().get(jump.getTarget());
+                    if (statement != null && (statement.getInstruction().flowType == Instruction.FlowType.CALL
+                            || statement.getInstruction().flowType == Instruction.FlowType.JMP
+                            || statement.getInstruction().flowType == Instruction.FlowType.BRA
+                            || statement.getInstruction().flowType == Instruction.FlowType.RET)) {
                         inProcessedSegment = true;
                         break;
                     }
                     // - or the next statement is also in the range
-                    Integer addressFollowingTarget = codeStructure.statements.higherKey(jump.target);
+                    Integer addressFollowingTarget = codeStructure.getStatements().higherKey(jump.getTarget());
                     if (addressFollowingTarget != null && addressFollowingTarget >= segment.getStart() && addressFollowingTarget <= segment.getEnd()) {
                         inProcessedSegment = true;
                         break;
@@ -535,7 +535,7 @@ public class CodeAnalyzer {
             }
             if (!inProcessedSegment) {
                 try {
-                    followFunction(currentFunction, jump.target, false);
+                    followFunction(currentFunction, jump.getTarget(), false);
                 }
                 catch (DisassemblyException e) {
                     debugPrintWriter.println("Error following jump at 0x" + Format.asHex(jump.getSource(), 8) + ": " + e.getMessage());
@@ -562,13 +562,13 @@ public class CodeAnalyzer {
     }
 
     private void addCall(Function currentFunction, FrStatement statement, Integer sourceAddress, int targetAddress, String defaultName, boolean isDynamic) throws IOException {
-        Jump call = new Jump(sourceAddress, targetAddress, statement.instruction, isDynamic);
+        Jump call = new Jump(sourceAddress, targetAddress, statement.getInstruction(), isDynamic);
         currentFunction.getCalls().add(call);
-        Function function = codeStructure.functions.get(targetAddress);
+        Function function = codeStructure.getFunctions().get(targetAddress);
         if (function == null) {
             // new Function
             function = new Function(targetAddress, defaultName, "", Function.Type.STANDARD);
-            codeStructure.functions.put(targetAddress, function);
+            codeStructure.getFunctions().put(targetAddress, function);
             try {
                 followFunction(function, targetAddress, false);
             }
@@ -593,14 +593,14 @@ public class CodeAnalyzer {
         Integer r12 = null;
         boolean r12SignExtend = false;
         for (int offset = 1; offset < 100; offset++) {
-            FrStatement candidateStatement = codeStructure.statements.get(address - 2 * offset);
+            FrStatement candidateStatement = (FrStatement) codeStructure.getStatements().get(address - 2 * offset);
             if (candidateStatement != null) {
-                if (candidateStatement.instruction.encoding == 0x9F80 && candidateStatement.decodedI == 12) {
+                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0x9F80 && candidateStatement.decodedI == 12) {
                     /* LDI:32 #i32, R12 */
                     r12 = candidateStatement.decodedX;
                     break;
                 }
-                if (candidateStatement.instruction.encoding == 0xC000 && candidateStatement.decodedI == 12) {
+                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0xC000 && candidateStatement.decodedI == 12) {
                     /* LDI:8 #i8, R12 */
                     if (r12SignExtend) {
                         r12 = BinaryArithmetics.signExtend(8, candidateStatement.decodedX);
@@ -610,7 +610,7 @@ public class CodeAnalyzer {
                     }
                     break;
                 }
-                if (candidateStatement.instruction.encoding == 0x9780 && candidateStatement.decodedI == 12) {
+                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0x9780 && candidateStatement.decodedI == 12) {
                     /* EXTSB R12 */
                     r12SignExtend = true;
                 }
@@ -625,13 +625,13 @@ public class CodeAnalyzer {
                 debugPrintWriter.println("Error : INT40 at 0x" + Format.asHex(address, 8) + " with value R12=0x" + Format.asHex(r12, 8) + " does not match a computed address...");
             }
             else {
-                Jump interrupt40Call = new Jump(address, int40targetAddress, statement.instruction /* TODO should characterize that it is a INT40 call */, false);
+                Jump interrupt40Call = new Jump(address, int40targetAddress, statement.getInstruction() /* TODO should characterize that it is a INT40 call */, false);
                 currentFunction.getCalls().add(interrupt40Call);
-                Function target = codeStructure.functions.get(int40targetAddress);
+                Function target = codeStructure.getFunctions().get(int40targetAddress);
                 if (target == null) {
                     // new Function
                     target = new Function(int40targetAddress, "", "", Function.Type.STANDARD);
-                    codeStructure.functions.put(int40targetAddress, target);
+                    codeStructure.getFunctions().put(int40targetAddress, target);
                     try {
                         followFunction(target, int40targetAddress, false);
                     }
@@ -646,10 +646,10 @@ public class CodeAnalyzer {
                     }
                 }
                 target.getCalledBy().put(interrupt40Call, currentFunction);
-                if (StringUtils.isBlank(statement.comment)) {
+                if (StringUtils.isBlank(statement.getComment())) {
                     Symbol symbol = symbols.get(int40targetAddress);
                     if (symbol != null) {
-                        statement.comment = ""+int40targetAddress;
+                        statement.setComment(""+int40targetAddress);
 //                        statement.comment = symbol.getName();
                     }
                 }

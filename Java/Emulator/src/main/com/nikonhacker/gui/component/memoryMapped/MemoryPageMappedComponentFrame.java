@@ -1,6 +1,6 @@
 package com.nikonhacker.gui.component.memoryMapped;
 
-import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.PageAccessLoggerActivityListener;
@@ -19,7 +19,7 @@ public class MemoryPageMappedComponentFrame extends DocumentFrame {
     DebuggableMemory memory;
     private final MemoryActivityListener listener;
 
-    public MemoryPageMappedComponentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int page, FrCPUState cpuState, EmulatorUI ui) {
+    public MemoryPageMappedComponentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int page, CPUState cpuState, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.memory = memory;
         final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);

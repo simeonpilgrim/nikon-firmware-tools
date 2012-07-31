@@ -2,6 +2,7 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.*;
@@ -161,7 +162,7 @@ public class Emulator {
 
                 statement.getNextStatement(memory, cpuState.pc);
     
-                statement.instruction = FrInstruction.instructionMap[statement.data[0]];
+                statement.setInstruction(FrInstruction.instructionMap[statement.data[0]]);
     
                 statement.decodeOperands(cpuState.pc, memory);
 
@@ -175,7 +176,7 @@ public class Emulator {
                     }
                 }
                 
-                switch (statement.instruction.encoding) {
+                switch (((FrInstruction)(statement.getInstruction())).encoding) {
                     case 0xA600: /* ADD Rj, Ri */
                         result64 = (cpuState.getReg(statement.i) & 0xFFFFFFFFL) + (cpuState.getReg(statement.j) & 0xFFFFFFFFL);
                         result32 = (int) result64;
@@ -1996,7 +1997,7 @@ public class Emulator {
     
                     case 0xBC00: /* LDRES @Ri+, #u4 */
                         /* TODO FUTURE */
-                        System.err.println(statement.instruction.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /*sentToResource(x, memory.load32(cpuState.getReg(i)));
                         cpuState.getReg(i) + = 4;*/
     
@@ -2009,7 +2010,7 @@ public class Emulator {
     
                     case 0xBD00: /* STRES #u4, @Ri+ */
                         /* TODO FUTURE */
-                        System.err.println(statement.instruction.toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (resource) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* memory.store32(cpuState.getReg(i), getFromResource(x); cpuState.getReg(i) + = 4;*/
     
                         /* No change to NZVC */
@@ -2021,7 +2022,7 @@ public class Emulator {
     
                     case 0x9FC0: /* COPOP #u4, #CC, CRj, CRi */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(statement.instruction.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
     
                         /* No change to NZVC */
 
@@ -2032,7 +2033,7 @@ public class Emulator {
     
                     case 0x9FD0: /* COPLD #u4, #CC, Rj, CRi */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(statement.instruction.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + i) = cpuState.getReg(j); */
     
                         /* No change to NZVC */
@@ -2044,7 +2045,7 @@ public class Emulator {
     
                     case 0x9FE0: /* COPST #u4, #CC, CRj, Ri */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(statement.instruction.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(i) = cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j); */
     
                         /* No change to NZVC */
@@ -2056,7 +2057,7 @@ public class Emulator {
     
                     case 0x9FF0: /* COPSV #u4, #CC, CRj, Ri */
                         /* TODO FUTURE coprocessor operation */
-                        System.err.println(statement.instruction.toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
+                        System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(cpuState.pc-2,8));
                         /* cpuState.getReg(i) = cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j);*/
     
                         /* No change to NZVC */

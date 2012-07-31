@@ -1,13 +1,15 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
+
+import com.nikonhacker.disassembly.Instruction;
 
 public class Jump {
-    int source;
-    int target;
-    private FrInstruction instruction;
-    boolean isDynamic;
+    private int source;
+    private int target;
+    private Instruction instruction;
+    private boolean isDynamic;
 
-    public Jump(int source, int target, FrInstruction instruction, boolean isDynamic) {
+    public Jump(int source, int target, Instruction instruction, boolean isDynamic) {
         this.source = source;
         this.target = target;
         this.instruction = instruction;
@@ -22,12 +24,12 @@ public class Jump {
         return target;
     }
 
-    public FrInstruction getInstruction() {
+    public Instruction getInstruction() {
         return instruction;
     }
 
     public boolean isConditional() {
-        return instruction != null && instruction.isConditional;
+        return instruction != null && instruction.isConditional();
     }
 
     public boolean isDynamic() {
@@ -37,5 +39,17 @@ public class Jump {
     @Override
     public String toString() {
         return (isConditional()?"Conditional":"Inconditional") + (isDynamic()?" dynamic":"") + " jump from 0x" + Integer.toHexString(source) + " to 0x" + Integer.toHexString(target);
+    }
+
+    public void setTarget(int target) {
+        this.target = target;
+    }
+
+    public void setSource(int source) {
+        this.source = source;
+    }
+
+    public void setDynamic(boolean dynamic) {
+        isDynamic = dynamic;
     }
 }

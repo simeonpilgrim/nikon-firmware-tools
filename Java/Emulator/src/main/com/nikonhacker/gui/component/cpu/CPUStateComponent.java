@@ -93,77 +93,77 @@ public class CPUStateComponent extends JComponent {
 
         add(new JLabel("PC = 0x", JLabel.RIGHT));
         add(pcTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[0]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[0]+" = 0x", JLabel.RIGHT));
         add(regTextFields[0]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[1]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[1]+" = 0x", JLabel.RIGHT));
         add(regTextFields[1]);
 
         add(new JLabel());
         add(new JLabel("43210 ", JLabel.RIGHT));
-        add(new JLabel(FrCPUState.REG_LABELS[2]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[2]+" = 0x", JLabel.RIGHT));
         add(regTextFields[2]);
 
         add(new JLabel("ILM = 0b", JLabel.RIGHT));
         add(ilmTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[3]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[3]+" = 0x", JLabel.RIGHT));
         add(regTextFields[3]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[4]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[4]+" = 0x", JLabel.RIGHT));
         add(regTextFields[4]);
 
         add(new JLabel());
         add(new JLabel("D01T ", JLabel.RIGHT));
-        add(new JLabel(FrCPUState.REG_LABELS[5]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[5]+" = 0x", JLabel.RIGHT));
         add(regTextFields[5]);
 
         add(new JLabel("SCR = 0b", JLabel.RIGHT));
         add(scrTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[6]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[6]+" = 0x", JLabel.RIGHT));
         add(regTextFields[6]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[7]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[7]+" = 0x", JLabel.RIGHT));
         add(regTextFields[7]);
 
         add(new JLabel());
         add(new JLabel("SINZVC ", JLabel.RIGHT));
-        add(new JLabel(FrCPUState.REG_LABELS[8]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[8]+" = 0x", JLabel.RIGHT));
         add(regTextFields[8]);
 
         add(new JLabel("CCR = 0b", JLabel.RIGHT));
         add(ccrTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[9]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[9]+" = 0x", JLabel.RIGHT));
         add(regTextFields[9]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[10]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[10]+" = 0x", JLabel.RIGHT));
         add(regTextFields[10]);
 
         add(new JLabel("TBR = 0x", JLabel.RIGHT));
         add(tbrTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[11]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[11]+" = 0x", JLabel.RIGHT));
         add(regTextFields[11]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[12]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[12]+" = 0x", JLabel.RIGHT));
         add(regTextFields[12]);
 
         add(new JLabel("RP = 0x", JLabel.RIGHT));
         add(rpTextField);
-        add(new JLabel(FrCPUState.REG_LABELS[13]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[13]+" = 0x", JLabel.RIGHT));
         add(regTextFields[13]);
 
         add(new JLabel());
         add(new JLabel());
-        add(new JLabel(FrCPUState.REG_LABELS[14]+" = 0x", JLabel.RIGHT));
+        add(new JLabel(FrCPUState.REG_LABEL[14]+" = 0x", JLabel.RIGHT));
         add(regTextFields[14]);
 
         add(new JLabel("SSP = 0x", JLabel.RIGHT));

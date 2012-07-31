@@ -1,15 +1,15 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.CPUState;
 
 import java.io.PrintWriter;
 
 public abstract class AbstractAccessLoggerActivityListener implements MemoryActivityListener {
     PrintWriter printWriter;
-    private FrCPUState cpuState;
+    private CPUState cpuState;
 
-    public AbstractAccessLoggerActivityListener(PrintWriter printWriter, FrCPUState cpuState) {
+    public AbstractAccessLoggerActivityListener(PrintWriter printWriter, CPUState cpuState) {
         this.printWriter = printWriter;
         this.cpuState = cpuState;
     }
