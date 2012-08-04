@@ -188,7 +188,6 @@ public class FrStatement extends Statement {
      * must be called after decodeOperands()
      * @param cpuState This stores CPU state.
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
-     * @return the direct argument (x), after decoding (shifts, relative, ...)
      */
     public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
         int tmp;
