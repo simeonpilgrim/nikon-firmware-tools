@@ -4,13 +4,13 @@ import java.util.Set;
 
 public abstract class Statement {
     private Instruction instruction = null;
-    private String comment;
     /** cached CPUState, for CALLs and INTs */
     public CPUState cpuState = null;
     /** flags (for display only) */
     public int flags;
-    /** formatted operand list */
-    public String operandString;
+
+    private String operandString;
+    private String commentString;
 
     public abstract String toString();
 
@@ -26,12 +26,12 @@ public abstract class Statement {
     }
 
     /** optional comment */
-    public String getComment() {
-        return comment;
+    public String getCommentString() {
+        return commentString;
     }
 
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setCommentString(String commentString) {
+        this.commentString = commentString;
     }
 
     public CPUState getCpuState() {
@@ -40,5 +40,14 @@ public abstract class Statement {
 
     public void setCpuState(CPUState cpuState) {
         this.cpuState = cpuState;
+    }
+
+    /** formatted operand list */
+    public String getOperandString() {
+        return operandString;
+    }
+
+    public void setOperandString(String operandString) {
+        this.operandString = operandString;
     }
 }
