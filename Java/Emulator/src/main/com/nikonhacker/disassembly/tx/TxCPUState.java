@@ -3,64 +3,44 @@ package com.nikonhacker.disassembly.tx;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.disassembly.Register32;
 
 import java.util.EnumSet;
 import java.util.Set;
 
 public class TxCPUState extends CPUState {
     /** registers names */
-    public static String[] REG_LABEL;
-    public final static int DEDICATED_REG_OFFSET =   16;
-    public final static int COPROCESSOR_REG_OFFSET = 32;
+    public static String[] REG_LABEL = new String[]{
+            "r0",       "r1",       "r2",       "r3",   /* standard names by default */
+            "r4",       "r5",       "r6",       "r7",
+            "r8",       "r9",       "r10",      "r11",
+            "r12",      "r13",      "r14",      "r15",
 
-    public final static int NOREG = -1;
-    public final static int AC = 13;
-    public final static int FP = 14;
-    public final static int SP = 15;
-    public final static int TBR = 16;
-    public final static int RP = 17;
-    public final static int SSP = 18;
-    public final static int USP = 19;
-    public final static int MDH = 20;
-    public final static int MDL = 21;
+            "r16",      "r17",      "r18",      "r19",
+            "r20",      "r21",      "r22",      "r23",
+            "r24",      "r25",      "r26",      "r27",
+            "r28",      "r29",      "r30",      "r31",
 
-    public final static int PS = 48;
-    public final static int CCR = 49;
+            "hi",       "lo"
+    };
+    private Register32[][] shadowRegisterSets;
 
-    public int flags = 0;
+    public int getActiveRegisterSet() {
+        return activeRegisterSet;
+    }
 
-    private long regValidityBitmap = 0;
+    public void setActiveRegisterSet(int activeRegisterSet) {
+        this.activeRegisterSet = activeRegisterSet;
+    }
 
-    /**
-     * Program Counter
-     */
-    public int pc;
+    private int activeRegisterSet;
 
-    /**
-     * Register values
-     */
-    private Register32 regValue[] = new Register32[50];
-
-    /* bits of the PS register (ILM part) */
-    public int ILM4 = 0;
-    public int ILM3 = 1;
-    public int ILM2 = 1;
-    public int ILM1 = 1;
-    public int ILM0 = 1;
-
-    /* bits of the PS register (SCR part) */
-    public int D0 = 0; // 1 if the dividend is negative
-    public int D1 = 0; // 1 if the dividend and divisor have opposite signs
-    public int T = 0;
-
-    /* bits of the PS register (CCR part) */
-    private int S=0; // only accessible via setter because it also points R15 to correct stack pointer
-    public int I=0;
-    public int N=0;
-    public int Z=0;
-    public int V=0;
-    public int C=0;
+    public final static int GP = 28;
+    public final static int SP = 29;
+    public final static int FP = 30;
+    public final static int RA = 31;
+    public final static int HI = 32;
+    public final static int LO = 33;
 
     /**
      * Default decoding upon class loading
@@ -88,196 +68,41 @@ public class TxCPUState extends CPUState {
 
 
     public static void initRegisterLabels(Set<OutputOption> outputOptions) {
-        REG_LABEL = new String[]{
-                "R0",       "R1",       "R2",       "R3",
-                "R4",       "R5",       "R6",       "R7",
-                "R8",       "R9",       "R10",      "R11",
-                "R12",      "R13",      "R14",      "R15",  /* standard names by default */
-
-                "TBR",      "RP",       "SSP",      "USP",
-                "MDH",      "MDL",      "D6",       "D7",
-                "D8",       "D9",       "D10",      "D11",
-                "D12",      "D13",      "D14",      "D15",
-
-                "CR0",      "CR1",      "CR2",      "CR3",
-                "CR4",      "CR5",      "CR6",      "CR7",
-                "CR8",      "CR9",      "CR10",     "CR11",
-                "CR12",     "CR13",     "CR14",     "CR15",
-
-                "PS",       "CCR"
-        };
-
         // Patch names if requested
         if (outputOptions.contains(OutputOption.REGISTER)) {
-            TxCPUState.REG_LABEL[TxCPUState.AC] = "AC";
-            TxCPUState.REG_LABEL[TxCPUState.FP] = "FP";
-            TxCPUState.REG_LABEL[TxCPUState.SP] = "SP";
+            TxCPUState.REG_LABEL[0] = "0";
+            TxCPUState.REG_LABEL[1] = "at";
+            TxCPUState.REG_LABEL[2] = "v0";
+            TxCPUState.REG_LABEL[3] = "v1";
+            TxCPUState.REG_LABEL[4] = "a0";
+            TxCPUState.REG_LABEL[5] = "a1";
+            TxCPUState.REG_LABEL[6] = "a2";
+            TxCPUState.REG_LABEL[7] = "a3";
+            TxCPUState.REG_LABEL[8] = "t0";
+            TxCPUState.REG_LABEL[9] = "t1";
+            TxCPUState.REG_LABEL[10] = "t2";
+            TxCPUState.REG_LABEL[11] = "t3";
+            TxCPUState.REG_LABEL[12] = "t4";
+            TxCPUState.REG_LABEL[13] = "t5";
+            TxCPUState.REG_LABEL[14] = "t6";
+            TxCPUState.REG_LABEL[15] = "t7";
+            TxCPUState.REG_LABEL[16] = "s0";
+            TxCPUState.REG_LABEL[17] = "s1";
+            TxCPUState.REG_LABEL[18] = "s2";
+            TxCPUState.REG_LABEL[19] = "s3";
+            TxCPUState.REG_LABEL[20] = "s4";
+            TxCPUState.REG_LABEL[21] = "s5";
+            TxCPUState.REG_LABEL[22] = "s6";
+            TxCPUState.REG_LABEL[23] = "s7";
+            TxCPUState.REG_LABEL[24] = "t8";
+            TxCPUState.REG_LABEL[25] = "t9";
+            TxCPUState.REG_LABEL[26] = "k0";
+            TxCPUState.REG_LABEL[27] = "k1";
+            TxCPUState.REG_LABEL[28] = "gp";
+            TxCPUState.REG_LABEL[29] = "sp";
+            TxCPUState.REG_LABEL[30] = "fp";
+            TxCPUState.REG_LABEL[31] = "ra";
         }
-    }
-
-    /**
-     * Returns CCR part of the PS register (built from individual bits)
-     * @return CCR
-     */
-    public int getCCR() {
-        return (S << 5) | (I << 4) | (N << 3) | (Z << 2) | (V << 1) | C; 
-    }
-
-    /**
-     * Sets CCR part of the PS register (splits it into individual bits)
-     * @param ccr
-     */
-    public void setCCR(int ccr) {
-        setS((ccr & 0x20) >> 5);
-        I = (ccr & 0x10)>> 4;
-        N = (ccr & 0x08) >> 3;
-        Z = (ccr & 0x04) >> 2;
-        V = (ccr & 0x02) >> 1;
-        C = ccr & 0x01;
-    }
-
-    /**
-     * Returns S bit of the PS register (built from individual bits)
-     * @return CCR
-     */
-    public int getS() {
-        return S;
-    }
-
-
-    /**
-     * Sets S bit of the PS register (switching R15 to USP or SSP behaviour accordingly)
-     * @param newS
-     */
-    public void setS(int newS) {
-        S = newS;
-        if (S == 0) {
-            regValue[15] = regValue[SSP];
-        }
-        else {
-            regValue[15] = regValue[USP];
-        }
-    }
-
-    /**
-     * Returns SCR part of the PS register (built from individual bits)
-     * @return SCR
-     */
-    public int getSCR() {
-        return (D1 << 2) | (D0 << 1) | T;
-    }
-
-    /**
-     * Sets SCR part of the PS register (splits it into individual bits)
-     * @param scr
-     */
-    public void setSCR(int scr) {
-        D1 = (scr & 0x04) >> 2;
-        D0 = (scr & 0x02) >> 1;
-        T = scr & 0x01;
-    }
-
-
-    /**
-     * Returns ILM part of the PS register (built from individual bits)
-     * @return ILM
-     */
-    public int getILM() {
-        return (ILM4 << 4) |(ILM3 << 3) |(ILM2 << 2) | (ILM1 << 1) | ILM0;
-    }
-
-    /**
-     * Sets ILM part of the PS register (splits it into individual bits)
-     * @param ilm new ILM value. According to the spec : "A limited range of values can be set from programs.
-     *            If the original value is in a range of 16 to 31, a value ranging from 16 to 31 can be specified
-     *            as a new value. If a value ranging from 0 to 15 is set for an statement, (specified-value + 16)
-     *            is transferred when the statement is executed.
-     *            If the original value is in a range of 0 to 15, any value ranging from 0 to 31 can be specified.
-     * @param isFromPrograms true if the statement is called by a program
-     */
-    public void setILM(int ilm, boolean isFromPrograms) {
-        if (ILM4 == 0 || !isFromPrograms) {
-            ILM4 = (ilm & 0x10) >> 4;
-        }
-        ILM3 = (ilm & 0x08) >> 3;
-        ILM2 = (ilm & 0x04) >> 2;
-        ILM1 = (ilm & 0x02) >> 1;
-        ILM0 = ilm & 0x01;
-    }
-
-
-    /**
-     * Rebuilds PS from individual parts
-     * @return PS
-     */
-    public int getPS() {
-        /* According to the Fujitsu Spec CM71-00104-3E.pdf, p29 (or progfr-cm71-00101-5e.pdf , p. 19):
-         * The read value of reserved bits is always "0". Write values should always be written as "0"
-         * So :
-         */
-         return (getILM() << 16) | (getSCR() << 8) | getCCR();
-
-        /* Although, all examples write the unused bits as "1" and expect to read them back as 1
-         * Ex : CM71-00104-3E.pdf, page 321 (sect. 7.119) (or progfr-cm71-00101-5e.pdf, page 158 (sect. 7.62))
-         * So :
-         */
-
-//        return 0xffe0f8c0 /* 0b 11111111 11100000 11111000 11000000 */
-//                | (getILM() << 16) | (getSCR() << 8) | getCCR();
-    }
-
-    /**
-     * Sets PS by splitting it into its individual parts
-     * @param ps new PS value
-     * @param isFromPrograms true if the statement is called by a program. See setILM
-     */
-    public void setPS(int ps, boolean isFromPrograms) {
-        setILM((ps >> 16) & 0xFF, isFromPrograms);
-        setSCR((ps >> 8) & 0xFF);
-        setCCR(ps & 0xFF);
-    }
-
-    /**
-     * Tests if such a register number exists
-     * @param regNumber
-     * @return
-     */
-    public boolean registerExists(int regNumber) {
-        return (regNumber >= 0) && (regNumber < regValue.length);
-    }
-
-    /**
-     * Tests if the given register number is defined in the current disassembly context
-     * @param regNumber
-     * @return
-     */
-    public boolean isRegisterDefined(int regNumber) {
-        return registerExists(regNumber) && ((regValidityBitmap & (1 << regNumber)) != 0);
-    }
-
-    /**
-     * Declares the given register number as defined in the current disassembly context
-     * @param regNumber
-     */
-    public void setRegisterDefined(int regNumber) {
-        if (registerExists(regNumber))
-            regValidityBitmap |= (1L << regNumber);
-    }
-
-    /**
-     * Declares the given register number as undefined in the current disassembly context
-     * @param regNumber
-     */
-    public void setRegisterUndefined(int regNumber) {
-        if (registerExists(regNumber))
-            regValidityBitmap &= (~(1L << regNumber));
-    }
-
-    /**
-     * Declares all register numbers as defined in the current disassembly context
-     */
-    public void setAllRegistersDefined() {
-        regValidityBitmap = -1L;
     }
 
     public String toString() {
@@ -295,16 +120,34 @@ public class TxCPUState extends CPUState {
     }
 
     public void reset() {
-        for (int i = 0; i < regValue.length; i++) {
-            regValue[i] = new Register32(0);
+        shadowRegisterSets = new Register32[8][REG_LABEL.length];
+        Register32 reg0 = new NullRegister32();
+
+        for (int registerSet = 0; registerSet < 8; registerSet++) {
+            // register 0 is dummy
+            shadowRegisterSets[registerSet][0] = reg0;
+            // base layout : all sets have separate register values
+            for (int i = 1; i < regValue.length; i++) {
+                shadowRegisterSets[registerSet][i] = new Register32(0);
+            }
         }
-        regValue[15] = regValue[SSP];
-        setILM(0xf, false); // 0b1111
-        T = 0;
-        I = 0;
-        setS(0);
-        setReg(TBR, 0x000FFC00);
-        setReg(SSP, 0x00000000);
+
+        // patch exceptions: r26-27-28 and hi-lo are common to all sets
+        for (int registerSet = 1; registerSet < 8; registerSet++) {
+            for (int i = 26; i <= 28; i++) {
+                shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
+            }
+            shadowRegisterSets[registerSet][HI] = shadowRegisterSets[0][HI];
+            shadowRegisterSets[registerSet][LO] = shadowRegisterSets[0][LO];
+        }
+
+        // other exception: r29 is common to sets 1-7
+        for (int registerSet = 2; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][29] = shadowRegisterSets[1][29];
+        }
+
+        activeRegisterSet = 0;
+        regValue = shadowRegisterSets[activeRegisterSet];
         regValidityBitmap = 0;
     }
 
@@ -312,53 +155,14 @@ public class TxCPUState extends CPUState {
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);
         }
-        regValue[15] = regValue[SSP];
-        setILM(0, false);
-        T = 0;
-        I = 0;
-        setS(0);
-        setReg(TBR, 0);
-        setReg(SSP, 0);
         regValidityBitmap = 0;
     }
 
 
-    public void setReg(int registerNumber, int newValue) {
-        regValue[registerNumber].value = newValue;
-    }
-
-    public int getReg(int registerNumber) {
-        return regValue[registerNumber].value;
-    }
-
-    public boolean accepts(InterruptRequest interruptRequest) {
-        return(
-                (I == 1 && interruptRequest.getICR() < getILM())
-             || (getILM() > 15 && interruptRequest.isNMI())
-              );
-    }
-
-    public String[] getRegisterLabels() {
-        return REG_LABEL;
-    }
-
-    private static class Register32 {
-        private int value;
-
-        private Register32(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            return "0x" + Integer.toHexString(value);
-        }
-    }
-
     public TxCPUState clone() {
         TxCPUState cloneCpuState = new TxCPUState();
-        for (int i = 0; i <= TxCPUState.CCR; i++) {
-            cloneCpuState.regValue[i] = new Register32(regValue[i].value);
+        for (int i = 0; i <= regValue.length; i++) {
+            cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
         }
         cloneCpuState.flags = flags;
         cloneCpuState.regValidityBitmap = regValidityBitmap;

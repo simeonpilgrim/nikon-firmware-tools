@@ -646,10 +646,10 @@ public class CodeAnalyzer {
                     }
                 }
                 target.getCalledBy().put(interrupt40Call, currentFunction);
-                if (StringUtils.isBlank(statement.getComment())) {
+                if (StringUtils.isBlank(statement.getCommentString())) {
                     Symbol symbol = symbols.get(int40targetAddress);
                     if (symbol != null) {
-                        statement.setComment(""+int40targetAddress);
+                        statement.setCommentString("" + int40targetAddress);
 //                        statement.comment = symbol.getName();
                     }
                 }

@@ -148,4 +148,117 @@ public class Format {
         return (int) v;
     }
 
+
+    // Following methods were copied from MARS' Binary utility class
+
+
+    /**
+     *  Returns int representing the bit values of the high order 32 bits of given
+     *  64 bit long value.
+     *   @param longValue The long value from which to extract bits.
+     *   @return int containing high order 32 bits of argument
+     **/
+
+    public static int highOrderLongToInt(long longValue) {
+        return (int) (longValue >> 32);  // high order 32 bits
+    }
+
+
+    /**
+     *  Returns int representing the bit values of the low order 32 bits of given
+     *  64 bit long value.
+     *   @param longValue The long value from which to extract bits.
+     *   @return int containing low order 32 bits of argument
+     **/
+    public static int lowOrderLongToInt(long longValue) {
+        return (int) (longValue << 32 >> 32);  // low order 32 bits
+    }
+
+    /**
+     *  Returns long (64 bit integer) combining the bit values of two given 32 bit
+     *  integer values.
+     *   @param highOrder Integer to form the high-order 32 bits of result.
+     *   @param lowOrder Integer to form the high-order 32 bits of result.
+     *   @return long containing concatenated 32 bit int values.
+     **/
+    public static long twoIntsToLong(int highOrder, int lowOrder) {
+        return (((long)highOrder) << 32) | (((long)lowOrder) & 0xFFFFFFFFL);
+    }
+
+
+
+    /**
+     *  Returns the bit value of the given bit position of the given int value.
+     *   @param value The value to read the bit from.
+     *   @param bit bit position in range 0 (least significant) to 31 (most)
+     *   @return 0 if the bit position contains 0, and 1 otherwise.
+     **/
+
+    public static int bitValue(int value, int bit) {
+        return 1 & (value >> bit);
+    }
+
+
+    /**
+     *  Returns the bit value of the given bit position of the given long value.
+     *   @param value The value to read the bit from.
+     *   @param bit bit position in range 0 (least significant) to 63 (most)
+     *   @return 0 if the bit position contains 0, and 1 otherwise.
+     **/
+
+    public static int bitValue(long value, int bit) {
+
+        return (int) (1L & (value >> bit));
+    }
+
+    /**
+     *  Sets the specified bit of the specified value to 1, and returns the result.
+     *   @param value The value in which the bit is to be set.
+     *   @param bit bit position in range 0 (least significant) to 31 (most)
+     *   @return value possibly modified with given bit set to 1.
+     **/
+
+    public static int setBit(int value, int bit) {
+        return value | ( 1 << bit) ;
+    }
+
+
+    /**
+     *  Sets the specified bit of the specified value to 0, and returns the result.
+     *   @param value The value in which the bit is to be set.
+     *   @param bit bit position in range 0 (least significant) to 31 (most)
+     *   @return value possibly modified with given bit set to 0.
+     **/
+
+    public static int clearBit(int value, int bit) {
+        return value &  ~(1 << bit);
+    }
+
+    // setByte and getByte added by DPS on 12 July 2006
+
+    /**
+     *  Sets the specified byte of the specified value to the low order 8 bits of
+     *  specified replacement value, and returns the result.
+     *   @param value The value in which the byte is to be set.
+     *   @param position byte position in range 0 (least significant) to 3 (most)
+     *   @param replace value to place into that byte position - use low order 8 bits
+     *   @return value modified value.
+     **/
+
+    public static int setByte(int value, int position, int replace) {
+        return value & ~(0xFF << (position<<3)) | ((replace & 0xFF) << (position<<3)) ;
+    }
+
+
+    /**
+     *  Gets the specified byte of the specified value.
+     *   @param value The value in which the byte is to be retrieved.
+     *   @param position byte position in range 0 (least significant) to 3 (most)
+     *   @return zero-extended byte value in low order byte.
+     **/
+
+    public static int getByte(int value, int position) {
+        return value << ((3-position)<<3) >>> 24;
+    }
+
 }

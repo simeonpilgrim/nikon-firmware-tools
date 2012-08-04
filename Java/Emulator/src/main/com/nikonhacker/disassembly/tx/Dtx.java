@@ -1,5 +1,6 @@
 package com.nikonhacker.disassembly.tx;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 
 import java.io.IOException;
@@ -18,19 +19,14 @@ public class Dtx extends Disassembler
 
 
     protected int disassembleOneStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
-        return 0;
-//        FrStatement statement = new FrStatement(memRange.getStart());
-//        statement.getNextStatement(memory, cpuState.pc);
-//        FrInstruction instruction = FrInstruction.instructionMap[statement.data[0]];
-//
-//        if (instruction == null) {
-//            statement.setInstruction(FrInstruction.opData[DataType.SpecType_MD_WORD]);
-//        }
-//        else {
-//            statement.setInstruction(instruction);
-//        }
-//
-//        statement.decodeOperands(cpuState.pc, memory);
+        TxStatement statement = new TxStatement(memRange.getStart());
+        statement.getNextStatement(memory, cpuState.pc);
+        try {
+            statement.setInstruction(TxInstructionSet.getInstructionForStatement(statement.getBinaryStatement()));
+        } catch (DisassemblyException e) {
+            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
+        }
+        statement.decodeOperands(cpuState.pc, memory);
 //
 //        statement.formatOperandsAndComment(cpuState, true, this.outputOptions);
 //
@@ -48,7 +44,7 @@ public class Dtx extends Disassembler
 //            }
 //        }
 //
-//        return statement.n << 1;
+        return 4;
     }
 
 
@@ -93,7 +89,7 @@ public class Dtx extends Disassembler
 
     public void initialize() throws IOException {
         super.initialize();
-        TxInstruction.initOpcodeMap(outputOptions);
+        // TxInstruction.initOpcodeMap(outputOptions);
 
         TxStatement.initFormatChars(outputOptions);
 

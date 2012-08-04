@@ -1,21 +1,20 @@
 package com.nikonhacker.disassembly;
 
-import com.nikonhacker.Format;
-
 public abstract class CPUState {
     public int flags = 0;
     protected long regValidityBitmap = 0;
+
+    public final static int NOREG = -1;
+
     /**
      * Program Counter
      */
     public int pc;
+
     /**
      * Register values
      */
-    protected Register32[] regValue = new Register32[50];
-
-    /** registers names */
-    public abstract String[] getRegisterLabels();
+    protected Register32[] regValue;
 
     /**
      * Tests if such a register number exists
@@ -61,27 +60,10 @@ public abstract class CPUState {
     }
 
     public void setReg(int registerNumber, int newValue) {
-        regValue[registerNumber].value = newValue;
+        regValue[registerNumber].setValue(newValue);
     }
 
     public int getReg(int registerNumber) {
-        return regValue[registerNumber].value;
-    }
-
-    protected static class Register32 {
-        protected int value;
-
-        public Register32(int value) {
-            this.value = value;
-        }
-
-        public int getValue() {
-            return value;
-        }
-
-        @Override
-        public String toString() {
-            return "0x" + Integer.toHexString(value);
-        }
+        return regValue[registerNumber].getValue();
     }
 }

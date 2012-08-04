@@ -1,7 +1,6 @@
 package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -123,11 +122,11 @@ public abstract class CodeStructure {
             try {
                 int targetAddress;
                 // get address in comment (if any) or in operand
-                if (statement.getComment().length() > 0) {
-                    targetAddress = Format.parseUnsigned(statement.getComment());
+                if (statement.getCommentString().length() > 0) {
+                    targetAddress = Format.parseUnsigned(statement.getCommentString());
                 }
                 else {
-                    targetAddress = Format.parseUnsigned(statement.operandString);
+                    targetAddress = Format.parseUnsigned(statement.getOperandString());
                 }
 
                 // fetch corresponding symbol
@@ -148,12 +147,12 @@ public abstract class CodeStructure {
                 if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA).contains(statement.getInstruction().getFlowType())) {
                     // Add (skip) or (loop) according to jump direction
                     //TODO only if(areInSameRange(address, targetAddress))
-                    if (statement.getComment().length() > 0) {
-                        statement.setComment((text + " " + skipOrLoop(address, targetAddress)).trim());
+                    if (statement.getCommentString().length() > 0) {
+                        statement.setCommentString((text + " " + skipOrLoop(address, targetAddress)).trim());
                     }
                     else {
-                        statement.operandString = text;
-                        statement.setComment(skipOrLoop(address, targetAddress));
+                        statement.setOperandString(text);
+                        statement.setCommentString(skipOrLoop(address, targetAddress));
                     }
                 }
                 else { // CALL or INT
@@ -190,11 +189,11 @@ public abstract class CodeStructure {
                         }
                     }
 
-                    if (statement.getComment().length() > 0) {
-                        statement.setComment(text);
+                    if (statement.getCommentString().length() > 0) {
+                        statement.setCommentString(text);
                     }
                     else {
-                        statement.operandString = text;
+                        statement.setOperandString(text);
                     }
                 }
             } catch(ParsingException e){

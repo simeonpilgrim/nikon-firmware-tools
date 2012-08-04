@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly.tx;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,7 +13,7 @@ import java.util.Set;
 /*
  * Statement : an instance of a specific Instruction with specific operands
  */
-public class TxStatement {
+public class TxStatement extends Statement {
     ///* disassembly */
     // [Flags]
     public final static int DF_FLOW = 0x01;
@@ -42,12 +43,6 @@ public class TxStatement {
     /** cached CPUState, for CALLs and INTs */
     public TxCPUState cpuState = null;
 
-    /** data read */
-    public int[] data = new int[3];
-
-    /** number of used elements in data[]*/
-    public int n;
-
     /** Ri/Rs operand */
     public int i; // as-is from binary code
     public int decodedI; // interpreted
@@ -70,14 +65,14 @@ public class TxStatement {
     /** flags (for display only) */
     public int flags;
 
-    /** formatted operand list */
-    public String operands;
-
-    /** optional comment */
-    public String comment;
-
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
+
+    private int binaryStatement;
+
+    /** Rs, Rt, Rd, shamt for R format. Rs, Rt, Imm for I format. Target for J format */
+    int[] operands = new int[4];
+    private int numOperands = 0;
 
     /**
      * Default decoding upon class loading
@@ -93,6 +88,10 @@ public class TxStatement {
     public TxStatement(int memRangeStart) {
         this.memRangeStart = memRangeStart;
         reset();
+    }
+
+    public int getBinaryStatement() {
+        return binaryStatement;
     }
 
     public static void initFormatChars(Set<OutputOption> outputOptions) {
@@ -117,83 +116,53 @@ public class TxStatement {
     }
 
     public void decodeOperands(int pc, Memory memory) {
-        switch (instruction.instructionFormat)
+        switch (instruction.getInstructionFormat())
         {
-            case TxInstruction.FORMAT_A:
-                i = 0xF & data[0];
-                j = 0xF & (data[0] >> 4);
+            case R:
+                numOperands=4;
+                operands[0] = (binaryStatement >>> 21) & 0b11111;
+                operands[1] = (binaryStatement >>> 16) & 0b11111;
+                operands[2] = (binaryStatement >>> 11) & 0b11111;
+                operands[3] = (binaryStatement >>>  6) & 0b11111;
                 break;
-            case TxInstruction.FORMAT_B:
-                i = 0xF & data[0];
-                x = 0xFF & (data[0] >> 4);
-                xBitWidth = 8;
+            case I:
+            case I_BRANCH:
+                numOperands = 3;
+                operands[0] = (binaryStatement >>> 21) & 0b11111;
+                operands[1] = (binaryStatement >>> 16) & 0b11111;
+                operands[2] =  binaryStatement         & 0xFFFF;
                 break;
-            case TxInstruction.FORMAT_C:
-                i = 0xF & data[0];
-                x = 0xF & (data[0] >> 4);
-                xBitWidth = 4;
+            case J:
+                numOperands = 1;
+                operands[0] =  binaryStatement         & 0x03FFFFFF;
                 break;
-            case TxInstruction.FORMAT_D:
-                x = 0xFF & data[0];
-                xBitWidth = 8;
+            case BREAK:
+                numOperands = 1;
+                operands[0] = (binaryStatement >>> 6)  & 0x000FFFFF;
                 break;
-            case TxInstruction.FORMAT_E:
-                i = 0xF & data[0];
+            case TRAP:
+                numOperands = 3;
+                operands[0] = (binaryStatement >>> 21) & 0b11111;
+                operands[1] = (binaryStatement >>> 16) & 0b11111;
+                operands[2] = (binaryStatement >>>  6) & 0x3FF;
                 break;
-            case TxInstruction.FORMAT_F:
-                x = 0x7FF & data[0];
-                xBitWidth = 11;
-                break;
-            case TxInstruction.FORMAT_Z:
-                j = 0xF & (data[0] >> 4);
-                break;
-            case TxInstruction.FORMAT_W:
-                x = data[0];
-                xBitWidth = 16;
-                break;
-        }
-
-        for (int ii = 0; ii < instruction.numberExtraXWords; ii++) {
-            getNextStatement(memory, pc);
-            x = (x << 16) + data[n - 1];
-            xBitWidth += 16;
-        }
-
-        for (int ii = 0; ii < instruction.numberExtraYWords; ii++) {
-            /* coprocessor extension word */
-            getNextStatement(memory, pc);
-            int tmp = data[n - 1];
-            x = i;
-            xBitWidth = 4;
-            c = 0xFF & (tmp >> 8);
-            j = 0x0F & (tmp >> 4);
-            i = 0x0F & (tmp);
         }
     }
 
     public void reset() {
         flags = 0;
-        data[0] = data[1] = data[2] = 0xDEAD;
-        n = 0;
         xBitWidth = 0;
         c = 0;
         i = TxCPUState.NOREG;
         j = TxCPUState.NOREG;
         x = 0;
-        operands = null;
-        comment = null;
-    }
-
-    public void getNextData(Memory memory, int address)
-    {
-        data[n] = memory.loadUnsigned16(address + 2 * n);
-        n++;
+        setOperandString(null);
+        setCommentString(null);
     }
 
     public void getNextStatement(Memory memory, int address)
     {
-        data[n] = memory.loadInstruction16(address + 2 * n);
-        n++;
+        binaryStatement = memory.loadInstruction32(address);
     }
 
     /**
@@ -258,15 +227,15 @@ public class TxStatement {
                     decodedX <<= 2;
                     xBitWidth += 2;
                     break;
-                case 'A':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.AC]);
-                    break;
-                case 'C':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.CCR]);
-                    break;
-                case 'F':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
-                    break;
+//                case 'A':
+//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.AC]);
+//                    break;
+//                case 'C':
+//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.CCR]);
+//                    break;
+//                case 'F':
+//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
+//                    break;
                 case 'J':
                     if (cpuState.isRegisterDefined(decodedJ))
                     {
@@ -294,12 +263,12 @@ public class TxStatement {
                 case 'M':
                     currentBuffer.append("ILM");
                     break;
-                case 'P':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.PS]);
-                    break;
-                case 'S':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.SP]);
-                    break;
+//                case 'P':
+//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.PS]);
+//                    break;
+//                case 'S':
+//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.SP]);
+//                    break;
                 case 'T':
                     currentBuffer.append("INT");
                     break;
@@ -337,27 +306,11 @@ public class TxStatement {
                         currentBuffer.append("NaN");
 
                     break;
-                case 'g':
-                    decodedI += TxCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(TxCPUState.REG_LABEL[decodedI]);
-                    break;
-                case 'h':
-                    decodedJ += TxCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(TxCPUState.REG_LABEL[decodedJ]);
-                    break;
                 case 'i':
                     currentBuffer.append(TxCPUState.REG_LABEL[decodedI]);
                     break;
                 case 'j':
                     currentBuffer.append(TxCPUState.REG_LABEL[decodedJ]);
-                    break;
-                case 'k':
-                    decodedI += TxCPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(decodedI);
-                    break;
-                case 'l':
-                    decodedJ += TxCPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(decodedJ);
                     break;
                 case 'n':
                     /* negative constant */
@@ -467,21 +420,6 @@ public class TxStatement {
                     /* delay */
                     dflags |= DF_DELAY;
                     break;
-                case 'A':
-                    r = TxCPUState.AC;
-                    break;
-                case 'C':
-                    r = TxCPUState.CCR;
-                    break;
-                case 'F':
-                    r = TxCPUState.FP;
-                    break;
-                case 'P':
-                    r = TxCPUState.PS;
-                    break;
-                case 'S':
-                    r = TxCPUState.SP;
-                    break;
                 case 'i':
                     r = decodedI;
                     break;
@@ -517,9 +455,9 @@ public class TxStatement {
             flags |= dflags & DF_TO_DELAY;
 
         /*XXX*/
-        operands = operandBuffer.toString();
+        setOperandString(operandBuffer.toString());
 
-        comment = commentBuffer.toString();
+        setCommentString(commentBuffer.toString());
     }
 
 
@@ -527,17 +465,17 @@ public class TxStatement {
      * Simple and fast version used by realtime disassembly trace
      */
     public String toString() {
-        String out = formatDataAsHex();
+        String out = Format.asHex(binaryStatement, 8);
 
         if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(instruction.name, 6) + " " + operands;
+            out += "               " + StringUtils.rightPad(instruction.name, 6) + " " + getOperandString();
         }
         else {
-            out += "              " + StringUtils.rightPad(instruction.name, 7) + " " + operands;
+            out += "              " + StringUtils.rightPad(instruction.name, 7) + " " + getOperandString();
         }
 
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
+        if (StringUtils.isNotBlank(getCommentString())) {
+            out += StringUtils.leftPad("; " + getCommentString(), 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
@@ -555,32 +493,28 @@ public class TxStatement {
     public String toString(Set<OutputOption> options) {
         String out = "";
         if (options.contains(OutputOption.HEXCODE)) {
-            out += formatDataAsHex();
+            out += Format.asHex(binaryStatement, 8);
         }
 
         if (options.contains(OutputOption.BLANKS)) {
-            out += "              ";
+            out += "        ";
         }
 
 
         if (instruction != null) {
             if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(instruction.name, 6) + " " + operands;
+                out += "  " + StringUtils.rightPad(instruction.name, 6) + " " + getOperandString();
             }
             else {
-                out += " " + StringUtils.rightPad(instruction.name, 7) + " " + operands;
+                out += " " + StringUtils.rightPad(instruction.name, 7) + " " + getOperandString();
             }
         }
         else {
-            out += " (no instruction)" + operands;
+            out += " (no instruction)" + getOperandString();
         }
         
-//        for (int i = 0; i < 15-operands.length(); i++) {
-//            out += " ";
-//        }
-
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
+        if (StringUtils.isNotBlank(getCommentString())) {
+            out += StringUtils.leftPad("; " + getCommentString(), 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
@@ -588,18 +522,4 @@ public class TxStatement {
         }
         return out;
     }
-
-    public String formatDataAsHex() {
-        String out = "";
-        for (int i = 0; i < 3; ++i) {
-            if (i < n) {
-                out += " " + Format.asHex(data[i], 4);
-            }
-            else {
-                out += "     ";
-            }
-        }
-        return out;
-    }
-
 }
