@@ -19,8 +19,8 @@
     <property name="conf-dir"         location="conf"/>
     <property name="tools-dir"        location="tools"/>
 	<property name="debug"            value="true"/>
-	<property name="debuglevel"       value="lines,var,source"/>
-	<property name="java-level"       value="1.6"/>
+	<property name="debuglevel"       value="lines,vars,source"/>
+	<property name="java-level"       value="1.7"/>
 
 
     <target name="preprocess" description="Substitute values for symbolic names in template files">
