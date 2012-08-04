@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.BinaryArithmetics;
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.CPUState;
 
 import java.io.PrintWriter;
 

@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.analyse;
 
-import com.nikonhacker.dfr.Dfr;
-import com.nikonhacker.dfr.OutputOption;
+import com.nikonhacker.disassembly.fr.Dfr;
+import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;

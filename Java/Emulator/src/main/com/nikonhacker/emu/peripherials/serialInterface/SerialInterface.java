@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.ExpeedInterruptController;
 
 import java.util.Deque;
 import java.util.LinkedList;
@@ -11,7 +11,7 @@ import java.util.LinkedList;
  */
 public class SerialInterface {
     private final int serialInterfaceNumber;
-    private final InterruptController interruptController;
+    private final ExpeedInterruptController interruptController;
 
     /**
      * FIFO1. null if disabled
@@ -46,7 +46,7 @@ public class SerialInterface {
 
     int rxInterruptNumber, txInterruptNumber;
 
-    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber) {
+    public SerialInterface(int serialInterfaceNumber, ExpeedInterruptController interruptController, int baseInterruptNumber) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
         rxInterruptNumber = baseInterruptNumber;

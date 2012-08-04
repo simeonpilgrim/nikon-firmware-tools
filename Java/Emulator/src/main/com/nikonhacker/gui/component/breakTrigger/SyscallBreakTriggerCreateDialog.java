@@ -1,10 +1,10 @@
 package com.nikonhacker.gui.component.breakTrigger;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.ParsingException;
-import com.nikonhacker.dfr.Symbol;
-import com.nikonhacker.dfr.Syscall;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.Symbol;
+import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import org.apache.commons.lang3.StringUtils;
@@ -142,8 +142,8 @@ public class SyscallBreakTriggerCreateDialog extends JDialog implements ActionLi
 
 
     private void save() {
-        CPUState cpuStateFlags = new CPUState();
-        CPUState cpuStateValues = new CPUState();
+        FrCPUState cpuStateFlags = new FrCPUState();
+        FrCPUState cpuStateValues = new FrCPUState();
         cpuStateFlags.clear();
 
         int selectedIndex = syscallCombo.getSelectedIndex();

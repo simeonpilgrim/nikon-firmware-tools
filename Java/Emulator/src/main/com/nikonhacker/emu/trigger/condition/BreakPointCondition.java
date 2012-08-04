@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.trigger.condition;
 
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 
@@ -12,7 +12,7 @@ public class BreakPointCondition extends AbstractLoggingBreakCondition implement
         this.pc = pc;
     }
 
-    public boolean matches(CPUState cpuState, Memory memory) {
+    public boolean matches(FrCPUState cpuState, Memory memory) {
         return cpuState.pc == pc;
     }
 }
