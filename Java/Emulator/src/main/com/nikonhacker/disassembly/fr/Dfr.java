@@ -44,8 +44,8 @@ package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.disassembly.*;
 
-import java.io.*;
-import java.util.*;
+import java.io.IOException;
+import java.util.Set;
 
 public class Dfr extends Disassembler
 {
@@ -77,7 +77,7 @@ public class Dfr extends Disassembler
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-                statement.cpuState = ((FrCPUState)(cpuState)).clone();
+                statement.cpuState = ((FrCPUState)cpuState).clone();
             }
 
             codeStructure.getStatements().put(cpuState.pc, statement);
