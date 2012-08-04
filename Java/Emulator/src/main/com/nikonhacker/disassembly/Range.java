@@ -1,24 +1,25 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.fr.DataType;
 
 public class Range implements Comparable<Range> {
-    int start;
-    int end;
-    DATA data;
-    int fileOffset;
+    private int start;
+    private int end;
+    private DataType dataType;
+    private int fileOffset;
 
-    public Range(int start, int end, DATA data) {
+    public Range(int start, int end, DataType dataType) {
         this.start = start;
         this.end = end;
-        this.data = data;
+        this.dataType = dataType;
         this.fileOffset = 0;
     }
 
     public Range(int start, int end, int fileOffset) {
         this.start = start;
         this.end = end;
-        this.data = null;
+        this.dataType = null;
         this.fileOffset = fileOffset;
     }
 
@@ -38,12 +39,12 @@ public class Range implements Comparable<Range> {
         this.end = end;
     }
 
-    public DATA getData() {
-        return data;
+    public DataType getDataType() {
+        return dataType;
     }
 
-    public void setData(DATA data) {
-        this.data = data;
+    public void setDataType(DataType dataType) {
+        this.dataType = dataType;
     }
 
     public int getFileOffset() {
@@ -60,6 +61,6 @@ public class Range implements Comparable<Range> {
 
     @Override
     public String toString() {
-        return "Range from 0x" + Format.asHex(start, 8) + " to 0x" + Format.asHex(end, 8) + " corresponding to file at 0x" + Format.asHex(fileOffset, 8) + ", data = {" + data + "}";
+        return "Range from 0x" + Format.asHex(start, 8) + " to 0x" + Format.asHex(end, 8) + " corresponding to file at 0x" + Format.asHex(fileOffset, 8) + ", dataType = {" + dataType + "}";
     }
 }

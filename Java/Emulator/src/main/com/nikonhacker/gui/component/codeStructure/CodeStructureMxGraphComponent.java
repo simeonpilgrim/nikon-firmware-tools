@@ -4,9 +4,9 @@ package com.nikonhacker.gui.component.codeStructure;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.swing.mxGraphComponent;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.Jump;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
