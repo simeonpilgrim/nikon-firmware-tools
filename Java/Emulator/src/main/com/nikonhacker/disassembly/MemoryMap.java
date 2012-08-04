@@ -1,4 +1,6 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly;
+
+import com.nikonhacker.disassembly.Range;
 
 import java.util.SortedSet;
 import java.util.TreeSet;

@@ -1,7 +1,7 @@
 package com.nikonhacker;
 
 
-import com.nikonhacker.dfr.OutputOption;
+import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 
 import java.io.File;

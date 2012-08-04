@@ -1,4 +1,4 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly;
 
 
 import com.nikonhacker.Format;

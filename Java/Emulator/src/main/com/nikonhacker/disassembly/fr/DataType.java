@@ -1,4 +1,4 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import java.util.List;
  * address maps
  */
 
-public class DATA {
+public class DataType {
     public final static int SpecType_MD_WORD = 0;
     public final static int SpecType_MD_LONG = 1;
     public final static int SpecType_MD_LONGNUM = 2;
@@ -58,6 +58,6 @@ public class DATA {
     }
 
     public boolean isCode() {
-        return memType == DATA.MEMTYPE_CODE || memType == MEMTYPE_UNKNOWN;
+        return memType == DataType.MEMTYPE_CODE || memType == MEMTYPE_UNKNOWN;
     }
 }
