@@ -1,7 +1,7 @@
 package com.nikonhacker.util;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.ParsingException;
+import com.nikonhacker.disassembly.ParsingException;
 
 import java.io.FileInputStream;
 import java.io.IOException;
