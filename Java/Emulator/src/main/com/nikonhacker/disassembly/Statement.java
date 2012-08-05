@@ -3,14 +3,14 @@ package com.nikonhacker.disassembly;
 import java.util.Set;
 
 public abstract class Statement {
-    private Instruction instruction = null;
+    protected Instruction instruction = null;
     /** cached CPUState, for CALLs and INTs */
     public CPUState cpuState = null;
     /** flags (for display only) */
     public int flags;
 
-    private String operandString;
-    private String commentString;
+    protected String operandString;
+    protected String commentString;
 
     public abstract String toString();
 
