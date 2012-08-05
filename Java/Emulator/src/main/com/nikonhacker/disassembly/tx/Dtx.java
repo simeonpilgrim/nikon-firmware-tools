@@ -21,14 +21,16 @@ public class Dtx extends Disassembler
     protected int disassembleOneStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         TxStatement statement = new TxStatement(memRange.getStart());
         statement.getNextStatement(memory, cpuState.pc);
+
         try {
             statement.setInstruction(TxInstructionSet.getInstructionForStatement(statement.getBinaryStatement()));
+
+            statement.decodeOperands(cpuState.pc, memory);
+
+            statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
         } catch (DisassemblyException e) {
             System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
         }
-        statement.decodeOperands(cpuState.pc, memory);
-
-        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
@@ -43,7 +45,6 @@ public class Dtx extends Disassembler
                 Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
-
         return 4;
     }
 
