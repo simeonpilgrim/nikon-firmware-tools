@@ -6,7 +6,9 @@
  
 ############################### Memory map:
 
--m 0xBFC00400-0xBFC0084B=CODE32
+-m 0xBFC00400-0xBFC004CB=CODE32
+
+-m 0xBFC00500-0xBFC0084B=CODE32
 
 -m 0xBFC00864-0xBFC009A3=CODE16
 
