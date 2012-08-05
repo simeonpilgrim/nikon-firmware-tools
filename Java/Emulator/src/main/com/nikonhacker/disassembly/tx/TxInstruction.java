@@ -2,12 +2,6 @@ package com.nikonhacker.disassembly.tx;
 
 
 import com.nikonhacker.disassembly.Instruction;
-import com.nikonhacker.disassembly.OutputOption;
-
-import java.util.EnumSet;
-import java.util.Set;
-
-import static com.nikonhacker.disassembly.Instruction.*;
 
 public class TxInstruction extends Instruction {
 
@@ -20,8 +14,10 @@ public class TxInstruction extends Instruction {
     public String displayFormat;
     public String action;
 
-    public TxInstruction(String name, String description, Format instructionFormat, String marsOperationMask, SimulationCode simulationCode) {
+    public TxInstruction(String name, String displayFormat, String sampleUse, String description, Format instructionFormat, String marsOperationMask, SimulationCode simulationCode) {
         super(null, false, false);
+        this.name = name;
+        this.displayFormat = displayFormat;
         this.instructionFormat = instructionFormat;
     }
     /**
@@ -44,7 +40,7 @@ public class TxInstruction extends Instruction {
 
 
     /**
-     * Creates a new FrInstruction
+     * Creates a new TxInstruction
      * @param encoding the value of the word instruction that matches this opcode/function combination (6 highest bits concatenated with 6 lower bits from the 32 bits statement)
      * @param mask indicates which bits of the "encoding" are significant. the others are either operants, unused, or to be determined later
      * @param instructionFormat pattern that specifies how the instruction word should be split in parts
@@ -53,20 +49,28 @@ public class TxInstruction extends Instruction {
      * @param name the symbolic name
      * @param displayFormat a string specifying how to format operands. It is a list of characters among :<br/>
 <pre>
+Here is the convention for the Tx:<br/>
+rs, rt, rd, sa, imm are the operands rs, rt, rd and shamt and immediate<br/>
+RS, RT, RD are the values of the operands rs, rt, rd before execution<br/>
+imm_s : outputs imm as a signed hex<br/>
+imm_u : outputs imm as an unsigned hex<br/>
+the other characters are rendered as is.<br/>
+
+Here are the ones for the Fr, for temporary reference:<br/>
+
+; separates the operand part and the comment part<br/>
+<br/>
 2 : constant operand (x) must be multiplied by 2 (e.g. address of 16-bit data)<br/>
 4 : constant operand (x) must be multiplied by 4 (e.g. address of 32-bit data)<br/>
 r : constant operand (x) is a relative address<br/>
 I : x is loaded from Ri if valid (0 otherwise) (?)<br/>
 J : x is loaded from Rj if valid (0 otherwise) (?)<br/>
 b : shift2 (?)<br/>
-x : set bit #8 of x to indicate that register bitmap (x) used by this operation must be reversed
 y : add 8 to c to mark that register bitmap (x) used by this operation represents R8-R15 and not R0-R7
 <br/>
-# ( ) + , - ; @ are copied as is<br/>
+# ( ) + , - @ are copied as is<br/>
 & : outputs a ,<br/>
 <br/>
-s : outputs x as a signed hex<br/>
-u : outputs x as an unsigned hex<br/>
 n : outputs x as a negative hex<br/>
 d : outputs x as a decimal<br/>
 a : outputs x as ASCII chars<br/>
@@ -81,12 +85,6 @@ F : outputs "FP"<br/>
 M : outputs "ILM"<br/>
 P : outputs "PS"<br/>
 S : outputs "SP"<br/>
-i : name of register pointed by i<br/>
-j : name of register pointed by j<br/>
-g : name of dedicated register pointed by i<br/>
-h : name of dedicated register pointed by j<br/>
-k : name of coprocessor register pointed by i<br/>
-l : name of coprocessor register pointed by j<br/>
 <br/>
 v : outputs current PC value as a vector id (0xFF being the first of this memory area, going down to 0x00)
 c : outputs coprocessor operation (c)<br/>
