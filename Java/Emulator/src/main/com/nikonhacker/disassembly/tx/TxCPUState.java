@@ -121,6 +121,9 @@ public class TxCPUState extends CPUState {
 
     public void reset() {
         shadowRegisterSets = new Register32[8][REG_LABEL.length];
+        activeRegisterSet = 0;
+        regValue = shadowRegisterSets[activeRegisterSet];
+
         Register32 reg0 = new NullRegister32();
 
         for (int registerSet = 0; registerSet < 8; registerSet++) {
@@ -146,8 +149,6 @@ public class TxCPUState extends CPUState {
             shadowRegisterSets[registerSet][29] = shadowRegisterSets[1][29];
         }
 
-        activeRegisterSet = 0;
-        regValue = shadowRegisterSets[activeRegisterSet];
         regValidityBitmap = 0;
     }
 

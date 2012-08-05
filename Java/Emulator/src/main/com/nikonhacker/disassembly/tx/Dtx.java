@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class Dtx extends Disassembler
 {
-    private static final String DEFAULT_OPTIONS_FILENAME = "dfr.txt";
+    private static final String DEFAULT_OPTIONS_FILENAME = "dtx.txt";
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
         new Dtx().execute(args);
@@ -27,23 +27,23 @@ public class Dtx extends Disassembler
             System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
         }
         statement.decodeOperands(cpuState.pc, memory);
-//
-//        statement.formatOperandsAndComment(cpuState, true, this.outputOptions);
-//
-//        if (codeStructure != null) {
-//            if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-//                statement.cpuState = ((FrCPUState)(cpuState)).clone();
-//            }
-//
-//            codeStructure.getStatements().put(cpuState.pc, statement);
-//        }
-//        else {
-//            // No structure analysis, output right now
-//            if (outWriter != null) {
-//                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
-//            }
-//        }
-//
+
+        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
+
+        if (codeStructure != null) {
+            if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
+                statement.cpuState = ((TxCPUState)cpuState).clone();
+            }
+
+            codeStructure.getStatements().put(cpuState.pc, statement);
+        }
+        else {
+            // No structure analysis, output right now
+            if (outWriter != null) {
+                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
+            }
+        }
+
         return 4;
     }
 

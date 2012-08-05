@@ -137,7 +137,7 @@ public abstract class Disassembler {
     }
 
     protected void writeHeader(Writer writer) throws IOException {
-        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + ", disassembler based on Dfr v1.03 by Kevin Schoedel\n");
+        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
         writer.write(";   Date:   " + startTime + "\n");
         if (inputFileName != null) {
             writer.write(";   Input:  " + inputFileName + "\n");
@@ -426,6 +426,9 @@ public abstract class Disassembler {
 
 
     public CodeStructure disassembleMemRanges() throws IOException, DisassemblyException {
+        if (memMap.ranges.size() == 0) {
+            throw new DisassemblyException("No memory range defined in options");
+        }
         if (!outputOptions.contains(OutputOption.STRUCTURE)) {
             // Original one pass disassembly
             for (Range range : memMap.ranges) {
