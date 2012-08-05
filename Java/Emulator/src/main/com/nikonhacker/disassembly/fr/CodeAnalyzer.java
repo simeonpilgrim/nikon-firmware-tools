@@ -238,7 +238,7 @@ public class CodeAnalyzer {
                     // Only overwrite if none was present
                     label = codeStructure.getLabels().get(address).getName();
                     if (StringUtils.isBlank(label)) {
-                        label = "label_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
+                        label = "loc_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
                     }
                 }
                 codeStructure.getLabels().put(address, new Symbol(address, label));
@@ -254,7 +254,7 @@ public class CodeAnalyzer {
                 Symbol label = codeStructure.getLabels().get(labelAddress);
                 if (label != null) {
                     // It matches an existing code label. Rename it if it is a generic "label", or add the name otherwise
-                    String newLabelName = (label.getName().startsWith("label_") ? "" : (label.getName() + "_/_")) + symbols.get(labelAddress).getName();
+                    String newLabelName = (label.getName().startsWith("loc_") ? "" : (label.getName() + "_/_")) + symbols.get(labelAddress).getName();
                     debugPrintWriter.println("Renaming label @" + Format.asHex(labelAddress, 8) + " from '" + label.getName() + "' to '" + newLabelName + "'.");
                     label.setName(newLabelName);
                 }
