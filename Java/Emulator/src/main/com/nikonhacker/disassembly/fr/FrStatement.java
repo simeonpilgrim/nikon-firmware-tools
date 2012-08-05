@@ -164,11 +164,11 @@ public class FrStatement extends Statement {
         n = 0;
         xBitWidth = 0;
         c = 0;
-        i = FrCPUState.NOREG;
-        j = FrCPUState.NOREG;
+        i = CPUState.NOREG;
+        j = CPUState.NOREG;
         x = 0;
-        setOperandString(null);
-        setCommentString(null);
+        operandString = null;
+        commentString = null;
     }
 
     public void getNextData(Memory memory, int address)
@@ -197,13 +197,13 @@ public class FrStatement extends Statement {
         decodedI = i;
         decodedJ = j;
 
+        flags = cpuState.flags;
+        cpuState.flags = 0;
+
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
 
         StringBuilder currentBuffer = operandBuffer;
-
-        flags = cpuState.flags;
-        cpuState.flags = 0;
 
         for (char formatChar : ((FrInstruction) getInstruction()).displayFormat.toCharArray())
         {
@@ -428,7 +428,7 @@ public class FrStatement extends Statement {
 
         int r = FrCPUState.NOREG;
         int dflags = 0;
-        for (char s : ((FrInstruction) getInstruction()).action.toCharArray())
+        for (char s : ((FrInstruction) instruction).action.toCharArray())
         {
             switch (s)
             {
@@ -503,9 +503,9 @@ public class FrStatement extends Statement {
             flags |= dflags & DF_TO_DELAY;
 
         /*XXX*/
-        setOperandString(operandBuffer.toString());
+        operandString = operandBuffer.toString();
 
-        setCommentString(commentBuffer.toString());
+        commentString = commentBuffer.toString();
     }
 
 
@@ -517,14 +517,14 @@ public class FrStatement extends Statement {
         String out = formatDataAsHex();
 
         if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 6) + " " + getOperandString();
+            out += "               " + StringUtils.rightPad(((FrInstruction) instruction).name, 6) + " " + operandString;
         }
         else {
-            out += "              " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 7) + " " + getOperandString();
+            out += "              " + StringUtils.rightPad(((FrInstruction) instruction).name, 7) + " " + operandString;
         }
 
-        if (StringUtils.isNotBlank(getCommentString())) {
-            out += StringUtils.leftPad("; " + getCommentString(), 22);
+        if (StringUtils.isNotBlank(commentString)) {
+            out += StringUtils.leftPad("; " + commentString, 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
@@ -551,24 +551,24 @@ public class FrStatement extends Statement {
         }
 
 
-        if (getInstruction() != null) {
+        if (instruction != null) {
             if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 6) + " " + getOperandString();
+                out += "  " + StringUtils.rightPad(((FrInstruction) instruction).name, 6) + " " + operandString;
             }
             else {
-                out += " " + StringUtils.rightPad(((FrInstruction) getInstruction()).name, 7) + " " + getOperandString();
+                out += " " + StringUtils.rightPad(((FrInstruction) instruction).name, 7) + " " + operandString;
             }
         }
         else {
-            out += " (no instruction)" + getOperandString();
+            out += " (no instruction)" + operandString;
         }
         
 //        for (int i = 0; i < 15-operandString.length(); i++) {
 //            out += " ";
 //        }
 
-        if (StringUtils.isNotBlank(getCommentString())) {
-            out += StringUtils.leftPad("; " + getCommentString(), 22);
+        if (StringUtils.isNotBlank(commentString)) {
+            out += StringUtils.leftPad("; " + commentString, 22);
         }
         out += "\n";
         if ((flags & DF_BREAK) != 0) {
