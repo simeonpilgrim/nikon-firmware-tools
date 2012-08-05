@@ -132,12 +132,13 @@ public abstract class Disassembler {
                 outWriter.close();
             }
 
-            outWriter = new FileWriter(outName + "." + ext);
+            outputFileName = outName + "." + ext;
+            outWriter = new FileWriter(outputFileName);
         }
     }
 
     protected void writeHeader(Writer writer) throws IOException {
-        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
+        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + "\n");
         writer.write(";   Date:   " + startTime + "\n");
         if (inputFileName != null) {
             writer.write(";   Input:  " + inputFileName + "\n");
