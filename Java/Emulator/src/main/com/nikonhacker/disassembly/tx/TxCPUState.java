@@ -70,7 +70,7 @@ public class TxCPUState extends CPUState {
     public static void initRegisterLabels(Set<OutputOption> outputOptions) {
         // Patch names if requested
         if (outputOptions.contains(OutputOption.REGISTER)) {
-            TxCPUState.REG_LABEL[0] = "0";
+            TxCPUState.REG_LABEL[0] = "$zero";
             TxCPUState.REG_LABEL[1] = "$at";
             TxCPUState.REG_LABEL[2] = "$v0";
             TxCPUState.REG_LABEL[3] = "$v1";
