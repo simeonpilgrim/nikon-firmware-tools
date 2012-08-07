@@ -8,20 +8,35 @@ import java.util.List;
  */
 
 public class DataType {
-    public final static int SpecType_MD_WORD = 0;
-    public final static int SpecType_MD_LONG = 1;
-    public final static int SpecType_MD_LONGNUM = 2;
-    public final static int SpecType_MD_VECTOR=3;
-    public final static int SpecType_MD_RATIONAL=4;
-    public final static int SpecType_UNKNOWN=-1;
+    public enum MemType {
+        NONE,
+        UNKNOWN,
+        CODE,
+        DATA
+    }
 
-    public final static int MEMTYPE_NONE = 0;
-    public final static int MEMTYPE_UNKNOWN=1;
-    public final static int MEMTYPE_CODE=2;
-    public final static int MEMTYPE_DATA=3;
+    public enum SpecType {
+        MD_WORD(0),
+        MD_LONG(1),
+        MD_LONGNUM(2),
+        MD_VECTOR(3),
+        MD_RATIONAL(4),
+        UNKNONW(-1);
 
-    public List<Integer> spec = new ArrayList<Integer>();
-    public int memType = MEMTYPE_UNKNOWN;
+        private int index;
+
+        SpecType(int index) {
+            this.index = index;
+        }
+
+        public int getIndex() {
+            return index;
+        }
+    }
+
+    public List<SpecType> specTypes = new ArrayList<SpecType>();
+
+    public MemType memType = MemType.UNKNOWN;
 
 
     public String toString()
@@ -30,34 +45,29 @@ public class DataType {
 
         switch (memType)
         {
-            case MEMTYPE_NONE:
-                return "NONE";
-            case MEMTYPE_UNKNOWN:
-                return "UNKNOWN";
-            case MEMTYPE_CODE:
-                return "CODE";
-            case MEMTYPE_DATA:
-                sb.append("DATA:");
+            case DATA:
+                sb.append(memType.name());
+                sb.append(":");
 
-                for (int s : spec)
+                for (SpecType specType : specTypes)
                 {
-                    switch (s)
+                    switch (specType)
                     {
-                        case SpecType_MD_LONG: sb.append("L"); break;
-                        case SpecType_MD_LONGNUM: sb.append("N"); break;
-                        case SpecType_MD_RATIONAL: sb.append("R"); break;
-                        case SpecType_MD_VECTOR: sb.append("V"); break;
-                        case SpecType_MD_WORD: sb.append("W"); break;
+                        case MD_LONG: sb.append("L"); break;
+                        case MD_LONGNUM: sb.append("N"); break;
+                        case MD_RATIONAL: sb.append("R"); break;
+                        case MD_VECTOR: sb.append("V"); break;
+                        case MD_WORD: sb.append("W"); break;
                         default: sb.append("?"); break;
                     }
                 }
                 return sb.toString();
             default:
-                return "Unknown memtype : " + memType;
+                return memType.name();
         }
     }
 
     public boolean isCode() {
-        return memType == DataType.MEMTYPE_CODE || memType == MEMTYPE_UNKNOWN;
+        return memType == MemType.CODE || memType == MemType.UNKNOWN;
     }
 }
