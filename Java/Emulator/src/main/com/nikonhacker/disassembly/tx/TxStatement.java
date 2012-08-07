@@ -404,9 +404,6 @@ public class TxStatement extends Statement {
                 case 'l':
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSa, 5));
                     break;
-                case 'g':
-                    // todo : special register
-                    break;
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));

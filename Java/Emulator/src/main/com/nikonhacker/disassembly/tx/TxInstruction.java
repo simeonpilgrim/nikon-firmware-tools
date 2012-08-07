@@ -36,7 +36,7 @@ public class TxInstruction extends Instruction {
         BREAK,
         /** used for TRAP code */
         TRAP,
-        /** used for move from/to CP0 instructions is as follows : <pre>[  op  |xxxxx| rt  | rd  |00000000| res ]</pre> */
+        /** used for move from/to CP0 instructions is as follows : <pre>[  op  |xxxxx| rt  | rd  |00000000|res]</pre> */
         CP
     }
 
