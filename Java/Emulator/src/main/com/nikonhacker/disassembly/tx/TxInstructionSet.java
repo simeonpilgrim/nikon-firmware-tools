@@ -70,7 +70,7 @@ public class TxInstructionSet
                     int sub1 = cpuState.getReg(statement.rs);
                     int sub2 = cpuState.getReg(statement.rt);
                     int dif = sub1 - sub2;
-                    // overflow on A-BREAK detected when A and BREAK have opposite signs and A-BREAK has BREAK's sign
+                    // overflow on A-B detected when A and B have opposite signs and A-B has B's sign
                     if ((sub1 >= 0 && sub2 < 0 && dif < 0) || (sub1 < 0 && sub2 >= 0 && dif >= 0)) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
@@ -86,7 +86,7 @@ public class TxInstructionSet
                     int add1 = cpuState.getReg(statement.rs);
                     int add2 = statement.imm << 16 >> 16;
                     int sum = add1 + add2;
-                    // overflow on A+BREAK detected when A and BREAK have same sign and A+BREAK has other sign.
+                    // overflow on A+B detected when A and B have same sign and A+B has other sign.
                     if ((add1 >= 0 && add2 >= 0 && sum < 0) || (add1 < 0 && add2 < 0 && sum >= 0)) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
