@@ -76,6 +76,70 @@ public class TxStatement extends Statement {
 
     private int binaryStatement;
 
+
+    /** This array is used to decode the mfc0 and mtc0 instruction operands
+     * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
+     */
+    private static final int[][] CP0_REGISTER_NUMBER_MAP = new int[][]{
+            // SEL0
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    TxCPUState.BadVAddr, TxCPUState.Count, -1, TxCPUState.Compare, TxCPUState.Status, TxCPUState.Cause, TxCPUState.EPC, TxCPUState.PRId,
+                    TxCPUState.Config, -1, -1, -1, -1, -1, TxCPUState.SSCR, TxCPUState.Debug,
+                    TxCPUState.DEPC, -1, -1, -1, -1, -1, TxCPUState.ErrorEPC, TxCPUState.DESAVE
+            },
+            // SEL1
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    TxCPUState.Config1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL2
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    TxCPUState.Config2, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL3
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    TxCPUState.Config3, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL4
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL5
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL6
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, TxCPUState.SSCR, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL7
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, TxCPUState.IER, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            }
+    };
+
+
     /**
      * Default decoding upon class loading
      */
@@ -117,6 +181,8 @@ public class TxStatement extends Statement {
         }
     }
 
+
+
     public void decodeOperands(int pc, Memory memory) {
         switch (((TxInstruction)instruction).getInstructionFormat())
         {
@@ -146,6 +212,10 @@ public class TxStatement extends Statement {
                 rt    = (binaryStatement >>> 16) & 0b11111;
                 imm   = (binaryStatement >>>  6) & 0x3FF;
                 immBitWidth = 10;
+                break;
+            case CP:
+                rt    = (binaryStatement >>> 16) & 0b11111;
+                rd    = CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
                 break;
         }
     }
@@ -333,6 +403,9 @@ public class TxStatement extends Statement {
                     break;
                 case 'l':
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSa, 5));
+                    break;
+                case 'g':
+                    // todo : special register
                     break;
                 case 'n':
                     /* negative constant */
