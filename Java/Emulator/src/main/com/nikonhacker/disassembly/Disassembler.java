@@ -162,7 +162,7 @@ public abstract class Disassembler {
     protected void printRangeHeader(Range range, Range matchingFileRange) throws IOException {
         String msg = "Disassembly of 0x" + Format.asHex(range.getStart(), 8) + "-0x" + Format.asHex(range.getEnd(), 8)
                 + " (file 0x" + Format.asHex(range.getStart() - matchingFileRange.getStart() + matchingFileRange.getFileOffset(), 8)
-                + ") as " + range.getDataType();
+                + ") as " + range.getRangeType();
         if (outputOptions.contains(OutputOption.VERBOSE)) {
             debugPrintWriter.println(msg);
         }
@@ -438,7 +438,7 @@ public abstract class Disassembler {
 
                 printRangeHeader(range, matchingFileRange);
 
-                if (range.getDataType().isCode()) {
+                if (range.getRangeType().isCode()) {
                     disassembleCodeMemoryRange(range, matchingFileRange, null);
                 }
                 else {
@@ -454,7 +454,7 @@ public abstract class Disassembler {
             CodeStructure codeStructure = getCodeStructure(memMap.ranges.first().getStart());
             debugPrintWriter.println("Disassembling the code ranges...");
             for (Range range : memMap.ranges) {
-                if (range.getDataType().isCode()) {
+                if (range.getRangeType().isCode()) {
                     disassembleCodeMemoryRange(range, getMatchingFileRange(range), codeStructure);
                 }
             }
@@ -475,7 +475,7 @@ public abstract class Disassembler {
                     // find file offset covering this memory location.
                     Range matchingFileRange = getMatchingFileRange(range);
                     printRangeHeader(range, matchingFileRange);
-                    if (range.getDataType().isCode()) {
+                    if (range.getRangeType().isCode()) {
                         codeStructure.writeDisassembly(outWriter, range, matchingFileRange, outputOptions);
                     }
                     else {

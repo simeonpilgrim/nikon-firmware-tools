@@ -308,9 +308,10 @@ public class FrInstruction extends Instruction {
         new FrInstruction( 0xA300, 0xFF00, FORMAT_D, 0, 0, "ADD",    "#4s,S",        ""         , FlowType.NONE, false, false),
     };
 
+
     /**
      * Fake OPCodes for data reading
-     * Array index is a DataType.SpecType.index value
+     * Array index is a RangeType.Width.index value
      */
     static FrInstruction[] opData = {
         new FrInstruction( 0x0000, 0x0000, FORMAT_W, 0, 0, "DW",     "u;a",         ""         , FlowType.NONE, false, false),

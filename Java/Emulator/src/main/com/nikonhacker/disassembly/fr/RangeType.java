@@ -7,15 +7,15 @@ import java.util.List;
  * address maps
  */
 
-public class DataType {
-    public enum MemType {
+public class RangeType {
+    public enum MemoryType {
         NONE,
         UNKNOWN,
         CODE,
         DATA
     }
 
-    public enum SpecType {
+    public enum Width {
         MD_WORD(0),
         MD_LONG(1),
         MD_LONGNUM(2),
@@ -25,7 +25,7 @@ public class DataType {
 
         private int index;
 
-        SpecType(int index) {
+        Width(int index) {
             this.index = index;
         }
 
@@ -34,24 +34,24 @@ public class DataType {
         }
     }
 
-    public List<SpecType> specTypes = new ArrayList<SpecType>();
+    public List<Width> widths = new ArrayList<Width>();
 
-    public MemType memType = MemType.UNKNOWN;
+    public MemoryType memoryType = MemoryType.UNKNOWN;
 
 
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
 
-        switch (memType)
+        switch (memoryType)
         {
             case DATA:
-                sb.append(memType.name());
+                sb.append(memoryType.name());
                 sb.append(":");
 
-                for (SpecType specType : specTypes)
+                for (Width width : widths)
                 {
-                    switch (specType)
+                    switch (width)
                     {
                         case MD_LONG: sb.append("L"); break;
                         case MD_LONGNUM: sb.append("N"); break;
@@ -63,11 +63,11 @@ public class DataType {
                 }
                 return sb.toString();
             default:
-                return memType.name();
+                return memoryType.name();
         }
     }
 
     public boolean isCode() {
-        return memType == MemType.CODE || memType == MemType.UNKNOWN;
+        return memoryType == MemoryType.CODE || memoryType == MemoryType.UNKNOWN;
     }
 }

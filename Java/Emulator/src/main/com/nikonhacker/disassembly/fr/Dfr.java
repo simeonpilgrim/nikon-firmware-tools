@@ -65,7 +65,7 @@ public class Dfr extends Disassembler
         FrInstruction instruction = FrInstruction.instructionMap[statement.data[0]];
 
         if (instruction == null) {
-            statement.setInstruction(FrInstruction.opData[DataType.SpecType.MD_WORD.getIndex()]);
+            statement.setInstruction(FrInstruction.opData[RangeType.Width.MD_WORD.getIndex()]);
         }
         else {
             statement.setInstruction(instruction);
@@ -97,7 +97,7 @@ public class Dfr extends Disassembler
 
         int sizeInBytes = 0;
 
-        for (DataType.SpecType spec : memRange.getDataType().specTypes)
+        for (RangeType.Width spec : memRange.getRangeType().widths)
         {
             FrStatement statement = new FrStatement(memRange.getStart());
             statement.getNextData(memory, dummyCpuState.pc);
