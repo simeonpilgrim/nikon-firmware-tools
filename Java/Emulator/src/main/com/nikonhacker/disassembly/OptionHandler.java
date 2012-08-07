@@ -1,7 +1,8 @@
 package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.*;
+import com.nikonhacker.disassembly.fr.DataType;
+import com.nikonhacker.disassembly.fr.InterruptVectorRange;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -137,54 +138,54 @@ public class OptionHandler
         {
             case 'C':
             case 'c':
-                memp.memType = DataType.MEMTYPE_CODE;
+                memp.memType = DataType.MemType.CODE;
                 break;
 
             case 'D':
             case 'd':
                 wtf = "data type";
-                memp.memType = DataType.MEMTYPE_DATA;
-                memp.spec.add(DataType.SpecType_MD_WORD);
+                memp.memType = DataType.MemType.DATA;
+                memp.specTypes.add(DataType.SpecType.MD_WORD);
 
                 int separator = arg.lastIndexOf(':');
                 if (separator != -1)
                 {
-                    memp.spec.clear(); // remove above default of MD_WORD
+                    memp.specTypes.clear(); // remove above default of MD_WORD
                     separator++;
                     while (separator < arg.length())
                     {
                         char c = arg.charAt(separator++);
 
-                        int md;
+                        DataType.SpecType md;
                         switch ((c + "").toLowerCase().charAt(0))
                         {
-                            case 'l': md = DataType.SpecType_MD_LONG; break;
-                            case 'n': md = DataType.SpecType_MD_LONGNUM; break;
-                            case 'r': md = DataType.SpecType_MD_RATIONAL; break;
-                            case 'v': md = DataType.SpecType_MD_VECTOR; break;
-                            case 'w': md = DataType.SpecType_MD_WORD; break;
+                            case 'l': md = DataType.SpecType.MD_LONG; break;
+                            case 'n': md = DataType.SpecType.MD_LONGNUM; break;
+                            case 'r': md = DataType.SpecType.MD_RATIONAL; break;
+                            case 'v': md = DataType.SpecType.MD_VECTOR; break;
+                            case 'w': md = DataType.SpecType.MD_WORD; break;
                             default:
                                 throw new ParsingException("unrecognized " + wtf + " at '" + arg + "'\n" + memtypehelp + "'\n");
                         }
-                        memp.spec.add(md);
+                        memp.specTypes.add(md);
                     }
                 }
                 break;
 
             case 'n':
             case 'N':
-                memp.memType = DataType.MEMTYPE_NONE;
+                memp.memType = DataType.MemType.NONE;
                 break;
 
             case 'u':
             case 'U':
-                memp.memType = DataType.MEMTYPE_UNKNOWN;
+                memp.memType = DataType.MemType.UNKNOWN;
                 break;
 
             case 'v':
             case 'V':
-                memp.memType = DataType.MEMTYPE_DATA;
-                memp.spec.add(DataType.SpecType_MD_VECTOR);
+                memp.memType = DataType.MemType.DATA;
+                memp.specTypes.add(DataType.SpecType.MD_VECTOR);
                 break;
 
             default:

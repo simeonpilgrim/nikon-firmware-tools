@@ -310,7 +310,7 @@ public class FrInstruction extends Instruction {
 
     /**
      * Fake OPCodes for data reading
-     * Array index is a DataType.SpecType_XXX value
+     * Array index is a DataType.SpecType.index value
      */
     static FrInstruction[] opData = {
         new FrInstruction( 0x0000, 0x0000, FORMAT_W, 0, 0, "DW",     "u;a",         ""         , FlowType.NONE, false, false),
