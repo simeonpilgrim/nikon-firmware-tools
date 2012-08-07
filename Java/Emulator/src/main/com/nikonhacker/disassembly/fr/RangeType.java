@@ -62,6 +62,16 @@ public class RangeType {
                     }
                 }
                 return sb.toString();
+            case CODE:
+                sb.append(memoryType.name());
+                sb.append(":");
+                switch (widths.get(0))
+                {
+                    case MD_LONG: sb.append("32"); break;
+                    case MD_WORD: sb.append("16"); break;
+                    default: sb.append("?"); break;
+                }
+                return sb.toString();
             default:
                 return memoryType.name();
         }
