@@ -18,7 +18,38 @@ public class Dtx extends Disassembler
     ///* output */
 
 
-    protected int disassembleOneStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+        TxStatement statement = new TxStatement(memRange.getStart());
+        statement.getNextStatement(memory, cpuState.pc);
+
+//        try {
+//            statement.setInstruction(TxInstructionSet.getInstructionForStatement(statement.getBinaryStatement()));
+//
+//            statement.decodeOperands(cpuState.pc, memory);
+//
+//            statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
+//        } catch (DisassemblyException e) {
+//            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
+//        }
+
+        if (codeStructure != null) {
+            if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
+                statement.cpuState = ((TxCPUState)cpuState).clone();
+            }
+
+            codeStructure.getStatements().put(cpuState.pc, statement);
+        }
+        else {
+            // No structure analysis, output right now
+            if (outWriter != null) {
+                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
+            }
+        }
+        return 2;
+    }
+
+    @Override
+    protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
         statement.getNextStatement(memory, cpuState.pc);
 

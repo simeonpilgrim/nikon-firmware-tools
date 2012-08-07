@@ -10,21 +10,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 
-///* reinventing the wheel because resetting getopt() isn't portable */
 public class OptionHandler
 {
     static String memtypehelp =
             "Memtypes are:\n"
                     + "NONE              do not disassemble\n"
                     + "UNKNOWN           unknown contents\n"
-                    + "CODE              disassemble as code where possible\n"
-                    + "DATA[:spec]       disassemble as data; spec is up to 8 of:\n"
-                    + "                    L -- long (32-bit) data\n"
-                    + "                    N -- long (32-bit) data, no labels\n"
-                    + "                    R -- rational\n"
-                    + "                    V -- vector\n"
-                    + "                    W -- word (16-bit) data\n"
+                    + "CODE[:width]      disassemble as code where possible. Where applicable, width is one of:\n"
+                    + "                    L or 32 -- 32-bit instructions\n"
+                    + "                    W or 16 -- 16-bit instructions\n"
+                    + "DATA[:width]      disassemble as data; width is up to 8 of:\n"
+                    + "                    L or 32 -- long (32-bit) data\n"
+                    + "                    N       -- long (32-bit) data, no labels\n"
+                    + "                    R       -- rational\n"
+                    + "                    V       -- vector\n"
+                    + "                    W or 16 -- word (16-bit) data\n"
             ;
+
     int index;
     String[] arguments;
     String currentToken;
@@ -132,63 +134,73 @@ public class OptionHandler
         if (StringUtils.isBlank(arg))  {
             throw new ParsingException("no memtype given");
         }
-
         RangeType rangeType = new RangeType();
-        switch (arg.charAt(0))
-        {
-            case 'C':
-            case 'c':
-                rangeType.memoryType = RangeType.MemoryType.CODE;
-                break;
 
-            case 'D':
-            case 'd':
-                rangeType.memoryType = RangeType.MemoryType.DATA;
+        String[] type_width = StringUtils.split(arg, ':');
+
+        String type = type_width[0].toUpperCase();
+        if (type.startsWith("C")) {
+            rangeType.memoryType = RangeType.MemoryType.CODE;
+            if (type_width.length == 1) {
                 rangeType.widths.add(RangeType.Width.MD_WORD);
-
-                int separator = arg.lastIndexOf(':');
-                if (separator != -1)
-                {
-                    rangeType.widths.clear(); // remove above default of MD_WORD
-                    separator++;
-                    while (separator < arg.length())
-                    {
-                        char c = arg.charAt(separator++);
-
-                        RangeType.Width md;
-                        switch ((c + "").toLowerCase().charAt(0))
-                        {
-                            case 'l': md = RangeType.Width.MD_LONG; break;
-                            case 'n': md = RangeType.Width.MD_LONGNUM; break;
-                            case 'r': md = RangeType.Width.MD_RATIONAL; break;
-                            case 'v': md = RangeType.Width.MD_VECTOR; break;
-                            case 'w': md = RangeType.Width.MD_WORD; break;
-                            default:
-                                throw new ParsingException("unrecognized data type at '" + arg + "'\n" + memtypehelp + "'\n");
-                        }
-                        rangeType.widths.add(md);
-                    }
+            }
+            else {
+                String width = type_width[1].toUpperCase();
+                if (width.startsWith("L") || "32".equalsIgnoreCase(width)) {
+                    rangeType.widths.add(RangeType.Width.MD_LONG);
                 }
-                break;
+                else if (width.startsWith("W") || "16".equalsIgnoreCase(width)) {
+                    rangeType.widths.add(RangeType.Width.MD_WORD);
+                }
+                else {
+                    throw new ParsingException("unrecognized data type at '" + arg + "'\n" + memtypehelp + "'\n");
+                }
+            }
+        }
+        else if (type.startsWith("D")) {
+            rangeType.memoryType = RangeType.MemoryType.DATA;
 
-            case 'n':
-            case 'N':
-                rangeType.memoryType = RangeType.MemoryType.NONE;
-                break;
-
-            case 'u':
-            case 'U':
-                rangeType.memoryType = RangeType.MemoryType.UNKNOWN;
-                break;
-
-            case 'v':
-            case 'V':
-                rangeType.memoryType = RangeType.MemoryType.DATA;
-                rangeType.widths.add(RangeType.Width.MD_VECTOR);
-                break;
-
-            default:
-                throw new ParsingException("unrecognized memory type at '" + arg + "'\n" + memtypehelp + "\n");
+            if (type_width.length == 1) {
+                rangeType.widths.add(RangeType.Width.MD_WORD);
+            }
+            else {
+                int i = 1;
+                while (type_width.length > i) {
+                    String width = type_width[i].toUpperCase();
+                    if (width.startsWith("L") || "32".equalsIgnoreCase(width)) {
+                        rangeType.widths.add(RangeType.Width.MD_LONG);
+                    }
+                    else if (width.startsWith("N")) {
+                        rangeType.widths.add(RangeType.Width.MD_LONGNUM);
+                    }
+                    else if (width.startsWith("R")) {
+                        rangeType.widths.add(RangeType.Width.MD_RATIONAL);
+                    }
+                    else if (width.startsWith("V")) {
+                        rangeType.widths.add(RangeType.Width.MD_VECTOR);
+                    }
+                    else if (width.startsWith("W") || "16".equalsIgnoreCase(width)) {
+                        rangeType.widths.add(RangeType.Width.MD_WORD);
+                    }
+                    else {
+                        throw new ParsingException("unrecognized data type at '" + arg + "'\n" + memtypehelp + "'\n");
+                    }
+                    i++;
+                }
+            }
+        }
+        else if (type.startsWith("N")) {
+            rangeType.memoryType = RangeType.MemoryType.NONE;
+        }
+        else if (type.startsWith("U")) {
+            rangeType.memoryType = RangeType.MemoryType.UNKNOWN;
+        }
+        else if (type.startsWith("U")) {
+            rangeType.memoryType = RangeType.MemoryType.DATA;
+            rangeType.widths.add(RangeType.Width.MD_VECTOR);
+        }
+        else {
+            throw new ParsingException("unrecognized memory type at '" + arg + "'\n" + memtypehelp + "\n");
         }
 
         return rangeType;

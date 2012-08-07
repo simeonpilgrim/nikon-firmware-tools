@@ -59,7 +59,7 @@ public class Dfr extends Disassembler
     ///* output */
 
 
-    protected int disassembleOneStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         FrStatement statement = new FrStatement(memRange.getStart());
         statement.getNextStatement(memory, cpuState.pc);
         FrInstruction instruction = FrInstruction.instructionMap[statement.data[0]];
@@ -90,6 +90,11 @@ public class Dfr extends Disassembler
         }
 
         return statement.n << 1;
+    }
+
+    @Override
+    protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws DisassemblyException {
+        throw new DisassemblyException("Dfr only has 16-bit instructions. Please check your dfr.txt config file for wrong CODE ranges");
     }
 
 

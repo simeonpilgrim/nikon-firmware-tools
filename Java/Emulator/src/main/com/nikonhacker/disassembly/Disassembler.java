@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly;
 import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.fr.CodeAnalyzer;
+import com.nikonhacker.disassembly.fr.RangeType;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.io.FilenameUtils;
@@ -510,18 +511,27 @@ public abstract class Disassembler {
 
         CPUState cpuState = getCPUState(memRange);
 
-        while (cpuState.pc < memRange.getEnd())
-        {
-            cpuState.pc += disassembleOneStatement(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
+        if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
+            while (cpuState.pc < memRange.getEnd())
+            {
+                cpuState.pc += disassembleOne32BitStatement(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
+            }
+        }
+        else {
+            while (cpuState.pc < memRange.getEnd())
+            {
+                cpuState.pc += disassembleOne16BitStatement(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
+            }
         }
     }
 
     protected abstract CPUState getCPUState(Range memRange);
 
-    protected abstract int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException;
+    protected abstract int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOneStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException;
+    protected abstract int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
+    protected abstract int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
     public void initialize() throws IOException {
         startTime = new Date().toString();
