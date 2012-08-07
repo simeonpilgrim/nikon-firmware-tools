@@ -1,8 +1,8 @@
 package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.DataType;
 import com.nikonhacker.disassembly.fr.InterruptVectorRange;
+import com.nikonhacker.disassembly.fr.RangeType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -93,11 +93,12 @@ public class OptionHandler
     }
 
     /**
-     * Parses a String of the form start-end=datatype[:wordsize] or start,length=datatype[:wordsize]
+     * Parses a String of the form start-end=type[:width] or start,length=type[:width]
      * start and end can be either decimal or hex (0x-prefixed) and can be followed by the K or M (case insensitive) multipliers
      * @param option the option that called this method
      * @param rangeString the String to parse
      * @return the converted Range
+     * @see RangeType for values of type and width
      */
     public static Range parseTypeRange(char option, String rangeString) throws ParsingException {
         StringTokenizer rangeTokenizer = new StringTokenizer(rangeString, ",-=", true);
@@ -117,7 +118,7 @@ public class OptionHandler
             throw new ParsingException("-" + option + " has a malformed range : " + rangeString + " (expected '=' before last address)");
         }
 
-        DataType map = parseMemtype(rangeTokenizer.nextToken());
+        RangeType map = parseRangeType(rangeTokenizer.nextToken());
 
         if (option == 't') {
             return new InterruptVectorRange(start, end, map);
@@ -127,72 +128,70 @@ public class OptionHandler
         }
     }
 
-    static DataType parseMemtype(String arg) throws ParsingException {
+    static RangeType parseRangeType(String arg) throws ParsingException {
         if (StringUtils.isBlank(arg))  {
             throw new ParsingException("no memtype given");
         }
 
-        DataType memp = new DataType();
-        String wtf = "memory type";
+        RangeType rangeType = new RangeType();
         switch (arg.charAt(0))
         {
             case 'C':
             case 'c':
-                memp.memType = DataType.MemType.CODE;
+                rangeType.memoryType = RangeType.MemoryType.CODE;
                 break;
 
             case 'D':
             case 'd':
-                wtf = "data type";
-                memp.memType = DataType.MemType.DATA;
-                memp.specTypes.add(DataType.SpecType.MD_WORD);
+                rangeType.memoryType = RangeType.MemoryType.DATA;
+                rangeType.widths.add(RangeType.Width.MD_WORD);
 
                 int separator = arg.lastIndexOf(':');
                 if (separator != -1)
                 {
-                    memp.specTypes.clear(); // remove above default of MD_WORD
+                    rangeType.widths.clear(); // remove above default of MD_WORD
                     separator++;
                     while (separator < arg.length())
                     {
                         char c = arg.charAt(separator++);
 
-                        DataType.SpecType md;
+                        RangeType.Width md;
                         switch ((c + "").toLowerCase().charAt(0))
                         {
-                            case 'l': md = DataType.SpecType.MD_LONG; break;
-                            case 'n': md = DataType.SpecType.MD_LONGNUM; break;
-                            case 'r': md = DataType.SpecType.MD_RATIONAL; break;
-                            case 'v': md = DataType.SpecType.MD_VECTOR; break;
-                            case 'w': md = DataType.SpecType.MD_WORD; break;
+                            case 'l': md = RangeType.Width.MD_LONG; break;
+                            case 'n': md = RangeType.Width.MD_LONGNUM; break;
+                            case 'r': md = RangeType.Width.MD_RATIONAL; break;
+                            case 'v': md = RangeType.Width.MD_VECTOR; break;
+                            case 'w': md = RangeType.Width.MD_WORD; break;
                             default:
-                                throw new ParsingException("unrecognized " + wtf + " at '" + arg + "'\n" + memtypehelp + "'\n");
+                                throw new ParsingException("unrecognized data type at '" + arg + "'\n" + memtypehelp + "'\n");
                         }
-                        memp.specTypes.add(md);
+                        rangeType.widths.add(md);
                     }
                 }
                 break;
 
             case 'n':
             case 'N':
-                memp.memType = DataType.MemType.NONE;
+                rangeType.memoryType = RangeType.MemoryType.NONE;
                 break;
 
             case 'u':
             case 'U':
-                memp.memType = DataType.MemType.UNKNOWN;
+                rangeType.memoryType = RangeType.MemoryType.UNKNOWN;
                 break;
 
             case 'v':
             case 'V':
-                memp.memType = DataType.MemType.DATA;
-                memp.specTypes.add(DataType.SpecType.MD_VECTOR);
+                rangeType.memoryType = RangeType.MemoryType.DATA;
+                rangeType.widths.add(RangeType.Width.MD_VECTOR);
                 break;
 
             default:
-                throw new ParsingException("unrecognized " + wtf + " at '" + arg + "'\n" + memtypehelp + "\n");
+                throw new ParsingException("unrecognized memory type at '" + arg + "'\n" + memtypehelp + "\n");
         }
 
-        return memp;
+        return rangeType;
     }
 
     public static void parseSymbol(Map<Integer, Symbol> symbols, String argument, String[] registerLabels) throws ParsingException {
