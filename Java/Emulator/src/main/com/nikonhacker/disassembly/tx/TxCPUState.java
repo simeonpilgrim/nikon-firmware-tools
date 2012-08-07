@@ -21,19 +21,13 @@ public class TxCPUState extends CPUState {
             "r24",      "r25",      "r26",      "r27",
             "r28",      "r29",      "r30",      "r31",
 
-            "hi",       "lo"
+            "hi",       "lo",       "Config",   "Config1",
+            "Config2",  "Config3",  "BadVAddr", "Count",
+            "Compare",  "Status",   "Cause",    "EPC",
+            "ErrorEPC", "PRId",     "IER",      "SSCR",
+
+            "Debug",    "DEPC",     "DESAVE"
     };
-    private Register32[][] shadowRegisterSets;
-
-    public int getActiveRegisterSet() {
-        return activeRegisterSet;
-    }
-
-    public void setActiveRegisterSet(int activeRegisterSet) {
-        this.activeRegisterSet = activeRegisterSet;
-    }
-
-    private int activeRegisterSet;
 
     public final static int GP = 28;
     public final static int SP = 29;
@@ -41,6 +35,52 @@ public class TxCPUState extends CPUState {
     public final static int RA = 31;
     public final static int HI = 32;
     public final static int LO = 33;
+    public final static int Config = 34;
+    public final static int Config1 = 35;
+    public final static int Config2 = 36;
+    public final static int Config3 = 37;
+    public final static int BadVAddr = 38;
+    public final static int Count = 39;
+    public final static int Compare = 40;
+    public final static int Status = 41;
+    public final static int Cause = 42;
+    public final static int EPC = 43;
+    public final static int ErrorEPC = 44;
+    public final static int PRId = 45;
+    public final static int IER = 46;
+    public final static int SSCR = 47;
+    public final static int Debug = 48;
+    public final static int DEPC = 49;
+    public final static int DESAVE = 50;
+
+    public final static int Status_RP_bit = 27;
+    public final static int Status_FR_bit = 26;
+    public final static int Status_RE_bit = 25;
+    public final static int Status_MX_bit = 24;
+    public final static int Status_PX_bit = 23;
+    public final static int Status_BEV_bit = 22;
+    public final static int Status_NMI_bit = 19;
+    public final static int Status_KX_bit = 7;
+    public final static int Status_SX_bit = 6;
+    public final static int Status_UX_bit = 5;
+    public final static int Status_UM_bit = 4;
+    public final static int Status_R0_bit = 3;
+    public final static int Status_ERL_bit = 2;
+    public final static int Status_EXL_bit = 1;
+    public final static int Status_IE_bit = 0;
+
+    public enum PowerMode {
+        RUN,
+        HALT,
+        DOZE
+    }
+
+
+    private Register32[][] shadowRegisterSets;
+
+    private int activeRegisterSet;
+
+    private PowerMode powerMode;
 
     /**
      * Default decoding upon class loading
@@ -66,6 +106,22 @@ public class TxCPUState extends CPUState {
         pc = startPc;
     }
 
+
+    public int getActiveRegisterSet() {
+        return activeRegisterSet;
+    }
+
+    public void setActiveRegisterSet(int activeRegisterSet) {
+        this.activeRegisterSet = activeRegisterSet;
+    }
+
+    public PowerMode getPowerMode() {
+        return powerMode;
+    }
+
+    public void setPowerMode(PowerMode powerMode) {
+        this.powerMode = powerMode;
+    }
 
     public static void initRegisterLabels(Set<OutputOption> outputOptions) {
         // Patch names if requested
@@ -126,36 +182,48 @@ public class TxCPUState extends CPUState {
 
         Register32 reg0 = new NullRegister32();
 
+        // All general registers have different values in each set (except 0 is dummy)
         for (int registerSet = 0; registerSet < 8; registerSet++) {
             // register 0 is dummy
             shadowRegisterSets[registerSet][0] = reg0;
             // base layout : all sets have separate register values
-            for (int i = 1; i < regValue.length; i++) {
+            for (int i = 1; i < HI; i++) {
                 shadowRegisterSets[registerSet][i] = new Register32(0);
             }
         }
 
-        // patch exceptions: r26-27-28 and hi-lo are common to all sets
+        // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
         for (int registerSet = 1; registerSet < 8; registerSet++) {
             for (int i = 26; i <= 28; i++) {
                 shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
             }
-            shadowRegisterSets[registerSet][HI] = shadowRegisterSets[0][HI];
-            shadowRegisterSets[registerSet][LO] = shadowRegisterSets[0][LO];
         }
 
-        // other exception: r29 is common to sets 1-7
+        // other exception: r29 is separate in set 0, but common to sets 1-7
         for (int registerSet = 2; registerSet < 8; registerSet++) {
             shadowRegisterSets[registerSet][29] = shadowRegisterSets[1][29];
+        }
+
+        // All registers starting from HI are a single set, so share them
+        for (int i = HI; i < regValue.length; i++) {
+            Register32 r = new Register32();
+            for (int registerSet = 0; registerSet < 8; registerSet++) {
+               shadowRegisterSets[registerSet][i] = r;
+            }
         }
 
         regValidityBitmap = 0;
     }
 
     public void clear() {
-        for (int i = 0; i < regValue.length; i++) {
-            regValue[i] = new Register32(0);
+        for (int registerSet = 0; registerSet < 8; registerSet++) {
+            setActiveRegisterSet(registerSet);
+            for (int i = 0; i < regValue.length; i++) {
+                setReg(i, 0);
+            }
         }
+        setActiveRegisterSet(0);
+
         regValidityBitmap = 0;
     }
 

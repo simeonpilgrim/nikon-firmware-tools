@@ -779,28 +779,27 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd, leadingZeros);
                 }
             });
-//    public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0 $t1,$8",
-//            "Move from Coprocessor 0 : Set $t1 to the value stored in Coprocessor 0 register $8",
-//            TxInstruction.Format.R,
-//            "010000 00000 fffff sssss 00000 000000",
-//            new SimulationCode() {
-//                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-//                    int[] marsOperands = statement.getMarsOperands();
-//                    cpuState.setReg(statement.rs,
-//                            Coprocessor0.getValue(statement.rd));
-//                }
-//            });
-//    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0 $t1,$8",
-//            "Move to Coprocessor 0 : Set Coprocessor 0 register $8 to value stored in $t1",
-//            TxInstruction.Format.R,
-//            "010000 00100 fffff sssss 00000 000000",
-//            new SimulationCode() {
-//                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-//                    int[] marsOperands = statement.getMarsOperands();
-//                    Coprocessor0.updateRegister(statement.rd,
-//                            cpuState.getReg(statement.rs));
-//                }
-//            });
+
+    public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0", "j, k", "mfc0 $t1,$8",
+            "Move from Coprocessor 0 : Set $t1 to the value stored in Coprocessor 0 register $8",
+            TxInstruction.Format.CP,
+            "010000 00000 fffff sssss 00000000 eee",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rd));
+                }
+            });
+
+    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "mtc0 $t1,$8",
+            "Move to Coprocessor 0 : Set Coprocessor 0 register $8 to value stored in $t1",
+            TxInstruction.Format.CP,
+            "010000 00100 fffff sssss 00000000 eee",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt)) ;
+                }
+            });
+
     public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u", "teq $t1,$t2,$t3",
             "Trap if EQual : Trap with code $t3 if $t1 is equal to $t2",
             TxInstruction.Format.TRAP,
@@ -1025,6 +1024,30 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt) & 0x0000ffff);
                 }
             });
+    public static final TxInstruction syncInstruction = new TxInstruction("sync", "", "sync",
+            "Sync : Wait for all operations to complete",
+            TxInstruction.Format.I,
+            "000000 00000000000000000000 001111",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    /* nop. Simulator does not have any pipeline */
+                }
+            });
+    public static final TxInstruction waitInstruction = new TxInstruction("wait", "", "wait",
+            "Wait : put the processor in stand-by",
+            TxInstruction.Format.I,
+            "010000 1 0000000000000000000 100000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (Format.bitValue(cpuState.getReg(TxCPUState.Status), TxCPUState.Status_RP_bit) == 1) {
+                        cpuState.setPowerMode(TxCPUState.PowerMode.DOZE);
+                    }
+                    else {
+                        cpuState.setPowerMode(TxCPUState.PowerMode.HALT);
+                    }
+                }
+            });
+
 //    public static final TxInstruction eretInstruction = new TxInstruction("eret",
 //            "Exception return : Set Program Counter to Coprocessor 0 EPC register value, set Coprocessor Status register bit 1 (exception level) to zero",
 //            TxInstruction.Format.R,
@@ -1250,6 +1273,8 @@ public class TxInstructionSet
         }
     };
 
+    /* Standard resolvers */
+
     static InstructionResolver[] opcodeResolvers;
     static InstructionResolver[] specialFunctionResolvers;
     static InstructionResolver[] regImmRtResolvers;
@@ -1288,7 +1313,7 @@ public class TxInstructionSet
     private static InstructionResolver cop0RsResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            return cop0RsResolvers[(binStatement >>> 21) & 0b111111].resolve(binStatement);
+            return cop0RsResolvers[(binStatement >>> 21) & 0b11111].resolve(binStatement);
         }
     };
 
@@ -1403,7 +1428,7 @@ public class TxInstructionSet
         specialFunctionResolvers[0b001100] = unimplementedResolver; // new DirectInstructionResolver(syscallInstruction);
         specialFunctionResolvers[0b001101] = new DirectInstructionResolver(breakInstruction);
         specialFunctionResolvers[0b001110] = starResolver;
-        specialFunctionResolvers[0b001111] = unimplementedResolver; // new DirectInstructionResolver(syncInstruction);
+        specialFunctionResolvers[0b001111] = new DirectInstructionResolver(syncInstruction);
 
         specialFunctionResolvers[0b010000] = new DirectInstructionResolver(mfhiInstruction);
         specialFunctionResolvers[0b010001] = new DirectInstructionResolver(mthiInstruction);
@@ -1580,11 +1605,11 @@ public class TxInstructionSet
         // COP0 Encoding of rs Field
         cop0RsResolvers = new InstructionResolver[32];
 
-        cop0RsResolvers[0b00000] = unimplementedResolver; // new DirectInstructionResolver(mfc0Instruction);
+        cop0RsResolvers[0b00000] = new DirectInstructionResolver(mfc0Instruction);
         cop0RsResolvers[0b00001] = betaResolver;
         cop0RsResolvers[0b00010] = starResolver;
         cop0RsResolvers[0b00011] = starResolver;
-        cop0RsResolvers[0b00100] = unimplementedResolver; // new DirectInstructionResolver(mtc0Instruction);
+        cop0RsResolvers[0b00100] = new DirectInstructionResolver(mtc0Instruction);
         cop0RsResolvers[0b00101] = betaResolver;
         cop0RsResolvers[0b00110] = starResolver;
         cop0RsResolvers[0b00111] = starResolver;
@@ -1655,7 +1680,7 @@ public class TxInstructionSet
         cop0CoFunctionResolvers[0b011110] = starResolver;
         cop0CoFunctionResolvers[0b011111] = unimplementedResolver; // new DirectInstructionResolver(deretInstruction);/* if EJTAG */
 
-        cop0CoFunctionResolvers[0b100000] = unimplementedResolver; // new DirectInstructionResolver(waitInstruction);
+        cop0CoFunctionResolvers[0b100000] = new DirectInstructionResolver(waitInstruction);
         cop0CoFunctionResolvers[0b100001] = starResolver;
         cop0CoFunctionResolvers[0b100010] = starResolver;
         cop0CoFunctionResolvers[0b100011] = starResolver;
