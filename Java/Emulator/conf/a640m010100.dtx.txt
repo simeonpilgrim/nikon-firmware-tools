@@ -1,0 +1,88 @@
+# The main part of this file describes the D5100 "A" firmware, ver 1.01
+
+
+############################### File map: D5100
+-i 0xBFC00000-0xBFCBFFFF=0x00000000
+ 
+############################### Memory map:
+
+-m 0xBFC00400-0xBFC004CB=CODE:32
+
+-m 0xBFC00500-0xBFC0084B=CODE:32
+
+-m 0xBFC00864-0xBFC009A3=CODE:16
+
+-m 0xBFC009A4-0xBFC02BE7=CODE:32
+
+-m 0xBFC02BE8-0xBFC03F8B=CODE:16
+
+-m 0xBFC0A008-0xBFC0A12B=CODE:32
+
+-m 0xBFC0A12C-0xBFC0D66F=CODE:16
+
+-m 0xBFC0D9F8-0xBFC0ED43=CODE:32
+
+-m 0xBFC11C28-0xBFC1417D=CODE:16
+
+-m 0xBFC14180-0xBFC15AB7=CODE:32
+
+-m 0xBFC15AB8-0xBFC8DD39=CODE:16
+
+
+# Table of offsets used by INT 0x40 :
+#-m 0x0004070A-0x00040869=DATA:W
+
+
+#-m 0x0004086A-0x00040947=CODE
+
+
+# Softune RTOS Copyright :
+#-m 0x00040948-0x000409b3=DATA:L
+
+
+#-m 0x000409b4-0x000504E1=CODE
+
+
+# Unknown :
+#-m 0x000504E2-0x0005425F=DATA:L
+
+# Probably data :
+#-m 0x000AB876-0x000ABB39=DATA:L
+
+
+# Code for sure (meaningful calls)
+#-m 0x000ABB3A-0x000DAA29=CODE
+
+
+# Unknown
+# Table for jump at 000B04FA
+#-m 0x000DAA30-0x000DAA3F=DATA:L
+
+# Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
+#-m 0x000DC310-0x000DC9A3=DATA:L
+
+# Unknown
+#-m 0x000DC9A4-0x000DD357=DATA:L
+
+# Interrupt vector table.
+#-t 0x000dfc00
+#-m 0x000dfc00-0x000dffff=DATA:L
+
+
+############################### Symbols
+
+
+#-s 0x4065E=time(R4 [OUT time_in_ms])
+#-s 0x41374=sys_ref_alm(R4 [IN ptr_to_pk_ralm], R5 [IN almno], R12 [OUT err_code] /* Get Alarm Handler Status */)
+#-s 0x107506=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
+
+########## Global variables
+
+#-s 0x68000910=Real_Time_Clock
+
+########## Menu Data Symbols
+
+#-s 0x8F9CA140=MN_SHOOTINGMENU
+
+# Jump hints
+#-j 0x001A93A0=0x001A929C, 0x001A92AE, 0x001A92EE, 0x001A930C, 0x001A9354
