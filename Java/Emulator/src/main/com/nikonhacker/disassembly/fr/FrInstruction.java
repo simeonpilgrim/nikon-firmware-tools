@@ -391,13 +391,13 @@ public class FrInstruction extends Instruction {
      * @param numberExtraXWords number of extra 16-bit words to be interpreted as x operand
      * @param numberExtraYWords number of extra 16-bit words to be interpreted as y operand (for coprocessor operations)
      * @param name the symbolic name
-     * @param displayFormat a string specifying how to format operands. It is a list of characters among :<br/>
+     * @param displayFormat a string specifying how to format operands and comment. It is a list of characters among :<br/>
 <pre>
 ; separates the operand part and the comment part<br/>
 <br/>
-2 : constant operand (x) must be multiplied by 2 (e.g. address of 16-bit data)<br/>
-4 : constant operand (x) must be multiplied by 4 (e.g. address of 32-bit data)<br/>
-r : constant operand (x) is a relative address<br/>
+2 : immediate operand (x) must be multiplied by 2 (e.g. address of 16-bit data)<br/>
+4 : immediate operand (x) must be multiplied by 4 (e.g. address of 32-bit data)<br/>
+r : immediate operand (x) is a relative address<br/>
 I : x is loaded from Ri if valid (0 otherwise) (?)<br/>
 J : x is loaded from Rj if valid (0 otherwise) (?)<br/>
 b : shift2 (?)<br/>
