@@ -87,7 +87,7 @@ R : immediate operand (x) must be added concatenated to PC & 0xF0000000 <br/>
 b : shift2 (?)<br/>
 y : add 8 to c to mark that register bitmap (x) used by this operation represents R8-R15 and not R0-R7
 <br/>
-[] delimits a section that is only printed if different than the sequence printed before. e.g. "x[y]" prints "xy" while "x[x]" only prints "x". Blanks and commas are ignored<br/>
+[] delimits a section that is only printed optionally. If it is at the start of the format string, it is only printed if included operand is "non-zero". If it is not at the start of the format string, it is only printed if different than the section printed before. examples: "[r0]x" prints "x", "[r2]y prints "r2y", "x[y]" prints "xy" and "x[x]" only prints "x". Blanks and commas are ignored<br/>
 # ( ) + , - @ are copied as is<br/>
 & : outputs a ,<br/>
 <br/>
