@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 public class TxInstructionSet
 {
-    public static final TxInstruction addInstruction = new TxInstruction("add", "k, i, j", "add $t1,$t2,$t3",
+    public static final TxInstruction addInstruction = new TxInstruction("add", "k, [i, ]j", "add $t1,$t2,$t3",
             "ADDition with overflow: set $t1 to ($t2 plus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100000",
@@ -59,7 +59,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, sum);
                 }
             });
-    public static final TxInstruction subInstruction = new TxInstruction("sub", "k, i, j", "sub $t1,$t2,$t3",
+    public static final TxInstruction subInstruction = new TxInstruction("sub", "k, [i, ]j", "sub $t1,$t2,$t3",
             "SUBtraction with overflow: set $t1 to ($t2 minus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100010",
@@ -75,7 +75,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, dif);
                 }
             });
-    public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, i, s", "addi $t1,$t2,-100",
+    public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, [i, ]s", "addi $t1,$t2,-100",
             "ADDition Immediate with overflow: set $t1 to ($t2 plus signed 16-bit immediate)",
             TxInstruction.Format.I,
             "001000 sssss fffff tttttttttttttttt",
@@ -91,6 +91,16 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, sum);
                 }
             });
+    public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, [i, ]j", "addu $t1,$t2,$t3",
+            "ADDition Unsigned without overflow: set $t1 to ($t2 plus $t3), no overflow",
+            TxInstruction.Format.R,
+            "000000 sssss ttttt fffff 00000 100001",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) + cpuState.getReg(statement.rt_ft));
+                }
+            });
+    // alternative if rt=r0
     public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i", "move $t1,$t2",
             "MOVE (formally an ADDU with rt=r0): set $t1 to $t2, no overflow",
             TxInstruction.Format.R,
@@ -100,16 +110,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
                 }
             });
-    public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, i, j", "addu $t1,$t2,$t3",
-            "ADDition Unsigned without overflow: set $t1 to ($t2 plus $t3), no overflow",
-            TxInstruction.Format.R,
-            "000000 sssss ttttt fffff 00000 100001",
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) + cpuState.getReg(statement.rt_ft));
-                }
-            });
-    public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, i, j", "subu $t1,$t2,$t3",
+    public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, [i, ]j", "subu $t1,$t2,$t3",
             "SUBtraction Unsigned without overflow: set $t1 to ($t2 minus $t3), no overflow",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100011",
@@ -118,6 +119,16 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) - cpuState.getReg(statement.rt_ft));
                 }
             });
+    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "addiu $t1,$t2,-100",
+            "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
+            TxInstruction.Format.I,
+            "001001 sssss fffff tttttttttttttttt",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16));
+                }
+            });
+    // alternative if rs=r0
     public static final TxInstruction liAddiuInstruction = new TxInstruction("li", "j, s", "li $t1,-100",
             "Load Immediate (formally an ADDIU with rs = r0): set $t1 to signed 16-bit immediate, no overflow",
             TxInstruction.Format.I,
@@ -127,17 +138,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, statement.imm << 16 >> 16);
                 }
             });
-    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, i, s", "addiu $t1,$t2,-100",
-            "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
-            TxInstruction.Format.I,
-            "001001 sssss fffff tttttttttttttttt",
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16));
-                }
-            });
-    public static final TxInstruction multInstruction = new TxInstruction("mult", "(k,) i, j", "mult $t1,$t2",
-            "MULTiplication: Set hi to high-order 32 bits, lo to low-order 32 bits of the product of $t1 and $t2 (use mfhi to access hi, mflo to access lo)",
+    public static final TxInstruction multInstruction = new TxInstruction("mult", "[k, ]i, j", "mult $t1,$t2",
+            "MULTiplication: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011000",
             new SimulationCode() {
@@ -149,8 +151,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction multuInstruction = new TxInstruction("multu", "(k,) i, j", "multu $t1,$t2",
-            "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of unsigned $t1 and $t2 (use mfhi to access HI, mflo to access LO)",
+    public static final TxInstruction multuInstruction = new TxInstruction("multu", "[k, ]i, j", "multu $t1,$t2",
+            "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of unsigned $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011001",
             new SimulationCode() {
@@ -173,8 +175,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, (int) ((product << 32) >> 32));
                 }
             });
-    public static final TxInstruction maddInstruction = new TxInstruction("madd", "(k,) i, j", "madd $t1,$t2",
-            "Multiply ADD: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product (use mfhi to access HI, mflo to access LO)",
+    public static final TxInstruction maddInstruction = new TxInstruction("madd", "[k, ]i, j", "madd $t1,$t2",
+            "Multiply ADD: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000000",
             new SimulationCode() {
@@ -188,8 +190,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction madduInstruction = new TxInstruction("maddu", "(k,) i, j", "maddu $t1,$t2",
-            "Multiply ADD Unsigned: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product, unsigned (use mfhi to access HI, mflo to access LO)",
+    public static final TxInstruction madduInstruction = new TxInstruction("maddu", "[k, ]i, j", "maddu $t1,$t2",
+            "Multiply ADD Unsigned: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000001",
             new SimulationCode() {
@@ -204,8 +206,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction msubInstruction = new TxInstruction("msub", "(k,) i, j", "msub $t1,$t2",
-            "Multiply SUBtract: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decrement LO by low-order 32 bits of product (use mfhi to access HI, mflo to access LO)",
+    public static final TxInstruction msubInstruction = new TxInstruction("msub", "[k, ]i, j", "msub $t1,$t2",
+            "Multiply SUBtract: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decrement LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000100",
             new SimulationCode() {
@@ -219,8 +221,8 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "(k,) i, j", "msubu $t1,$t2",
-            "Multiply SUBtract Unsigned: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decement LO by low-order 32 bits of product, unsigned (use mfhi to access HI, mflo to access LO)",
+    public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "[k, ]i, j", "msubu $t1,$t2",
+            "Multiply SUBtract Unsigned: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decement LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000101",
             new SimulationCode() {
@@ -236,7 +238,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "div $t1,$t2",
-            "DIVision with overflow: Divide $t1 by $t2 then set LO to quotient and HI to remainder (use mfhi to access HI, mflo to access LO)",
+            "DIVision with overflow: Divide $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011010",
             new SimulationCode() {
@@ -245,13 +247,12 @@ public class TxInstructionSet
                         // Note: no exceptions, and undefined results for zero divide
                         return;
                     }
-
                     cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs) % cpuState.getReg(statement.rt_ft));
                     cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs) / cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "divu $t1,$t2",
-            "DIVision Unsigned without overflow: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder (use mfhi to access HI, mflo to access LO)",
+            "DIVision Unsigned without overflow: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011011",
             new SimulationCode() {
@@ -302,7 +303,7 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs));
                 }
             });
-    public static final TxInstruction andInstruction = new TxInstruction("and", "k, i, j", "and $t1,$t2,$t3",
+    public static final TxInstruction andInstruction = new TxInstruction("and", "k, [i, ]j", "and $t1,$t2,$t3",
             "bitwise AND: Set $t1 to bitwise AND of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100100",
@@ -311,6 +312,16 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) & cpuState.getReg(statement.rt_ft));
                 }
             });
+    public static final TxInstruction orInstruction = new TxInstruction("or", "k, [i, ]j", "or $t1,$t2,$t3",
+            "bitwise OR: Set $t1 to bitwise OR of $t2 and $t3",
+            TxInstruction.Format.R,
+            "000000 sssss ttttt fffff 00000 100101",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft));
+                }
+            });
+    // alternative if rs=r0
     public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j", "move $t1,$t3",
             "MOVE (formally an OR with rs=r0): Set $t1 to $t3",
             TxInstruction.Format.R,
@@ -320,16 +331,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction orInstruction = new TxInstruction("or", "k, i, j", "or $t1,$t2,$t3",
-            "bitwise OR: Set $t1 to bitwise OR of $t2 and $t3",
-            TxInstruction.Format.R,
-            "000000 sssss ttttt fffff 00000 100101",
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft));
-                }
-            });
-    public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, i, s", "andi $t1,$t2,100",
+    public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, [i, ]s", "andi $t1,$t2,100",
             "bitwise AND Immediate: Set $t1 to bitwise AND of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001100 sssss fffff tttttttttttttttt",
@@ -339,6 +341,17 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) & (statement.imm & 0x0000FFFF));
                 }
             });
+    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]s", "ori $t1,$t2,100",
+            "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
+            TxInstruction.Format.I,
+            "001101 sssss fffff tttttttttttttttt",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) | (statement.imm & 0x0000FFFF));
+                }
+            });
+    // alternative if rs=r0
     public static final TxInstruction liOriInstruction = new TxInstruction("li", "j, s", "li $t1,100",
             "Load Immediate (formally an ORI with rs=r0): Set $t1 to zero-extended 16-bit immediate",
             TxInstruction.Format.I,
@@ -349,17 +362,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, statement.imm & 0x0000FFFF);
                 }
             });
-    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, i, s", "ori $t1,$t2,100",
-            "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
-            TxInstruction.Format.I,
-            "001101 sssss fffff tttttttttttttttt",
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) | (statement.imm & 0x0000FFFF));
-                }
-            });
-    public static final TxInstruction norInstruction = new TxInstruction("nor", "k, i, j", "nor $t1,$t2,$t3",
+    public static final TxInstruction norInstruction = new TxInstruction("nor", "k, [i, ]j", "nor $t1,$t2,$t3",
             "bitwise NOR: Set $t1 to bitwise NOR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100111",
@@ -377,7 +380,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) ^ cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, i, s", "xori $t1,$t2,100",
+    public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, [i, ]s", "xori $t1,$t2,100",
             "bitwise XOR Immediate: Set $t1 to bitwise XOR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001110 sssss fffff tttttttttttttttt",
@@ -387,6 +390,16 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) ^ (statement.imm & 0x0000FFFF));
                 }
             });
+    public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, [j, ]l", "sll $t1,$t2,10",
+            "Shift Left Logical: Set $t1 to result of shifting $t2 left by number of bits specified by immediate",
+            TxInstruction.Format.R,
+            "000000 00000 sssss fffff ttttt 000000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) << statement.sa_cc);
+                }
+            });
+    // alternate SLL with 0 registers
     public static final TxInstruction nopInstruction = new TxInstruction("nop", "", "nop",
             "NOP (formally a useless SLL): Do nothing",
             TxInstruction.Format.R,
@@ -396,16 +409,7 @@ public class TxInstructionSet
                     // nop
                 }
             });
-    public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, j, l", "sll $t1,$t2,10",
-            "Shift Left Logical: Set $t1 to result of shifting $t2 left by number of bits specified by immediate",
-            TxInstruction.Format.R,
-            "000000 00000 sssss fffff ttttt 000000",
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) << statement.sa_cc);
-                }
-            });
-    public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, j, i", "sllv $t1,$t2,$t3",
+    public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, [j, ]i", "sllv $t1,$t2,$t3",
             "Shift Left Logical Variable: Set $t1 to result of shifting $t2 left by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000100",
@@ -416,7 +420,7 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt_ft) << (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
-    public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, j, l", "srl $t1,$t2,10",
+    public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, [j, ]l", "srl $t1,$t2,10",
             "Shift Right Logical: Set $t1 to result of shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000010",
@@ -426,7 +430,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> statement.sa_cc);
                 }
             });
-    public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, j, l", "sra $t1,$t2,10",
+    public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, [j, ]l", "sra $t1,$t2,10",
             "Shift Right Arithmetic: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000011",
@@ -436,7 +440,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> statement.sa_cc);
                 }
             });
-    public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, j, i", "srav $t1,$t2,$t3",
+    public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, [j, ]i", "srav $t1,$t2,$t3",
             "Shift Right Arithmetic Variable: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000111",
@@ -446,7 +450,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
-    public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, j, i", "srlv $t1,$t2,$t3",
+    public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, [j, ]i", "srlv $t1,$t2,$t3",
             "Shift Right Logical Variable: Set $t1 to result of shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000110",
@@ -555,7 +559,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    /* alternate mnemonic when Rt is 0 */
+    // alternative if rt=r0
     // TODO: delay slot work
     public static final TxInstruction beqzInstruction = new TxInstruction("beqz", "i, 4ru", "beqz $t1,label",
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
@@ -580,7 +584,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    /* alternate mnemonic when Rt is 0 */
+    // alternative if rt=r0
     // TODO: delay slot work
     public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4ru", "beqzl $t1,label",
             "Branch if EQual Zero (Likely): Branch to statement at label's address if $t1 is zero",
@@ -605,7 +609,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    /* alternate mnemonic when Rt is 0 */
+    // alternative if rt=r0
     // TODO: delay slot work
     public static final TxInstruction bnezInstruction = new TxInstruction("bnez", "i, 4ru", "bnez $t1,label",
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
@@ -630,7 +634,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    /* alternate mnemonic when Rt is 0 */
+    // alternative if rt=r0
     // TODO: delay slot work
     public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4ru", "bnezl $t1,label",
             "Branch if Not Equal Zero (Likely): Branch to statement at label's address if $t1 is not zero",
@@ -656,7 +660,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgezlInstruction = new TxInstruction("bgez", "i, 4rs", "bgez $t1,label",
+    public static final TxInstruction bgezlInstruction = new TxInstruction("bgezl", "i, 4rs", "bgezl $t1,label",
             "Branch if Greater than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is greater than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00011 ssssssssssssssss",
@@ -1044,7 +1048,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, i, j", "add.s $f0,$f1,$f3",
+    public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, [i, ]j", "add.s $f0,$f1,$f3",
             "floating point ADDition Single precision : Set $f0 to single-precision floating point value of $f1 plus $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000000",
@@ -1080,7 +1084,7 @@ public class TxInstructionSet
                 }
             }
     );
-    public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, i, j", "mul.s $f0,$f1,$f3",
+    public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, [i, ]j", "mul.s $f0,$f1,$f3",
             "floating point MULtiplication Single precision : Set $f0 to single-precision floating point value of $f1 times $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000010",
@@ -1094,7 +1098,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, i, j", "div.s $f0,$f1,$f3",
+    public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "div.s $f0,$f1,$f3",
             "floating point DIVision Single precision : Set $f0 to single-precision floating point value of $f1 divided by $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000011",

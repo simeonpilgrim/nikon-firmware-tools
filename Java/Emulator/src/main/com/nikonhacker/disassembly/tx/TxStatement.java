@@ -300,7 +300,7 @@ public class TxStatement extends Statement {
         flags = cpuState.flags;
         cpuState.flags = 0;
 
-        boolean omitZeroMode = false; // sections between square brackets are meant to ignore 0 values
+        boolean isOptionalExpression = false; // sections between square brackets are "optional"
 
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
@@ -345,7 +345,7 @@ public class TxStatement extends Statement {
                     // Start of bracket. Store currentBuffer for later and start own buffer
                     tmpBuffer = currentBuffer;
                     currentBuffer = new StringBuilder();
-                    omitZeroMode = true;
+                    isOptionalExpression = true;
                     break;
                 case ']':
                     // Analyse result of string between brackets and compare it to what was in the buffer before
@@ -355,7 +355,7 @@ public class TxStatement extends Statement {
                     }
                     // Then revert to normal mode
                     currentBuffer = tmpBuffer;
-                    omitZeroMode = false;
+                    isOptionalExpression = false;
                     break;
 
                 case '2':
@@ -422,7 +422,7 @@ public class TxStatement extends Statement {
                     break;
                 case 'd':
                     /* unsigned decimal */
-                    if (decodedImm != 0 || !omitZeroMode) currentBuffer.append(decodedImm);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedImm == 0)) currentBuffer.append(decodedImm);
                     break;
                 case 'f':
                     pos = immBitWidth >> 1;
@@ -437,16 +437,16 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'i':
-                    if (decodedRsFs != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRsFs]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRsFs == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRsFs]);
                     break;
                 case 'j':
-                    if (decodedRtFt != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRtFt]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRtFt == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRtFt]);
                     break;
                 case 'k':
-                    if (decodedRdFd != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
                     break;
                 case 'l':
-                    if (decodedSaCc != 0 || !omitZeroMode) currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSaCc, 5));
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedSaCc == 0)) currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSaCc, 5));
                     break;
 
                 case 'n':
