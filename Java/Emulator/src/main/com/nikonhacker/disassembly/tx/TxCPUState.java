@@ -21,20 +21,37 @@ public class TxCPUState extends CPUState {
             "r24",      "r25",      "r26",      "r27",
             "r28",      "r29",      "r30",      "r31",
 
-            "hi",       "lo",       "Config",   "Config1",
-            "Config2",  "Config3",  "BadVAddr", "Count",
-            "Compare",  "Status",   "Cause",    "EPC",
-            "ErrorEPC", "PRId",     "IER",      "SSCR",
+            "hi",       "lo",
 
-            "Debug",    "DEPC",     "DESAVE"
+            // CP0 Registers
+            "Config",   "Config1", "Config2",   "Config3",
+            "BadVAddr", "Count",   "Compare",   "Status",
+            "Cause",    "EPC",     "ErrorEPC",  "PRId",
+            "IER",      "SSCR",    "Debug",     "DEPC",
+            "DESAVE",
+
+            // CP1 Registers
+            "$f0",  "$f1",  "$f2",  "$f3",
+            "$f4",  "$f5",  "$f6",  "$f7",
+            "$f8",  "$f9",  "$f10", "$f11",
+            "$f12", "$f13", "$f14", "$f15",
+            "$f16", "$f17", "$f18", "$f19",
+            "$f20", "$f21", "$f22", "$f23",
+            "$f24", "$f25", "$f26", "$f27",
+            "$f28", "$f29", "$f30", "$f31",
+
+            // CP1 Control Registers
+            "FIR", "FCCR", "FEXR", "FENR", "FCSR"
     };
 
     public final static int GP = 28;
     public final static int SP = 29;
     public final static int FP = 30;
     public final static int RA = 31;
+
     public final static int HI = 32;
     public final static int LO = 33;
+
     public final static int Config = 34;
     public final static int Config1 = 35;
     public final static int Config2 = 36;
@@ -52,6 +69,14 @@ public class TxCPUState extends CPUState {
     public final static int Debug = 48;
     public final static int DEPC = 49;
     public final static int DESAVE = 50;
+
+    public final static int CP1_F0 = 51;
+
+    public final static int FIR = 67;
+    public final static int FCCR = 68;
+    public final static int FEXR = 69;
+    public final static int FENR = 70;
+    public final static int FCSR = 71;
 
     public final static int Status_RP_bit = 27;
     public final static int Status_FR_bit = 26;
@@ -81,6 +106,11 @@ public class TxCPUState extends CPUState {
     private int activeRegisterSet;
 
     private PowerMode powerMode;
+
+    // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
+    private Register32 cp1Condition = new Register32(0);
+    private int numCp1ConditionFlags = 8;
+
 
     /**
      * Default decoding upon class loading
@@ -238,4 +268,170 @@ public class TxCPUState extends CPUState {
         cloneCpuState.pc = pc;
         return cloneCpuState;
     }
+
+
+    /**
+     *  Sets the value of the FPU register given to the value given.
+     *   @param reg Register to set the value of.
+     *   @param val The desired float value for the register.
+     **/
+    public void setRegisterToFloat(int reg, float val){
+        regValue[reg].setValue(Float.floatToRawIntBits(val));
+    }
+
+    /**
+     *  Sets the value of the FPU register given to the 32-bit
+     *  pattern given by the int parameter.
+     *   @param reg Register to set the value of.
+     *   @param val The desired int bit pattern for the register.
+     **/
+    public void setRegisterToInt(int reg, int val){
+        regValue[reg].setValue(val);
+    }
+
+    /**
+     *  Sets the value of the FPU register given to the double value given.  The register
+     *  must be even-numbered, and the low order 32 bits are placed in it.  The high order
+     *  32 bits are placed in the (odd numbered) register that follows it.
+     *   @param reg Register to set the value of.
+     *   @param val The desired double value for the register.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public void setRegisterPairToDouble(int reg, double val) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        long bits = Double.doubleToRawLongBits(val);
+        regValue[reg+1].setValue(Format.highOrderLongToInt(bits));  // high order 32 bits
+        regValue[reg].setValue(Format.lowOrderLongToInt(bits)); // low order 32 bits
+    }
+
+    /**
+     *  Sets the value of the FPU register pair given to the long value containing 64 bit pattern
+     *  given.  The register
+     *  must be even-numbered, and the low order 32 bits from the long are placed in it.  The high order
+     *  32 bits from the long are placed in the (odd numbered) register that follows it.
+     *   @param reg Register to set the value of.  Must be even register of even/odd pair.
+     *   @param val The desired double value for the register.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public void setRegisterPairToLong(int reg, long val)
+            throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        regValue[reg+1].setValue(Format.highOrderLongToInt(val));  // high order 32 bits
+        regValue[reg].setValue(Format.lowOrderLongToInt(val)); // low order 32 bits
+    }
+
+
+    /**
+     *  Gets the float value stored in the given FPU register.
+     *   @param reg Register to get the value of.
+     *   @return The  float value stored by that register.
+     **/
+
+    public float getFloatFromRegister(int reg){
+        return Float.intBitsToFloat(regValue[reg].getValue());
+    }
+
+    /**
+     *  Gets the double value stored in the given FPU register.  The register
+     *  must be even-numbered.
+     *   @param reg Register to get the value of. Must be even number of even/odd pair.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public double getDoubleFromRegisterPair(int reg) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        return Double.longBitsToDouble(Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue()));
+    }
+
+    /**
+     *  Gets a long representing the double value stored in the given double
+     *  precision FPU register.
+     *  The register must be even-numbered.
+     *   @param reg Register to get the value of. Must be even number of even/odd pair.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public long getLongFromRegisterPair(int reg) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        return Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue());
+    }
+
+
+    /**
+     *  Set condition flag to 1 (true).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return previous flag setting (0 or 1)
+     */
+    public void setConditionFlag(int flag) {
+        cp1Condition.setValue(Format.setBit(cp1Condition.getValue(), flag));
+    }
+
+    /**
+     *  Set condition flag to 0 (false).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return previous flag setting (0 or 1)
+     */
+    public void clearConditionFlag(int flag) {
+        cp1Condition.setValue(Format.clearBit(cp1Condition.getValue(), flag));
+    }
+
+
+    /**
+     *  Get value of specified condition flag (0-7).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return 0 if condition is false, 1 if condition is true
+     */
+    public int getConditionFlag(int flag) {
+        return Format.bitValue(cp1Condition.getValue(), flag);
+    }
+
+
+    /**
+     *  Get array of condition flags (0-7).
+     *
+     *  @return array of int condition flags
+     */
+    public int getConditionFlags() {
+        return cp1Condition.getValue();
+    }
+
+
+    /**
+     *  Clear all condition flags (0-7).
+     *
+     */
+    public void clearConditionFlags() {
+        cp1Condition.setValue(0);  // sets all 32 bits to 0.
+    }
+
+    /**
+     *  Set all condition flags (0-7).
+     *
+     */
+    public void setConditionFlags() {
+        cp1Condition.setValue(-1);  // sets all 32 bits to 1.
+    }
+
+    /**
+     *  Get count of condition flags.
+     *
+     *  @return number of condition flags
+     */
+    public int getConditionFlagCount() {
+        return numCp1ConditionFlags;
+    }
+
 }

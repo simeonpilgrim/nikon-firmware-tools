@@ -35,6 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /**
  * The list of TxInstruction objects, each of which represents a TX19a MIPS32 instruction.
+ * This is based mainly on
  *
  * @author original: Pete Sanderson and Ken Vollmar
  * @version August 2003-5
@@ -48,14 +49,14 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int add1 = cpuState.getReg(statement.rs);
-                    int add2 = cpuState.getReg(statement.rt);
+                    int add1 = cpuState.getReg(statement.rs_fs);
+                    int add2 = cpuState.getReg(statement.rt_ft);
                     int sum = add1 + add2;
                     // overflow on A+B detected when A and B have same sign and A+B has other sign.
                     if ((add1 >= 0 && add2 >= 0 && sum < 0) || (add1 < 0 && add2 < 0 && sum >= 0)) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
-                    cpuState.setReg(statement.rd, sum);
+                    cpuState.setReg(statement.rd_fd, sum);
                 }
             });
     public static final TxInstruction subInstruction = new TxInstruction("sub", "k, i, j", "sub $t1,$t2,$t3",
@@ -64,14 +65,14 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int sub1 = cpuState.getReg(statement.rs);
-                    int sub2 = cpuState.getReg(statement.rt);
+                    int sub1 = cpuState.getReg(statement.rs_fs);
+                    int sub2 = cpuState.getReg(statement.rt_ft);
                     int dif = sub1 - sub2;
                     // overflow on A-B detected when A and B have opposite signs and A-B has B's sign
                     if ((sub1 >= 0 && sub2 < 0 && dif < 0) || (sub1 < 0 && sub2 >= 0 && dif >= 0)) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
-                    cpuState.setReg(statement.rd, dif);
+                    cpuState.setReg(statement.rd_fd, dif);
                 }
             });
     public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, i, s", "addi $t1,$t2,-100",
@@ -80,14 +81,23 @@ public class TxInstructionSet
             "001000 sssss fffff tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int add1 = cpuState.getReg(statement.rs);
+                    int add1 = cpuState.getReg(statement.rs_fs);
                     int add2 = statement.imm << 16 >> 16;
                     int sum = add1 + add2;
                     // overflow on A+B detected when A and B have same sign and A+B has other sign.
                     if ((add1 >= 0 && add2 >= 0 && sum < 0) || (add1 < 0 && add2 < 0 && sum >= 0)) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
-                    cpuState.setReg(statement.rt, sum);
+                    cpuState.setReg(statement.rt_ft, sum);
+                }
+            });
+    public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i", "move $t1,$t2",
+            "MOVE (formally an ADDU with rt=r0): set $t1 to $t2, no overflow",
+            TxInstruction.Format.R,
+            "000000 sssss 00000 fffff 00000 100001",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
                 }
             });
     public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, i, j", "addu $t1,$t2,$t3",
@@ -96,7 +106,7 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rs) + cpuState.getReg(statement.rt));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) + cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, i, j", "subu $t1,$t2,$t3",
@@ -105,16 +115,25 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rs) - cpuState.getReg(statement.rt));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) - cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, i, u", "addiu $t1,$t2,-100", // TODO why -100 for unsigned ?
-            "ADDition Immediate Unsigned without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
+    public static final TxInstruction liAddiuInstruction = new TxInstruction("li", "j, s", "li $t1,-100",
+            "Load Immediate (formally an ADDIU with rs = r0): set $t1 to signed 16-bit immediate, no overflow",
+            TxInstruction.Format.I,
+            "001001 00000 fffff tttttttttttttttt",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, statement.imm << 16 >> 16);
+                }
+            });
+    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, i, s", "addiu $t1,$t2,-100",
+            "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
             TxInstruction.Format.I,
             "001001 sssss fffff tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16));
                 }
             });
     public static final TxInstruction multInstruction = new TxInstruction("mult", "(k,) i, j", "mult $t1,$t2",
@@ -123,11 +142,11 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 011000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (long) cpuState.getReg(statement.rs) * (long) cpuState.getReg(statement.rt);
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
                     cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction multuInstruction = new TxInstruction("multu", "(k,) i, j", "multu $t1,$t2",
@@ -136,12 +155,12 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 011001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (((long) cpuState.getReg(statement.rs)) << 32 >>> 32)
-                            * (((long) cpuState.getReg(statement.rt)) << 32 >>> 32);
+                    long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
+                            * (((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction mulInstruction = new TxInstruction("mul", "k, i, j", "mul $t1,$t2,$t3",
@@ -150,8 +169,8 @@ public class TxInstructionSet
             "011100 sssss ttttt fffff 00000 000010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (long) cpuState.getReg(statement.rs) * (long) cpuState.getReg(statement.rt);
-                    cpuState.setReg(statement.rd, (int) ((product << 32) >> 32));
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
+                    cpuState.setReg(statement.rd_fd, (int) ((product << 32) >> 32));
                 }
             });
     public static final TxInstruction maddInstruction = new TxInstruction("madd", "(k,) i, j", "madd $t1,$t2",
@@ -160,13 +179,13 @@ public class TxInstructionSet
             "011100 fffff sssss 00000 00000 000000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (long) cpuState.getReg(statement.rs) * (long) cpuState.getReg(statement.rt);
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
                     long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
                     long sum = contentsHiLo + product;
                     cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
                     int lo = Format.lowOrderLongToInt(sum);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction madduInstruction = new TxInstruction("maddu", "(k,) i, j", "maddu $t1,$t2",
@@ -175,14 +194,14 @@ public class TxInstructionSet
             "011100 fffff sssss 00000 00000 000001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (((long) cpuState.getReg(statement.rs)) << 32 >>> 32)
-                            * (((long) cpuState.getReg(statement.rt)) << 32 >>> 32);
+                    long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
+                            * (((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
                     long sum = contentsHiLo + product;
                     cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
                     int lo = Format.lowOrderLongToInt(sum);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction msubInstruction = new TxInstruction("msub", "(k,) i, j", "msub $t1,$t2",
@@ -191,13 +210,13 @@ public class TxInstructionSet
             "011100 fffff sssss 00000 00000 000100",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (long) cpuState.getReg(statement.rs) * (long) cpuState.getReg(statement.rt);
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
                     long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
                     long diff = contentsHiLo - product;
                     cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(diff));
                     int lo = Format.lowOrderLongToInt(diff);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "(k,) i, j", "msubu $t1,$t2",
@@ -206,14 +225,14 @@ public class TxInstructionSet
             "011100 fffff sssss 00000 00000 000101",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    long product = (((long) cpuState.getReg(statement.rs)) << 32 >>> 32)
-                            * (((long) cpuState.getReg(statement.rt)) << 32 >>> 32);
+                    long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
+                            * (((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
                     long diff = contentsHiLo - product;
                     cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(diff));
                     int lo = Format.lowOrderLongToInt(diff);
                     cpuState.setReg(TxCPUState.LO, lo);
-                    cpuState.setReg(statement.rd, lo);
+                    cpuState.setReg(statement.rd_fd, lo);
                 }
             });
     public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "div $t1,$t2",
@@ -222,13 +241,13 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 011010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rt) == 0) {
+                    if (cpuState.getReg(statement.rt_ft) == 0) {
                         // Note: no exceptions, and undefined results for zero divide
                         return;
                     }
 
-                    cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs) % cpuState.getReg(statement.rt));
-                    cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs) / cpuState.getReg(statement.rt));
+                    cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs) % cpuState.getReg(statement.rt_ft));
+                    cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs) / cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "divu $t1,$t2",
@@ -237,12 +256,12 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 011011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rt) == 0) {
+                    if (cpuState.getReg(statement.rt_ft) == 0) {
                         // Note: no exceptions, and undefined results for zero divide
                         return;
                     }
-                    long oper1 = ((long) cpuState.getReg(statement.rs)) << 32 >>> 32;
-                    long oper2 = ((long) cpuState.getReg(statement.rt)) << 32 >>> 32;
+                    long oper1 = ((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32;
+                    long oper2 = ((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32;
                     cpuState.setReg(TxCPUState.HI, (int) (((oper1 % oper2) << 32) >> 32));
                     cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
                 }
@@ -253,7 +272,7 @@ public class TxInstructionSet
             "000000 00000 00000 fffff 00000 010000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(TxCPUState.HI));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.HI));
                 }
             });
     public static final TxInstruction mfloInstruction = new TxInstruction("mflo", "k", "mflo $t1",
@@ -262,7 +281,7 @@ public class TxInstructionSet
             "000000 00000 00000 fffff 00000 010010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(TxCPUState.LO));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.LO));
                 }
             });
     public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "mthi $t1",
@@ -271,7 +290,7 @@ public class TxInstructionSet
             "000000 fffff 00000 00000 00000 010001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs));
+                    cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs));
                 }
             });
     public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "mtlo $t1",
@@ -280,7 +299,7 @@ public class TxInstructionSet
             "000000 fffff 00000 00000 00000 010011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs));
+                    cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs));
                 }
             });
     public static final TxInstruction andInstruction = new TxInstruction("and", "k, i, j", "and $t1,$t2,$t3",
@@ -289,7 +308,16 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100100",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rs) & cpuState.getReg(statement.rt));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) & cpuState.getReg(statement.rt_ft));
+                }
+            });
+    public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j", "move $t1,$t3",
+            "MOVE (formally an OR with rs=r0): Set $t1 to $t3",
+            TxInstruction.Format.R,
+            "000000 00000 ttttt fffff 00000 100101",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction orInstruction = new TxInstruction("or", "k, i, j", "or $t1,$t2,$t3",
@@ -298,7 +326,7 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100101",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rs) | cpuState.getReg(statement.rt));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, i, s", "andi $t1,$t2,100",
@@ -308,17 +336,27 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rs) & (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) & (statement.imm & 0x0000FFFF));
                 }
             });
-    public static final TxInstruction oriInstruction = new TxInstruction("or", "j, i, s", "ori $t1,$t2,100",
+    public static final TxInstruction liOriInstruction = new TxInstruction("li", "j, s", "li $t1,100",
+            "Load Immediate (formally an ORI with rs=r0): Set $t1 to zero-extended 16-bit immediate",
+            TxInstruction.Format.I,
+            "001101 00000 fffff tttttttttttttttt",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
+                    cpuState.setReg(statement.rt_ft, statement.imm & 0x0000FFFF);
+                }
+            });
+    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, i, s", "ori $t1,$t2,100",
             "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001101 sssss fffff tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rs) | (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) | (statement.imm & 0x0000FFFF));
                 }
             });
     public static final TxInstruction norInstruction = new TxInstruction("nor", "k, i, j", "nor $t1,$t2,$t3",
@@ -327,7 +365,7 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100111",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, ~(cpuState.getReg(statement.rs) | cpuState.getReg(statement.rt)));
+                    cpuState.setReg(statement.rd_fd, ~(cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft)));
                 }
             });
     public static final TxInstruction xorInstruction = new TxInstruction("xor", "k, i, j", "xor $t1,$t2,$t3",
@@ -336,7 +374,7 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 100110",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rs) ^ cpuState.getReg(statement.rt));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) ^ cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, i, s", "xori $t1,$t2,100",
@@ -346,11 +384,11 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rs) ^ (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) ^ (statement.imm & 0x0000FFFF));
                 }
             });
     public static final TxInstruction nopInstruction = new TxInstruction("nop", "", "nop",
-            "NOP (formally a useless shift left logical): Do nothing",
+            "NOP (formally a useless SLL): Do nothing",
             TxInstruction.Format.R,
             "000000 00000 00000 00000 00000 000000",
             new SimulationCode() {
@@ -364,7 +402,7 @@ public class TxInstructionSet
             "000000 00000 sssss fffff ttttt 000000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt) << statement.sa);
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) << statement.sa_cc);
                 }
             });
     public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, j, i", "sllv $t1,$t2,$t3",
@@ -374,8 +412,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount.
-                    cpuState.setReg(statement.rd,
-                            cpuState.getReg(statement.rt) << (cpuState.getReg(statement.rs) & 0b11111));
+                    cpuState.setReg(statement.rd_fd,
+                            cpuState.getReg(statement.rt_ft) << (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
     public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, j, l", "srl $t1,$t2,10",
@@ -385,7 +423,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // must zero-fill, so use ">>>" instead of ">>".
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt) >>> statement.sa);
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> statement.sa_cc);
                 }
             });
     public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, j, l", "sra $t1,$t2,10",
@@ -395,7 +433,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // must sign-fill, so use ">>".
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt) >> statement.sa);
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> statement.sa_cc);
                 }
             });
     public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, j, i", "srav $t1,$t2,$t3",
@@ -405,7 +443,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>" to sign-fill.
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt) >> (cpuState.getReg(statement.rs) & 0b11111));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
     public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, j, i", "srlv $t1,$t2,$t3",
@@ -415,7 +453,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>>" to zero-fill.
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt) >>> (cpuState.getReg(statement.rs) & 0b11111));
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
     public static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "lw $t1,-100($t2)",
@@ -425,7 +463,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    cpuState.setReg(statement.rt, memory.load32(cpuState.getReg(statement.rs) + statement.imm));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm));
                 }
             });
     public static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "lwl $t1,-100($t2)",
@@ -435,12 +473,12 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs) + statement.imm;
-                    int result = cpuState.getReg(statement.rt);
+                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int result = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         result = Format.setByte(result, 3 - i, memory.loadUnsigned8(address - i));
                     }
-                    cpuState.setReg(statement.rt, result);
+                    cpuState.setReg(statement.rt_ft, result);
                 }
             });
     public static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "lwr $t1,-100($t2)",
@@ -450,12 +488,12 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs) + statement.imm;
-                    int result = cpuState.getReg(statement.rt);
+                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int result = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         result = Format.setByte(result, i, memory.loadUnsigned8(address + i));
                     }
-                    cpuState.setReg(statement.rt, result);
+                    cpuState.setReg(statement.rt_ft, result);
                 }
             });
     public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "sw $t1,-100($t2)",
@@ -465,7 +503,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    memory.store32(cpuState.getReg(statement.rs) + statement.imm, cpuState.getReg(statement.rt));
+                    memory.store32(cpuState.getReg(statement.rs_fs) + statement.imm, cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "swl $t1,-100($t2)",
@@ -475,8 +513,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs) + statement.imm;
-                    int source = cpuState.getReg(statement.rt);
+                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int source = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         memory.store8(address - i, Format.getByte(source, 3 - i));
                     }
@@ -489,8 +527,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs) + statement.imm;
-                    int source = cpuState.getReg(statement.rt);
+                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int source = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         memory.store8(address + i, Format.getByte(source, i));
                     }
@@ -502,7 +540,7 @@ public class TxInstructionSet
             "001111 00000 fffff ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt, statement.imm << 16);
+                    cpuState.setReg(statement.rt_ft, statement.imm << 16);
                 }
             });
     // TODO: delay slot work
@@ -512,7 +550,7 @@ public class TxInstructionSet
             "000100 fffff sssss tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -525,7 +563,7 @@ public class TxInstructionSet
             "000100 fffff 00000 tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == 0) {
+                    if (cpuState.getReg(statement.rs_fs) == 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -537,7 +575,7 @@ public class TxInstructionSet
             "010100 fffff sssss tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -550,7 +588,7 @@ public class TxInstructionSet
             "010100 fffff 00000 tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == 0) {
+                    if (cpuState.getReg(statement.rs_fs) == 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -562,7 +600,7 @@ public class TxInstructionSet
             "000101 fffff sssss tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -575,7 +613,7 @@ public class TxInstructionSet
             "000101 fffff 00000 tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != 0) {
+                    if (cpuState.getReg(statement.rs_fs) != 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -587,7 +625,7 @@ public class TxInstructionSet
             "010101 fffff sssss tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -600,7 +638,7 @@ public class TxInstructionSet
             "010101 fffff 00000 tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != 0) {
+                    if (cpuState.getReg(statement.rs_fs) != 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -612,7 +650,7 @@ public class TxInstructionSet
             "000001 fffff 00001 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= 0) {
+                    if (cpuState.getReg(statement.rs_fs) >= 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -624,7 +662,7 @@ public class TxInstructionSet
             "000001 fffff 00011 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= 0) {
+                    if (cpuState.getReg(statement.rs_fs) >= 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -636,7 +674,7 @@ public class TxInstructionSet
             "000001 fffff 10001 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= 0) {
+                    if (cpuState.getReg(statement.rs_fs) >= 0) {
                         cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
@@ -649,7 +687,7 @@ public class TxInstructionSet
             "000001 fffff 10011 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= 0) {
+                    if (cpuState.getReg(statement.rs_fs) >= 0) {
                         cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
@@ -662,7 +700,7 @@ public class TxInstructionSet
             "000111 fffff 00000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) > 0) {
+                    if (cpuState.getReg(statement.rs_fs) > 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -674,7 +712,7 @@ public class TxInstructionSet
             "010111 fffff 00000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) > 0) {
+                    if (cpuState.getReg(statement.rs_fs) > 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -686,7 +724,7 @@ public class TxInstructionSet
             "000110 fffff 00000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) <= 0) {
+                    if (cpuState.getReg(statement.rs_fs) <= 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -698,7 +736,7 @@ public class TxInstructionSet
             "010110 fffff 00000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) <= 0) {
+                    if (cpuState.getReg(statement.rs_fs) <= 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -710,7 +748,7 @@ public class TxInstructionSet
             "000001 fffff 00000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < 0) {
+                    if (cpuState.getReg(statement.rs_fs) < 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -722,7 +760,7 @@ public class TxInstructionSet
             "000001 fffff 00010 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < 0) {
+                    if (cpuState.getReg(statement.rs_fs) < 0) {
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -734,7 +772,7 @@ public class TxInstructionSet
             "000001 fffff 10000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < 0) {
+                    if (cpuState.getReg(statement.rs_fs) < 0) {
                         cpuState.setReg(TxCPUState.RA, cpuState.pc + 8); // the "and link" part
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
@@ -747,7 +785,7 @@ public class TxInstructionSet
             "000001 fffff 10010 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < 0) {
+                    if (cpuState.getReg(statement.rs_fs) < 0) {
                         cpuState.setReg(TxCPUState.RA, cpuState.pc + 8); // the "and link" part
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
@@ -759,7 +797,7 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 101010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, (cpuState.getReg(statement.rs) < cpuState.getReg(statement.rt)) ? 1 : 0);
+                    cpuState.setReg(statement.rd_fd, (cpuState.getReg(statement.rs_fs) < cpuState.getReg(statement.rt_ft)) ? 1 : 0);
                 }
             });
     public static final TxInstruction sltuInstruction = new TxInstruction("sltu", "k, i, j", "sltu $t1,$t2,$t3",
@@ -768,12 +806,12 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 101011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
-                    int second = cpuState.getReg(statement.rt);
+                    int first = cpuState.getReg(statement.rs_fs);
+                    int second = cpuState.getReg(statement.rt_ft);
                     if (first >= 0 && second >= 0 || first < 0 && second < 0) {
-                        cpuState.setReg(statement.rd, (first < second) ? 1 : 0);
+                        cpuState.setReg(statement.rd_fd, (first < second) ? 1 : 0);
                     } else {
-                        cpuState.setReg(statement.rd, (first >= 0) ? 1 : 0);
+                        cpuState.setReg(statement.rd_fd, (first >= 0) ? 1 : 0);
                     }
                 }
             });
@@ -784,7 +822,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // 16 bit immediate value in statement.imm is sign-extended
-                    cpuState.setReg(statement.rt, (cpuState.getReg(statement.rs) < (statement.imm << 16 >> 16)) ? 1 : 0);
+                    cpuState.setReg(statement.rt_ft, (cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) ? 1 : 0);
                 }
             });
     public static final TxInstruction sltiuInstruction = new TxInstruction("sltiu", "j, i, imm", "sltiu $t1,$t2,-100",
@@ -793,13 +831,13 @@ public class TxInstructionSet
             "001011 sssss fffff tttttttttttttttt",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
+                    int first = cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
                     if (first >= 0 && second >= 0 || first < 0 && second < 0) {
-                        cpuState.setReg(statement.rt, (first < second) ? 1 : 0);
+                        cpuState.setReg(statement.rt_ft, (first < second) ? 1 : 0);
                     } else {
-                        cpuState.setReg(statement.rt, (first >= 0) ? 1 : 0);
+                        cpuState.setReg(statement.rt_ft, (first >= 0) ? 1 : 0);
                     }
                 }
             });
@@ -809,8 +847,8 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 001011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rt) != 0) {
-                        cpuState.setReg(statement.rd, cpuState.getReg(statement.rs));
+                    if (cpuState.getReg(statement.rt_ft) != 0) {
+                        cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
                     }
                 }
             });
@@ -820,8 +858,8 @@ public class TxInstructionSet
             "000000 sssss ttttt fffff 00000 001010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rt) == 0) {
-                        cpuState.setReg(statement.rd, cpuState.getReg(statement.rs));
+                    if (cpuState.getReg(statement.rt_ft) == 0) {
+                        cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
                     }
                 }
             });
@@ -836,7 +874,7 @@ public class TxInstructionSet
                             statement.imm + ".", Exceptions.BREAKPOINT_EXCEPTION);
                 }
             });
-    public static final TxInstruction jInstruction = new TxInstruction("j", "4ru", "j target",
+    public static final TxInstruction jInstruction = new TxInstruction("j", "4Ru", "j target",
             "Jump unconditionally: Jump to statement at target address",
             TxInstruction.Format.J,
             "000010 ffffffffffffffffffffffffff",
@@ -851,10 +889,10 @@ public class TxInstructionSet
             "000000 fffff 00000 00000 00000 001000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(statement.rs);
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
                 }
             });
-    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4ru", "jal target",
+    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "jal target",
             "Jump And Link: Set $ra to Program Counter (return address) then jump to statement at target address",
             TxInstruction.Format.J,
             "000011 ffffffffffffffffffffffffff",
@@ -864,14 +902,14 @@ public class TxInstructionSet
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
                 }
             });
-    public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i", "jalr $t1,$t2", // special case: print short version if $t2 is RA
+    public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i", "jalr $t1,$t2", // TODO omit rd if rd=$ra
             "Jump And Link Register: Set $t1 to Program Counter (return address) then jump to statement whose address is in $t2",
             TxInstruction.Format.R,
             "000000 sssss 00000 fffff 00000 001001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.pc + 8);
-                    cpuState.pc = cpuState.getReg(statement.rs);
+                    cpuState.setReg(statement.rd_fd, cpuState.pc + 8);
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
                 }
             });
     public static final TxInstruction cloInstruction = new TxInstruction("clo", "k, i", "clo $t1,$t2",
@@ -894,14 +932,14 @@ public class TxInstructionSet
             "011100 sssss 00000 fffff 00000 100001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int value = cpuState.getReg(statement.rs);
+                    int value = cpuState.getReg(statement.rs_fs);
                     int leadingOnes = 0;
                     int bitPosition = 31;
                     while (Format.bitValue(value, bitPosition) == 1 && bitPosition >= 0) {
                         leadingOnes++;
                         bitPosition--;
                     }
-                    cpuState.setReg(statement.rd, leadingOnes);
+                    cpuState.setReg(statement.rd_fd, leadingOnes);
                 }
             });
     public static final TxInstruction clzInstruction = new TxInstruction("clz", "k, i", "clz $t1,$t2",
@@ -911,44 +949,276 @@ public class TxInstructionSet
             "011100 sssss 00000 fffff 00000 100000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int value = cpuState.getReg(statement.rs);
+                    int value = cpuState.getReg(statement.rs_fs);
                     int leadingZeros = 0;
                     int bitPosition = 31;
                     while (Format.bitValue(value, bitPosition) == 0 && bitPosition >= 0) {
                         leadingZeros++;
                         bitPosition--;
                     }
-                    cpuState.setReg(statement.rd, leadingZeros);
+                    cpuState.setReg(statement.rd_fd, leadingZeros);
                 }
             });
 
     public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0", "j, k", "mfc0 $t1,$8",
             "Move From Coprocessor 0: Set $t1 to the value stored in Coprocessor 0 register $8",
-            TxInstruction.Format.CP,
+            TxInstruction.Format.CP0,
             "010000 00000 fffff sssss 00000000 eee",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt, cpuState.getReg(statement.rd));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rd_fd));
                 }
             });
 
     public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "mtc0 $t1,$8",
             "Move To Coprocessor 0: Set Coprocessor 0 register $8 to value stored in $t1",
-            TxInstruction.Format.CP,
+            TxInstruction.Format.CP0,
             "010000 00100 fffff sssss 00000000 eee",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd, cpuState.getReg(statement.rt)) ;
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft)) ;
                 }
             });
 
+    /////////////////////// CP1 and Floating Point Instructions Start Here ////////////////
+    public static final TxInstruction mfc1Instruction = new TxInstruction("mfc1", "j, i", "mfc1 $t1,$8",
+            "Move From Coprocessor 1: Set $t1 to the value stored in Coprocessor 1 register $8",
+            TxInstruction.Format.CP1_R1,
+            "010000 00000 fffff sssss 00000000 000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs/*fs*/));
+                }
+            });
+
+    public static final TxInstruction mtc1Instruction = new TxInstruction("mtc1", "j, i", "mtc1 $t1,$8",
+            "Move To Coprocessor 1: Set Coprocessor 1 register $8 to value stored in $t1",
+            TxInstruction.Format.CP1_R1,
+            "010000 00100 fffff sssss 00000000 000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rs_fs/*fs*/, cpuState.getReg(statement.rt_ft)) ;
+                }
+            });
+
+    public static final TxInstruction cfc1Instruction = new TxInstruction("cfc1", "j, i", "cfc1 $t1,$8",
+            "move Control From Coprocessor 1: Set $t1 to the value stored in coprocessor 1 control register $8",
+            TxInstruction.Format.CP1_CR1,
+            "010000 00000 fffff sssss 00000000 000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs/*cr#*/));
+                }
+            });
+
+    public static final TxInstruction ctc1Instruction = new TxInstruction("ctc1", "j, i", "ctc1 $t1,$8",
+            "move Control To Coprocessor 1: Set coprocessor 1 control register $8 to value stored in $t1",
+            TxInstruction.Format.CP1_CR1,
+            "010000 00100 fffff sssss 00000000 000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rs_fs/*cr#*/, cpuState.getReg(statement.rt_ft)) ;
+                }
+            });
+
+
+    public static final TxInstruction lwc1Instruction = new TxInstruction("lwc1", "j, s(i)", "lwc1 $f1,-100($t2)",
+            "Load Word into Coprocessor 1 (FPU) : Set $f1 to 32-bit value from effective memory word address",
+            TxInstruction.Format.CP1_I,
+            "110001 ttttt fffff ssssssssssssssss",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // todo check sign extension of offset
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm));
+                }
+            });
+
+    public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i)", "swc1 $f1,-100($t2)",
+            "Store Word from Coprocessor 1 (FPU) : Store 32 bit value in $f1 to effective memory word address",
+            TxInstruction.Format.CP1_I,
+            "111001 ttttt fffff ssssssssssssssss",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // todo check sign extension of offset
+                    memory.store32(cpuState.getReg(statement.rs_fs) + statement.imm, cpuState.getReg(statement.rt_ft));
+                }
+            });
+
+    public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, i, j", "add.s $f0,$f1,$f3",
+            "floating point ADDition Single precision : Set $f0 to single-precision floating point value of $f1 plus $f3",
+            TxInstruction.Format.CP1_R2,
+            "010001 10000 ttttt sssss fffff 000000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float add1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float add2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        float sum = add1 + add2;
+                        // overflow detected when sum is positive or negative infinity.
+                        /*
+                        if (sum == Float.NEGATIVE_INFINITY || sum == Float.POSITIVE_INFINITY) {
+                          throw new ProcessingException(statement,"arithmetic overflow");
+                        }
+                        */
+                        cpuState.setReg(statement.rd_fd, Float.floatToIntBits(sum));
+                    }
+                }
+            }
+    );
+    public static final TxInstruction subSInstruction = new TxInstruction("sub.s", "k, [i, ]j", "sub.s $f0,$f1,$f3",
+            "floating point SUBtraction Single precision : Set $f0 to single-precision floating point value of $f1  minus $f3",
+            TxInstruction.Format.CP1_R2,
+            "010001 10000 ttttt sssss fffff 000001",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float sub1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float sub2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        float diff = sub1 - sub2;
+                        cpuState.setReg(statement.rd_fd, Float.floatToIntBits(diff));
+                    }
+                }
+            }
+    );
+    public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, i, j", "mul.s $f0,$f1,$f3",
+            "floating point MULtiplication Single precision : Set $f0 to single-precision floating point value of $f1 times $f3",
+            TxInstruction.Format.CP1_R2,
+            "010001 10000 ttttt sssss fffff 000010",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float mul1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float mul2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        float prod = mul1 * mul2;
+                        cpuState.setReg(statement.rd_fd, Float.floatToIntBits(prod));
+                    }
+                }
+            });
+    public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, i, j", "div.s $f0,$f1,$f3",
+            "floating point DIVision Single precision : Set $f0 to single-precision floating point value of $f1 divided by $f3",
+            TxInstruction.Format.CP1_R2,
+            "010001 10000 ttttt sssss fffff 000011",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float div1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float div2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        float quot = div1 / div2;
+                        cpuState.setReg(statement.rd_fd, Float.floatToIntBits(quot));
+                    }
+                }
+            });
+
+    public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4ru", "bc1f 1,label",
+            "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF) : If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
+            TxInstruction.Format.CP1_CC_BRANCH,
+            "010001 01000 fff 00 ssssssssssssssss",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        if (cpuState.getConditionFlag(statement.sa_cc) == 0) {
+                            cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        }
+                    }
+                }
+            });
+    public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4ru", "bc1t 1,label",
+            "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT) : If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
+            TxInstruction.Format.CP1_CC_BRANCH,
+            "010001 01000 fff 01 ssssssssssssssss",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        if (cpuState.getConditionFlag(statement.sa_cc) == 1) {
+                            cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        }
+                    }
+                }
+            });
+
+    public static final TxInstruction cvtSWInstruction = new TxInstruction("cvt.s.w", "k, i", "cvt.s.w $f0,$f1",
+            "ConVerT to Single precision from Word : Set $f0 to single precision equivalent of 32-bit integer value in $f2",
+            TxInstruction.Format.CP1_R2,
+            "010001 10100 00000 sssss fffff 100000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        // convert integer to single (interpret $f1 value as int?)
+                        cpuState.setReg(statement.rd_fd, Float.floatToIntBits((float) cpuState.getReg(statement.rs_fs)));
+                    }
+                }
+            });
+    public static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "cvt.w.s $f0,$f1",
+            "ConVerT to Word from Single precision : Set $f0 to 32-bit integer equivalent of single precision value in $f1",
+            TxInstruction.Format.CP1_R2,
+            "010001 10000 00000 sssss fffff 100100",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        // convert single precision in $f1 to integer stored in $f0
+                        cpuState.setReg(statement.rd_fd, (int) Float.intBitsToFloat(cpuState.getReg(statement.rs_fs)));
+                    }
+                }
+            });
+
+
+    public static final TxInstruction cEqSInstruction = new TxInstruction("c.eq.s", "[l, ]i, j", "c.eq.s 1,$f0,$f1",
+            "Compare EQual Single precision : If $f0 is equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            TxInstruction.Format.CP1_R_CC,
+                "010001 10000 ttttt sssss fff 00 110010",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float op1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float op2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        if (op1 == op2)
+                            cpuState.setConditionFlag(statement.sa_cc);
+                        else
+                            cpuState.clearConditionFlag(statement.sa_cc);
+                    }
+                }
+            });
+    public static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "c.le.s 1,$f0,$f1",
+            "Compare Less or Equal Single precision : If $f0 is less than or equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            TxInstruction.Format.CP1_R_CC,
+            "010001 10000 ttttt sssss fff 00 111110",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float op1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float op2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        if (op1 <= op2)
+                            cpuState.setConditionFlag(statement.sa_cc);
+                        else
+                            cpuState.clearConditionFlag(statement.sa_cc);
+                    }
+                }
+            });
+    public static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "c.lt.s 1,$f0,$f1",
+            "Compare Less Than Single precision : If $f0 is less than $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            TxInstruction.Format.CP1_R_CC,
+            "010001 10000 ttttt sssss fff 00 111100",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    {
+                        float op1 = Float.intBitsToFloat(cpuState.getReg(statement.rs_fs));
+                        float op2 = Float.intBitsToFloat(cpuState.getReg(statement.rt_ft));
+                        if (op1 < op2)
+                            cpuState.setConditionFlag(statement.sa_cc);
+                        else
+                            cpuState.clearConditionFlag(statement.sa_cc);
+                    }
+                }
+            });
+
+    // TRAP instructions
     public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u", "teq $t1,$t2,$t3",
             "Trap if EQual: Trap with code $t3 if $t1 is equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110100",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -959,7 +1229,7 @@ public class TxInstructionSet
             "000001 fffff 01100 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) == (statement.imm << 16 >> 16)) {
+                    if (cpuState.getReg(statement.rs_fs) == (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -970,7 +1240,7 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 110110",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -981,7 +1251,7 @@ public class TxInstructionSet
             "000001 fffff 01110 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) != (statement.imm << 16 >> 16)) {
+                    if (cpuState.getReg(statement.rs_fs) != (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -992,7 +1262,7 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 110000",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) >= cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -1003,8 +1273,8 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 110001",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
-                    int second = cpuState.getReg(statement.rt);
+                    int first = cpuState.getReg(statement.rs_fs);
+                    int second = cpuState.getReg(statement.rt_ft);
                     // if signs same, do straight compare; if signs differ & first negative then first greater else second
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first >= second) : (first < 0)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
@@ -1017,7 +1287,7 @@ public class TxInstructionSet
             "000001 fffff 01000 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) >= (statement.imm << 16 >> 16)) {
+                    if (cpuState.getReg(statement.rs_fs) >= (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -1028,7 +1298,7 @@ public class TxInstructionSet
             "000001 fffff 01001 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
+                    int first = cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
                     // if signs same, do straight compare; if signs differ & first negative then first greater else second
@@ -1043,7 +1313,7 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 110010",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < cpuState.getReg(statement.rt)) {
+                    if (cpuState.getReg(statement.rs_fs) < cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -1054,8 +1324,8 @@ public class TxInstructionSet
             "000000 fffff sssss 00000 00000 110011",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
-                    int second = cpuState.getReg(statement.rt);
+                    int first = cpuState.getReg(statement.rs_fs);
+                    int second = cpuState.getReg(statement.rt_ft);
                     // if signs same, do straight compare; if signs differ & first positive then first is less else second
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first < second) : (first >= 0)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
@@ -1068,7 +1338,7 @@ public class TxInstructionSet
             "000001 fffff 01010 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (cpuState.getReg(statement.rs) < (statement.imm << 16 >> 16)) {
+                    if (cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
                 }
@@ -1079,7 +1349,7 @@ public class TxInstructionSet
             "000001 fffff 01011 ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int first = cpuState.getReg(statement.rs);
+                    int first = cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
                     // if signs same, do straight compare; if signs differ & first positive then first is less else second
@@ -1088,16 +1358,18 @@ public class TxInstructionSet
                     }
                 }
             });
+
+
     public static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "lb $t1,-100($t2)",
         "Load Byte: Set $t1 to sign-extended 8-bit value from effective memory byte address",
         TxInstruction.Format.I,
         "100000 ttttt fffff ssssssssssssssss",
         new SimulationCode() {
             public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                cpuState.setReg(statement.rt,
+                cpuState.setReg(statement.rt_ft,
                         // TODO check precedence
                         memory.loadUnsigned8(
-                                cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16))
+                                cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
                                 << 24
                                 >> 24);
             }
@@ -1108,11 +1380,11 @@ public class TxInstructionSet
             "100001 ttttt fffff ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt,
+                    cpuState.setReg(statement.rt_ft,
                             // TODO check precedence
                             // TODO check load/un/signed ?
                             memory.loadUnsigned16(
-                                    cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16))
+                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
                                     << 16
                                     >> 16);
                 }
@@ -1124,10 +1396,10 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // offset is sign-extended and loaded halfword value is zero-extended
-                    cpuState.setReg(statement.rt,
+                    cpuState.setReg(statement.rt_ft,
                             // TODO check load/un/signed ?
                             memory.loadUnsigned16(
-                                    cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16))
+                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
                                     & 0x0000ffff);
                 }
             });
@@ -1137,10 +1409,10 @@ public class TxInstructionSet
             "100100 ttttt fffff ssssssssssssssss",
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt,
+                    cpuState.setReg(statement.rt_ft,
                             // TODO check load/un/signed ?
                             memory.loadUnsigned8(
-                                    cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16))
+                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
                                     & 0x000000ff);
                 }
             });
@@ -1151,8 +1423,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     memory.store8(
-                            cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16),
-                            cpuState.getReg(statement.rt) & 0x000000ff);
+                            cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16),
+                            cpuState.getReg(statement.rt_ft) & 0x000000ff);
                 }
             });
     public static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "sh $t1,-100($t2)",
@@ -1162,8 +1434,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     memory.store16(
-                            cpuState.getReg(statement.rs) + (statement.imm << 16 >> 16),
-                            cpuState.getReg(statement.rt) & 0x0000ffff);
+                            cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16),
+                            cpuState.getReg(statement.rt_ft) & 0x0000ffff);
                 }
             });
     public static final TxInstruction syncInstruction = new TxInstruction("sync", "", "sync",
@@ -1190,18 +1462,17 @@ public class TxInstructionSet
                 }
             });
 
-//    public static final TxInstruction eretInstruction = new TxInstruction("eret",
-//            "Exception return: Set Program Counter to Coprocessor 0 EPC register value, set Coprocessor Status register bit 1 (exception level) to zero",
-//            TxInstruction.Format.R,
-//            "010000 1 0000000000000000000 011000",
-//            new SimulationCode() {
-//                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-//                    // set EXL bit (bit 1) in Status register to 0 and set PC to EPC
-//                    Coprocessor0.updateRegister(Coprocessor0.STATUS,
-//                            Format.clearBit(Coprocessor0.getValue(Coprocessor0.STATUS), Coprocessor0.EXCEPTION_LEVEL));
-//                    RegisterFile.setProgramCounter(Coprocessor0.getValue(Coprocessor0.EPC));
-//                }
-//            });
+    public static final TxInstruction eretInstruction = new TxInstruction("eret", "", "eret",
+            "Exception RETurn: Set Program Counter to Coprocessor 0 EPC register value, clear Coprocessor Status exception level bit",
+            TxInstruction.Format.R,
+            "010000 1 0000000000000000000 011000",
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // set EXL bit (bit 1) in Status register to 0 and set PC to EPC
+                    cpuState.setReg(TxCPUState.Status, Format.clearBit(cpuState.getReg(TxCPUState.Status), TxCPUState.Status_EXL_bit));
+                    cpuState.pc = cpuState.getReg(TxCPUState.EPC);
+                }
+            });
 
 //    private ArrayList<TxInstruction> instructionList;
 //    private SyscallLoader syscallLoader;
@@ -1372,6 +1643,58 @@ public class TxInstructionSet
         }
     };
 
+    static InstructionResolver adduOrMoveResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 16) & 0b11111) == 0) { // rt == 0
+                return moveAdduInstruction;
+            }
+            else {
+                return adduInstruction;
+            }
+
+        }
+    };
+
+    static InstructionResolver orOrMoveResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0) { // rs == 0
+                return moveOrInstruction;
+            }
+            else {
+                return orInstruction;
+            }
+
+        }
+    };
+
+    static InstructionResolver addiuOrLiResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0) { // rs == 0
+                return liAddiuInstruction;
+            }
+            else {
+                return addiuInstruction;
+            }
+
+        }
+    };
+
+    static InstructionResolver oriOrLiResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0) { // rs == 0
+                return liOriInstruction;
+            }
+            else {
+                return oriInstruction;
+            }
+
+        }
+    };
+
     static InstructionResolver beqOrBeqzResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
@@ -1443,7 +1766,7 @@ public class TxInstructionSet
     static InstructionResolver thetaResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            // TODO See section 3.5 :
+            // Formally, See section 3.5 :
             // If the corresponding CU bit in the Status register is cleared, a Coprocessor Unusable exception is taken.
             // If the CU bit is set, a Reserved Instruction exception is taken.
             throw new ReservedInstructionException();
@@ -1465,6 +1788,12 @@ public class TxInstructionSet
     static InstructionResolver[] special2FunctionResolvers;
     static InstructionResolver[] cop0RsResolvers;
     static InstructionResolver[] cop0CoFunctionResolvers;
+    static InstructionResolver[] cop1RsResolvers;
+    static InstructionResolver[] cop1SFunctionResolvers;
+    static InstructionResolver[] cop1WLFunctionResolvers;
+    static InstructionResolver bc1fResolver;
+    static InstructionResolver bc1tResolver;
+
 
     private static InstructionResolver opcodeResolver = new InstructionResolver() {
         @Override
@@ -1501,10 +1830,43 @@ public class TxInstructionSet
         }
     };
 
+    private static InstructionResolver cop1RsResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            return cop1RsResolvers[(binStatement >>> 21) & 0b11111].resolve(binStatement);
+        }
+    };
+
     private static InstructionResolver cop0CoFunctionResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
             return cop0CoFunctionResolvers[binStatement & 0b111111].resolve(binStatement);
+        }
+    };
+
+    private static InstructionResolver cop1SFunctionResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            return cop1SFunctionResolvers[binStatement & 0b111111].resolve(binStatement);
+        }
+    };
+
+    private static InstructionResolver cop1WLFunctionResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            return cop1WLFunctionResolvers[binStatement & 0b111111].resolve(binStatement);
+        }
+    };
+
+    private static InstructionResolver bc1TFResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if ((binStatement & 0x10000) == 0) {
+                return bc1fResolver.resolve(binStatement);
+            }
+            else {
+                return bc1tResolver.resolve(binStatement);
+            }
         }
     };
 
@@ -1532,15 +1894,21 @@ public class TxInstructionSet
 
         opcodeResolvers[0b001000] = new DirectInstructionResolver(addiInstruction);
         opcodeResolvers[0b001001] = new DirectInstructionResolver(addiuInstruction);
+        if (true/*OptionAltInstructions*/) {
+            opcodeResolvers[0b001001] = addiuOrLiResolver;
+        }
         opcodeResolvers[0b001010] = new DirectInstructionResolver(sltiInstruction);
         opcodeResolvers[0b001011] = new DirectInstructionResolver(sltiuInstruction);
         opcodeResolvers[0b001100] = new DirectInstructionResolver(andiInstruction);
         opcodeResolvers[0b001101] = new DirectInstructionResolver(oriInstruction);
+        if (true/*OptionAltInstructions*/) {
+            opcodeResolvers[0b001101] = oriOrLiResolver;
+        }
         opcodeResolvers[0b001110] = new DirectInstructionResolver(xoriInstruction);
         opcodeResolvers[0b001111] = new DirectInstructionResolver(luiInstruction);
 
         opcodeResolvers[0b010000] = cop0RsResolver;
-        opcodeResolvers[0b010001] = /*COP1*/ thetaResolver;
+        opcodeResolvers[0b010001] = cop1RsResolver;
         opcodeResolvers[0b010010] = /*COP2*/ thetaResolver;
         opcodeResolvers[0b010011] = /*COP3*/ thetaResolver;
         opcodeResolvers[0b010100] = new DirectInstructionResolver(beqlInstruction);
@@ -1582,7 +1950,7 @@ public class TxInstructionSet
         opcodeResolvers[0b101111] = /*CACHE*/ betaResolver;
 
         opcodeResolvers[0b110000] = /*LL*/ betaResolver;
-        opcodeResolvers[0b110001] = /*LWC1*/ betaResolver;
+        opcodeResolvers[0b110001] = new DirectInstructionResolver(lwc1Instruction);
         opcodeResolvers[0b110010] = /*LWC2*/ betaResolver;
         opcodeResolvers[0b110011] = /*PREF*/ betaResolver;
         opcodeResolvers[0b110100] = betaResolver;
@@ -1591,7 +1959,7 @@ public class TxInstructionSet
         opcodeResolvers[0b110111] = betaResolver;
 
         opcodeResolvers[0b111000] = /*SC*/ betaResolver;
-        opcodeResolvers[0b111001] = /*SWC1*/ betaResolver;
+        opcodeResolvers[0b111001] = new DirectInstructionResolver(swc1Instruction);
         opcodeResolvers[0b111010] = /*SWC2*/ betaResolver;
         opcodeResolvers[0b111011] = starResolver;
         opcodeResolvers[0b111100] = betaResolver;
@@ -1643,13 +2011,15 @@ public class TxInstructionSet
 
         specialFunctionResolvers[0b100000] = new DirectInstructionResolver(addInstruction);
         specialFunctionResolvers[0b100001] = new DirectInstructionResolver(adduInstruction);
+        if (true/*OptionAltInstructions*/) {
+            specialFunctionResolvers[0b100001] = adduOrMoveResolver;
+        }
         specialFunctionResolvers[0b100010] = new DirectInstructionResolver(subInstruction);
         specialFunctionResolvers[0b100011] = new DirectInstructionResolver(subuInstruction);
         specialFunctionResolvers[0b100100] = new DirectInstructionResolver(andInstruction);
         specialFunctionResolvers[0b100101] = new DirectInstructionResolver(orInstruction);
         if (true/*OptionAltInstructions*/) {
-            // TODO liOrOrResolver "or $k1, 0, 0x00D2" > "li $k1, 0x00D2"
-            specialFunctionResolvers[0b100101] = new DirectInstructionResolver(orInstruction);
+            specialFunctionResolvers[0b100101] = orOrMoveResolver;
         }
         specialFunctionResolvers[0b100110] = new DirectInstructionResolver(xorInstruction);
         specialFunctionResolvers[0b100111] = new DirectInstructionResolver(norInstruction);
@@ -1864,7 +2234,7 @@ public class TxInstructionSet
         cop0CoFunctionResolvers[0b010110] = starResolver;
         cop0CoFunctionResolvers[0b010111] = starResolver;
 
-        cop0CoFunctionResolvers[0b011000] = unimplementedResolver; // new DirectInstructionResolver(eretInstruction);
+        cop0CoFunctionResolvers[0b011000] = new DirectInstructionResolver(eretInstruction);
         cop0CoFunctionResolvers[0b011001] = starResolver;
         cop0CoFunctionResolvers[0b011010] = starResolver;
         cop0CoFunctionResolvers[0b011011] = starResolver;
@@ -1909,6 +2279,197 @@ public class TxInstructionSet
         cop0CoFunctionResolvers[0b111101] = starResolver;
         cop0CoFunctionResolvers[0b111110] = starResolver;
 
-    }
+        // COP1 Encoding of rs Field
+        cop1RsResolvers = new InstructionResolver[32];
 
+        cop1RsResolvers[0b00000] = new DirectInstructionResolver(mfc1Instruction);
+        cop1RsResolvers[0b00001] = betaResolver;
+        cop1RsResolvers[0b00010] = new DirectInstructionResolver(cfc1Instruction);
+        cop1RsResolvers[0b00011] = /*MIPS32 MFHC1*/starResolver;
+        cop1RsResolvers[0b00100] = new DirectInstructionResolver(mtc1Instruction);
+        cop1RsResolvers[0b00101] = betaResolver;
+        cop1RsResolvers[0b00110] = new DirectInstructionResolver(ctc1Instruction);
+        cop1RsResolvers[0b00111] = /*MIPS32 MTHC1*/starResolver;
+
+        cop1RsResolvers[0b01000] = bc1TFResolver;
+        cop1RsResolvers[0b01001] = /*BC1ANY2*/starResolver;
+        cop1RsResolvers[0b01010] = /*BC1ANY4*/starResolver;
+        cop1RsResolvers[0b01011] = starResolver;
+        cop1RsResolvers[0b01100] = starResolver;
+        cop1RsResolvers[0b01101] = starResolver;
+        cop1RsResolvers[0b01110] = starResolver;
+        cop1RsResolvers[0b01111] = starResolver;
+
+        cop1RsResolvers[0b10000] = cop1SFunctionResolver;
+        cop1RsResolvers[0b10001] = unimplementedResolver;
+        cop1RsResolvers[0b10010] = starResolver;
+        cop1RsResolvers[0b10011] = starResolver;
+        cop1RsResolvers[0b10100] = cop1WLFunctionResolver;
+        cop1RsResolvers[0b10101] = cop1WLFunctionResolver;
+        cop1RsResolvers[0b10110] = unimplementedResolver;
+        cop1RsResolvers[0b10111] = starResolver;
+
+        cop1RsResolvers[0b11000] = starResolver;
+        cop1RsResolvers[0b11001] = starResolver;
+        cop1RsResolvers[0b11010] = starResolver;
+        cop1RsResolvers[0b11011] = starResolver;
+        cop1RsResolvers[0b11100] = starResolver;
+        cop1RsResolvers[0b11101] = starResolver;
+        cop1RsResolvers[0b11110] = starResolver;
+        cop1RsResolvers[0b11111] = starResolver;
+
+        // MIPS32 COP1 Encoding of Function Field When rs = S
+        cop1SFunctionResolvers = new InstructionResolver[64];
+
+        cop1SFunctionResolvers[0b000000] = new DirectInstructionResolver(addSInstruction);
+        cop1SFunctionResolvers[0b000001] = new DirectInstructionResolver(subSInstruction);
+        cop1SFunctionResolvers[0b000010] = new DirectInstructionResolver(mulSInstruction);
+        cop1SFunctionResolvers[0b000011] = new DirectInstructionResolver(divSInstruction);
+        cop1SFunctionResolvers[0b000100] = unimplementedResolver;//new DirectInstructionResolver(SqrtSInstruction);
+        cop1SFunctionResolvers[0b000101] = unimplementedResolver;//new DirectInstructionResolver(AbsSInstruction);
+        cop1SFunctionResolvers[0b000110] = unimplementedResolver;//new DirectInstructionResolver(MovSInstruction);
+        cop1SFunctionResolvers[0b000111] = unimplementedResolver;//new DirectInstructionResolver(NegSInstruction);
+
+        cop1SFunctionResolvers[0b001000] = unimplementedResolver;//new DirectInstructionResolver(roundS_lInstruction)
+        cop1SFunctionResolvers[0b001001] = unimplementedResolver;//new DirectInstructionResolver(truncS_lInstruction)
+        cop1SFunctionResolvers[0b001010] = unimplementedResolver;//new DirectInstructionResolver(ceilS_lInstruction)
+        cop1SFunctionResolvers[0b001011] = unimplementedResolver;//new DirectInstructionResolver(floorS_lInstruction)
+        cop1SFunctionResolvers[0b001100] = unimplementedResolver;//new DirectInstructionResolver(roundS_wInstruction)
+        cop1SFunctionResolvers[0b001101] = unimplementedResolver;//new DirectInstructionResolver(truncS_wInstruction)
+        cop1SFunctionResolvers[0b001110] = unimplementedResolver;//new DirectInstructionResolver(ceilS_wInstruction)
+        cop1SFunctionResolvers[0b001111] = unimplementedResolver;//new DirectInstructionResolver(floorS_wInstruction)
+
+        cop1SFunctionResolvers[0b010000] = starResolver;
+        cop1SFunctionResolvers[0b010001] = unimplementedResolver;//new DirectInstructionResolver(movcfSInstruction)
+        cop1SFunctionResolvers[0b010010] = unimplementedResolver;//new DirectInstructionResolver(movzSInstruction)
+        cop1SFunctionResolvers[0b010011] = unimplementedResolver;//new DirectInstructionResolver(movnSInstruction)
+        cop1SFunctionResolvers[0b010100] = starResolver;
+        cop1SFunctionResolvers[0b010101] = unimplementedResolver;//new DirectInstructionResolver(recipSInstruction)
+        cop1SFunctionResolvers[0b010110] = unimplementedResolver;//new DirectInstructionResolver(rsqrtSInstruction)
+        cop1SFunctionResolvers[0b010111] = starResolver;
+
+        cop1SFunctionResolvers[0b011000] = starResolver;
+        cop1SFunctionResolvers[0b011001] = starResolver;
+        cop1SFunctionResolvers[0b011010] = starResolver;
+        cop1SFunctionResolvers[0b011011] = starResolver;
+        cop1SFunctionResolvers[0b011100] = unimplementedResolver;//new DirectInstructionResolver(recip2SInstruction)
+        cop1SFunctionResolvers[0b011101] = unimplementedResolver;//new DirectInstructionResolver(recip1SInstruction)
+        cop1SFunctionResolvers[0b011110] = unimplementedResolver;//new DirectInstructionResolver(rsqrt1SInstruction)
+        cop1SFunctionResolvers[0b011111] = unimplementedResolver;//new DirectInstructionResolver(rsqrt2SInstruction)
+
+        cop1SFunctionResolvers[0b100000] = starResolver;
+        cop1SFunctionResolvers[0b100001] = unimplementedResolver;//new DirectInstructionResolver(cvtSDInstruction);
+        cop1SFunctionResolvers[0b100010] = starResolver;
+        cop1SFunctionResolvers[0b100011] = starResolver;
+        cop1SFunctionResolvers[0b100100] = new DirectInstructionResolver(cvtWSInstruction);
+        cop1SFunctionResolvers[0b100101] = unimplementedResolver;//new DirectInstructionResolver(cvtSLInstruction);
+        cop1SFunctionResolvers[0b100110] = unimplementedResolver;//new DirectInstructionResolver(cvtSPsInstruction);
+        cop1SFunctionResolvers[0b100111] = starResolver;
+
+        cop1SFunctionResolvers[0b101000] = starResolver;
+        cop1SFunctionResolvers[0b101001] = starResolver;
+        cop1SFunctionResolvers[0b101010] = starResolver;
+        cop1SFunctionResolvers[0b101011] = starResolver;
+        cop1SFunctionResolvers[0b101100] = starResolver;
+        cop1SFunctionResolvers[0b101101] = starResolver;
+        cop1SFunctionResolvers[0b101110] = starResolver;
+        cop1SFunctionResolvers[0b101111] = starResolver;
+
+        cop1SFunctionResolvers[0b110000] = unimplementedResolver;//new DirectInstructionResolver(cFSInstruction);
+        cop1SFunctionResolvers[0b110001] = unimplementedResolver;//new DirectInstructionResolver(cUnSInstruction);
+        cop1SFunctionResolvers[0b110010] = new DirectInstructionResolver(cEqSInstruction);
+        cop1SFunctionResolvers[0b110011] = unimplementedResolver;//new DirectInstructionResolver(cUeqSInstruction);
+        cop1SFunctionResolvers[0b110100] = unimplementedResolver;//new DirectInstructionResolver(cSOltInstruction);
+        cop1SFunctionResolvers[0b110101] = unimplementedResolver;//new DirectInstructionResolver(cSUltInstruction);
+        cop1SFunctionResolvers[0b110110] = unimplementedResolver;//new DirectInstructionResolver(cSOleInstruction);
+        cop1SFunctionResolvers[0b110111] = unimplementedResolver;//new DirectInstructionResolver(cSUleInstruction);
+
+        cop1SFunctionResolvers[0b111000] = unimplementedResolver;//new DirectInstructionResolver(cSfSInstruction);
+        cop1SFunctionResolvers[0b111001] = unimplementedResolver;//new DirectInstructionResolver(cNgleSInstruction);
+        cop1SFunctionResolvers[0b111010] = unimplementedResolver;//new DirectInstructionResolver(cSeqSInstruction);
+        cop1SFunctionResolvers[0b111011] = unimplementedResolver;//new DirectInstructionResolver(cNglSInstruction);
+        cop1SFunctionResolvers[0b111100] = new DirectInstructionResolver(cLtSInstruction);
+        cop1SFunctionResolvers[0b111101] = unimplementedResolver;//new DirectInstructionResolver(cNgeSInstruction);
+        cop1SFunctionResolvers[0b111110] = new DirectInstructionResolver(cLeSInstruction);
+        cop1SFunctionResolvers[0b111111] = unimplementedResolver;//new DirectInstructionResolver(cNgtSInstruction);
+
+
+        // MIPS32 COP1 Encoding of Function Field When rs = W or L
+        cop1WLFunctionResolvers = new InstructionResolver[64];
+
+        cop1WLFunctionResolvers[0b000000] = starResolver;
+        cop1WLFunctionResolvers[0b000001] = starResolver;
+        cop1WLFunctionResolvers[0b000010] = starResolver;
+        cop1WLFunctionResolvers[0b000011] = starResolver;
+        cop1WLFunctionResolvers[0b000100] = starResolver;
+        cop1WLFunctionResolvers[0b000101] = starResolver;
+        cop1WLFunctionResolvers[0b000110] = starResolver;
+        cop1WLFunctionResolvers[0b000111] = starResolver;
+
+        cop1WLFunctionResolvers[0b001000] = starResolver;
+        cop1WLFunctionResolvers[0b001001] = starResolver;
+        cop1WLFunctionResolvers[0b001010] = starResolver;
+        cop1WLFunctionResolvers[0b001011] = starResolver;
+        cop1WLFunctionResolvers[0b001100] = starResolver;
+        cop1WLFunctionResolvers[0b001101] = starResolver;
+        cop1WLFunctionResolvers[0b001110] = starResolver;
+        cop1WLFunctionResolvers[0b001111] = starResolver;
+
+        cop1WLFunctionResolvers[0b010000] = starResolver;
+        cop1WLFunctionResolvers[0b010001] = starResolver;
+        cop1WLFunctionResolvers[0b010010] = starResolver;
+        cop1WLFunctionResolvers[0b010011] = starResolver;
+        cop1WLFunctionResolvers[0b010100] = starResolver;
+        cop1WLFunctionResolvers[0b010101] = starResolver;
+        cop1WLFunctionResolvers[0b010110] = starResolver;
+        cop1WLFunctionResolvers[0b010111] = starResolver;
+
+        cop1WLFunctionResolvers[0b011000] = starResolver;
+        cop1WLFunctionResolvers[0b011001] = starResolver;
+        cop1WLFunctionResolvers[0b011010] = starResolver;
+        cop1WLFunctionResolvers[0b011011] = starResolver;
+        cop1WLFunctionResolvers[0b011100] = starResolver;
+        cop1WLFunctionResolvers[0b011101] = starResolver;
+        cop1WLFunctionResolvers[0b011110] = starResolver;
+        cop1WLFunctionResolvers[0b011111] = starResolver;
+
+        cop1WLFunctionResolvers[0b100000] = new DirectInstructionResolver(cvtSWInstruction);
+        cop1WLFunctionResolvers[0b100001] = unimplementedResolver;//new DirectInstructionResolver(cop1CvtDInstruction);
+        cop1WLFunctionResolvers[0b100010] = starResolver;
+        cop1WLFunctionResolvers[0b100011] = starResolver;
+        cop1WLFunctionResolvers[0b100100] = starResolver;
+        cop1WLFunctionResolvers[0b100101] = starResolver;
+        cop1WLFunctionResolvers[0b100110] = unimplementedResolver;//new DirectInstructionResolver(cop1CvtPsPwInstruction);
+        cop1WLFunctionResolvers[0b100111] = starResolver;
+
+        cop1WLFunctionResolvers[0b101000] = starResolver;
+        cop1WLFunctionResolvers[0b101001] = starResolver;
+        cop1WLFunctionResolvers[0b101010] = starResolver;
+        cop1WLFunctionResolvers[0b101011] = starResolver;
+        cop1WLFunctionResolvers[0b101100] = starResolver;
+        cop1WLFunctionResolvers[0b101101] = starResolver;
+        cop1WLFunctionResolvers[0b101110] = starResolver;
+        cop1WLFunctionResolvers[0b101111] = starResolver;
+
+        cop1WLFunctionResolvers[0b110000] = starResolver;
+        cop1WLFunctionResolvers[0b110001] = starResolver;
+        cop1WLFunctionResolvers[0b110010] = starResolver;
+        cop1WLFunctionResolvers[0b110011] = starResolver;
+        cop1WLFunctionResolvers[0b110100] = starResolver;
+        cop1WLFunctionResolvers[0b110101] = starResolver;
+        cop1WLFunctionResolvers[0b110110] = starResolver;
+        cop1WLFunctionResolvers[0b110111] = starResolver;
+
+        cop1WLFunctionResolvers[0b111000] = starResolver;
+        cop1WLFunctionResolvers[0b111001] = starResolver;
+        cop1WLFunctionResolvers[0b111010] = starResolver;
+        cop1WLFunctionResolvers[0b111011] = starResolver;
+        cop1WLFunctionResolvers[0b111111] = starResolver;
+        cop1WLFunctionResolvers[0b111100] = starResolver;
+        cop1WLFunctionResolvers[0b111101] = starResolver;
+        cop1WLFunctionResolvers[0b111110] = starResolver;
+
+        bc1fResolver = new DirectInstructionResolver(bc1fInstruction);
+        bc1tResolver = new DirectInstructionResolver(bc1tInstruction);
+    }
 }

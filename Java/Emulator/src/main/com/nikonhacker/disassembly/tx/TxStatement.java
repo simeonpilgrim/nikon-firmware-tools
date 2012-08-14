@@ -41,21 +41,22 @@ public class TxStatement extends Statement {
     /** cached CPUState, for CALLs and INTs */
     public TxCPUState cpuState = null;
 
-    /** rs operand */
-    public int rs; // as-is from binary code
-    public int decodedRs; // interpreted
+    /** rs or fs operand */
+    public int rs_fs; // as-is from binary code
+    public int decodedRsFs; // interpreted
 
-    /** rt operand */
-    public int rt; // as-is from binary code
-    public int decodedRt; // interpreted
+    /** rt or ft operand */
+    public int rt_ft; // as-is from binary code
+    public int decodedRtFt; // interpreted
 
-    /** rd operand */
-    public int rd; // as-is from binary code
-    public int decodedRd; // interpreted
+    /** rd of fd operand */
+    public int rd_fd; // as-is from binary code
+    public int decodedRdFd; // interpreted
 
-    /** shift amount operand */
-    public int sa; // as-is from binary code
-    public int decodedSa; // interpreted
+    /** sa (shift amount) of cc (CP1 condition code) operand */
+    // TODO use imm instead ?? what is decodedSa ??
+    public int sa_cc; // as-is from binary code
+    public int decodedSaCc; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     public int c;
@@ -139,6 +140,14 @@ public class TxStatement extends Statement {
             }
     };
 
+    private static final int[] CP1_REGISTER_NUMBER_MAP = new int[]{
+            TxCPUState.FIR, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, TxCPUState.FCCR, TxCPUState.FEXR, -1, TxCPUState.FENR, -1, -1, TxCPUState.FCSR
+    };
+
+
 
     /**
      * Default decoding upon class loading
@@ -187,15 +196,15 @@ public class TxStatement extends Statement {
         switch (((TxInstruction)instruction).getInstructionFormat())
         {
             case R:
-                rs    = (binaryStatement >>> 21) & 0b11111;
-                rt    = (binaryStatement >>> 16) & 0b11111;
-                rd    = (binaryStatement >>> 11) & 0b11111;
-                sa    = (binaryStatement >>>  6) & 0b11111;
+                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                rd_fd = (binaryStatement >>> 11) & 0b11111; // rd
+                sa_cc = (binaryStatement >>>  6) & 0b11111; // sa
                 break;
             case I:
             case I_BRANCH:
-                rs    = (binaryStatement >>> 21) & 0b11111;
-                rt    = (binaryStatement >>> 16) & 0b11111;
+                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 imm   =  binaryStatement         & 0xFFFF;
                 immBitWidth = 16;
                 break;
@@ -204,19 +213,52 @@ public class TxStatement extends Statement {
                 immBitWidth = 26;
                 break;
             case BREAK:
-                imm   = (binaryStatement >>> 6)  & 0x000FFFFF;
+                imm   = (binaryStatement >>>  6) & 0x000FFFFF;
                 immBitWidth = 20;
                 break;
             case TRAP:
-                rs    = (binaryStatement >>> 21) & 0b11111;
-                rt    = (binaryStatement >>> 16) & 0b11111;
+                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 imm   = (binaryStatement >>>  6) & 0x3FF;
                 immBitWidth = 10;
                 break;
-            case CP:
-                rt    = (binaryStatement >>> 16) & 0b11111;
-                rd    = CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
+            // IN CPxx formats, rs, rt and rd are mapped or shifted to target the registers belonging to the correct CP
+            case CP0:
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                rd_fd = CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
                 break;
+            case CP1_R1: // Coprocessor 1 with registers, version 1 (rt)
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
+                break;
+            case CP1_R2: // Coprocessor 1 with registers, version 2 (ft)
+                //fmt   = (binaryStatement >>> 21) & 0b11111;
+                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
+                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); // fs
+                rd_fd = TxCPUState.CP1_F0 + ((binaryStatement >>>  6) & 0b11111); // fd
+                break;
+            case CP1_CR1: // Coprocessor 1 with Condition Register
+                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                rs_fs = CP1_REGISTER_NUMBER_MAP[(binaryStatement >>> 11) & 0b11111];
+                break;
+            case CP1_CC_BRANCH:
+                sa_cc = (binaryStatement >>> 18) & 0b111; // cc
+                imm   =  binaryStatement         & 0xFFFF;
+                immBitWidth = 16;
+                break;
+            case CP1_I:
+                rs_fs = (binaryStatement >>> 21) & 0b11111;
+                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
+                imm   =  binaryStatement         & 0xFFFF;
+                immBitWidth = 16;
+                break;
+            case CP1_R_CC: // Coprocessor 1 with Register and Condition Code
+                //fmt   = (binaryStatement >>> 21) & 0b11111;
+                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); //ft
+                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
+                sa_cc = (binaryStatement >>>  8) & 0b111; //cc
+                break;
+
         }
     }
 
@@ -224,10 +266,10 @@ public class TxStatement extends Statement {
         flags = 0;
         immBitWidth = 0;
         c = 0;
-        rs = CPUState.NOREG;
-        rt = CPUState.NOREG;
-        rd = CPUState.NOREG;
-        sa = CPUState.NOREG;
+        rs_fs = CPUState.NOREG;
+        rt_ft = CPUState.NOREG;
+        rd_fd = CPUState.NOREG;
+        sa_cc = CPUState.NOREG;
         imm = CPUState.NOREG;
         operandString = null;
         commentString = null;
@@ -243,25 +285,30 @@ public class TxStatement extends Statement {
      * must be called after decodeOperands()
      * @param cpuState This stores CPU state.
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
+     * @see TxInstruction for a description of all possible chars
      */
     public void formatOperandsAndComment(TxCPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
         int tmp;
         int pos;
 
-        decodedRs = rs;
-        decodedRt = rt;
-        decodedRd = rd;
-        decodedSa = sa;
+        decodedRsFs = rs_fs;
+        decodedRtFt = rt_ft;
+        decodedRdFd = rd_fd;
+        decodedSaCc = sa_cc;
         decodedImm = imm;
 
         flags = cpuState.flags;
         cpuState.flags = 0;
 
+        boolean omitZeroMode = false; // sections between square brackets are meant to ignore 0 values
+
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
 
         StringBuilder currentBuffer = operandBuffer;
+        StringBuilder tmpBuffer = null;
 
+        // See TxInstruction constructor for meaning of chars
         for (char formatChar : ((TxInstruction)instruction).displayFormat.toCharArray())
         {
             switch (formatChar)
@@ -287,12 +334,30 @@ public class TxStatement extends Statement {
                 case '-':
                     currentBuffer.append(fmt_dec);
                     break;
-                case ';':
-                    currentBuffer = commentBuffer;
-                    break;
                 case '@':
                     currentBuffer.append(fmt_mem);
                     break;
+
+                case ';':
+                    currentBuffer = commentBuffer;
+                    break;
+                case '[':
+                    // Start of bracket. Store currentBuffer for later and start own buffer
+                    tmpBuffer = currentBuffer;
+                    currentBuffer = new StringBuilder();
+                    omitZeroMode = true;
+                    break;
+                case ']':
+                    // Analyse result of string between brackets and compare it to what was in the buffer before
+                    if (!stripped(tmpBuffer).equals(stripped(currentBuffer))) {
+                        // If different, add it
+                        tmpBuffer.append(currentBuffer);
+                    }
+                    // Then revert to normal mode
+                    currentBuffer = tmpBuffer;
+                    omitZeroMode = false;
+                    break;
+
                 case '2':
                     decodedImm <<= 1;
                     immBitWidth += 1;
@@ -301,19 +366,11 @@ public class TxStatement extends Statement {
                     decodedImm <<= 2;
                     immBitWidth += 2;
                     break;
-//                case 'A':
-//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.AC]);
-//                    break;
-//                case 'C':
-//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.CCR]);
-//                    break;
-//                case 'F':
-//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
-//                    break;
-                case 'J':
-                    if (cpuState.isRegisterDefined(decodedRt))
+
+                case 'I':
+                    if (cpuState.isRegisterDefined(decodedRsFs))
                     {
-                        decodedImm = cpuState.getReg(decodedRt);
+                        decodedImm = cpuState.getReg(decodedRsFs);
                         immBitWidth = 32;
                     }
                     else
@@ -322,10 +379,10 @@ public class TxStatement extends Statement {
                         immBitWidth = 0;
                     }
                     break;
-                case 'I':
-                    if (cpuState.isRegisterDefined(decodedRs))
+                case 'J':
+                    if (cpuState.isRegisterDefined(decodedRtFt))
                     {
-                        decodedImm = cpuState.getReg(decodedRs);
+                        decodedImm = cpuState.getReg(decodedRtFt);
                         immBitWidth = 32;
                     }
                     else
@@ -335,9 +392,9 @@ public class TxStatement extends Statement {
                     }
                     break;
                 case 'K':
-                    if (cpuState.isRegisterDefined(decodedRd))
+                    if (cpuState.isRegisterDefined(decodedRdFd))
                     {
-                        decodedImm = cpuState.getReg(decodedRd);
+                        decodedImm = cpuState.getReg(decodedRdFd);
                         immBitWidth = 32;
                     }
                     else
@@ -346,21 +403,7 @@ public class TxStatement extends Statement {
                         immBitWidth = 0;
                     }
                     break;
-                case 'M':
-                    currentBuffer.append("ILM");
-                    break;
-//                case 'P':
-//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.PS]);
-//                    break;
-//                case 'S':
-//                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.SP]);
-//                    break;
-                case 'T':
-                    currentBuffer.append("INT");
-                    break;
-                case 'X':
-                case 'Y':
-                    throw new RuntimeException("no more X or Y : operand parsing is now done in decodeOperands()");
+
                 case 'a':
                     pos = immBitWidth;
                     while (pos >= 8){
@@ -379,7 +422,7 @@ public class TxStatement extends Statement {
                     break;
                 case 'd':
                     /* unsigned decimal */
-                    currentBuffer.append(decodedImm);
+                    if (decodedImm != 0 || !omitZeroMode) currentBuffer.append(decodedImm);
                     break;
                 case 'f':
                     pos = immBitWidth >> 1;
@@ -392,18 +435,20 @@ public class TxStatement extends Statement {
                         currentBuffer.append("NaN");
 
                     break;
+
                 case 'i':
-                    currentBuffer.append(TxCPUState.REG_LABEL[decodedRs]);
+                    if (decodedRsFs != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRsFs]);
                     break;
                 case 'j':
-                    currentBuffer.append(TxCPUState.REG_LABEL[decodedRt]);
+                    if (decodedRtFt != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRtFt]);
                     break;
                 case 'k':
-                    currentBuffer.append(TxCPUState.REG_LABEL[decodedRd]);
+                    if (decodedRdFd != 0 || !omitZeroMode) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
                     break;
                 case 'l':
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSa, 5));
+                    if (decodedSaCc != 0 || !omitZeroMode) currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSaCc, 5));
                     break;
+
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
@@ -424,9 +469,14 @@ public class TxStatement extends Statement {
                     currentBuffer.append(((1L << pos) - 1) & decodedImm);
                     break;
                 case 'r':
-                    /* relative */
+                    /* relative to PC */
                     // TODO +4 or +2 according to ISA mode 32 or 16
                     decodedImm = cpuState.pc + 4 + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
+                    immBitWidth = 32;
+                    break;
+                case 'R':
+                    /* relative to PC & 0xF0000000 */
+                    decodedImm = (cpuState.pc & 0xF0000000) | decodedImm;
                     immBitWidth = 32;
                     break;
                 case 's':
@@ -551,6 +601,11 @@ public class TxStatement extends Statement {
         operandString = operandBuffer.toString();
 
         commentString = commentBuffer.toString();
+    }
+
+    /** Remove blanks and comas */
+    private String stripped(StringBuilder buffer) {
+        return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
 
