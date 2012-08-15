@@ -94,6 +94,87 @@ public class TxCPUState extends CPUState {
     public final static int Status_EXL_bit = 1;
     public final static int Status_IE_bit = 0;
 
+    /** This array is used to decode the mfc0 and mtc0 instruction operands
+     * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
+     */
+    static final int[][] CP0_REGISTER_NUMBER_MAP = new int[][]{
+            // SEL0
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    BadVAddr, Count, -1, Compare, Status, Cause, EPC, PRId,
+                    Config, -1, -1, -1, -1, -1, SSCR, Debug,
+                    DEPC, -1, -1, -1, -1, -1, ErrorEPC, DESAVE
+            },
+            // SEL1
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    Config1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL2
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    Config2, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL3
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    Config3, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL4
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL5
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL6
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, SSCR, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            },
+            // SEL7
+            {
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, IER, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1,
+                    -1, -1, -1, -1, -1, -1, -1, -1
+            }
+    };
+
+    static final int[] CP1_REGISTER_NUMBER_MAP = new int[]{
+            FIR, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1, -1, -1, -1,
+            -1, FCCR, FEXR, -1, FENR, -1, -1, FCSR
+    };
+
+    public int getCp1CrReg(int regNumber) {
+        // TODO
+        //return getReg(regNumber);
+        throw new RuntimeException("CP1 Control registers Unimplemented");
+    }
+
+    public void setCp1CrReg(int regNumber, int value) {
+        // TODO
+        //setReg(regNumber, value);
+        throw new RuntimeException("CP1 Control registers Unimplemented");
+    }
+
     public enum PowerMode {
         RUN,
         HALT,
@@ -198,8 +279,7 @@ public class TxCPUState extends CPUState {
         }
         registers = registers.trim() + "]";
         return "CPUState : " +
-                "flags=0b" + Integer.toString(flags,2) +
-                ", pc=0x" + Format.asHex(pc, 8) +
+                "pc=0x" + Format.asHex(pc, 8) +
                 ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
                 ", reg=" + registers +
                 '}';
@@ -263,7 +343,6 @@ public class TxCPUState extends CPUState {
         for (int i = 0; i <= regValue.length; i++) {
             cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
         }
-        cloneCpuState.flags = flags;
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
         return cloneCpuState;
@@ -374,7 +453,9 @@ public class TxCPUState extends CPUState {
      *  @return previous flag setting (0 or 1)
      */
     public void setConditionFlag(int flag) {
-        cp1Condition.setValue(Format.setBit(cp1Condition.getValue(), flag));
+        // TODO check
+        // cp1Condition.setValue(Format.setBit(cp1Condition.getValue(), flag));
+        throw new RuntimeException("Unimplemented");
     }
 
     /**
@@ -384,7 +465,9 @@ public class TxCPUState extends CPUState {
      *  @return previous flag setting (0 or 1)
      */
     public void clearConditionFlag(int flag) {
-        cp1Condition.setValue(Format.clearBit(cp1Condition.getValue(), flag));
+        // TODO check
+        // cp1Condition.setValue(Format.clearBit(cp1Condition.getValue(), flag));
+        throw new RuntimeException("Unimplemented");
     }
 
 
@@ -395,7 +478,9 @@ public class TxCPUState extends CPUState {
      *  @return 0 if condition is false, 1 if condition is true
      */
     public int getConditionFlag(int flag) {
-        return Format.bitValue(cp1Condition.getValue(), flag);
+        // TODO check
+        // return Format.bitValue(cp1Condition.getValue(), flag);
+        throw new RuntimeException("Unimplemented");
     }
 
 
@@ -405,7 +490,9 @@ public class TxCPUState extends CPUState {
      *  @return array of int condition flags
      */
     public int getConditionFlags() {
-        return cp1Condition.getValue();
+        // TODO check
+        // return cp1Condition.getValue();
+        throw new RuntimeException("Unimplemented");
     }
 
 
@@ -414,7 +501,9 @@ public class TxCPUState extends CPUState {
      *
      */
     public void clearConditionFlags() {
-        cp1Condition.setValue(0);  // sets all 32 bits to 0.
+        // TODO check
+        // cp1Condition.setValue(0);  // sets all 32 bits to 0.
+        throw new RuntimeException("Unimplemented");
     }
 
     /**
@@ -422,7 +511,9 @@ public class TxCPUState extends CPUState {
      *
      */
     public void setConditionFlags() {
-        cp1Condition.setValue(-1);  // sets all 32 bits to 1.
+        // TODO check
+        // cp1Condition.setValue(-1);  // sets all 32 bits to 1.
+        throw new RuntimeException("Unimplemented");
     }
 
     /**
@@ -431,7 +522,9 @@ public class TxCPUState extends CPUState {
      *  @return number of condition flags
      */
     public int getConditionFlagCount() {
-        return numCp1ConditionFlags;
+        // TODO check
+        // return numCp1ConditionFlags;
+        throw new RuntimeException("Unimplemented");
     }
 
 }

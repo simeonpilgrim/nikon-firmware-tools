@@ -97,7 +97,7 @@ public class FrInstruction extends Instruction {
         new FrInstruction( 0x1C00, 0xFF00, FORMAT_D, 0, 0, "DMOV",   "@A+,@4u",      "Aw"       , FlowType.NONE, false, false),
         new FrInstruction( 0x1D00, 0xFF00, FORMAT_D, 0, 0, "DMOVH",  "@A+,@2u",      "Aw"       , FlowType.NONE, false, false),
         new FrInstruction( 0x1E00, 0xFF00, FORMAT_D, 0, 0, "DMOVB",  "@A+,@u",       "Aw"       , FlowType.NONE, false, false),
-        new FrInstruction( 0x1F00, 0xFF00, FORMAT_D, 0, 0, "INT",    "#u",           "("        , FlowType.INT, false, false),
+        new FrInstruction( 0x1F00, 0xFF00, FORMAT_D, 0, 0, "INT",    "#u",           ""         , FlowType.INT, false, false),
         new FrInstruction( 0x2000, 0xF000, FORMAT_B, 0, 0, "LD",     "@(F&4s),i",    "iw"       , FlowType.NONE, false, false),
         new FrInstruction( 0x3000, 0xF000, FORMAT_B, 0, 0, "ST",     "i,@(F&4s)",    ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x4000, 0xF000, FORMAT_B, 0, 0, "LDUH",   "@(F&2s),i",    "iw"       , FlowType.NONE, false, false),
@@ -127,10 +127,10 @@ public class FrInstruction extends Instruction {
         new FrInstruction( 0x9400, 0xFF00, FORMAT_A, 0, 0, "OR",     "j,@i;Iu",      ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9500, 0xFF00, FORMAT_A, 0, 0, "ORH",    "j,@i;Iu",      ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9600, 0xFF00, FORMAT_A, 0, 0, "ORB",    "j,@i;Iu",      ""         , FlowType.NONE, false, false),
-        new FrInstruction( 0x9700, 0xFFF0, FORMAT_E, 0, 0, "JMP",    "@i;Iu",        "!"        , FlowType.JMP, false, false),
-        new FrInstruction( 0x9710, 0xFFF0, FORMAT_E, 0, 0, "CALL",   "@i;Iu",        "("        , FlowType.CALL, false, false),
-        new FrInstruction( 0x9720, 0xFFFF, FORMAT_Z, 0, 0, "RET",    "",             ")"        , FlowType.RET, false, false),
-        new FrInstruction( 0x9730, 0xFFFF, FORMAT_Z, 0, 0, "RETI",   "",             ")"        , FlowType.RET, false, false),
+        new FrInstruction( 0x9700, 0xFFF0, FORMAT_E, 0, 0, "JMP",    "@i;Iu",        ""         , FlowType.JMP, false, false),
+        new FrInstruction( 0x9710, 0xFFF0, FORMAT_E, 0, 0, "CALL",   "@i;Iu",        ""         , FlowType.CALL, false, false),
+        new FrInstruction( 0x9720, 0xFFFF, FORMAT_Z, 0, 0, "RET",    "",             ""         , FlowType.RET, false, false),
+        new FrInstruction( 0x9730, 0xFFFF, FORMAT_Z, 0, 0, "RETI",   "",             ""         , FlowType.RET, false, false),
         new FrInstruction( 0x9740, 0xFFF0, FORMAT_E, 0, 0, "DIV0S",  "i",            "iw"       , FlowType.NONE, false, false),
         new FrInstruction( 0x9750, 0xFFF0, FORMAT_E, 0, 0, "DIV0U",  "i",            "iw"       , FlowType.NONE, false, false),
         new FrInstruction( 0x9760, 0xFFF0, FORMAT_E, 0, 0, "DIV1",   "i",            "iw"       , FlowType.NONE, false, false),
@@ -149,10 +149,10 @@ public class FrInstruction extends Instruction {
         new FrInstruction( 0x9C00, 0xFF00, FORMAT_A, 0, 0, "EOR",    "j,@i;Iu",      ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9D00, 0xFF00, FORMAT_A, 0, 0, "EORH",   "j,@i;Iu",      ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9E00, 0xFF00, FORMAT_A, 0, 0, "EORB",   "j,@i;Iu",      ""         , FlowType.NONE, false, false),
-        new FrInstruction( 0x9F00, 0xFFF0, FORMAT_E, 0, 0, "JMP:D",  "@i;Iu",        "_!"       , FlowType.JMP, false, true ),
-        new FrInstruction( 0x9F10, 0xFFF0, FORMAT_E, 0, 0, "CALL:D", "@i;Iu",        "_("       , FlowType.CALL, false, true ),
-        new FrInstruction( 0x9F20, 0xFFFF, FORMAT_Z, 0, 0, "RET:D",  "",             "_)"       , FlowType.RET, false, true ),
-        new FrInstruction( 0x9F30, 0xFFFF, FORMAT_Z, 0, 0, "INTE",   "",             ""         , FlowType.INTE, false, false),
+        new FrInstruction( 0x9F00, 0xFFF0, FORMAT_E, 0, 0, "JMP:D",  "@i;Iu",        ""         , FlowType.JMP, false, true ),
+        new FrInstruction( 0x9F10, 0xFFF0, FORMAT_E, 0, 0, "CALL:D", "@i;Iu",        ""         , FlowType.CALL, false, true ),
+        new FrInstruction( 0x9F20, 0xFFFF, FORMAT_Z, 0, 0, "RET:D",  "",             ""         , FlowType.RET, false, true ),
+        new FrInstruction( 0x9F30, 0xFFFF, FORMAT_Z, 0, 0, "INTE",   "",             ""         , FlowType.INT, false, false),
         new FrInstruction( 0x9F60, 0xFFFF, FORMAT_Z, 0, 0, "DIV3",   "",             ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9F70, 0xFFFF, FORMAT_Z, 0, 0, "DIV4S",  "",             ""         , FlowType.NONE, false, false),
         new FrInstruction( 0x9F80, 0xFFF0, FORMAT_E, 2, 0, "LDI:32", "#u,i",         "iv"       , FlowType.NONE, false, false),
@@ -204,40 +204,40 @@ public class FrInstruction extends Instruction {
         new FrInstruction( 0xBD00, 0xFF00, FORMAT_C, 0, 0, "STRES",  "#u,@i+;Iu",    ""         , FlowType.NONE, false, false), // not in FR80/FR81
         new FrInstruction( 0xBF00, 0xFF00, FORMAT_A, 0, 0, "MULH",   "j,i",          "iw"       , FlowType.NONE, false, false),
         new FrInstruction( 0xC000, 0xF000, FORMAT_B, 0, 0, "LDI:8",  "#u,i",         "iv"       , FlowType.NONE, false, false),
-        new FrInstruction( 0xD000, 0xF800, FORMAT_F, 0, 0, "CALL",   "2ru",          "("        , FlowType.CALL, false, false),
-        new FrInstruction( 0xD800, 0xF800, FORMAT_F, 0, 0, "CALL:D", "2ru",          "_("       , FlowType.CALL, false, true ),
-        new FrInstruction( 0xE000, 0xFF00, FORMAT_D, 0, 0, "BRA",    "2ru",          "!"        , FlowType.JMP, false, false),
-        new FrInstruction( 0xE100, 0xFF00, FORMAT_D, 0, 0, "BNO",    "2ru",          "?"        , FlowType.NONE, false, false),
-        new FrInstruction( 0xE200, 0xFF00, FORMAT_D, 0, 0, "BEQ",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE300, 0xFF00, FORMAT_D, 0, 0, "BNE",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE400, 0xFF00, FORMAT_D, 0, 0, "BC",     "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE500, 0xFF00, FORMAT_D, 0, 0, "BNC",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE600, 0xFF00, FORMAT_D, 0, 0, "BN",     "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE700, 0xFF00, FORMAT_D, 0, 0, "BP",     "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE800, 0xFF00, FORMAT_D, 0, 0, "BV",     "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xE900, 0xFF00, FORMAT_D, 0, 0, "BNV",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xEA00, 0xFF00, FORMAT_D, 0, 0, "BLT",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xEB00, 0xFF00, FORMAT_D, 0, 0, "BGE",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xEC00, 0xFF00, FORMAT_D, 0, 0, "BLE",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xED00, 0xFF00, FORMAT_D, 0, 0, "BGT",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xEE00, 0xFF00, FORMAT_D, 0, 0, "BLS",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xEF00, 0xFF00, FORMAT_D, 0, 0, "BHI",    "2ru",          "?"        , FlowType.BRA, true , false),
-        new FrInstruction( 0xF000, 0xFF00, FORMAT_D, 0, 0, "BRA:D",  "2ru",          "_!"       , FlowType.JMP, false, true ),
-        new FrInstruction( 0xF100, 0xFF00, FORMAT_D, 0, 0, "BNO:D",  "2ru",          "_?"       , FlowType.NONE, false, true ),
-        new FrInstruction( 0xF200, 0xFF00, FORMAT_D, 0, 0, "BEQ:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF300, 0xFF00, FORMAT_D, 0, 0, "BNE:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF400, 0xFF00, FORMAT_D, 0, 0, "BC:D",   "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF500, 0xFF00, FORMAT_D, 0, 0, "BNC:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF600, 0xFF00, FORMAT_D, 0, 0, "BN:D",   "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF700, 0xFF00, FORMAT_D, 0, 0, "BP:D",   "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF800, 0xFF00, FORMAT_D, 0, 0, "BV:D",   "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xF900, 0xFF00, FORMAT_D, 0, 0, "BNV:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFA00, 0xFF00, FORMAT_D, 0, 0, "BLT:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFB00, 0xFF00, FORMAT_D, 0, 0, "BGE:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFC00, 0xFF00, FORMAT_D, 0, 0, "BLE:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFD00, 0xFF00, FORMAT_D, 0, 0, "BGT:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFE00, 0xFF00, FORMAT_D, 0, 0, "BLS:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
-        new FrInstruction( 0xFF00, 0xFF00, FORMAT_D, 0, 0, "BHI:D",  "2ru",          "_?"       , FlowType.BRA, true , true ),
+        new FrInstruction( 0xD000, 0xF800, FORMAT_F, 0, 0, "CALL",   "2ru",          ""         , FlowType.CALL, false, false),
+        new FrInstruction( 0xD800, 0xF800, FORMAT_F, 0, 0, "CALL:D", "2ru",          ""         , FlowType.CALL, false, true ),
+        new FrInstruction( 0xE000, 0xFF00, FORMAT_D, 0, 0, "BRA",    "2ru",          ""         , FlowType.JMP, false, false),
+        new FrInstruction( 0xE100, 0xFF00, FORMAT_D, 0, 0, "BNO",    "2ru",          ""         , FlowType.NONE, false, false),
+        new FrInstruction( 0xE200, 0xFF00, FORMAT_D, 0, 0, "BEQ",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE300, 0xFF00, FORMAT_D, 0, 0, "BNE",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE400, 0xFF00, FORMAT_D, 0, 0, "BC",     "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE500, 0xFF00, FORMAT_D, 0, 0, "BNC",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE600, 0xFF00, FORMAT_D, 0, 0, "BN",     "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE700, 0xFF00, FORMAT_D, 0, 0, "BP",     "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE800, 0xFF00, FORMAT_D, 0, 0, "BV",     "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xE900, 0xFF00, FORMAT_D, 0, 0, "BNV",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xEA00, 0xFF00, FORMAT_D, 0, 0, "BLT",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xEB00, 0xFF00, FORMAT_D, 0, 0, "BGE",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xEC00, 0xFF00, FORMAT_D, 0, 0, "BLE",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xED00, 0xFF00, FORMAT_D, 0, 0, "BGT",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xEE00, 0xFF00, FORMAT_D, 0, 0, "BLS",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xEF00, 0xFF00, FORMAT_D, 0, 0, "BHI",    "2ru",          ""         , FlowType.BRA, true , false),
+        new FrInstruction( 0xF000, 0xFF00, FORMAT_D, 0, 0, "BRA:D",  "2ru",          ""         , FlowType.JMP, false, true ),
+        new FrInstruction( 0xF100, 0xFF00, FORMAT_D, 0, 0, "BNO:D",  "2ru",          ""         , FlowType.NONE, false, true ),
+        new FrInstruction( 0xF200, 0xFF00, FORMAT_D, 0, 0, "BEQ:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF300, 0xFF00, FORMAT_D, 0, 0, "BNE:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF400, 0xFF00, FORMAT_D, 0, 0, "BC:D",   "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF500, 0xFF00, FORMAT_D, 0, 0, "BNC:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF600, 0xFF00, FORMAT_D, 0, 0, "BN:D",   "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF700, 0xFF00, FORMAT_D, 0, 0, "BP:D",   "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF800, 0xFF00, FORMAT_D, 0, 0, "BV:D",   "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xF900, 0xFF00, FORMAT_D, 0, 0, "BNV:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFA00, 0xFF00, FORMAT_D, 0, 0, "BLT:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFB00, 0xFF00, FORMAT_D, 0, 0, "BGE:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFC00, 0xFF00, FORMAT_D, 0, 0, "BLE:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFD00, 0xFF00, FORMAT_D, 0, 0, "BGT:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFE00, 0xFF00, FORMAT_D, 0, 0, "BLS:D",  "2ru",          ""         , FlowType.BRA, true , true ),
+        new FrInstruction( 0xFF00, 0xFF00, FORMAT_D, 0, 0, "BHI:D",  "2ru",          ""         , FlowType.BRA, true , true ),
     };
 
     /**
@@ -327,8 +327,6 @@ public class FrInstruction extends Instruction {
     public int instructionFormat;
     public int numberExtraXWords;
     public int numberExtraYWords;
-    public String name;
-    public String displayFormat;
     public String action;
 
 
@@ -456,19 +454,17 @@ c : outputs coprocessor operation (c)<br/>
      */
     public FrInstruction(int encoding, int mask, int instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
     {
-        super(flowType, hasDelaySlot, isConditional);
+        super(name, displayFormat, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
         this.encoding = encoding;
         this.mask = mask;
         this.instructionFormat = instructionFormat;
         this.numberExtraXWords = numberExtraXWords;
         this.numberExtraYWords = numberExtraYWords;
-        this.name = name;
-        this.displayFormat = displayFormat;
         this.action = action;
     }
 
     @Override
     public String toString() {
-        return name + "(0x" + Integer.toHexString(encoding) + ")";
+        return getName() + "(0x" + Integer.toHexString(encoding) + ")";
     }
 }

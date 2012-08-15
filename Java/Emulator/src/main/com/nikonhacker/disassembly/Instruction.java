@@ -2,25 +2,59 @@ package com.nikonhacker.disassembly;
 
 public class Instruction {
     public boolean isConditional;
-    public boolean hasDelaySlot;
+    public DelaySlotType delaySlotType;
+    private String name;
+    private String displayFormat;
 
     /** Type of flow control assigned to each instruction (if suitable) */
     public static enum FlowType {
+        /** This instruction does not change the program flow */
         NONE,
+
+        /** This instruction changes the program flow to a subroutine (with return foreseen) */
         CALL,
+
+        /** This instruction changes the program flow unconditionally (with no return foreseen) */
         JMP,
+
+        /** This instruction changes the program flow conditionally (with no return foreseen) */
         BRA,
+
+        /** This instruction changes the program flow by calling an interrupt */
         INT,
-        INTE,
+
+        /** This instruction changes the program flow by returning from a subroutine or interrupt */
         RET
+    }
+
+    /** Type of delay slot */
+    public static enum DelaySlotType {
+        /** This instruction is not followed by a delay slot */
+        NONE,
+
+        /** This instruction is followed by a normal delay slot, executed unconditionally */
+        NORMAL,
+
+        /** This instruction is followed by a delay slot, executed only if the branch is followed */
+        LIKELY
     }
 
     public FlowType flowType;
 
-    public Instruction(FlowType flowType, boolean hasDelaySlot, boolean isConditional) {
+    public Instruction(String name, String displayFormat, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
+        this.name = name;
+        this.displayFormat = displayFormat;
         this.flowType = flowType;
-        this.hasDelaySlot = hasDelaySlot;
         this.isConditional = isConditional;
+        this.delaySlotType = delaySlotType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDisplayFormat() {
+        return displayFormat;
     }
 
     public FlowType getFlowType() {
@@ -40,10 +74,14 @@ public class Instruction {
     }
 
     public boolean hasDelaySlot() {
-        return hasDelaySlot;
+        return delaySlotType != DelaySlotType.NONE;
     }
 
-    public void setHasDelaySlot(boolean hasDelaySlot) {
-        this.hasDelaySlot = hasDelaySlot;
+    public DelaySlotType getDelaySlotType() {
+        return delaySlotType;
+    }
+
+    public void setDelaySlotType(DelaySlotType delaySlotType) {
+        this.delaySlotType = delaySlotType;
     }
 }

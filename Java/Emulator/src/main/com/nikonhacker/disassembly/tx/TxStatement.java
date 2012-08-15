@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly.tx;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.memory.Memory;
@@ -69,85 +70,10 @@ public class TxStatement extends Statement {
     /** number of significant bits in decodedX (for display only) */
     public int immBitWidth;
 
-    /** flags (for display only) */
-    public int flags;
-
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
 
     private int binaryStatement;
-
-
-    /** This array is used to decode the mfc0 and mtc0 instruction operands
-     * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
-     */
-    private static final int[][] CP0_REGISTER_NUMBER_MAP = new int[][]{
-            // SEL0
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    TxCPUState.BadVAddr, TxCPUState.Count, -1, TxCPUState.Compare, TxCPUState.Status, TxCPUState.Cause, TxCPUState.EPC, TxCPUState.PRId,
-                    TxCPUState.Config, -1, -1, -1, -1, -1, TxCPUState.SSCR, TxCPUState.Debug,
-                    TxCPUState.DEPC, -1, -1, -1, -1, -1, TxCPUState.ErrorEPC, TxCPUState.DESAVE
-            },
-            // SEL1
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    TxCPUState.Config1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL2
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    TxCPUState.Config2, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL3
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    TxCPUState.Config3, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL4
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL5
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL6
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, TxCPUState.SSCR, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            },
-            // SEL7
-            {
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, TxCPUState.IER, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1,
-                    -1, -1, -1, -1, -1, -1, -1, -1
-            }
-    };
-
-    private static final int[] CP1_REGISTER_NUMBER_MAP = new int[]{
-            TxCPUState.FIR, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1, -1, -1, -1,
-            -1, TxCPUState.FCCR, TxCPUState.FEXR, -1, TxCPUState.FENR, -1, -1, TxCPUState.FCSR
-    };
-
-
 
     /**
      * Default decoding upon class loading
@@ -225,7 +151,7 @@ public class TxStatement extends Statement {
             // IN CPxx formats, rs, rt and rd are mapped or shifted to target the registers belonging to the correct CP
             case CP0:
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
-                rd_fd = CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
+                rd_fd = TxCPUState.CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
                 break;
             case CP1_R1: // Coprocessor 1 with registers, version 1 (rt)
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
@@ -239,7 +165,7 @@ public class TxStatement extends Statement {
                 break;
             case CP1_CR1: // Coprocessor 1 with Condition Register
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
-                rs_fs = CP1_REGISTER_NUMBER_MAP[(binaryStatement >>> 11) & 0b11111];
+                rs_fs = TxCPUState.CP1_REGISTER_NUMBER_MAP[(binaryStatement >>> 11) & 0b11111];
                 break;
             case CP1_CC_BRANCH:
                 sa_cc = (binaryStatement >>> 18) & 0b111; // cc
@@ -263,7 +189,6 @@ public class TxStatement extends Statement {
     }
 
     public void reset() {
-        flags = 0;
         immBitWidth = 0;
         c = 0;
         rs_fs = CPUState.NOREG;
@@ -271,8 +196,8 @@ public class TxStatement extends Statement {
         rd_fd = CPUState.NOREG;
         sa_cc = CPUState.NOREG;
         imm = CPUState.NOREG;
-        operandString = null;
-        commentString = null;
+        setOperandString(null);
+        setCommentString(null);
     }
 
     public void getNextStatement(Memory memory, int address)
@@ -288,6 +213,9 @@ public class TxStatement extends Statement {
      * @see TxInstruction for a description of all possible chars
      */
     public void formatOperandsAndComment(TxCPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
+
+        /* DISPLAY FORMAT processing */
+
         int tmp;
         int pos;
 
@@ -296,9 +224,6 @@ public class TxStatement extends Statement {
         decodedRdFd = rd_fd;
         decodedSaCc = sa_cc;
         decodedImm = imm;
-
-        flags = cpuState.flags;
-        cpuState.flags = 0;
 
         boolean isOptionalExpression = false; // sections between square brackets are "optional"
 
@@ -309,7 +234,7 @@ public class TxStatement extends Statement {
         StringBuilder tmpBuffer = null;
 
         // See TxInstruction constructor for meaning of chars
-        for (char formatChar : ((TxInstruction)instruction).displayFormat.toCharArray())
+        for (char formatChar : instruction.getDisplayFormat().toCharArray())
         {
             switch (formatChar)
             {
@@ -446,7 +371,7 @@ public class TxStatement extends Statement {
                     if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
                     break;
                 case 'l':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedSaCc == 0)) currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedSaCc, 5));
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedSaCc == 0)) currentBuffer.append(decodedSaCc);
                     break;
 
                 case 'n':
@@ -535,39 +460,39 @@ public class TxStatement extends Statement {
             }
         }
 
+        setOperandString(operandBuffer.toString());
+
+        setCommentString(commentBuffer.toString());
+
+
+        /* ACTION processing */
 
 //        int r = TxCPUState.NOREG;
-//        int dflags = 0;
-//        for (char s : instruction.action.toCharArray())
+//
+//        for (char s : ((TxInstruction) instruction).action.toCharArray())
 //        {
 //            switch (s)
 //            {
-//                case '!':
-//                    /* jump */
-//                    dflags |= DF_FLOW | DF_BREAK | DF_BRANCH;
+//                case 'A':
+//                    r = TxCPUState.AC;
 //                    break;
-//                case '?':
-//                    /* branch */
-//                    dflags |= DF_FLOW | DF_BRANCH;
+//                case 'C':
+//                    r = TxCPUState.CCR;
 //                    break;
-//                case '(':
-//                    /* call */
-//                    dflags |= DF_FLOW | DF_CALL;
-//                    //System.err.println("CALL {0:X8} {1:x8}", displayx, displayRegisterBuffer.pc);
+//                case 'F':
+//                    r = TxCPUState.FP;
 //                    break;
-//                case ')':
-//                    /* return */
-//                    dflags |= DF_FLOW | DF_BREAK | DF_CALL;
+//                case 'P':
+//                    r = TxCPUState.PS;
 //                    break;
-//                case '_':
-//                    /* delay */
-//                    dflags |= DF_DELAY;
+//                case 'S':
+//                    r = TxCPUState.SP;
 //                    break;
 //                case 'i':
-//                    r = decodedRs;
+//                    r = decodedI;
 //                    break;
 //                case 'j':
-//                    r = decodedRt;
+//                    r = decodedJ;
 //                    break;
 //                case 'w':
 //                    if (updateRegisters) {
@@ -578,29 +503,44 @@ public class TxStatement extends Statement {
 //                    if (updateRegisters && cpuState.registerExists(r))
 //                    {
 //                        cpuState.setRegisterDefined(r);
-//                        cpuState.setReg(r, decodedImm);
+//                        cpuState.setReg(r, decodedX);
 //                    }
 //                    break;
 //                case 'x':
 //                    r = TxCPUState.NOREG;
 //                    break;
 //                default:
-//                    System.err.println("bad action '" + s + "' at " + Format.asHex(cpuState.pc, 8));
+//                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
 //                    break;
 //            }
 //        }
-//
-//        flags |= dflags & DF_TO_KEEP;
-//        cpuState.flags |= dflags & DF_TO_COPY;
-//        if ((dflags & DF_DELAY) != 0)
-//            cpuState.flags |= dflags & DF_TO_DELAY;
-//        else
-//            flags |= dflags & DF_TO_DELAY;
 
-        /*XXX*/
-        operandString = operandBuffer.toString();
 
-        commentString = commentBuffer.toString();
+        /* LINE BREAKS and INDENT (delay slot) processing */
+
+        // Retrieve stored delay slot type to print this instruction
+        setDelaySlotType(cpuState.getStoredDelaySlotType());
+        // Store the one of this instruction for printing next one
+        cpuState.setStoredDelaySlotType(instruction.getDelaySlotType());
+
+
+        boolean newIsBreak = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET).contains(instruction.getFlowType());
+
+        if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
+            // Current instruction has no delay slot
+            // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
+            setMustInsertLineBreak(cpuState.isLineBreakRequested() || newIsBreak);
+            // Clear break request for next one
+            cpuState.setLineBreakRequest(false);
+        }
+        else {
+            // Current instruction has a delay slot
+            // Don't break now
+            setMustInsertLineBreak(false);
+            // Request a break after the next instruction if needed (current instruction is a JMP or RET)
+            cpuState.setLineBreakRequest(newIsBreak);
+        }
+
     }
 
     /** Remove blanks and comas */
@@ -608,66 +548,7 @@ public class TxStatement extends Statement {
         return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
-
-    /**
-     * Simple and fast version used by realtime disassembly trace
-     */
-    public String toString() {
-        String out = Format.asHex(binaryStatement, 8);
-
-        if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(((TxInstruction)instruction).name, 6) + " " + getOperandString();
-        }
-        else {
-            out += "              " + StringUtils.rightPad(((TxInstruction)instruction).name, 7) + " " + getOperandString();
-        }
-
-        if (StringUtils.isNotBlank(commentString)) {
-            out += StringUtils.leftPad("; " + commentString, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
-    }
-
-
-    /**
-     * Full fledged version used for offline disassembly
-     * @param options
-     * @return
-     */
-    public String toString(Set<OutputOption> options) {
-        String out = "";
-        if (options.contains(OutputOption.HEXCODE)) {
-            out += Format.asHex(binaryStatement, 8);
-        }
-
-        if (options.contains(OutputOption.BLANKS)) {
-            out += "        ";
-        }
-
-
-        if (instruction != null) {
-            if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(((TxInstruction)instruction).name, 6) + " " + operandString;
-            }
-            else {
-                out += " " + StringUtils.rightPad(((TxInstruction)instruction).name, 7) + " " + operandString;
-            }
-        }
-        else {
-            out += " (?)     " + operandString;
-        }
-        
-        if (StringUtils.isNotBlank(commentString)) {
-            out += StringUtils.leftPad("; " + commentString, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
+    protected String formatDataAsHex() {
+        return Format.asHex(binaryStatement, 8);
     }
 }

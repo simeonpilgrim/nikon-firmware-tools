@@ -3,10 +3,10 @@ package com.nikonhacker.disassembly.fr;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.memory.Memory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -16,17 +16,6 @@ import java.util.Set;
  */
 public class FrStatement extends Statement {
     ///* disassembly */
-    // [Flags]
-    public final static int DF_FLOW = 0x01;
-    public final static int DF_BREAK = 0x02;
-    public final static int DF_DELAY = 0x04;
-    public final static int DF_BRANCH = 0x10;
-    public final static int DF_JUMP = 0x20;
-    public final static int DF_CALL = 0x40;
-    public final static int DF_RETURN = 0x80;
-    public final static int DF_TO_KEEP = DF_FLOW | DF_BRANCH | DF_JUMP | DF_CALL | DF_RETURN;
-    public final static int DF_TO_COPY = DF_DELAY;
-    public final static int DF_TO_DELAY = DF_BREAK;
 
     ///* output formatting */
     public static String fmt_nxt;
@@ -159,7 +148,6 @@ public class FrStatement extends Statement {
     }
 
     public void reset() {
-        flags = 0;
         data[0] = data[1] = data[2] = 0xDEAD;
         n = 0;
         xBitWidth = 0;
@@ -167,8 +155,8 @@ public class FrStatement extends Statement {
         i = CPUState.NOREG;
         j = CPUState.NOREG;
         x = 0;
-        operandString = null;
-        commentString = null;
+        setOperandString(null);
+        setCommentString(null);
     }
 
     public void getNextData(Memory memory, int address)
@@ -190,6 +178,9 @@ public class FrStatement extends Statement {
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
      */
     public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
+
+        /* DISPLAY FORMAT processing */
+
         int tmp;
         int pos;
 
@@ -197,15 +188,12 @@ public class FrStatement extends Statement {
         decodedI = i;
         decodedJ = j;
 
-        flags = cpuState.flags;
-        cpuState.flags = 0;
-
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
 
         StringBuilder currentBuffer = operandBuffer;
 
-        for (char formatChar : ((FrInstruction) getInstruction()).displayFormat.toCharArray())
+        for (char formatChar : getInstruction().getDisplayFormat().toCharArray())
         {
             switch (formatChar)
             {
@@ -425,34 +413,19 @@ public class FrStatement extends Statement {
             }
         }
 
+        setOperandString(operandBuffer.toString());
+
+        setCommentString(commentBuffer.toString());
+
+
+        /* ACTION processing */
 
         int r = FrCPUState.NOREG;
-        int dflags = 0;
+
         for (char s : ((FrInstruction) instruction).action.toCharArray())
         {
             switch (s)
             {
-                case '!':
-                    /* jump */
-                    dflags |= DF_FLOW | DF_BREAK | DF_BRANCH;
-                    break;
-                case '?':
-                    /* branch */
-                    dflags |= DF_FLOW | DF_BRANCH;
-                    break;
-                case '(':
-                    /* call */
-                    dflags |= DF_FLOW | DF_CALL;
-                    //System.err.println("CALL {0:X8} {1:x8}", displayx, displayRegisterBuffer.pc);
-                    break;
-                case ')':
-                    /* return */
-                    dflags |= DF_FLOW | DF_BREAK | DF_CALL;
-                    break;
-                case '_':
-                    /* delay */
-                    dflags |= DF_DELAY;
-                    break;
                 case 'A':
                     r = FrCPUState.AC;
                     break;
@@ -490,92 +463,39 @@ public class FrStatement extends Statement {
                     r = FrCPUState.NOREG;
                     break;
                 default:
-                    System.err.println("bad action '" + s + "' at " + Format.asHex(cpuState.pc, 8));
+                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
                     break;
             }
         }
 
-        flags |= dflags & DF_TO_KEEP;
-        cpuState.flags |= dflags & DF_TO_COPY;
-        if ((dflags & DF_DELAY) != 0)
-            cpuState.flags |= dflags & DF_TO_DELAY;
-        else
-            flags |= dflags & DF_TO_DELAY;
 
-        /*XXX*/
-        operandString = operandBuffer.toString();
+        /* LINE BREAKS and INDENT (delay slot) processing */
 
-        commentString = commentBuffer.toString();
-    }
+        // Retrieve stored delay slot type to print this instruction
+        setDelaySlotType(cpuState.getStoredDelaySlotType());
+
+        // Store the one of this instruction for printing next one
+        cpuState.setStoredDelaySlotType(instruction.getDelaySlotType());
 
 
-    /**
-     * Simple and fast version used by realtime disassembly trace
-     */
-    @Override
-    public String toString() {
-        String out = formatDataAsHex();
+        boolean newIsBreak = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET).contains(instruction.getFlowType());
 
-        if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(((FrInstruction) instruction).name, 6) + " " + operandString;
+        if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
+            // Current instruction has no delay slot
+            // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
+            setMustInsertLineBreak(cpuState.isLineBreakRequested() || newIsBreak);
+            // Clear break request for next one
+            cpuState.setLineBreakRequest(false);
         }
         else {
-            out += "              " + StringUtils.rightPad(((FrInstruction) instruction).name, 7) + " " + operandString;
+            // Current instruction has a delay slot
+            // Don't break now
+            setMustInsertLineBreak(false);
+            // Request a break after the next instruction if needed (current instruction is a JMP or RET)
+            cpuState.setLineBreakRequest(newIsBreak);
         }
-
-        if (StringUtils.isNotBlank(commentString)) {
-            out += StringUtils.leftPad("; " + commentString, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
     }
 
-
-    /**
-     * Full fledged version used for offline disassembly
-     * @param options
-     * @return
-     */
-    @Override
-    public String toString(Set<OutputOption> options) {
-        String out = "";
-        if (options.contains(OutputOption.HEXCODE)) {
-            out += formatDataAsHex();
-        }
-
-        if (options.contains(OutputOption.BLANKS)) {
-            out += "              ";
-        }
-
-
-        if (instruction != null) {
-            if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(((FrInstruction) instruction).name, 6) + " " + operandString;
-            }
-            else {
-                out += " " + StringUtils.rightPad(((FrInstruction) instruction).name, 7) + " " + operandString;
-            }
-        }
-        else {
-            out += " (no instruction)" + operandString;
-        }
-        
-//        for (int i = 0; i < 15-operandString.length(); i++) {
-//            out += " ";
-//        }
-
-        if (StringUtils.isNotBlank(commentString)) {
-            out += StringUtils.leftPad("; " + commentString, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
-    }
 
     public String formatDataAsHex() {
         String out = "";
