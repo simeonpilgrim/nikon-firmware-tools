@@ -5,6 +5,7 @@ public class Instruction {
     public DelaySlotType delaySlotType;
     private String name;
     private String displayFormat;
+    private String action;
 
     /** Type of flow control assigned to each instruction (if suitable) */
     public static enum FlowType {
@@ -41,9 +42,10 @@ public class Instruction {
 
     public FlowType flowType;
 
-    public Instruction(String name, String displayFormat, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
+    public Instruction(String name, String displayFormat, String action, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
         this.name = name;
         this.displayFormat = displayFormat;
+        this.action = action;
         this.flowType = flowType;
         this.isConditional = isConditional;
         this.delaySlotType = delaySlotType;
@@ -57,20 +59,16 @@ public class Instruction {
         return displayFormat;
     }
 
+    public String getAction() {
+        return action;
+    }
+
     public FlowType getFlowType() {
         return flowType;
     }
 
-    public void setFlowType(FlowType flowType) {
-        this.flowType = flowType;
-    }
-
     public boolean isConditional() {
         return isConditional;
-    }
-
-    public void setConditional(boolean conditional) {
-        isConditional = conditional;
     }
 
     public boolean hasDelaySlot() {
@@ -79,9 +77,5 @@ public class Instruction {
 
     public DelaySlotType getDelaySlotType() {
         return delaySlotType;
-    }
-
-    public void setDelaySlotType(DelaySlotType delaySlotType) {
-        this.delaySlotType = delaySlotType;
     }
 }

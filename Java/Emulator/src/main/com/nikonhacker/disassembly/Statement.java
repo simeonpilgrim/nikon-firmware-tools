@@ -38,10 +38,6 @@ public abstract class Statement {
         return cpuState;
     }
 
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
-    }
-
     /** formatted operand list */
     public String getOperandString() {
         return operandString;

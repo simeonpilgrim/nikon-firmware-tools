@@ -15,8 +15,6 @@ import java.util.Set;
  * Statement : an instance of a specific Instruction with specific operands
  */
 public class FrStatement extends Statement {
-    ///* disassembly */
-
     ///* output formatting */
     public static String fmt_nxt;
     public static String fmt_imm;
@@ -422,7 +420,7 @@ public class FrStatement extends Statement {
 
         int r = FrCPUState.NOREG;
 
-        for (char s : ((FrInstruction) instruction).action.toCharArray())
+        for (char s : instruction.getAction().toCharArray())
         {
             switch (s)
             {
@@ -453,8 +451,7 @@ public class FrStatement extends Statement {
                     }
                     break;
                 case 'v':
-                    if (updateRegisters && cpuState.registerExists(r))
-                    {
+                    if (updateRegisters && cpuState.registerExists(r)) {
                         cpuState.setRegisterDefined(r);
                         cpuState.setReg(r, decodedX);
                     }
