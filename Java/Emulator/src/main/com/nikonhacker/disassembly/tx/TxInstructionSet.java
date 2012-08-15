@@ -2,6 +2,7 @@ package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.DisassemblyException;
+import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.memory.Memory;
 
@@ -47,6 +48,7 @@ public class TxInstructionSet
             "ADDition with overflow: set $t1 to ($t2 plus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int add1 = cpuState.getReg(statement.rs_fs);
@@ -63,6 +65,7 @@ public class TxInstructionSet
             "SUBtraction with overflow: set $t1 to ($t2 minus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int sub1 = cpuState.getReg(statement.rs_fs);
@@ -79,6 +82,7 @@ public class TxInstructionSet
             "ADDition Immediate with overflow: set $t1 to ($t2 plus signed 16-bit immediate)",
             TxInstruction.Format.I,
             "001000 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int add1 = cpuState.getReg(statement.rs_fs);
@@ -95,6 +99,7 @@ public class TxInstructionSet
             "ADDition Unsigned without overflow: set $t1 to ($t2 plus $t3), no overflow",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) + cpuState.getReg(statement.rt_ft));
@@ -105,6 +110,7 @@ public class TxInstructionSet
             "MOVE (formally an ADDU with rt=r0): set $t1 to $t2, no overflow",
             TxInstruction.Format.R,
             "000000 sssss 00000 fffff 00000 100001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
@@ -114,6 +120,7 @@ public class TxInstructionSet
             "SUBtraction Unsigned without overflow: set $t1 to ($t2 minus $t3), no overflow",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) - cpuState.getReg(statement.rt_ft));
@@ -123,6 +130,7 @@ public class TxInstructionSet
             "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
             TxInstruction.Format.I,
             "001001 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16));
@@ -133,6 +141,7 @@ public class TxInstructionSet
             "Load Immediate (formally an ADDIU with rs = r0): set $t1 to signed 16-bit immediate, no overflow",
             TxInstruction.Format.I,
             "001001 00000 fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft, statement.imm << 16 >> 16);
@@ -142,6 +151,7 @@ public class TxInstructionSet
             "MULTiplication: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
@@ -155,6 +165,7 @@ public class TxInstructionSet
             "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of unsigned $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
@@ -169,6 +180,7 @@ public class TxInstructionSet
             "MULtiplication without overflow: Set $t1 to low-order 32 bits of the product of $t2 and $t3",
             TxInstruction.Format.R,
             "011100 sssss ttttt fffff 00000 000010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
@@ -179,6 +191,7 @@ public class TxInstructionSet
             "Multiply ADD: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
@@ -194,6 +207,7 @@ public class TxInstructionSet
             "Multiply ADD Unsigned: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
@@ -210,6 +224,7 @@ public class TxInstructionSet
             "Multiply SUBtract: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decrement LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000100",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
@@ -225,6 +240,7 @@ public class TxInstructionSet
             "Multiply SUBtract Unsigned: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decement LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000101",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
@@ -241,6 +257,7 @@ public class TxInstructionSet
             "DIVision with overflow: Divide $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rt_ft) == 0) {
@@ -255,6 +272,7 @@ public class TxInstructionSet
             "DIVision Unsigned without overflow: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rt_ft) == 0) {
@@ -271,6 +289,7 @@ public class TxInstructionSet
             "Move From HI register: Set $t1 to contents of HI (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 00000 00000 fffff 00000 010000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.HI));
@@ -280,6 +299,7 @@ public class TxInstructionSet
             "Move From LO register: Set $t1 to contents of LO (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 00000 00000 fffff 00000 010010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.LO));
@@ -289,6 +309,7 @@ public class TxInstructionSet
             "Move To HI registerr: Set HI to contents of $t1 (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 010001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs));
@@ -298,6 +319,7 @@ public class TxInstructionSet
             "Move To LO register: Set LO to contents of $t1 (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 010011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs));
@@ -307,6 +329,7 @@ public class TxInstructionSet
             "bitwise AND: Set $t1 to bitwise AND of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100100",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) & cpuState.getReg(statement.rt_ft));
@@ -316,6 +339,7 @@ public class TxInstructionSet
             "bitwise OR: Set $t1 to bitwise OR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100101",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft));
@@ -326,6 +350,7 @@ public class TxInstructionSet
             "MOVE (formally an OR with rs=r0): Set $t1 to $t3",
             TxInstruction.Format.R,
             "000000 00000 ttttt fffff 00000 100101",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft));
@@ -335,6 +360,7 @@ public class TxInstructionSet
             "bitwise AND Immediate: Set $t1 to bitwise AND of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001100 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
@@ -345,6 +371,7 @@ public class TxInstructionSet
             "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001101 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
@@ -356,6 +383,7 @@ public class TxInstructionSet
             "Load Immediate (formally an ORI with rs=r0): Set $t1 to zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001101 00000 fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
@@ -366,6 +394,7 @@ public class TxInstructionSet
             "bitwise NOR: Set $t1 to bitwise NOR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100111",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, ~(cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft)));
@@ -375,6 +404,7 @@ public class TxInstructionSet
             "bitwise XOR (exclusive OR): Set $t1 to bitwise XOR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100110",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) ^ cpuState.getReg(statement.rt_ft));
@@ -384,6 +414,7 @@ public class TxInstructionSet
             "bitwise XOR Immediate: Set $t1 to bitwise XOR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001110 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
@@ -394,6 +425,7 @@ public class TxInstructionSet
             "Shift Left Logical: Set $t1 to result of shifting $t2 left by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) << statement.sa_cc);
@@ -404,6 +436,7 @@ public class TxInstructionSet
             "NOP (formally a useless SLL): Do nothing",
             TxInstruction.Format.R,
             "000000 00000 00000 00000 00000 000000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // nop
@@ -413,6 +446,7 @@ public class TxInstructionSet
             "Shift Left Logical Variable: Set $t1 to result of shifting $t2 left by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000100",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount.
@@ -424,6 +458,7 @@ public class TxInstructionSet
             "Shift Right Logical: Set $t1 to result of shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // must zero-fill, so use ">>>" instead of ">>".
@@ -434,6 +469,7 @@ public class TxInstructionSet
             "Shift Right Arithmetic: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // must sign-fill, so use ">>".
@@ -444,6 +480,7 @@ public class TxInstructionSet
             "Shift Right Arithmetic Variable: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000111",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>" to sign-fill.
@@ -454,6 +491,7 @@ public class TxInstructionSet
             "Shift Right Logical Variable: Set $t1 to result of shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000110",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>>" to zero-fill.
@@ -464,6 +502,7 @@ public class TxInstructionSet
             "Load Word: Set $t1 to contents of effective memory word address",
             TxInstruction.Format.I,
             "100011 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -474,6 +513,7 @@ public class TxInstructionSet
             "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
             TxInstruction.Format.I,
             "100010 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -489,6 +529,7 @@ public class TxInstructionSet
             "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
             TxInstruction.Format.I,
             "100110 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -504,6 +545,7 @@ public class TxInstructionSet
             "Store Word: Store contents of $t1 into effective memory word address",
             TxInstruction.Format.I,
             "101011 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -514,6 +556,7 @@ public class TxInstructionSet
             "Store Word Left: Store high-order 1 to 4 bytes of $t1 into memory, starting with effective byte address and continuing through the low-order byte of its word",
             TxInstruction.Format.I,
             "101010 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -528,6 +571,7 @@ public class TxInstructionSet
             "Store Word Right: Store low-order 1 to 4 bytes of $t1 into memory, starting with high-order byte of word containing effective byte address and continuing through that byte address",
             TxInstruction.Format.I,
             "101110 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -542,6 +586,7 @@ public class TxInstructionSet
             "Load Upper Immediate: Set high-order 16 bits of $t1 to 16-bit immediate and low-order 16 bits to 0",
             TxInstruction.Format.I,
             "001111 00000 fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft, statement.imm << 16);
@@ -552,6 +597,7 @@ public class TxInstructionSet
             "Branch if EQual: Branch to statement at label's address if $t1 and $t2 are equal",
             TxInstruction.Format.I_BRANCH,
             "000100 fffff sssss tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
@@ -565,6 +611,7 @@ public class TxInstructionSet
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
             TxInstruction.Format.I_BRANCH,
             "000100 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == 0) {
@@ -577,6 +624,7 @@ public class TxInstructionSet
             "Branch if EQual (Likely): Branch to statement at label's address if $t1 and $t2 are equal",
             TxInstruction.Format.I_BRANCH,
             "010100 fffff sssss tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
@@ -590,6 +638,7 @@ public class TxInstructionSet
             "Branch if EQual Zero (Likely): Branch to statement at label's address if $t1 is zero",
             TxInstruction.Format.I_BRANCH,
             "010100 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == 0) {
@@ -602,6 +651,7 @@ public class TxInstructionSet
             "Branch if Not Equal: Branch to statement at label's address if $t1 and $t2 are not equal",
             TxInstruction.Format.I_BRANCH,
             "000101 fffff sssss tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
@@ -615,6 +665,7 @@ public class TxInstructionSet
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             TxInstruction.Format.I_BRANCH,
             "000101 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != 0) {
@@ -627,6 +678,7 @@ public class TxInstructionSet
             "Branch if Not Equal (Likely): Branch to statement at label's address if $t1 and $t2 are not equal",
             TxInstruction.Format.I_BRANCH,
             "010101 fffff sssss tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
@@ -640,6 +692,7 @@ public class TxInstructionSet
             "Branch if Not Equal Zero (Likely): Branch to statement at label's address if $t1 is not zero",
             TxInstruction.Format.I_BRANCH,
             "010101 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != 0) {
@@ -652,6 +705,7 @@ public class TxInstructionSet
             "Branch if Greater than or Equal to Zero: Branch to statement at label's address if $t1 is greater than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00001 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
@@ -664,6 +718,7 @@ public class TxInstructionSet
             "Branch if Greater than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is greater than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00011 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
@@ -676,6 +731,7 @@ public class TxInstructionSet
             "Branch if Greater then or Equal to Zero And Link: If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10001 ssssssssssssssss",
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
@@ -689,6 +745,7 @@ public class TxInstructionSet
             "Branch if Greater then or Equal to Zero And Link (Likely): If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10011 ssssssssssssssss",
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
@@ -702,6 +759,7 @@ public class TxInstructionSet
             "Branch if Greater Than Zero: Branch to statement at label's address if $t1 is greater than zero",
             TxInstruction.Format.I_BRANCH,
             "000111 fffff 00000 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) > 0) {
@@ -714,6 +772,7 @@ public class TxInstructionSet
             "Branch if Greater Than Zero (Likely): Branch to statement at label's address if $t1 is greater than zero",
             TxInstruction.Format.I_BRANCH,
             "010111 fffff 00000 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) > 0) {
@@ -726,6 +785,7 @@ public class TxInstructionSet
             "Branch if Less than or Equal to Zero: Branch to statement at label's address if $t1 is less than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000110 fffff 00000 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) <= 0) {
@@ -738,6 +798,7 @@ public class TxInstructionSet
             "Branch if Less than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is less than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "010110 fffff 00000 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) <= 0) {
@@ -750,6 +811,7 @@ public class TxInstructionSet
             "Branch if Less Than Zero: Branch to statement at label's address if $t1 is less than zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00000 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
@@ -762,6 +824,7 @@ public class TxInstructionSet
             "Branch if Less Than Zero (Likely): Branch to statement at label's address if $t1 is less than zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00010 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
@@ -774,6 +837,7 @@ public class TxInstructionSet
             "Branch if Less Than Zero And Link: If $t1 is less than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10000 ssssssssssssssss",
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
@@ -787,6 +851,7 @@ public class TxInstructionSet
             "Branch if Less Than Zero And Link (Likely): If $t1 is less than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10010 ssssssssssssssss",
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
@@ -799,6 +864,7 @@ public class TxInstructionSet
             "Set on Less Than: If $t2 is less than $t3, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 101010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, (cpuState.getReg(statement.rs_fs) < cpuState.getReg(statement.rt_ft)) ? 1 : 0);
@@ -808,6 +874,7 @@ public class TxInstructionSet
             "Set on Less Than Unsigned: If $t2 is less than $t3 using unsigned comparision, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 101011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -823,6 +890,7 @@ public class TxInstructionSet
             "Set Less Than Immediate: If $t2 is less than sign-extended 16-bit immediate, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.I,
             "001010 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // 16 bit immediate value in statement.imm is sign-extended
@@ -833,6 +901,7 @@ public class TxInstructionSet
             "Set Less Than Immediate Unsigned: If $t2 is less than  sign-extended 16-bit immediate using unsigned comparison, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.I,
             "001011 sssss fffff tttttttttttttttt",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -849,6 +918,7 @@ public class TxInstructionSet
             "MOVe conditional on Non zero: Set $t1 to $t2 if $t3 is not zero",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 001011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rt_ft) != 0) {
@@ -860,6 +930,7 @@ public class TxInstructionSet
             "MOVe conditional on Zero: Set $t1 to $t2 if $t3 is zero",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 001010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rt_ft) == 0) {
@@ -871,6 +942,7 @@ public class TxInstructionSet
             "Break execution with code: Terminate program execution with specified exception code",
             TxInstruction.Format.BREAK,
             "000000 ffffffffffffffffffff 001101",
+            Instruction.FlowType.INT, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // so will just halt execution with a message.
@@ -878,38 +950,74 @@ public class TxInstructionSet
                             statement.imm + ".", Exceptions.BREAKPOINT_EXCEPTION);
                 }
             });
+    // TODO: delay slot work
     public static final TxInstruction jInstruction = new TxInstruction("j", "4Ru", "j target",
             "Jump unconditionally: Jump to statement at target address",
             TxInstruction.Format.J,
             "000010 ffffffffffffffffffffffffff",
+            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
                 }
             });
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
     public static final TxInstruction jrInstruction = new TxInstruction("jr", "i", "jr $t1",
             "Jump Register unconditionally: Jump to statement whose address is in $t1",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 001000",
+            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.pc = cpuState.getReg(statement.rs_fs);
                 }
             });
+    // alternative if rs=ra
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
+    public static final TxInstruction retInstruction = new TxInstruction("ret", "", "ret",
+            "RETurn (formally a JR to $ra): Return to calling statement",
+            TxInstruction.Format.R,
+            "000000 fffff 00000 00000 00000 001000",
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                }
+            });
+    // TODO: delay slot work
     public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "jal target",
             "Jump And Link: Set $ra to Program Counter (return address) then jump to statement at target address",
             TxInstruction.Format.J,
             "000011 ffffffffffffffffffffffffff",
+            Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
                 }
             });
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
+    public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "jalx target",
+            "Jump And Link eXchanging isa mode: Set $ra to Program Counter (return address) then jump to statement at target address, toggling ISA mode",
+            TxInstruction.Format.J,
+            "011101 ffffffffffffffffffffffffff",
+            Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
+                    cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
+                }
+            });
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
     public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i", "jalr $t1,$t2", // TODO omit rd if rd=$ra
             "Jump And Link Register: Set $t1 to Program Counter (return address) then jump to statement whose address is in $t2",
             TxInstruction.Format.R,
             "000000 sssss 00000 fffff 00000 001001",
+            Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.pc + 8);
@@ -934,6 +1042,7 @@ public class TxInstructionSet
             // on a real MIPS machine but since I am providing no means of storing
             // the binary code that is not really an issue.
             "011100 sssss 00000 fffff 00000 100001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int value = cpuState.getReg(statement.rs_fs);
@@ -951,6 +1060,7 @@ public class TxInstructionSet
             TxInstruction.Format.R,
             // See comments for "clo" instruction above.  They apply here too.
             "011100 sssss 00000 fffff 00000 100000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int value = cpuState.getReg(statement.rs_fs);
@@ -968,6 +1078,7 @@ public class TxInstructionSet
             "Move From Coprocessor 0: Set $t1 to the value stored in Coprocessor 0 register $8",
             TxInstruction.Format.CP0,
             "010000 00000 fffff sssss 00000000 eee",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rd_fd));
@@ -978,6 +1089,7 @@ public class TxInstructionSet
             "Move To Coprocessor 0: Set Coprocessor 0 register $8 to value stored in $t1",
             TxInstruction.Format.CP0,
             "010000 00100 fffff sssss 00000000 eee",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft)) ;
@@ -989,6 +1101,7 @@ public class TxInstructionSet
             "Move From Coprocessor 1: Set $t1 to the value stored in Coprocessor 1 register $8",
             TxInstruction.Format.CP1_R1,
             "010000 00000 fffff sssss 00000000 000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs/*fs*/));
@@ -999,6 +1112,7 @@ public class TxInstructionSet
             "Move To Coprocessor 1: Set Coprocessor 1 register $8 to value stored in $t1",
             TxInstruction.Format.CP1_R1,
             "010000 00100 fffff sssss 00000000 000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rs_fs/*fs*/, cpuState.getReg(statement.rt_ft)) ;
@@ -1009,9 +1123,10 @@ public class TxInstructionSet
             "move Control From Coprocessor 1: Set $t1 to the value stored in coprocessor 1 control register $8",
             TxInstruction.Format.CP1_CR1,
             "010000 00000 fffff sssss 00000000 000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs/*cr#*/));
+                    cpuState.setReg(statement.rt_ft, cpuState.getCp1CrReg(statement.rs_fs/*cr#*/));
                 }
             });
 
@@ -1019,9 +1134,10 @@ public class TxInstructionSet
             "move Control To Coprocessor 1: Set coprocessor 1 control register $8 to value stored in $t1",
             TxInstruction.Format.CP1_CR1,
             "010000 00100 fffff sssss 00000000 000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rs_fs/*cr#*/, cpuState.getReg(statement.rt_ft)) ;
+                    cpuState.setCp1CrReg(statement.rs_fs/*cr#*/, cpuState.getReg(statement.rt_ft)) ;
                 }
             });
 
@@ -1030,6 +1146,7 @@ public class TxInstructionSet
             "Load Word into Coprocessor 1 (FPU) : Set $f1 to 32-bit value from effective memory word address",
             TxInstruction.Format.CP1_I,
             "110001 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -1041,6 +1158,7 @@ public class TxInstructionSet
             "Store Word from Coprocessor 1 (FPU) : Store 32 bit value in $f1 to effective memory word address",
             TxInstruction.Format.CP1_I,
             "111001 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // todo check sign extension of offset
@@ -1052,6 +1170,7 @@ public class TxInstructionSet
             "floating point ADDition Single precision : Set $f0 to single-precision floating point value of $f1 plus $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1073,6 +1192,7 @@ public class TxInstructionSet
             "floating point SUBtraction Single precision : Set $f0 to single-precision floating point value of $f1  minus $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1088,6 +1208,7 @@ public class TxInstructionSet
             "floating point MULtiplication Single precision : Set $f0 to single-precision floating point value of $f1 times $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1102,6 +1223,7 @@ public class TxInstructionSet
             "floating point DIVision Single precision : Set $f0 to single-precision floating point value of $f1 divided by $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000011",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1117,6 +1239,7 @@ public class TxInstructionSet
             "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF) : If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
             TxInstruction.Format.CP1_CC_BRANCH,
             "010001 01000 fff 00 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1130,6 +1253,7 @@ public class TxInstructionSet
             "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT) : If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
             TxInstruction.Format.CP1_CC_BRANCH,
             "010001 01000 fff 01 ssssssssssssssss",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1144,6 +1268,7 @@ public class TxInstructionSet
             "ConVerT to Single precision from Word : Set $f0 to single precision equivalent of 32-bit integer value in $f2",
             TxInstruction.Format.CP1_R2,
             "010001 10100 00000 sssss fffff 100000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1156,6 +1281,7 @@ public class TxInstructionSet
             "ConVerT to Word from Single precision : Set $f0 to 32-bit integer equivalent of single precision value in $f1",
             TxInstruction.Format.CP1_R2,
             "010001 10000 00000 sssss fffff 100100",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1169,7 +1295,8 @@ public class TxInstructionSet
     public static final TxInstruction cEqSInstruction = new TxInstruction("c.eq.s", "[l, ]i, j", "c.eq.s 1,$f0,$f1",
             "Compare EQual Single precision : If $f0 is equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
-                "010001 10000 ttttt sssss fff 00 110010",
+            "010001 10000 ttttt sssss fff 00 110010",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1186,6 +1313,7 @@ public class TxInstructionSet
             "Compare Less or Equal Single precision : If $f0 is less than or equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
             "010001 10000 ttttt sssss fff 00 111110",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1202,6 +1330,7 @@ public class TxInstructionSet
             "Compare Less Than Single precision : If $f0 is less than $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
             "010001 10000 ttttt sssss fff 00 111100",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     {
@@ -1220,6 +1349,7 @@ public class TxInstructionSet
             "Trap if EQual: Trap with code $t3 if $t1 is equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110100",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == cpuState.getReg(statement.rt_ft)) {
@@ -1231,6 +1361,7 @@ public class TxInstructionSet
             "Trap if EQual to Immediate: Trap if $t1 is equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01100 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == (statement.imm << 16 >> 16)) {
@@ -1242,6 +1373,7 @@ public class TxInstructionSet
             "Trap if Not Equal: Trap if $t1 is not equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110110",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != cpuState.getReg(statement.rt_ft)) {
@@ -1253,6 +1385,7 @@ public class TxInstructionSet
             "Trap if Not Equal to Immediate: Trap if $t1 is not equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01110 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != (statement.imm << 16 >> 16)) {
@@ -1264,6 +1397,7 @@ public class TxInstructionSet
             "Trap if Greater or Equal: Trap if $t1 is greater than or equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110000",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= cpuState.getReg(statement.rt_ft)) {
@@ -1275,6 +1409,7 @@ public class TxInstructionSet
             "Trap if Greater or Equal Unsigned: Trap if $t1 is greater than or equal to $t2 using unsigned comparision",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110001",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -1289,6 +1424,7 @@ public class TxInstructionSet
             "Trap if Greater than or Equal to Immediate: Trap if $t1 greater than or equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01000 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= (statement.imm << 16 >> 16)) {
@@ -1300,6 +1436,7 @@ public class TxInstructionSet
             "Trap if Greater or Equal to Immediate unsigned: Trap if $t1 greater than or equal to sign-extended 16 bit immediate, unsigned comparison",
             TxInstruction.Format.I,
             "000001 fffff 01001 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -1315,6 +1452,7 @@ public class TxInstructionSet
             "Trap if Less Than: Trap if $t1 less than $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110010",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < cpuState.getReg(statement.rt_ft)) {
@@ -1326,6 +1464,7 @@ public class TxInstructionSet
             "Trap if Less Than Unsigned: Trap if $t1 less than $t2, unsigned comparison",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110011",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -1340,6 +1479,7 @@ public class TxInstructionSet
             "Trap if Less Than Immediate: Trap if $t1 less than sign-extended 16-bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01010 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) {
@@ -1351,6 +1491,7 @@ public class TxInstructionSet
             "Trap if Less Than Immediate Uunsigned: Trap if $t1 less than sign-extended 16-bit immediate, unsigned comparison",
             TxInstruction.Format.I,
             "000001 fffff 01011 ssssssssssssssss",
+            Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int first = cpuState.getReg(statement.rs_fs);
@@ -1365,23 +1506,25 @@ public class TxInstructionSet
 
 
     public static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "lb $t1,-100($t2)",
-        "Load Byte: Set $t1 to sign-extended 8-bit value from effective memory byte address",
-        TxInstruction.Format.I,
-        "100000 ttttt fffff ssssssssssssssss",
-        new SimulationCode() {
-            public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                cpuState.setReg(statement.rt_ft,
-                        // TODO check precedence
-                        memory.loadUnsigned8(
-                                cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
-                                << 24
-                                >> 24);
-            }
-        });
+            "Load Byte: Set $t1 to sign-extended 8-bit value from effective memory byte address",
+            TxInstruction.Format.I,
+            "100000 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft,
+                            // TODO check precedence
+                            memory.loadUnsigned8(
+                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
+                                    << 24
+                                    >> 24);
+                }
+            });
     public static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "lh $t1,-100($t2)",
             "Load Halfword: Set $t1 to sign-extended 16-bit value from effective memory halfword address",
             TxInstruction.Format.I,
             "100001 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft,
@@ -1397,6 +1540,7 @@ public class TxInstructionSet
             "Load Halfword Unsigned: Set $t1 to zero-extended 16-bit value from effective memory halfword address",
             TxInstruction.Format.I,
             "100101 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // offset is sign-extended and loaded halfword value is zero-extended
@@ -1411,6 +1555,7 @@ public class TxInstructionSet
             "Load Byte Unsigned: Set $t1 to zero-extended 8-bit value from effective memory byte address",
             TxInstruction.Format.I,
             "100100 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(statement.rt_ft,
@@ -1424,6 +1569,7 @@ public class TxInstructionSet
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             TxInstruction.Format.I,
             "101000 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     memory.store8(
@@ -1435,6 +1581,7 @@ public class TxInstructionSet
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             TxInstruction.Format.I,
             "101001 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     memory.store16(
@@ -1446,6 +1593,7 @@ public class TxInstructionSet
             "SYNC: Wait for all operations to complete",
             TxInstruction.Format.I,
             "000000 00000000000000000000 001111",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     /* nop. Simulator does not have any pipeline */
@@ -1455,6 +1603,7 @@ public class TxInstructionSet
             "WAIT: put the processor in stand-by",
             TxInstruction.Format.I,
             "010000 1 0000000000000000000 100000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (Format.bitValue(cpuState.getReg(TxCPUState.Status), TxCPUState.Status_RP_bit) == 1) {
@@ -1470,6 +1619,7 @@ public class TxInstructionSet
             "Exception RETurn: Set Program Counter to Coprocessor 0 EPC register value, clear Coprocessor Status exception level bit",
             TxInstruction.Format.R,
             "010000 1 0000000000000000000 011000",
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // set EXL bit (bit 1) in Status register to 0 and set PC to EPC
@@ -1642,6 +1792,19 @@ public class TxInstructionSet
             }
             else {
                 return sllInstruction;
+            }
+
+        }
+    };
+
+    static InstructionResolver jrOrRetResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0b11111) { // rs == ra
+                return retInstruction;
+            }
+            else {
+                return jrInstruction;
             }
 
         }
@@ -1987,6 +2150,9 @@ public class TxInstructionSet
         specialFunctionResolvers[0b000111] = new DirectInstructionResolver(sravInstruction);
 
         specialFunctionResolvers[0b001000] = new DirectInstructionResolver(jrInstruction);
+        if (true/*OptionAltInstructions*/) {
+            specialFunctionResolvers[0b001000] = jrOrRetResolver;
+        }
         specialFunctionResolvers[0b001001] = new DirectInstructionResolver(jalrInstruction);
         specialFunctionResolvers[0b001010] = new DirectInstructionResolver(movzInstruction);
         specialFunctionResolvers[0b001011] = new DirectInstructionResolver(movnInstruction);

@@ -10,16 +10,8 @@ public class TxInstruction extends Instruction {
     public int mask;
     public int numberExtraXWords;
     public int numberExtraYWords;
-    public String name;
-    public String displayFormat;
     public String action;
-
-    public TxInstruction(String name, String displayFormat, String sampleUse, String description, Format instructionFormat, String marsOperationMask, SimulationCode simulationCode) {
-        super(null, false, false);
-        this.name = name;
-        this.displayFormat = displayFormat;
-        this.instructionFormat = instructionFormat;
-    }
+    public SimulationCode simulationCode;
     /**
      * Instruction types (formats)
      */
@@ -67,11 +59,6 @@ public class TxInstruction extends Instruction {
 
     /**
      * Creates a new TxInstruction
-     * @param encoding the value of the word instruction that matches this opcode/function combination (6 highest bits concatenated with 6 lower bits from the 32 bits statement)
-     * @param mask indicates which bits of the "encoding" are significant. the others are either operants, unused, or to be determined later
-     * @param instructionFormat pattern that specifies how the instruction word should be split in parts
-     * @param numberExtraXWords number of extra 16-bit words to be interpreted as x operand
-     * @param numberExtraYWords number of extra 16-bit words to be interpreted as y operand (for coprocessor operations)
      * @param name the symbolic name
      * @param displayFormat a string specifying how to format operands and comment. It is a list of characters among :<br/>
 <pre>
@@ -104,42 +91,29 @@ z : outputs x as a bitmap of register IDs (influenced by previous x and y chars)
 v : outputs current PC value as a vector id (0xFF being the first of this memory area, going down to 0x00)
 c : outputs coprocessor operation (c)<br/>
 </pre>
-
-
-
-     * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
-* <pre>
-'!': jump<br/>
-'?': branch<br/>
-'(': call<br/>
-')': return<br/>
-'_': instruction provides a delay slot<br/>
-'A': current register is AC<br/>
-'C': current register is CCR<br/>
-'F': current register is FP<br/>
-'P': current register is PS<br/>
-'S': current register is SP<br/>
-'i': current register is Ri<br/>
-'j': current register is Rj<br/>
-'w': current register is marked invalid<br/>
-'v': current register is marked valid and loaded with the given value<br/>
-'x': current register is undefined<br/>
+     * @param instructionFormat pattern that specifies how the instruction word should be split in parts
      * @param flowType
      * @param isConditional
-     * @param hasDelaySlot
+     * @param delaySlotType
      */
+    public TxInstruction(String name, String displayFormat, String sampleUse, String description, Format instructionFormat, String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
+        super(name, displayFormat, flowType, isConditional, delaySlotType);
+        this.instructionFormat = instructionFormat;
+        this.simulationCode = simulationCode;
+    }
+
+    @Deprecated
     public TxInstruction(int encoding, int mask, Format instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
     {
-        super(flowType, hasDelaySlot, isConditional);
+        super(name, displayFormat, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
         this.encoding = encoding;
         this.mask = mask;
         this.instructionFormat = instructionFormat;
         this.numberExtraXWords = numberExtraXWords;
         this.numberExtraYWords = numberExtraYWords;
-        this.name = name;
-        this.displayFormat = displayFormat;
         this.action = action;
     }
+
 
     public Format getInstructionFormat() {
         return instructionFormat;
@@ -147,6 +121,6 @@ c : outputs coprocessor operation (c)<br/>
 
     @Override
     public String toString() {
-        return name + "(0x" + Integer.toHexString(encoding) + ")";
+        return getName() + "(0x" + Integer.toHexString(encoding) + ")";
     }
 }

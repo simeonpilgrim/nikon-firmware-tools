@@ -302,7 +302,7 @@ public class CodeAnalyzer {
             if (stopAtFirstProcessedStatement && processedStatements.contains(address)) {
                 Integer previousAddress = codeStructure.getStatements().lowerKey(address);
                 // Check we're not in delay slot. We shouldn't stop on delay slot
-                if (previousAddress == null || !((FrInstruction)(codeStructure.getStatements().get(previousAddress).getInstruction())).hasDelaySlot) {
+                if (previousAddress == null || !codeStructure.getStatements().get(previousAddress).getInstruction().hasDelaySlot()) {
                     break;
                 }
             }
@@ -312,7 +312,7 @@ public class CodeAnalyzer {
             switch (statement.getInstruction().getFlowType()) {
                 case RET:
                     codeStructure.getReturns().put(address, currentFunction.getAddress());
-                    codeStructure.getEnds().put(address + (((FrInstruction) (statement.getInstruction())).hasDelaySlot ? 2 : 0), currentFunction.getAddress());
+                    codeStructure.getEnds().put(address + (statement.getInstruction().hasDelaySlot() ? 2 : 0), currentFunction.getAddress());
                     break;
                 case JMP:
                 case BRA:
@@ -466,7 +466,7 @@ public class CodeAnalyzer {
                     }
                     break;
                 case CALL:
-                    if (((FrInstruction)(statement.getInstruction())).hasDelaySlot) {
+                    if (statement.getInstruction().hasDelaySlot()) {
                         currentSegment.setEnd(address + 2);
                         processedStatements.add(address + 2);
                     }
@@ -490,7 +490,6 @@ public class CodeAnalyzer {
                     }
                     break;
                 case INT:
-                case INTE:
                     Integer interruptAddress = interruptTable.get(statement.decodedX);
                     if (statement.decodedX == 0x40 && int40mapping != null) {
                         processInt40Call(currentFunction, address, statement);
@@ -510,7 +509,7 @@ public class CodeAnalyzer {
             }
 
             if (statement.getInstruction().flowType == Instruction.FlowType.RET || statement.getInstruction().flowType == Instruction.FlowType.JMP) {
-                if (statement.getInstruction().hasDelaySlot) {
+                if (statement.getInstruction().hasDelaySlot()) {
                     currentSegment.setEnd(address + 2);
                     processedStatements.add(address + 2);
                 }

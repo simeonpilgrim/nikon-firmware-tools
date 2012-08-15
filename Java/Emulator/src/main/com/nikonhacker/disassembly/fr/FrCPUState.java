@@ -261,9 +261,10 @@ public class FrCPUState extends CPUState {
         for (int i = 0; i <= FrCPUState.CCR; i++) {
             cloneCpuState.setReg(i, getReg(i));
         }
-        cloneCpuState.flags = flags;
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
+        cloneCpuState.setStoredDelaySlotType(getStoredDelaySlotType());
+        cloneCpuState.setLineBreakRequest(isLineBreakRequested());
         return cloneCpuState;
     }
 
@@ -275,8 +276,7 @@ public class FrCPUState extends CPUState {
         }
         registers = registers.trim() + "]";
         return "CPUState : " +
-                "flags=0b" + Integer.toString(flags,2) +
-                ", pc=0x" + Format.asHex(pc, 8) +
+                "pc=0x" + Format.asHex(pc, 8) +
                 ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
                 ", reg=" + registers +
                 '}';
