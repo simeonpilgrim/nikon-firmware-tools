@@ -6,11 +6,6 @@ import com.nikonhacker.disassembly.Instruction;
 public class TxInstruction extends Instruction {
 
     private Format instructionFormat;
-    public int encoding;
-    public int mask;
-    public int numberExtraXWords;
-    public int numberExtraYWords;
-    public String action;
     public SimulationCode simulationCode;
     /**
      * Instruction types (formats)
@@ -91,29 +86,30 @@ z : outputs x as a bitmap of register IDs (influenced by previous x and y chars)
 v : outputs current PC value as a vector id (0xFF being the first of this memory area, going down to 0x00)
 c : outputs coprocessor operation (c)<br/>
 </pre>
+     * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
+     * <pre>
+    'A': current register is AC<br/>
+    'C': current register is CCR<br/>
+    'F': current register is FP<br/>
+    'P': current register is PS<br/>
+    'S': current register is SP<br/>
+    'i': current register is Ri<br/>
+    'j': current register is Rj<br/>
+    'w': current register is marked invalid<br/>
+    'v': current register is marked valid and loaded with the given value<br/>
+    'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
+    '+': current register is incremented by given value<br/>
+    'x': current register is undefined<br/>
      * @param instructionFormat pattern that specifies how the instruction word should be split in parts
      * @param flowType
      * @param isConditional
      * @param delaySlotType
      */
-    public TxInstruction(String name, String displayFormat, String sampleUse, String description, Format instructionFormat, String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
-        super(name, displayFormat, flowType, isConditional, delaySlotType);
+    public TxInstruction(String name, String displayFormat, String action, String sampleUse, String description, Format instructionFormat, String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
+        super(name, displayFormat, action, flowType, isConditional, delaySlotType);
         this.instructionFormat = instructionFormat;
         this.simulationCode = simulationCode;
     }
-
-    @Deprecated
-    public TxInstruction(int encoding, int mask, Format instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
-    {
-        super(name, displayFormat, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
-        this.encoding = encoding;
-        this.mask = mask;
-        this.instructionFormat = instructionFormat;
-        this.numberExtraXWords = numberExtraXWords;
-        this.numberExtraYWords = numberExtraYWords;
-        this.action = action;
-    }
-
 
     public Format getInstructionFormat() {
         return instructionFormat;
@@ -121,6 +117,6 @@ c : outputs coprocessor operation (c)<br/>
 
     @Override
     public String toString() {
-        return getName() + "(0x" + Integer.toHexString(encoding) + ")";
+        return getName();
     }
 }

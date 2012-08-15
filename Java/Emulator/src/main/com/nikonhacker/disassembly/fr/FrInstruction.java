@@ -327,8 +327,6 @@ public class FrInstruction extends Instruction {
     public int instructionFormat;
     public int numberExtraXWords;
     public int numberExtraYWords;
-    public String action;
-
 
     /**
      * Default instruction decoding upon class loading
@@ -433,11 +431,6 @@ c : outputs coprocessor operation (c)<br/>
 </pre>
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
 * <pre>
-'!': jump<br/>
-'?': branch<br/>
-'(': call<br/>
-')': return<br/>
-'_': instruction provides a delay slot<br/>
 'A': current register is AC<br/>
 'C': current register is CCR<br/>
 'F': current register is FP<br/>
@@ -454,13 +447,12 @@ c : outputs coprocessor operation (c)<br/>
      */
     public FrInstruction(int encoding, int mask, int instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
     {
-        super(name, displayFormat, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
+        super(name, displayFormat, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
         this.encoding = encoding;
         this.mask = mask;
         this.instructionFormat = instructionFormat;
         this.numberExtraXWords = numberExtraXWords;
         this.numberExtraYWords = numberExtraYWords;
-        this.action = action;
     }
 
     @Override

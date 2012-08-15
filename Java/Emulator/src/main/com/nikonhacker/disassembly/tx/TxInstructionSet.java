@@ -44,7 +44,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 public class TxInstructionSet
 {
-    public static final TxInstruction addInstruction = new TxInstruction("add", "k, [i, ]j", "add $t1,$t2,$t3",
+    public static final TxInstruction addInstruction = new TxInstruction("add", "k, [i, ]j", "kw", "add $t1,$t2,$t3",
             "ADDition with overflow: set $t1 to ($t2 plus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100000",
@@ -61,7 +61,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, sum);
                 }
             });
-    public static final TxInstruction subInstruction = new TxInstruction("sub", "k, [i, ]j", "sub $t1,$t2,$t3",
+    public static final TxInstruction subInstruction = new TxInstruction("sub", "k, [i, ]j", "kw", "sub $t1,$t2,$t3",
             "SUBtraction with overflow: set $t1 to ($t2 minus $t3)",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100010",
@@ -78,7 +78,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, dif);
                 }
             });
-    public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, [i, ]s", "addi $t1,$t2,-100",
+    public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, [i, ]s", "j+", "addi $t1,$t2,-100",
             "ADDition Immediate with overflow: set $t1 to ($t2 plus signed 16-bit immediate)",
             TxInstruction.Format.I,
             "001000 sssss fffff tttttttttttttttt",
@@ -95,7 +95,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, sum);
                 }
             });
-    public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, [i, ]j", "addu $t1,$t2,$t3",
+    public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, [i, ]j", "kw", "addu $t1,$t2,$t3",
             "ADDition Unsigned without overflow: set $t1 to ($t2 plus $t3), no overflow",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100001",
@@ -106,7 +106,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rt=r0
-    public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i", "move $t1,$t2",
+    public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i", "kw", "move $t1,$t2",
             "MOVE (formally an ADDU with rt=r0): set $t1 to $t2, no overflow",
             TxInstruction.Format.R,
             "000000 sssss 00000 fffff 00000 100001",
@@ -116,7 +116,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
                 }
             });
-    public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, [i, ]j", "subu $t1,$t2,$t3",
+    public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, [i, ]j", "kw", "subu $t1,$t2,$t3",
             "SUBtraction Unsigned without overflow: set $t1 to ($t2 minus $t3), no overflow",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100011",
@@ -126,7 +126,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) - cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "addiu $t1,$t2,-100",
+    public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "j+", "addiu $t1,$t2,-100",
             "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
             TxInstruction.Format.I,
             "001001 sssss fffff tttttttttttttttt",
@@ -137,7 +137,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rs=r0
-    public static final TxInstruction liAddiuInstruction = new TxInstruction("li", "j, s", "li $t1,-100",
+    public static final TxInstruction liAddiuInstruction = new TxInstruction("li", "j, s", "jv", "li $t1,-100",
             "Load Immediate (formally an ADDIU with rs = r0): set $t1 to signed 16-bit immediate, no overflow",
             TxInstruction.Format.I,
             "001001 00000 fffff tttttttttttttttt",
@@ -147,7 +147,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, statement.imm << 16 >> 16);
                 }
             });
-    public static final TxInstruction multInstruction = new TxInstruction("mult", "[k, ]i, j", "mult $t1,$t2",
+    public static final TxInstruction multInstruction = new TxInstruction("mult", "[k, ]i, j", "kw", "mult $t1,$t2",
             "MULTiplication: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011000",
@@ -161,7 +161,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction multuInstruction = new TxInstruction("multu", "[k, ]i, j", "multu $t1,$t2",
+    public static final TxInstruction multuInstruction = new TxInstruction("multu", "[k, ]i, j", "kw", "multu $t1,$t2",
             "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of unsigned $t1 and $t2",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011001",
@@ -176,7 +176,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction mulInstruction = new TxInstruction("mul", "k, i, j", "mul $t1,$t2,$t3",
+    public static final TxInstruction mulInstruction = new TxInstruction("mul", "k, i, j", "kw", "mul $t1,$t2,$t3",
             "MULtiplication without overflow: Set $t1 to low-order 32 bits of the product of $t2 and $t3",
             TxInstruction.Format.R,
             "011100 sssss ttttt fffff 00000 000010",
@@ -187,7 +187,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, (int) ((product << 32) >> 32));
                 }
             });
-    public static final TxInstruction maddInstruction = new TxInstruction("madd", "[k, ]i, j", "madd $t1,$t2",
+    public static final TxInstruction maddInstruction = new TxInstruction("madd", "[k, ]i, j", "kw", "madd $t1,$t2",
             "Multiply ADD: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000000",
@@ -203,7 +203,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction madduInstruction = new TxInstruction("maddu", "[k, ]i, j", "maddu $t1,$t2",
+    public static final TxInstruction madduInstruction = new TxInstruction("maddu", "[k, ]i, j", "kw", "maddu $t1,$t2",
             "Multiply ADD Unsigned: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000001",
@@ -220,7 +220,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction msubInstruction = new TxInstruction("msub", "[k, ]i, j", "msub $t1,$t2",
+    public static final TxInstruction msubInstruction = new TxInstruction("msub", "[k, ]i, j", "kw", "msub $t1,$t2",
             "Multiply SUBtract: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decrement LO by low-order 32 bits of product",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000100",
@@ -236,7 +236,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "[k, ]i, j", "msubu $t1,$t2",
+    public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "[k, ]i, j", "kw", "msubu $t1,$t2",
             "Multiply SUBtract Unsigned: Multiply $t1 by $t2 then decrement HI by high-order 32 bits of product, decement LO by low-order 32 bits of product, unsigned",
             TxInstruction.Format.R,
             "011100 fffff sssss 00000 00000 000101",
@@ -253,7 +253,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, lo);
                 }
             });
-    public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "div $t1,$t2",
+    public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "iw", "div $t1,$t2",
             "DIVision with overflow: Divide $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011010",
@@ -268,7 +268,7 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs) / cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "divu $t1,$t2",
+    public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "iw", "divu $t1,$t2",
             "DIVision Unsigned without overflow: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder",
             TxInstruction.Format.R,
             "000000 fffff sssss 00000 00000 011011",
@@ -285,7 +285,7 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
                 }
             });
-    public static final TxInstruction mfhiInstruction = new TxInstruction("mfhi", "k", "mfhi $t1",
+    public static final TxInstruction mfhiInstruction = new TxInstruction("mfhi", "k", "kw", "mfhi $t1",
             "Move From HI register: Set $t1 to contents of HI (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 00000 00000 fffff 00000 010000",
@@ -295,7 +295,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.HI));
                 }
             });
-    public static final TxInstruction mfloInstruction = new TxInstruction("mflo", "k", "mflo $t1",
+    public static final TxInstruction mfloInstruction = new TxInstruction("mflo", "k", "kw", "mflo $t1",
             "Move From LO register: Set $t1 to contents of LO (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 00000 00000 fffff 00000 010010",
@@ -305,7 +305,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(TxCPUState.LO));
                 }
             });
-    public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "mthi $t1",
+    public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "", "mthi $t1",
             "Move To HI registerr: Set HI to contents of $t1 (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 010001",
@@ -315,7 +315,7 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs));
                 }
             });
-    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "mtlo $t1",
+    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "", "mtlo $t1",
             "Move To LO register: Set LO to contents of $t1 (see multiply and divide operations)",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 010011",
@@ -325,7 +325,7 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs));
                 }
             });
-    public static final TxInstruction andInstruction = new TxInstruction("and", "k, [i, ]j", "and $t1,$t2,$t3",
+    public static final TxInstruction andInstruction = new TxInstruction("and", "k, [i, ]j", "kw", "and $t1,$t2,$t3",
             "bitwise AND: Set $t1 to bitwise AND of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100100",
@@ -335,7 +335,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) & cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction orInstruction = new TxInstruction("or", "k, [i, ]j", "or $t1,$t2,$t3",
+    public static final TxInstruction orInstruction = new TxInstruction("or", "k, [i, ]j", "kw", "or $t1,$t2,$t3",
             "bitwise OR: Set $t1 to bitwise OR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100101",
@@ -346,7 +346,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rs=r0
-    public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j", "move $t1,$t3",
+    public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j", "kw", "move $t1,$t3",
             "MOVE (formally an OR with rs=r0): Set $t1 to $t3",
             TxInstruction.Format.R,
             "000000 00000 ttttt fffff 00000 100101",
@@ -356,7 +356,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, [i, ]s", "andi $t1,$t2,100",
+    public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, [i, ]s", "jw", "andi $t1,$t2,100",
             "bitwise AND Immediate: Set $t1 to bitwise AND of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001100 sssss fffff tttttttttttttttt",
@@ -367,7 +367,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) & (statement.imm & 0x0000FFFF));
                 }
             });
-    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]s", "ori $t1,$t2,100",
+    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]s", "jw", "ori $t1,$t2,100",
             "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001101 sssss fffff tttttttttttttttt",
@@ -379,7 +379,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rs=r0
-    public static final TxInstruction liOriInstruction = new TxInstruction("li", "j, s", "li $t1,100",
+    public static final TxInstruction liOriInstruction = new TxInstruction("li", "j, s", "jv", "li $t1,100",
             "Load Immediate (formally an ORI with rs=r0): Set $t1 to zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001101 00000 fffff tttttttttttttttt",
@@ -390,7 +390,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, statement.imm & 0x0000FFFF);
                 }
             });
-    public static final TxInstruction norInstruction = new TxInstruction("nor", "k, [i, ]j", "nor $t1,$t2,$t3",
+    public static final TxInstruction norInstruction = new TxInstruction("nor", "k, [i, ]j", "kw", "nor $t1,$t2,$t3",
             "bitwise NOR: Set $t1 to bitwise NOR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100111",
@@ -400,7 +400,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, ~(cpuState.getReg(statement.rs_fs) | cpuState.getReg(statement.rt_ft)));
                 }
             });
-    public static final TxInstruction xorInstruction = new TxInstruction("xor", "k, i, j", "xor $t1,$t2,$t3",
+    public static final TxInstruction xorInstruction = new TxInstruction("xor", "k, i, j", "kw", "xor $t1,$t2,$t3",
             "bitwise XOR (exclusive OR): Set $t1 to bitwise XOR of $t2 and $t3",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 100110",
@@ -410,7 +410,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs) ^ cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, [i, ]s", "xori $t1,$t2,100",
+    public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, [i, ]s", "jw", "xori $t1,$t2,100",
             "bitwise XOR Immediate: Set $t1 to bitwise XOR of $t2 and zero-extended 16-bit immediate",
             TxInstruction.Format.I,
             "001110 sssss fffff tttttttttttttttt",
@@ -421,7 +421,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) ^ (statement.imm & 0x0000FFFF));
                 }
             });
-    public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, [j, ]l", "sll $t1,$t2,10",
+    public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, [j, ]l", "kw", "sll $t1,$t2,10",
             "Shift Left Logical: Set $t1 to result of shifting $t2 left by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000000",
@@ -432,7 +432,7 @@ public class TxInstructionSet
                 }
             });
     // alternate SLL with 0 registers
-    public static final TxInstruction nopInstruction = new TxInstruction("nop", "", "nop",
+    public static final TxInstruction nopInstruction = new TxInstruction("nop", "", "", "nop",
             "NOP (formally a useless SLL): Do nothing",
             TxInstruction.Format.R,
             "000000 00000 00000 00000 00000 000000",
@@ -442,7 +442,7 @@ public class TxInstructionSet
                     // nop
                 }
             });
-    public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, [j, ]i", "sllv $t1,$t2,$t3",
+    public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, [j, ]i", "kw", "sllv $t1,$t2,$t3",
             "Shift Left Logical Variable: Set $t1 to result of shifting $t2 left by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000100",
@@ -454,7 +454,7 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt_ft) << (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
-    public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, [j, ]l", "srl $t1,$t2,10",
+    public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, [j, ]l", "kw", "srl $t1,$t2,10",
             "Shift Right Logical: Set $t1 to result of shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000010",
@@ -465,7 +465,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> statement.sa_cc);
                 }
             });
-    public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, [j, ]l", "sra $t1,$t2,10",
+    public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, [j, ]l", "kw", "sra $t1,$t2,10",
             "Shift Right Arithmetic: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by immediate",
             TxInstruction.Format.R,
             "000000 00000 sssss fffff ttttt 000011",
@@ -476,7 +476,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> statement.sa_cc);
                 }
             });
-    public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, [j, ]i", "srav $t1,$t2,$t3",
+    public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, [j, ]i", "kw", "srav $t1,$t2,$t3",
             "Shift Right Arithmetic Variable: Set $t1 to result of sign-extended shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000111",
@@ -487,7 +487,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
-    public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, [j, ]i", "srlv $t1,$t2,$t3",
+    public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, [j, ]i", "kw", "srlv $t1,$t2,$t3",
             "Shift Right Logical Variable: Set $t1 to result of shifting $t2 right by number of bits specified by value in low-order 5 bits of $t3",
             TxInstruction.Format.R,
             "000000 ttttt sssss fffff 00000 000110",
@@ -498,7 +498,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
-    public static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "lw $t1,-100($t2)",
+    public static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "jw", "lw $t1,-100($t2)",
             "Load Word: Set $t1 to contents of effective memory word address",
             TxInstruction.Format.I,
             "100011 ttttt fffff ssssssssssssssss",
@@ -509,7 +509,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm));
                 }
             });
-    public static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "lwl $t1,-100($t2)",
+    public static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "jw", "lwl $t1,-100($t2)",
             "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
             TxInstruction.Format.I,
             "100010 ttttt fffff ssssssssssssssss",
@@ -525,7 +525,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, result);
                 }
             });
-    public static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "lwr $t1,-100($t2)",
+    public static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "jw", "lwr $t1,-100($t2)",
             "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
             TxInstruction.Format.I,
             "100110 ttttt fffff ssssssssssssssss",
@@ -541,7 +541,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, result);
                 }
             });
-    public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "sw $t1,-100($t2)",
+    public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "", "sw $t1,-100($t2)",
             "Store Word: Store contents of $t1 into effective memory word address",
             TxInstruction.Format.I,
             "101011 ttttt fffff ssssssssssssssss",
@@ -552,7 +552,7 @@ public class TxInstructionSet
                     memory.store32(cpuState.getReg(statement.rs_fs) + statement.imm, cpuState.getReg(statement.rt_ft));
                 }
             });
-    public static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "swl $t1,-100($t2)",
+    public static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "", "swl $t1,-100($t2)",
             "Store Word Left: Store high-order 1 to 4 bytes of $t1 into memory, starting with effective byte address and continuing through the low-order byte of its word",
             TxInstruction.Format.I,
             "101010 ttttt fffff ssssssssssssssss",
@@ -567,7 +567,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction swrInstruction = new TxInstruction("swr", "j, s(i)", "swr $t1,-100($t2)",
+    public static final TxInstruction swrInstruction = new TxInstruction("swr", "j, s(i)", "", "swr $t1,-100($t2)",
             "Store Word Right: Store low-order 1 to 4 bytes of $t1 into memory, starting with high-order byte of word containing effective byte address and continuing through that byte address",
             TxInstruction.Format.I,
             "101110 ttttt fffff ssssssssssssssss",
@@ -582,7 +582,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", "lui $t1,100", // todo disassemble with << 16
+    public static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", "jV", "lui $t1,100", // todo disassemble with << 16
             "Load Upper Immediate: Set high-order 16 bits of $t1 to 16-bit immediate and low-order 16 bits to 0",
             TxInstruction.Format.I,
             "001111 00000 fffff ssssssssssssssss",
@@ -593,7 +593,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction beqInstruction = new TxInstruction("beq", "i, j, 4ru", "beq $t1,$t2,label",
+    public static final TxInstruction beqInstruction = new TxInstruction("beq", "i, j, 4ru", "", "beq $t1,$t2,label",
             "Branch if EQual: Branch to statement at label's address if $t1 and $t2 are equal",
             TxInstruction.Format.I_BRANCH,
             "000100 fffff sssss tttttttttttttttt",
@@ -607,7 +607,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction beqzInstruction = new TxInstruction("beqz", "i, 4ru", "beqz $t1,label",
+    public static final TxInstruction beqzInstruction = new TxInstruction("beqz", "i, 4ru", "", "beqz $t1,label",
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
             TxInstruction.Format.I_BRANCH,
             "000100 fffff 00000 tttttttttttttttt",
@@ -620,7 +620,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction beqlInstruction = new TxInstruction("beql", "i, j, 4ru", "beql $t1,$t2,label",
+    public static final TxInstruction beqlInstruction = new TxInstruction("beql", "i, j, 4ru", "", "beql $t1,$t2,label",
             "Branch if EQual (Likely): Branch to statement at label's address if $t1 and $t2 are equal",
             TxInstruction.Format.I_BRANCH,
             "010100 fffff sssss tttttttttttttttt",
@@ -634,7 +634,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4ru", "beqzl $t1,label",
+    public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4ru", "", "beqzl $t1,label",
             "Branch if EQual Zero (Likely): Branch to statement at label's address if $t1 is zero",
             TxInstruction.Format.I_BRANCH,
             "010100 fffff 00000 tttttttttttttttt",
@@ -647,7 +647,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bneInstruction = new TxInstruction("bne", "i, j, 4ru", "bne $t1,$t2,label",
+    public static final TxInstruction bneInstruction = new TxInstruction("bne", "i, j, 4ru", "", "bne $t1,$t2,label",
             "Branch if Not Equal: Branch to statement at label's address if $t1 and $t2 are not equal",
             TxInstruction.Format.I_BRANCH,
             "000101 fffff sssss tttttttttttttttt",
@@ -661,7 +661,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction bnezInstruction = new TxInstruction("bnez", "i, 4ru", "bnez $t1,label",
+    public static final TxInstruction bnezInstruction = new TxInstruction("bnez", "i, 4ru", "", "bnez $t1,label",
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             TxInstruction.Format.I_BRANCH,
             "000101 fffff 00000 tttttttttttttttt",
@@ -674,7 +674,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bnelInstruction = new TxInstruction("bnel", "i, j, 4ru", "bnel $t1,$t2,label",
+    public static final TxInstruction bnelInstruction = new TxInstruction("bnel", "i, j, 4ru", "", "bnel $t1,$t2,label",
             "Branch if Not Equal (Likely): Branch to statement at label's address if $t1 and $t2 are not equal",
             TxInstruction.Format.I_BRANCH,
             "010101 fffff sssss tttttttttttttttt",
@@ -688,7 +688,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4ru", "bnezl $t1,label",
+    public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4ru", "", "bnezl $t1,label",
             "Branch if Not Equal Zero (Likely): Branch to statement at label's address if $t1 is not zero",
             TxInstruction.Format.I_BRANCH,
             "010101 fffff 00000 tttttttttttttttt",
@@ -701,7 +701,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgezInstruction = new TxInstruction("bgez", "i, 4rs", "bgez $t1,label",
+    public static final TxInstruction bgezInstruction = new TxInstruction("bgez", "i, 4rs", "", "bgez $t1,label",
             "Branch if Greater than or Equal to Zero: Branch to statement at label's address if $t1 is greater than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00001 ssssssssssssssss",
@@ -714,7 +714,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgezlInstruction = new TxInstruction("bgezl", "i, 4rs", "bgezl $t1,label",
+    public static final TxInstruction bgezlInstruction = new TxInstruction("bgezl", "i, 4rs", "", "bgezl $t1,label",
             "Branch if Greater than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is greater than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00011 ssssssssssssssss",
@@ -727,7 +727,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgezalInstruction = new TxInstruction("bgezal", "i, 4rs", "bgezal $t1,label",
+    public static final TxInstruction bgezalInstruction = new TxInstruction("bgezal", "i, 4rs", "", "bgezal $t1,label",
             "Branch if Greater then or Equal to Zero And Link: If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10001 ssssssssssssssss",
@@ -741,7 +741,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgezallInstruction = new TxInstruction("bgezall", "i, 4rs", "bgezall $t1,label",
+    public static final TxInstruction bgezallInstruction = new TxInstruction("bgezall", "i, 4rs", "", "bgezall $t1,label",
             "Branch if Greater then or Equal to Zero And Link (Likely): If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10011 ssssssssssssssss",
@@ -755,7 +755,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgtzInstruction = new TxInstruction("bgtz", "i, 4rs", "bgtz $t1,label",
+    public static final TxInstruction bgtzInstruction = new TxInstruction("bgtz", "i, 4rs", "", "bgtz $t1,label",
             "Branch if Greater Than Zero: Branch to statement at label's address if $t1 is greater than zero",
             TxInstruction.Format.I_BRANCH,
             "000111 fffff 00000 ssssssssssssssss",
@@ -768,7 +768,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bgtzlInstruction = new TxInstruction("bgtzl", "i, 4rs", "bgtzl $t1,label",
+    public static final TxInstruction bgtzlInstruction = new TxInstruction("bgtzl", "i, 4rs", "", "bgtzl $t1,label",
             "Branch if Greater Than Zero (Likely): Branch to statement at label's address if $t1 is greater than zero",
             TxInstruction.Format.I_BRANCH,
             "010111 fffff 00000 ssssssssssssssss",
@@ -781,7 +781,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction blezInstruction = new TxInstruction("blez", "i, 4rs", "blez $t1,label",
+    public static final TxInstruction blezInstruction = new TxInstruction("blez", "i, 4rs", "", "blez $t1,label",
             "Branch if Less than or Equal to Zero: Branch to statement at label's address if $t1 is less than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "000110 fffff 00000 ssssssssssssssss",
@@ -794,7 +794,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction blezlInstruction = new TxInstruction("blezl", "i, 4rs", "blezl $t1,label",
+    public static final TxInstruction blezlInstruction = new TxInstruction("blezl", "i, 4rs", "", "blezl $t1,label",
             "Branch if Less than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is less than or equal to zero",
             TxInstruction.Format.I_BRANCH,
             "010110 fffff 00000 ssssssssssssssss",
@@ -807,7 +807,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bltzInstruction = new TxInstruction("bltz", "i, 4rs", "bltz $t1,label",
+    public static final TxInstruction bltzInstruction = new TxInstruction("bltz", "i, 4rs", "", "bltz $t1,label",
             "Branch if Less Than Zero: Branch to statement at label's address if $t1 is less than zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00000 ssssssssssssssss",
@@ -820,7 +820,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bltzlInstruction = new TxInstruction("bltzl", "i, 4rs", "bltzl $t1,label",
+    public static final TxInstruction bltzlInstruction = new TxInstruction("bltzl", "i, 4rs", "", "bltzl $t1,label",
             "Branch if Less Than Zero (Likely): Branch to statement at label's address if $t1 is less than zero",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 00010 ssssssssssssssss",
@@ -833,7 +833,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bltzalInstruction = new TxInstruction("bltzal", "i, 4rs", "bltzal $t1,label",
+    public static final TxInstruction bltzalInstruction = new TxInstruction("bltzal", "i, 4rs", "", "bltzal $t1,label",
             "Branch if Less Than Zero And Link: If $t1 is less than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10000 ssssssssssssssss",
@@ -847,7 +847,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bltzallInstruction = new TxInstruction("bltzall", "i, 4rs", "bltzall $t1,label",
+    public static final TxInstruction bltzallInstruction = new TxInstruction("bltzall", "i, 4rs", "", "bltzall $t1,label",
             "Branch if Less Than Zero And Link (Likely): If $t1 is less than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             TxInstruction.Format.I_BRANCH,
             "000001 fffff 10010 ssssssssssssssss",
@@ -860,7 +860,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction sltInstruction = new TxInstruction("slt", "k, i, j", "slt $t1,$t2,$t3",
+    public static final TxInstruction sltInstruction = new TxInstruction("slt", "k, i, j", "kw", "slt $t1,$t2,$t3",
             "Set on Less Than: If $t2 is less than $t3, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 101010",
@@ -870,7 +870,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, (cpuState.getReg(statement.rs_fs) < cpuState.getReg(statement.rt_ft)) ? 1 : 0);
                 }
             });
-    public static final TxInstruction sltuInstruction = new TxInstruction("sltu", "k, i, j", "sltu $t1,$t2,$t3",
+    public static final TxInstruction sltuInstruction = new TxInstruction("sltu", "k, i, j", "kw", "sltu $t1,$t2,$t3",
             "Set on Less Than Unsigned: If $t2 is less than $t3 using unsigned comparision, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 101011",
@@ -886,7 +886,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction sltiInstruction = new TxInstruction("slti", "j, i, s", "slti $t1,$t2,-100",
+    public static final TxInstruction sltiInstruction = new TxInstruction("slti", "j, i, s", "jw", "slti $t1,$t2,-100",
             "Set Less Than Immediate: If $t2 is less than sign-extended 16-bit immediate, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.I,
             "001010 sssss fffff tttttttttttttttt",
@@ -897,7 +897,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, (cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) ? 1 : 0);
                 }
             });
-    public static final TxInstruction sltiuInstruction = new TxInstruction("sltiu", "j, i, imm", "sltiu $t1,$t2,-100",
+    public static final TxInstruction sltiuInstruction = new TxInstruction("sltiu", "j, i, imm", "jw", "sltiu $t1,$t2,-100",
             "Set Less Than Immediate Unsigned: If $t2 is less than  sign-extended 16-bit immediate using unsigned comparison, then set $t1 to 1 else set $t1 to 0",
             TxInstruction.Format.I,
             "001011 sssss fffff tttttttttttttttt",
@@ -914,7 +914,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction movnInstruction = new TxInstruction("movn", "k, i, j", "movn $t1,$t2,$t3",
+    public static final TxInstruction movnInstruction = new TxInstruction("movn", "k, i, j", "kw", "movn $t1,$t2,$t3",
             "MOVe conditional on Non zero: Set $t1 to $t2 if $t3 is not zero",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 001011",
@@ -926,7 +926,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction movzInstruction = new TxInstruction("movz", "k, i, j", "movz $t1,$t2,$t3",
+    public static final TxInstruction movzInstruction = new TxInstruction("movz", "k, i, j", "kw", "movz $t1,$t2,$t3",
             "MOVe conditional on Zero: Set $t1 to $t2 if $t3 is zero",
             TxInstruction.Format.R,
             "000000 sssss ttttt fffff 00000 001010",
@@ -938,7 +938,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction breakInstruction = new TxInstruction("break", "u", "break 100",
+    public static final TxInstruction breakInstruction = new TxInstruction("break", "u", "", "break 100",
             "Break execution with code: Terminate program execution with specified exception code",
             TxInstruction.Format.BREAK,
             "000000 ffffffffffffffffffff 001101",
@@ -951,7 +951,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction jInstruction = new TxInstruction("j", "4Ru", "j target",
+    public static final TxInstruction jInstruction = new TxInstruction("j", "4Ru", "", "j target",
             "Jump unconditionally: Jump to statement at target address",
             TxInstruction.Format.J,
             "000010 ffffffffffffffffffffffffff",
@@ -963,7 +963,7 @@ public class TxInstructionSet
             });
     // TODO: delay slot work
     // TODO handle ISA mode switch
-    public static final TxInstruction jrInstruction = new TxInstruction("jr", "i", "jr $t1",
+    public static final TxInstruction jrInstruction = new TxInstruction("jr", "i;Iu", "", "jr $t1",
             "Jump Register unconditionally: Jump to statement whose address is in $t1",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 001000",
@@ -976,7 +976,7 @@ public class TxInstructionSet
     // alternative if rs=ra
     // TODO: delay slot work
     // TODO handle ISA mode switch
-    public static final TxInstruction retInstruction = new TxInstruction("ret", "", "ret",
+    public static final TxInstruction retInstruction = new TxInstruction("ret", "", "", "ret",
             "RETurn (formally a JR to $ra): Return to calling statement",
             TxInstruction.Format.R,
             "000000 fffff 00000 00000 00000 001000",
@@ -987,7 +987,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "jal target",
+    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "", "jal target", // TODO put address in comment
             "Jump And Link: Set $ra to Program Counter (return address) then jump to statement at target address",
             TxInstruction.Format.J,
             "000011 ffffffffffffffffffffffffff",
@@ -1000,7 +1000,7 @@ public class TxInstructionSet
             });
     // TODO: delay slot work
     // TODO handle ISA mode switch
-    public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "jalx target",
+    public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target", // TODO put address in comment
             "Jump And Link eXchanging isa mode: Set $ra to Program Counter (return address) then jump to statement at target address, toggling ISA mode",
             TxInstruction.Format.J,
             "011101 ffffffffffffffffffffffffff",
@@ -1013,7 +1013,7 @@ public class TxInstructionSet
             });
     // TODO: delay slot work
     // TODO handle ISA mode switch
-    public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i", "jalr $t1,$t2", // TODO omit rd if rd=$ra
+    public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i;Iu", "", "jalr $t1,$t2", // TODO omit rd if rd=$ra
             "Jump And Link Register: Set $t1 to Program Counter (return address) then jump to statement whose address is in $t2",
             TxInstruction.Format.R,
             "000000 sssss 00000 fffff 00000 001001",
@@ -1024,7 +1024,7 @@ public class TxInstructionSet
                     cpuState.pc = cpuState.getReg(statement.rs_fs);
                 }
             });
-    public static final TxInstruction cloInstruction = new TxInstruction("clo", "k, i", "clo $t1,$t2",
+    public static final TxInstruction cloInstruction = new TxInstruction("clo", "k, i", "kw", "clo $t1,$t2",
             "Count number of Leading Ones: Set $t1 to the count of leading one bits in $t2 starting at most significant bit position",
             TxInstruction.Format.R,
             // MIPS32 requires rd (first) operand to appear twice in machine code.
@@ -1055,7 +1055,7 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, leadingOnes);
                 }
             });
-    public static final TxInstruction clzInstruction = new TxInstruction("clz", "k, i", "clz $t1,$t2",
+    public static final TxInstruction clzInstruction = new TxInstruction("clz", "k, i", "kw", "clz $t1,$t2",
             "Count number of Leading Zeroes: Set $t1 to the count of leading zero bits in $t2 starting at most significant bit positio",
             TxInstruction.Format.R,
             // See comments for "clo" instruction above.  They apply here too.
@@ -1074,7 +1074,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0", "j, k", "mfc0 $t1,$8",
+    public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0", "j, k", "jw", "mfc0 $t1,$8",
             "Move From Coprocessor 0: Set $t1 to the value stored in Coprocessor 0 register $8",
             TxInstruction.Format.CP0,
             "010000 00000 fffff sssss 00000000 eee",
@@ -1085,7 +1085,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "mtc0 $t1,$8",
+    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "", "mtc0 $t1,$8",
             "Move To Coprocessor 0: Set Coprocessor 0 register $8 to value stored in $t1",
             TxInstruction.Format.CP0,
             "010000 00100 fffff sssss 00000000 eee",
@@ -1097,7 +1097,7 @@ public class TxInstructionSet
             });
 
     /////////////////////// CP1 and Floating Point Instructions Start Here ////////////////
-    public static final TxInstruction mfc1Instruction = new TxInstruction("mfc1", "j, i", "mfc1 $t1,$8",
+    public static final TxInstruction mfc1Instruction = new TxInstruction("mfc1", "j, i", "jw", "mfc1 $t1,$8",
             "Move From Coprocessor 1: Set $t1 to the value stored in Coprocessor 1 register $8",
             TxInstruction.Format.CP1_R1,
             "010000 00000 fffff sssss 00000000 000",
@@ -1108,7 +1108,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction mtc1Instruction = new TxInstruction("mtc1", "j, i", "mtc1 $t1,$8",
+    public static final TxInstruction mtc1Instruction = new TxInstruction("mtc1", "j, i", "", "mtc1 $t1,$8",
             "Move To Coprocessor 1: Set Coprocessor 1 register $8 to value stored in $t1",
             TxInstruction.Format.CP1_R1,
             "010000 00100 fffff sssss 00000000 000",
@@ -1119,7 +1119,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction cfc1Instruction = new TxInstruction("cfc1", "j, i", "cfc1 $t1,$8",
+    public static final TxInstruction cfc1Instruction = new TxInstruction("cfc1", "j, i", "jw", "cfc1 $t1,$8",
             "move Control From Coprocessor 1: Set $t1 to the value stored in coprocessor 1 control register $8",
             TxInstruction.Format.CP1_CR1,
             "010000 00000 fffff sssss 00000000 000",
@@ -1130,7 +1130,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction ctc1Instruction = new TxInstruction("ctc1", "j, i", "ctc1 $t1,$8",
+    public static final TxInstruction ctc1Instruction = new TxInstruction("ctc1", "j, i", "", "ctc1 $t1,$8",
             "move Control To Coprocessor 1: Set coprocessor 1 control register $8 to value stored in $t1",
             TxInstruction.Format.CP1_CR1,
             "010000 00100 fffff sssss 00000000 000",
@@ -1142,7 +1142,7 @@ public class TxInstructionSet
             });
 
 
-    public static final TxInstruction lwc1Instruction = new TxInstruction("lwc1", "j, s(i)", "lwc1 $f1,-100($t2)",
+    public static final TxInstruction lwc1Instruction = new TxInstruction("lwc1", "j, s(i)", "jw", "lwc1 $f1,-100($t2)",
             "Load Word into Coprocessor 1 (FPU) : Set $f1 to 32-bit value from effective memory word address",
             TxInstruction.Format.CP1_I,
             "110001 ttttt fffff ssssssssssssssss",
@@ -1154,7 +1154,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i)", "swc1 $f1,-100($t2)",
+    public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i)", "", "swc1 $f1,-100($t2)",
             "Store Word from Coprocessor 1 (FPU) : Store 32 bit value in $f1 to effective memory word address",
             TxInstruction.Format.CP1_I,
             "111001 ttttt fffff ssssssssssssssss",
@@ -1166,7 +1166,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, [i, ]j", "add.s $f0,$f1,$f3",
+    public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, [i, ]j", "kw", "add.s $f0,$f1,$f3",
             "floating point ADDition Single precision : Set $f0 to single-precision floating point value of $f1 plus $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000000",
@@ -1188,7 +1188,7 @@ public class TxInstructionSet
                 }
             }
     );
-    public static final TxInstruction subSInstruction = new TxInstruction("sub.s", "k, [i, ]j", "sub.s $f0,$f1,$f3",
+    public static final TxInstruction subSInstruction = new TxInstruction("sub.s", "k, [i, ]j", "kw", "sub.s $f0,$f1,$f3",
             "floating point SUBtraction Single precision : Set $f0 to single-precision floating point value of $f1  minus $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000001",
@@ -1204,7 +1204,7 @@ public class TxInstructionSet
                 }
             }
     );
-    public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, [i, ]j", "mul.s $f0,$f1,$f3",
+    public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, [i, ]j", "kw", "mul.s $f0,$f1,$f3",
             "floating point MULtiplication Single precision : Set $f0 to single-precision floating point value of $f1 times $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000010",
@@ -1219,7 +1219,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "div.s $f0,$f1,$f3",
+    public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "kw", "div.s $f0,$f1,$f3",
             "floating point DIVision Single precision : Set $f0 to single-precision floating point value of $f1 divided by $f3",
             TxInstruction.Format.CP1_R2,
             "010001 10000 ttttt sssss fffff 000011",
@@ -1235,7 +1235,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4ru", "bc1f 1,label",
+    public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4ru", "", "bc1f 1,label",
             "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF) : If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
             TxInstruction.Format.CP1_CC_BRANCH,
             "010001 01000 fff 00 ssssssssssssssss",
@@ -1249,7 +1249,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4ru", "bc1t 1,label",
+    public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4ru", "", "bc1t 1,label",
             "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT) : If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
             TxInstruction.Format.CP1_CC_BRANCH,
             "010001 01000 fff 01 ssssssssssssssss",
@@ -1264,7 +1264,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction cvtSWInstruction = new TxInstruction("cvt.s.w", "k, i", "cvt.s.w $f0,$f1",
+    public static final TxInstruction cvtSWInstruction = new TxInstruction("cvt.s.w", "k, i", "kw", "cvt.s.w $f0,$f1",
             "ConVerT to Single precision from Word : Set $f0 to single precision equivalent of 32-bit integer value in $f2",
             TxInstruction.Format.CP1_R2,
             "010001 10100 00000 sssss fffff 100000",
@@ -1277,7 +1277,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "cvt.w.s $f0,$f1",
+    public static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "kw", "cvt.w.s $f0,$f1",
             "ConVerT to Word from Single precision : Set $f0 to 32-bit integer equivalent of single precision value in $f1",
             TxInstruction.Format.CP1_R2,
             "010001 10000 00000 sssss fffff 100100",
@@ -1292,7 +1292,7 @@ public class TxInstructionSet
             });
 
 
-    public static final TxInstruction cEqSInstruction = new TxInstruction("c.eq.s", "[l, ]i, j", "c.eq.s 1,$f0,$f1",
+    public static final TxInstruction cEqSInstruction = new TxInstruction("c.eq.s", "[l, ]i, j", "", "c.eq.s 1,$f0,$f1",
             "Compare EQual Single precision : If $f0 is equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
             "010001 10000 ttttt sssss fff 00 110010",
@@ -1309,7 +1309,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "c.le.s 1,$f0,$f1",
+    public static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "", "c.le.s 1,$f0,$f1",
             "Compare Less or Equal Single precision : If $f0 is less than or equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
             "010001 10000 ttttt sssss fff 00 111110",
@@ -1326,7 +1326,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "c.lt.s 1,$f0,$f1",
+    public static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "", "c.lt.s 1,$f0,$f1",
             "Compare Less Than Single precision : If $f0 is less than $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             TxInstruction.Format.CP1_R_CC,
             "010001 10000 ttttt sssss fff 00 111100",
@@ -1345,7 +1345,7 @@ public class TxInstructionSet
             });
 
     // TRAP instructions
-    public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u", "teq $t1,$t2,$t3",
+    public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u", "", "teq $t1,$t2,$t3",
             "Trap if EQual: Trap with code $t3 if $t1 is equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110100",
@@ -1357,7 +1357,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction teqiInstruction = new TxInstruction("teqi", "i, s", "teqi $t1,-100",
+    public static final TxInstruction teqiInstruction = new TxInstruction("teqi", "i, s", "", "teqi $t1,-100",
             "Trap if EQual to Immediate: Trap if $t1 is equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01100 ssssssssssssssss",
@@ -1369,7 +1369,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tneInstruction = new TxInstruction("tne", "i, j, u", "tne $t1,$t2",
+    public static final TxInstruction tneInstruction = new TxInstruction("tne", "i, j, u", "", "tne $t1,$t2",
             "Trap if Not Equal: Trap if $t1 is not equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110110",
@@ -1381,7 +1381,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tneiInstruction = new TxInstruction("tnei", "i, s", "tnei $t1,-100",
+    public static final TxInstruction tneiInstruction = new TxInstruction("tnei", "i, s", "", "tnei $t1,-100",
             "Trap if Not Equal to Immediate: Trap if $t1 is not equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01110 ssssssssssssssss",
@@ -1393,7 +1393,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tgeInstruction = new TxInstruction("tge", "i, j, u", "tge $t1,$t2",
+    public static final TxInstruction tgeInstruction = new TxInstruction("tge", "i, j, u", "", "tge $t1,$t2",
             "Trap if Greater or Equal: Trap if $t1 is greater than or equal to $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110000",
@@ -1405,7 +1405,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tgeuInstruction = new TxInstruction("tgeu", "i, j, u", "tgeu $t1,$t2",
+    public static final TxInstruction tgeuInstruction = new TxInstruction("tgeu", "i, j, u", "", "tgeu $t1,$t2",
             "Trap if Greater or Equal Unsigned: Trap if $t1 is greater than or equal to $t2 using unsigned comparision",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110001",
@@ -1420,7 +1420,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tgeiInstruction = new TxInstruction("tgei", "i, s", "tgei $t1,-100",
+    public static final TxInstruction tgeiInstruction = new TxInstruction("tgei", "i, s", "", "tgei $t1,-100",
             "Trap if Greater than or Equal to Immediate: Trap if $t1 greater than or equal to sign-extended 16 bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01000 ssssssssssssssss",
@@ -1432,7 +1432,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tgeiuInstruction = new TxInstruction("tgeiu", "i, s", "tgeiu $t1,-100",
+    public static final TxInstruction tgeiuInstruction = new TxInstruction("tgeiu", "i, s", "", "tgeiu $t1,-100",
             "Trap if Greater or Equal to Immediate unsigned: Trap if $t1 greater than or equal to sign-extended 16 bit immediate, unsigned comparison",
             TxInstruction.Format.I,
             "000001 fffff 01001 ssssssssssssssss",
@@ -1448,7 +1448,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tltInstruction = new TxInstruction("tlt", "i, j, u", "tlt $t1,$t2",
+    public static final TxInstruction tltInstruction = new TxInstruction("tlt", "i, j, u", "", "tlt $t1,$t2",
             "Trap if Less Than: Trap if $t1 less than $t2",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110010",
@@ -1460,7 +1460,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tltuInstruction = new TxInstruction("tltu", "i, j, u", "tltu $t1,$t2",
+    public static final TxInstruction tltuInstruction = new TxInstruction("tltu", "i, j, u", "", "tltu $t1,$t2",
             "Trap if Less Than Unsigned: Trap if $t1 less than $t2, unsigned comparison",
             TxInstruction.Format.TRAP,
             "000000 fffff sssss 00000 00000 110011",
@@ -1475,7 +1475,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tltiInstruction = new TxInstruction("tlti", "i, s", "tlti $t1,-100",
+    public static final TxInstruction tltiInstruction = new TxInstruction("tlti", "i, s", "", "tlti $t1,-100",
             "Trap if Less Than Immediate: Trap if $t1 less than sign-extended 16-bit immediate",
             TxInstruction.Format.I,
             "000001 fffff 01010 ssssssssssssssss",
@@ -1487,7 +1487,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction tltiuInstruction = new TxInstruction("tltiu", "i, s", "tltiu $t1,-100",
+    public static final TxInstruction tltiuInstruction = new TxInstruction("tltiu", "i, s", "", "tltiu $t1,-100",
             "Trap if Less Than Immediate Uunsigned: Trap if $t1 less than sign-extended 16-bit immediate, unsigned comparison",
             TxInstruction.Format.I,
             "000001 fffff 01011 ssssssssssssssss",
@@ -1505,7 +1505,7 @@ public class TxInstructionSet
             });
 
 
-    public static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "lb $t1,-100($t2)",
+    public static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "jw", "lb $t1,-100($t2)",
             "Load Byte: Set $t1 to sign-extended 8-bit value from effective memory byte address",
             TxInstruction.Format.I,
             "100000 ttttt fffff ssssssssssssssss",
@@ -1520,7 +1520,7 @@ public class TxInstructionSet
                                     >> 24);
                 }
             });
-    public static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "lh $t1,-100($t2)",
+    public static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "jw", "lh $t1,-100($t2)",
             "Load Halfword: Set $t1 to sign-extended 16-bit value from effective memory halfword address",
             TxInstruction.Format.I,
             "100001 ttttt fffff ssssssssssssssss",
@@ -1536,7 +1536,7 @@ public class TxInstructionSet
                                     >> 16);
                 }
             });
-    public static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "lhu $t1,-100($t2)",
+    public static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "jw", "lhu $t1,-100($t2)",
             "Load Halfword Unsigned: Set $t1 to zero-extended 16-bit value from effective memory halfword address",
             TxInstruction.Format.I,
             "100101 ttttt fffff ssssssssssssssss",
@@ -1551,7 +1551,7 @@ public class TxInstructionSet
                                     & 0x0000ffff);
                 }
             });
-    public static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "lbu $t1,-100($t2)",
+    public static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "jw", "lbu $t1,-100($t2)",
             "Load Byte Unsigned: Set $t1 to zero-extended 8-bit value from effective memory byte address",
             TxInstruction.Format.I,
             "100100 ttttt fffff ssssssssssssssss",
@@ -1565,7 +1565,7 @@ public class TxInstructionSet
                                     & 0x000000ff);
                 }
             });
-    public static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "sb $t1,-100($t2)",
+    public static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "jw", "sb $t1,-100($t2)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             TxInstruction.Format.I,
             "101000 ttttt fffff ssssssssssssssss",
@@ -1577,7 +1577,7 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt_ft) & 0x000000ff);
                 }
             });
-    public static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "sh $t1,-100($t2)",
+    public static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "jw", "sh $t1,-100($t2)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             TxInstruction.Format.I,
             "101001 ttttt fffff ssssssssssssssss",
@@ -1589,7 +1589,7 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt_ft) & 0x0000ffff);
                 }
             });
-    public static final TxInstruction syncInstruction = new TxInstruction("sync", "", "sync",
+    public static final TxInstruction syncInstruction = new TxInstruction("sync", "", "", "sync",
             "SYNC: Wait for all operations to complete",
             TxInstruction.Format.I,
             "000000 00000000000000000000 001111",
@@ -1599,7 +1599,7 @@ public class TxInstructionSet
                     /* nop. Simulator does not have any pipeline */
                 }
             });
-    public static final TxInstruction waitInstruction = new TxInstruction("wait", "", "wait",
+    public static final TxInstruction waitInstruction = new TxInstruction("wait", "", "", "wait",
             "WAIT: put the processor in stand-by",
             TxInstruction.Format.I,
             "010000 1 0000000000000000000 100000",
@@ -1615,7 +1615,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction eretInstruction = new TxInstruction("eret", "", "eret",
+    public static final TxInstruction eretInstruction = new TxInstruction("eret", "", "", "eret",
             "Exception RETurn: Set Program Counter to Coprocessor 0 EPC register value, clear Coprocessor Status exception level bit",
             TxInstruction.Format.R,
             "010000 1 0000000000000000000 011000",

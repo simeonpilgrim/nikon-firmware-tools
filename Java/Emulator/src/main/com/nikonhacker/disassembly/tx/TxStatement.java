@@ -16,19 +16,6 @@ import java.util.Set;
  * Statement : an instance of a specific Instruction with specific operands
  */
 public class TxStatement extends Statement {
-    ///* disassembly */
-    // [Flags]
-    public final static int DF_FLOW = 0x01;
-    public final static int DF_BREAK = 0x02;
-    public final static int DF_DELAY = 0x04;
-    public final static int DF_BRANCH = 0x10;
-    public final static int DF_JUMP = 0x20;
-    public final static int DF_CALL = 0x40;
-    public final static int DF_RETURN = 0x80;
-    public final static int DF_TO_KEEP = DF_FLOW | DF_BRANCH | DF_JUMP | DF_CALL | DF_RETURN;
-    public final static int DF_TO_COPY = DF_DELAY;
-    public final static int DF_TO_DELAY = DF_BREAK;
-
     ///* output formatting */
     public static String fmt_nxt;
     public static String fmt_imm;
@@ -38,9 +25,6 @@ public class TxStatement extends Statement {
     public static String fmt_mem;
     public static String fmt_par;
     public static String fmt_ens;
-
-    /** cached CPUState, for CALLs and INTs */
-    public TxCPUState cpuState = null;
 
     /** rs or fs operand */
     public int rs_fs; // as-is from binary code
@@ -80,10 +64,6 @@ public class TxStatement extends Statement {
      */
     static {
         initFormatChars(EnumSet.noneOf(OutputOption.class));
-    }
-
-    public TxStatement() {
-        reset();
     }
 
     public TxStatement(int memRangeStart) {
@@ -406,16 +386,14 @@ public class TxStatement extends Statement {
                     break;
                 case 's':
                     /* signed constant */
-                    if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm))
-                    {
+                    if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm)) {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                         if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
                         currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
                     }
-                    else
-                    {
+                    else {
                         currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth - 1));
                     }
                     break;
@@ -437,10 +415,8 @@ public class TxStatement extends Statement {
                     /* register list */
                     currentBuffer.append(fmt_par);
                     boolean first = true;
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        if ((decodedImm & (1 << i)) != 0)
-                        {
+                    for (int i = 0; i < 8; ++i) {
+                        if ((decodedImm & (1 << i)) != 0) {
                             if (first)
                                 first = false;
                             else
@@ -467,12 +443,12 @@ public class TxStatement extends Statement {
 
         /* ACTION processing */
 
-//        int r = TxCPUState.NOREG;
-//
-//        for (char s : ((TxInstruction) instruction).action.toCharArray())
-//        {
-//            switch (s)
-//            {
+        int r = TxCPUState.NOREG;
+
+        for (char s : instruction.getAction().toCharArray())
+        {
+            switch (s)
+            {
 //                case 'A':
 //                    r = TxCPUState.AC;
 //                    break;
@@ -488,32 +464,45 @@ public class TxStatement extends Statement {
 //                case 'S':
 //                    r = TxCPUState.SP;
 //                    break;
-//                case 'i':
-//                    r = decodedI;
-//                    break;
-//                case 'j':
-//                    r = decodedJ;
-//                    break;
-//                case 'w':
-//                    if (updateRegisters) {
-//                        cpuState.setRegisterUndefined(r);
-//                    }
-//                    break;
-//                case 'v':
-//                    if (updateRegisters && cpuState.registerExists(r))
-//                    {
-//                        cpuState.setRegisterDefined(r);
-//                        cpuState.setReg(r, decodedX);
-//                    }
-//                    break;
-//                case 'x':
-//                    r = TxCPUState.NOREG;
-//                    break;
-//                default:
-//                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
-//                    break;
-//            }
-//        }
+                case 'i':
+                    r = decodedRsFs;
+                    break;
+                case 'j':
+                    r = decodedRtFt;
+                    break;
+                case 'k':
+                    r = decodedRdFd;
+                    break;
+                case 'w':
+                    if (updateRegisters) {
+                        cpuState.setRegisterUndefined(r);
+                    }
+                    break;
+                case 'v':
+                    if (updateRegisters && cpuState.registerExists(r)) {
+                        cpuState.setRegisterDefined(r);
+                        cpuState.setReg(r, decodedImm);
+                    }
+                    break;
+                case 'V':
+                    if (updateRegisters && cpuState.registerExists(r)) {
+                        cpuState.setRegisterDefined(r);
+                        cpuState.setReg(r, decodedImm << 16);
+                    }
+                    break;
+                case '+':
+                    if (updateRegisters && cpuState.registerExists(r)) {
+                        cpuState.setReg(r, cpuState.getReg(r) + (decodedImm << 16 >> 16));
+                    }
+                    break;
+                case 'x':
+                    r = TxCPUState.NOREG;
+                    break;
+                default:
+                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
+                    break;
+            }
+        }
 
 
         /* LINE BREAKS and INDENT (delay slot) processing */
