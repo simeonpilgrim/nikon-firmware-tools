@@ -180,7 +180,7 @@ public abstract class Disassembler {
             debugPrintWriter.println(msg);
         }
         if (outWriter != null) {
-            outWriter.write("; ############  " + msg + "  ############\n");
+            outWriter.write("; ############  " + msg + "  ############\n\n");
         }
     }
 
@@ -482,6 +482,7 @@ public abstract class Disassembler {
                     else {
                         disassembleDataMemoryRange(range, matchingFileRange);
                     }
+                    printRangeFooter(range);
                 }
             }
             return codeStructure;
