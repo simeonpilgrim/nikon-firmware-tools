@@ -8,7 +8,7 @@ public class FrInstruction extends Instruction {
 
     public int encoding;
     public int mask;
-    public int instructionFormat;
+    public FrInstructionSet.InstructionFormat instructionFormat;
     public int numberExtraXWords;
     public int numberExtraYWords;
 
@@ -78,7 +78,7 @@ c : outputs coprocessor operation (c)<br/>
      * @param isConditional
      * @param hasDelaySlot
      */
-    public FrInstruction(int encoding, int mask, int instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
+    public FrInstruction(int encoding, int mask, FrInstructionSet.InstructionFormat instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
     {
         super(name, displayFormat, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
         this.encoding = encoding;
