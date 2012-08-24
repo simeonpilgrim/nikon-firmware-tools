@@ -164,15 +164,40 @@ public class TxCPUState extends CPUState {
     };
 
     public int getCp1CrReg(int regNumber) {
-        // TODO
-        //return getReg(regNumber);
-        throw new RuntimeException("CP1 Control registers Unimplemented");
+        switch(regNumber) {
+            case FIR:
+                //       0000Impl06LW3PDSProcesidRevision
+                return 0b00000000000100010000000000000000;
+            case FCSR:
+                return getReg(FCSR);
+            case FCCR:
+                return ((getReg(FCSR) & 0b11111110000000000000000000000000) >> 24) | ((getReg(FCSR) & 0b00000000100000000000000000000000) >> 23);
+            case FEXR:
+                return getReg(FCSR) & 0b00000000000000111111000001111100;
+            case FENR:
+                return (getReg(FCSR) & 0b00000000000000000000111110000011) | ((getReg(FCSR) & 0b00000001000000000000000000000000) >> 22);
+        }
+        throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
 
     public void setCp1CrReg(int regNumber, int value) {
-        // TODO
-        //setReg(regNumber, value);
-        throw new RuntimeException("CP1 Control registers Unimplemented");
+        switch(regNumber) {
+            case FIR:
+                throw new RuntimeException("Cannot write to read-only CP1 Control register FIR");
+            case FCSR:
+                setReg(FCSR, value);
+                break;
+            case FCCR:
+                setReg(FCSR, (getReg(FCSR) & 0b00000001011111111111111111111111) | ((value & 0b11111110) << 24) | ((value & 0b1) << 23));
+                break;
+            case FEXR:
+                setReg(FCSR, (getReg(FCSR) & 0b11111111111111000000111110000011) | (value & 0b00000000000000111111000001111100));
+                break;
+            case FENR:
+                setReg(FCSR, (getReg(FCSR) & 0b11111111111111111111000001111000) | (value & 0b00000000000000000000111110000011) | ((value & 0b100) << 22));
+            break;
+        }
+        throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
 
     public enum PowerMode {
@@ -187,6 +212,8 @@ public class TxCPUState extends CPUState {
     private int activeRegisterSet;
 
     private PowerMode powerMode;
+
+    private boolean isIsaMode16 = false;
 
     // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
     private Register32 cp1Condition = new Register32(0);
