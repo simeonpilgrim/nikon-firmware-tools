@@ -93,35 +93,35 @@ public class FrStatement extends Statement {
     public void decodeOperands(int pc, Memory memory) {
         switch (((FrInstruction) getInstruction()).instructionFormat)
         {
-            case FrInstructionSet.FORMAT_A:
+            case A:
                 i = 0xF & data[0];
                 j = 0xF & (data[0] >> 4);
                 break;
-            case FrInstructionSet.FORMAT_B:
+            case B:
                 i = 0xF & data[0];
                 x = 0xFF & (data[0] >> 4);
                 xBitWidth = 8;
                 break;
-            case FrInstructionSet.FORMAT_C:
+            case C:
                 i = 0xF & data[0];
                 x = 0xF & (data[0] >> 4);
                 xBitWidth = 4;
                 break;
-            case FrInstructionSet.FORMAT_D:
+            case D:
                 x = 0xFF & data[0];
                 xBitWidth = 8;
                 break;
-            case FrInstructionSet.FORMAT_E:
+            case E:
                 i = 0xF & data[0];
                 break;
-            case FrInstructionSet.FORMAT_F:
+            case F:
                 x = 0x7FF & data[0];
                 xBitWidth = 11;
                 break;
-            case FrInstructionSet.FORMAT_Z:
+            case Z:
                 j = 0xF & (data[0] >> 4);
                 break;
-            case FrInstructionSet.FORMAT_W:
+            case W:
                 x = data[0];
                 xBitWidth = 16;
                 break;
