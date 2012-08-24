@@ -6,6 +6,7 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.FrInstruction;
+import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
@@ -108,7 +109,7 @@ public class Emulator {
     }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
-        FrInstruction.initOpcodeMap(outputOptions);
+        FrInstructionSet.initOpcodeMap(outputOptions);
         FrStatement.initFormatChars(outputOptions);
         FrCPUState.initRegisterLabels(outputOptions);
         this.outputOptions = outputOptions;
@@ -163,7 +164,7 @@ public class Emulator {
 
                 statement.getNextStatement(memory, cpuState.pc);
     
-                statement.setInstruction(FrInstruction.instructionMap[statement.data[0]]);
+                statement.setInstruction(FrInstructionSet.instructionMap[statement.data[0]]);
     
                 statement.decodeOperands(cpuState.pc, memory);
 

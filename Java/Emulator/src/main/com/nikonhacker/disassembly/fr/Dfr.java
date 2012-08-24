@@ -62,10 +62,10 @@ public class Dfr extends Disassembler
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         FrStatement statement = new FrStatement(memRange.getStart());
         statement.getNextStatement(memory, cpuState.pc);
-        FrInstruction instruction = FrInstruction.instructionMap[statement.data[0]];
+        FrInstruction instruction = FrInstructionSet.instructionMap[statement.data[0]];
 
         if (instruction == null) {
-            statement.setInstruction(FrInstruction.opData[RangeType.Width.MD_WORD.getIndex()]);
+            statement.setInstruction(FrInstructionSet.opData[RangeType.Width.MD_WORD.getIndex()]);
         }
         else {
             statement.setInstruction(instruction);
@@ -108,7 +108,7 @@ public class Dfr extends Disassembler
             statement.getNextData(memory, dummyCpuState.pc);
             statement.x = statement.data[0];
             statement.xBitWidth = 16;
-            statement.setInstruction(FrInstruction.opData[spec.getIndex()]);
+            statement.setInstruction(FrInstructionSet.opData[spec.getIndex()]);
 
             statement.decodeOperands(dummyCpuState.pc, memory);
 
@@ -136,7 +136,7 @@ public class Dfr extends Disassembler
 
     public void initialize() throws IOException {
         super.initialize();
-        FrInstruction.initOpcodeMap(outputOptions);
+        FrInstructionSet.initOpcodeMap(outputOptions);
 
         FrStatement.initFormatChars(outputOptions);
 
