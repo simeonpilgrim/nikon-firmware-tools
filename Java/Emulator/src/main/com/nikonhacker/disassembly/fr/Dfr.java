@@ -89,7 +89,7 @@ public class Dfr extends Disassembler
             }
         }
 
-        return statement.n << 1;
+        return statement.numData << 1;
     }
 
     @Override
@@ -114,7 +114,7 @@ public class Dfr extends Disassembler
 
             statement.formatOperandsAndComment(dummyCpuState, true, this.outputOptions);
 
-            sizeInBytes += statement.n << 1;
+            sizeInBytes += statement.numData << 1;
 
             if (outWriter != null) {
                 Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
