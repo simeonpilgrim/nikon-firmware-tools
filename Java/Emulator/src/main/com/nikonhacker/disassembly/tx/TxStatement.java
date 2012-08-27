@@ -188,11 +188,21 @@ public class TxStatement extends Statement {
                     imm   =  binaryStatement  & 0b11111111;
                     immBitWidth = 8;
                     break;
+                case RR:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    rd_fd = rs_fs;
+                    break;
                 case RRIA:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b1111;
                     immBitWidth = 4;
+                    break;
+                case RRR1:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b111]; // rz
                     break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
@@ -228,6 +238,12 @@ public class TxStatement extends Statement {
                             | ((binaryStatement           ) & 0b0000000000001111);
                     immBitWidth = 15;
                     break;
+                case RRR1:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b111]; // rz
+                    throw new RuntimeException("RRR1 EXTEND not implemented");
+                    //break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
                     rt_ft = TxCPUState.CP0_REGISTER_NUMBER_MAP[0][(binaryStatement >>> 2) & 0b11111]; // cp0rt32
