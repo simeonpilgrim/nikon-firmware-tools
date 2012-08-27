@@ -497,7 +497,7 @@ public class FrStatement extends Statement {
     }
 
 
-    public String formatDataAsHex() {
+    public String formatAsHex() {
         String out = "";
         for (int i = 0; i < 3; ++i) {
             if (i < numData) {

@@ -2423,7 +2423,7 @@ public class Emulator {
                 System.err.println("Offending instruction : " + statement);
             }
             catch(Exception e1) {
-                System.err.println("Cannot disassemble offending instruction :" + statement.formatDataAsHex());
+                System.err.println("Cannot disassemble offending instruction :" + statement.formatAsHex());
             }
             System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
             throw new EmulationException(e);

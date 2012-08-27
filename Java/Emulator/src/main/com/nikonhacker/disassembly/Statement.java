@@ -69,7 +69,7 @@ public abstract class Statement {
      */
     @Override
     public String toString() {
-        String out = formatDataAsHex();
+        String out = formatAsHex();
 
         switch (delaySlotType) {
             case NONE:
@@ -105,7 +105,7 @@ public abstract class Statement {
         String out = "";
 
         if (options.contains(OutputOption.HEXCODE)) {
-            out += formatDataAsHex();
+            out += formatAsHex();
         }
 
         if (options.contains(OutputOption.BLANKS)) {
@@ -135,6 +135,6 @@ public abstract class Statement {
         return out;
     }
 
-    protected abstract String formatDataAsHex();
+    protected abstract String formatAsHex();
 
 }
