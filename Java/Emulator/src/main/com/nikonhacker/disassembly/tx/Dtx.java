@@ -19,22 +19,39 @@ public class Dtx extends Disassembler
 
 
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+        int bytesInInstruction;
         TxStatement statement = new TxStatement(memRange.getStart());
-        statement.getNextStatement(memory, cpuState.pc);
 
-//        try {
-//            statement.setInstruction(TxInstructionSet.getInstructionForStatement(statement.getBinaryStatement()));
-//
-//            statement.decodeOperands(cpuState.pc, memory);
-//
-//            statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
-//        } catch (DisassemblyException e) {
-//            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
-//        }
+        int binaryStatement = memory.loadInstruction16(cpuState.pc);
+
+        if (isExtend(binaryStatement)) {
+            // This is the EXTEND prefix. Get real instruction
+            int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
+            try {
+                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(realBinaryStatement));
+            } catch (DisassemblyException e) {
+                System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
+            }
+            statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
+            bytesInInstruction = 4;
+        }
+        else {
+            try {
+                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
+            } catch (DisassemblyException e) {
+                System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
+            }
+            statement.setBinaryStatement(binaryStatement);
+            bytesInInstruction = 2;
+        }
+
+        statement.decode16BitOperands(cpuState.pc, memory);
+
+        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-                statement.cpuState = ((TxCPUState)cpuState).clone();
+                statement.cpuState = ((TxCPUState) cpuState).clone();
             }
 
             codeStructure.getStatements().put(cpuState.pc, statement);
@@ -45,18 +62,27 @@ public class Dtx extends Disassembler
                 Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
-        return 2;
+        return bytesInInstruction;
+    }
+
+    /**
+     * Determines if this statement is the "EXTEND" prefix
+     * @param binaryStatement
+     * @return
+     */
+    private static boolean isExtend(int binaryStatement) {
+        return (binaryStatement & 0b1111100000000000) == 0b1111000000000000;
     }
 
     @Override
     protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
-        statement.getNextStatement(memory, cpuState.pc);
+        statement.setBinaryStatement(memory.loadInstruction32(cpuState.pc));
 
         try {
-            statement.setInstruction(TxInstructionSet.getInstructionForStatement(statement.getBinaryStatement()));
+            statement.setInstruction(TxInstructionSet.getInstructionFor32BitStatement(statement.getBinaryStatement()));
 
-            statement.decodeOperands(cpuState.pc, memory);
+            statement.decode32BitOperands(cpuState.pc, memory);
 
             statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
         } catch (DisassemblyException e) {

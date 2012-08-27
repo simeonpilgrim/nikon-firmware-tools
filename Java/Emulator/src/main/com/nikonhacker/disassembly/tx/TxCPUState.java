@@ -163,6 +163,14 @@ public class TxCPUState extends CPUState {
             -1, FCCR, FEXR, -1, FENR, -1, -1, FCSR
     };
 
+    static final int[] REGISTER_MAP_16B = new int[] {
+            16, 17, 2, 3, 4, 5, 6, 7
+    };
+
+    static final int[] XIMM3_MAP = new int[] {
+            +1, +2, +4, +8, -1, -2, -4, -8
+    };
+
     public int getCp1CrReg(int regNumber) {
         switch(regNumber) {
             case FIR:
@@ -367,7 +375,7 @@ public class TxCPUState extends CPUState {
 
     public TxCPUState clone() {
         TxCPUState cloneCpuState = new TxCPUState();
-        for (int i = 0; i <= regValue.length; i++) {
+        for (int i = 0; i < regValue.length; i++) {
             cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;

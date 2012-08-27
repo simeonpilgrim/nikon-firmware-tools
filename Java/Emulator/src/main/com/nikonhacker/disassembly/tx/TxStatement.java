@@ -6,6 +6,7 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Statement;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -75,6 +76,10 @@ public class TxStatement extends Statement {
         return binaryStatement;
     }
 
+    public void setBinaryStatement(int binaryStatement) {
+        this.binaryStatement = binaryStatement;
+    }
+
     public static void initFormatChars(Set<OutputOption> outputOptions) {
         fmt_nxt = ",";
         fmt_par = "(";
@@ -98,8 +103,8 @@ public class TxStatement extends Statement {
 
 
 
-    public void decodeOperands(int pc, Memory memory) {
-        switch (((TxInstruction)instruction).getInstructionFormat())
+    public void decode32BitOperands(int pc, Memory memory) {
+        switch (((TxInstruction)instruction).getInstructionFormat32())
         {
             case R:
                 rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
@@ -168,6 +173,71 @@ public class TxStatement extends Statement {
         }
     }
 
+    public void decode16BitOperands(int pc, Memory memory) {
+        if ((binaryStatement & 0xFFFF0000) == 0) {
+            // No EXTEND
+            switch (((TxInstruction)instruction).getInstructionFormat16())
+            {
+                case I:
+                    imm   =  binaryStatement  & 0b11111111;
+                    immBitWidth = 8;
+                    break;
+                case RI:
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rs_fs = rt_ft;
+                    imm   =  binaryStatement  & 0b11111111;
+                    immBitWidth = 8;
+                    break;
+                case RRIA:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =  binaryStatement  & 0b1111;
+                    immBitWidth = 4;
+                    break;
+                case RRR3:
+                    // TODO Check cp0rt32 -> cp0 reg number mapping
+                    rt_ft = TxCPUState.CP0_REGISTER_NUMBER_MAP[0][(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
+                    immBitWidth = 4;
+                    break;
+            }
+        }
+        else {
+            // EXTENDed versions
+            switch (((TxInstruction)instruction).getInstructionFormat16())
+            {
+                case I:
+                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
+                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
+                            | ((binaryStatement           ) & 0b0000000000011111);
+                    immBitWidth = 16;
+                    break;
+                case RI:
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rs_fs = rt_ft;
+                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
+                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
+                            | ((binaryStatement           ) & 0b0000000000011111);
+                    immBitWidth = 16;
+                    break;
+                case RRIA:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =   ((binaryStatement >> (16-11)) & 0b0111100000000000)
+                            | ((binaryStatement >> (20- 4)) & 0b0000011111110000)
+                            | ((binaryStatement           ) & 0b0000000000001111);
+                    immBitWidth = 15;
+                    break;
+                case RRR3:
+                    // TODO Check cp0rt32 -> cp0 reg number mapping
+                    rt_ft = TxCPUState.CP0_REGISTER_NUMBER_MAP[0][(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
+                    immBitWidth = 4;
+                    break;
+            }
+        }
+    }
+
     public void reset() {
         immBitWidth = 0;
         c = 0;
@@ -178,11 +248,6 @@ public class TxStatement extends Statement {
         imm = CPUState.NOREG;
         setOperandString(null);
         setCommentString(null);
-    }
-
-    public void getNextStatement(Memory memory, int address)
-    {
-        binaryStatement = memory.loadInstruction32(address);
     }
 
     /**
@@ -270,6 +335,16 @@ public class TxStatement extends Statement {
                 case '4':
                     decodedImm <<= 2;
                     immBitWidth += 2;
+                    break;
+
+                case 'F':
+                    currentBuffer.append(FrCPUState.REG_LABEL[TxCPUState.FP]);
+                    break;
+                case 'P':
+                    currentBuffer.append("pc");
+                    break;
+                case 'S':
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
                     break;
 
                 case 'I':
@@ -537,7 +612,14 @@ public class TxStatement extends Statement {
         return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
-    protected String formatDataAsHex() {
-        return Format.asHex(binaryStatement, 8);
+    protected String formatAsHex() {
+        String out = "";
+        if ((binaryStatement & 0xFFFF0000) == 0)
+            // 16b
+            return Format.asHex(binaryStatement, 4) + "    ";
+        else {
+            // 32b, or extended 16b
+            return Format.asHex(binaryStatement, 8);
+        }
     }
 }

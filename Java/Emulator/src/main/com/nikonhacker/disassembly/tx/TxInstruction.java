@@ -5,52 +5,9 @@ import com.nikonhacker.disassembly.Instruction;
 
 public class TxInstruction extends Instruction {
 
-    private Format instructionFormat;
+    private TxInstructionSet.InstructionFormat32 instructionFormat32;
+    private TxInstructionSet.InstructionFormat16 instructionFormat16;
     public SimulationCode simulationCode;
-    /**
-     * Instruction types (formats)
-     */
-    public enum Format {
-        /** Layout of type I instructions is as follows : <pre>[  op  | rs  | rt  |      imm       ]</pre> */
-        I,
-
-        /** Layout of type J instructions is as follows : <pre>[  op  |           target           ]</pre> */
-        J,
-
-        /** Layout of type R instructions is as follows : <pre>[  op  | rs  | rt  | rd  |shamt| fnct ]</pre> */
-        R ,
-
-        /** MARS-defined variant of I layout as follows : <pre>[  op  |base | rt  |     offset     ]</pre> */
-        I_BRANCH,
-
-        /** used for BREAK code */
-        BREAK,
-
-        /** used for TRAP code */
-        TRAP,
-
-        /** Layout used for CP0 instructions as follows : <pre>[  op  |xxxxx| rt  | rd  |00000000|res]</pre> */
-        CP0,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx| rt  | fs  |00000000000]</pre> */
-        CP1_R1,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx| rt  | cr  |00000000000]</pre> */
-        CP1_CR1,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | fmt | ft  | fs  | fd  |xxxxxx]</pre> */
-        CP1_R2,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | rs  | ft  |      imm       ]</pre> */
-        CP1_I,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx||cc |xx|     offset     ]</pre> */
-        CP1_CC_BRANCH,
-
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | fmt | ft  | fs  |cc |0|0|11|cond]</pre> */
-        CP1_R_CC
-
-     }
 
     /**
      * Creates a new TxInstruction
@@ -87,32 +44,45 @@ v : outputs current PC value as a vector id (0xFF being the first of this memory
 c : outputs coprocessor operation (c)<br/>
 </pre>
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
-     * <pre>
-    'A': current register is AC<br/>
-    'C': current register is CCR<br/>
-    'F': current register is FP<br/>
-    'P': current register is PS<br/>
-    'S': current register is SP<br/>
-    'i': current register is Ri<br/>
-    'j': current register is Rj<br/>
-    'w': current register is marked invalid<br/>
-    'v': current register is marked valid and loaded with the given value<br/>
-    'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
-    '+': current register is incremented by given value<br/>
-    'x': current register is undefined<br/>
-     * @param instructionFormat pattern that specifies how the instruction word should be split in parts
+ * <pre>
+'A': current register is AC<br/>
+'C': current register is CCR<br/>
+'F': current register is FP<br/>
+'P': current register is PS<br/>
+'S': current register is SP<br/>
+'i': current register is Ri<br/>
+'j': current register is Rj<br/>
+'w': current register is marked invalid<br/>
+'v': current register is marked valid and loaded with the given value<br/>
+'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
+'+': current register is incremented by given value<br/>
+'x': current register is undefined<br/>
+     * @param instructionFormat32 pattern that specifies how the instruction word should be split in parts
+     * @param instructionFormat16
      * @param flowType
      * @param isConditional
      * @param delaySlotType
      */
-    public TxInstruction(String name, String displayFormat, String action, String sampleUse, String description, Format instructionFormat, String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
+    public TxInstruction(String name, String displayFormat, String action, String sampleUse, String description,
+                         TxInstructionSet.InstructionFormat32 instructionFormat32,
+                         TxInstructionSet.InstructionFormat16 instructionFormat16,
+                         String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
         super(name, displayFormat, action, flowType, isConditional, delaySlotType);
-        this.instructionFormat = instructionFormat;
+        this.instructionFormat32 = instructionFormat32;
+        this.instructionFormat16 = instructionFormat16;
         this.simulationCode = simulationCode;
     }
 
-    public Format getInstructionFormat() {
-        return instructionFormat;
+    public TxInstructionSet.InstructionFormat32 getInstructionFormat32() {
+        return instructionFormat32;
+    }
+
+    public TxInstructionSet.InstructionFormat16 getInstructionFormat16() {
+        return instructionFormat16;
+    }
+
+    public SimulationCode getSimulationCode() {
+        return simulationCode;
     }
 
     @Override
