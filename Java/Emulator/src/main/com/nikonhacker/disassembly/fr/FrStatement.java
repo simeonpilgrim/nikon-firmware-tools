@@ -29,7 +29,7 @@ public class FrStatement extends Statement {
     public int[] data = new int[3];
 
     /** number of used elements in data[]*/
-    public int n;
+    public int numData;
 
     /** Ri/Rs operand */
     public int i; // as-is from binary code
@@ -129,14 +129,14 @@ public class FrStatement extends Statement {
 
         for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraXWords; ii++) {
             getNextStatement(memory, pc);
-            x = (x << 16) + data[n - 1];
+            x = (x << 16) + data[numData - 1];
             xBitWidth += 16;
         }
 
         for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraYWords; ii++) {
             /* coprocessor extension word */
             getNextStatement(memory, pc);
-            int tmp = data[n - 1];
+            int tmp = data[numData - 1];
             x = i;
             xBitWidth = 4;
             c = 0xFF & (tmp >> 8);
@@ -147,7 +147,7 @@ public class FrStatement extends Statement {
 
     public void reset() {
         data[0] = data[1] = data[2] = 0xDEAD;
-        n = 0;
+        numData = 0;
         xBitWidth = 0;
         c = 0;
         i = CPUState.NOREG;
@@ -159,14 +159,14 @@ public class FrStatement extends Statement {
 
     public void getNextData(Memory memory, int address)
     {
-        data[n] = memory.loadUnsigned16(address + 2 * n);
-        n++;
+        data[numData] = memory.loadUnsigned16(address + 2 * numData);
+        numData++;
     }
 
     public void getNextStatement(Memory memory, int address)
     {
-        data[n] = memory.loadInstruction16(address + 2 * n);
-        n++;
+        data[numData] = memory.loadInstruction16(address + 2 * numData);
+        numData++;
     }
 
     /**
@@ -230,6 +230,7 @@ public class FrStatement extends Statement {
                     decodedX <<= 2;
                     xBitWidth += 2;
                     break;
+
                 case 'A':
                     currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.AC]);
                     break;
@@ -238,6 +239,28 @@ public class FrStatement extends Statement {
                     break;
                 case 'F':
                     currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.FP]);
+                    break;
+                case 'M':
+                    currentBuffer.append("ILM");
+                    break;
+                case 'P':
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.PS]);
+                    break;
+                case 'S':
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
+                    break;
+
+                case 'I':
+                    if (cpuState.isRegisterDefined(decodedI))
+                    {
+                        decodedX = cpuState.getReg(decodedI);
+                        xBitWidth = 32;
+                    }
+                    else
+                    {
+                        decodedX = 0;
+                        xBitWidth = 0;
+                    }
                     break;
                 case 'J':
                     if (cpuState.isRegisterDefined(decodedJ))
@@ -251,27 +274,7 @@ public class FrStatement extends Statement {
                         xBitWidth = 0;
                     }
                     break;
-                case 'I':
-                    if (cpuState.isRegisterDefined(decodedI))
-                    {
-                        decodedX = cpuState.getReg(decodedI);
-                        xBitWidth = 32;
-                    }
-                    else
-                    {
-                        decodedX = 0;
-                        xBitWidth = 0;
-                    }
-                    break;
-                case 'M':
-                    currentBuffer.append("ILM");
-                    break;
-                case 'P':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.PS]);
-                    break;
-                case 'S':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
-                    break;
+
                 case 'T':
                     currentBuffer.append("INT");
                     break;
@@ -497,7 +500,7 @@ public class FrStatement extends Statement {
     public String formatDataAsHex() {
         String out = "";
         for (int i = 0; i < 3; ++i) {
-            if (i < n) {
+            if (i < numData) {
                 out += " " + Format.asHex(data[i], 4);
             }
             else {
