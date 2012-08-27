@@ -237,8 +237,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, [i, ]j", "kw", "addu $t1,$t2,$t3",
             "ADDition Unsigned without overflow: set $t1 to ($t2 plus $t3), no overflow",
-            InstructionFormat32.R,
-            null, "000000 sssss ttttt fffff 00000 100001",
+            InstructionFormat32.R, InstructionFormat16.RRR1,
+            "000000 sssss ttttt fffff 00000 100001",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -468,8 +468,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction andInstruction = new TxInstruction("and", "k, [i, ]j", "kw", "and $t1,$t2,$t3",
             "bitwise AND: Set $t1 to bitwise AND of $t2 and $t3",
-            InstructionFormat32.R,
-            null, "000000 sssss ttttt fffff 00000 100100",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 sssss ttttt fffff 00000 100100",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -499,8 +499,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, [i, ]s", "jw", "andi $t1,$t2,100",
             "bitwise AND Immediate: Set $t1 to bitwise AND of $t2 and zero-extended 16-bit immediate",
-            InstructionFormat32.I,
-            null, "001100 sssss fffff tttttttttttttttt",
+            InstructionFormat32.I, InstructionFormat16.RI,
+            "001100 sssss fffff tttttttttttttttt",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1835,7 +1835,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction adjspInstruction = new TxInstruction("addiu", "S, 4s", "" /* TODO action */, "addiu r3, sp, 16",
+    public static final TxInstruction adjspInstruction = new TxInstruction("addiu", "S, 4s", "" /* TODO action */, "addiu sp, 16",
             "ADD Immediate Unsigned with SP",
             null, InstructionFormat16.RI,
             "",
@@ -2288,6 +2288,9 @@ public class TxInstructionSet
         expandInstruction(0b0000000000000000, 0b1111100000000000, addiuspInstruction);
         expandInstruction(0b0100000000000000, 0b1111100000010000, addiuInstruction);
         expandInstruction(0b0110001100000000, 0b1111111100000000, adjspInstruction);
+        expandInstruction(0b1110000000000001, 0b1111100000000011, adduInstruction);
+        expandInstruction(0b1110100000001100, 0b1111100000011111, andInstruction);
+        expandInstruction(0b0100100010000000, 0b1111100011100000, andiInstruction);
 
 
         // ----------------- 32-bits -----------------
