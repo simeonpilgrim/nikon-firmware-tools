@@ -12,6 +12,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 /**
  * This component gives access to emulated Serial Interfaces
@@ -21,6 +22,7 @@ public class SerialInterfaceFrame extends DocumentFrame {
 
     private final Insets buttonInsets = new Insets(1,1,1,1);
     private SerialInterface[] serialInterfaces;
+    private java.util.List<Integer> buffer = new ArrayList<Integer>();
 
     public SerialInterfaceFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final SerialInterface[] serialInterfaces, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
@@ -45,14 +47,21 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 public void actionPerformed(ActionEvent e) {
                     JValueButton button = (JValueButton) e.getSource();
                     int value = button.getValue();
-                    serialInterface.write(value);
-                    txTextArea.append(Format.asHex(value, 2) + " ");
+                    send(serialInterface, txTextArea, value);
                 }
             };
 
             serialInterface.connect(new SerialDevice() {
                 public void onValueReady(SerialInterface serialInterface) {
-                    rxTextArea.append(Format.asHex(serialInterface.read(), 2) + " ");
+                    Integer incoming = serialInterface.read();
+                    buffer.add(incoming);
+                    rxTextArea.append(Format.asHex(incoming, 2) + " ");
+                    if (buffer.size() == 2) {
+                        for (Integer i : buffer) {
+                            send(serialInterface, txTextArea, i);
+                        }
+                        buffer.clear();
+                    }
                 }
 
                 public void onBitNumberChange(SerialInterface serialInterface, int nbBits) {
@@ -75,6 +84,11 @@ public class SerialInterfaceFrame extends DocumentFrame {
         // Add tab panel
 
         getContentPane().add(tabbedPane);
+    }
+
+    private void send(SerialInterface serialInterface, JTextArea txTextArea, int value) {
+        serialInterface.write(value);
+        txTextArea.append(Format.asHex(value, 2) + " ");
     }
 
     private JPanel prepareButtonGrid(JPanel buttonGrid, ActionListener valueButtonListener, int bits) {

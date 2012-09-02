@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 
 
-<project name="FR Emulator" default="all" basedir=".">
+<project name="Nikon Emulator" default="all" basedir=".">
 
-	<description>FR Emulator build file</description>
+	<description>Nikon Emulator build file</description>
 
 	<!-- Set global properties for this build. -->
-    <property name="app-name"         value="FrEmulator"/>
-    <property name="app-version"      value="1.98"/>
+    <property name="app-name"         value="NikonEmulator"/>
+    <property name="app-version"      value="2.00.00"/>
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
     <property name="class-dir"        location="ant-classes"/>
@@ -19,8 +19,8 @@
     <property name="conf-dir"         location="conf"/>
     <property name="tools-dir"        location="tools"/>
 	<property name="debug"            value="true"/>
-	<property name="debuglevel"       value="lines,var,source"/>
-	<property name="java-level"       value="1.6"/>
+	<property name="debuglevel"       value="lines,vars,source"/>
+	<property name="java-level"       value="1.7"/>
 
 
     <target name="preprocess" description="Substitute values for symbolic names in template files">
@@ -61,7 +61,7 @@
 
 
 	<!-- Build the executable jar.  -->
-	<target name="make-jar" depends="compile" description="Create the Fr Emulator jar">
+	<target name="make-jar" depends="compile" description="Create the Nikon Emulator jar">
 		<delete includeEmptyDirs="true" quiet="true">
 			<fileset dir="${jar-dir}"/>
 		</delete>

@@ -4,9 +4,9 @@ import com.mxgraph.layout.hierarchical.mxHierarchicalLayout;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.util.mxConstants;
 import com.mxgraph.view.mxGraph;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.Jump;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -177,15 +177,14 @@ public class CodeStructureMxGraph extends mxGraph {
     }
 
     private String getStrokeColor(Jump jump) {
-        if (jump.getOpcode() == null) {
+        if (jump.getInstruction() == null) {
             // Should not happen
             return "#FF0000";
         }
-        switch (jump.getOpcode().type) {
+        switch (jump.getInstruction().flowType) {
             case CALL:
                 return "#777777";
             case INT:
-            case INTE:
                 return "#00CC00";
             default:
                 return "#777700";

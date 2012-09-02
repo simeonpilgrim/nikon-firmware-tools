@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import java.util.Deque;
@@ -34,7 +35,7 @@ public class SerialInterface {
     private int bgr0;
     private int ismk;
     private int isba;
-    private int fcr1;
+    private int fcr1 = 0x4;
     private int fcr0;
     private int fbyte2 = 0x8;
     private int fbyte1 = 0x8;
@@ -49,10 +50,12 @@ public class SerialInterface {
     public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
-        rxInterruptNumber = baseInterruptNumber;
-        txInterruptNumber = baseInterruptNumber + 1;
+//        First, interrupt numbers were automatic but they are now custom
 //        rxInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + this.serialInterfaceNumber * 3;
 //        txInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + 1 + this.serialInterfaceNumber * 3;
+        rxInterruptNumber = baseInterruptNumber;
+//        txInterruptNumber = baseInterruptNumber + 1;
+        txInterruptNumber = baseInterruptNumber;
     }
 
     public int getSerialInterfaceNumber() {
@@ -116,6 +119,7 @@ public class SerialInterface {
         int oldNbBits = getNbBits();
         this.escrIbsr = escrIbsr;
         if (this.serialDevice != null) {
+            // inform emulated connected device that config changed
             int newNbBits = getNbBits();
             if (newNbBits != oldNbBits) {
                 this.serialDevice.onBitNumberChange(this, newNbBits);
@@ -171,7 +175,7 @@ public class SerialInterface {
      * This can only be called by external software to simulate data reading by another device
      * @return 5 to 9 bits integer corresponding to a single value read by a device from this serial port
      */
-    public int read() {
+    public Integer read() {
         Deque<Integer> txFifo;
         if ((fcr1 & 0x1) == 0) {
             txFifo = fifo1;
@@ -199,14 +203,6 @@ public class SerialInterface {
         else {
             Integer value = txFifo.poll();
 
-            if ((fcr1 & 0x1) == 0) {
-                fbyte1 = txFifo.size();
-            }
-            else {
-                fbyte2 = txFifo.size();
-            }
-
-
             if (txFifo.isEmpty()) {
                 // Set FCR1:FDRQ
                 fcr1 = fcr1 | 0x4;
@@ -220,7 +216,7 @@ public class SerialInterface {
                 }
             }
 
-            return value==null?-1:value;
+            return value;
         }
     }
 
@@ -341,12 +337,19 @@ public class SerialInterface {
             return rdr;
         }
         else {
-            int value = rxFifo.poll();
             if (rxFifo.isEmpty()) {
-                // Clear SSR:RDRF
-                ssr = ssr & 0xEF;
+                // throw exception ??
+                System.err.println("Attempt to read from empty FIFO");
+                return -1;
             }
-            return value;
+            else {
+                int value = rxFifo.poll();
+                if (rxFifo.isEmpty()) {
+                    // Clear SSR:RDRF
+                    ssr = ssr & 0xEF;
+                }
+                return value;
+            }
         }
     }
 
@@ -462,28 +465,20 @@ public class SerialInterface {
         return fcr0 & 0x63; // 0b01100011
     }
 
-    /**
-     * This represents the capacity of fifo2
-     * @param fbyte2
-     */
     public void setFbyte2(int fbyte2) {
         this.fbyte2 = fbyte2;
     }
 
     public int getFbyte2() {
-        return fbyte2;
+        return fifo2.size();
     }
 
-    /**
-     * This represents the capacity of fifo1
-     * @param fbyte1
-     */
     public void setFbyte1(int fbyte1) {
         this.fbyte1 = fbyte1;
     }
 
     public int getFbyte1() {
-        return fbyte1;
+        return fifo1.size();
     }
 
     private int mask(int value) {

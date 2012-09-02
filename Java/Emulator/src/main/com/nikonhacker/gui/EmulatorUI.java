@@ -9,14 +9,18 @@ package com.nikonhacker.gui;
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.*;
-import com.nikonhacker.dfr.*;
+import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.fr.*;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -121,9 +125,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private Emulator emulator;
-    private CPUState cpuState;
+    private FrCPUState cpuState;
     private DebuggableMemory memory;
-    private InterruptController interruptController;
+    private FrInterruptController interruptController;
     private java.util.Timer reloadAnimationTimer;
     private ReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
@@ -159,6 +163,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem codeStructureMenuItem;
     private JCheckBoxMenuItem sourceCodeMenuItem;
     private JCheckBoxMenuItem interruptControllerMenuItem;
+    private JCheckBoxMenuItem reloadTimersMenuItem;
     private JCheckBoxMenuItem serialInterfacesMenuItem;
     private JCheckBoxMenuItem callStackMenuItem;
     private JCheckBoxMenuItem realosObjectMenuItem;
@@ -629,13 +634,21 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         interruptControllerMenuItem.addActionListener(this);
         componentsMenu.add(interruptControllerMenuItem);
 
+        //Reload timers
+        reloadTimersMenuItem = new JCheckBoxMenuItem("Reload Timers");
+        //reloadTimersMenuItem.setMnemonic(KeyEvent.VK_I);
+        //reloadTimersMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
+        reloadTimersMenuItem.setActionCommand(COMMAND_TOGGLE_RELOAD_TIMERS);
+        reloadTimersMenuItem.addActionListener(this);
+        componentsMenu.add(reloadTimersMenuItem);
+
         //Serial interface
         serialInterfacesMenuItem = new JCheckBoxMenuItem("Serial interfaces");
 //        serialInterfacesMenuItem.setMnemonic(KeyEvent.VK_I);
 //        serialInterfacesMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK));
         serialInterfacesMenuItem.setActionCommand(COMMAND_TOGGLE_SERIAL_INTERFACES);
         serialInterfacesMenuItem.addActionListener(this);
-        componentsMenu.add(interruptControllerMenuItem);
+        componentsMenu.add(serialInterfacesMenuItem);
 
 
         //Set up the trace menu.
@@ -957,7 +970,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     JOptionPane.showMessageDialog(this, "Error loading state file\nFirst file not called " + CPUSTATE_ENTRY_NAME, "Error", JOptionPane.ERROR_MESSAGE);
                 }
                 else {
-                    cpuState = (CPUState) XStreamUtils.load(zipInputStream);
+                    cpuState = (FrCPUState) XStreamUtils.load(zipInputStream);
 
                     // Read memory
                     entry = zipInputStream.getNextEntry();
@@ -1140,7 +1153,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     int lastAddress = baseAddress;
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
-                    CPUState sampleCpuState = new CPUState();
+                    FrCPUState sampleCpuState = new FrCPUState();
                     sampleCpuState.setAllRegistersDefined();
 
 
@@ -1296,6 +1309,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>MigLayout, Copyright (c) MigInfoCom - " + makeLink("http://www.miginfocom.com/") + "</li>"
                 + "<li>Glazed Lists, Copyright (c) 2003-2006, publicobject.com, O'Dell Engineering Ltd - " + makeLink("http://www.glazedlists.com/") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
+                + "<li>MARS, MIPS Assembler and Runtime Simulator (c) 2003-2011, Pete Sanderson and Kenneth Vollmar - " + makeLink("http://courses.missouristate.edu/KenVollmar/MARS") + "</li>"
                 + "</ul></body></html>");
 
         // handle link events
@@ -1363,14 +1377,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memory.loadFile(imageFile, BASE_ADDRESS);
 
             if (cpuState == null) {
-                cpuState = new CPUState(BASE_ADDRESS);
+                cpuState = new FrCPUState(BASE_ADDRESS);
             }
             else {
                 cpuState.reset();
                 cpuState.pc = BASE_ADDRESS;
             }
 
-            interruptController = new InterruptController(memory);
+            interruptController = new FrInterruptController(memory);
             reloadTimers = new ReloadTimer[]{
                     new ReloadTimer(0, interruptController),
                     new ReloadTimer(1, interruptController),
@@ -1792,6 +1806,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         component4006MenuItem.setEnabled(isImageLoaded); component4006Button.setEnabled(isImageLoaded);
         customMemoryRangeLoggerMenuItem.setEnabled(isImageLoaded); customMemoryRangeLoggerButton.setEnabled(isImageLoaded);
         interruptControllerMenuItem.setEnabled(isImageLoaded); interruptControllerButton.setEnabled(isImageLoaded);
+        reloadTimersMenuItem.setEnabled(isImageLoaded); reloadTimersButton.setEnabled(isImageLoaded);
         serialInterfacesMenuItem.setEnabled(isImageLoaded); serialInterfacesButton.setEnabled(isImageLoaded);
         callStackMenuItem.setEnabled(isImageLoaded); callStackButton.setEnabled(isImageLoaded);
         realosObjectMenuItem.setEnabled(isImageLoaded); realosObjectButton.setEnabled(isImageLoaded);
@@ -1874,11 +1889,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
             if (endAddress != null) {
                 // Set a temporary break condition at given endAddress
-                CPUState values = new CPUState(endAddress);
-                CPUState flags = new CPUState();
+                FrCPUState values = new FrCPUState(endAddress);
+                FrCPUState flags = new FrCPUState();
                 flags.pc = 1;
                 flags.setILM(0, false);
-                flags.setReg(CPUState.TBR, 0);
+                flags.setReg(FrCPUState.TBR, 0);
                 BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
                 emulator.addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
@@ -2036,7 +2051,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
         // Create alternate cpuState
-        CPUState tmpCpuState = cpuState.clone();
+        FrCPUState tmpCpuState = cpuState.clone();
 
         // Tweak alt cpuState
         tmpCpuState.I = 0; // prevent interrupts

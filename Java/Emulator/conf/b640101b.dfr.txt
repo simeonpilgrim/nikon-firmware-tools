@@ -1,4 +1,4 @@
-# The main part of this file describes the D5100 firmware, ver 1.01
+# The main part of this file describes the D5100 "B" firmware, ver 1.01
 # Two special parts are also included but commented out :
 # - the ROM part at 0x000E0000
 # - the copy of code to 0x80080000 performed by the ROM bootup
@@ -22,9 +22,12 @@
 # Softune RTOS Copyright :
 #-m 0x00040948-0x000409b3=DATA:L
 
+-m 0x000409B4-0x000427BD=CODE
 
--m 0x000409b4-0x000504E1=CODE
+# RealOS version structure returned by "get_ver" system call
+-m 0x000427BE-0x000427D1=DATA
 
+-m 0x000427D2-0x000504E1=CODE
 
 # Unknown :
 #-m 0x000504E2-0x0005425F=DATA:L
@@ -576,6 +579,13 @@
 #-m 0x00267C6C-0x00267C7B=DATA:L
 # Table for jump at 001A44B6
 #-m 0x00267C7C-0x00267C8B=DATA:L
+
+# Table with 81 records of 16 bytes used at 001A89D6 and at 001A8BDE
+#-m 0x00267CF4-0x00268203=DATA:L
+# Table for call at 001A9424
+#-m 0x00268204-0x00268213=DATA:L
+# Table for call at 001A93A0
+#-m 0x00268214-0x00268227=DATA:L
 
 # Table for jump at 001AC484
 #-m 0x0026A4AC-0x0026A4BB=DATA:L
@@ -1227,7 +1237,7 @@
 -s 0x409E6=infinite_loop
 -s 0x40A70=set_x440_x10
 -s 0x40A98=Setupx68000918
--s 0x40AB6=SetupAllTopLevlFuncs
+-s 0x40AB6=sys__SetupAllTopLevlFuncs
 -s 0x40AFE=SetupTable78
 -s 0x40B24=SetupTable53
 -s 0x40B4A=SetupTable19
@@ -1235,7 +1245,15 @@
 -s 0x40BBC=SetupTable3
 -s 0x40C02=SetupTableEmpty1
 -s 0x40C28=SetupTable2
+-s 0x40C4E=UpdateClock_ms(/*int_18_body*/)
 -s 0x40CDE=MillisecondTimer
+-s 0x40DE4=sys__sub_40DE4
+-s 0x40E1E=sys__TopLevel_sub2
+-s 0x40E4C=sys__sub_40E4C
+-s 0x40E98=sys__sub_40E98
+-s 0x40EC8=sys__sub_40EC8
+-s 0x40F06=sys__sub_40F06
+-s 0x40F3C=int_3f
 -s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
 -s 0x41106=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
 -s 0x41124=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
@@ -1252,8 +1270,9 @@
 -s 0x4160C=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
 -s 0x4166E=sys_can_wup(R4 [IN tsk_id], R12 [OUT err_code], R13 [OUT wakeup_count] /* Cancel Wakeup Request */)
 -s 0x416D2=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
+-s 0x4172C=sys__TaskSetupReturnPointers
 -s 0x41750=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
--s 0x41770=SetupTopLevelStack
+-s 0x41770=sys__SetupTopLevelStack
 -s 0x4179A=gbl_ret_02
 -s 0x417AA=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
 -s 0x41848=sys_dis_dsp(R12 [OUT err_code] /* Disable Dispatch */)
@@ -1264,8 +1283,9 @@
 -s 0x419D6=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
 -s 0x419F2=gbl_ret_01
 -s 0x419F6=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
--s 0x41A4A=TableLoadOffset(R14 [IN ptr_to_table; OUT ptr to the R4th record], R4 [IN index in table /*1-based*/])
--s 0x41A66=TopLevel_sub1
+-s 0x41A4A=sys__TableLoadOffset(R14 [IN ptr_to_table; OUT ptr to the R4th record], R4 [IN index in table /*1-based*/])
+-s 0x41A66=sys__TopLevel_sub1
+-s 0x41A98=sys__sub_41A98_
 -s 0x41ACA=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
 -s 0x41B0C=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
 -s 0x41B4E=sys_preq_sem(R4 [IN sem_id], R12 [OUT err_code] /* Poll and request Semaphore */)
@@ -1284,8 +1304,11 @@
 -s 0x41F92=sys_prcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, polling */)
 -s 0x41FE0=sys_trcv_msg(R5 [IN mailbox_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, with Timeout */)
 -s 0x42062=sys_ref_mbx(R4 [IN ptr_to_pk_rmbx], R5 [IN mailbox_id], R12 [OUT err_code] /* Get Mailbox Status */)
+-s 0x420A4=sys__sub_420A4
+-s 0x420C4=sys__sub_420C4
 -s 0x420E6=sys_get_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block */)
 -s 0x421DA=sys_pget_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block, polling */)
+-s 0x42288=sys__sub_42288
 -s 0x422CE=table1_422CE
 -s 0x422DA=sys_rel_blk(R4 [IN mempool_id], R5 [OUT blk_start], R12 [OUT err_code] /* Release Variable-Sized Memory Block */)
 -s 0x42498=sys_ref_mpl(R4 [IN ptr_to_pk_rmempool], R5 [IN mempool_id], R12 [OUT err_code] /* Get Variable-Sized Memorypool Status */)
@@ -1600,12 +1623,15 @@
 -s 0x101802=put10at7EF
 -s 0x101ACE=nullsub_12
 -s 0x101E4A=lists_setup_01
+-s 0x101FE6=get_queued_struc_79
 -s 0x1020A4=lists_setup_04
 -s 0x102306=lists_setup_02
 -s 0x1026B8=lists_setup_03
 -s 0x10276C=lists_setup_05
--s 0x1074F2=dlist_init(R4 [IN ptr_to_list])
--s 0x1074FA=dlist_is_head(R4 [IN ptr_to_element; OUT is_head] /*R4->prev == R4 ?*/)
+-s 0x102FFA=get_queued_struc_79_w
+-s 0x103018=get_queued_struc_79_1
+-s 0x1074F2=dlist_init(R4 [IN ptr_to_list] /*creates sentinel node at the beginning*/)
+-s 0x1074FA=dlist_is_empty(R4 [IN ptr_to_element; OUT is_empty] /*if R4->prev == R4, only the sentinel node remains*/)
 -s 0x107506=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
 -s 0x107516=dlist_insert_after(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 after R4*/)
 -s 0x107526=dlist_remove(R4 [IN ptr_to_element] /*remove R4 element*/)
@@ -1615,8 +1641,8 @@
 -s 0x1075EA=LowPriority_SigSem
 -s 0x107626=signal_semaphores
 -s 0x107650=get_8F805A5C
--s 0x10765a=loop_till_decr_138(R4 [IN threshold])
--s 0x107672=rot_rdq_0_till_decr_138(R4 [IN threshold])
+-s 0x10765a=Wait_ExternalTicks(R4 [IN threshold])
+-s 0x107672=Wait_ExternalTicks_RotateReadyQueue(R4 [IN threshold])
 -s 0x107696=crc16
 -s 0x107780=intToString
 -s 0x1077E4=uintToString
@@ -1627,12 +1653,15 @@
 -s 0x107C80=memcpy_fast
 -s 0x107CB2=memset_fast
 -s 0x10896E=start_task_x18
+-s 0x10898E=x50000100_set_x80
+-s 0x1089BC=x50000100_clear_x80
 -s 0x108A86=Tsk18_108A86
 -s 0x10996E=Tsk1B_10996E
 -s 0x10A84E=nullsub_43
 -s 0x10C91E=Tsk1A_10C91E
 -s 0x110B98=GetVideoFpsMode
 -s 0x110BD4=set_8F80C473_bit3
+-s 0x1177AA=save_picture_settings
 -s 0x1180C4=FlashTxtFunc
 -s 0x118192=Tsk1F_118192
 -s 0x118E6C=Tsk22_118E6C
@@ -1640,8 +1669,10 @@
 -s 0x119EF6=ExposureCalc_xx
 -s 0x11F990=nullsub_90
 -s 0x11FAB2=nullsub_211
--s 0x11FDB0=Tsk1E_11FDB0
 -s 0x11FD7C=setEvtPtr_and_start_task_x1e
+-s 0x11FDB0=Tsk1E_11FDB0
+-s 0x122C22=array_copy_word
+-s 0x122C32=nullsub_215
 -s 0x1254EC=nullsub_13
 -s 0x1254F0=nullsub_14
 -s 0x1254F2=nullsub_15
@@ -1655,10 +1686,13 @@
 -s 0x125A20=SetList
 -s 0x125B6E=AudioBuf_InitCircular
 -s 0x125EE8=nullsub_45
+-s 0x1265AE=setup_struc_41_defaults
 -s 0x1265C0=copy_default_struc_43
+-s 0x1265D2=cmp_set05_struc_43_defaults
 -s 0x1265FC=cmp_SYSTEMFIXADJUST
 -s 0x128DCA=ptp_128DCA
--s 0x12AE8C=matchAndCall99
+-s 0x128EBE=ptp_NEFcomp_raw
+-s 0x12AE8C=ptp_matchAndCall
 -s 0x12B302=Tsk1D_12B302
 -s 0x12BD64=Tsk27_12BD64
 -s 0x12E0DC=start_task_x1C
@@ -1782,6 +1816,7 @@
 -s 0x149892=ptpGet_Autodistortion
 -s 0x1498DC=ptpSet_ExposureTime
 -s 0x149B98=ptpGet_ExposureTime
+-s 0x149F8A=ptpGet ShutterSpeed_ms
 -s 0x14A19C=ptpGet_ACPower
 -s 0x14A1E4=ptpGet_WarningStatus
 -s 0x14A2CA=ptpGet_MaximumShots
@@ -1845,6 +1880,8 @@
 -s 0x14DA1E=ptpGet_ActivePicCtrlItem
 -s 0x14DAAE=ptpGet_ChangePicCtrlItem
 -s 0x14DCA8=ptpSet_SessionInitiatorInfo
+-s 0x151320=find_dword_index
+-s 0x1517EE=manual_mode_xy
 -s 0x151804=get_151804
 -s 0x15180E=set_15180E
 -s 0x151DE0=start_task_x2A
@@ -1864,6 +1901,7 @@
 -s 0x157E30=call_sub_21B3B4_GRD
 -s 0x15803C=call_sub_21AD48_GRD
 -s 0x15C7C8=set_8F86BF40
+-s 0x15FDA0=GetTotalImageCount
 -s 0x164CBC=nullsub_177
 -s 0x164CBE=trace(R4 [IN szDebugString])
 -s 0x168688=setPointerValue
@@ -1909,9 +1947,9 @@
 -s 0x1695D6=ExifTag_1695D6
 -s 0x16965A=ExifTag_16965A
 -s 0x169660=ExifTag_169660
--s 0x169714=ExifTag_169714
--s 0x169746=ExifTag_169746
--s 0x169760=ExifTag_169760
+-s 0x169714=ExifTag_9290
+-s 0x169746=ExifTag_9291
+-s 0x169760=ExifTag_9292
 -s 0x1697AA=ExifTag_1697AA
 -s 0x1697C8=ExifTag_1697C8
 -s 0x16985A=ExifTag_16985A
@@ -2047,21 +2085,32 @@
 -s 0x19DC68=SceneAuto
 -s 0x19DD72=PictureEditMenu
 -s 0x1A54C6=Avi_headers_xx
+-s 0x1A879A=disableSerial5
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19_1A87BC
--s 0x1A8908=getnextdlstix_value (/* get next dList index value */)
--s 0x1A90E0=init_dlist_2_dlist_1
--s 0x1A9122=getnextdlistx_f8(R4 [OUT element->payload], R0 [OUT element->next])
--s 0x1A9188=dlist_callxx
--s 0x1A9228=Enqueue_Dlist_Item
--s 0x1A929C=setflag12_x20
--s 0x1A92AE=setflag12_x10_a
--s 0x1A92EE=setflag12_x10_b
+-s 0x1A87C2=Tsk19_loop
+-s 0x1A8812=Tsk19Init_1A8812
+-s 0x1A8908=wait_for_next_value(/* get next value from the head of the lifo -or wait for one if empty- and store it */)
+-s 0x1A894C=Tsk19part1_send_msg_header_1A894C(R4 [OUT error_code] /* Send message function and length */)
+-s 0x1A8AF0=Tsk19part2_process_header_in_1A8AF0(R4 [OUT error_code] /* Received header is checked */)
+-s 0x1A8B90=Tsk19part3_send_and_receive_param_1A8B90(R4 [OUT error_code] /* Send message param and checksum, and receive response param */)
+-s 0x1A8D90=Tsk19part4_process_param_in_1A8D90(R4 [OUT error_code] /* Received param is checked */)
+-s 0x1A8F1E=Tsk19BeforeLoop_1A8F1E(R4 [IN boolean])
+-s 0x1A90E0=init_fifos(/* initializes empty fifo1 and fifo2, and set the last field of each record of arrayC to its ordinal index */)
+-s 0x1A9122=get_lifo_head_value(R4 [OUT head->value] /* get the value field of the head element of the lifo, or 0 if lifo is empty */)
+-s 0x1A9188=Tsk19part5_dlist_callxx
+-s 0x1A9228=push_dlist_item(R4 [IN index] /* inserts the <index>th element of arrayC at the head of the lifo */)
+-s 0x1A929C=int_1B_mode_0_set_serial_error_flag
+-s 0x1A92AE=int_1B_mode_1_read_msg_header
+-s 0x1A92EE=int_1B_mode_2_stop_timer
+-s 0x1A930C=int_1B_mode_3_read_and_check_ACK
+-s 0x1A9354=int_1B_mode_4_ignore_once
 -s 0x1A936A=int_1B_body
--s 0x1A93A6=nullsub_81
--s 0x1A93A8=setflag12_x01
--s 0x1A93B4=setflag12_x06
--s 0x1A93D6=setflag12_x02
+-s 0x1A93A6=int_16_mode_0_nullsub
+-s 0x1A93A8=int_16_mode_1_return_ok
+-s 0x1A93B4=int_16_mode_2_stop_timer
+-s 0x1A93D6=int_16_mode_3_store_138
+-s 0x1A9400=int_16_body
 -s 0x1A9452=start_task_x2F
 -s 0x1A9464=Tsk2F_1A9464
 -s 0x1A977A=FindFileNamed_XX
@@ -2191,6 +2240,10 @@
 -s 0x1D5448=nullsub_51
 -s 0x1D54E6=Tsk26_1D54E6
 -s 0x1D5A1C=getR4from0x8F960EAC(R4 [OUT])
+-s 0x1D5A1C=get_s43_field_C
+-s 0x1D5A26=set_s43_field_C
+-s 0x1D6130=set_1D6130
+-s 0x1D6144=set_1D6144
 -s 0x1D61CC=set_8F960EC8_to_0
 -s 0x1D61D8=set_8F960EC8_to_1
 -s 0x1D7254=CheckErrorStates
@@ -2224,6 +2277,7 @@
 -s 0x1D9A6C=nullsub_132
 -s 0x1D9A6E=nullsub_133
 -s 0x1D9A70=nullsub_134
+-s 0x1D9A72=call_int_1B_body
 -s 0x1D9A80=nullsub_135
 -s 0x1D9A9E=nullsub_136
 -s 0x1D9AA0=nullsub_137
@@ -2309,9 +2363,13 @@
 -s 0x1E67FA=Tsk20_1E67FA
 -s 0x1E683C=Tsk21_1E683C
 -s 0x1E684E=start_tsk39_and_recording
+-s 0x1E6A46=ret_stru_8F9614F4
 -s 0x1E6AD0=Tsk20_init_memory
 -s 0x1E6B1C=tsk20_sub_1E6B1C
 -s 0x1E7184=Tsk17_1E7184
+-s 0x1E8954=get_1E8954
+-s 0x1E895E=get_1E895E
+-s 0x1E896A=get_1E896A
 -s 0x1EAB4C=inttab_5_int15_body
 -s 0x1EB37A=DmaCheckOverflow
 -s 0x1EB630=DmaCheckUnderflow
@@ -2461,6 +2519,12 @@
 -s 0x1F059C=nullsub_182
 -s 0x1F05B2=getBeep
 -s 0x1F05C0=setBeep
+-s 0x1F0604=set_1F0604
+-s 0x1F0620=get_1F0620
+-s 0x1F062C=set_1F062C
+-s 0x1F0646=get_1F0646
+-s 0x1F0654=set_1F0654
+-s 0x1F0670=get_1F0670
 -s 0x1F067C=set_1F067C
 -s 0x1F0696=get_1F0696
 -s 0x1F06A4=set_1F06A4
@@ -2545,6 +2609,7 @@
 -s 0x2057C6=nullsub_78
 -s 0x205ACC=nullsub_79
 -s 0x205F36=nullsub_80
+-s 0x2062A2=call_sub_10D064
 -s 0x20678A=set_event_x12_x4000_a
 -s 0x206798=set_event_x12_x4000_b
 -s 0x2067A6=nullsub_82
@@ -2552,9 +2617,13 @@
 -s 0x2069A0=nullsub_57
 -s 0x209D32=start_task_x3C
 -s 0x209D3E=Tsk3C_209D3E
+-s 0x209DB8=setflag_x2C_x1
+-s 0x209DC4=setflag_x2C_x2
 -s 0x20B0B2=nullsub_58
 -s 0x20B0B4=nullsub_59
 -s 0x20B4AA=nullsub_184
+-s 0x213C0C=set_@0x8F9DC9F4(R4 [IN value]  /* sets 8bits @0x8F9DC9F4 */)
+-s 0x213C16=get_@0x8F9DC9F4(R4 [OUT value] /* gets 8bits @0x8F9DC9F4 */)
 -s 0x213FEE=xmlControlLoop
 -s 0x214422=xml_result
 -s 0x214464=xml_abortJob
@@ -2581,8 +2650,10 @@
 -s 0x219F08=OS_219F08
 -s 0x21AC8E=VOL_txt_xx
 -s 0x21B7FC=DirExists
+-s 0x21C160=filesys_init_xx
 -s 0x21F446=FileDir_xx
 -s 0x222562=FileSys_type_xx
+-s 0x2251D2=set_r4_to_zero_2
 -s 0x2251D6=set_r4_to_zero_0
 -s 0x2251DA=set_r4_to_zero_1
 -s 0x2251DE=nullsub_5
@@ -2697,6 +2768,7 @@
 -s 0x2CF89C=BFT119_s3_2CF89C
 -s 0x2CF944=BFT119_s9_2CF944
 -s 0x2CF984=BFT119_s6_2CF984
+-s 0x2CFA4E=set_2CFA4E
 -s 0x2CFAB0=BFT120_s1_IsoDisplay
 -s 0x2CFB12=BFT120_s3_IsoDisplay
 -s 0x2CFBA6=BFT121_s1_FileNumSeq
@@ -2846,6 +2918,12 @@
 -s 0x2EAC92=nullsub_112
 -s 0x2EAD9A=BFT59_s1_JpegImageSize
 -s 0x2EAE04=BFT59_s3_JpegImageSize
+-s 0x2EB722=BFT61_s1_WB_Adjust
+-s 0x2EB758=BFT61_s4_WB_Adjust
+-s 0x2EB792=BFT61_s5_WB_Adjust
+-s 0x2EB7DA=BFT61_s6_WB_Adjust
+-s 0x2EB822=BFT61_s7_WB_Adjust
+-s 0x2EBCD6=WB_Adjust_GM_AB_txt
 -s 0x2EC2AC=nullsub_31
 -s 0x2ECA04=nullsub_114
 -s 0x2ED084=BFT77_s1_ColorSpace
@@ -2873,6 +2951,8 @@
 -s 0x2EEA5E=BFT70_s3_2EEA5E
 -s 0x2EEB6E=BFT71_s3_2EEB6E
 -s 0x2EEBF8=BFT72_s1_MaxIso
+-s 0x2EEF12=BFT73_s1_2EEF12
+-s 0x2EF128=BFT73_s3_2EF128
 -s 0x2EF63C=BFTxx_s5_2EF63C
 -s 0x2EF676=GetVideoMode
 -s 0x2EFB6A=set_r4_1
@@ -2917,10 +2997,8 @@
 -s 0x30A51E=lang_xx_13
 -s 0x30A5C2=lang_xx_11
 -s 0x30B3AA=nullsub_64
-#-s 0x30B3AC=LangSelect_xx
 -s 0x30B3AC=draw_menu_rows
 -s 0x30B496=MenuDrawSelected
-#-s 0x30BB22=LangSelectFillBK_xx
 -s 0x30BB22=draw_menu_rectangle
 
 -s 0x30BE38=lang_xx_12
@@ -2951,12 +3029,19 @@
 -s 0x3160EE=set_3160EE
 -s 0x31610A=get_31610A
 -s 0x316116=set_316116
+-s 0x316130=get_316130
+-s 0x31613E=set_31613E
+-s 0x316158=get_316158
+-s 0x316166=set_316166
+-s 0x316180=get_316180
+-s 0x31618E=set_31618E
 -s 0x3161AA=get_3161AA
 -s 0x3161B6=set_3161B6
 -s 0x3161D0=get_3161D0
 -s 0x3161F8=get_3161F8
 -s 0x316220=get_316220
--s 0x316248=get_316248
+-s 0x31622E=setExposureMeteringMode
+-s 0x316248=getExposureMeteringMode
 -s 0x316256=setFlashCntrl
 -s 0x316272=getFlashCntrl
 -s 0x31629A=get_31629A
@@ -2965,12 +3050,20 @@
 -s 0x3162E4=get_3162E4
 -s 0x3162F2=setAFassistLamp
 -s 0x316308=getAFassistLamp
+-s 0x316316=set_316316
 -s 0x31633E=setEvSteps
 -s 0x31635A=getEvSteps
+-s 0x316366=set_316366
+-s 0x31638E=set_31638E
+-s 0x3163B6=set_3163B6
+-s 0x3163E2=set_3163E2
+-s 0x31640E=set_31640E
 -s 0x31643A=setBeepLevel
 -s 0x316456=getBeepLevel
 -s 0x316462=setAssignFnMode
 -s 0x31647E=getAssignFnMode
+-s 0x31648A=set_31648A
+-s 0x3164B2=set_3164B2
 -s 0x3164DA=setAssignAEAFMode
 -s 0x3164F6=getAssignAEAFMode
 -s 0x316502=setFlashPowerLevel2
@@ -3017,14 +3110,18 @@
 -s 0x316A00=set_316A00
 -s 0x316A28=setSelfTimerMode
 -s 0x316A44=getSelfTimer
+-s 0x316A50=set_316A50
+-s 0x316A78=set_316A78
 -s 0x316AA0=setRemoteOnDur
 -s 0x316ABA=getRemoteOnDur
 -s 0x316AC8=setGridDisplay
 -s 0x316ADE=getGridDisplay
+-s 0x316AEC=set_316AEC
 -s 0x316B02=get_316B02
 -s 0x316B10=set_316B10
 -s 0x316B26=get_316B26
 -s 0x316B32=set_316B32
+-s 0x316B56=set_316B56
 -s 0x316B7A=setIsoDisplay
 -s 0x316B90=getIsoDisplay
 -s 0x316B9E=set_316B9E
@@ -3051,10 +3148,22 @@
 -s 0x316D28=get_8F851588_bit_45
 -s 0x316D36=setSlotEmptyLock
 -s 0x316D4C=getSlotEmptyLock
+-s 0x316D5A=set_316D5A
+-s 0x316D70=get_316D70
 -s 0x316D7E=setReverseIndicatorMode
 -s 0x316D94=getReverseIndicatorMode
 -s 0x316DA0=nullsub_26
+-s 0x316DA2=get_316DA2
+-s 0x316DA6=set_316DA6
+-s 0x316DBC=get_316DBC
 -s 0x316DC8=set_316DC8
+-s 0x316DE4=get_316DE4
+-s 0x316DF0=set_316DF0
+-s 0x316E0A=get_316E0A
+-s 0x316E18=set_316E18
+-s 0x316E34=get_316E34
+-s 0x316E40=set_316E40
+-s 0x316E56=get_316E56
 -s 0x316E64=setJpegCompression
 -s 0x316E7A=getJpegCompression
 -s 0x316E88=setNEFCompression
@@ -3073,11 +3182,37 @@
 -s 0x316F72=getAutoIsoSensitivity
 -s 0x316F7E=setAutoDistortion
 -s 0x316F94=getAutoDistortion
--s 0x316FCA=nullsub_210
+-s 0x316FA2=set_316FA2
+-s 0x316FBE=get_316FBE
+-s 0x316FCA=set_nullsub_210
+-s 0x316FCC=get_316FCC
 -s 0x316FD0=setWhiteBalanceMode
 -s 0x316FEC=getWhiteBalanceMode
+-s 0x316FF8=setWBAutoBias
+-s 0x317016=getWBAutoBias
+-s 0x317024=setWBTungstenBias
+-s 0x317040=getWBTungstenBias
+-s 0x317050=setWBFluorescentBias
+-s 0x31706E=getWBFluorescentBias
+-s 0x31707C=setWBDaylightBias
+-s 0x317098=getWBDaylightBias
+-s 0x3170A8=setWBFlashBias
+-s 0x3170C6=getWBFlashBias
+-s 0x3170D4=setWBCloudyBias
+-s 0x3170F0=getWBCloudyBias
+-s 0x317100=setWBShadeBias
+-s 0x31711E=getWBShadeBias
+-s 0x31712C=set_31712C
+-s 0x317148=get_317148
+-s 0x3171AC=set_3171AC
+-s 0x3171CA=get_3171CA
 -s 0x3171D8=set_3171D8
 -s 0x317204=set_317204
+-s 0x317230=set_317230
+-s 0x31725C=set_31725C
+-s 0x317288=set_317288
+-s 0x3172B4=set_3172B4
+-s 0x3172E0=set_3172E0
 -s 0x31730C=set_unused_02
 -s 0x31732A=get_unused_02
 -s 0x317338=setAutoIsoSenitivity
@@ -3169,15 +3304,25 @@
 -s 0x317C7C=get_s49_field_B_x02
 -s 0x317C8A=set_s49_field_B_x01
 -s 0x317CA0=get_s49_field_B_x01
+-s 0x317D3E=setModeDial
+-s 0x317D5A=getModeDial_0
 -s 0x317D66=setBurstMode
 -s 0x317D82=getBurstMode
 -s 0x317D8E=setShutterRelease
 -s 0x317DA8=getShutterRelease
+-s 0x317DB6=set_317DB6
+-s 0x317DD2=get_317DD2
+-s 0x317DDE=set_317DDE
+-s 0x317DF4=get_317DF4
+-s 0x317E02=set_317E02
+-s 0x317E18=get_317E18
+-s 0x317E26=set_317E26
+-s 0x317E3C=get_317E3C
 -s 0x317E4A=nullsub_190
 -s 0x317E50=nullsub_191
 -s 0x317E52=ret_0_0
--s 0x317E56=set_317E56
--s 0x317E60=get_317E60
+-s 0x317E56=setShutterSpeed
+-s 0x317E60=getShutterSpeed
 -s 0x317E6C=setFNumber
 -s 0x317E76=getFNumber
 -s 0x317E80=setExposureBiasCompensation1
@@ -3204,7 +3349,7 @@
 -s 0x31801A=get_8f8514e8
 -s 0x318128=getModeDial
 -s 0x318134=get_318134
--s 0x31818E=get_31818E
+-s 0x31818E=getShutterSpeed_set14
 -s 0x31819A=get_8F8514CF
 -s 0x3181A4=get_8F8514D0
 -s 0x3181D2=get_3181D2
@@ -3228,7 +3373,28 @@
 -s 0x3189A2=set_set3B_f0
 -s 0x3189AC=get_set3B_f0
 -s 0x3189FA=get_set3B_f1_0x04
--s 0x318A26=get_set3C_f1
+-s 0x318A08=set_@0x8F850FB2(R4 [IN value]  /* sets 8bits  @0x8F850FB2 */)
+-s 0x318A12=get_@0x8F850FB2(R4 [OUT value] /* gets 8bits  @0x8F850FB2 */)
+-s 0x318A1C=set_@0x8F850FB3(R4 [IN  value] /* sets 8bits  @0x8F850FB3 */)
+-s 0x318A26=get_set3C_f1   (R4 [OUT value] /* gets 8bits  @0x8F850FB3 */)
+-s 0x318A30=set_@0x8F850FB4(R4 [IN value]  /* sets 32bits @0x8F850FB4 */)
+-s 0x318A5E=get_@0x8F850FB4(R4 [OUT value] /* gets 32bits @0x8F850FB4 */)
+-s 0x318A84=set_@0x8F850FB8(R4 [IN value]  /* sets 8bits  @0x8F850FB8 */)
+-s 0x318A8E=get_@0x8F850FB8(R4 [OUT value] /* gets 8bits  @0x8F850FB8 */)
+-s 0x318A98=set_@0x8F850FB9(R4 [IN value]  /* sets 32bits @0x8F850FB9 */)
+-s 0x318AC6=get_@0x8F850FB9(R4 [OUT value] /* gets 32bits @0x8F850FB9 */)
+-s 0x318AEC=set_@0x8F850FBD(R4 [IN value]  /* sets 8bits  @0x8F850FBD */)
+-s 0x318AF6=get_@0x8F850FBD(R4 [OUT value] /* gets 8bits  @0x8F850FBD */)
+-s 0x318B00=set_@0x8F850FBE(R4 [IN value]  /* sets 32bits @0x8F850FBE */)
+-s 0x318B2E=get_@0x8F850FBE(R4 [OUT value] /* gets 32bits @0x8F850FBE */)
+-s 0x318B54=set_@0x8F850FC2(R4 [IN value]  /* sets 8bits  @0x8F850FC2 */)
+-s 0x318B5E=get_@0x8F850FC2(R4 [OUT value] /* gets 8bits  @0x8F850FC2 */)
+-s 0x318B68=set_@0x8F850FC3(R4 [IN value]  /* sets 32bits @0x8F850FC3 */)
+-s 0x318B96=get_@0x8F850FC3(R4 [OUT value] /* gets 32bits @0x8F850FC3 */)
+-s 0x318BBC=set_@0x8F850FC7(R4 [IN value]  /* sets 8bits  @0x8F850FC7 */)
+-s 0x318BC6=get_@0x8F850FC7(R4 [OUT value] /* gets 8bits  @0x8F850FC7 */)
+-s 0x318BD0=set_@0x8F850FC8(R4 [IN value]  /* sets 32bits @0x8F850FC8 */)
+-s 0x318BFE=get_@0x8F850FC8(R4 [OUT value] /* gets 32bits @0x8F850FC8 */)
 -s 0x318C24=set_318C24
 -s 0x318C2E=get_318C2E
 -s 0x319498=cmp_set07_set08
@@ -3252,6 +3418,7 @@
 -s 0x32F27A=nullsub_27
 -s 0x345430=TimeZone_xx
 -s 0x345D02=set_r4_to_two
+-s 0x34A626=Display_ImageCount
 -s 0x34C75C=BFT314_s2_34C75C
 -s 0x34C84A=BFTxx_s2_34C84A
 -s 0x34C858=BFT318_s1_34C858
@@ -3265,6 +3432,7 @@
 -s 0x34C96E=BFT348_s2_34C96E_w
 -s 0x34C97C=BFT348_s1_34C97C_w
 -s 0x34C98A=BFT348_s3_34C98A_w
+-s 0x34CAF0=manaul_mode_xx
 -s 0x35579E=MN_setFilterEffectMode
 -s 0x355F80=BFTxx_s2_34C84A_body
 -s 0x3563C4=BFTxx_s7_3563C4
@@ -3278,13 +3446,16 @@
 -s 0x35B88E=BFT349_s3_35B88E
 -s 0x35B93C=Tsk2C_35B93C
 -s 0x35E444=DisplayPicture
--s 0x35FA16=ViewPic_Info1
--s 0x360DFE=ViewPic_Info2
--s 0x3615F2=ViewPic_Info3
+-s 0x35FA16=Image_ShootData_1
+-s 0x360DFE=Image_ShootData_2
+-s 0x3615F2=Image_ShootData_3
+-s 0x361B2A=Image_GPS_data
 -s 0x36246A=start_task_x2C
+-s 0x362482=WhiteBalanceModeOutput
 -s 0x36287E=Outut_xx
 -s 0x3628A0=FlashMeterModeOutput
 -s 0x3629D2=output_value01
+-s 0x36423C=Dis_ImagesLeft
 -s 0x36440A=ChangeCamModeDial
 -s 0x364F3A=BFT337_s2_364F3A
 -s 0x36527E=BFT338_s2_36527E
@@ -3313,7 +3484,26 @@
 -s 0x379D04=SetISO
 -s 0x379D40=SetAutoIsoSensitivity
 -s 0x379D7C=SetAutoDistortion
+-s 0x379DB8=Set_379DB8
 -s 0x379DF4=SetWhiteBalanceMode
+-s 0x379E30=SetWBAutoBias
+-s 0x379E6C=SetWBTungstenBias
+-s 0x379EA8=SetWBFluorescentBias
+-s 0x379EE4=SetWBDaylightBias
+-s 0x379F20=SetWBFlashBias
+-s 0x379F5C=SetWBCloudyBias
+-s 0x379F98=SetWBShadeBias
+-s 0x379FD4=Set_379FD4
+-s 0x37A010=Set_37A010
+-s 0x37A04C=Set_37A04C
+-s 0x37A088=Set_37A088
+-s 0x37A0C4=Set_37A0C4
+-s 0x37A100=Set_37A100
+-s 0x37A13C=Set_37A13C
+-s 0x37A178=Set_37A178
+-s 0x37A1B4=Set_37A1B4
+-s 0x37A1F0=Set_37A1F0
+-s 0x37A22C=Set_37A22C
 -s 0x37A268=Set_unused_02
 -s 0x37A2A4=Set_8F851547
 -s 0x37A358=SetMultipleExposure3
@@ -3328,6 +3518,7 @@
 -s 0x37A5B0=SetMinShutterSpeed
 -s 0x37A628=SetRemoteMode
 -s 0x37A6A0=SetHDRMode
+-s 0x37A7CC=Set_37A7CC
 -s 0x37A880=SetFlashCntrl
 -s 0x37A8F8=SetAFassistLamp
 -s 0x37A934=SetBeepLevel
@@ -3357,15 +3548,39 @@
 -s 0x37AF1E=Set_37AF1E
 -s 0x37AF96=SetIsoDisplay
 -s 0x37B00E=SetGridDisplay
+-s 0x37B086=Set_37B086
+-s 0x37B0C2=Set_37B0C2
+-s 0x37B0FE=Set_37B0FE
 -s 0x37B13A=Set_unused_01
+-s 0x37B176=Set_37B176
 -s 0x37B1B2=SetReverseIndicatorMode
+-s 0x37B1EE=Set_37B1EE
 -s 0x37B22A=SetEvSteps
+-s 0x37B266=Set_37B266
+-s 0x37B2A2=Set_37B2A2
+-s 0x37B2DE=Set_37B2DE
+-s 0x37B31A=Set_37B31A
+-s 0x37B356=Set_37B356
 -s 0x37B392=SetExposureDelay
 -s 0x37B3CE=Set_unused_00
 -s 0x37B40A=Set_37B40A
 -s 0x37B446=SetAutoBrackSetMode
 -s 0x37B482=SetBracketingOrder
+-s 0x37B4BE=Set_37B4BE
+-s 0x37B4FA=Set_37B4FA
+-s 0x37B536=Set_37B536
+-s 0x37B572=Set_37B572
+-s 0x37B5AE=Set_37B5AE
+-s 0x37B5EA=Set_37B5EA
 -s 0x37B626=SetRemoteOnDur
+-s 0x37B662=Set_37B662
+-s 0x37B69E=Set_37B69E
+-s 0x37B6DA=Set_37B6DA
+-s 0x37B716=Set_37B716
+-s 0x37B752=Set_37B752
+-s 0x37B78E=Set_37B78E
+-s 0x37B7CA=Set_37B7CA
+-s 0x37B806=Set_37B806
 -s 0x37BC02=Set_37BC02
 -s 0x37BD2E=SetHdrSmoothing
 -s 0x37BD6A=SetBurstMode
@@ -6428,5 +6643,8 @@
 -s 0x8F9C95C0=ME_Saturation_8
 -s 0x8F9C95D0=ME_Hue_8
 
-# Jump hints
+# Jump or call hints
 -j 0x001A93A0=0x001A929C, 0x001A92AE, 0x001A92EE, 0x001A930C, 0x001A9354
+-j 0x001A91AA=0x0020465E, 0x00204660, 0x002046F0, 0x00204734, 0x00204790, 0x002048D0, 0x00204A00, 0x00204C92, 0x00204CA0, 0x00204CAE, 0x00204D00, 0x00204F50, 0x00205018, 0x0020505E, 0x00205418, 0x00205422, 0x00205424, 0x00205722, 0x002057BC, 0x002057C6, 0x002057C8, 0x0020588E, 0x002058FA, 0x0020596C, 0x00205A86, 0x00205A9C, 0x00205AAC, 0x00205ABC, 0x00205ACC, 0x00205ACE, 0x00205C42, 0x00205C8C, 0x00205D70, 0x00205D7E, 0x00205DDE, 0x00205E70, 0x00205EB4, 0x00205EE4, 0x00205F36, 0x00205F38, 0x00206048, 0x00206056, 0x002060C0, 0x002062A2, 0x002062B0, 0x00206706, 0x00206712, 0x0020677C, 0x0020678A, 0x00206798, 0x002067A6, 0x002067A8, 0x002067B4, 0x0020680E, 0x00206810
+-j 0x001A9220=0x0020465E, 0x00204660, 0x002046F0, 0x00204734, 0x00204790, 0x002048D0, 0x00204A00, 0x00204C92, 0x00204CA0, 0x00204CAE, 0x00204D00, 0x00204F50, 0x00205018, 0x0020505E, 0x00205418, 0x00205422, 0x00205424, 0x00205722, 0x002057BC, 0x002057C6, 0x002057C8, 0x0020588E, 0x002058FA, 0x0020596C, 0x00205A86, 0x00205A9C, 0x00205AAC, 0x00205ABC, 0x00205ACC, 0x00205ACE, 0x00205C42, 0x00205C8C, 0x00205D70, 0x00205D7E, 0x00205DDE, 0x00205E70, 0x00205EB4, 0x00205EE4, 0x00205F36, 0x00205F38, 0x00206048, 0x00206056, 0x002060C0, 0x002062A2, 0x002062B0, 0x00206706, 0x00206712, 0x0020677C, 0x0020678A, 0x00206798, 0x002067A6, 0x002067A8, 0x002067B4, 0x0020680E, 0x00206810
+-j 0x001A9424=0x001A93A6, 0x001A93A8, 0x001A93B4, 0x001A93D6

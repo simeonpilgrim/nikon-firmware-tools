@@ -1,27 +1,20 @@
-package com.nikonhacker.dfr;
+package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.Instruction;
+import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.memory.Memory;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.EnumSet;
 import java.util.Set;
 
-public class DisassembledInstruction {
-    ///* disassembly */
-    // [Flags]
-    public final static int DF_FLOW = 0x01;
-    public final static int DF_BREAK = 0x02;
-    public final static int DF_DELAY = 0x04;
-    public final static int DF_BRANCH = 0x10;
-    public final static int DF_JUMP = 0x20;
-    public final static int DF_CALL = 0x40;
-    public final static int DF_RETURN = 0x80;
-    public final static int DF_TO_KEEP = DF_FLOW | DF_BRANCH | DF_JUMP | DF_CALL | DF_RETURN;
-    public final static int DF_TO_COPY = DF_DELAY;
-    public final static int DF_TO_DELAY = DF_BREAK;
-
+/*
+ * Statement : an instance of a specific Instruction with specific operands
+ */
+public class FrStatement extends Statement {
     ///* output formatting */
     public static String fmt_nxt;
     public static String fmt_imm;
@@ -32,61 +25,46 @@ public class DisassembledInstruction {
     public static String fmt_par;
     public static String fmt_ens;
 
-    /** decoded opcode */
-    public OpCode opcode = null;
-
-    /** cached CPUState, for CALLs and INTs */
-    public CPUState cpuState = null;
-
     /** data read */
     public int[] data = new int[3];
 
     /** number of used elements in data[]*/
-    public int n;
+    public int numData;
 
     /** Ri/Rs operand */
-    public int i; // as-is from instruction
+    public int i; // as-is from binary code
     public int decodedI; // interpreted
 
     /** Rj operand */
-    public int j; // as-is from instruction
+    public int j; // as-is from binary code
     public int decodedJ; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     public int c;
 
     /** direct operand */
-    public int x; // as-is from instruction
+    public int x; // as-is from binary code
     public int decodedX; // interpreted
 
 
     /** number of significant bits in decodedX (for display only) */
     public int xBitWidth;
 
-    /** flags (for display only) */
-    public int flags;
-
-    /** formatted operand list */
-    public String operands;
-
-    /** optional comment */
-    public String comment;
-    
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
 
     /**
-     * Default instruction decoding upon class loading
+     * Default decoding upon class loading
      */
     static {
         initFormatChars(EnumSet.noneOf(OutputOption.class));
     }
 
-    public DisassembledInstruction() {
+    public FrStatement() {
         reset();
     }
 
-    public DisassembledInstruction(int memRangeStart) {
+    public FrStatement(int memRangeStart) {
         this.memRangeStart = memRangeStart;
         reset();
     }
@@ -112,53 +90,53 @@ public class DisassembledInstruction {
         }
     }
 
-    public void decodeInstructionOperands(int pc, Memory memory) {
-        switch (opcode.instructionFormat)
+    public void decodeOperands(int pc, Memory memory) {
+        switch (((FrInstruction) getInstruction()).instructionFormat)
         {
-            case OpCode.FORMAT_A:
+            case A:
                 i = 0xF & data[0];
                 j = 0xF & (data[0] >> 4);
                 break;
-            case OpCode.FORMAT_B:
+            case B:
                 i = 0xF & data[0];
                 x = 0xFF & (data[0] >> 4);
                 xBitWidth = 8;
                 break;
-            case OpCode.FORMAT_C:
+            case C:
                 i = 0xF & data[0];
                 x = 0xF & (data[0] >> 4);
                 xBitWidth = 4;
                 break;
-            case OpCode.FORMAT_D:
+            case D:
                 x = 0xFF & data[0];
                 xBitWidth = 8;
                 break;
-            case OpCode.FORMAT_E:
+            case E:
                 i = 0xF & data[0];
                 break;
-            case OpCode.FORMAT_F:
+            case F:
                 x = 0x7FF & data[0];
                 xBitWidth = 11;
                 break;
-            case OpCode.FORMAT_Z:
+            case Z:
                 j = 0xF & (data[0] >> 4);
                 break;
-            case OpCode.FORMAT_W:
+            case W:
                 x = data[0];
                 xBitWidth = 16;
                 break;
         }
 
-        for (int ii = 0; ii < opcode.numberExtraXWords; ii++) {
-            getNextInstruction(memory, pc);
-            x = (x << 16) + data[n - 1];
+        for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraXWords; ii++) {
+            getNextStatement(memory, pc);
+            x = (x << 16) + data[numData - 1];
             xBitWidth += 16;
         }
 
-        for (int ii = 0; ii < opcode.numberExtraYWords; ii++) {
+        for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraYWords; ii++) {
             /* coprocessor extension word */
-            getNextInstruction(memory, pc);
-            int tmp = data[n - 1];
+            getNextStatement(memory, pc);
+            int tmp = data[numData - 1];
             x = i;
             xBitWidth = 4;
             c = 0xFF & (tmp >> 8);
@@ -168,38 +146,39 @@ public class DisassembledInstruction {
     }
 
     public void reset() {
-        flags = 0;
         data[0] = data[1] = data[2] = 0xDEAD;
-        n = 0;
+        numData = 0;
         xBitWidth = 0;
         c = 0;
         i = CPUState.NOREG;
         j = CPUState.NOREG;
         x = 0;
-        operands = null;
-        comment = null;
+        setOperandString(null);
+        setCommentString(null);
     }
 
     public void getNextData(Memory memory, int address)
     {
-        data[n] = memory.loadUnsigned16(address + 2 * n);
-        n++;
+        data[numData] = memory.loadUnsigned16(address + 2 * numData);
+        numData++;
     }
 
-    public void getNextInstruction(Memory memory, int address)
+    public void getNextStatement(Memory memory, int address)
     {
-        data[n] = memory.loadInstruction16(address + 2 * n);
-        n++;
+        data[numData] = memory.loadInstruction16(address + 2 * numData);
+        numData++;
     }
 
     /**
-     * Disassemble OpCode for presentation
-     * must be called after Dfr.decodeInstructionOperands()
+     * Disassemble FrInstruction for presentation
+     * must be called after decodeOperands()
      * @param cpuState This stores CPU state.
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
-     * @return the direct argument (x), after decoding (shifts, relative, ...)
      */
     public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
+
+        /* DISPLAY FORMAT processing */
+
         int tmp;
         int pos;
 
@@ -212,10 +191,7 @@ public class DisassembledInstruction {
 
         StringBuilder currentBuffer = operandBuffer;
 
-        flags = cpuState.flags;
-        cpuState.flags = 0;
-
-        for (char formatChar : opcode.displayFormat.toCharArray())
+        for (char formatChar : getInstruction().getDisplayFormat().toCharArray())
         {
             switch (formatChar)
             {
@@ -254,14 +230,37 @@ public class DisassembledInstruction {
                     decodedX <<= 2;
                     xBitWidth += 2;
                     break;
+
                 case 'A':
-                    currentBuffer.append(CPUState.REG_LABEL[CPUState.AC]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.AC]);
                     break;
                 case 'C':
-                    currentBuffer.append(CPUState.REG_LABEL[CPUState.CCR]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.CCR]);
                     break;
                 case 'F':
-                    currentBuffer.append(CPUState.REG_LABEL[CPUState.FP]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.FP]);
+                    break;
+                case 'M':
+                    currentBuffer.append("ILM");
+                    break;
+                case 'P':
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.PS]);
+                    break;
+                case 'S':
+                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
+                    break;
+
+                case 'I':
+                    if (cpuState.isRegisterDefined(decodedI))
+                    {
+                        decodedX = cpuState.getReg(decodedI);
+                        xBitWidth = 32;
+                    }
+                    else
+                    {
+                        decodedX = 0;
+                        xBitWidth = 0;
+                    }
                     break;
                 case 'J':
                     if (cpuState.isRegisterDefined(decodedJ))
@@ -275,33 +274,13 @@ public class DisassembledInstruction {
                         xBitWidth = 0;
                     }
                     break;
-                case 'I':
-                    if (cpuState.isRegisterDefined(decodedI))
-                    {
-                        decodedX = cpuState.getReg(decodedI);
-                        xBitWidth = 32;
-                    }
-                    else
-                    {
-                        decodedX = 0;
-                        xBitWidth = 0;
-                    }
-                    break;
-                case 'M':
-                    currentBuffer.append("ILM");
-                    break;
-                case 'P':
-                    currentBuffer.append(CPUState.REG_LABEL[CPUState.PS]);
-                    break;
-                case 'S':
-                    currentBuffer.append(CPUState.REG_LABEL[CPUState.SP]);
-                    break;
+
                 case 'T':
                     currentBuffer.append("INT");
                     break;
                 case 'X':
                 case 'Y':
-                    throw new RuntimeException("no more X or Y : operand parsing is now done in decodeInstructionOperands()");
+                    throw new RuntimeException("no more X or Y : operand parsing is now done in decodeOperands()");
                 case 'a':
                     pos = xBitWidth;
                     while (pos >= 8){
@@ -334,25 +313,25 @@ public class DisassembledInstruction {
 
                     break;
                 case 'g':
-                    decodedI += CPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(CPUState.REG_LABEL[decodedI]);
+                    decodedI += FrCPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
                     break;
                 case 'h':
-                    decodedJ += CPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(CPUState.REG_LABEL[decodedJ]);
+                    decodedJ += FrCPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'i':
-                    currentBuffer.append(CPUState.REG_LABEL[decodedI]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
                     break;
                 case 'j':
-                    currentBuffer.append(CPUState.REG_LABEL[decodedJ]);
+                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
                     break;
                 case 'k':
-                    decodedI += CPUState.COPROCESSOR_REG_OFFSET;
+                    decodedI += FrCPUState.COPROCESSOR_REG_OFFSET;
                     currentBuffer.append(decodedI);
                     break;
                 case 'l':
-                    decodedJ += CPUState.COPROCESSOR_REG_OFFSET;
+                    decodedJ += FrCPUState.COPROCESSOR_REG_OFFSET;
                     currentBuffer.append(decodedJ);
                     break;
                 case 'n':
@@ -422,9 +401,9 @@ public class DisassembledInstruction {
                                 currentBuffer.append(",");
 
                             if ((decodedX & 0x100) != 0)
-                                currentBuffer.append(CPUState.REG_LABEL[c + 7 - i]);
+                                currentBuffer.append(FrCPUState.REG_LABEL[c + 7 - i]);
                             else
-                                currentBuffer.append(CPUState.REG_LABEL[c + i]);
+                                currentBuffer.append(FrCPUState.REG_LABEL[c + i]);
                         }
                     }
                     currentBuffer.append(fmt_ens);
@@ -435,48 +414,33 @@ public class DisassembledInstruction {
             }
         }
 
+        setOperandString(operandBuffer.toString());
 
-        int r = CPUState.NOREG;
-        int dflags = 0;
-        for (char s : opcode.action.toCharArray())
+        setCommentString(commentBuffer.toString());
+
+
+        /* ACTION processing */
+
+        int r = FrCPUState.NOREG;
+
+        for (char s : instruction.getAction().toCharArray())
         {
             switch (s)
             {
-                case '!':
-                    /* jump */
-                    dflags |= DF_FLOW | DF_BREAK | DF_BRANCH;
-                    break;
-                case '?':
-                    /* branch */
-                    dflags |= DF_FLOW | DF_BRANCH;
-                    break;
-                case '(':
-                    /* call */
-                    dflags |= DF_FLOW | DF_CALL;
-                    //System.err.println("CALL {0:X8} {1:x8}", displayx, displayRegisterBuffer.pc);
-                    break;
-                case ')':
-                    /* return */
-                    dflags |= DF_FLOW | DF_BREAK | DF_CALL;
-                    break;
-                case '_':
-                    /* delay */
-                    dflags |= DF_DELAY;
-                    break;
                 case 'A':
-                    r = CPUState.AC;
+                    r = FrCPUState.AC;
                     break;
                 case 'C':
-                    r = CPUState.CCR;
+                    r = FrCPUState.CCR;
                     break;
                 case 'F':
-                    r = CPUState.FP;
+                    r = FrCPUState.FP;
                     break;
                 case 'P':
-                    r = CPUState.PS;
+                    r = FrCPUState.PS;
                     break;
                 case 'S':
-                    r = CPUState.SP;
+                    r = FrCPUState.SP;
                     break;
                 case 'i':
                     r = decodedI;
@@ -490,105 +454,53 @@ public class DisassembledInstruction {
                     }
                     break;
                 case 'v':
-                    if (updateRegisters && cpuState.registerExists(r))
-                    {
+                    if (updateRegisters && cpuState.registerExists(r)) {
                         cpuState.setRegisterDefined(r);
                         cpuState.setReg(r, decodedX);
                     }
                     break;
                 case 'x':
-                    r = CPUState.NOREG;
+                    r = FrCPUState.NOREG;
                     break;
                 default:
-                    System.err.println("bad action '" + s + "' at " + Format.asHex(cpuState.pc, 8));
+                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
                     break;
             }
         }
 
-        flags |= dflags & DF_TO_KEEP;
-        cpuState.flags |= dflags & DF_TO_COPY;
-        if ((dflags & DF_DELAY) != 0)
-            cpuState.flags |= dflags & DF_TO_DELAY;
-        else
-            flags |= dflags & DF_TO_DELAY;
 
-        /*XXX*/
-        operands = operandBuffer.toString();
+        /* LINE BREAKS and INDENT (delay slot) processing */
 
-        comment = commentBuffer.toString();
-    }
+        // Retrieve stored delay slot type to print this instruction
+        setDelaySlotType(cpuState.getStoredDelaySlotType());
+
+        // Store the one of this instruction for printing next one
+        cpuState.setStoredDelaySlotType(instruction.getDelaySlotType());
 
 
-    /**
-     * Simple and fast version used by realtime disassembly trace
-     */
-    public String toString() {
-        String out = formatDataAsHex();
+        boolean newIsBreak = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET).contains(instruction.getFlowType());
 
-        if ((flags & DF_DELAY) != 0) {
-            out += "               " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
+        if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
+            // Current instruction has no delay slot
+            // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
+            setMustInsertLineBreak(cpuState.isLineBreakRequested() || newIsBreak);
+            // Clear break request for next one
+            cpuState.setLineBreakRequest(false);
         }
         else {
-            out += "              " + StringUtils.rightPad(opcode.name, 7) + " " + operands;
+            // Current instruction has a delay slot
+            // Don't break now
+            setMustInsertLineBreak(false);
+            // Request a break after the next instruction if needed (current instruction is a JMP or RET)
+            cpuState.setLineBreakRequest(newIsBreak);
         }
-
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
     }
 
 
-    /**
-     * Full fledged version used for offline disassembly
-     * @param options
-     * @return
-     */
-    public String toString(Set<OutputOption> options) {
-        String out = "";
-        if (options.contains(OutputOption.HEXCODE)) {
-            out += formatDataAsHex();
-        }
-
-        if (options.contains(OutputOption.BLANKS)) {
-            out += "              ";
-        }
-
-
-        if (opcode != null) {
-            if ((flags & DF_DELAY) != 0) {
-                out += "  " + StringUtils.rightPad(opcode.name, 6) + " " + operands;
-            }
-            else {
-                out += " " + StringUtils.rightPad(opcode.name, 7) + " " + operands;
-            }
-        }
-        else {
-            out += " (no opcode)" + operands;
-        }
-        
-//        for (int i = 0; i < 15-operands.length(); i++) {
-//            out += " ";
-//        }
-
-        if (StringUtils.isNotBlank(comment)) {
-            out += StringUtils.leftPad("; " + comment, 22);
-        }
-        out += "\n";
-        if ((flags & DF_BREAK) != 0) {
-            out += "\n";
-        }
-        return out;
-    }
-
-    public String formatDataAsHex() {
+    public String formatAsHex() {
         String out = "";
         for (int i = 0; i < 3; ++i) {
-            if (i < n) {
+            if (i < numData) {
                 out += " " + Format.asHex(data[i], 4);
             }
             else {
