@@ -53,8 +53,8 @@
         </javac>
         <copy todir="${class-dir}" >
             <fileset dir="${source-dir}">
-                <include name="/**/*.png"/>
-                <include name="/**/*.properties"/>
+                <include name="**/*.png"/>
+                <include name="**/*.properties"/>
             </fileset>
         </copy>
 	</target>
