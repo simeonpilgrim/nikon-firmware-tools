@@ -9,10 +9,11 @@ import com.mxgraph.util.mxUtils;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
-import com.nikonhacker.dfr.CodeStructure;
-import com.nikonhacker.dfr.Function;
-import com.nikonhacker.dfr.Jump;
+import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.Jump;
+import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -193,7 +194,7 @@ public class CodeStructureFrame extends DocumentFrame
 
     /** for debugging only */
     private void createFakeStructure() {
-        codeStructure = new CodeStructure(0);
+        codeStructure = new FrCodeStructure(0);
         Function sourceFunction = new Function(0, "main", "comment", Function.Type.MAIN);
         codeStructure.getFunctions().put(0, sourceFunction);
         for (int i = 1; i <= 10; i++) {

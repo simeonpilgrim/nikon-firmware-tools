@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.memory;
 
-import com.nikonhacker.dfr.Range;
+import com.nikonhacker.disassembly.Range;
 
 import java.io.*;
 import java.util.Collection;

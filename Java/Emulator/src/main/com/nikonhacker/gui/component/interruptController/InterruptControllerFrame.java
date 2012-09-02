@@ -4,7 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -25,7 +25,7 @@ import java.util.Vector;
  */
 public class InterruptControllerFrame extends DocumentFrame {
 
-    private InterruptController interruptController;
+    private FrInterruptController interruptController;
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
@@ -34,7 +34,7 @@ public class InterruptControllerFrame extends DocumentFrame {
 
     Timer interruptTimer = null;
 
-    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final InterruptController interruptController, final DebuggableMemory memory, final EmulatorUI ui) {
+    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final FrInterruptController interruptController, final DebuggableMemory memory, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.interruptController = interruptController;
 
@@ -60,7 +60,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                     isNMI = true;
                 }
                 else {
-                    int irNumber = interruptNumber - InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
+                    int irNumber = interruptNumber - FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
                     interruptName = "IR" + (irNumber < 10 ? "0" : "") + irNumber;
                     int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
                     icr = memory.loadUnsigned8(icrAddress) & 0x1F;
@@ -85,8 +85,8 @@ public class InterruptControllerFrame extends DocumentFrame {
         standardButtonGrid.add(nmiButton);
 
         for (int value = 0; value < 47; value++) {
-            JInterruptButton button = new JInterruptButton("INT 0x" + Format.asHex(value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
-                    + " = IR" + (value<10?"0":"") + value, value + InterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
+            JInterruptButton button = new JInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
+                    + " = IR" + (value<10?"0":"") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
             standardButtonGrid.add(button);

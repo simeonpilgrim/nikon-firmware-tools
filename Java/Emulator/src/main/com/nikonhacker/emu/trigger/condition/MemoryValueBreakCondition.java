@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.trigger.condition;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.dfr.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 
@@ -47,7 +47,7 @@ public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition imp
         this.negate = negate;
     }
 
-    public boolean matches(CPUState cpuState, Memory memory) {
+    public boolean matches(FrCPUState cpuState, Memory memory) {
         return negate ^ ((memory.load32(address) & mask) == value);
     }
 
