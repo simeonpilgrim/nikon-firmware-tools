@@ -9,3 +9,6 @@ JpegDetails/JpegDetails/obj
 JpegDetails/JpegDetails/bin
 Firmware Patch/Firmware Patch/bin/
 Firmware Patch/Firmware Patch/obj/
+Java/Emulator/ant-classes/
+Java/Emulator/ant-gen/
+Java/Emulator/dist/jar
