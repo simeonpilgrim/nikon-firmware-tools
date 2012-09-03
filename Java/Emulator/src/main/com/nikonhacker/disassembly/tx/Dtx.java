@@ -28,7 +28,7 @@ public class Dtx extends Disassembler
             // This is the EXTEND prefix. Get real instruction
             int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
             try {
-                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(realBinaryStatement));
+                statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
             } catch (DisassemblyException e) {
                 System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + " : " + e.getClass().getName());
             }
