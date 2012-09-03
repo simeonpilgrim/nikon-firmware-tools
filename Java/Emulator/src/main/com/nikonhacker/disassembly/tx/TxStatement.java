@@ -6,7 +6,6 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Statement;
-import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -114,7 +113,7 @@ public class TxStatement extends Statement {
                 break;
             case I:
             case I_BRANCH:
-                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs or base
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 imm   =  binaryStatement         & 0xFFFF;
                 immBitWidth = 16;
@@ -179,8 +178,8 @@ public class TxStatement extends Statement {
             switch (((TxInstruction)instruction).getInstructionFormat16())
             {
                 case I:
-                    imm   =  binaryStatement  & 0b11111111;
-                    immBitWidth = 8;
+                    imm   =  binaryStatement  & 0b11111111111;
+                    immBitWidth = 11;
                     break;
                 case RI:
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
@@ -193,12 +192,6 @@ public class TxStatement extends Statement {
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     rd_fd = rs_fs;
                     break;
-                case RRIA:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
-                    imm   =  binaryStatement  & 0b1111;
-                    immBitWidth = 4;
-                    break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
@@ -210,6 +203,17 @@ public class TxStatement extends Statement {
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
+                case RRIA:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =  binaryStatement  & 0b1111;
+                    immBitWidth = 4;
+                    break;
+                case SPC_BIT:
+                    sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
+                    rs_fs = 0b11; // base = fp
+                    imm   =  binaryStatement  & 0b11111;
+                    immBitWidth = 5;
             }
         }
         else {
@@ -230,14 +234,6 @@ public class TxStatement extends Statement {
                             | ((binaryStatement           ) & 0b0000000000011111);
                     immBitWidth = 16;
                     break;
-                case RRIA:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
-                    imm   =   ((binaryStatement >> (16-11)) & 0b0111100000000000)
-                            | ((binaryStatement >> (20- 4)) & 0b0000011111110000)
-                            | ((binaryStatement           ) & 0b0000000000001111);
-                    immBitWidth = 15;
-                    break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
@@ -250,6 +246,21 @@ public class TxStatement extends Statement {
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
+                case RRIA:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =   ((binaryStatement >> (16-11)) & 0b0111100000000000)
+                            | ((binaryStatement >> (20- 4)) & 0b0000011111110000)
+                            | ((binaryStatement           ) & 0b0000000000001111);
+                    immBitWidth = 15;
+                    break;
+                case SPC_BIT:
+                    sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
+                    rs_fs = (binaryStatement >>> 19) & 0b11; // base
+                    imm   =   ((binaryStatement >> (16-11)) & 0b0011100000000000)
+                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
+                            | ((binaryStatement           ) & 0b0000000000011111);
+                    immBitWidth = 14;
             }
         }
     }
@@ -354,13 +365,13 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'F':
-                    currentBuffer.append(FrCPUState.REG_LABEL[TxCPUState.FP]);
+                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
                     break;
                 case 'P':
                     currentBuffer.append("pc");
                     break;
                 case 'S':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
+                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.SP]);
                     break;
 
                 case 'I':
