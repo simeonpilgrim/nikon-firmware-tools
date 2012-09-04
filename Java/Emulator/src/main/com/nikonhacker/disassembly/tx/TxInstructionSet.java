@@ -1883,7 +1883,7 @@ public class TxInstructionSet
             "Bit CLeaR: clear given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
             "",
-            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int address = statement.imm;
@@ -1894,6 +1894,39 @@ public class TxInstructionSet
                         case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
                     }
                     memory.store8(address, memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
+                }
+            });
+
+    // TODO: delay slot work
+    public static final TxInstruction beqz1Instruction = new TxInstruction("beqz", "i, 2ru", "", "beqz $t1,label",
+            "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
+            null, InstructionFormat16.RI,
+            "000100 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(statement.rs_fs) == 0) {
+                        int shift = 32 - statement.immBitWidth;
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                    }
+                }
+            });
+
+    public static final TxInstruction bextInstruction = new TxInstruction("bext", "u(i), l", "", "bext 4(sp), 7",
+            "Bit EXTract: extract given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int address = statement.imm;
+                    switch (statement.rs_fs) {
+                        //case 0b00: address += 0; break; // useless
+                        case 0b01: address += cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address += cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
+                    }
+                    cpuState.setReg(24 /*t8*/, ((memory.loadUnsigned8(address) & (~(1 << statement.sa_cc))) == 0)?0:1);
                 }
             });
 
@@ -2367,15 +2400,17 @@ public class TxInstructionSet
         expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, balInstruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111100100000000, 0b1111111100000000, bclrInstruction); // incl with $r0
+
         expandInstruction(opcode16Map,         0b1111100100000000, 0b1111111100000000, bclrInstruction);
-/*
-        expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz Instruction);
-*/
-/*
+
+        expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz1Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz1Instruction);
+
         expandInstruction(extendedOpcode16Map, 0b1111110100000000, 0b1111111100000000, bextInstruction); // incl with $r0
+
         expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextInstruction);
 
+/*
         expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bfinsInstruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
@@ -2523,11 +2558,98 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restore1Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restore2Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000010100, 0b1111100000011111, saddInstruction);
+
+        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, save1Instruction);
+
+        expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, save2Instruction);
+
+        expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sb Instruction);
+
+        expandInstruction(opcode16Map,         0b0011100010000000, 0b1111100010000000, sb Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011100010000000, 0b1111100011100000, sb Instruction);
+
+        expandInstruction(opcode16Map,         0b0111100010000000, 0b1111100010000000, sb Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0111100010000000, 0b1111100011100000, sb Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000001, 0b1111100000011111, sdbbpInstruction);
+
+        expandInstruction(opcode16Map,         0b1110100010010001, 0b1111100011111111, sebInstruction);
+
+        expandInstruction(opcode16Map,         0b1110100010110001, 0b1111100011111111, sehInstruction);
+
+        expandInstruction(opcode16Map,         0b1100100000000000, 0b1111100000000000, sh Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1100100000000000, 0b1111100000000000, sh Instruction);
+
+        expandInstruction(opcode16Map,         0b1011100010000001, 0b1111100010000001, sh Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100010000001, 0b1111100011100001, sh Instruction);
+
+        expandInstruction(opcode16Map,         0b1011100010000000, 0b1111100010000001, sh Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100010000000, 0b1111100011100001, sh Instruction);
+
+        expandInstruction(opcode16Map,         0b0011000000000000, 0b1111100000000011, sll Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011000000000000, 0b1111100000011111, sll Instruction);
+
+        expandInstruction(opcode16Map,         0b1110000010000000, 0b1111100010000011, sll Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000100, 0b1111100000011111, sllv Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000010, 0b1111100000011111, slt Instruction);
+
+        expandInstruction(opcode16Map,         0b0101000000000000, 0b1111100000000000, slti Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0101000000000000, 0b1111100011100000, slti Instruction);
+
+        expandInstruction(opcode16Map,         0b0101100000000000, 0b1111100000000000, sltiu Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0101100000000000, 0b1111100011100000, sltiu Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000011, 0b1111100000011111, sltu Instruction);
+
+        expandInstruction(opcode16Map,         0b0011000000000011, 0b1111100000000011, sra1 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011000000000011, 0b1111100000011111, sra1 Instruction);
+
+        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100010000011, sra2 Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000111, 0b1111100000011111, srav Instruction);
+
+        expandInstruction(opcode16Map,         0b0011000000000010, 0b1111100000000011, srl1 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011000000000010, 0b1111100000011111, srl1 Instruction);
+
+        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100010000011, srl2 Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000000110, 0b1111100000011111, srlv Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000010101, 0b1111100000011111, ssub Instruction);
+
+        expandInstruction(opcode16Map,         0b1110000000000011, 0b1111100000000011, subu Instruction);
+
+        expandInstruction(opcode16Map,         0b0110001000000000, 0b1111111100000000, sw1 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0110001000000000, 0b1111111111100000, sw1 Instruction);
+
+        expandInstruction(opcode16Map,         0b1111111100000000, 0b1111111100000000, sw2 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1111111100000000, 0b1111111100000000, sw2 Instruction);
+
+        expandInstruction(opcode16Map,         0b1101000000000000, 0b1111100000000000, sw3 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1101000000000000, 0b1111100011100000, sw3 Instruction);
+
+        expandInstruction(opcode16Map,         0b1101100000000000, 0b1111100000000000, sw4 Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1101100000000000, 0b1111100000000000, sw4 Instruction);
+
+        expandInstruction(extendedOpcode16Map, 0b1110100000001111, 0b1111111111111111, sync Instruction);
+
+        expandInstruction(extendedOpcode16Map, 0b1110100000001100, 0b1111100000011111, syscall Instruction);
+
+        expandInstruction(extendedOpcode16Map, 0b1110100000000000, 0b1111111111111111, wait Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000001110, 0b1111100000011111, xor Instruction);
+
+        expandInstruction(extendedOpcode16Map, 0b0100100011000000, 0b1111100011100000, xori Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000010001, 0b1111100011111111, zeb Instruction);
+
+        expandInstruction(opcode16Map,         0b1110100000110001, 0b1111100011111111, zeh Instruction);
 */
-
-
-
-
 
         // ----------------- 32-bits -----------------
 
