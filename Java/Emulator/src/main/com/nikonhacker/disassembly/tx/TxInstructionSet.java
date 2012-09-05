@@ -121,7 +121,10 @@ public class TxInstructionSet
         RRR_INT,
 
         /** Layout for data reading is as follows               : <pre>[      imm       ]</pre> */
-        W
+        W,
+
+        /** Layout for data reading is as follows               : <pre>[ op  | imm  |  F  ]</pre> */
+        BREAK
     }
 
     // TODO "EXTEND"
@@ -1082,8 +1085,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction breakInstruction = new TxInstruction("break", "u", "", "break 100",
             "Break execution with code: Terminate program execution with specified exception code",
-            InstructionFormat32.BREAK,
-            null, "000000 ffffffffffffffffffff 001101",
+            InstructionFormat32.BREAK, InstructionFormat16.BREAK,
+            "000000 ffffffffffffffffffff 001101",
             Instruction.FlowType.INT, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1926,7 +1929,135 @@ public class TxInstructionSet
                         case 0b10: address += cpuState.getReg(TxCPUState.SP); break;
                         case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
                     }
-                    cpuState.setReg(24 /*t8*/, ((memory.loadUnsigned8(address) & (~(1 << statement.sa_cc))) == 0)?0:1);
+                    cpuState.setReg(24 /*t8*/, ((memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
+                }
+            });
+
+    public static final TxInstruction binsInstruction = new TxInstruction("bins", "u(i), l", "", "bins 4(sp), 7",
+            "Bit INSert: insert given bit at memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int address = statement.imm;
+                    switch (statement.rs_fs) {
+                        //case 0b00: address += 0; break; // useless
+                        case 0b01: address += cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address += cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
+                    }
+                    if ((cpuState.getReg(24 /*t8*/) & 1) == 0) {
+                        // Clear bit
+                        memory.store8(address, memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
+                    }
+                    else {
+                        // set bit
+                        memory.store8(address, memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
+                    }
+                }
+            });
+
+    // TODO: delay slot work
+    public static final TxInstruction bnez1Instruction = new TxInstruction("bnez", "i, 2ru", "", "bnez $t1,label",
+            "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
+            null, InstructionFormat16.RI,
+            "000101 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(statement.rs_fs) != 0) {
+                        int shift = 32 - statement.immBitWidth;
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                    }
+                }
+            });
+
+    public static final TxInstruction bsetInstruction = new TxInstruction("bset", "u(i), l", "", "bset 4(sp), 7",
+            "Bit SET: set given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int address = statement.imm;
+                    switch (statement.rs_fs) {
+                        //case 0b00: address += 0; break; // useless
+                        case 0b01: address += cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address += cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
+                    }
+                    memory.store8(address, memory.loadUnsigned8(address) | (1 << statement.sa_cc));
+                }
+            });
+
+    // TODO: delay slot work
+    public static final TxInstruction bteqzInstruction = new TxInstruction("bteqz", "2ru", "", "bteqz label",
+            "Branch if T8 EQual Zero: Branch to statement at label's address if $t1 is not zero",
+            null, InstructionFormat16.RI,
+            "000101 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(24 /*t8*/) == 0) {
+                        int shift = 32 - statement.immBitWidth;
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                    }
+                }
+            });
+
+    // TODO: delay slot work
+    public static final TxInstruction btnezInstruction = new TxInstruction("btnez", "2ru", "", "btnez label",
+            "Branch if T8 Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
+            null, InstructionFormat16.RI,
+            "000101 fffff 00000 tttttttttttttttt",
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(24 /*t8*/) != 0) {
+                        int shift = 32 - statement.immBitWidth;
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                    }
+                }
+            });
+
+    public static final TxInstruction btstInstruction = new TxInstruction("btst", "u(i), l", "", "btst 4(sp), 7",
+            "Bit TeST: extract given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int address = statement.imm;
+                    switch (statement.rs_fs) {
+                        //case 0b00: address += 0; break; // useless
+                        case 0b01: address += cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address += cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address += cpuState.getReg(TxCPUState.FP); break;
+                    }
+                    cpuState.setReg(24 /*t8*/, ((memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?1:0); // !bext
+                }
+            });
+
+    public static final TxInstruction cmpInstruction = new TxInstruction("cmp", "i, j", "", "cmp $t1, $t2",
+            "CoMPare : set t8 to 0 if registers are equal",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(24 /*t8*/, cpuState.getReg(statement.rs_fs) ^ cpuState.getReg(statement.rt_ft));
+                }
+            });
+
+    public static final TxInstruction cmpiInstruction = new TxInstruction("cmpi", "i, u", "", "cmpi $t1, 15",
+            "CoMPare Immediate : set t8 to 0 if register equals given value",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(24 /*t8*/, cpuState.getReg(statement.rs_fs) ^ statement.imm);
                 }
             });
 
@@ -2385,7 +2516,9 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0110001100000000, 0b1111111100000000, adjspInstruction);
         expandInstruction(extendedOpcode16Map, 0b0110001100000000, 0b1111111111100000, adjspInstruction);
 
-        // addmiu
+/*
+        expandInstruction(extendedOpcode16Map, 0b0100100001000000, 0b1111100011100000, addmiuInstruction); // incl with $r0
+*/
 
         expandInstruction(opcode16Map,         0b1110000000000001, 0b1111100000000011, adduInstruction);
 
@@ -2412,18 +2545,20 @@ public class TxInstructionSet
 
 /*
         expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bfinsInstruction);
-
+*/
         expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
+
         expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsInstruction);
 
-        expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez Instruction);
+        expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez1Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez1Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000101, 0b1111100000011111, break Instruction);
-
+        expandInstruction(opcode16Map,         0b1110100000000101, 0b1111100000011111, breakInstruction);
+/*
         expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bs1fInstruction);
-
+*/
         expandInstruction(extendedOpcode16Map, 0b1111101000000000, 0b1111111100000000, bsetInstruction); // incl with $r0
+
         expandInstruction(opcode16Map,         0b1111101000000000, 0b1111111100000000, bsetInstruction);
 
         expandInstruction(opcode16Map,         0b0110000000000000, 0b1111111100000000, bteqzInstruction);
@@ -2433,6 +2568,7 @@ public class TxInstructionSet
         expandInstruction(extendedOpcode16Map, 0b0110000100000000, 0b1111111111100000, btnezInstruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111100000000000, 0b1111111100000000, btstInstruction); // incl with $r0
+
         expandInstruction(opcode16Map,         0b1111100000000000, 0b1111111100000000, btstInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000001010, 0b1111100000011111, cmpInstruction);
@@ -2440,6 +2576,7 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0111000000000000, 0b1111100000000000, cmpiInstruction);
         expandInstruction(extendedOpcode16Map, 0b0111000000000000, 0b1111100011100000, cmpiInstruction);
 
+/*
         expandInstruction(extendedOpcode16Map, 0b1110100000011111, 0b1111111111111111, deretInstruction); // + constraints on extended part
 
         expandInstruction(opcode16Map,         0b1110000010000000, 0b1111111111111111, diInstruction);
