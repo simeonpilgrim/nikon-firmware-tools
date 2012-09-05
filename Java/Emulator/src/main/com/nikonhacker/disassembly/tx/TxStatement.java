@@ -214,6 +214,10 @@ public class TxStatement extends Statement {
                     rs_fs = 0b11; // base = fp
                     imm   =  binaryStatement  & 0b11111;
                     immBitWidth = 5;
+                case BREAK:
+                    imm   = (binaryStatement >>>  5) & 0b111111;
+                    immBitWidth = 6;
+                    break;
             }
         }
         else {
