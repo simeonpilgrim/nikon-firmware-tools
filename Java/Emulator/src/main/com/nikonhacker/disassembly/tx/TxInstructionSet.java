@@ -93,6 +93,9 @@ public class TxInstructionSet
         /** Layout of type I8 instructions is as follows        : <pre>[ I8  | F |        ]</pre> */
         I8,
 
+        /** Layout of type I8MOVFP instructions is as follows   : <pre>[ op  |1| r32 |  F  ]</pre> */
+        I8MOVFP,
+
         /** Layout of type I8MOVR32 instructions is as follows  : <pre>[ I8  | F |ry |r3240]</pre> */
         I8MOVR32,
 
@@ -293,9 +296,9 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction multInstruction = new TxInstruction("mult", "[k, ]i, j", "kw", "mult $t1,$t2",
-            "MULTiplication: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of $t1 and $t2",
-            InstructionFormat32.R,
-            null, "000000 fffff sssss 00000 00000 011000",
+            "MULTiplication: Set HI to high-order 32 bits, LO (and Rd) to low-order 32 bits of the product of $t1 and $t2",
+            InstructionFormat32.R, InstructionFormat16.RRI /* not RR because rd must be rt here */,
+            "000000 fffff sssss 00000 00000 011000",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -307,9 +310,9 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction multuInstruction = new TxInstruction("multu", "[k, ]i, j", "kw", "multu $t1,$t2",
-            "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rs) to low-order 32 bits of the product of unsigned $t1 and $t2",
-            InstructionFormat32.R,
-            null, "000000 fffff sssss 00000 00000 011001",
+            "MULTiplication Unsigned: Set HI to high-order 32 bits, LO (and Rd) to low-order 32 bits of the product of unsigned $t1 and $t2",
+            InstructionFormat32.R, InstructionFormat16.RRI,
+            "000000 fffff sssss 00000 00000 011001",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -432,8 +435,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction mfhiInstruction = new TxInstruction("mfhi", "k", "kw", "mfhi $t1",
             "Move From HI register: Set $t1 to contents of HI (see multiply and divide operations)",
-            InstructionFormat32.R,
-            null, "000000 00000 00000 fffff 00000 010000",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 00000 00000 fffff 00000 010000",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -442,8 +445,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction mfloInstruction = new TxInstruction("mflo", "k", "kw", "mflo $t1",
             "Move From LO register: Set $t1 to contents of LO (see multiply and divide operations)",
-            InstructionFormat32.R,
-            null, "000000 00000 00000 fffff 00000 010010",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 00000 00000 fffff 00000 010010",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -452,8 +455,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "", "mthi $t1",
             "Move To HI registerr: Set HI to contents of $t1 (see multiply and divide operations)",
-            InstructionFormat32.R,
-            null, "000000 fffff 00000 00000 00000 010001",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 fffff 00000 00000 00000 010001",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -462,8 +465,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "", "mtlo $t1",
             "Move To LO register: Set LO to contents of $t1 (see multiply and divide operations)",
-            InstructionFormat32.R,
-            null, "000000 fffff 00000 00000 00000 010011",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 fffff 00000 00000 00000 010011",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -482,8 +485,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction orInstruction = new TxInstruction("or", "k, [i, ]j", "kw", "or $t1,$t2,$t3",
             "bitwise OR: Set $t1 to bitwise OR of $t2 and $t3",
-            InstructionFormat32.R,
-            null, "000000 sssss ttttt fffff 00000 100101",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 sssss ttttt fffff 00000 100101",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -508,19 +511,17 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) & (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) & statement.imm);
                 }
             });
     public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]s", "jw", "ori $t1,$t2,100",
             "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
-            InstructionFormat32.I,
-            null, "001101 sssss fffff tttttttttttttttt",
+            InstructionFormat32.I, InstructionFormat16.RI,
+            "001101 sssss fffff tttttttttttttttt",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) | (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) | statement.imm);
                 }
             });
     // alternative if rs=r0
@@ -531,8 +532,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt_ft, statement.imm & 0x0000FFFF);
+                    cpuState.setReg(statement.rt_ft, statement.imm);
                 }
             });
     public static final TxInstruction norInstruction = new TxInstruction("nor", "k, [i, ]j", "kw", "nor $t1,$t2,$t3",
@@ -562,8 +562,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // ANDing with 0x0000FFFF zero-extends the immediate (high 16 bits always 0).
-                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) ^ (statement.imm & 0x0000FFFF));
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(statement.rs_fs) ^ statement.imm);
                 }
             });
     public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, [j, ]l", "kw", "sll $t1,$t2,10",
@@ -728,10 +727,10 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", "jV", "lui $t1,100", // todo disassemble with << 16
+    public static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", "jV", "lui $t1,100",
             "Load Upper Immediate: Set high-order 16 bits of $t1 to 16-bit immediate and low-order 16 bits to 0",
-            InstructionFormat32.I,
-            null, "001111 00000 fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RI,
+            "001111 00000 fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1207,8 +1206,8 @@ public class TxInstructionSet
 
     public static final TxInstruction mfc0Instruction = new TxInstruction("mfc0", "j, k", "jw", "mfc0 $t1,$8",
             "Move From Coprocessor 0: Set $t1 to the value stored in Coprocessor 0 register $8",
-            InstructionFormat32.CP0,
-            null, "010000 00000 fffff sssss 00000000 eee",
+            InstructionFormat32.CP0, InstructionFormat16.SHIFT2,
+            "010000 00000 fffff sssss 00000000 eee",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1218,8 +1217,8 @@ public class TxInstructionSet
 
     public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "", "mtc0 $t1,$8",
             "Move To Coprocessor 0: Set Coprocessor 0 register $8 to value stored in $t1",
-            InstructionFormat32.CP0,
-            null, "010000 00100 fffff sssss 00000000 eee",
+            InstructionFormat32.CP0, InstructionFormat16.SHIFT2,
+            "010000 00100 fffff sssss 00000000 eee",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -2438,6 +2437,158 @@ public class TxInstructionSet
                 }
             });
 
+    public static final TxInstruction liInstruction = new TxInstruction("li", "j, u", "jv", "li $t1,100",
+            "Load Immediate: Set high-order 16 bits of $t1 to 0 and low-order 16 bits to 16-bit immediate",
+            InstructionFormat32.I, InstructionFormat16.RI,
+            "001111 00000 fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, statement.imm);
+                }
+            });
+
+    // 16-bit version of maddInstruction, with no copy of LO to rd
+    public static final TxInstruction madd16Instruction = new TxInstruction("madd", "i, j", "", "madd $t1,$t2",
+            "Multiply ADD: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
+                    long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
+                    long sum = contentsHiLo + product;
+                    cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
+                    int lo = Format.lowOrderLongToInt(sum);
+                    cpuState.setReg(TxCPUState.LO, lo);
+                }
+            });
+
+    // 16-bit version of madduInstruction, with no copy of LO to rd
+    public static final TxInstruction maddu16Instruction = new TxInstruction("maddu", "i, j", "", "maddu $t1,$t2",
+            "Multiply ADD Unsigned: Multiply $t1 by $t2 then increment HI by high-order 32 bits of product, increment LO by low-order 32 bits of product, unsigned",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
+                            * (((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
+                    long contentsHiLo = Format.twoIntsToLong(cpuState.getReg(TxCPUState.HI), cpuState.getReg(TxCPUState.LO));
+                    long sum = contentsHiLo + product;
+                    cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
+                    int lo = Format.lowOrderLongToInt(sum);
+                    cpuState.setReg(TxCPUState.LO, lo);
+                }
+            });
+
+    public static final TxInstruction movefpInstruction = new TxInstruction("move", "F, i", "kw", "move $t1,$t2",
+            "MOVE: set $t1 to FP, no overflow",
+            null, InstructionFormat16.I8MOVFP,
+            "000000 sssss 00000 fffff 00000 100001",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.FP, cpuState.getReg(statement.rs_fs));
+                }
+            });
+
+    public static final TxInstruction moveR32Instruction = new TxInstruction("move", "k, i", "kw", "move $t1,$t2",
+            "MOVE: set $t1 to $t2, no overflow",
+            null, InstructionFormat16.I8MOVR32,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
+                }
+            });
+
+    public static final TxInstruction move32RInstruction = new TxInstruction("move", "k, i", "kw", "move $t1,$t2",
+            "MOVE: set $t1 to $t2, no overflow",
+            null, InstructionFormat16.I8MOV32R,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rs_fs));
+                }
+            });
+
+    /** 16-bit "short" version only affects HI and LO */
+    public static final TxInstruction mult16Instruction = new TxInstruction("mult", "i, j", "", "mult $t1,$t2",
+            "MULTiplication: Set HI to high-order 32 bits, LO to low-order 32 bits of the product of $t1 and $t2",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    long product = (long) cpuState.getReg(statement.rs_fs) * (long) cpuState.getReg(statement.rt_ft);
+                    cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
+                    int lo = (int) ((product << 32) >> 32);
+                    cpuState.setReg(TxCPUState.LO, lo);
+                }
+            });
+
+    /** 16-bit "short" version only affects HI and LO */
+    public static final TxInstruction multu16Instruction = new TxInstruction("multu", "i, j", "", "multu $t1,$t2",
+            "MULTiplication Unsigned: Set HI to high-order 32 bits, LO to low-order 32 bits of the product of unsigned $t1 and $t2",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    long product = (((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
+                            * (((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
+                    cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
+                    int lo = (int) ((product << 32) >> 32);
+                    cpuState.setReg(TxCPUState.LO, lo);
+                }
+            });
+
+    public static final TxInstruction negInstruction = new TxInstruction("neg", "i, j", "iw", "neg $t1,$t2",
+            "NEGate: Set $t1 to -$t2",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rs_fs, 0 - cpuState.getReg(statement.rt_ft));
+                }
+            });
+
+    public static final TxInstruction notInstruction = new TxInstruction("not", "i, j", "iw", "not $t1,$t2",
+            "NOT: Set $t1 to $t2 NOR 0x00000000",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rs_fs, ~cpuState.getReg(statement.rt_ft));
+                }
+            });
+
+    public static final TxInstruction saddInstruction = new TxInstruction("sadd", "k, [i, ]j", "kw", "sadd $t1,$t2,$t3",
+            "Saturated ADDition: set $t2 to ($t1 plus $t2), or max/min integer values if overflow occurs",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 sssss ttttt fffff 00000 100000",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int add1 = cpuState.getReg(statement.rs_fs);
+                    int add2 = cpuState.getReg(statement.rt_ft);
+                    int sum = add1 + add2;
+                    // overflow on A+B detected when A and B have same sign and A+B has other sign.
+                    if ((add1 >= 0 && add2 >= 0 && sum < 0)) {
+                        sum = Integer.MAX_VALUE;
+                    } else if ((add1 < 0 && add2 < 0 && sum >= 0)) {
+                        sum = Integer.MIN_VALUE;
+                    }
+                    cpuState.setReg(statement.rt_ft, sum);
+                }
+            });
+
 
 
 
@@ -2935,12 +3086,12 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b1011100000000000, 0b1111100010000001, lhusp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1011100000000000, 0b1111100011100001, lhuspInstruction);
 
-/*
-        expandInstruction(opcode16Map,         0b0110100000000000, 0b1111100000000000, li Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0110100000000000, 0b1111100011100000, li Instruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100011100000, 0b1111100011100000, lui Instruction);
-*/
+        expandInstruction(opcode16Map,         0b0110100000000000, 0b1111100000000000, liInstruction);
+        expandInstruction(extendedOpcode16Map, 0b0110100000000000, 0b1111100011100000, liInstruction);
+
+        expandInstruction(extendedOpcode16Map, 0b0100100011100000, 0b1111100011100000, luiInstruction);
+
         expandInstruction(opcode16Map,         0b1001100000000000, 0b1111100000000000, lw16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1001100000000000, 0b1111100000000000, lwInstruction);
 
@@ -2953,83 +3104,93 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b1011000000000000, 0b1111100000000000, lwpc16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1011000000000000, 0b1111100011100000, lwpcInstruction);
 
+        expandInstruction(opcode16Map,         0b1110100000010110, 0b1111100000011111, madd16Instruction);
 
-/*
-        expandInstruction(opcode16Map,         0b1110100000010110, 0b1111100000011111, madd Instruction);
+        expandInstruction(opcode16Map,         0b1110100000010111, 0b1111100000011111, maddu16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010111, 0b1111100000011111, maddu Instruction);
-
-        expandInstruction(extendedOpcode16Map, 0b1110100000000101, 0b1111100000011111, max Instruction); // !! + constraints on extended part
-
-        expandInstruction(opcode16Map,         0b0011000000000001, 0b1111100000000111, mfc0 Instruction);
-
-        expandInstruction(opcode16Map,         0b1110100000010000, 0b1111100011111111, mfhi Instruction);
-
-        expandInstruction(opcode16Map,         0b1110100000010010, 0b1111100011111111, mflo Instruction);
-
+        /*
         expandInstruction(extendedOpcode16Map, 0b1110100000000101, 0b1111100000011111, min Instruction); // !! + constraints on extended part
+        expandInstruction(extendedOpcode16Map, 0b1110100000000101, 0b1111100000011111, max Instruction); // !! + constraints on extended part
+        */
 
-        expandInstruction(opcode16Map,         0b1110110000001000, 0b1111110000011111, move1 Instruction);
+        expandInstruction(opcode16Map,         0b0011000000000001, 0b1111100000000111, mfc0Instruction);
+        expandInstruction(opcode16Map,         0b0011000000000101, 0b1111100000000111, mtc0Instruction);
 
-        expandInstruction(opcode16Map,         0b0110011100000000, 0b1111111100000000, move2 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000010000, 0b1111100011111111, mfhiInstruction);
+        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100011111111, mthiInstruction);
 
-        expandInstruction(opcode16Map,         0b0110010100000000, 0b1111111100000000, move3 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000010010, 0b1111100011111111, mfloInstruction);
+        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, mtloInstruction);
 
-        expandInstruction(opcode16Map,         0b0011000000000101, 0b1111100000000111, mtc0 Instruction);
+        expandInstruction(opcode16Map,         0b1110110000001000, 0b1111110000011111, movefpInstruction);
 
-        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100011111111, mthi Instruction);
+        expandInstruction(opcode16Map,         0b0110011100000000, 0b1111111100000000, moveR32Instruction);
 
-        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, mtlo Instruction);
+        expandInstruction(opcode16Map,         0b0110010100000000, 0b1111111100000000, move32RInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011100, 0b1111100000011111, mult1 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011100, 0b1111100000011111, multInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011000, 0b1111100000011111, mult2 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011000, 0b1111100000011111, mult16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011001, 0b1111100000011111, multu1 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011001, 0b1111100000011111, multu16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, multu2 Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, multuInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000001011, 0b1111100000011111, negInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000001111, 0b1111100000011111, notInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, or Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, orInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100010100000, 0b1111100011100000, ori Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0100100010100000, 0b1111100011100000, oriInstruction);
 
+/*
         expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restore1Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restore2Instruction);
-
+*/
         expandInstruction(opcode16Map,         0b1110100000010100, 0b1111100000011111, saddInstruction);
-
+/*
         expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, save1Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, save2Instruction);
+*/
+/*
+        expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sbInstruction);
 
-        expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sb Instruction);
+        expandInstruction(opcode16Map,         0b0011100010000000, 0b1111100010000000, sbfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011100010000000, 0b1111100011100000, sbfpInstruction);
 
-        expandInstruction(opcode16Map,         0b0011100010000000, 0b1111100010000000, sb Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0011100010000000, 0b1111100011100000, sb Instruction);
+        expandInstruction(opcode16Map,         0b0111100010000000, 0b1111100010000000, sbsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0111100010000000, 0b1111100011100000, sbspInstruction);
 
-        expandInstruction(opcode16Map,         0b0111100010000000, 0b1111100010000000, sb Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0111100010000000, 0b1111100011100000, sb Instruction);
+        expandInstruction(opcode16Map,         0b1100100000000000, 0b1111100000000000, sh16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1100100000000000, 0b1111100000000000, shInstruction);
+
+        expandInstruction(opcode16Map,         0b1011100010000001, 0b1111100010000001, shfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100010000001, 0b1111100011100001, shfpInstruction);
+
+        expandInstruction(opcode16Map,         0b1011100010000000, 0b1111100010000001, shsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100010000000, 0b1111100011100001, shspInstruction);
+
+        expandInstruction(opcode16Map,         0b0110001000000000, 0b1111111100000000, swrasp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0110001000000000, 0b1111111111100000, swraspInstruction);
+
+        expandInstruction(opcode16Map,         0b1111111100000000, 0b1111111100000000, swfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1111111100000000, 0b1111111100000000, swfpInstruction);
+
+        expandInstruction(opcode16Map,         0b1101000000000000, 0b1111100000000000, swsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1101000000000000, 0b1111100011100000, swspInstruction);
+
+        expandInstruction(opcode16Map,         0b1101100000000000, 0b1111100000000000, sw16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1101100000000000, 0b1111100000000000, swInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000000001, 0b1111100000011111, sdbbpInstruction);
 
         expandInstruction(opcode16Map,         0b1110100010010001, 0b1111100011111111, sebInstruction);
 
         expandInstruction(opcode16Map,         0b1110100010110001, 0b1111100011111111, sehInstruction);
-
-        expandInstruction(opcode16Map,         0b1100100000000000, 0b1111100000000000, sh Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1100100000000000, 0b1111100000000000, sh Instruction);
-
-        expandInstruction(opcode16Map,         0b1011100010000001, 0b1111100010000001, sh Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100010000001, 0b1111100011100001, sh Instruction);
-
-        expandInstruction(opcode16Map,         0b1011100010000000, 0b1111100010000001, sh Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100010000000, 0b1111100011100001, sh Instruction);
 
         expandInstruction(opcode16Map,         0b0011000000000000, 0b1111100000000011, sll Instruction);
         expandInstruction(extendedOpcode16Map, 0b0011000000000000, 0b1111100000011111, sll Instruction);
@@ -3065,18 +3226,6 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b1110100000010101, 0b1111100000011111, ssub Instruction);
 
         expandInstruction(opcode16Map,         0b1110000000000011, 0b1111100000000011, subu Instruction);
-
-        expandInstruction(opcode16Map,         0b0110001000000000, 0b1111111100000000, sw1 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0110001000000000, 0b1111111111100000, sw1 Instruction);
-
-        expandInstruction(opcode16Map,         0b1111111100000000, 0b1111111100000000, sw2 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1111111100000000, 0b1111111100000000, sw2 Instruction);
-
-        expandInstruction(opcode16Map,         0b1101000000000000, 0b1111100000000000, sw3 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1101000000000000, 0b1111100011100000, sw3 Instruction);
-
-        expandInstruction(opcode16Map,         0b1101100000000000, 0b1111100000000000, sw4 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1101100000000000, 0b1111100000000000, sw4 Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b1110100000001111, 0b1111111111111111, sync Instruction);
 
