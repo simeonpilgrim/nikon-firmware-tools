@@ -400,8 +400,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "iw", "div $t1,$t2",
             "DIVision with overflow: Divide $t1 by $t2 then set LO to quotient and HI to remainder",
-            InstructionFormat32.R,
-            null, "000000 fffff sssss 00000 00000 011010",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 fffff sssss 00000 00000 011010",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -415,8 +415,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "iw", "divu $t1,$t2",
             "DIVision Unsigned without overflow: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder",
-            InstructionFormat32.R,
-            null, "000000 fffff sssss 00000 00000 011011",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "000000 fffff sssss 00000 00000 011011",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1110,8 +1110,8 @@ public class TxInstructionSet
     // TODO handle ISA mode switch
     public static final TxInstruction jrInstruction = new TxInstruction("jr", "i;Iu", "", "jr $t1",
             "Jump Register unconditionally: Jump to statement whose address is in $t1",
-            InstructionFormat32.R,
-            null, "000000 fffff 00000 00000 00000 001000",
+            InstructionFormat32.R, InstructionFormat16.RI,
+            "000000 fffff 00000 00000 00000 001000",
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1273,7 +1273,7 @@ public class TxInstructionSet
 
 
     public static final TxInstruction lwc1Instruction = new TxInstruction("lwc1", "j, s(i)", "jw", "lwc1 $f1,-100($t2)",
-            "Load Word into Coprocessor 1 (FPU) : Set $f1 to 32-bit value from effective memory word address",
+            "Load Word into Coprocessor 1 (FPU): Set $f1 to 32-bit value from effective memory word address",
             InstructionFormat32.CP1_I,
             null, "110001 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1285,7 +1285,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i)", "", "swc1 $f1,-100($t2)",
-            "Store Word from Coprocessor 1 (FPU) : Store 32 bit value in $f1 to effective memory word address",
+            "Store Word from Coprocessor 1 (FPU): Store 32 bit value in $f1 to effective memory word address",
             InstructionFormat32.CP1_I,
             null, "111001 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1297,7 +1297,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction addSInstruction = new TxInstruction("add.s", "k, [i, ]j", "kw", "add.s $f0,$f1,$f3",
-            "floating point ADDition Single precision : Set $f0 to single-precision floating point value of $f1 plus $f3",
+            "floating point ADDition Single precision: Set $f0 to single-precision floating point value of $f1 plus $f3",
             InstructionFormat32.CP1_R2,
             null, "010001 10000 ttttt sssss fffff 000000",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1319,7 +1319,7 @@ public class TxInstructionSet
             }
     );
     public static final TxInstruction subSInstruction = new TxInstruction("sub.s", "k, [i, ]j", "kw", "sub.s $f0,$f1,$f3",
-            "floating point SUBtraction Single precision : Set $f0 to single-precision floating point value of $f1  minus $f3",
+            "floating point SUBtraction Single precision: Set $f0 to single-precision floating point value of $f1  minus $f3",
             InstructionFormat32.CP1_R2,
             null, "010001 10000 ttttt sssss fffff 000001",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1335,7 +1335,7 @@ public class TxInstructionSet
             }
     );
     public static final TxInstruction mulSInstruction = new TxInstruction("mul.s", "k, [i, ]j", "kw", "mul.s $f0,$f1,$f3",
-            "floating point MULtiplication Single precision : Set $f0 to single-precision floating point value of $f1 times $f3",
+            "floating point MULtiplication Single precision: Set $f0 to single-precision floating point value of $f1 times $f3",
             InstructionFormat32.CP1_R2,
             null, "010001 10000 ttttt sssss fffff 000010",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1350,7 +1350,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "kw", "div.s $f0,$f1,$f3",
-            "floating point DIVision Single precision : Set $f0 to single-precision floating point value of $f1 divided by $f3",
+            "floating point DIVision Single precision: Set $f0 to single-precision floating point value of $f1 divided by $f3",
             InstructionFormat32.CP1_R2,
             null, "010001 10000 ttttt sssss fffff 000011",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1366,7 +1366,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4ru", "", "bc1f 1,label",
-            "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF) : If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
+            "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF): If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
             InstructionFormat32.CP1_CC_BRANCH,
             null, "010001 01000 fff 00 ssssssssssssssss",
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
@@ -1380,7 +1380,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4ru", "", "bc1t 1,label",
-            "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT) : If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
+            "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT): If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
             InstructionFormat32.CP1_CC_BRANCH,
             null, "010001 01000 fff 01 ssssssssssssssss",
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
@@ -1395,7 +1395,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction cvtSWInstruction = new TxInstruction("cvt.s.w", "k, i", "kw", "cvt.s.w $f0,$f1",
-            "ConVerT to Single precision from Word : Set $f0 to single precision equivalent of 32-bit integer value in $f2",
+            "ConVerT to Single precision from Word: Set $f0 to single precision equivalent of 32-bit integer value in $f2",
             InstructionFormat32.CP1_R2,
             null, "010001 10100 00000 sssss fffff 100000",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1408,7 +1408,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "kw", "cvt.w.s $f0,$f1",
-            "ConVerT to Word from Single precision : Set $f0 to 32-bit integer equivalent of single precision value in $f1",
+            "ConVerT to Word from Single precision: Set $f0 to 32-bit integer equivalent of single precision value in $f1",
             InstructionFormat32.CP1_R2,
             null, "010001 10000 00000 sssss fffff 100100",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1423,7 +1423,7 @@ public class TxInstructionSet
 
 
     public static final TxInstruction cEqSInstruction = new TxInstruction("c.eq.s", "[l, ]i, j", "", "c.eq.s 1,$f0,$f1",
-            "Compare EQual Single precision : If $f0 is equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            "Compare EQual Single precision: If $f0 is equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             InstructionFormat32.CP1_R_CC,
             null, "010001 10000 ttttt sssss fff 00 110010",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1440,7 +1440,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "", "c.le.s 1,$f0,$f1",
-            "Compare Less or Equal Single precision : If $f0 is less than or equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            "Compare Less or Equal Single precision: If $f0 is less than or equal to $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             InstructionFormat32.CP1_R_CC,
             null, "010001 10000 ttttt sssss fff 00 111110",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1457,7 +1457,7 @@ public class TxInstructionSet
                 }
             });
     public static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "", "c.lt.s 1,$f0,$f1",
-            "Compare Less Than Single precision : If $f0 is less than $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
+            "Compare Less Than Single precision: If $f0 is less than $f1, set Coprocessor 1 condition flag specified by immediate to true else set it to false",
             InstructionFormat32.CP1_R_CC,
             null, "010001 10000 ttttt sssss fff 00 111100",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1634,65 +1634,49 @@ public class TxInstructionSet
                 }
             });
 
-
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "jw", "lb $t1,-100($t2)",
-            "Load Byte: Set $t1 to sign-extended 8-bit value from effective memory byte address",
-            InstructionFormat32.I,
-            null, "100000 ttttt fffff ssssssssssssssss",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "100000 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft,
-                            // TODO check precedence
-                            memory.loadUnsigned8(
-                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
-                                    << 24
-                                    >> 24);
+                    // offset is sign-extended and halfword value is loaded signed
+                    cpuState.setReg(statement.rt_ft, memory.loadSigned8(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
+                }
+            });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    public static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "jw", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "100100 ttttt fffff ssssssssssssssss",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
     public static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "jw", "lh $t1,-100($t2)",
-            "Load Halfword: Set $t1 to sign-extended 16-bit value from effective memory halfword address",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
             InstructionFormat32.I,
             null, "100001 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft,
-                            // TODO check precedence
-                            // TODO check load/un/signed ?
-                            memory.loadUnsigned16(
-                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
-                                    << 16
-                                    >> 16);
+                    // offset is sign-extended and halfword value is loaded signed
+                    cpuState.setReg(statement.rt_ft, memory.loadSigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
     public static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "jw", "lhu $t1,-100($t2)",
-            "Load Halfword Unsigned: Set $t1 to zero-extended 16-bit value from effective memory halfword address",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             InstructionFormat32.I,
             null, "100101 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // offset is sign-extended and loaded halfword value is zero-extended
-                    cpuState.setReg(statement.rt_ft,
-                            // TODO check load/un/signed ?
-                            memory.loadUnsigned16(
-                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
-                                    & 0x0000ffff);
-                }
-            });
-    public static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "jw", "lbu $t1,-100($t2)",
-            "Load Byte Unsigned: Set $t1 to zero-extended 8-bit value from effective memory byte address",
-            InstructionFormat32.I,
-            null, "100100 ttttt fffff ssssssssssssssss",
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft,
-                            // TODO check load/un/signed ?
-                            memory.loadUnsigned8(
-                                    cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16))
-                                    & 0x000000ff);
+                    // offset is sign-extended and halfword value is loaded unsigned
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
     public static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "jw", "sb $t1,-100($t2)",
@@ -1759,7 +1743,12 @@ public class TxInstructionSet
             });
 
 
-    // 16-bit specific instructions
+
+
+    /* ***************************************************************************************************
+     * 16-bit specific instructions, or instructions with a different behaviour from the 32-bit equivalent
+     * *************************************************************************************************** */
+
 
     public static final TxInstruction ac0iuInstruction = new TxInstruction("ac0iu", "", "", "ac0iu",
             "Add Coprocessor 0 Immediate Unsigned",
@@ -1809,7 +1798,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int basePc = cpuState.pc; // TODO : if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     if (statement.immBitWidth == 8) {
                         // If not EXTENDed, "The 8-bit immediate is shifted left by two bits, zero-extended and added"
                         cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
@@ -2040,7 +2029,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction cmpInstruction = new TxInstruction("cmp", "i, j", "", "cmp $t1, $t2",
-            "CoMPare : set t8 to 0 if registers are equal",
+            "CoMPare: set t8 to 0 if registers are equal",
             null, InstructionFormat16.RR,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2051,7 +2040,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction cmpiInstruction = new TxInstruction("cmpi", "i, u", "", "cmpi $t1, 15",
-            "CoMPare Immediate : set t8 to 0 if register equals given value",
+            "CoMPare Immediate: set t8 to 0 if register equals given value",
             null, InstructionFormat16.RI,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2061,26 +2050,155 @@ public class TxInstructionSet
                 }
             });
 
+    public static final TxInstruction diInstruction = new TxInstruction("di", "", "", "di",
+            "Disable Interrupt: clears the IE bit of the status register",
+            null, InstructionFormat16.I,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.Status, Format.clearBit(cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
+                }
+            });
 
-//    private ArrayList<TxInstruction> instructionList;
+    public static final TxInstruction diveInstruction = new TxInstruction("dive", "i, j", "iw", "dive $t1,$t2",
+            "DIVision with Exception: Divide $t1 by $t2 then set LO to quotient and HI to remainder",
+            InstructionFormat32.R, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(statement.rt_ft) == 0) {
+                        throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.DIVIDE_BY_ZERO_EXCEPTION);
+                    }
+                    cpuState.setReg(TxCPUState.HI, cpuState.getReg(statement.rs_fs) % cpuState.getReg(statement.rt_ft));
+                    cpuState.setReg(TxCPUState.LO, cpuState.getReg(statement.rs_fs) / cpuState.getReg(statement.rt_ft));
+                }
+            });
+
+    public static final TxInstruction diveuInstruction = new TxInstruction("divu", "i, j", "iw", "divu $t1,$t2",
+            "DIVision with Exception Unsigned: Divide unsigned $t1 by $t2 then set LO to quotient and HI to remainder",
+            null, InstructionFormat16.RR,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    if (cpuState.getReg(statement.rt_ft) == 0) {
+                        throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.DIVIDE_BY_ZERO_EXCEPTION);
+                    }
+                    long oper1 = ((long) cpuState.getReg(statement.rs_fs)) << 32 >>> 32;
+                    long oper2 = ((long) cpuState.getReg(statement.rt_ft)) << 32 >>> 32;
+                    cpuState.setReg(TxCPUState.HI, (int) (((oper1 % oper2) << 32) >> 32));
+                    cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
+                }
+            });
+
+    public static final TxInstruction eiInstruction = new TxInstruction("ei", "", "", "ei",
+            "Enable Interrupt: sets the IE bit of the status register",
+            null, InstructionFormat16.I,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.Status, Format.setBit(cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
+                }
+            });
+
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
+    public static final TxInstruction jalr16Instruction = new TxInstruction("jalr", "i;Iu", "", "jalr $t2",
+            "Jump And Link Register: Set $ra to Program Counter (return address) then jump to statement whose address is in $t2",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 5); // TODO 5 ??
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                }
+            });
+
+    // TODO handle ISA mode switch
+    public static final TxInstruction jalrcInstruction = new TxInstruction("jalrc", "i;Iu", "", "jalrc $t2",
+            "Jump And Link Register Compact: Set $ra to Program Counter (return address) then jump to statement whose address is in $t2",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 3); // TODO 3 ??
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                }
+            });
+
+    // TODO: delay slot work
+    // TODO handle ISA mode switch
+    public static final TxInstruction jrraInstruction = new TxInstruction("jr $ra", "", "", "jr $ra",
+            "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.pc = cpuState.getReg(TxCPUState.RA);
+                }
+            });
+
+    // TODO handle ISA mode switch
+    public static final TxInstruction jrcraInstruction = new TxInstruction("jrc $ra", "", "", "jrc $ra",
+            "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.pc = cpuState.getReg(TxCPUState.RA);
+                }
+            });
+
+    // TODO handle ISA mode switch
+    public static final TxInstruction jrcInstruction = new TxInstruction("jrc", "i;Iu", "", "jrc $t2",
+            "Jump Register unconditionally Compact: Jump to statement whose address is in $t2",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                }
+            });
+
+    /**
+     * non-EXTENDed 16-bit ISA version of lbInstruction: does not sign-extend offset
+     */
+    public static final TxInstruction lb16Instruction = new TxInstruction("lb", "j, u(i)", "jw", "lb $t1,-100($t2)",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadSigned8(cpuState.getReg(statement.rs_fs) + statement.imm));
+                }
+            });
+
+    /**
+     * non-EXTENDed 16-bit ISA version of lbuInstruction: does not sign-extend offset
+     */
+    public static final TxInstruction lbu16Instruction = new TxInstruction("lbu", "j, u(i)", "jw", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(statement.rs_fs) + statement.imm));
+                }
+            });
+
+
 //    private SyscallLoader syscallLoader;
 //
-//    /**
-//     * Creates a new InstructionSet object.
-//     */
-//    public TxInstructionSet()
-//    {
-//        instructionList = new ArrayList<TxInstruction>();
-//
-//    }
-//    /**
-//     * Retrieve the current instruction set.
-//     */
-//    public ArrayList getInstructionList()
-//    {
-//        return instructionList;
-//
-//    }
 //    void populate() {
 //        instructionList.add(
 //                new TxInstruction("syscall",
@@ -2111,70 +2229,6 @@ public class TxInstructionSet
 //        }
 //
 //    }
-//
-//    /*  METHOD TO ADD PSEUDO-INSTRUCTIONS
-
-
-//        }
-//            in = new BufferedReader(new InputStreamReader(is));
-//            is = this.getClass().getResourceAsStream("/PseudoOps.txt");
-//            // leading "/" prevents package name being prepended to filepath.
-//        {
-//        try
-//        BufferedReader in = null;
-//        InputStream is = null;
-//    {
-//    private void addPseudoInstructions()
-//
-//    */
-
-//    /**
-//     *  Given an operator mnemonic, will return the corresponding TxInstruction object(s)
-//     *  from the instruction set.  Uses straight linear search technique.
-//     *  @param name operator mnemonic (e.g. addi, sw,...)
-//     *  @return list of corresponding TxInstruction object(s), or null if not found.
-//     */
-//    public ArrayList matchOperator(String name)
-//    {
-//        ArrayList matchingInstructions = null;
-//        // Linear search for now....
-//        for (int i = 0; i < instructionList.size(); i++)
-//        {
-//            if (((TxInstruction) instructionList.get(i)).getName().equalsIgnoreCase(name))
-//            {
-//                if (matchingInstructions == null)
-//                    matchingInstructions = new ArrayList();
-//                matchingInstructions.add(instructionList.get(i));
-//            }
-//        }
-//        return matchingInstructions;
-//    }
-//
-//
-//    /**
-//     *  Given a string, will return the TxInstruction object(s) from the instruction
-//     *  set whose operator mnemonic prefix matches it.  Case-insensitive.  For example
-//     *  "s" will match "sw", "sh", "sb", etc.  Uses straight linear search technique.
-//     *  @param name a string
-//     *  @return list of matching TxInstruction object(s), or null if none match.
-//     */
-//    public ArrayList prefixMatchOperator(String name)
-//    {
-//        ArrayList matchingInstructions = null;
-//        // Linear search for now....
-//        if (name != null) {
-//            for (int i = 0; i < instructionList.size(); i++)
-//            {
-//                if (((TxInstruction) instructionList.get(i)).getName().toLowerCase().startsWith(name.toLowerCase()))
-//                {
-//                    if (matchingInstructions == null)
-//                        matchingInstructions = new ArrayList();
-//                    matchingInstructions.add(instructionList.get(i));
-//                }
-//            }
-//        }
-//        return matchingInstructions;
-//    }
 
 //    /*
 //         * Method to find and invoke a syscall given its service number.  Each syscall
@@ -2195,6 +2249,7 @@ public class TxInstructionSet
 //    }
 
 
+
     public static TxInstruction getInstructionFor16BitStatement(int binStatement) throws DisassemblyException {
         return opcode16Map[binStatement];
     }
@@ -2203,11 +2258,11 @@ public class TxInstructionSet
         return extendedOpcode16Map[binStatement];
     }
 
-    
 
     public static TxInstruction getInstructionFor32BitStatement(int binStatement) throws DisassemblyException {
         return opcode32Resolver.resolve(binStatement);
     }
+
 
     private abstract static class InstructionResolver {
         public abstract TxInstruction resolve(int binStatement) throws ReservedInstructionException;
@@ -2378,7 +2433,7 @@ public class TxInstructionSet
     static InstructionResolver thetaResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            // Formally, See section 3.5 :
+            // Formally, See section 3.5:
             // If the corresponding CU bit in the Status register is cleared, a Coprocessor Unusable exception is taken.
             // If the CU bit is set, a Reserved Instruction exception is taken.
             throw new ReservedInstructionException();
@@ -2578,43 +2633,45 @@ public class TxInstructionSet
 
 /*
         expandInstruction(extendedOpcode16Map, 0b1110100000011111, 0b1111111111111111, deretInstruction); // + constraints on extended part
+*/
 
         expandInstruction(opcode16Map,         0b1110000010000000, 0b1111111111111111, diInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011010, 0b1111100000011111, div Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011010, 0b1111100000011111, divInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011110, 0b1111100000011111, dive Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011110, 0b1111100000011111, diveInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011111, 0b1111100000011111, diveu Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011111, 0b1111100000011111, diveuInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011011, 0b1111100000011111, divu Instruction);
+        expandInstruction(opcode16Map,         0b1110100000011011, 0b1111100000011111, divuInstruction);
 
         expandInstruction(opcode16Map,         0b1110000110000000, 0b1111111111111111, eiInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1110100000011000, 0b1111111111111111, eret Instruction); // + constraints on extended part
+        expandInstruction(extendedOpcode16Map, 0b1110100000011000, 0b1111111111111111, eretInstruction); // + constraints on extended part ?
+/*
+        TODO JAL;
+*/
+        expandInstruction(opcode16Map,         0b1110100001000000, 0b1111100011111111, jalr16Instruction);
 
-        JAL;
+        expandInstruction(opcode16Map,         0b1110100011000000, 0b1111100011111111, jalrcInstruction);
+/*
+        TODO JALX;
+*/
 
-        expandInstruction(opcode16Map,         0b1110100001000000, 0b1111100011111111, jalr Instruction);
+        expandInstruction(opcode16Map,         0b1110100000000000, 0b1111100011111111, jrInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100011000000, 0b1111100011111111, jalrc Instruction);
+        expandInstruction(opcode16Map,         0b1110100000100000, 0b1111111111111111, jrraInstruction);
 
-        JALX;
+        expandInstruction(opcode16Map,         0b1110100010100000, 0b1111111111111111, jrcraInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000000, 0b1111100011111111, jr Instruction);
+        expandInstruction(opcode16Map,         0b1110100010000000, 0b1111100011111111, jrcInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000100000, 0b1111111111111111, jrra Instruction);
+        expandInstruction(opcode16Map,         0b1000000000000000, 0b1111100000000000, lb16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1000000000000000, 0b1111100000000000, lbInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100010100000, 0b1111111111111111, jrcra Instruction);
-
-        expandInstruction(opcode16Map,         0b1110100010000000, 0b1111100011111111, jrc Instruction);
-
-        expandInstruction(opcode16Map,         0b1000000000000000, 0b1111100000000000, lb Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1000000000000000, 0b1111100000000000, lb Instruction);
-
-        expandInstruction(opcode16Map,         0b1010000000000000, 0b1111100000000000, lbu1 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1010000000000000, 0b1111100000000000, lbu1 Instruction);
-
+        expandInstruction(opcode16Map,         0b1010000000000000, 0b1111100000000000, lbu16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1010000000000000, 0b1111100000000000, lbuInstruction);
+/*
         expandInstruction(opcode16Map,         0b0011100000000000, 0b1111100010000000, lbu2 Instruction);
         expandInstruction(extendedOpcode16Map, 0b0011100000000000, 0b1111100011100000, lbu2 Instruction);
 

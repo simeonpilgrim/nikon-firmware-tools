@@ -192,6 +192,12 @@ public class TxStatement extends Statement {
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     rd_fd = rs_fs;
                     break;
+                case RRI:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =  binaryStatement  & 0b11111;
+                    immBitWidth = 5;
+                    break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
@@ -237,6 +243,14 @@ public class TxStatement extends Statement {
                             | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
                             | ((binaryStatement           ) & 0b0000000000011111);
                     immBitWidth = 16;
+                    break;
+                case RRI:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
+                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
+                            | ((binaryStatement           ) & 0b0000000000011111);
+                    immBitWidth = 15;
                     break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
