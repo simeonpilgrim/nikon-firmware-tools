@@ -250,7 +250,7 @@ public class TxStatement extends Statement {
                     imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
                             | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
                             | ((binaryStatement           ) & 0b0000000000011111);
-                    immBitWidth = 15;
+                    immBitWidth = 16;
                     break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
@@ -382,6 +382,9 @@ public class TxStatement extends Statement {
                     immBitWidth += 2;
                     break;
 
+                case 'A':
+                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA]);
+                    break;
                 case 'F':
                     currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
                     break;
