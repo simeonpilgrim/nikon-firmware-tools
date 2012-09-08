@@ -97,7 +97,7 @@ public class TxCPUState extends CPUState {
     /** This array is used to decode the mfc0 and mtc0 instruction operands
      * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
      */
-    static final int[][] CP0_REGISTER_NUMBER_MAP = new int[][]{
+    static final int[][] CP0_REGISTER_MAP = new int[][]{
             // SEL0
             {
                     -1, -1, -1, -1, -1, -1, -1, -1,
@@ -154,6 +154,14 @@ public class TxCPUState extends CPUState {
                     -1, -1, -1, -1, -1, -1, -1, -1,
                     -1, -1, -1, -1, -1, -1, -1, -1
             }
+    };
+
+    // TODO cp0rs32 - unknown mapping ! Putting dummy values in to test
+    static final int[] CP0_REGISTER_MAP_16B = new int[]{
+             0, 1, 2, 3, 4, 5, 6, 7,
+             8, 9,10,11,12,13,14,15,
+            16,17,18,19,20,21,22,23,
+            24,25,26,27,28,29,30,31
     };
 
     static final int[] CP1_REGISTER_NUMBER_MAP = new int[]{

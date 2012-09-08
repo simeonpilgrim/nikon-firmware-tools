@@ -135,7 +135,7 @@ public class TxStatement extends Statement {
             // IN CPxx formats, rs, rt and rd are mapped or shifted to target the registers belonging to the correct CP
             case CP0:
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
-                rd_fd = TxCPUState.CP0_REGISTER_NUMBER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
+                rd_fd = TxCPUState.CP0_REGISTER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
                 break;
             case CP1_R1: // Coprocessor 1 with registers, version 1 (rt)
                 rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
@@ -196,6 +196,7 @@ public class TxStatement extends Statement {
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b11111;
+                    rd_fd = rt_ft; // trick to use RRI for MULT to avoid a specific encoding
                     immBitWidth = 5;
                     break;
                 case RRR1:
@@ -205,7 +206,7 @@ public class TxStatement extends Statement {
                     break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
-                    rt_ft = TxCPUState.CP0_REGISTER_NUMBER_MAP[0][(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
@@ -215,15 +216,38 @@ public class TxStatement extends Statement {
                     imm   =  binaryStatement  & 0b1111;
                     immBitWidth = 4;
                     break;
+                case SHIFT2:
+                    // TODO Check cp0rt32 -> cp0 reg number mapping
+                    rd_fd = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 3) & 0b11111]; // cp0rt32
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111];
+                    break;
+                case I8MOVFP:
+                    rd_fd = TxCPUState.FP;
+                    rs_fs = (binaryStatement >> 5) & 0b11111;
+                    break;
+                case I8MOVR32:
+                    rs_fs = binaryStatement & 0b11111;
+                    rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111];
+                    break;
+                case I8MOV32R:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[binaryStatement & 0b111];
+                    // r32 bit encoding is --------21043--- . 43 must not move and 210 is shifted right to reorder 43210
+                    rd_fd = binaryStatement & 0b11000 | (binaryStatement >> 5) & 0b00111;
+                    break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
                     rs_fs = 0b11; // base = fp
                     imm   =  binaryStatement  & 0b11111;
                     immBitWidth = 5;
+                    break;
                 case BREAK:
                     imm   = (binaryStatement >>>  5) & 0b111111;
                     immBitWidth = 6;
                     break;
+                case W:
+                    break;
+                default:
+                    throw new RuntimeException("Decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented.");
             }
         }
         else {
@@ -260,7 +284,7 @@ public class TxStatement extends Statement {
                     //break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
-                    rt_ft = TxCPUState.CP0_REGISTER_NUMBER_MAP[0][(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
@@ -279,6 +303,11 @@ public class TxStatement extends Statement {
                             | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
                             | ((binaryStatement           ) & 0b0000000000011111);
                     immBitWidth = 14;
+                    break;
+                case W:
+                    break;
+                default:
+                    throw new RuntimeException("EXTENDed decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented.");
             }
         }
     }
@@ -471,7 +500,12 @@ public class TxStatement extends Statement {
                     if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRtFt == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRtFt]);
                     break;
                 case 'k':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
+                    try {
+                        if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
+                    }
+                    catch (Exception e) {
+                        System.out.println(e);
+                    }
                     break;
                 case 'l':
                     if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedSaCc == 0)) currentBuffer.append(decodedSaCc);
