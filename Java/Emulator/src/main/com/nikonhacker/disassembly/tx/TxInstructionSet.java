@@ -643,15 +643,16 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rd_fd, cpuState.getReg(statement.rt_ft) >>> (cpuState.getReg(statement.rs_fs) & 0b11111));
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "jw", "lw $t1,-100($t2)",
             "Load Word: Set $t1 to contents of effective memory word address",
-            InstructionFormat32.I,
-            null, "100011 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "100011 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm));
+                    // Changed from MARS : Added sign extension to offset
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
     public static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "jw", "lwl $t1,-100($t2)",
@@ -1657,10 +1658,11 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "jw", "lh $t1,-100($t2)",
             "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
-            InstructionFormat32.I,
-            null, "100001 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "100001 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1668,10 +1670,11 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, memory.loadSigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "jw", "lhu $t1,-100($t2)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            InstructionFormat32.I,
-            null, "100101 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "100101 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -2133,7 +2136,7 @@ public class TxInstructionSet
 
     // TODO: delay slot work
     // TODO handle ISA mode switch
-    public static final TxInstruction jrraInstruction = new TxInstruction("jr $ra", "", "", "jr $ra",
+    public static final TxInstruction jrraInstruction = new TxInstruction("jr", "A", "", "jr $ra",
             "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             "",
@@ -2145,7 +2148,7 @@ public class TxInstructionSet
             });
 
     // TODO handle ISA mode switch
-    public static final TxInstruction jrcraInstruction = new TxInstruction("jrc $ra", "", "", "jrc $ra",
+    public static final TxInstruction jrcraInstruction = new TxInstruction("jrc", "A", "", "jrc $ra",
             "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             "",
@@ -2195,6 +2198,248 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(statement.rs_fs) + statement.imm));
                 }
             });
+
+    /**
+     * EXTENDed 16-bit ISA version of lbufpInstruction: sign-extends offset
+     */
+    public static final TxInstruction lbufpInstruction = new TxInstruction("lbu", "j, s(F)", "jw", "lbu $t1,-100($fp)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 16));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lbufpInstruction: does not sign-extend offset
+     */
+    public static final TxInstruction lbufp16Instruction = new TxInstruction("lbu", "j, u(F)", "jw", "lbu $t1,-100($fp)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.FP) + statement.imm));
+                }
+            });
+
+
+    /**
+     * EXTENDed 16-bit ISA version of lbuspInstruction: sign-extends offset
+     */
+    public static final TxInstruction lbuspInstruction = new TxInstruction("lbu", "j, s(S)", "jw", "lbu $t1,-100($sp)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 16));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lbuspInstruction: does not sign-extend offset
+     */
+    public static final TxInstruction lbusp16Instruction = new TxInstruction("lbu", "j, u(S)", "jw", "lbu $t1,-100($sp)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.SP) + statement.imm));
+                }
+            });
+
+
+    /**
+     * non-EXTENDed 16-bit ISA version of lhInstruction: does not sign-extend offset but multiplies it by 2
+     */
+    public static final TxInstruction lh16Instruction = new TxInstruction("lh", "j, 2u(i)", "jw", "lh $t1,-100($t2)",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadSigned16(cpuState.getReg(statement.rs_fs) + statement.imm << 1));
+                }
+            });
+
+    /**
+     * non-EXTENDed 16-bit ISA version of lhuInstruction: does not sign-extend offset but multiplies it by 2
+     */
+    public static final TxInstruction lhu16Instruction = new TxInstruction("lhu", "j, 2u(i)", "jw", "lhu $t1,-100($t2)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(statement.rs_fs) + statement.imm << 1));
+                }
+            });
+
+    /**
+     * EXTENDed 16-bit ISA version of lhufpInstruction: sign-extends offset and multiplies it by 2
+     */
+    public static final TxInstruction lhufpInstruction = new TxInstruction("lhu", "j, 2s(F)", "jw", "lhu $t1,-100($fp)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 15));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lhufpInstruction: does not sign-extend offset but multiplies it by 2
+     */
+    public static final TxInstruction lhufp16Instruction = new TxInstruction("lhu", "j, 2u(F)", "jw", "lhu $t1,-100($fp)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + statement.imm << 1));
+                }
+            });
+
+
+    /**
+     * EXTENDed 16-bit ISA version of lhuspInstruction: sign-extends offset and multiplies it by 2
+     */
+    public static final TxInstruction lhuspInstruction = new TxInstruction("lhu", "j, 2s(S)", "jw", "lhu $t1,-100($sp)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 15));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lhuspInstruction: does not sign-extend offset but multiplies it by 2
+     */
+    public static final TxInstruction lhusp16Instruction = new TxInstruction("lhu", "j, 2u(S)", "jw", "lhu $t1,-100($sp)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + statement.imm << 1));
+                }
+            });
+
+/* lhu > lw */
+
+    /**
+     * non-EXTENDed 16-bit ISA version of lwInstruction: does not sign-extend offset but multiplies it by 4
+     */
+    public static final TxInstruction lw16Instruction = new TxInstruction("lw", "j, 4u(i)", "jw", "lw $t1,-100($t2)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm << 2));
+                }
+            });
+
+    /**
+     * EXTENDed 16-bit ISA version of lwfpInstruction: sign-extends offset
+     */
+    public static final TxInstruction lwfpInstruction = new TxInstruction("lw", "j, s(F)", "jw", "lw $t1,-100($fp)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 16));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lwfpInstruction: does not sign-extend offset but multiplies it by 4
+     */
+    public static final TxInstruction lwfp16Instruction = new TxInstruction("lw", "j, 4u(F)", "jw", "lw $t1,-100($fp)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RRI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + statement.imm << 2));
+                }
+            });
+
+
+    /**
+     * EXTENDed 16-bit ISA version of lwpcInstruction: sign-extends offset
+     */
+    public static final TxInstruction lwpcInstruction = new TxInstruction("lw", "j, s(P)", "jw", "lw $t1,-100($pc)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // TODO mask PC
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + statement.imm << 16 >> 16));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lwpcInstruction: does not sign-extend offset but multiplies it by 4
+     */
+    public static final TxInstruction lwpc16Instruction = new TxInstruction("lw", "j, 4u(P)", "jw", "lw $t1,-100($pc)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // TODO mask PC
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + statement.imm << 2));
+                }
+            });
+
+    /**
+     * EXTENDed 16-bit ISA version of lwspInstruction: sign-extends offset
+     */
+    public static final TxInstruction lwspInstruction = new TxInstruction("lw", "j, s(S)", "jw", "lw $t1,-100($sp)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 16));
+                }
+            });
+    /**
+     * non-EXTENDed 16-bit ISA version of lwspInstruction: does not sign-extend offset but multiplies it by 4
+     */
+    public static final TxInstruction lwsp16Instruction = new TxInstruction("lw", "j, 4u(S)", "jw", "lw $t1,-100($sp)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + statement.imm << 2));
+                }
+            });
+
+
+
 
 
 //    private SyscallLoader syscallLoader;
@@ -2671,42 +2916,45 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1010000000000000, 0b1111100000000000, lbu16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1010000000000000, 0b1111100000000000, lbuInstruction);
+
+        expandInstruction(opcode16Map,         0b0011100000000000, 0b1111100010000000, lbufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0011100000000000, 0b1111100011100000, lbufpInstruction);
+
+        expandInstruction(opcode16Map,         0b0111100000000000, 0b1111100010000000, lbusp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0111100000000000, 0b1111100011100000, lbuspInstruction);
+
+        expandInstruction(opcode16Map,         0b1000100000000000, 0b1111100000000000, lh16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1000100000000000, 0b1111100000000000, lhInstruction);
+
+        expandInstruction(opcode16Map,         0b1010100000000000, 0b1111100000000000, lhu16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1010100000000000, 0b1111100000000000, lhuInstruction);
+
+        expandInstruction(opcode16Map,         0b1011100000000001, 0b1111100010000001, lhufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100000000001, 0b1111100011100001, lhufpInstruction);
+
+        expandInstruction(opcode16Map,         0b1011100000000000, 0b1111100010000001, lhusp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011100000000000, 0b1111100011100001, lhuspInstruction);
+
 /*
-        expandInstruction(opcode16Map,         0b0011100000000000, 0b1111100010000000, lbu2 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0011100000000000, 0b1111100011100000, lbu2 Instruction);
-
-        expandInstruction(opcode16Map,         0b0111100000000000, 0b1111100010000000, lbu3 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0111100000000000, 0b1111100011100000, lbu3 Instruction);
-
-        expandInstruction(opcode16Map,         0b1000100000000000, 0b1111100000000000, lh Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1000100000000000, 0b1111100000000000, lh Instruction);
-
-        expandInstruction(opcode16Map,         0b1010100000000000, 0b1111100000000000, lhu1 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1010100000000000, 0b1111100000000000, lhu1 Instruction);
-
-        expandInstruction(opcode16Map,         0b1011100000000001, 0b1111100010000001, lhu2 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100000000001, 0b1111100011100001, lhu2 Instruction);
-
-        expandInstruction(opcode16Map,         0b1011100000000000, 0b1111100010000001, lhu3 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100000000000, 0b1111100011100001, lhu3 Instruction);
-
         expandInstruction(opcode16Map,         0b0110100000000000, 0b1111100000000000, li Instruction);
         expandInstruction(extendedOpcode16Map, 0b0110100000000000, 0b1111100011100000, li Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b0100100011100000, 0b1111100011100000, lui Instruction);
+*/
+        expandInstruction(opcode16Map,         0b1001100000000000, 0b1111100000000000, lw16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1001100000000000, 0b1111100000000000, lwInstruction);
 
-        expandInstruction(opcode16Map,         0b1011000000000000, 0b1111100000000000, lw1 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011000000000000, 0b1111100011100000, lw1 Instruction);
+        expandInstruction(opcode16Map,         0b1111111000000000, 0b1111111100000000, lwfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1111111000000000, 0b1111111100000000, lwfpInstruction);
 
-        expandInstruction(opcode16Map,         0b1001000000000000, 0b1111100000000000, lw2 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1001000000000000, 0b1111100011100000, lw2 Instruction);
+        expandInstruction(opcode16Map,         0b1001000000000000, 0b1111100000000000, lwsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1001000000000000, 0b1111100011100000, lwspInstruction);
 
-        expandInstruction(opcode16Map,         0b1001100000000000, 0b1111100000000000, lw3 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1001100000000000, 0b1111100000000000, lw3 Instruction);
+        expandInstruction(opcode16Map,         0b1011000000000000, 0b1111100000000000, lwpc16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1011000000000000, 0b1111100011100000, lwpcInstruction);
 
-        expandInstruction(opcode16Map,         0b1111111000000000, 0b1111111100000000, lw4 Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1111111000000000, 0b1111111100000000, lw4 Instruction);
 
+/*
         expandInstruction(opcode16Map,         0b1110100000010110, 0b1111100000011111, madd Instruction);
 
         expandInstruction(opcode16Map,         0b1110100000010111, 0b1111100000011111, maddu Instruction);
