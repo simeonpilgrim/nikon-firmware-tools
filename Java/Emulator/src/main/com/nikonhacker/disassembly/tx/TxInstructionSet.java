@@ -1891,17 +1891,16 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO: delay slot work
-    public static final TxInstruction beqz1Instruction = new TxInstruction("beqz", "i, 2ru", "", "beqz $t1,label",
+    public static final TxInstruction beqz16Instruction = new TxInstruction("beqz", "i, 2ru", "", "beqz $t1,label",
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
             null, InstructionFormat16.RI,
             "000100 fffff 00000 tttttttttttttttt",
-            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -1949,17 +1948,16 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO: delay slot work
-    public static final TxInstruction bnez1Instruction = new TxInstruction("bnez", "i, 2ru", "", "bnez $t1,label",
+    public static final TxInstruction bnez16Instruction = new TxInstruction("bnez", "i, 2ru", "", "bnez $t1,label",
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
-            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -1982,27 +1980,25 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO: delay slot work
     public static final TxInstruction bteqzInstruction = new TxInstruction("bteqz", "2ru", "", "bteqz label",
             "Branch if T8 EQual Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
-            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(24 /*t8*/) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
 
-    // TODO: delay slot work
     public static final TxInstruction btnezInstruction = new TxInstruction("btnez", "2ru", "", "btnez label",
             "Branch if T8 Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
-            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
+            Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(24 /*t8*/) != 0) {
@@ -2987,8 +2983,8 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1111100100000000, 0b1111111100000000, bclrInstruction);
 
-        expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz1Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz1Instruction);
+        expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz16Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111110100000000, 0b1111111100000000, bextInstruction); // incl with $r0
 
@@ -3001,8 +2997,8 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsInstruction);
 
-        expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez1Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez1Instruction);
+        expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez16Instruction);
 
         expandInstruction(opcode16Map,         0b1110100000000101, 0b1111100000011111, breakInstruction);
 /*
