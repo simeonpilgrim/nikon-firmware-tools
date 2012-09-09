@@ -207,6 +207,7 @@ public class TxStatement extends Statement {
                 case RRR2:
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
                     imm = (binaryStatement >>> 2) & 0b11111; // imm or sa
+                    immBitWidth = 5;
                     break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
@@ -320,6 +321,12 @@ public class TxStatement extends Statement {
                             | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
                             | ((binaryStatement           ) & 0b0000000000011111);
                     immBitWidth = 14;
+                    break;
+                case JAL_JALX:
+                    imm   =   ((binaryStatement << (21-16)) & 0b00000011111000000000000000000000)
+                            | ((binaryStatement >> (21-16)) & 0b00000000000111110000000000000000)
+                            | ( binaryStatement             & 0b00000000000000001111111111111111);
+                    immBitWidth = 26;
                     break;
                 case W:
                     break;

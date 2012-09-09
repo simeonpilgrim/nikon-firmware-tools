@@ -127,7 +127,10 @@ public class TxInstructionSet
         W,
 
         /** Layout for data reading is as follows               : <pre>[ op  | imm  |  F  ]</pre> */
-        BREAK
+        BREAK,
+
+        /** Layout for JAL/JALX (extended only):<pre>[ op  |x| tar | tar |      tar       ]</pre> */
+        JAL_JALX
     }
 
     // TODO "EXTEND"
@@ -1131,8 +1134,8 @@ public class TxInstructionSet
     // TODO: delay slot work
     public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "", "jal target", // TODO put address in comment
             "Jump And Link: Set $ra to Program Counter (return address) then jump to statement at target address",
-            InstructionFormat32.J,
-            null, "000011 ffffffffffffffffffffffffff",
+            InstructionFormat32.J, InstructionFormat16.JAL_JALX,
+            "000011 ffffffffffffffffffffffffff",
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1144,8 +1147,8 @@ public class TxInstructionSet
     // TODO handle ISA mode switch
     public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target", // TODO put address in comment
             "Jump And Link eXchanging isa mode: Set $ra to Program Counter (return address) then jump to statement at target address, toggling ISA mode",
-            InstructionFormat32.J,
-            null, "011101 ffffffffffffffffffffffffff",
+            InstructionFormat32.J, InstructionFormat16.JAL_JALX,
+            "011101 ffffffffffffffffffffffffff",
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -2887,7 +2890,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction srl5Instruction = new TxInstruction("srl", "j, l", "jw", "srl $t2,10",
+    public static final TxInstruction srl5Instruction = new TxInstruction("srl", "j, u", "jw", "srl $t2,10",
             "Shift Right Logical: Shift $t2 right by number of bits specified by immediate",
             null, InstructionFormat16.RRR2,
             "",
@@ -3099,6 +3102,15 @@ public class TxInstructionSet
 
     public static TxInstruction getInstructionFor32BitStatement(int binStatement) throws DisassemblyException {
         return opcode32Resolver.resolve(binStatement);
+    }
+
+    public static Instruction getJalInstructionForStatement(int binaryStatement)  throws DisassemblyException {
+        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+            return jalInstruction;
+        }
+        else {
+            return jalxInstruction;
+        }
     }
 
 
@@ -3487,15 +3499,10 @@ public class TxInstructionSet
         /* ei is defined later as a patch on sll5 when sa == 0 */
 
         expandInstruction(extendedOpcode16Map, 0b1110100000011000, 0b1111111111111111, eretInstruction); // + constraints on extended part ?
-/*
-        TODO JAL;
-*/
+
         expandInstruction(opcode16Map,         0b1110100001000000, 0b1111100011111111, jalr16Instruction);
 
         expandInstruction(opcode16Map,         0b1110100011000000, 0b1111100011111111, jalrcInstruction);
-/*
-        TODO JALX;
-*/
 
         expandInstruction(opcode16Map,         0b1110100000000000, 0b1111100011111111, jrInstruction);
 
