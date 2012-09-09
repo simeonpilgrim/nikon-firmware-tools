@@ -24,25 +24,38 @@ public class Dtx extends Disassembler
 
         int binaryStatement = memory.loadInstruction16(cpuState.pc);
 
-        if (isExtend(binaryStatement)) {
-            // This is the EXTEND prefix. Get real instruction
-            int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
-            try {
-                statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
-            } catch (DisassemblyException e) {
-                System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-            }
-            statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
-            bytesInInstruction = 4;
-        }
-        else {
-            try {
-                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
-            } catch (DisassemblyException e) {
-                System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-            }
-            statement.setBinaryStatement(binaryStatement);
-            bytesInInstruction = 2;
+        switch (binaryStatement & 0b1111100000000000) {
+            case 0b1111000000000000:
+                // This is the EXTEND prefix. Get real instruction
+                int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
+                try {
+                    statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
+                } catch (DisassemblyException e) {
+                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
+                }
+                statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
+                bytesInInstruction = 4;
+                break;
+            case 0b0001100000000000:
+                // This is the JAL/JALX prefix.
+                int fullStatement = (binaryStatement << 16) | memory.loadInstruction16(cpuState.pc + 2);
+                statement.setBinaryStatement(fullStatement);
+                try {
+                    statement.setInstruction(TxInstructionSet.getJalInstructionForStatement(fullStatement));
+                } catch (DisassemblyException e) {
+                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
+                }
+                bytesInInstruction = 4;
+                break;
+            default:
+                try {
+                    statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
+                } catch (DisassemblyException e) {
+                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
+                }
+                statement.setBinaryStatement(binaryStatement);
+                bytesInInstruction = 2;
+                break;
         }
 
         statement.decode16BitOperands(cpuState.pc, memory);
@@ -63,15 +76,6 @@ public class Dtx extends Disassembler
             }
         }
         return bytesInInstruction;
-    }
-
-    /**
-     * Determines if this statement is the "EXTEND" prefix
-     * @param binaryStatement
-     * @return
-     */
-    private static boolean isExtend(int binaryStatement) {
-        return (binaryStatement & 0b1111100000000000) == 0b1111000000000000;
     }
 
     @Override
