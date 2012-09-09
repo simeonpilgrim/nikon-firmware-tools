@@ -196,13 +196,17 @@ public class TxStatement extends Statement {
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b11111;
-                    rd_fd = rt_ft; // trick to use RRI for MULT to avoid a specific encoding
+                    rd_fd = rt_ft; // trick to use RRI for MULT, SLLV, etc. to avoid a specific encoding
                     immBitWidth = 5;
                     break;
                 case RRR1:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b111]; // rz
+                    break;
+                case RRR2:
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
+                    imm = (binaryStatement >>> 2) & 0b11111; // imm or sa
                     break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
@@ -215,6 +219,13 @@ public class TxStatement extends Statement {
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b1111;
                     immBitWidth = 4;
+                    break;
+                case SHIFT1:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    sa_cc = (binaryStatement >>> 2) & 0b111; // sa
+                    if (sa_cc == 0) sa_cc = 8; // special convention as a value of 0 is meaningless
+                    rd_fd = rs_fs;
                     break;
                 case SHIFT2:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
@@ -247,7 +258,7 @@ public class TxStatement extends Statement {
                 case W:
                     break;
                 default:
-                    throw new RuntimeException("Decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented.");
+                    throw new RuntimeException("Decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented at 0x" + Format.asHex(pc, 8));
             }
         }
         else {
@@ -296,6 +307,12 @@ public class TxStatement extends Statement {
                             | ((binaryStatement           ) & 0b0000000000001111);
                     immBitWidth = 15;
                     break;
+                case SHIFT1:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    sa_cc = (binaryStatement >>> 22) & 0b11111; // sa
+                    rd_fd = rs_fs;
+                    break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
                     rs_fs = (binaryStatement >>> 19) & 0b11; // base
@@ -307,7 +324,7 @@ public class TxStatement extends Statement {
                 case W:
                     break;
                 default:
-                    throw new RuntimeException("EXTENDed decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented.");
+                    throw new RuntimeException("EXTENDed decoding of format " + ((TxInstruction)instruction).getInstructionFormat16() + " is not implemented at 0x" + Format.asHex(pc, 8));
             }
         }
     }
@@ -504,7 +521,7 @@ public class TxStatement extends Statement {
                         if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
                     }
                     catch (Exception e) {
-                        System.out.println(e);
+                        e.printStackTrace();
                     }
                     break;
                 case 'l':
