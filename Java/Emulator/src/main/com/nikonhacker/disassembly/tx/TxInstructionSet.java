@@ -595,7 +595,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount.
                     cpuState.setReg(statement.rd_fd,
-                            cpuState.getReg(statement.rt_ft) << (cpuState.getReg(statement.rs_fs) & 0b11111));
+                            (cpuState.getReg(statement.rt_ft) << (cpuState.getReg(statement.rs_fs)) & 0b11111));
                 }
             });
     public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, [j, ]l", "kw", "srl $t1,$t2,10",
@@ -661,8 +661,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int address = cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int result = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         result = Format.setByte(result, 3 - i, memory.loadUnsigned8(address - i));
@@ -677,8 +676,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int address = cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int result = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         result = Format.setByte(result, i, memory.loadUnsigned8(address + i));
@@ -686,15 +684,15 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, result);
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "", "sw $t1,-100($t2)",
             "Store Word: Store contents of $t1 into effective memory word address",
-            InstructionFormat32.I,
-            null, "101011 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "101011 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    memory.store32(cpuState.getReg(statement.rs_fs) + statement.imm, cpuState.getReg(statement.rt_ft));
+                    memory.store32(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16), cpuState.getReg(statement.rt_ft));
                 }
             });
     public static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "", "swl $t1,-100($t2)",
@@ -704,8 +702,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int address = cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int source = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         memory.store8(address - i, Format.getByte(source, 3 - i));
@@ -719,8 +716,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    int address = cpuState.getReg(statement.rs_fs) + statement.imm;
+                    int address = cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int source = cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         memory.store8(address + i, Format.getByte(source, i));
@@ -1279,8 +1275,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
 
@@ -1291,8 +1286,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    // todo check sign extension of offset
-                    memory.store32(cpuState.getReg(statement.rs_fs) + statement.imm, cpuState.getReg(statement.rt_ft));
+                    memory.store32(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16), cpuState.getReg(statement.rt_ft));
                 }
             });
 
@@ -1681,10 +1675,11 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "jw", "sb $t1,-100($t2)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            InstructionFormat32.I,
-            null, "101000 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "101000 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1693,10 +1688,11 @@ public class TxInstructionSet
                             cpuState.getReg(statement.rt_ft) & 0x000000ff);
                 }
             });
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     public static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "jw", "sh $t1,-100($t2)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            InstructionFormat32.I,
-            null, "101001 ttttt fffff ssssssssssssssss",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            "101001 ttttt fffff ssssssssssssssss",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -2204,7 +2200,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16)));
                 }
             });
     /**
@@ -2232,7 +2228,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned8(cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16)));
                 }
             });
     /**
@@ -2260,7 +2256,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadSigned16(cpuState.getReg(statement.rs_fs) + statement.imm << 1));
+                    cpuState.setReg(statement.rt_ft, memory.loadSigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 1)));
                 }
             });
 
@@ -2274,7 +2270,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(statement.rs_fs) + statement.imm << 1));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(statement.rs_fs) + (statement.imm << 1)));
                 }
             });
 
@@ -2288,7 +2284,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 15));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 15)));
                 }
             });
     /**
@@ -2301,7 +2297,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + statement.imm << 1));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.FP) + (statement.imm << 1)));
                 }
             });
 
@@ -2316,7 +2312,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 15));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 15)));
                 }
             });
     /**
@@ -2329,7 +2325,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + statement.imm << 1));
+                    cpuState.setReg(statement.rt_ft, memory.loadUnsigned16(cpuState.getReg(TxCPUState.SP) + (statement.imm << 1)));
                 }
             });
 
@@ -2345,7 +2341,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + statement.imm << 2));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(statement.rs_fs) + (statement.imm << 2)));
                 }
             });
 
@@ -2359,7 +2355,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16)));
                 }
             });
     /**
@@ -2372,7 +2368,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + statement.imm << 2));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.FP) + (statement.imm << 2)));
                 }
             });
 
@@ -2388,7 +2384,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // TODO mask PC
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + (statement.imm << 16 >> 16)));
                 }
             });
     /**
@@ -2402,7 +2398,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // TODO mask PC
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + statement.imm << 2));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + (statement.imm << 2)));
                 }
             });
 
@@ -2416,7 +2412,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + statement.imm << 16 >> 16));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16)));
                 }
             });
     /**
@@ -2429,7 +2425,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + statement.imm << 2));
+                    cpuState.setReg(statement.rt_ft, memory.load32(cpuState.getReg(TxCPUState.SP) + (statement.imm << 2)));
                 }
             });
 
