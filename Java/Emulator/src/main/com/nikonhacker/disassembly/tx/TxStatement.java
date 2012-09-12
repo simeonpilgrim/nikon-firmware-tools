@@ -362,6 +362,8 @@ public class TxStatement extends Statement {
         int tmp;
         int pos;
 
+        int offset = 0;
+
         decodedRsFs = rs_fs;
         decodedRtFt = rt_ft;
         decodedRdFd = rd_fd;
@@ -556,30 +558,39 @@ public class TxStatement extends Statement {
                     break;
                 case 'r':
                     /* relative to PC */
-                    // TODO +4 or +2 according to ISA mode 32 or 16
-                    decodedImm = cpuState.pc + 4 + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
-                    immBitWidth = 32;
+                    offset = cpuState.pc + 2 + (isExtended()?2:0);
                     break;
                 case 'R':
                     /* relative to PC & 0xF0000000 */
-                    decodedImm = (cpuState.pc & 0xF0000000) | decodedImm;
-                    immBitWidth = 32;
+                    offset = cpuState.pc & 0xF0000000;
                     break;
                 case 's':
                     /* signed constant */
-                    if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm)) {
-                        /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
-                        if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
-                            currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
-                        }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
+                    if (offset != 0) {
+                        // relative signed means immediate must be sign-extended before appending, then printed unsigned
+                        decodedImm = offset + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
+                        immBitWidth = 32;
+                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth));
                     }
                     else {
-                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth - 1));
+                        if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm)) {
+                            /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
+                            if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
+                                currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
+                            }
+                            currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
+                        }
+                        else {
+                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth - 1));
+                        }
                     }
                     break;
                 case 'u':
                     /* unsigned constant */
+                    if (offset != 0) {
+                        decodedImm = offset + decodedImm;
+                        immBitWidth = 32;
+                    }
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth));
                     break;
                 case 'v':
@@ -719,13 +730,18 @@ public class TxStatement extends Statement {
     }
 
     protected String formatAsHex() {
-        String out = "";
-        if ((binaryStatement & 0xFFFF0000) == 0)
-            // 16b
-            return Format.asHex(binaryStatement, 4) + "    ";
-        else {
+        if (isExtended())
+        {
             // 32b, or extended 16b
             return Format.asHex(binaryStatement, 8);
         }
+        else {
+            // 16b
+            return Format.asHex(binaryStatement, 4) + "    ";
+        }
+    }
+
+    public boolean isExtended() {
+        return (binaryStatement & 0xFFFF0000) != 0;
     }
 }
