@@ -279,8 +279,8 @@ public class TxInstructionSet
             });
     public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "j+", "addiu $t1,$t2,-100",
             "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
-            InstructionFormat32.I,
-            InstructionFormat16.RRIA, "001001 sssss fffff tttttttttttttttt",
+            InstructionFormat32.I, InstructionFormat16.RRIA,
+            "001001 sssss fffff tttttttttttttttt",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -738,7 +738,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction beqInstruction = new TxInstruction("beq", "i, j, 4ru", "", "beq $t1,$t2,label",
+    public static final TxInstruction beqInstruction = new TxInstruction("beq", "i, j, 4rs", "", "beq $t1,$t2,label",
             "Branch if EQual: Branch to statement at label's address if $t1 and $t2 are equal",
             InstructionFormat32.I_BRANCH,
             null, "000100 fffff sssss tttttttttttttttt",
@@ -752,7 +752,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction beqzInstruction = new TxInstruction("beqz", "i, 4ru", "", "beqz $t1,label",
+    public static final TxInstruction beqzInstruction = new TxInstruction("beqz", "i, 4rs", "", "beqz $t1,label",
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
             InstructionFormat32.I_BRANCH,
             null, "000100 fffff 00000 tttttttttttttttt",
@@ -765,7 +765,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction beqlInstruction = new TxInstruction("beql", "i, j, 4ru", "", "beql $t1,$t2,label",
+    public static final TxInstruction beqlInstruction = new TxInstruction("beql", "i, j, 4rs", "", "beql $t1,$t2,label",
             "Branch if EQual (Likely): Branch to statement at label's address if $t1 and $t2 are equal",
             InstructionFormat32.I_BRANCH,
             null, "010100 fffff sssss tttttttttttttttt",
@@ -779,7 +779,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4ru", "", "beqzl $t1,label",
+    public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4rs", "", "beqzl $t1,label",
             "Branch if EQual Zero (Likely): Branch to statement at label's address if $t1 is zero",
             InstructionFormat32.I_BRANCH,
             null, "010100 fffff 00000 tttttttttttttttt",
@@ -792,7 +792,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bneInstruction = new TxInstruction("bne", "i, j, 4ru", "", "bne $t1,$t2,label",
+    public static final TxInstruction bneInstruction = new TxInstruction("bne", "i, j, 4rs", "", "bne $t1,$t2,label",
             "Branch if Not Equal: Branch to statement at label's address if $t1 and $t2 are not equal",
             InstructionFormat32.I_BRANCH,
             null, "000101 fffff sssss tttttttttttttttt",
@@ -806,7 +806,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction bnezInstruction = new TxInstruction("bnez", "i, 4ru", "", "bnez $t1,label",
+    public static final TxInstruction bnezInstruction = new TxInstruction("bnez", "i, 4rs", "", "bnez $t1,label",
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             InstructionFormat32.I_BRANCH,
             null, "000101 fffff 00000 tttttttttttttttt",
@@ -819,7 +819,7 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    public static final TxInstruction bnelInstruction = new TxInstruction("bnel", "i, j, 4ru", "", "bnel $t1,$t2,label",
+    public static final TxInstruction bnelInstruction = new TxInstruction("bnel", "i, j, 4rs", "", "bnel $t1,$t2,label",
             "Branch if Not Equal (Likely): Branch to statement at label's address if $t1 and $t2 are not equal",
             InstructionFormat32.I_BRANCH,
             null, "010101 fffff sssss tttttttttttttttt",
@@ -833,7 +833,7 @@ public class TxInstructionSet
             });
     // alternative if rt=r0
     // TODO: delay slot work
-    public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4ru", "", "bnezl $t1,label",
+    public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4rs", "", "bnezl $t1,label",
             "Branch if Not Equal Zero (Likely): Branch to statement at label's address if $t1 is not zero",
             InstructionFormat32.I_BRANCH,
             null, "010101 fffff 00000 tttttttttttttttt",
@@ -1363,7 +1363,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4ru", "", "bc1f 1,label",
+    public static final TxInstruction bc1fInstruction = new TxInstruction("bc1f", "[l, ]4rs", "", "bc1f 1,label",
             "Branch if specified fp condition of Coprocessor 1 flag False (BC1F, not BCLF): If Coprocessor 1 condition flag specified by immediate is false (zero) then branch to statement at label's address",
             InstructionFormat32.CP1_CC_BRANCH,
             null, "010001 01000 fff 00 ssssssssssssssss",
@@ -1377,7 +1377,7 @@ public class TxInstructionSet
                     }
                 }
             });
-    public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4ru", "", "bc1t 1,label",
+    public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4rs", "", "bc1t 1,label",
             "Branch if specified fp condition flag of Coprocessor 1 flag True (BC1T, not BCLT): If Coprocessor 1 condition flag specified by immediate is true (one) then branch to statement at label's address",
             InstructionFormat32.CP1_CC_BRANCH,
             null, "010001 01000 fff 01 ssssssssssssssss",
@@ -1763,21 +1763,29 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction adjfpInstruction = new TxInstruction("addiu", "F, 4s" /* TODO shift of not according to EXTEND */, "" /* TODO action */, "addiu fp, -100",
+    /* non-EXTENDED : zero extended and multiplied by 4 */
+    public static final TxInstruction addiufp16Instruction = new TxInstruction("addiu", "F, 4u", "" /* TODO action */, "addiu $fp, -100",
             "ADD Immediate Unsigned to FP",
             null, InstructionFormat16.RI,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (statement.immBitWidth == 8) {
-                        // If not EXTENDed, "The 8-bit immediate is shifted left by two bits and sign-extended"
-                        cpuState.setReg(TxCPUState.FP, cpuState.getReg(TxCPUState.FP) + (statement.imm << 24 >> 22));
-                    }
-                    else {
-                        // "When EXTENDed, the immediate operand is not shifted at all"
-                        cpuState.setReg(TxCPUState.FP, cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16));
-                    }
+                    // If not EXTENDed, "The 8-bit immediate is shifted left by two bits and sign-extended"
+                    cpuState.setReg(TxCPUState.FP, cpuState.getReg(TxCPUState.FP) + (statement.imm << 24 >> 22));
+                }
+            });
+
+    /* EXTENDed : sign-extended and not shifted */
+    public static final TxInstruction addiufpInstruction = new TxInstruction("addiu", "F, s", "" /* TODO action */, "addiu fp, -100",
+            "ADD Immediate Unsigned to FP",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // "When EXTENDed, the immediate operand is not shifted at all"
+                    cpuState.setReg(TxCPUState.FP, cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16));
                 }
             });
 
@@ -1793,7 +1801,8 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, P, 4s", "" /* TODO action */, "addiu r3, pc, 16",
+    /* non-EXTENDED : zero extended and multiplied by 4 */
+    public static final TxInstruction addiupc16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
             "ADD Immediate Unsigned with PC",
             null, InstructionFormat16.RI,
             "",
@@ -1801,32 +1810,71 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    if (statement.immBitWidth == 8) {
-                        // If not EXTENDed, "The 8-bit immediate is shifted left by two bits, zero-extended and added"
-                        cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
-                    }
-                    else {
-                        // "When EXTENDed, the immediate operand is not shifted at all"
-                        cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
-                    }
+                    cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
                 }
             });
 
-    public static final TxInstruction addiuspInstruction = new TxInstruction("addiu", "i, S, 4s", "" /* TODO action */, "addiu r3, sp, 16",
+    /* EXTENDed : sign-extended and not shifted */
+    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
+            "ADD Immediate Unsigned with PC",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
+                }
+            });
+
+    /* non-EXTENDED : zero extended and multiplied by 4 */
+    public static final TxInstruction la16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
+            "ADD Immediate Unsigned with PC",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
+                }
+            });
+
+    /* EXTENDed : sign-extended and not shifted */
+    public static final TxInstruction laInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
+            "ADD Immediate Unsigned with PC",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
+                }
+            });
+
+    /* non-EXTENDED : zero extended and multiplied by 4 */
+    public static final TxInstruction addiusp16Instruction = new TxInstruction("addiu", "i, S, 4u", "iw", "addiu r3, sp, 16",
             "ADD Immediate Unsigned with SP",
             null, InstructionFormat16.RI,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    if (statement.immBitWidth == 8) {
-                        // If not EXTENDed, "The 8-bit immediate is shifted left by two bits, zero-extended and added"
-                        cpuState.setReg(statement.rt_ft, cpuState.getReg(TxCPUState.SP) + (statement.imm << 2));
-                    }
-                    else {
-                        // "When EXTENDed, the immediate operand is not shifted at all"
-                        cpuState.setReg(statement.rt_ft, cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
-                    }
+                    // If not EXTENDed, "The 8-bit immediate is shifted left by two bits, zero-extended and added"
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(TxCPUState.SP) + (statement.imm << 2));
+                }
+            });
+    /* EXTENDed : sign-extended and not shifted */
+    public static final TxInstruction addiuspInstruction = new TxInstruction("addiu", "i, S, s", "iw", "addiu r3, sp, 16",
+            "ADD Immediate Unsigned with SP",
+            null, InstructionFormat16.RI,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    // "When EXTENDed, the immediate operand is not shifted at all"
+                    cpuState.setReg(statement.rt_ft, cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
                 }
             });
 
@@ -1848,7 +1896,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bInstruction = new TxInstruction("b", "2ru", "", "b 100",
+    public static final TxInstruction bInstruction = new TxInstruction("b", "2rs", "", "b 100",
             "unconditional Branch: branch to target address",
             null, InstructionFormat16.I,
             "",
@@ -1856,11 +1904,11 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int shift = 32 - statement.immBitWidth;
-                    cpuState.pc += statement.imm << shift >> (shift-1);
+                    cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
             });
 
-    public static final TxInstruction balInstruction = new TxInstruction("bal", "2ru", "", "bal 100",
+    public static final TxInstruction balInstruction = new TxInstruction("bal", "2rs", "", "bal 100",
             "unconditional Branch And Link: branch to target address",
             null, InstructionFormat16.RI,
             "",
@@ -1869,7 +1917,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.RA, cpuState.pc + 5); // TODO check
                     int shift = 32 - statement.immBitWidth;
-                    cpuState.pc += statement.imm << shift >> (shift-1);
+                    cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
             });
 
@@ -1891,7 +1939,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction beqz16Instruction = new TxInstruction("beqz", "i, 2ru", "", "beqz $t1,label",
+    public static final TxInstruction beqz16Instruction = new TxInstruction("beqz", "i, 2rs", "", "beqz $t1,label",
             "Branch if EQual Zero: Branch to statement at label's address if $t1 is zero",
             null, InstructionFormat16.RI,
             "000100 fffff 00000 tttttttttttttttt",
@@ -1900,7 +1948,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -1948,7 +1996,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bnez16Instruction = new TxInstruction("bnez", "i, 2ru", "", "bnez $t1,label",
+    public static final TxInstruction bnez16Instruction = new TxInstruction("bnez", "i, 2rs", "", "bnez $t1,label",
             "Branch if Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
@@ -1957,7 +2005,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -1980,7 +2028,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bteqzInstruction = new TxInstruction("bteqz", "2ru", "", "bteqz label",
+    public static final TxInstruction bteqzInstruction = new TxInstruction("bteqz", "2rs", "", "bteqz label",
             "Branch if T8 EQual Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
@@ -1989,12 +2037,12 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(TxCPUState.T8) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
 
-    public static final TxInstruction btnezInstruction = new TxInstruction("btnez", "2ru", "", "btnez label",
+    public static final TxInstruction btnezInstruction = new TxInstruction("btnez", "2rs", "", "btnez label",
             "Branch if T8 Not Equal Zero: Branch to statement at label's address if $t1 is not zero",
             null, InstructionFormat16.RI,
             "000101 fffff 00000 tttttttttttttttt",
@@ -2003,7 +2051,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(TxCPUState.T8) != 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc = cpuState.pc + 4 + (statement.imm << shift >> (shift-1)); // sign extend and x4
+                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -3405,16 +3453,16 @@ public class TxInstructionSet
         //                map                , encoding          , mask              , instruction
         expandInstruction(opcode16Map,         0b1110000000000000, 0b1111100010000011, ac0iuInstruction);
 
-        expandInstruction(opcode16Map,         0b0110011000000000, 0b1111111100000000, adjfpInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0110011000000000, 0b1111111111100000, adjfpInstruction);
+        expandInstruction(opcode16Map,         0b0110011000000000, 0b1111111100000000, addiufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0110011000000000, 0b1111111111100000, addiufpInstruction);
 
         expandInstruction(opcode16Map,         0b0100100000000000, 0b1111100000000000, addiu8Instruction);
         expandInstruction(extendedOpcode16Map, 0b0100100000000000, 0b1111100011100000, addiu8Instruction);
 
-        expandInstruction(opcode16Map,         0b0000100000000000, 0b1111100000000000, addiupcInstruction);
+        expandInstruction(opcode16Map,         0b0000100000000000, 0b1111100000000000, addiupc16Instruction);
         expandInstruction(extendedOpcode16Map, 0b0000100000000000, 0b1111100011100000, addiupcInstruction);
 
-        expandInstruction(opcode16Map,         0b0000000000000000, 0b1111100000000000, addiuspInstruction);
+        expandInstruction(opcode16Map,         0b0000000000000000, 0b1111100000000000, addiusp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b0000000000000000, 0b1111100011100000, addiuspInstruction);
 
         expandInstruction(opcode16Map,         0b0100000000000000, 0b1111100000010000, addiuInstruction);
