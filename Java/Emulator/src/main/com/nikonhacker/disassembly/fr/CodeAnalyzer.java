@@ -83,7 +83,7 @@ public class CodeAnalyzer {
                     }
                     else {
                         FrStatement statement = (FrStatement) codeStructure.getStatements().get(int40address + 0x3E);
-                        int baseAddress = statement.decodedX;
+                        int baseAddress = statement.decodedImm;
                         int40mapping = new TreeMap<Integer, Integer>();
                         /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
                         for (int r12 = 0; r12 > -0xB0; r12--) {
@@ -316,9 +316,9 @@ public class CodeAnalyzer {
                     break;
                 case JMP:
                 case BRA:
-                    if (statement.decodedX != 0) {
-                        codeStructure.getLabels().put(statement.decodedX, new Symbol(statement.decodedX, "", ""));
-                        Jump jump = new Jump(address, statement.decodedX, statement.getInstruction(), false);
+                    if (statement.decodedImm != 0) {
+                        codeStructure.getLabels().put(statement.decodedImm, new Symbol(statement.decodedImm, "", ""));
+                        Jump jump = new Jump(address, statement.decodedImm, statement.getInstruction(), false);
                         jumps.add(jump);
                         currentFunction.getJumps().add(jump);
                     }
@@ -470,7 +470,7 @@ public class CodeAnalyzer {
                         currentSegment.setEnd(address + 2);
                         processedStatements.add(address + 2);
                     }
-                    int targetAddress = statement.decodedX;
+                    int targetAddress = statement.decodedImm;
                     if (targetAddress == 0) {
                         List<Integer> potentialTargets = jumpHints.get(address);
                         if (potentialTargets != null) {
@@ -490,8 +490,8 @@ public class CodeAnalyzer {
                     }
                     break;
                 case INT:
-                    Integer interruptAddress = interruptTable.get(statement.decodedX);
-                    if (statement.decodedX == 0x40 && int40mapping != null) {
+                    Integer interruptAddress = interruptTable.get(statement.decodedImm);
+                    if (statement.decodedImm == 0x40 && int40mapping != null) {
                         processInt40Call(currentFunction, address, statement);
                     }
                     else {
@@ -611,16 +611,16 @@ public class CodeAnalyzer {
             if (candidateStatement != null) {
                 if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0x9F80 && candidateStatement.decodedI == 12) {
                     /* LDI:32 #i32, R12 */
-                    r12 = candidateStatement.decodedX;
+                    r12 = candidateStatement.decodedImm;
                     break;
                 }
                 if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0xC000 && candidateStatement.decodedI == 12) {
                     /* LDI:8 #i8, R12 */
                     if (r12SignExtend) {
-                        r12 = BinaryArithmetics.signExtend(8, candidateStatement.decodedX);
+                        r12 = BinaryArithmetics.signExtend(8, candidateStatement.decodedImm);
                     }
                     else {
-                        r12 = candidateStatement.decodedX;
+                        r12 = candidateStatement.decodedImm;
                     }
                     break;
                 }
