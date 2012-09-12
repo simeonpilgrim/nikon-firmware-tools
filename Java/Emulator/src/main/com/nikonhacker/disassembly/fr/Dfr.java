@@ -106,8 +106,8 @@ public class Dfr extends Disassembler
         {
             FrStatement statement = new FrStatement(memRange.getStart());
             statement.getNextData(memory, dummyCpuState.pc);
-            statement.x = statement.data[0];
-            statement.xBitWidth = 16;
+            statement.imm = statement.data[0];
+            statement.immBitWidth = 16;
             statement.setInstruction(FrInstructionSet.opData[spec.getIndex()]);
 
             statement.decodeOperands(dummyCpuState.pc, memory);

@@ -42,13 +42,13 @@ public class FrStatement extends Statement {
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     public int c;
 
-    /** direct operand */
-    public int x; // as-is from binary code
-    public int decodedX; // interpreted
+    /** immediate operand */
+    public int imm; // as-is from binary code
+    public int decodedImm; // interpreted
 
 
     /** number of significant bits in decodedX (for display only) */
-    public int xBitWidth;
+    public int immBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
@@ -99,46 +99,46 @@ public class FrStatement extends Statement {
                 break;
             case B:
                 i = 0xF & data[0];
-                x = 0xFF & (data[0] >> 4);
-                xBitWidth = 8;
+                imm = 0xFF & (data[0] >> 4);
+                immBitWidth = 8;
                 break;
             case C:
                 i = 0xF & data[0];
-                x = 0xF & (data[0] >> 4);
-                xBitWidth = 4;
+                imm = 0xF & (data[0] >> 4);
+                immBitWidth = 4;
                 break;
             case D:
-                x = 0xFF & data[0];
-                xBitWidth = 8;
+                imm = 0xFF & data[0];
+                immBitWidth = 8;
                 break;
             case E:
                 i = 0xF & data[0];
                 break;
             case F:
-                x = 0x7FF & data[0];
-                xBitWidth = 11;
+                imm = 0x7FF & data[0];
+                immBitWidth = 11;
                 break;
             case Z:
                 j = 0xF & (data[0] >> 4);
                 break;
             case W:
-                x = data[0];
-                xBitWidth = 16;
+                imm = data[0];
+                immBitWidth = 16;
                 break;
         }
 
         for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraXWords; ii++) {
             getNextStatement(memory, pc);
-            x = (x << 16) + data[numData - 1];
-            xBitWidth += 16;
+            imm = (imm << 16) + data[numData - 1];
+            immBitWidth += 16;
         }
 
         for (int ii = 0; ii < ((FrInstruction) getInstruction()).numberExtraYWords; ii++) {
             /* coprocessor extension word */
             getNextStatement(memory, pc);
             int tmp = data[numData - 1];
-            x = i;
-            xBitWidth = 4;
+            imm = i;
+            immBitWidth = 4;
             c = 0xFF & (tmp >> 8);
             j = 0x0F & (tmp >> 4);
             i = 0x0F & (tmp);
@@ -148,11 +148,11 @@ public class FrStatement extends Statement {
     public void reset() {
         data[0] = data[1] = data[2] = 0xDEAD;
         numData = 0;
-        xBitWidth = 0;
+        immBitWidth = 0;
         c = 0;
         i = CPUState.NOREG;
         j = CPUState.NOREG;
-        x = 0;
+        imm = 0;
         setOperandString(null);
         setCommentString(null);
     }
@@ -182,7 +182,7 @@ public class FrStatement extends Statement {
         int tmp;
         int pos;
 
-        decodedX = x;
+        decodedImm = imm;
         decodedI = i;
         decodedJ = j;
 
@@ -223,12 +223,12 @@ public class FrStatement extends Statement {
                     currentBuffer.append(fmt_mem);
                     break;
                 case '2':
-                    decodedX <<= 1;
-                    xBitWidth += 1;
+                    decodedImm <<= 1;
+                    immBitWidth += 1;
                     break;
                 case '4':
-                    decodedX <<= 2;
-                    xBitWidth += 2;
+                    decodedImm <<= 2;
+                    immBitWidth += 2;
                     break;
 
                 case 'A':
@@ -253,25 +253,25 @@ public class FrStatement extends Statement {
                 case 'I':
                     if (cpuState.isRegisterDefined(decodedI))
                     {
-                        decodedX = cpuState.getReg(decodedI);
-                        xBitWidth = 32;
+                        decodedImm = cpuState.getReg(decodedI);
+                        immBitWidth = 32;
                     }
                     else
                     {
-                        decodedX = 0;
-                        xBitWidth = 0;
+                        decodedImm = 0;
+                        immBitWidth = 0;
                     }
                     break;
                 case 'J':
                     if (cpuState.isRegisterDefined(decodedJ))
                     {
-                        decodedX = cpuState.getReg(decodedJ);
-                        xBitWidth = 32;
+                        decodedImm = cpuState.getReg(decodedJ);
+                        immBitWidth = 32;
                     }
                     else
                     {
-                        decodedX = 0;
-                        xBitWidth = 0;
+                        decodedImm = 0;
+                        immBitWidth = 0;
                     }
                     break;
 
@@ -282,16 +282,16 @@ public class FrStatement extends Statement {
                 case 'Y':
                     throw new RuntimeException("no more X or Y : operand parsing is now done in decodeOperands()");
                 case 'a':
-                    pos = xBitWidth;
+                    pos = immBitWidth;
                     while (pos >= 8){
                         pos -= 8;
-                        currentBuffer.append(Format.asAscii(decodedX >> pos));
+                        currentBuffer.append(Format.asAscii(decodedImm >> pos));
                     }
                     break;
                 case 'b':
                     /* shift2 */
-                    decodedX += 16;
-                    xBitWidth += 1;
+                    decodedImm += 16;
+                    immBitWidth += 1;
                     break;
                 case 'c':
                     /* coprocessor operation */
@@ -299,13 +299,13 @@ public class FrStatement extends Statement {
                     break;
                 case 'd':
                     /* unsigned decimal */
-                    currentBuffer.append(decodedX);
+                    currentBuffer.append(decodedImm);
                     break;
                 case 'f':
-                    pos = xBitWidth >> 1;
+                    pos = immBitWidth >> 1;
 
-                    tmp = (int)(((1L << pos) - 1) & (decodedX >> pos));
-                    int tmq = (int)(((1L << pos) - 1) & decodedX);
+                    tmp = (int)(((1L << pos) - 1) & (decodedImm >> pos));
+                    int tmq = (int)(((1L << pos) - 1) & decodedImm);
                     if (tmq != 0)
                         currentBuffer.append(((double)tmp) / tmq);
                     else
@@ -337,52 +337,52 @@ public class FrStatement extends Statement {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (xBitWidth + 1)) - 1) & BinaryArithmetics.NEG(xBitWidth, (1 << (xBitWidth)) | decodedX), xBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.NEG(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
-                    pos = xBitWidth >> 1;
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (decodedX >> pos), pos));
+                    pos = immBitWidth >> 1;
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (decodedImm >> pos), pos));
                     currentBuffer.append(fmt_nxt);
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & decodedX, pos));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & decodedImm, pos));
                     break;
                 case 'q':
                     /* rational */
-                    pos = xBitWidth >> 1;
-                    currentBuffer.append(((1L << pos) - 1) & (decodedX >> pos));
+                    pos = immBitWidth >> 1;
+                    currentBuffer.append(((1L << pos) - 1) & (decodedImm >> pos));
                     currentBuffer.append("/");
-                    currentBuffer.append(((1L << pos) - 1) & decodedX);
+                    currentBuffer.append(((1L << pos) - 1) & decodedImm);
                     break;
                 case 'r':
                     /* relative */
-                    decodedX = cpuState.pc + 2 + BinaryArithmetics.signExtend(xBitWidth, decodedX);
-                    xBitWidth = 32;
+                    decodedImm = cpuState.pc + 2 + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
+                    immBitWidth = 32;
                     break;
                 case 's':
                     /* signed constant */
-                    if (BinaryArithmetics.IsNeg(xBitWidth, decodedX))
+                    if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm))
                     {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                         if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(xBitWidth, decodedX), xBitWidth));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
                     }
                     else
                     {
-                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedX, xBitWidth - 1));
+                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth - 1));
                     }
                     break;
                 case 'u':
                     /* unsigned constant */
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedX, xBitWidth));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth));
                     break;
                 case 'v':
                     /* vector */
                     currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(0xFF - (0xFF & ((cpuState.pc - memRangeStart) / 4)), 1));
                     break;
                 case 'x':
-                    decodedX |= 0x100;
+                    decodedImm |= 0x100;
                     break;
                 case 'y':
                     c += 8;
@@ -393,14 +393,14 @@ public class FrStatement extends Statement {
                     boolean first = true;
                     for (int i = 0; i < 8; ++i)
                     {
-                        if ((decodedX & (1 << i)) != 0)
+                        if ((decodedImm & (1 << i)) != 0)
                         {
                             if (first)
                                 first = false;
                             else
                                 currentBuffer.append(",");
 
-                            if ((decodedX & 0x100) != 0)
+                            if ((decodedImm & 0x100) != 0)
                                 currentBuffer.append(FrCPUState.REG_LABEL[c + 7 - i]);
                             else
                                 currentBuffer.append(FrCPUState.REG_LABEL[c + i]);
@@ -456,7 +456,7 @@ public class FrStatement extends Statement {
                 case 'v':
                     if (updateRegisters && cpuState.registerExists(r)) {
                         cpuState.setRegisterDefined(r);
-                        cpuState.setReg(r, decodedX);
+                        cpuState.setReg(r, decodedImm);
                     }
                     break;
                 case 'x':
