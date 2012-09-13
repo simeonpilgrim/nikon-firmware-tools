@@ -2633,6 +2633,72 @@ public class TxInstructionSet
                 }
             });
 
+
+    public static final TxInstruction restore16Instruction = new TxInstruction("restore", "z", "", "restore $s0, 0x8",
+            "RESTORE registers and deallocate stack frame: restore given registers on the stack and adjust sp according to given value",
+            null, InstructionFormat16.I8SVRS,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int temp;
+                    if (statement.imm == 0) {
+                        temp = cpuState.getReg(TxCPUState.SP) + 128;
+                    }
+                    else {
+                        temp = cpuState.getReg(TxCPUState.SP) + (statement.imm << 3);
+                    }
+
+                    int temp2 = temp;
+                    if ((statement.sa_cc & 0b100) != 0) { // RA
+                        temp -= 4;
+                        cpuState.setReg(TxCPUState.RA, memory.load32(temp));
+                    }
+                    if ((statement.sa_cc & 0b001) != 0) { // S1
+                        temp -= 4;
+                        cpuState.setReg(TxCPUState.S1, memory.load32(temp));
+                    }
+                    if ((statement.sa_cc & 0b010) != 0) { // S0
+                        temp -= 4;
+                        cpuState.setReg(TxCPUState.S0, memory.load32(temp));
+                    }
+                    cpuState.setReg(TxCPUState.SP, temp2);
+                }
+            });
+
+
+    public static final TxInstruction save16Instruction = new TxInstruction("save", "z", "", "save $s0, 0x8",
+            "SAVE registers and set up stack frame: save given registers on the stack and adjust sp according to given value",
+            null, InstructionFormat16.I8SVRS,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int temp = cpuState.getReg(TxCPUState.SP);
+                    if ((statement.sa_cc & 0b100) != 0) { // RA
+                        temp -= 4;
+                        memory.store32(temp, cpuState.getReg(TxCPUState.RA));
+                    }
+                    if ((statement.sa_cc & 0b001) != 0) { // S1
+                        temp -= 4;
+                        memory.store32(temp, cpuState.getReg(TxCPUState.S1));
+                    }
+                    if ((statement.sa_cc & 0b010) != 0) { // S0
+                        temp -= 4;
+                        memory.store32(temp, cpuState.getReg(TxCPUState.S0));
+                    }
+                    if (statement.imm == 0) {
+                        temp = cpuState.getReg(TxCPUState.SP) - 128;
+                    }
+                    else {
+                        temp = cpuState.getReg(TxCPUState.SP) - (statement.imm << 3);
+                    }
+                    cpuState.setReg(TxCPUState.SP, temp);
+                }
+            });
+
+
+
     /**
      * non-EXTENDed 16-bit ISA version of sbInstruction: does not sign-extend offset
      */
@@ -3645,18 +3711,16 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b0100100010100000, 0b1111100011100000, oriInstruction);
 
-/*
-        expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restore1Instruction);
-
-        expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restore2Instruction);
-*/
         expandInstruction(opcode16Map,         0b1110100000010100, 0b1111100000011111, saddInstruction);
+
+        expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restore16Instruction);
 /*
-        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, save1Instruction);
-
-        expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, save2Instruction);
+        expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restoreInstruction);
 */
-
+        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, save16Instruction);
+/*
+        expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, saveInstruction);
+*/
         expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sbInstruction);
 

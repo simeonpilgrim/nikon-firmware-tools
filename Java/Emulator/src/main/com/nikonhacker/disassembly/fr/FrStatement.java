@@ -385,8 +385,8 @@ public class FrStatement extends Statement {
                     decodedImm |= 0x100;
                     break;
                 case 'y':
-                    c += 8;
-                    // goto case 'z'; /*FALLTHROUGH*/
+                    c += 8; // use high register list
+                    // continue with case 'z'
                 case 'z':
                     /* register list */
                     currentBuffer.append(fmt_par);
