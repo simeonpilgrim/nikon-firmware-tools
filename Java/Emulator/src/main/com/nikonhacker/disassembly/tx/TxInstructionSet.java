@@ -3879,7 +3879,7 @@ public class TxInstructionSet
         opcodeResolvers[0b011010] = betaResolver;
         opcodeResolvers[0b011011] = betaResolver;
         opcodeResolvers[0b011100] = special2FunctionResolver;
-        opcodeResolvers[0b011101] = unimplementedResolver; // new DirectInstructionResolver(jalxInstruction);
+        opcodeResolvers[0b011101] = new DirectInstructionResolver(jalxInstruction);
         opcodeResolvers[0b011110] = betaResolver;
         opcodeResolvers[0b011111] = starResolver;
 
