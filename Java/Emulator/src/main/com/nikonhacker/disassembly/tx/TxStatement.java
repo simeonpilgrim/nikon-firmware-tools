@@ -235,7 +235,7 @@ public class TxStatement extends Statement {
                     break;
                 case I8MOVFP:
                     rd_fd = TxCPUState.FP;
-                    rs_fs = (binaryStatement >> 5) & 0b11111;
+                    rs_fs = (binaryStatement >>> 5) & 0b11111;
                     break;
                 case I8MOVR32:
                     rs_fs = binaryStatement & 0b11111;
@@ -245,6 +245,11 @@ public class TxStatement extends Statement {
                     rs_fs = TxCPUState.REGISTER_MAP_16B[binaryStatement & 0b111];
                     // r32 bit encoding is --------21043--- . 43 must not move and 210 is shifted right to reorder 43210
                     rd_fd = binaryStatement & 0b11000 | (binaryStatement >> 5) & 0b00111;
+                    break;
+                case I8SVRS:
+                    imm   = binaryStatement & 0b1111;
+                    immBitWidth = 4;
+                    sa_cc = (binaryStatement >>> 4) & 0b111;
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
@@ -313,6 +318,11 @@ public class TxStatement extends Statement {
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     sa_cc = (binaryStatement >>> 22) & 0b11111; // sa
                     rd_fd = rs_fs;
+                    break;
+                case I8SVRS:
+                    imm   =   ((binaryStatement >> (20- 4)) & 0b11110000)
+                            | ( binaryStatement             & 0b00001111);
+                    immBitWidth = 8;
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
@@ -605,22 +615,21 @@ public class TxStatement extends Statement {
                     // goto case 'z'; /*FALLTHROUGH*/
                 case 'z':
                     /* register list */
-                    currentBuffer.append(fmt_par);
-                    boolean first = true;
-                    for (int i = 0; i < 8; ++i) {
-                        if ((decodedImm & (1 << i)) != 0) {
-                            if (first)
-                                first = false;
-                            else
-                                currentBuffer.append(",");
-
-                            if ((decodedImm & 0x100) != 0)
-                                currentBuffer.append(TxCPUState.REG_LABEL[c + 7 - i]);
-                            else
-                                currentBuffer.append(TxCPUState.REG_LABEL[c + i]);
-                        }
+                    if ((sa_cc & 0b100) != 0) { // RA
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA] + ", ");
                     }
-                    currentBuffer.append(fmt_ens);
+                    if ((sa_cc & 0b001) != 0) { // S1
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S1] + ", ");
+                    }
+                    if ((sa_cc & 0b010) != 0) { // S0
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S0] + ", ");
+                    }
+                    if (imm == 0) {
+                        currentBuffer.append("0x" + Format.asHex(128, 2));
+                    }
+                    else {
+                        currentBuffer.append("0x" + Format.asHex((imm << 3), 2));
+                    }
                     break;
                 default:
                     currentBuffer.append(formatChar);

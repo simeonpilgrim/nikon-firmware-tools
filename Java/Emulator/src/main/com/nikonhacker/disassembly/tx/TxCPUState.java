@@ -44,6 +44,8 @@ public class TxCPUState extends CPUState {
             "FIR", "FCCR", "FEXR", "FENR", "FCSR"
     };
 
+    public final static int S0 = 16;
+    public final static int S1 = 17;
     public final static int T8 = 24;
     public final static int GP = 28;
     public final static int SP = 29;
