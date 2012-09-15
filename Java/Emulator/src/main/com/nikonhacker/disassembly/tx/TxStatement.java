@@ -247,9 +247,9 @@ public class TxStatement extends Statement {
                     rd_fd = binaryStatement & 0b11000 | (binaryStatement >> 5) & 0b00111;
                     break;
                 case I8SVRS:
-                    imm   = binaryStatement & 0b1111;
+                    imm   = binaryStatement & 0b1111; // framesize
                     immBitWidth = 4;
-                    sa_cc = (binaryStatement >>> 4) & 0b111;
+                    sa_cc = (binaryStatement >>> 4) & 0b111; // ra|s0|s1
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
@@ -321,8 +321,11 @@ public class TxStatement extends Statement {
                     break;
                 case I8SVRS:
                     imm   =   ((binaryStatement >> (20- 4)) & 0b11110000)
-                            | ( binaryStatement             & 0b00001111);
+                            | ( binaryStatement             & 0b00001111); // framesize
                     immBitWidth = 8;
+                    sa_cc =   ((binaryStatement >> (20- 7)) & 0b1110000000)
+                            | ((binaryStatement >> (16- 3)) & 0b0001111000)
+                            | ((binaryStatement >> 4)       & 0b0000000111); // xsregs|aregs|ra|s0|s1
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
@@ -616,19 +619,50 @@ public class TxStatement extends Statement {
                 case 'z':
                     /* register list */
                     if ((sa_cc & 0b100) != 0) { // RA
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA] + ", ");
-                    }
-                    if ((sa_cc & 0b001) != 0) { // S1
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S1] + ", ");
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA] + ",");
                     }
                     if ((sa_cc & 0b010) != 0) { // S0
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S0] + ", ");
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S0] + ",");
                     }
-                    if (imm == 0) {
-                        currentBuffer.append("0x" + Format.asHex(128, 2));
+                    if ((sa_cc & 0b001) != 0) { // S1
+                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S1] + ",");
+                    }
+
+                    int xsregs = (binaryStatement >> 24) & 0b111;
+                    if (xsregs > 0) {
+                        currentBuffer.append(TxCPUState.REG_LABEL[18]);
+                        int lastReg = Math.min(xsregs + 17, 23);
+                        if (lastReg >= 18) {
+                            currentBuffer.append("-" + TxCPUState.REG_LABEL[lastReg]);
+                        }
+                        currentBuffer.append(",");
+                        if (xsregs == 7) {
+                            currentBuffer.append(TxCPUState.REG_LABEL[30] + ",");
+                        }
+                    }
+
+                    switch ((binaryStatement >> 16) & 0b1111) {
+                        case 0b0001:currentBuffer.append("[" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b0010:currentBuffer.append("[" + TxCPUState.REG_LABEL[6] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b0011:currentBuffer.append("[" + TxCPUState.REG_LABEL[5] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b1011:currentBuffer.append("[" + TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b0100:currentBuffer.append(TxCPUState.REG_LABEL[4]);break;
+                        case 0b0101:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b0110:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[6]+ "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b0111:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[5]+ "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b1000:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ", ");break;
+                        case 0b1001:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b1010:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ",[" + TxCPUState.REG_LABEL[6] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b1100:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[6] + ", ");break;
+                        case 0b1101:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[6] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
+                        case 0b1110:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[7] + ", ");break;
+                    }
+
+                    if (isExtended() && imm == 0) {
+                        currentBuffer.append(" 0x" + Format.asHex(128, 2));
                     }
                     else {
-                        currentBuffer.append("0x" + Format.asHex((imm << 3), 2));
+                        currentBuffer.append(" 0x" + Format.asHex((imm << 3), 2));
                     }
                     break;
                 default:
