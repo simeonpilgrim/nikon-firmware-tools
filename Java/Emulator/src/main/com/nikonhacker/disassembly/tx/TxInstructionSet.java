@@ -2634,15 +2634,18 @@ public class TxInstructionSet
             });
 
 
-    public static final TxInstruction restore16Instruction = new TxInstruction("restore", "z", "", "restore $s0, 0x8",
+    public static final TxInstruction restoreInstruction = new TxInstruction("restore", "z", "", "restore $s0, 0x8",
             "RESTORE registers and deallocate stack frame: restore given registers on the stack and adjust sp according to given value",
             null, InstructionFormat16.I8SVRS,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
+                    int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
+
                     int temp;
-                    if (statement.imm == 0) {
+                    if (!statement.isExtended() && statement.imm == 0) {
                         temp = cpuState.getReg(TxCPUState.SP) + 128;
                     }
                     else {
@@ -2654,6 +2657,36 @@ public class TxInstructionSet
                         temp -= 4;
                         cpuState.setReg(TxCPUState.RA, memory.load32(temp));
                     }
+
+                    if (xsregs > 0) {
+                        if (xsregs > 1) {
+                            if (xsregs > 2) {
+                                if (xsregs > 3) {
+                                    if (xsregs > 4) {
+                                        if (xsregs > 5) {
+                                            if (xsregs > 6) {
+                                                temp -= 4;
+                                                cpuState.setReg(30, memory.load32(temp));
+                                            }
+                                            temp -= 4;
+                                            cpuState.setReg(23, memory.load32(temp));
+                                        }
+                                        temp -= 4;
+                                        cpuState.setReg(22, memory.load32(temp));
+                                    }
+                                    temp -= 4;
+                                    cpuState.setReg(21, memory.load32(temp));
+                                }
+                                temp -= 4;
+                                cpuState.setReg(20, memory.load32(temp));
+                            }
+                            temp -= 4;
+                            cpuState.setReg(19, memory.load32(temp));
+                        }
+                        temp -= 4;
+                        cpuState.setReg(18, memory.load32(temp));
+                    }
+
                     if ((statement.sa_cc & 0b001) != 0) { // S1
                         temp -= 4;
                         cpuState.setReg(TxCPUState.S1, memory.load32(temp));
@@ -2662,23 +2695,134 @@ public class TxInstructionSet
                         temp -= 4;
                         cpuState.setReg(TxCPUState.S0, memory.load32(temp));
                     }
+
+                    if (aregs > 0) {
+                        int astatic = 0;
+                        switch (aregs) {
+                            case 0b0001:
+                            case 0b0101:
+                            case 0b1001:
+                            case 0b1101:
+                                astatic = 1;
+                                break;
+                            case 0b0010:
+                            case 0b0110:
+                            case 0b1010:
+                                astatic = 2;
+                                break;
+                            case 0b0011:
+                            case 0b0111:
+                                astatic = 3;
+                                break;
+                            case 0b1011:
+                                astatic = 4;
+                                break;
+                        }
+                        if (astatic > 0) {
+                            temp -= 4;
+                            cpuState.setReg(7, memory.load32(temp));
+                            if (astatic > 0) {
+                                temp -= 4;
+                                cpuState.setReg(6, memory.load32(temp));
+                                if (astatic > 0) {
+                                    temp -= 4;
+                                    cpuState.setReg(5, memory.load32(temp));
+                                    if (astatic > 0) {
+                                        temp -= 4;
+                                        cpuState.setReg(4, memory.load32(temp));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     cpuState.setReg(TxCPUState.SP, temp2);
                 }
             });
 
 
-    public static final TxInstruction save16Instruction = new TxInstruction("save", "z", "", "save $s0, 0x8",
+    public static final TxInstruction saveInstruction = new TxInstruction("save", "z", "", "save $s0, 0x8",
             "SAVE registers and set up stack frame: save given registers on the stack and adjust sp according to given value",
             null, InstructionFormat16.I8SVRS,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
+                    int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
+
                     int temp = cpuState.getReg(TxCPUState.SP);
+
+                    if (aregs > 0) {
+                        int args = 0;
+                        switch (aregs) {
+                            case 0b0100:
+                            case 0b0101:
+                            case 0b0110:
+                            case 0b0111:
+                                args = 1;
+                                break;
+                            case 0b1000:
+                            case 0b1001:
+                            case 0b1010:
+                                args = 2;
+                                break;
+                            case 0b1100:
+                            case 0b1101:
+                                args = 3;
+                                break;
+                            case 0b1110:
+                                args = 4;
+                                break;
+                        }
+                        if (args > 0) {
+                            memory.store32(temp, cpuState.getReg(4));
+                            if (args > 1) {
+                                memory.store32(temp + 4, cpuState.getReg(5));
+                                if (args > 2) {
+                                    memory.store32(temp + 8, cpuState.getReg(6));
+                                    if (args > 3) {
+                                        memory.store32(temp + 12, cpuState.getReg(7));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     if ((statement.sa_cc & 0b100) != 0) { // RA
                         temp -= 4;
                         memory.store32(temp, cpuState.getReg(TxCPUState.RA));
                     }
+
+                    if (xsregs > 0) {
+                        if (xsregs > 1) {
+                            if (xsregs > 2) {
+                                if (xsregs > 3) {
+                                    if (xsregs > 4) {
+                                        if (xsregs > 5) {
+                                            if (xsregs > 6) {
+                                                temp -= 4;
+                                                memory.store32(temp, cpuState.getReg(30));
+                                            }
+                                            temp -= 4;
+                                            memory.store32(temp, cpuState.getReg(23));
+                                        }
+                                        temp -= 4;
+                                        memory.store32(temp, cpuState.getReg(22));
+                                    }
+                                    temp -= 4;
+                                    memory.store32(temp, cpuState.getReg(21));
+                                }
+                                temp -= 4;
+                                memory.store32(temp, cpuState.getReg(20));
+                            }
+                            temp -= 4;
+                            memory.store32(temp, cpuState.getReg(19));
+                        }
+                        temp -= 4;
+                        memory.store32(temp, cpuState.getReg(18));
+                    }
+
                     if ((statement.sa_cc & 0b001) != 0) { // S1
                         temp -= 4;
                         memory.store32(temp, cpuState.getReg(TxCPUState.S1));
@@ -2687,7 +2831,48 @@ public class TxInstructionSet
                         temp -= 4;
                         memory.store32(temp, cpuState.getReg(TxCPUState.S0));
                     }
-                    if (statement.imm == 0) {
+
+                    if (aregs > 0) {
+                        int astatic = 0;
+                        switch (aregs) {
+                            case 0b0001:
+                            case 0b0101:
+                            case 0b1001:
+                            case 0b1101:
+                                astatic = 1;
+                                break;
+                            case 0b0010:
+                            case 0b0110:
+                            case 0b1010:
+                                astatic = 2;
+                                break;
+                            case 0b0011:
+                            case 0b0111:
+                                astatic = 3;
+                                break;
+                            case 0b1011:
+                                astatic = 4;
+                                break;
+                        }
+                        if (astatic > 0) {
+                            temp -= 4;
+                            memory.store32(temp, cpuState.getReg(7));
+                            if (astatic > 1) {
+                                temp -= 4;
+                                memory.store32(temp, cpuState.getReg(6));
+                                if (astatic > 2) {
+                                    temp -= 4;
+                                    memory.store32(temp, cpuState.getReg(5));
+                                    if (astatic > 3) {
+                                        temp -= 4;
+                                        memory.store32(temp, cpuState.getReg(4));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (!statement.isExtended() && statement.imm == 0) {
                         temp = cpuState.getReg(TxCPUState.SP) - 128;
                     }
                     else {
@@ -3713,14 +3898,14 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1110100000010100, 0b1111100000011111, saddInstruction);
 
-        expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restore16Instruction);
-/*
+        expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restoreInstruction);
+
         expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restoreInstruction);
-*/
-        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, save16Instruction);
-/*
+
+        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, saveInstruction);
+
         expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, saveInstruction);
-*/
+
         expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb16Instruction);
         expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sbInstruction);
 
