@@ -3892,7 +3892,7 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1110100000001111, 0b1111100000011111, notInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, orInstruction);
+        expandInstruction(opcode16Map,         0b1110100000001101, 0b1111100000011111, orInstruction);
 
         expandInstruction(extendedOpcode16Map, 0b0100100010100000, 0b1111100011100000, oriInstruction);
 
