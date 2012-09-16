@@ -173,7 +173,7 @@ public class TxStatement extends Statement {
     }
 
     public void decode16BitOperands(int pc, Memory memory) {
-        if ((binaryStatement & 0xFFFF0000) == 0) {
+        if (!isExtended()) {
             // No EXTEND
             switch (((TxInstruction)instruction).getInstructionFormat16())
             {
@@ -341,14 +341,22 @@ public class TxStatement extends Statement {
                             | ( binaryStatement             & 0b00000000000000001111111111111111);
                     immBitWidth = 26;
                     break;
-                case RR_BFINS:
+                case RR_BS1F_BFINS:
+                    System.out.println(Format.asBinary(binaryStatement, 32) + " " + (((binaryStatement & 0b00000100000000000000000000000000) == 0)?"BFINS":"BS1F"));
+                    if (((binaryStatement & 0b00000100000000000000000000000000) != 0)) {
+                        System.out.println("BS1f");
+                    }
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
                     sa_cc = (binaryStatement >>> 16) & 0b11111; // bit1
                     imm = (binaryStatement >>> 21) & 0b11111; // bit2
                     immBitWidth = 5;
                     break;
-
+                case RR_MIN_MAX:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
+                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>>16) & 0b111]; // ry
+                    rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rz
+                    break;
                 case W:
                     break;
                 default:

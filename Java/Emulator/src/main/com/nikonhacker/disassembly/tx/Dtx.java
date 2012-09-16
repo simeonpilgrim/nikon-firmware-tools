@@ -28,12 +28,24 @@ public class Dtx extends Disassembler
             case 0b1111000000000000:
                 // This is the EXTEND prefix. Get real instruction
                 int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
-                try {
-                    statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
-                } catch (DisassemblyException e) {
-                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-                }
                 statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
+
+                switch (realBinaryStatement & 0b1111100000011111) {
+                    case 0b1110100000000101:
+                        // Weird min/max encoding : they are both extended instructions with the same lower 16b pattern
+                        statement.setInstruction(TxInstructionSet.getMinMaxInstructionForStatement(statement.getBinaryStatement()));
+                        break;
+                    case 0b1110100000000111:
+                        // Weird Bs1f/Bfins encoding : they are both extended instructions with the same lower 16b pattern
+                        statement.setInstruction(TxInstructionSet.getBs1fBfinsInstructionForStatement(statement.getBinaryStatement()));
+                        break;
+                    default:
+                        try {
+                            statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
+                        } catch (DisassemblyException e) {
+                            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
+                        }
+                }
                 bytesInInstruction = 4;
                 break;
             case 0b0001100000000000:

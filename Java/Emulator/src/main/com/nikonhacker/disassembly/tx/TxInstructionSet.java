@@ -133,7 +133,10 @@ public class TxInstructionSet
         JAL_JALX,
 
         /** Layout for BFINS (extended only)    :<pre>[ ext |0|bit2 |bit1 | op  |ry |rx |  F  ]</pre> */
-        RR_BFINS
+        RR_BS1F_BFINS,
+
+        /** Layout for MIN/MAX (extended only)  :<pre>[ ext |M|0000000|ry | op  |rz |rx |  F  ]</pre> */
+        RR_MIN_MAX
     }
 
 
@@ -1957,7 +1960,7 @@ public class TxInstructionSet
 
     public static final TxInstruction bfinsInstruction = new TxInstruction("bfins", "j, i, l, d", "", "bfins $t1, $t2, 4, 2",
             "Bit Field INSert: copy a bit field from register $t2 to register $t1",
-            null, InstructionFormat16.RR_BFINS,
+            null, InstructionFormat16.RR_BS1F_BFINS,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -1973,6 +1976,28 @@ public class TxInstructionSet
                     cpuState.setReg(statement.rt_ft,
                             ( cpuState.getReg(statement.rt_ft)          & ~mask)
                           | ((cpuState.getReg(statement.rs_fs) << bit1 )&  mask));
+                }
+            });
+
+    public static final TxInstruction bs1fInstruction = new TxInstruction("bs1f", "j, i", "", "bs1f $t1, $t2",
+            "Bit Search 1 Forward: set $t2 to the position of the first 1 in register $t1",
+            null, InstructionFormat16.RR_BS1F_BFINS,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int rx = cpuState.getReg(statement.rs_fs);
+                    if (rx == 0) {
+                        cpuState.setReg(statement.rt_ft, 0);
+                    }
+                    else {
+                        for(int i = 0; i < 32; i++) {
+                            if (((rx >> i) & 0b1) == 1) {
+                                cpuState.setReg(statement.rt_ft, i + 1);
+                                break;
+                            }
+                        }
+                    }
                 }
             });
 
@@ -3360,6 +3385,27 @@ public class TxInstructionSet
                 }
             });
 
+    public static final TxInstruction minInstruction = new TxInstruction("min", "k, [i, ]j", "kw", "min $t1, $t2, $t3",
+            "MINimum signed: $t1 is set to the minimum of $t2 and $t3",
+            null, InstructionFormat16.RR_MIN_MAX,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, Math.min(cpuState.getReg(statement.rs_fs), cpuState.getReg(statement.rt_ft)));
+                }
+            });
+    public static final TxInstruction maxInstruction = new TxInstruction("max", "k, [i, ]j", "kw", "min $t1, $t2, $t3",
+            "MAXimum signed: $t1 is set to the maximum of $t2 and $t3",
+            null, InstructionFormat16.RR_MIN_MAX,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    cpuState.setReg(statement.rd_fd, Math.max(cpuState.getReg(statement.rs_fs), cpuState.getReg(statement.rt_ft)));
+                }
+            });
+
 
 
 //    private SyscallLoader syscallLoader;
@@ -3434,6 +3480,24 @@ public class TxInstructionSet
         }
         else {
             return jalxInstruction;
+        }
+    }
+
+    public static Instruction getMinMaxInstructionForStatement(int binaryStatement) {
+        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+            return maxInstruction;
+        }
+        else {
+            return minInstruction;
+        }
+    }
+
+    public static Instruction getBs1fBfinsInstructionForStatement(int binaryStatement) {
+        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+            return bfinsInstruction;
+        }
+        else {
+            return bs1fInstruction;
         }
     }
 
@@ -3774,7 +3838,7 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bfinsInstruction);
+        /* bs1f and bfins instructions differ in the upper 16-bits and are processed separately */
 
         expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
 
@@ -3784,9 +3848,7 @@ public class TxInstructionSet
         expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez16Instruction);
 
         expandInstruction(opcode16Map,         0b1110100000000101, 0b1111100000011111, breakInstruction);
-/*
-        expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bs1fInstruction);
-*/
+
         expandInstruction(extendedOpcode16Map, 0b1111101000000000, 0b1111111100000000, bsetInstruction); // incl with $r0
 
         expandInstruction(opcode16Map,         0b1111101000000000, 0b1111111100000000, bsetInstruction);
@@ -3881,10 +3943,7 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1110100000010111, 0b1111100000011111, maddu16Instruction);
 
-        /*
-        expandInstruction(extendedOpcode16Map, 0b1110100000000101, 0b1111100000011111, min Instruction); // !! + constraints on extended part
-        expandInstruction(extendedOpcode16Map, 0b1110100000000101, 0b1111100000011111, max Instruction); // !! + constraints on extended part
-        */
+        /* min and max instructions look like extended breaks. They differ in the upper 16-bits and are processed separately */
 
         expandInstruction(opcode16Map,         0b0011000000000001, 0b1111100000000111, mfc0Instruction);
         expandInstruction(opcode16Map,         0b0011000000000101, 0b1111100000000111, mtc0Instruction);
