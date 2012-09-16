@@ -73,7 +73,7 @@ public abstract class Disassembler {
                         + "Numbers are C-style (16 or 0x10) and can be followed by the K or M multipliers.\n"
                         + "A range is start-end or start,length.\n";
 
-        System.err.println("Usage: " + getClass().getSimpleName() + "[options] filename");
+        System.err.println("Usage: " + getClass().getSimpleName() + " [options] filename");
         System.err.println("Options:");
         System.err.println(help);
     }
@@ -576,12 +576,24 @@ public abstract class Disassembler {
     }
 
     protected void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
-        String defaultOptionsFilename = getDefaultOptionsFilename();
-        if (!new File(defaultOptionsFilename).exists()) {
-            System.out.println("Default options file " +defaultOptionsFilename + " not found.");
+        if (args.length == 0) {
+            usage();
+            System.exit(-1);
+        }
+        String optionsFilename;
+        String specificFilename = FilenameUtils.removeExtension(args[args.length - 1]) + "." + getClass().getSimpleName().toLowerCase() + ".txt";
+        if (new File(specificFilename).exists()) {
+            optionsFilename = specificFilename;
         }
         else {
-            readOptions(defaultOptionsFilename);
+            optionsFilename = getDefaultOptionsFilename();
+        }
+
+        if (!new File(optionsFilename).exists()) {
+            System.out.println("No specific options file " + specificFilename + " or default options file " + optionsFilename + " could be found.");
+        }
+        else {
+            readOptions(optionsFilename);
         }
         processOptions(args);
 
@@ -591,7 +603,7 @@ public abstract class Disassembler {
 
         cleanup();
 
-        System.out.println("Done.");
+        System.out.println("Disassembly done.");
     }
 
     protected abstract String getDefaultOptionsFilename();
