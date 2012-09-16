@@ -42,10 +42,6 @@ public class FrStatement extends Statement {
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     public int c;
 
-    /** immediate operand */
-    public int imm; // as-is from binary code
-    public int decodedImm; // interpreted
-
 
     /** number of significant bits in decodedX (for display only) */
     public int immBitWidth;
