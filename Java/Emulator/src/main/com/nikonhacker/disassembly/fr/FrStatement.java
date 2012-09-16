@@ -506,4 +506,8 @@ public class FrStatement extends Statement {
         return out;
     }
 
+    public int getNumBytes() {
+        return numData * 2;
+    }
+
 }

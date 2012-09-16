@@ -313,7 +313,7 @@ public class CodeAnalyzer {
             switch (statement.getInstruction().getFlowType()) {
                 case RET:
                     codeStructure.getReturns().put(address, currentFunction.getAddress());
-                    codeStructure.getEnds().put(address + (statement.getInstruction().hasDelaySlot() ? 2 : 0), currentFunction.getAddress());
+                    codeStructure.getEnds().put(address + (statement.getInstruction().hasDelaySlot() ? statement.getNumBytes() : 0), currentFunction.getAddress());
                     break;
                 case JMP:
                 case BRA:
@@ -468,8 +468,8 @@ public class CodeAnalyzer {
                     break;
                 case CALL:
                     if (statement.getInstruction().hasDelaySlot()) {
-                        currentSegment.setEnd(address + 2);
-                        processedStatements.add(address + 2);
+                        currentSegment.setEnd(address + statement.getNumBytes());
+                        processedStatements.add(address + statement.getNumBytes());
                     }
                     int targetAddress = statement.decodedImm;
                     if (targetAddress == 0) {
@@ -512,8 +512,8 @@ public class CodeAnalyzer {
 
             if (statement.getInstruction().flowType == Instruction.FlowType.RET || statement.getInstruction().flowType == Instruction.FlowType.JMP) {
                 if (statement.getInstruction().hasDelaySlot()) {
-                    currentSegment.setEnd(address + 2);
-                    processedStatements.add(address + 2);
+                    currentSegment.setEnd(address + statement.getNumBytes());
+                    processedStatements.add(address + statement.getNumBytes());
                 }
                 // End of segment
                 break;
@@ -566,8 +566,9 @@ public class CodeAnalyzer {
             // and try to merge it with all following ones
             for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
                 CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
-                if ((segmentA.getStart() >= segmentB.getStart() - 2 && segmentA.getStart() <= segmentB.getEnd() + 2)
-                        || (segmentA.getEnd() >= segmentB.getStart() - 2 && segmentA.getEnd() <= segmentB.getEnd() + 2)) {
+                int numBytesSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
+                if ((segmentA.getStart() >= segmentB.getStart() - numBytesSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesSegmentB)
+                        || (segmentA.getEnd() >= segmentB.getStart() - numBytesSegmentB && segmentA.getEnd() <= segmentB.getEnd() + numBytesSegmentB)) {
                     // merge
                     segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
                     segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
