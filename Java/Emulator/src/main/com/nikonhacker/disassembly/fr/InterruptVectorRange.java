@@ -2,6 +2,7 @@ package com.nikonhacker.disassembly.fr;
 
 
 import com.nikonhacker.disassembly.Range;
+import com.nikonhacker.disassembly.RangeType;
 
 public class InterruptVectorRange extends Range {
     public InterruptVectorRange(int start, int end, RangeType rangeType) {

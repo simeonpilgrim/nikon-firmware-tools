@@ -123,26 +123,35 @@ public class Dtx extends Disassembler
 
         int sizeInBytes = 0;
 
-        // TODO
+        for (RangeType.Width spec : memRange.getRangeType().widths)
+        {
+            TxStatement statement = new TxStatement(memRange.getStart());
+            switch (spec.getWidth()) {
+                case 1:
+                    statement.imm = memory.loadUnsigned8(dummyCpuState.pc);
+                    statement.immBitWidth = 8;
+                    break;
+                case 2:
+                    statement.imm = memory.loadUnsigned16(dummyCpuState.pc);
+                    statement.immBitWidth = 16;
+                    break;
+                default:
+                    statement.imm = memory.load32(dummyCpuState.pc);
+                    statement.immBitWidth = 32;
+                    break;
+            }
+            statement.setBinaryStatement(statement.imm);
 
-//        for (int spec : memRange.getDataType().spec)
-//        {
-//            FrStatement statement = new FrStatement(memRange.getStart());
-//            statement.getNextData(memory, dummyCpuState.pc);
-//            statement.x = statement.data[0];
-//            statement.xBitWidth = 16;
-//            statement.setInstruction(FrInstruction.opData[spec]);
-//
-//            statement.decodeOperands(dummyCpuState.pc, memory);
-//
-//            statement.formatOperandsAndComment(dummyCpuState, true, this.outputOptions);
-//
-//            sizeInBytes += statement.n << 1;
-//
-//            if (outWriter != null) {
-//                Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
-//            }
-//        }
+            statement.setInstruction(TxInstructionSet.opData[spec.getIndex()]);
+
+            statement.formatOperandsAndComment((TxCPUState) dummyCpuState, true, this.outputOptions);
+
+            sizeInBytes += statement.immBitWidth / 4;
+
+            if (outWriter != null) {
+                Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
+            }
+        }
 
         return sizeInBytes;
     }

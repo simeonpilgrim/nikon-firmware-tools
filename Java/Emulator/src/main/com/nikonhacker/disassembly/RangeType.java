@@ -1,4 +1,4 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,21 +16,27 @@ public class RangeType {
     }
 
     public enum Width {
-        MD_WORD(0),
-        MD_LONG(1),
-        MD_LONGNUM(2),
-        MD_VECTOR(3),
-        MD_RATIONAL(4),
-        UNKNONW(-1);
+        MD_WORD(0, 2),
+        MD_LONG(1, 4),
+        MD_LONGNUM(2, 4),
+        MD_VECTOR(3, 2),
+        MD_RATIONAL(4, 2),
+        UNKNONW(-1, -1);
 
         private int index;
+        private int width;
 
-        Width(int index) {
+        Width(int index, int width) {
             this.index = index;
+            this.width = width;
         }
 
         public int getIndex() {
             return index;
+        }
+
+        public int getWidth() {
+            return width;
         }
     }
 

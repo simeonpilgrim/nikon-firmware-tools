@@ -1,7 +1,6 @@
 package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.RangeType;
 
 public class Range implements Comparable<Range> {
     private int start;

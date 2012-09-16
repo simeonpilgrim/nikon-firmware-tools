@@ -54,6 +54,43 @@ public class TxInstructionSet
     public static TxInstruction[] extendedOpcode16Map = new TxInstruction[0x10000];
 
     /**
+     * Fake OPCodes for data reading
+     * Array index is a RangeType.Width.index value
+     */
+    static TxInstruction[] opData = {
+            new TxInstruction("dw",  "u;a", "", "", "", null, null, "", Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
+                @Override
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    throw new EmulationException("Cannot execute data at 0x" + Format.asHex(cpuState.pc, 8));
+                }
+            }),
+            new TxInstruction("dl",  "u;a", "", "", "", null, null, "", Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
+                @Override
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    throw new EmulationException("Cannot execute data at 0x" + Format.asHex(cpuState.pc, 8));
+                }
+            }),
+            new TxInstruction("dl",  "u;a", "", "", "", null, null, "", Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
+                @Override
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    throw new EmulationException("Cannot execute data at 0x" + Format.asHex(cpuState.pc, 8));
+                }
+            }),
+            new TxInstruction("dl",  "u;T #v", "", "", "", null, null, "", Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
+                @Override
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    throw new EmulationException("Cannot execute data at 0x" + Format.asHex(cpuState.pc, 8));
+                }
+            }),
+            new TxInstruction("dr",  "q;f", "", "", "", null, null, "", Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
+                @Override
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    throw new EmulationException("Cannot execute data at 0x" + Format.asHex(cpuState.pc, 8));
+                }
+            }),
+    };
+
+    /**
      * Instruction types (formats)
      */
     public enum InstructionFormat16 {
