@@ -129,11 +129,13 @@ public class TxInstructionSet
         /** Layout for data reading is as follows               : <pre>[ op  | imm  |  F  ]</pre> */
         BREAK,
 
-        /** Layout for JAL/JALX (extended only):<pre>[ op  |x| tar | tar |      tar       ]</pre> */
-        JAL_JALX
+        /** Layout for JAL/JALX (extended only) :<pre>[ op  |x| tar | tar |      tar       ]</pre> */
+        JAL_JALX,
+
+        /** Layout for BFINS (extended only)    :<pre>[ ext |0|bit2 |bit1 | op  |ry |rx |  F  ]</pre> */
+        RR_BFINS
     }
 
-    // TODO "EXTEND"
 
 
     // ----------------------------- 32 bits ------------------------------------
@@ -1953,6 +1955,27 @@ public class TxInstructionSet
                 }
             });
 
+    public static final TxInstruction bfinsInstruction = new TxInstruction("bfins", "j, i, l, d", "", "bfins $t1, $t2, 4, 2",
+            "Bit Field INSert: copy a bit field from register $t2 to register $t1",
+            null, InstructionFormat16.RR_BFINS,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int bit1 = statement.sa_cc;
+                    int bit2 = statement.imm;
+                    // Create a mask such as 00..001110000 for 6:4 by
+                    // 1. Creating a fullly set bitmap (-1) :         11..11
+                    // 2. Shifting it left by (6-4+1 = 3)   :      11..11000
+                    // 3. Negating it                       :      00..00111
+                    // 4. Shifting it left by 4             :  00..001110000
+                    int mask = (~((-1) << (bit2-bit1+1))) << bit1;
+                    cpuState.setReg(statement.rt_ft,
+                            ( cpuState.getReg(statement.rt_ft)          & ~mask)
+                          | ((cpuState.getReg(statement.rs_fs) << bit1 )&  mask));
+                }
+            });
+
     public static final TxInstruction bextInstruction = new TxInstruction("bext", "u(i), l", "", "bext 4(sp), 7",
             "Bit EXTract: extract given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
@@ -1970,6 +1993,8 @@ public class TxInstructionSet
                     cpuState.setReg(TxCPUState.T8, ((memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
                 }
             });
+
+
 
     public static final TxInstruction binsInstruction = new TxInstruction("bins", "u(i), l", "", "bins 4(sp), 7",
             "Bit INSert: insert given bit at memory address",
@@ -3749,9 +3774,8 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextInstruction);
 
-/*
         expandInstruction(extendedOpcode16Map, 0b1110100000000111, 0b1111100000011111, bfinsInstruction);
-*/
+
         expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
 
         expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsInstruction);
