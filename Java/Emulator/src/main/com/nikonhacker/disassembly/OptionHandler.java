@@ -2,7 +2,6 @@ package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.fr.InterruptVectorRange;
-import com.nikonhacker.disassembly.fr.RangeType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
