@@ -136,8 +136,9 @@ public class CodeAnalyzer {
         Map.Entry<Integer, Statement> entry = codeStructure.getStatements().firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
+            Instruction instruction = codeStructure.getStatements().get(address).getInstruction();
             if (!processedStatements.contains(address)
-                && ((FrInstruction)(codeStructure.getStatements().get(address).getInstruction())).encoding != 0x9FA0 // NOP stuffing
+                && (instruction instanceof FrInstruction && ((FrInstruction) instruction).encoding != 0x9FA0) // NOP stuffing
                 && memory.loadInstruction16(address) != 0x0000 // 0x0000 stuffing
                 ) {
                 // Not a 0000 nor a NOP
@@ -306,7 +307,7 @@ public class CodeAnalyzer {
                     break;
                 }
             }
-            FrStatement statement = (FrStatement)(codeStructure.getStatements().get(address));
+            Statement statement = codeStructure.getStatements().get(address);
             processedStatements.add(address);
             currentSegment.setEnd(address);
             switch (statement.getInstruction().getFlowType()) {
@@ -490,9 +491,10 @@ public class CodeAnalyzer {
                     }
                     break;
                 case INT:
+                    // This is FR-specific
                     Integer interruptAddress = interruptTable.get(statement.decodedImm);
                     if (statement.decodedImm == 0x40 && int40mapping != null) {
-                        processInt40Call(currentFunction, address, statement);
+                        processInt40Call(currentFunction, address, (FrStatement)statement);
                     }
                     else {
                         Jump interruptCall = new Jump(address, interruptAddress, statement.getInstruction(), false);
@@ -575,7 +577,7 @@ public class CodeAnalyzer {
         }
     }
 
-    private void addCall(Function currentFunction, FrStatement statement, Integer sourceAddress, int targetAddress, String defaultName, boolean isDynamic) throws IOException {
+    private void addCall(Function currentFunction, Statement statement, Integer sourceAddress, int targetAddress, String defaultName, boolean isDynamic) throws IOException {
         Jump call = new Jump(sourceAddress, targetAddress, statement.getInstruction(), isDynamic);
         currentFunction.getCalls().add(call);
         Function function = codeStructure.getFunctions().get(targetAddress);

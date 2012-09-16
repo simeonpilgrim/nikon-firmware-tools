@@ -16,6 +16,10 @@ public abstract class Statement {
     private String operandString;
     private String commentString;
 
+    /** immediate operand */
+    public int imm; // as-is from binary code
+    public int decodedImm; // interpreted
+
     /** decoded instruction */
     public Instruction getInstruction() {
         return instruction;
