@@ -24,12 +24,15 @@ public class Dtx extends Disassembler
 
         int binaryStatement = memory.loadInstruction16(cpuState.pc);
 
+        // In 16-bit ISA, all instructions are on 16-bits, except EXTENDed instructions and JAL/JALX.
+        // Handle these 3 cases, based on the 5 MSBs of the 16 bits read:
         switch (binaryStatement & 0b1111100000000000) {
             case 0b1111000000000000:
                 // This is the EXTEND prefix. Get real instruction
                 int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
                 statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
 
+                // Now most of the instructions can be determined based only on the lower 16bits, except two cases: Min/Max and Bs1f/Bfins:
                 switch (realBinaryStatement & 0b1111100000011111) {
                     case 0b1110100000000101:
                         // Weird min/max encoding : they are both extended instructions with the same lower 16b pattern
@@ -40,11 +43,8 @@ public class Dtx extends Disassembler
                         statement.setInstruction(TxInstructionSet.getBs1fBfinsInstructionForStatement(statement.getBinaryStatement()));
                         break;
                     default:
-                        try {
-                            statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
-                        } catch (DisassemblyException e) {
-                            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-                        }
+                        // Normal case for EXTENDed instructions. Decode based on lower 16 bits
+                        statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
                 }
                 bytesInInstruction = 4;
                 break;
@@ -60,12 +60,9 @@ public class Dtx extends Disassembler
                 bytesInInstruction = 4;
                 break;
             default:
-                try {
-                    statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
-                } catch (DisassemblyException e) {
-                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-                }
+                // Normal non-EXTENDed 16-bit instructions
                 statement.setBinaryStatement(binaryStatement);
+                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
                 bytesInInstruction = 2;
                 break;
         }
