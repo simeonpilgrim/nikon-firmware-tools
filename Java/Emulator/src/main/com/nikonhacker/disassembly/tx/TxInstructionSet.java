@@ -3461,11 +3461,11 @@ public class TxInstructionSet
 
 
 
-    public static TxInstruction getInstructionFor16BitStatement(int binStatement) throws DisassemblyException {
+    public static TxInstruction getInstructionFor16BitStatement(int binStatement) {
         return opcode16Map[binStatement];
     }
 
-    public static TxInstruction getExtendedInstructionFor16BitStatement(int binStatement) throws DisassemblyException {
+    public static TxInstruction getExtendedInstructionFor16BitStatement(int binStatement) {
         return extendedOpcode16Map[binStatement];
     }
 
