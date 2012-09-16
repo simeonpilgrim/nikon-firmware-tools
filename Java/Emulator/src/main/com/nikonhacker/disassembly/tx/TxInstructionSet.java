@@ -2270,7 +2270,7 @@ public class TxInstructionSet
             "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             "",
-            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.pc = cpuState.getReg(TxCPUState.RA);
@@ -2282,7 +2282,7 @@ public class TxInstructionSet
             "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             "",
-            Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.pc = cpuState.getReg(TxCPUState.RA);
