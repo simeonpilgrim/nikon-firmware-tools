@@ -141,4 +141,5 @@ public abstract class Statement {
 
     protected abstract String formatAsHex();
 
+    public abstract int getNumBytes();
 }

@@ -54,6 +54,7 @@ public class TxStatement extends Statement {
     public int memRangeStart = 0;
 
     private int binaryStatement;
+    private int numBytes;
 
     /**
      * Default decoding upon class loading
@@ -71,7 +72,8 @@ public class TxStatement extends Statement {
         return binaryStatement;
     }
 
-    public void setBinaryStatement(int binaryStatement) {
+    public void setBinaryStatement(int numBytes, int binaryStatement) {
+        this.numBytes = numBytes;
         this.binaryStatement = binaryStatement;
     }
 
@@ -169,8 +171,8 @@ public class TxStatement extends Statement {
     }
 
     public void decode16BitOperands(int pc, Memory memory) {
-        if (!isExtended()) {
-            // No EXTEND
+        if (numBytes == 2) {
+            // Not EXTENDed
             switch (((TxInstruction)instruction).getInstructionFormat16())
             {
                 case I:
@@ -579,7 +581,7 @@ public class TxStatement extends Statement {
                     break;
                 case 'r':
                     /* relative to PC */
-                    offset = cpuState.pc + 2 + (isExtended()?2:0);
+                    offset = cpuState.pc + numBytes;
                     break;
                 case 'R':
                     /* relative to PC & 0xF0000000 */
@@ -781,7 +783,7 @@ public class TxStatement extends Statement {
     }
 
     protected String formatAsHex() {
-        if (isExtended())
+        if (numBytes == 4)
         {
             // 32b, or extended 16b
             return Format.asHex(binaryStatement, 8);
@@ -792,7 +794,12 @@ public class TxStatement extends Statement {
         }
     }
 
+    @Override
+    public int getNumBytes() {
+        return numBytes;
+    }
+
     public boolean isExtended() {
-        return (binaryStatement & 0xFFFF0000) != 0;
+        return (numBytes == 4);
     }
 }

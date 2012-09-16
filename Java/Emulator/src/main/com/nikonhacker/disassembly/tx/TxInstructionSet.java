@@ -1946,7 +1946,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     int shift = 32 - statement.immBitWidth;
-                    cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                    cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
             });
 
@@ -1959,7 +1959,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.RA, cpuState.pc + 5); // TODO check
                     int shift = 32 - statement.immBitWidth;
-                    cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                    cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
             });
 
@@ -1990,7 +1990,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -2092,7 +2092,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) != 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -2124,7 +2124,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(TxCPUState.T8) == 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });
@@ -2138,7 +2138,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(TxCPUState.T8) != 0) {
                         int shift = 32 - statement.immBitWidth;
-                        cpuState.pc += 2 + (statement.isExtended()?2:0) + (statement.imm << shift >> (shift-1)); // sign extend and x2
+                        cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                     }
                 }
             });

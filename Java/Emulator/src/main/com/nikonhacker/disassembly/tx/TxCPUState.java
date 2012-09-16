@@ -232,7 +232,7 @@ public class TxCPUState extends CPUState {
 
     private PowerMode powerMode;
 
-    private boolean isIsaMode16 = false;
+    public boolean is16bitIsaMode = false;
 
     // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
     private Register32 cp1Condition = new Register32(0);

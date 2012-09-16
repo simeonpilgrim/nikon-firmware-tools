@@ -19,7 +19,6 @@ public class Dtx extends Disassembler
 
 
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
-        int bytesInInstruction;
         TxStatement statement = new TxStatement(memRange.getStart());
 
         int binaryStatement = memory.loadInstruction16(cpuState.pc);
@@ -30,7 +29,7 @@ public class Dtx extends Disassembler
             case 0b1111000000000000:
                 // This is the EXTEND prefix. Get real instruction
                 int realBinaryStatement = memory.loadInstruction16(cpuState.pc + 2);
-                statement.setBinaryStatement((binaryStatement << 16) | realBinaryStatement);
+                statement.setBinaryStatement(4, (binaryStatement << 16) | realBinaryStatement);
 
                 // Now most of the instructions can be determined based only on the lower 16bits, except two cases: Min/Max and Bs1f/Bfins:
                 switch (realBinaryStatement & 0b1111100000011111) {
@@ -46,24 +45,22 @@ public class Dtx extends Disassembler
                         // Normal case for EXTENDed instructions. Decode based on lower 16 bits
                         statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
                 }
-                bytesInInstruction = 4;
                 break;
             case 0b0001100000000000:
                 // This is the JAL/JALX prefix.
                 int fullStatement = (binaryStatement << 16) | memory.loadInstruction16(cpuState.pc + 2);
-                statement.setBinaryStatement(fullStatement);
+                statement.setBinaryStatement(4, fullStatement);
+
                 try {
                     statement.setInstruction(TxInstructionSet.getJalInstructionForStatement(fullStatement));
                 } catch (DisassemblyException e) {
                     System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
                 }
-                bytesInInstruction = 4;
                 break;
             default:
                 // Normal non-EXTENDed 16-bit instructions
-                statement.setBinaryStatement(binaryStatement);
+                statement.setBinaryStatement(2, binaryStatement);
                 statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
-                bytesInInstruction = 2;
                 break;
         }
 
@@ -84,13 +81,13 @@ public class Dtx extends Disassembler
                 Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
-        return bytesInInstruction;
+        return statement.getNumBytes();
     }
 
     @Override
     protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
-        statement.setBinaryStatement(memory.loadInstruction32(cpuState.pc));
+        statement.setBinaryStatement(4, memory.loadInstruction32(cpuState.pc));
 
         try {
             statement.setInstruction(TxInstructionSet.getInstructionFor32BitStatement(statement.getBinaryStatement()));
@@ -140,17 +137,17 @@ public class Dtx extends Disassembler
                     statement.immBitWidth = 32;
                     break;
             }
-            statement.setBinaryStatement(statement.imm);
+            statement.setBinaryStatement(statement.immBitWidth / 4, statement.imm);
 
             statement.setInstruction(TxInstructionSet.opData[spec.getIndex()]);
 
             statement.formatOperandsAndComment((TxCPUState) dummyCpuState, true, this.outputOptions);
 
-            sizeInBytes += statement.immBitWidth / 4;
-
             if (outWriter != null) {
                 Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
             }
+
+            sizeInBytes += statement.getNumBytes();
         }
 
         return sizeInBytes;
