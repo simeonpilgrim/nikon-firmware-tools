@@ -3893,7 +3893,8 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100011111111, mthiInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000010010, 0b1111100011111111, mfloInstruction);
-        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, mtloInstruction);
+
+        /* mtlo is defined later as a patch on srl when sa == 0 */
 
         expandInstruction(opcode16Map,         0b1110110000001000, 0b1111110000011111, movefpInstruction);
 
@@ -3995,8 +3996,8 @@ public class TxInstructionSet
         expandInstruction(extendedOpcode16Map, 0b0011000000000010, 0b1111100000011111, srlInstruction);
 
         expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100010000011, srl5Instruction);
-        // all values are valid for the sa field, except 00000. So override them with unknown:
-        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, unknownInstruction);
+        // all values are valid for the sa field, except 00000, which is mtlo. So patch it:
+        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, mtloInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000000110, 0b1111100000011111, srlvInstruction);
 
