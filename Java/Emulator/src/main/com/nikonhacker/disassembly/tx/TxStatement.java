@@ -342,10 +342,6 @@ public class TxStatement extends Statement {
                     immBitWidth = 26;
                     break;
                 case RR_BS1F_BFINS:
-                    System.out.println(Format.asBinary(binaryStatement, 32) + " " + (((binaryStatement & 0b00000100000000000000000000000000) == 0)?"BFINS":"BS1F"));
-                    if (((binaryStatement & 0b00000100000000000000000000000000) != 0)) {
-                        System.out.println("BS1f");
-                    }
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
                     sa_cc = (binaryStatement >>> 16) & 0b11111; // bit1
