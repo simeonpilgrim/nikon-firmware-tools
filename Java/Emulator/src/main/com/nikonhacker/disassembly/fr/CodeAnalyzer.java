@@ -563,12 +563,16 @@ public class CodeAnalyzer {
         for (int i = 0; i < currentFunction.getCodeSegments().size(); i++) {
             // take a segment
             CodeSegment segmentA = currentFunction.getCodeSegments().get(i);
+            int numBytesEndSegmentA = codeStructure.getStatements().get(segmentA.getEnd()).getNumBytes();
             // and try to merge it with all following ones
             for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
                 CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
-                int numBytesSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
-                if ((segmentA.getStart() >= segmentB.getStart() - numBytesSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesSegmentB)
-                        || (segmentA.getEnd() >= segmentB.getStart() - numBytesSegmentB && segmentA.getEnd() <= segmentB.getEnd() + numBytesSegmentB)) {
+                int numBytesEndSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
+                // Why isn't "BFC00904 E8A0 jrc $ra" labeled "end" instead of "part2"
+                // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ?
+                // Why isn't "BFC00898 E8A0 jrc $ra" considered a RET ?
+                if ((segmentA.getStart() >= segmentB.getStart() - numBytesEndSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesEndSegmentB)
+                        || (segmentA.getEnd() + numBytesEndSegmentA >= segmentB.getStart() && segmentA.getEnd() <= segmentB.getEnd() + numBytesEndSegmentB)) {
                     // merge
                     segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
                     segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
