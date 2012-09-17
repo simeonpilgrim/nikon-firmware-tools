@@ -138,8 +138,8 @@ public class CodeAnalyzer {
             Integer address = entry.getKey();
             Instruction instruction = codeStructure.getStatements().get(address).getInstruction();
             if (!processedStatements.contains(address)
-                && (instruction instanceof FrInstruction && ((FrInstruction) instruction).encoding != 0x9FA0) // NOP stuffing
-                && memory.loadInstruction16(address) != 0x0000 // 0x0000 stuffing
+                && ((!(instruction instanceof FrInstruction)) || ((FrInstruction) instruction).encoding != 0x9FA0 /* NOP stuffing */ )
+                && ((!(instruction instanceof FrInstruction)) || memory.loadInstruction16(address) != 0x0000 /* 0x0000 stuffing */ )
                 ) {
                 // Not a 0000 nor a NOP
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
@@ -324,146 +324,8 @@ public class CodeAnalyzer {
                         currentFunction.getJumps().add(jump);
                     }
                     else {
-                        // target is dynamic. See if we have a hint
-                        List<Integer> potentialTargets = jumpHints.get(address);
-                        if (potentialTargets != null) {
-                            int i = 0;
-                            for (Integer potentialTarget : potentialTargets) {
-                                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
-                                jumps.add(jump);
-                                currentFunction.getJumps().add(jump);
-                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
-                                i++;
-                            }
-                        }
-                        else {
-                            // try to resolve this typical compiler construct :
-//                            000ABB66  A850                         CMP     #0x5,R<0>   ; number_of_elements
-//                            000ABB68  F510                         BNC:D   part_2_of_sub_abb5e_              ; (skip)
-//                            000ABB6A  8B0D                          MOV    R<0>,AC
-//                            000ABB6C  9F8C 002A 5384               LDI:32  #0x<002A5384>,R12 ; base_address
-//                            000ABB72  B42D                         LSL     #2,AC
-//                            000ABB74  00CC                         LD      @(AC,R12),R12
-//                            000ABB76  970C                         JMP     @R12                            
-                            if (
-                                    ((memory.loadInstruction16(address - 14) & 0xFF00) == 0xF500)   // BNC:D
-                                    &&((memory.loadInstruction16(address - 12) & 0xFF0F) == 0x8B0D) // MOV    R<0>,AC
-                                    && (memory.loadInstruction16(address - 10) == 0x9F8C) // LDI:32  #0x<base_address>,R12
-                                    && (memory.loadInstruction16(address - 4) == 0xB42D) // LSL     #2,AC
-                                    && (memory.loadInstruction16(address - 2) == 0x00CC) // LD      @(AC,R12),R12
-                                    && (memory.loadInstruction16(address    ) == 0x970C) // JMP     @R12
-                                    ) {
-
-                                int baseAddress = memory.loadInstruction32(address - 8);
-
-                                // Try to determine table size
-                                Integer size = null;
-                                // Short version (size <= 0xF) : 000ABB66  A850                         CMP     #0x5,R<0>   ; number_of_elements
-                                if (   ((memory.loadInstruction16(address - 16) & 0xFF00) == 0xA800) // comparing max value with register <n'>
-                                    && ((memory.loadInstruction16(address - 16) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
-                                    ) {
-                                        size = (memory.loadInstruction16(address - 16) & 0x00F0) >> 4;
-                                }
-                                // Long version (size > 0xF):  0030A43A  C10C                         LDI:8   #0x10,R12
-                                //                             0030A43C  AAC4                         CMP     R12,R4
-                                else if (  ((memory.loadInstruction16(address - 18) & 0xF000) == 0xC000) // copying max value to register <m>
-                                        && ((memory.loadInstruction16(address - 16) & 0xFF00) == 0xAA00) // comparing register <m'> with register <n'>
-                                        && ((memory.loadInstruction16(address - 18) & 0x000F) == ((memory.loadInstruction16(address - 16) & 0x00F0) >> 4)) // check m == m'
-                                        && ((memory.loadInstruction16(address - 16) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
-                                        ) {
-                                    size = (memory.loadInstruction16(address - 18) & 0x0FF0) >> 4;
-                                }
-
-                                if (size != null) {
-                                    // Match complete. Add jumps
-                                    try {
-                                        for (int i = 0; i < size; i++) {
-                                            int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                            Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
-                                            jumps.add(jump);
-                                            currentFunction.getJumps().add(jump);
-                                            codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
-                                        }
-                                        //debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
-                                    }
-                                    catch (NullPointerException e) {
-                                        debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8) + " (no table at 0x" + Format.asHex(baseAddress - 8, 8) +")");
-                                    }
-                                }
-                                else {
-                                    debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
-                                }
-                            }
-                            else {
-                                // try to resolve this alternate typical compiler construct :
-//                                0012785A  C90C           LDI:8   #0x90,R12
-//                                0012785C  AAC4           CMP     R12,R4
-//                                0012785E  E404           BC      label_127868_              ; (skip)
-//                                00127860  9F8C 0012 7C02 LDI:32  #0x00127C02,R12
-//                                00127866  9F0C           JMP:D   @R12; part_2_of_sub_127848_ (skip)
-//                                label_127868_:
-//                                00127868  8B4D            MOV    R4,AC
-//                                0012786A  9F8C 0024 A438 LDI:32  #0x0024A438,R12
-//                                00127870  B42D           LSL     #2,AC
-//                                00127872  00CC           LD      @(AC,R12),R12
-//                                00127874  970C           JMP     @R12
-
-                                if (
-                                           (memory.loadInstruction16(address - 22) == 0xE404) // BC +04
-                                        && (memory.loadInstruction16(address - 20) == 0x9F8C) // LDI32:xxxx xxxx,R12
-                                        && (memory.loadInstruction16(address - 14) == 0x9F0C) // JMP:D   @R12;
-                                        &&((memory.loadInstruction16(address - 12) & 0xFF0F) == 0x8B0D) // MOV    R<0>,AC
-                                        && (memory.loadInstruction16(address - 10) == 0x9F8C) // LDI:32  #0x<base_address>,R12
-                                        && (memory.loadInstruction16(address - 4) == 0xB42D) // LSL     #2,AC
-                                        && (memory.loadInstruction16(address - 2) == 0x00CC) // LD      @(AC,R12),R12
-                                        && (memory.loadInstruction16(address    ) == 0x970C) // JMP     @R12
-                                        ) {
-
-                                    int baseAddress = memory.loadInstruction32(address - 8);
-
-                                    // Try to determine table size
-                                    Integer size = null;
-                                    // Short version (size <= 0xF) : 000B442A  A844           CMP     #0x4,R<4>   ; number_of_elements
-                                    if (   ((memory.loadInstruction16(address - 24) & 0xFF00) == 0xA800) // comparing max value with register <n'>
-                                            && ((memory.loadInstruction16(address - 24) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
-                                            ) {
-                                        size = (memory.loadInstruction16(address - 24) & 0x00F0) >> 4;
-                                    }
-                                    // Long version (size > 0xF):  0012785A  C90C           LDI:8   #0x90,R12
-                                    //                             0012785C  AAC4           CMP     R12,R4
-                                    else if (  ((memory.loadInstruction16(address - 26) & 0xF000) == 0xC000) // copying max value to register <m>
-                                            && ((memory.loadInstruction16(address - 24) & 0xFF00) == 0xAA00) // comparing register <m'> with register <n'>
-                                            && ((memory.loadInstruction16(address - 26) & 0x000F) == ((memory.loadInstruction16(address - 24) & 0x00F0) >> 4)) // check m == m'
-                                            && ((memory.loadInstruction16(address - 24) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
-                                            ) {
-                                        size = (memory.loadInstruction16(address - 26) & 0x0FF0) >> 4;
-                                    }
-
-                                    if (size != null) {
-                                        // Match complete. Add jumps
-                                        try {
-                                            for (int i = 0; i < size; i++) {
-                                                int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
-                                                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
-                                                jumps.add(jump);
-                                                currentFunction.getJumps().add(jump);
-                                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
-                                            }
-//                                          debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
-                                        }
-                                        catch (NullPointerException e) {
-                                            debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8) + " (no table at 0x" + Format.asHex(baseAddress - 8, 8) +")");
-                                        }
-                                    }
-                                    else {
-                                        debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
-                                    }
-                                }
-                                else {
-                                    debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
-                                }
-                            }
-                        }
+                        // target is dynamic
+                        resolveDynamicTarget(currentFunction, address, jumps, statement);
                     }
                     break;
                 case CALL:
@@ -492,19 +354,21 @@ public class CodeAnalyzer {
                     break;
                 case INT:
                     // This is FR-specific
-                    Integer interruptAddress = interruptTable.get(statement.decodedImm);
-                    if (statement.decodedImm == 0x40 && int40mapping != null) {
-                        processInt40Call(currentFunction, address, (FrStatement)statement);
-                    }
-                    else {
-                        Jump interruptCall = new Jump(address, interruptAddress, statement.getInstruction(), false);
-                        currentFunction.getCalls().add(interruptCall);
-                        Function interrupt = codeStructure.getFunctions().get(interruptAddress);
-                        if (interrupt != null) {
-                            interrupt.getCalledBy().put(interruptCall, currentFunction);
+                    if (statement.getInstruction() instanceof FrInstruction) {
+                        Integer interruptAddress = interruptTable.get(statement.decodedImm);
+                        if (statement.decodedImm == 0x40 && int40mapping != null) {
+                            processInt40Call(currentFunction, address, (FrStatement)statement);
                         }
                         else {
-                            debugPrintWriter.println("Error : following INT at 0x" + Format.asHex(address, 8) + ": no code found at 0x" + Format.asHex(interruptAddress, 8));
+                            Jump interruptCall = new Jump(address, interruptAddress, statement.getInstruction(), false);
+                            currentFunction.getCalls().add(interruptCall);
+                            Function interrupt = codeStructure.getFunctions().get(interruptAddress);
+                            if (interrupt != null) {
+                                interrupt.getCalledBy().put(interruptCall, currentFunction);
+                            }
+                            else {
+                                debugPrintWriter.println("Error : following INT at 0x" + Format.asHex(address, 8) + ": no code found at 0x" + Format.asHex(interruptAddress, 8));
+                            }
                         }
                     }
                     break;
@@ -568,8 +432,7 @@ public class CodeAnalyzer {
             for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
                 CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
                 int numBytesEndSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
-                // Why isn't "BFC00904 E8A0 jrc $ra" labeled "end" instead of "part2"
-                // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ?
+                // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ? => because they are in unprocessed statements (?)
                 // Why isn't "BFC00898 E8A0 jrc $ra" considered a RET ?
                 if ((segmentA.getStart() >= segmentB.getStart() - numBytesEndSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesEndSegmentB)
                         || (segmentA.getEnd() + numBytesEndSegmentA >= segmentB.getStart() && segmentA.getEnd() <= segmentB.getEnd() + numBytesEndSegmentB)) {
@@ -577,6 +440,149 @@ public class CodeAnalyzer {
                     segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
                     segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
                     currentFunction.getCodeSegments().remove(j);
+                }
+            }
+        }
+    }
+
+    private void resolveDynamicTarget(Function currentFunction, Integer address, List<Jump> jumps, Statement statement) {
+        // First see if we have a hint
+        List<Integer> potentialTargets = jumpHints.get(address);
+        if (potentialTargets != null) {
+            int i = 0;
+            for (Integer potentialTarget : potentialTargets) {
+                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
+                jumps.add(jump);
+                currentFunction.getJumps().add(jump);
+                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
+                i++;
+            }
+        }
+        else {
+            // try to resolve this typical FR compiler construct :
+//                            000ABB66  A850                         CMP     #0x5,R<0>   ; number_of_elements
+//                            000ABB68  F510                         BNC:D   part_2_of_sub_abb5e_              ; (skip)
+//                            000ABB6A  8B0D                          MOV    R<0>,AC
+//                            000ABB6C  9F8C 002A 5384               LDI:32  #0x<002A5384>,R12 ; base_address
+//                            000ABB72  B42D                         LSL     #2,AC
+//                            000ABB74  00CC                         LD      @(AC,R12),R12
+//                            000ABB76  970C                         JMP     @R12
+            if (
+                    ((memory.loadInstruction16(address - 14) & 0xFF00) == 0xF500)   // BNC:D
+                    &&((memory.loadInstruction16(address - 12) & 0xFF0F) == 0x8B0D) // MOV    R<0>,AC
+                    && (memory.loadInstruction16(address - 10) == 0x9F8C) // LDI:32  #0x<base_address>,R12
+                    && (memory.loadInstruction16(address - 4) == 0xB42D) // LSL     #2,AC
+                    && (memory.loadInstruction16(address - 2) == 0x00CC) // LD      @(AC,R12),R12
+                    && (memory.loadInstruction16(address    ) == 0x970C) // JMP     @R12
+                    ) {
+
+                int baseAddress = memory.loadInstruction32(address - 8);
+
+                // Try to determine table size
+                Integer size = null;
+                // Short version (size <= 0xF) : 000ABB66  A850                         CMP     #0x5,R<0>   ; number_of_elements
+                if (   ((memory.loadInstruction16(address - 16) & 0xFF00) == 0xA800) // comparing max value with register <n'>
+                    && ((memory.loadInstruction16(address - 16) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
+                    ) {
+                        size = (memory.loadInstruction16(address - 16) & 0x00F0) >> 4;
+                }
+                // Long version (size > 0xF):  0030A43A  C10C                         LDI:8   #0x10,R12
+                //                             0030A43C  AAC4                         CMP     R12,R4
+                else if (  ((memory.loadInstruction16(address - 18) & 0xF000) == 0xC000) // copying max value to register <m>
+                        && ((memory.loadInstruction16(address - 16) & 0xFF00) == 0xAA00) // comparing register <m'> with register <n'>
+                        && ((memory.loadInstruction16(address - 18) & 0x000F) == ((memory.loadInstruction16(address - 16) & 0x00F0) >> 4)) // check m == m'
+                        && ((memory.loadInstruction16(address - 16) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
+                        ) {
+                    size = (memory.loadInstruction16(address - 18) & 0x0FF0) >> 4;
+                }
+
+                if (size != null) {
+                    // Match complete. Add jumps
+                    try {
+                        for (int i = 0; i < size; i++) {
+                            int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
+                            Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
+                            jumps.add(jump);
+                            currentFunction.getJumps().add(jump);
+                            codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                        }
+                        //debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
+                    }
+                    catch (NullPointerException e) {
+                        debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8) + " (no table at 0x" + Format.asHex(baseAddress - 8, 8) +")");
+                    }
+                }
+                else {
+                    debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
+                }
+            }
+            else {
+                // try to resolve this alternate typical compiler construct :
+//                                0012785A  C90C           LDI:8   #0x90,R12
+//                                0012785C  AAC4           CMP     R12,R4
+//                                0012785E  E404           BC      label_127868_              ; (skip)
+//                                00127860  9F8C 0012 7C02 LDI:32  #0x00127C02,R12
+//                                00127866  9F0C           JMP:D   @R12; part_2_of_sub_127848_ (skip)
+//                                label_127868_:
+//                                00127868  8B4D            MOV    R4,AC
+//                                0012786A  9F8C 0024 A438 LDI:32  #0x0024A438,R12
+//                                00127870  B42D           LSL     #2,AC
+//                                00127872  00CC           LD      @(AC,R12),R12
+//                                00127874  970C           JMP     @R12
+
+                if (
+                           (memory.loadInstruction16(address - 22) == 0xE404) // BC +04
+                        && (memory.loadInstruction16(address - 20) == 0x9F8C) // LDI32:xxxx xxxx,R12
+                        && (memory.loadInstruction16(address - 14) == 0x9F0C) // JMP:D   @R12;
+                        &&((memory.loadInstruction16(address - 12) & 0xFF0F) == 0x8B0D) // MOV    R<0>,AC
+                        && (memory.loadInstruction16(address - 10) == 0x9F8C) // LDI:32  #0x<base_address>,R12
+                        && (memory.loadInstruction16(address - 4) == 0xB42D) // LSL     #2,AC
+                        && (memory.loadInstruction16(address - 2) == 0x00CC) // LD      @(AC,R12),R12
+                        && (memory.loadInstruction16(address    ) == 0x970C) // JMP     @R12
+                        ) {
+
+                    int baseAddress = memory.loadInstruction32(address - 8);
+
+                    // Try to determine table size
+                    Integer size = null;
+                    // Short version (size <= 0xF) : 000B442A  A844           CMP     #0x4,R<4>   ; number_of_elements
+                    if (   ((memory.loadInstruction16(address - 24) & 0xFF00) == 0xA800) // comparing max value with register <n'>
+                            && ((memory.loadInstruction16(address - 24) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
+                            ) {
+                        size = (memory.loadInstruction16(address - 24) & 0x00F0) >> 4;
+                    }
+                    // Long version (size > 0xF):  0012785A  C90C           LDI:8   #0x90,R12
+                    //                             0012785C  AAC4           CMP     R12,R4
+                    else if (  ((memory.loadInstruction16(address - 26) & 0xF000) == 0xC000) // copying max value to register <m>
+                            && ((memory.loadInstruction16(address - 24) & 0xFF00) == 0xAA00) // comparing register <m'> with register <n'>
+                            && ((memory.loadInstruction16(address - 26) & 0x000F) == ((memory.loadInstruction16(address - 24) & 0x00F0) >> 4)) // check m == m'
+                            && ((memory.loadInstruction16(address - 24) & 0x000F) == ((memory.loadInstruction16(address - 12) & 0x00F0) >> 4)) // check n == n'
+                            ) {
+                        size = (memory.loadInstruction16(address - 26) & 0x0FF0) >> 4;
+                    }
+
+                    if (size != null) {
+                        // Match complete. Add jumps
+                        try {
+                            for (int i = 0; i < size; i++) {
+                                int potentialTarget = memory.loadInstruction32(baseAddress + (i << 2));
+                                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
+                                jumps.add(jump);
+                                currentFunction.getJumps().add(jump);
+                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                            }
+//                                          debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
+                        }
+                        catch (NullPointerException e) {
+                            debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8) + " (no table at 0x" + Format.asHex(baseAddress - 8, 8) +")");
+                        }
+                    }
+                    else {
+                        debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
+                    }
+                }
+                else {
+                    debugPrintWriter.println("Cannot follow dynamic jump at 0x" + Format.asHex(address, 8));
                 }
             }
         }
