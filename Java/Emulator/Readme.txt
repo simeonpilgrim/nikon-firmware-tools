@@ -14,7 +14,7 @@ process it (take care, for Dfr, a "Dfr.txt" file is expected to be next to the b
 specify options in the batch file. a sample dfr.txt file is provided for your convenience)
 
 They are all of the form :
-java -cp FrEmulator.jar;lib/commons-io-2.1.jar;lib/commons-lang3-3.1.jar;lib/xstream-1.4.2.jar;lib/jacksum.jar <command> <params>
+java -cp NikonEmulator.jar;<additional_libs> <command> <params>
 
 Where <command> can be :
     com.nikonhacker.gui.EmulatorUI :    Starts the main emulator user interface. From there, many other tools can be
@@ -22,9 +22,12 @@ Where <command> can be :
                                         <params> is an optional (decoded) firmware binary file to load on startup. If
                                         you don't have one, either start it with no param and decode one using the
                                         Tools menu or use the FirmwareDecoder command line tool (see below)
-    com.nikonhacker.dfr.Dfr :   Starts the Dfr disassembler ported from Kevin Schoedel's original Dfr.
-                                <params> are exactly the same as the original Dfr except for filemap and memorymap
-                                output options. Start it with no <params> for help
+    com.nikonhacker.disassembly.fr.Dfr: Starts the Dfr tool, a Fujitsu FR disassembler ported from Kevin Schoedel's
+                                        original Dfr.
+                                        <params> are exactly the same as the original Dfr except for filemap and
+                                        memorymap output options. Start it with no <params> for help
+    com.nikonhacker.disassembly.fr.Dfr: Starts the Dtx tool, a Toshiba TMP19A disassembler.
+                                        <params> are similar to Dfr above. Start it with no <params> for help
     com.nikonhacker.encoding.FirmwareDecoder :  Decodes a encrypted firmware to its different files. By default, the
                                                 intermediary 'res' file staged is skipped so you immediately get
                                                 files that can be loaded in other tools
