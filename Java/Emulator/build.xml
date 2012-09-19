@@ -142,4 +142,18 @@
     <!-- default target -->
     <target name="all" depends="clean,dist" description="Default target to build all"/>
 
+    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="ant-googlecode-0.0.3.jar" name="gcupload"/>
+    <property file="build.credentials.properties" />
+    <target name="upload-build" description="Upload built file to Google Code">
+        <gcupload
+                username="${gc.username}"
+                password="${gc.password}"
+                projectname="nikon-firmware-tools"
+                filename="${dist-dir}/${app-name}-${app-version}.zip"
+                targetfilename="${app-name}-${app-version}.zip"
+                summary="Version ${app-version} of ${app-name}"
+                labels="Featured, Type-Archive, OpSys-All" />
+        <echo message="Don't forget to deprecate the previous release"/>
+    </target>
+
 </project>
