@@ -922,7 +922,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
-                        cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
+                        cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8);
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -936,7 +936,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) >= 0) {
-                        cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
+                        cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8);
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -1028,7 +1028,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
-                        cpuState.setReg(TxCPUState.RA, cpuState.pc + 8); // the "and link" part
+                        cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8); // the "and link" part
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -1042,7 +1042,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     if (cpuState.getReg(statement.rs_fs) < 0) {
-                        cpuState.setReg(TxCPUState.RA, cpuState.pc + 8); // the "and link" part
+                        cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8); // the "and link" part
                         cpuState.pc = cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                 }
@@ -1140,8 +1140,8 @@ public class TxInstructionSet
     // TODO: delay slot work
     public static final TxInstruction jInstruction = new TxInstruction("j", "4Ru", "", "j target",
             "Jump unconditionally: Jump to statement at target address",
-            InstructionFormat32.J,
-            null, "000010 ffffffffffffffffffffffffff",
+            InstructionFormat32.J, null,
+            "000010 ffffffffffffffffffffffffff",
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
@@ -1157,7 +1157,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
     // alternative if rs=ra
@@ -1170,7 +1170,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
     // TODO: delay slot work
@@ -1181,7 +1181,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
+                    cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8);
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
                 }
             });
@@ -1194,7 +1194,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 8);
+                    cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8);
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
                 }
             });
@@ -1207,8 +1207,8 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(statement.rd_fd, cpuState.pc + 8);
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setReg(statement.rd_fd, cpuState.getPc() + 8);
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
     public static final TxInstruction cloInstruction = new TxInstruction("clo", "k, i", "kw", "clo $t1,$t2",
@@ -1851,7 +1851,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    int basePc = cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
                 }
             });
@@ -1864,7 +1864,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    int basePc = cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
                 }
             });
@@ -1877,7 +1877,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    int basePc = cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
                 }
             });
@@ -1890,7 +1890,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    int basePc = cpuState.pc; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    int basePc = cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
                 }
             });
@@ -2012,7 +2012,7 @@ public class TxInstructionSet
                     int mask = (~((-1) << (bit2-bit1+1))) << bit1;
                     cpuState.setReg(statement.rt_ft,
                             ( cpuState.getReg(statement.rt_ft)          & ~mask)
-                          | ((cpuState.getReg(statement.rs_fs) << bit1 )&  mask));
+                                    | ((cpuState.getReg(statement.rs_fs) << bit1 )&  mask));
                 }
             });
 
@@ -2246,8 +2246,8 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 5); // TODO 5 ??
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 5); // TODO 5 ?? getPc ??
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
 
@@ -2259,8 +2259,8 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 3); // TODO 3 ??
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setReg(TxCPUState.RA, cpuState.pc + 3); // TODO 3 ?? getPc ??
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
 
@@ -2273,7 +2273,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(TxCPUState.RA);
+                    cpuState.setPc(cpuState.getReg(TxCPUState.RA));
                 }
             });
 
@@ -2285,7 +2285,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(TxCPUState.RA);
+                    cpuState.setPc(cpuState.getReg(TxCPUState.RA));
                 }
             });
 
@@ -2297,7 +2297,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                    cpuState.pc = cpuState.getReg(statement.rs_fs);
+                    cpuState.setPc(cpuState.getReg(statement.rs_fs));
                 }
             });
 
@@ -2523,6 +2523,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // TODO mask PC
+                    // getPc ??
                     cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + (statement.imm << 16 >> 16)));
                 }
             });
@@ -2537,6 +2538,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     // TODO mask PC
+                    // getPc ??
                     cpuState.setReg(statement.rt_ft, memory.load32(cpuState.pc + (statement.imm << 2)));
                 }
             });
@@ -3327,22 +3329,22 @@ public class TxInstructionSet
 
     /** 16-bit non-EXTENDed version of sltiuInstruction uses t8 as fixed destination and zero-extends imm */
     public static final TxInstruction sltiu16Instruction = new TxInstruction("sltiu", "i, u", "", "sltiu $t1,-100",
-        "Set on Less Than Immediate Unsigned: If $t1 is less than zero-extended 8-bit immediate using unsigned comparison, then set $t8 to 1 else set $t8 to 0",
+            "Set on Less Than Immediate Unsigned: If $t1 is less than zero-extended 8-bit immediate using unsigned comparison, then set $t8 to 1 else set $t8 to 0",
             null, InstructionFormat16.RI,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-            public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
-                int first = cpuState.getReg(statement.rs_fs);
-                // 8 bit immediate value in statement.imm is zero-extended
-                int second = statement.imm ;
-                if (first >= 0 && second >= 0 || first < 0 && second < 0) {
-                    cpuState.setReg(TxCPUState.T8, (first < second) ? 1 : 0);
-                } else {
-                    cpuState.setReg(TxCPUState.T8, (first >= 0) ? 1 : 0);
+                public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
+                    int first = cpuState.getReg(statement.rs_fs);
+                    // 8 bit immediate value in statement.imm is zero-extended
+                    int second = statement.imm ;
+                    if (first >= 0 && second >= 0 || first < 0 && second < 0) {
+                        cpuState.setReg(TxCPUState.T8, (first < second) ? 1 : 0);
+                    } else {
+                        cpuState.setReg(TxCPUState.T8, (first >= 0) ? 1 : 0);
+                    }
                 }
-            }
-        });
+            });
     /** 16-bit EXTENDed version of sltiuInstruction uses t8 as fixed destination and sign-extends imm */
     public static final TxInstruction sltiu16eInstruction = new TxInstruction("sltiu", "i, s", "", "sltiu $t1,-100",
             "Set on Less Than Immediate Unsigned: If $t1 is less than sign-extended 16-bit immediate using unsigned comparison, then set $t8 to 1 else set $t8 to 0",
