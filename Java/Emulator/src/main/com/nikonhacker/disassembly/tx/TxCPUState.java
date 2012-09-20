@@ -263,6 +263,15 @@ public class TxCPUState extends CPUState {
         pc = startPc;
     }
 
+    public int getPc() {
+        return pc | (is16bitIsaMode?1:0);
+    }
+
+    public void setPc(int pc) {
+        this.is16bitIsaMode = ((pc & 1) == 1);
+        this.pc = pc & 0xFFFE;
+    }
+
 
     public int getActiveRegisterSet() {
         return activeRegisterSet;
