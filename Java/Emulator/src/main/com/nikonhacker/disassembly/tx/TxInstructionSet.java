@@ -1149,7 +1149,6 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction jrInstruction = new TxInstruction("jr", "i;Iu", "", "jr $t1",
             "Jump Register unconditionally: Jump to statement whose address is in $t1",
             InstructionFormat32.R, InstructionFormat16.RI,
@@ -1162,7 +1161,6 @@ public class TxInstructionSet
             });
     // alternative if rs=ra
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction retInstruction = new TxInstruction("ret", "", "", "ret",
             "RETurn (formally a JR to $ra): Return to calling statement",
             InstructionFormat32.R,
@@ -1186,7 +1184,6 @@ public class TxInstructionSet
                 }
             });
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target", // TODO put address in comment
             "Jump And Link eXchanging isa mode: Set $ra to Program Counter (return address) then jump to statement at target address, toggling ISA mode",
             InstructionFormat32.J, InstructionFormat16.JAL_JALX,
@@ -1196,10 +1193,10 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException {
                     cpuState.setReg(TxCPUState.RA, cpuState.getPc() + 8);
                     cpuState.pc = (cpuState.pc & 0xF0000000) | (statement.imm << 2);
+                    cpuState.is16bitIsaMode = !cpuState.is16bitIsaMode;
                 }
             });
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i;Iu", "", "jalr $t1,$t2", // TODO omit rd if rd=$ra
             "Jump And Link Register: Set $t1 to Program Counter (return address) then jump to statement whose address is in $t2",
             InstructionFormat32.R,
@@ -2238,7 +2235,6 @@ public class TxInstructionSet
             });
 
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction jalr16Instruction = new TxInstruction("jalr", "i;Iu", "", "jalr $t2",
             "Jump And Link Register: Set $ra to Program Counter (return address) then jump to statement whose address is in $t2",
             null, InstructionFormat16.RI,
@@ -2251,7 +2247,6 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO handle ISA mode switch
     public static final TxInstruction jalrcInstruction = new TxInstruction("jalrc", "i;Iu", "", "jalrc $t2",
             "Jump And Link Register Compact: Set $ra to Program Counter (return address) then jump to statement whose address is in $t2",
             null, InstructionFormat16.RI,
@@ -2265,7 +2260,6 @@ public class TxInstructionSet
             });
 
     // TODO: delay slot work
-    // TODO handle ISA mode switch
     public static final TxInstruction jrraInstruction = new TxInstruction("jr", "A", "", "jr $ra",
             "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
@@ -2277,7 +2271,6 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO handle ISA mode switch
     public static final TxInstruction jrcraInstruction = new TxInstruction("jrc", "A", "", "jrc $ra",
             "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
@@ -2289,7 +2282,6 @@ public class TxInstructionSet
                 }
             });
 
-    // TODO handle ISA mode switch
     public static final TxInstruction jrcInstruction = new TxInstruction("jrc", "i;Iu", "", "jrc $t2",
             "Jump Register unconditionally Compact: Jump to statement whose address is in $t2",
             null, InstructionFormat16.RI,
