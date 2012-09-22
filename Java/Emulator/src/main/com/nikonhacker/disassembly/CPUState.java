@@ -87,4 +87,6 @@ public abstract class CPUState {
     public boolean isLineBreakRequested() {
         return isLineBreakRequested;
     }
+
+    public abstract void reset();
 }
