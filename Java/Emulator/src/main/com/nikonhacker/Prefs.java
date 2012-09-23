@@ -3,6 +3,7 @@ package com.nikonhacker;
 
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.gui.EmulatorUI;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,7 +16,13 @@ public class Prefs {
     List<BreakTrigger> triggers;
     Set<OutputOption> outputOptions;
 
+    /**
+    @deprecated Use buttonSize field
+     */
     boolean largeToolbarButtons = false;
+
+    String buttonSize = EmulatorUI.BUTTON_SIZE_MEDIUM;
+
     boolean closeAllWindowsOnStop = false;
 
     boolean writeDisassemblyToFile = true;
@@ -60,7 +67,15 @@ public class Prefs {
     }
 
     public void setLargeToolbarButtons(boolean largeToolbarButtons) {
-        this.largeToolbarButtons = largeToolbarButtons;
+        this.buttonSize = largeToolbarButtons?EmulatorUI.BUTTON_SIZE_LARGE:EmulatorUI.BUTTON_SIZE_SMALL;
+    }
+
+    public String getButtonSize() {
+        return buttonSize;
+    }
+
+    public void setButtonSize(String buttonSize) {
+        this.buttonSize = buttonSize;
     }
 
     public boolean isCloseAllWindowsOnStop() {

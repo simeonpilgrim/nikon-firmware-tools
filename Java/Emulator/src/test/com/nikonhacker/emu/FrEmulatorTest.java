@@ -21,7 +21,7 @@ import java.util.Random;
  * Look for the word "spec" for failed tests or differences compared to the examples in the tests
  * Among other things, the spec says unused bits of PS should be 1 while code shows they have to be 0
  */
-public class EmulatorTest extends TestCase {
+public class FrEmulatorTest extends TestCase {
 
     public static final boolean STAY_SILENT_IF_OK = true;
     public static final boolean STOP_ON_ERROR = true;
@@ -32,12 +32,12 @@ public class EmulatorTest extends TestCase {
     private static final int RANDOM_16 = 0xBF01;
     private static final int RANDOM_8 = 0xB3;
 
-    static Emulator emulator;
+    static FrEmulator emulator;
     static FrCPUState cpuState;
     static Memory memory;
 
     static {
-        emulator = new Emulator();
+        emulator = new FrEmulator();
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new AlwaysBreakCondition());
         emulator.setInterruptController(new DummyInterruptController());

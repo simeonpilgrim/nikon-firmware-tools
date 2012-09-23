@@ -136,7 +136,7 @@ public class Dfr extends Disassembler
 
     public void initialize() throws IOException {
         super.initialize();
-        FrInstructionSet.initOpcodeMap(outputOptions);
+        FrInstructionSet.init(outputOptions);
 
         FrStatement.initFormatChars(outputOptions);
 
