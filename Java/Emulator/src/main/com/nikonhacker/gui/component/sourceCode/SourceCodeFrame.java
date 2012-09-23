@@ -496,7 +496,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         codeStructure.writeStatement(writer, address, statement, 0, ui.getPrefs().getOutputOptions());
                         String str = writer.toString();
                         for (String line : str.split("\n")) {
-                            if (line.length() > 0 && Character.isDigit(line.charAt(0))) {
+                            if (line.length() > 0 && isCodeLine(line)) {
                                 lineAddresses.add(address);
                             }
                             else {
@@ -518,10 +518,15 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         updateBreakTriggers();
     }
 
+    private boolean isCodeLine(String line) {
+        char ch = line.charAt(0);
+        return Character.isDigit(ch) || (ch >= 'A' && ch <= 'F');
+    }
+
 
     public void updateBreakTriggers() {
         gutter.removeAllTrackingIcons();
-        for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers()) {
+        for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers(chip)) {
             if (breakTrigger.getCpuStateFlags().pc != 0) {
                 try {
                     Integer lineFromAddress = getLineFromAddress(breakTrigger.getCpuStateValues().pc);
@@ -554,7 +559,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
     private void toggleBreakpoint(int addressFromLine) {
         BreakTrigger matchedTrigger = null;
-        for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers()) {
+        for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers(chip)) {
             if (breakTrigger.getCpuStateFlags().pc != 0) {
                 if (breakTrigger.getCpuStateValues().pc == addressFromLine) {
                     // We found a matching breakpoint, toggle it
@@ -578,7 +583,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             else {
                 triggerName = "Breakpoint at 0x" + Format.asHex(addressFromLine, 8);
             }
-            ui.getPrefs().getTriggers().add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
+            ui.getPrefs().getTriggers(chip).add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
         }
 
         ui.onBreaktriggersChange(chip);
