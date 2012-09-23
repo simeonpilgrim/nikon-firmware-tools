@@ -327,14 +327,14 @@ public class FrInstructionSet {
      * Default instruction decoding upon class loading
      */
     static {
-        initOpcodeMap(EnumSet.noneOf(OutputOption.class));
+        init(EnumSet.noneOf(OutputOption.class));
     }
 
     /**
      * This method fills the instructionMap array with all possible variants of instruction word so that
      * OPCODE can be looked up by just getting instructionMap[instructionWord]
      */
-    public static void initOpcodeMap(Set<OutputOption> options) {
+    public static void init(Set<OutputOption> options) {
         /* opcode decoding */
         // First, fill everything with a default dummy code as a safety net for unknown instructions
         expandOpCodes(instructionMap, defaultInstruction);

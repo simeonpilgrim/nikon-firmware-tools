@@ -3,8 +3,12 @@ package com.nikonhacker.disassembly.tx;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.DisassemblyException;
 import com.nikonhacker.disassembly.Instruction;
+import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.memory.Memory;
+
+import java.util.EnumSet;
+import java.util.Set;
 
 /*
 Copyright (c) 2003-2010,  Pete Sanderson and Kenneth Vollmar
@@ -3806,8 +3810,14 @@ public class TxInstructionSet
         }
     };
 
-
+    /**
+     * Default instruction decoding upon class loading
+     */
     static {
+        init(EnumSet.noneOf(OutputOption.class));
+    }
+
+    public static void init(Set<OutputOption> outputOptions) {
         // ----------------- 16-bits -----------------
 
         // These are rewrites of the Toshiba architecture document, appendix F
@@ -3991,7 +4001,7 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0110011100000000, 0b1111111100000000, moveR32Instruction);
 
         expandInstruction(opcode16Map,         0b0110010100000000, 0b1111111100000000, move32RInstruction);
-        if (true) {
+        if (outputOptions.contains(OutputOption.DMOV)) {
             // Patch : replace "move $zero, $xx" > "nop"
             expandInstruction(opcode16Map,     0b0110010100000000, 0b1111111111111000, nopInstruction);
         }
@@ -4134,11 +4144,11 @@ public class TxInstructionSet
         opcodeResolvers[0b000010] = new DirectInstructionResolver(jInstruction);
         opcodeResolvers[0b000011] = new DirectInstructionResolver(jalInstruction);
         opcodeResolvers[0b000100] = new DirectInstructionResolver(beqInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.BZ)) {
             opcodeResolvers[0b000100] = beqOrBeqzResolver;
         }
         opcodeResolvers[0b000101] = new DirectInstructionResolver(bneInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.BZ)) {
             opcodeResolvers[0b000101] = bneOrBnezResolver;
         }
         opcodeResolvers[0b000110] = new DirectInstructionResolver(blezInstruction);
@@ -4146,14 +4156,14 @@ public class TxInstructionSet
 
         opcodeResolvers[0b001000] = new DirectInstructionResolver(addiInstruction);
         opcodeResolvers[0b001001] = new DirectInstructionResolver(addiuInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.LI)) {
             opcodeResolvers[0b001001] = addiuOrLiResolver;
         }
         opcodeResolvers[0b001010] = new DirectInstructionResolver(sltiInstruction);
         opcodeResolvers[0b001011] = new DirectInstructionResolver(sltiuInstruction);
         opcodeResolvers[0b001100] = new DirectInstructionResolver(andiInstruction);
         opcodeResolvers[0b001101] = new DirectInstructionResolver(oriInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.LI)) {
             opcodeResolvers[0b001101] = oriOrLiResolver;
         }
         opcodeResolvers[0b001110] = new DirectInstructionResolver(xoriInstruction);
@@ -4164,11 +4174,11 @@ public class TxInstructionSet
         opcodeResolvers[0b010010] = /*COP2*/ thetaResolver;
         opcodeResolvers[0b010011] = /*COP3*/ thetaResolver;
         opcodeResolvers[0b010100] = new DirectInstructionResolver(beqlInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.BZ)) {
             opcodeResolvers[0b010100] = beqlOrBeqzlResolver;
         }
         opcodeResolvers[0b010101] = new DirectInstructionResolver(bnelInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.BZ)) {
             opcodeResolvers[0b010101] = bnelOrBnezlResolver;
         }
         opcodeResolvers[0b010110] = new DirectInstructionResolver(blezlInstruction);
@@ -4223,7 +4233,7 @@ public class TxInstructionSet
         specialFunctionResolvers = new InstructionResolver[64];
 
         specialFunctionResolvers[0b000000] = new DirectInstructionResolver(sllInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.SHIFT)) {
             specialFunctionResolvers[0b000000] = sllOrNopResolver;
         }
         specialFunctionResolvers[0b000001] = betaResolver;
@@ -4235,7 +4245,7 @@ public class TxInstructionSet
         specialFunctionResolvers[0b000111] = new DirectInstructionResolver(sravInstruction);
 
         specialFunctionResolvers[0b001000] = new DirectInstructionResolver(jrInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.RET)) {
             specialFunctionResolvers[0b001000] = jrOrRetResolver;
         }
         specialFunctionResolvers[0b001001] = new DirectInstructionResolver(jalrInstruction);
@@ -4266,14 +4276,14 @@ public class TxInstructionSet
 
         specialFunctionResolvers[0b100000] = new DirectInstructionResolver(addInstruction);
         specialFunctionResolvers[0b100001] = new DirectInstructionResolver(adduInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.DMOV)) {
             specialFunctionResolvers[0b100001] = adduOrMoveResolver;
         }
         specialFunctionResolvers[0b100010] = new DirectInstructionResolver(subInstruction);
         specialFunctionResolvers[0b100011] = new DirectInstructionResolver(subuInstruction);
         specialFunctionResolvers[0b100100] = new DirectInstructionResolver(andInstruction);
         specialFunctionResolvers[0b100101] = new DirectInstructionResolver(orInstruction);
-        if (true/*OptionAltInstructions*/) {
+        if (outputOptions.contains(OutputOption.DMOV)) {
             specialFunctionResolvers[0b100101] = orOrMoveResolver;
         }
         specialFunctionResolvers[0b100110] = new DirectInstructionResolver(xorInstruction);

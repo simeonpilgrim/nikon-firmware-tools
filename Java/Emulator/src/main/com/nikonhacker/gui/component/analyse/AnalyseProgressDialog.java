@@ -1,7 +1,9 @@
 package com.nikonhacker.gui.component.analyse;
 
+import com.nikonhacker.disassembly.Disassembler;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.fr.Dfr;
+import com.nikonhacker.disassembly.tx.Dtx;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;
@@ -51,9 +53,14 @@ public class AnalyseProgressDialog extends JDialog {
         setLocationRelativeTo(null);
     }
 
-    public void startBackgroundAnalysis(final int chip, final String optionsFilename, final String inputFilename, final String outputFilename) {
-
-        final Dfr disassembler = new Dfr();
+    public void startBackgroundAnalysis(final int chip, final String optionsFilename, final String outputFilename) {
+        final Disassembler disassembler;
+        if (chip == EmulatorUI.CHIP_FR) {
+            disassembler = new Dfr();
+        }
+        else {
+            disassembler = new Dtx();
+        }
         Thread disassemblerThread = new Thread(new Runnable() {
             public void run() {
                 boolean wasVerbose = emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.VERBOSE);

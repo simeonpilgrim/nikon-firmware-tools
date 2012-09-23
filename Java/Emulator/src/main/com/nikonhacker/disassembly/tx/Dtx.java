@@ -172,7 +172,7 @@ public class Dtx extends Disassembler
 
     public void initialize() throws IOException {
         super.initialize();
-        // TxInstruction.initOpcodeMap(outputOptions);
+        TxInstructionSet.init(outputOptions);
 
         TxStatement.initFormatChars(outputOptions);
 
