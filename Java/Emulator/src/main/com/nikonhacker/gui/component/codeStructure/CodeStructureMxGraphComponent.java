@@ -17,13 +17,11 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class CodeStructureMxGraphComponent extends mxGraphComponent {
-    private int chip;
     private CodeStructure codeStructure;
     private Function currentlySelectedFunction;
 
     public CodeStructureMxGraphComponent(final int chip, final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame, final EmulatorUI ui) {
         super(graph);
-        this.chip = chip;
         this.codeStructure = codeStructureFrame.codeStructure;
 
         final JPopupMenu popupMenu = new JPopupMenu();
