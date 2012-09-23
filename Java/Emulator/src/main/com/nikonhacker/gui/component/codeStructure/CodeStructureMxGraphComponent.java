@@ -17,11 +17,13 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 
 public class CodeStructureMxGraphComponent extends mxGraphComponent {
+    private int chip;
     private CodeStructure codeStructure;
     private Function currentlySelectedFunction;
 
-    public CodeStructureMxGraphComponent(final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame, final EmulatorUI ui) {
+    public CodeStructureMxGraphComponent(final int chip, final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame, final EmulatorUI ui) {
         super(graph);
+        this.chip = chip;
         this.codeStructure = codeStructureFrame.codeStructure;
 
         final JPopupMenu popupMenu = new JPopupMenu();
@@ -54,7 +56,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         final JMenuItem runMenuItem = new JMenuItem("Run then pause");
         runMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.playOneFunction(currentlySelectedFunction.getAddress(), false);
+                ui.playOneFunction(chip, currentlySelectedFunction.getAddress(), false);
             }
         });
         popupMenu.add(runMenuItem);
@@ -62,7 +64,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         final JMenuItem debugMenuItem = new JMenuItem("Debug then pause");
         debugMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.playOneFunction(currentlySelectedFunction.getAddress(), true);
+                ui.playOneFunction(chip, currentlySelectedFunction.getAddress(), true);
             }
         });
         popupMenu.add(debugMenuItem);
@@ -79,17 +81,17 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         Object value = vertex.getValue();
                         if (value instanceof Function) {
                             Function function = (Function) value;
-                            codeStructureFrame.writeFunction(function);
+                            codeStructureFrame.writeFunction(chip, function);
                         }
                         if (value instanceof Jump) {
                             Jump jump = (Jump) value;
-                            ui.jumpToSource(jump.getSource());
+                            ui.jumpToSource(chip, jump.getSource());
                         }
                         else if (value instanceof Integer) {
-                            ui.setStatusText("The function at address 0x" + Format.asHex((Integer) value, 8) + " was not part of a CODE segment and was not disassembled");
+                            ui.setStatusText(chip, "The function at address 0x" + Format.asHex((Integer) value, 8) + " was not part of a CODE segment and was not disassembled");
                         }
                         else {
-                            ui.setStatusText("The target for this jump could not be determined in a static way");
+                            ui.setStatusText(chip, "The target for this jump could not be determined in a static way");
                         }
                     } catch (IOException e1) {
                         e1.printStackTrace();
@@ -110,8 +112,9 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         Object value = ((mxCell) cell).getValue();
                         if (value instanceof Function) {
                             currentlySelectedFunction = (Function) value;
-                            runMenuItem.setEnabled(ui.isEmulatorReady());
-                            debugMenuItem.setEnabled(ui.isEmulatorReady());
+                            boolean emulatorReady = ui.isEmulatorReady(chip);
+                            runMenuItem.setEnabled(emulatorReady);
+                            debugMenuItem.setEnabled(emulatorReady);
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());
                         }
                     }

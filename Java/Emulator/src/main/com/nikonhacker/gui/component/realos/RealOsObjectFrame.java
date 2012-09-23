@@ -27,6 +27,8 @@ public class RealOsObjectFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
+    int chip;
+
     private JButton updateAllButton;
     private JCheckBox autoUpdateCheckbox;
     private final EventList<TaskInformation> taskInformationList;
@@ -36,8 +38,9 @@ public class RealOsObjectFrame extends DocumentFrame {
     private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
     private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
-    public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final EmulatorUI ui) {
+    public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
+        this.chip = chip;
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -45,7 +48,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         updateAllButton = new JButton("Update all");
         updateAllButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                updateAllLists();
+                updateAllLists(chip);
             }
         });
         topPanel.add(updateAllButton);
@@ -57,7 +60,7 @@ public class RealOsObjectFrame extends DocumentFrame {
                 ui.getPrefs().setAutoUpdateRealOsObjects(autoUpdateCheckbox.isSelected());
                 if (autoUpdateCheckbox.isSelected()) {
                     if (updateAllButton.isEnabled()) {
-                        updateAllLists();
+                        updateAllLists(chip);
                     }
                 }
             }
@@ -124,7 +127,7 @@ public class RealOsObjectFrame extends DocumentFrame {
                             if (errorCode != ErrorCode.E_OK) {
                                 JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Setting flag returned " + errorCode);
                             }
-                            updateAllLists();
+                            updateAllLists(chip);
                         } catch (ParsingException e1) {
                             JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Cannot parse new value " + newValue);
                         }
@@ -166,7 +169,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         pack();
     }
 
-    public void updateTaskList() {
+    public void updateTaskList(int chip) {
         taskInformationList.clear();
         int taskNumber = 1;
         TaskInformation taskInformation = ui.getTaskInformation(taskNumber);
@@ -188,7 +191,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         taskPanel.revalidate();
     }
 
-    public void updateSemaphoreList() {
+    public void updateSemaphoreList(int chip) {
         semaphoreInformationList.clear();
         int semaphoreNumber = 1;
         SemaphoreInformation semaphoreInformation = ui.getSemaphoreInformation(semaphoreNumber);
@@ -211,7 +214,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     }
 
 
-    public void updateEventFlagList() {
+    public void updateEventFlagList(int chip) {
         eventFlagInformationList.clear();
         int eventFlagNumber = 1;
         EventFlagInformation eventFlagInformation = ui.getEventFlagInformation(eventFlagNumber);
@@ -234,7 +237,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     }
 
 
-    public void updateMailboxList() {
+    public void updateMailboxList(int chip) {
         mailboxInformationList.clear();
         int mailboxNumber = 1;
         MailboxInformation mailboxInformation = ui.getMailboxInformation(mailboxNumber);
@@ -256,20 +259,20 @@ public class RealOsObjectFrame extends DocumentFrame {
         mailboxPanel.revalidate();
     }
 
-    public void updateAllLists() {
-        updateTaskList();
-        updateSemaphoreList();
-        updateEventFlagList();
-        updateMailboxList();
+    public void updateAllLists(int chip) {
+        updateTaskList(chip);
+        updateSemaphoreList(chip);
+        updateEventFlagList(chip);
+        updateMailboxList(chip);
     }
 
     public void enableUpdate(boolean enable) {
         updateAllButton.setEnabled(enable);
     }
 
-    public void onEmulatorStop() {
+    public void onEmulatorStop(int chip) {
         if (autoUpdateCheckbox.isSelected()) {
-            updateAllLists();
+            updateAllLists(chip);
         }
     }
 }

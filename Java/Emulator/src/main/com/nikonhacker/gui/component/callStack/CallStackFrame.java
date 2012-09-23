@@ -1,8 +1,8 @@
 package com.nikonhacker.gui.component.callStack;
 
 import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
@@ -23,6 +23,7 @@ public class CallStackFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
+    private int chip;
     private Emulator emulator;
     private CPUState cpuState;
     private final LinkedList<CallStackItem> callStack;
@@ -32,7 +33,7 @@ public class CallStackFrame extends DocumentFrame {
     private Timer _timer;
     private final JList callStackList;
 
-    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, CPUState cpuState, CodeStructure codeStructure, EmulatorUI ui) {
+    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, Emulator emulator, CPUState cpuState, CodeStructure codeStructure, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;
@@ -118,11 +119,11 @@ public class CallStackFrame extends DocumentFrame {
         if (index != -1) {
             if (index == 0) {
                 // Pseudo stack element
-                ui.jumpToSource(cpuState.pc);
+                ui.jumpToSource(chip, cpuState.pc);
             }
             else {
                 // Real stack
-                ui.jumpToSource(callStack.get(index - 1).getAddress());
+                ui.jumpToSource(chip, callStack.get(index - 1).getAddress());
             }
         }
     }
@@ -131,11 +132,11 @@ public class CallStackFrame extends DocumentFrame {
         if (index != -1) {
             if (index == 0) {
                 // Pseudo stack element
-                ui.jumpToMemory(cpuState.getReg(FrCPUState.SP));
+                ui.jumpToMemory(chip, cpuState.getReg(FrCPUState.SP));
             }
             else {
                 // Real stack
-                ui.jumpToMemory(callStack.get(index - 1).getSp());
+                ui.jumpToMemory(chip, callStack.get(index - 1).getSp());
             }
         }
     }

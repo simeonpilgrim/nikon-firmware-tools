@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.sourceCode;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
-import com.nikonhacker.disassembly.fr.*;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
@@ -29,6 +29,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 500;
 
+    int chip;
     private final RSyntaxTextArea listingArea;
     private final ImageIcon enabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointIcon.png"));
     private final ImageIcon disabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointIcon.png"));
@@ -51,8 +52,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
+    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
+
+        this.chip = chip;
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
 
@@ -399,7 +402,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     JTextArea textArea = (JTextArea) textComponent;
                     Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                     if (addressFromLine != null) {
-                        ui.playToAddress(addressFromLine, debugMode);
+                        ui.playToAddress(chip, addressFromLine, debugMode);
                     }
                 }
             } catch (BadLocationException ble) {
@@ -578,6 +581,6 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             ui.getPrefs().getTriggers().add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
         }
 
-        ui.onBreaktriggersChange();
+        ui.onBreaktriggersChange(chip);
     }
 }
