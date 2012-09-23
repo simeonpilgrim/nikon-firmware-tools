@@ -1981,8 +1981,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         for (int chip = 0; chip < 2; chip++) {
             // Menus and buttons enabled or not
-            codeStructureMenuItem[chip].setEnabled(codeStructure != null); codeStructureButton[chip].setEnabled(codeStructure != null);
-            sourceCodeMenuItem[chip].setEnabled(codeStructure != null); sourceCodeButton[chip].setEnabled(codeStructure != null);
+            codeStructureMenuItem[chip].setEnabled(codeStructure[chip] != null); codeStructureButton[chip].setEnabled(codeStructure[chip] != null);
+            sourceCodeMenuItem[chip].setEnabled(codeStructure[chip] != null); sourceCodeButton[chip].setEnabled(codeStructure[chip] != null);
 
             // CheckboxMenuItem checked or not
             cpuStateMenuItem[chip].setSelected(cpuStateEditorFrame[chip] != null);
