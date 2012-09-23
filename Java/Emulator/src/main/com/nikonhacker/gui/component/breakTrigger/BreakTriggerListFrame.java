@@ -30,14 +30,17 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
+
+    int chip;
     private List<BreakTrigger> breakTriggers;
     private DebuggableMemory memory;
     private final EventList<BreakTrigger> triggerList;
     private final JTable triggerTable;
     private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory, EmulatorUI ui) {
+    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
+        this.chip = chip;
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
         this.memory = memory;
@@ -136,7 +139,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void deleteTrigger(int index) {
         if (index != -1) {
             breakTriggers.remove(index);
-            ui.onBreaktriggersChange();
+            ui.onBreaktriggersChange(chip);
             if (!breakTriggers.isEmpty()) {
                 int newIndex = Math.min(index, breakTriggers.size() - 1);
                 triggerTable.getSelectionModel().clearSelection();
@@ -159,7 +162,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         cpuStateFlags.clear();
         BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
-        ui.onBreaktriggersChange();
+        ui.onBreaktriggersChange(chip);
 
         editTrigger(trigger);
 
@@ -173,10 +176,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
         cpuStateFlags.clear();
         BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
-        ui.onBreaktriggersChange();
+        ui.onBreaktriggersChange(chip);
 
         new SyscallBreakTriggerCreateDialog(null, trigger, "Add syscall trigger", memory).setVisible(true);
-        ui.onBreaktriggersChange();
+        ui.onBreaktriggersChange(chip);
 
         int newIndex = breakTriggers.size() - 1;
         triggerTable.getSelectionModel().clearSelection();
@@ -185,7 +188,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private void editTrigger(BreakTrigger trigger) {
         new BreakTriggerEditDialog(null, trigger, "Edit trigger conditions").setVisible(true);
-        ui.onBreaktriggersChange();
+        ui.onBreaktriggersChange(chip);
     }
 
     private String findNewName() {
@@ -226,11 +229,11 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return baseObject;
                 case 1:
                     baseObject.setMustBreak((Boolean) editedValue);
-                    ui.onBreaktriggersChange();
+                    ui.onBreaktriggersChange(chip);
                     return baseObject;
                 case 2:
                     baseObject.setMustBeLogged((Boolean) editedValue);
-                    ui.onBreaktriggersChange();
+                    ui.onBreaktriggersChange(chip);
                     return baseObject;
                 case 3:
                     if ("".equals(editedValue)) {

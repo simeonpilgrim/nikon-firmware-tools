@@ -68,10 +68,10 @@ public class InterruptControllerFrame extends DocumentFrame {
                 }
                 InterruptRequest interruptRequest = new InterruptRequest(interruptNumber, isNMI, icr);
                 if (interruptController.request(interruptRequest)) {
-                    ui.setStatusText(interruptName + " (" +  interruptRequest + ") was requested.");
+                    ui.setStatusText(EmulatorUI.CHIP_FR, interruptName + " (" +  interruptRequest + ") was requested.");
                 }
                 else {
-                    ui.setStatusText(interruptName + " (" +  interruptRequest + ") was rejected (already requested).");
+                    ui.setStatusText(EmulatorUI.CHIP_FR, interruptName + " (" +  interruptRequest + ") was rejected (already requested).");
                 }
             }
         };
@@ -119,10 +119,10 @@ public class InterruptControllerFrame extends DocumentFrame {
                 JInterruptButton button = (JInterruptButton) e.getSource();
                 int interruptNumber = button.getInterruptNumber();
                 if (interruptController.request(new InterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
-                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
+                    ui.setStatusText(EmulatorUI.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
                 }
                 else {
-                    ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was rejected (already requested).");
+                    ui.setStatusText(EmulatorUI.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was rejected (already requested).");
                 }
             }
         };
@@ -289,7 +289,7 @@ public class InterruptControllerFrame extends DocumentFrame {
             interruptTimer.cancel();
             interruptTimer = null;
         }
-        ui.setStatusText("Stopped interrupt timer");
+        ui.setStatusText(EmulatorUI.CHIP_FR, "Stopped interrupt timer");
     }
 
     private void startTimer(final int interruptNumber, final boolean isNmi, final int icr, int interval) {
@@ -300,7 +300,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                 interruptController.request(new InterruptRequest(interruptNumber, isNmi, icr));
             }
         }, 0, interval);
-        ui.setStatusText("Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
+        ui.setStatusText(EmulatorUI.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
     }
 
     public void dispose() {

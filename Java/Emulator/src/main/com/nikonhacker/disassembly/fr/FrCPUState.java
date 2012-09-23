@@ -219,6 +219,7 @@ public class FrCPUState extends CPUState {
         setCCR(ps & 0xFF);
     }
 
+    @Override
     public void reset() {
         regValue = new Register32[REG_LABEL.length];
         for (int i = 0; i < regValue.length; i++) {

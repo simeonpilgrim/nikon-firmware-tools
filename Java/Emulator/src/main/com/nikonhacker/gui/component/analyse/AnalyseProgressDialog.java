@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.analyse;
 
-import com.nikonhacker.disassembly.fr.Dfr;
 import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.fr.Dfr;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;
@@ -51,7 +51,8 @@ public class AnalyseProgressDialog extends JDialog {
         setLocationRelativeTo(null);
     }
 
-    public void startBackgroundAnalysis(final String optionsFilename, final String inputFilename, final String outputFilename) {
+    public void startBackgroundAnalysis(final int chip, final String optionsFilename, final String inputFilename, final String outputFilename) {
+
         final Dfr disassembler = new Dfr();
         Thread disassemblerThread = new Thread(new Runnable() {
             public void run() {
@@ -67,7 +68,7 @@ public class AnalyseProgressDialog extends JDialog {
                     disassembler.setMemory(memory);
                     disassembler.initialize();
                     debugPrintWriter.println("Starting disassembly...");
-                    emulatorUI.setCodeStructure(disassembler.disassembleMemRanges());
+                    emulatorUI.setCodeStructure(chip, disassembler.disassembleMemRanges());
                     disassembler.cleanup();
                     debugPrintWriter.println();
                     debugPrintWriter.println("Disassembly complete.");

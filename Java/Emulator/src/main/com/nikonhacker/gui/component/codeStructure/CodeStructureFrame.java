@@ -170,7 +170,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         
         // Create graph
-        Component graphComponent = getGraphPane();
+        Component graphComponent = getGraphPane(EmulatorUI.CHIP_FR);
 
         // Create and fill main panel
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -211,7 +211,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public Component getGraphPane() {
+    public Component getGraphPane(int chip) {
         // Create graph object
         graph = new CodeStructureMxGraph(getCurrentOrientation().getSwingValue());
         // Prevent manual cell resizing
@@ -222,7 +222,7 @@ public class CodeStructureFrame extends DocumentFrame
         graph.setMinimumGraphSize(new mxRectangle(0, 0, FRAME_WIDTH, FRAME_HEIGHT));
 
         // Create graph component
-        graphComponent = new CodeStructureMxGraphComponent(graph, this, ui);
+        graphComponent = new CodeStructureMxGraphComponent(chip, graph, this, ui);
         // Prevent edge drawing from UI
         graphComponent.setConnectable(false);
         graphComponent.setAutoScroll(true);
@@ -231,8 +231,8 @@ public class CodeStructureFrame extends DocumentFrame
     }
 
 
-    public void writeFunction(Function function) throws IOException {
-        ui.jumpToSource(function);
+    public void writeFunction(int chip, Function function) throws IOException {
+        ui.jumpToSource(chip, function);
     }
 
 

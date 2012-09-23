@@ -22,10 +22,13 @@ import java.util.Arrays;
 import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
+
+    private int chip;
+
     private DebuggableMemory memory;
     private CPUState cpuState;
     private String baseTitle;
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private Timer _timer;
     private JTextField addressField;
@@ -39,8 +42,10 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JComboBox registerCombo;
     private JButton saveLoadButton;
 
-    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
+    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
+
+        this.chip = chip;
         this.baseTitle = title;
         this.memory = memory;
         this.cpuState = cpuState;
@@ -58,7 +63,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     private void refreshData() {
-        if (ui.isEmulatorPlaying()) {
+        if (ui.isEmulatorPlaying(chip)) {
             if (currentPage != null) {
                 try {
                     hexEditor.open(new ByteArrayInputStream(currentPage));
@@ -169,7 +174,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
     private Color[] createColorMap() {
         Color[] colorMap = null; // default if memory is not tracked
-        TrackingMemoryActivityListener activityListener = ui.getTrackingMemoryActivityListener();
+        TrackingMemoryActivityListener activityListener = ui.getTrackingMemoryActivityListener(chip);
         if (activityListener != null) {
             int[] cellActivityMap = activityListener.getCellActivityMap(baseAddress >>> 16);
             colorMap = new Color[0x10000];
