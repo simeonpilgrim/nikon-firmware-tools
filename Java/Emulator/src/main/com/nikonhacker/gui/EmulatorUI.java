@@ -1670,7 +1670,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleBreakTriggerList(int chip) {
         if (breakTriggerListFrame[chip] == null) {
-            breakTriggerListFrame[chip] = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, chip, emulator[chip], prefs.getTriggers(), memory[chip], this);
+            breakTriggerListFrame[chip] = new BreakTriggerListFrame("Setup breakpoints and triggers", true, true, true, true, chip, emulator[chip], prefs.getTriggers(chip), memory[chip], this);
             addDocumentFrame(chip, breakTriggerListFrame[chip]);
             breakTriggerListFrame[chip].display(true);
         }
@@ -1884,7 +1884,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCodeStructureWindow(int chip) {
         if (codeStructureFrame[chip] == null) {
-            codeStructureFrame[chip] = new CodeStructureFrame("Code structure", true, true, true, true, cpuState[chip], codeStructure[chip], this);
+            codeStructureFrame[chip] = new CodeStructureFrame("Code structure", true, true, true, true, chip, cpuState[chip], codeStructure[chip], this);
             addDocumentFrame(chip, codeStructureFrame[chip]);
             codeStructureFrame[chip].display(true);
         }
@@ -2076,7 +2076,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else {
             if (debugMode) {
-                for (BreakTrigger breakTrigger : prefs.getTriggers()) {
+                for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
                     if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged() || breakTrigger.getInterruptToRequest() != null || breakTrigger.getPcToSet() != null) {
                         emulator[chip].addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure[chip], memory[chip]), breakTrigger));
                     }
@@ -2166,7 +2166,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         cpuState[chip].pc = BASE_ADDRESS_FUNCTION_CALL;
 
         if (debugMode) {
-            for (BreakTrigger breakTrigger : prefs.getTriggers()) {
+            for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
                 if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
                     emulator[chip].addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure[chip], memory[chip]), breakTrigger));
                 }

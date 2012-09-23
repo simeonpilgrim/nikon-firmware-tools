@@ -13,7 +13,7 @@ import java.util.*;
 
 public class Prefs {
     int sleepTick = 2;
-    List<BreakTrigger> triggers;
+    List<BreakTrigger>[] triggers = new ArrayList[2];
     Set<OutputOption> outputOptions;
 
     /**
@@ -133,13 +133,13 @@ public class Prefs {
         }
     }
 
-    public List<BreakTrigger> getTriggers() {
-        if (triggers == null) triggers = new ArrayList<BreakTrigger>();
-        return triggers;
+    public List<BreakTrigger> getTriggers(int chip) {
+        if (triggers[chip] == null) triggers[chip] = new ArrayList<BreakTrigger>();
+        return triggers[chip];
     }
 
-    public void setTriggers(List<BreakTrigger> triggers) {
-        this.triggers = triggers;
+    public void setTriggers(int chip, List<BreakTrigger> triggers) {
+        this.triggers[chip] = triggers;
     }
 
     public int getWindowPositionX(String windowName) {
