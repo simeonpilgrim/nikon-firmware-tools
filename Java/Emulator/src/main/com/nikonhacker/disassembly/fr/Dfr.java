@@ -42,6 +42,7 @@ package com.nikonhacker.disassembly.fr;
 // Further modifications and port to Java by Vicne
 // */
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.disassembly.*;
 
 import java.io.IOException;
@@ -52,13 +53,11 @@ public class Dfr extends Disassembler
     private static final String DEFAULT_OPTIONS_FILENAME = "dfr.txt";
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
-        new Dfr().execute(args);
+        new Dfr().execute(Constants.CHIP_FR, args);
     }
 
 
-    ///* output */
-
-
+    /* output */
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         FrStatement statement = new FrStatement(memRange.getStart());
         statement.getNextStatement(memory, cpuState.pc);
@@ -132,8 +131,8 @@ public class Dfr extends Disassembler
     protected String getDefaultOptionsFilename() {
         return DEFAULT_OPTIONS_FILENAME;
     }
-    ///* initialization */
 
+    /* initialization */
     public void initialize() throws IOException {
         super.initialize();
         FrInstructionSet.init(outputOptions);
@@ -142,9 +141,6 @@ public class Dfr extends Disassembler
 
         FrCPUState.initRegisterLabels(outputOptions);
     }
-
-
-    ///* options */
 
 
     protected String[] getRegisterLabels() {

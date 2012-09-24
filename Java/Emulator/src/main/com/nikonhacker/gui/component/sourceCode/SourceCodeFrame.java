@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.sourceCode;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -116,7 +117,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Create listing
 
         listingArea = new RSyntaxTextArea(50, 80);
-        prepareAreaFormat(listingArea);
+        prepareAreaFormat(chip, listingArea);
         JComponent listingComponent = prepareListingPane();
 
 
@@ -189,9 +190,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
     /**
      * Format as expected for Fr source display
+     * @param chip
      * @param listingArea
      */
-    public static void prepareAreaFormat(RSyntaxTextArea listingArea) {
+    public static void prepareAreaFormat(int chip, RSyntaxTextArea listingArea) {
         listingArea.setEditable(false);
         listingArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 11));
 
@@ -208,37 +210,41 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Make current line transparent so PC line highlight passes through
         listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
 
+        if (chip == Constants.CHIP_FR) {
+            // Register our FR assembly syntax highlighter
+            AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
+            atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerFrTokenMaker");
+            TokenMakerFactory.setDefaultInstance(atmf);
 
-        // Register our FR assembly syntax highlighter
-        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
-        atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerFrTokenMaker");
-        TokenMakerFactory.setDefaultInstance(atmf);
+            SyntaxScheme ss = listingArea.getSyntaxScheme();
+            Style functionStyle = ss.getStyle(Token.FUNCTION);
 
-        SyntaxScheme ss = listingArea.getSyntaxScheme();
-        Style functionStyle = ss.getStyle(Token.FUNCTION);
+            Style addressStyle = (Style) functionStyle.clone();
+            ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
+            addressStyle.foreground = Color.BLACK;
 
-        Style addressStyle = (Style) functionStyle.clone();
-        ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
-        addressStyle.foreground = Color.BLACK;
+            Style instructionStyle = (Style) functionStyle.clone();
+            ss.setStyle(Token.ANNOTATION, instructionStyle);
+            instructionStyle.foreground = Color.LIGHT_GRAY;
 
-        Style instructionStyle = (Style) functionStyle.clone();
-        ss.setStyle(Token.ANNOTATION, instructionStyle);
-        instructionStyle.foreground = Color.LIGHT_GRAY;
+            Style variableStyle = ss.getStyle(Token.VARIABLE);
+            variableStyle.foreground = new Color(155, 22, 188);
 
-        Style variableStyle = ss.getStyle(Token.VARIABLE);
-        variableStyle.foreground = new Color(155, 22, 188);
+            Style reservedWordStyle = ss.getStyle(Token.RESERVED_WORD);
+            reservedWordStyle.foreground = new Color(0, 0, 255);
 
-        Style reservedWordStyle = ss.getStyle(Token.RESERVED_WORD);
-        reservedWordStyle.foreground = new Color(0, 0, 255);
-
-        Style reservedWord2Style = ss.getStyle(Token.RESERVED_WORD_2);
-        reservedWord2Style.foreground = new Color(0, 150, 150);
+            Style reservedWord2Style = ss.getStyle(Token.RESERVED_WORD_2);
+            reservedWord2Style.foreground = new Color(0, 150, 150);
 
 
-        // Assign it to our area
-        listingArea.setSyntaxEditingStyle("text/frasm");
-        RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
-        listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
+            // Assign it to our area
+            listingArea.setSyntaxEditingStyle("text/frasm");
+            RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
+            listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
+        }
+        else {
+             // TODO
+        }
     }
 
     /**
@@ -493,7 +499,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     Statement statement = codeStructure.getStatements().get(address);
                     try {
                         StringWriter writer = new StringWriter();
-                        codeStructure.writeStatement(writer, address, statement, 0, ui.getPrefs().getOutputOptions());
+                        codeStructure.writeStatement(writer, address, statement, 0, ui.getPrefs().getOutputOptions(chip));
                         String str = writer.toString();
                         for (String line : str.split("\n")) {
                             if (line.length() > 0 && isCodeLine(line)) {

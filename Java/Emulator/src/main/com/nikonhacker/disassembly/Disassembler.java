@@ -12,6 +12,9 @@ import java.io.*;
 import java.util.*;
 
 public abstract class Disassembler {
+
+    private int chip;
+
     public Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
     protected String inputFileName;
     /**
@@ -206,11 +209,13 @@ public abstract class Disassembler {
 
     /**
      * Processes options passed as a String array. E.g. {"infile.bin", "-t1", "-m", "0x00040000-0x00040947=CODE"}
+     *
+     * @param chip
      * @param args
      * @return
      * @throws com.nikonhacker.disassembly.ParsingException
      */
-    public boolean processOptions(String[] args) throws ParsingException {
+    public boolean processOptions(int chip, String[] args) throws ParsingException {
         Character option;
         String argument;
         OptionHandler optionHandler = new OptionHandler(args);
@@ -359,7 +364,7 @@ public abstract class Disassembler {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    if (!OutputOption.parseFlag(outputOptions, option, argument)) {
+                    if (!OutputOption.parseFlag(chip, outputOptions, option, argument)) {
                         System.exit(1);
                     }
                     break;
@@ -372,7 +377,7 @@ public abstract class Disassembler {
                         return false;
                     }
                     try {
-                        readOptions(argument);
+                        readOptions(this.chip, argument);
                     } catch (IOException e) {
                         debugPrintWriter.println("Cannot open given options file '" + argument + "'");
                         System.exit(1);
@@ -396,7 +401,7 @@ public abstract class Disassembler {
 
     protected abstract String[] getRegisterLabels();
 
-    public void readOptions(String filename) throws IOException, ParsingException {
+    public void readOptions(int chip, String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
         String buf;
@@ -414,13 +419,13 @@ public abstract class Disassembler {
                         String params = buf.substring(2).trim();
                         if (StringUtils.isNotBlank(params))
                         {
-                            processOptions(new String[]{option, params});
+                            processOptions(chip, new String[]{option, params});
                             continue;
                         }
                     }
                 }
 
-                processOptions(new String[]{buf});
+                processOptions(chip, new String[]{buf});
             }
         }
     }
@@ -575,7 +580,8 @@ public abstract class Disassembler {
         if (outWriter != null) outWriter.close();
     }
 
-    protected void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
+    protected void execute(int chip, String[] args) throws ParsingException, IOException, DisassemblyException {
+        this.chip = chip;
         if (args.length == 0) {
             usage();
             System.exit(-1);
@@ -593,9 +599,9 @@ public abstract class Disassembler {
             System.out.println("No specific options file " + specificFilename + " or default options file " + optionsFilename + " could be found.");
         }
         else {
-            readOptions(optionsFilename);
+            readOptions(chip, optionsFilename);
         }
-        processOptions(args);
+        processOptions(chip, args);
 
         initialize();
 

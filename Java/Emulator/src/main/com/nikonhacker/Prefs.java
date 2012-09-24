@@ -14,7 +14,7 @@ import java.util.*;
 public class Prefs {
     int sleepTick = 2;
     List<BreakTrigger>[] triggers = new ArrayList[2];
-    Set<OutputOption> outputOptions;
+    EnumSet<OutputOption>[] outputOptions = new EnumSet[2];
 
     /**
     @deprecated Use buttonSize field
@@ -62,14 +62,6 @@ public class Prefs {
         return new Prefs();
     }
 
-    public boolean isLargeToolbarButtons() {
-        return largeToolbarButtons;
-    }
-
-    public void setLargeToolbarButtons(boolean largeToolbarButtons) {
-        this.buttonSize = largeToolbarButtons?EmulatorUI.BUTTON_SIZE_LARGE:EmulatorUI.BUTTON_SIZE_SMALL;
-    }
-
     public String getButtonSize() {
         return buttonSize;
     }
@@ -110,26 +102,26 @@ public class Prefs {
         this.sleepTick = sleepTick;
     }
 
-    public Set<OutputOption> getOutputOptions() {
-        if (outputOptions==null) {
+    public Set<OutputOption> getOutputOptions(int chip) {
+        if (outputOptions[chip]==null) {
             // Prepare a new outputOptions containing only default values
-            outputOptions = EnumSet.noneOf(OutputOption.class);
+            outputOptions[chip] = EnumSet.noneOf(OutputOption.class);
             for (OutputOption option : EnumSet.allOf(OutputOption.class)) {
                 if (option.isDefaultValue()) {
-                    outputOptions.add(option);
+                    outputOptions[chip].add(option);
                 }
             }
         }
-        return outputOptions;
+        return outputOptions[chip];
     }
 
-    public void setOutputOption(OutputOption outputOption, boolean value) {
-        getOutputOptions();
+    public void setOutputOption(int chip, OutputOption outputOption, boolean value) {
+        getOutputOptions(chip);
         if (value) {
-            outputOptions.add(outputOption);
+            outputOptions[chip].add(outputOption);
         }
         else {
-            outputOptions.remove(outputOption);
+            outputOptions[chip].remove(outputOption);
         }
     }
 
