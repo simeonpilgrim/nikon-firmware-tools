@@ -18,6 +18,11 @@ public class TxEmulator extends Emulator {
     }
 
 
+    /**
+     * Starts emulating
+     * @return the BreakCondition that caused the emulator to stop
+     * @throws EmulationException
+     */
     @Override
     public BreakCondition play() throws EmulationException {
         throw new RuntimeException("TxEmulator.play unimplemented");
