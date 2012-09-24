@@ -1,5 +1,6 @@
 package com.nikonhacker.disassembly.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 
@@ -11,12 +12,11 @@ public class Dtx extends Disassembler
     private static final String DEFAULT_OPTIONS_FILENAME = "dtx.txt";
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
-        new Dtx().execute(args);
+        new Dtx().execute(Constants.CHIP_FR, args);
     }
 
 
-    ///* output */
-
+    /* output */
 
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());

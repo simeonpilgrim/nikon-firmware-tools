@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.analyse;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.disassembly.Disassembler;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.fr.Dfr;
@@ -55,7 +56,7 @@ public class AnalyseProgressDialog extends JDialog {
 
     public void startBackgroundAnalysis(final int chip, final String optionsFilename, final String outputFilename) {
         final Disassembler disassembler;
-        if (chip == EmulatorUI.CHIP_FR) {
+        if (chip == Constants.CHIP_FR) {
             disassembler = new Dfr();
         }
         else {
@@ -63,15 +64,15 @@ public class AnalyseProgressDialog extends JDialog {
         }
         Thread disassemblerThread = new Thread(new Runnable() {
             public void run() {
-                boolean wasVerbose = emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.VERBOSE);
-                emulatorUI.getPrefs().getOutputOptions().add(OutputOption.VERBOSE);
+                boolean wasVerbose = emulatorUI.getPrefs().getOutputOptions(chip).contains(OutputOption.VERBOSE);
+                emulatorUI.getPrefs().getOutputOptions(chip).add(OutputOption.VERBOSE);
                 PrintWriter debugPrintWriter = printWriterArea.getPrintWriter();
                 try {
                     debugPrintWriter.println("Initializing disassembler...");
                     disassembler.setDebugPrintWriter(debugPrintWriter);
                     disassembler.setOutputFileName(outputFilename);
-                    disassembler.readOptions(optionsFilename);
-                    disassembler.setOutputOptions(emulatorUI.getPrefs().getOutputOptions());
+                    disassembler.readOptions(chip, optionsFilename);
+                    disassembler.setOutputOptions(emulatorUI.getPrefs().getOutputOptions(chip));
                     disassembler.setMemory(memory);
                     disassembler.initialize();
                     debugPrintWriter.println("Starting disassembly...");
@@ -79,7 +80,7 @@ public class AnalyseProgressDialog extends JDialog {
                     disassembler.cleanup();
                     debugPrintWriter.println();
                     debugPrintWriter.println("Disassembly complete.");
-                    if (emulatorUI.getPrefs().getOutputOptions().contains(OutputOption.STRUCTURE)) {
+                    if (emulatorUI.getPrefs().getOutputOptions(chip).contains(OutputOption.STRUCTURE)) {
                         debugPrintWriter.println("You may now use the 'Code Structure' and 'Source Code' windows");
                     }
                 } catch (Exception e) {
@@ -87,7 +88,7 @@ public class AnalyseProgressDialog extends JDialog {
                     debugPrintWriter.println("ERROR : " + e.getClass().getName() + ": " + e.getMessage());
                     debugPrintWriter.println("See console for more information");
                 }
-                emulatorUI.getPrefs().setOutputOption(OutputOption.VERBOSE, wasVerbose);
+                emulatorUI.getPrefs().setOutputOption(chip, OutputOption.VERBOSE, wasVerbose);
                 setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 closeButton.setEnabled(true);
                 emulatorUI.updateStates();
