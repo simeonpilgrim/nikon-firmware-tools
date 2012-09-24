@@ -2157,7 +2157,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
         Thread emulatorThread = new Thread(new Runnable() {
             public void run() {
-                emulator[chip].setCpuState((FrCPUState) cpuState[chip]);
+                emulator[chip].setCpuState(cpuState[chip]);
                 emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
                 setStatusText(chip, "Emulator is running...");
                 BreakCondition stopCause = null;

@@ -82,5 +82,10 @@ public abstract class Emulator {
 
     public abstract void setOutputOptions(Set<OutputOption> outputOptions);
 
+    /**
+     * Starts emulating
+     * @return the BreakCondition that caused the emulator to stop
+     * @throws EmulationException
+     */
     public abstract BreakCondition play() throws EmulationException ;
 }

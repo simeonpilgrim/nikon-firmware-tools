@@ -71,7 +71,7 @@ public class FrEmulator extends Emulator {
 
     /**
      * Starts emulating
-     * @return the BreakCondition that made the emulator stop
+     * @return the BreakCondition that caused the emulator to stop
      * @throws EmulationException
      */
     public BreakCondition play() throws EmulationException {
