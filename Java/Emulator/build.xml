@@ -151,7 +151,7 @@
                 projectname="nikon-firmware-tools"
                 filename="${dist-dir}/${app-name}-${app-version}.zip"
                 targetfilename="${app-name}-${app-version}.zip"
-                summary="Version ${app-version} of ${app-name}"
+                summary="Version ${app-version} of ${app-name} (requires Java 1.7)"
                 labels="Featured, Type-Archive, OpSys-All" />
         <echo message="Don't forget to deprecate the previous release"/>
     </target>
