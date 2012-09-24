@@ -16,12 +16,7 @@ public class Prefs {
     List<BreakTrigger>[] triggers = new ArrayList[2];
     EnumSet<OutputOption>[] outputOptions = new EnumSet[2];
 
-    /**
-    @deprecated Use buttonSize field
-     */
-    boolean largeToolbarButtons = false;
-
-    String buttonSize = EmulatorUI.BUTTON_SIZE_MEDIUM;
+    String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
 
     boolean closeAllWindowsOnStop = false;
 
