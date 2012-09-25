@@ -1,8 +1,11 @@
-package com.nikonhacker.emu.trigger.condition;
+package com.nikonhacker.emu.trigger.condition.fr;
 
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.AbstractLoggingBreakCondition;
+import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
 public class CCRBreakCondition extends AbstractLoggingBreakCondition implements BreakCondition {
     private int ccr;
@@ -14,7 +17,7 @@ public class CCRBreakCondition extends AbstractLoggingBreakCondition implements 
         this.ccrMask = ccrMask;
     }
 
-    public boolean matches(FrCPUState cpuState, Memory memory) {
-        return (cpuState.getCCR() & ccrMask) == ccr;
+    public boolean matches(CPUState cpuState, Memory memory) {
+        return (((FrCPUState)cpuState).getCCR() & ccrMask) == ccr;
     }
 }

@@ -1,11 +1,19 @@
 package com.nikonhacker.emu.trigger;
+
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
-import com.nikonhacker.disassembly.fr.*;
+import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.trigger.condition.*;
+import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
+import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
+import com.nikonhacker.emu.trigger.condition.RegisterEqualityBreakCondition;
+import com.nikonhacker.emu.trigger.condition.fr.CCRBreakCondition;
+import com.nikonhacker.emu.trigger.condition.fr.ILMBreakCondition;
+import com.nikonhacker.emu.trigger.condition.fr.SCRBreakCondition;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.PrintWriter;
