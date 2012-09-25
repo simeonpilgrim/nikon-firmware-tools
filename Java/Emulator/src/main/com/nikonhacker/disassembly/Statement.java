@@ -139,7 +139,7 @@ public abstract class Statement {
         return out;
     }
 
-    protected abstract String formatAsHex();
+    public abstract String formatAsHex();
 
     public abstract int getNumBytes();
 }

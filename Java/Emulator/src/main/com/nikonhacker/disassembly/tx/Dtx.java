@@ -1,7 +1,6 @@
 package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.Constants;
-import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 
 import java.io.IOException;
@@ -17,15 +16,14 @@ public class Dtx extends Disassembler
 
 
     /* output */
-
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
-        int binaryStatement = memory.loadInstruction16(cpuState.pc);
+        int binaryStatement16 = memory.loadInstruction16(cpuState.pc);
 
-        fillInstructionFor16bStatement(statement, binaryStatement, cpuState.pc);
+        statement.fill16bInstruction(binaryStatement16, cpuState.pc, memory);
 
-        statement.decode16BitOperands(cpuState.pc, memory);
+        statement.decode16BitOperands(cpuState.pc);
 
         statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
 
@@ -45,63 +43,17 @@ public class Dtx extends Disassembler
         return statement.getNumBytes();
     }
 
-    private void fillInstructionFor16bStatement(TxStatement statement, int binaryStatement, int pc) {
-        // In 16-bit ISA, all instructions are on 16-bits, except EXTENDed instructions and JAL/JALX.
-        // Handle these 3 cases, based on the 5 MSBs of the 16 bits read:
-        switch (binaryStatement & 0b1111100000000000) {
-            case 0b1111000000000000:
-                // This is the EXTEND prefix. Get real instruction
-                int realBinaryStatement = memory.loadInstruction16(pc + 2);
-                statement.setBinaryStatement(4, (binaryStatement << 16) | realBinaryStatement);
-
-                // Now most of the instructions can be determined based only on the lower 16bits, except two cases: Min/Max and Bs1f/Bfins:
-                switch (realBinaryStatement & 0b1111100000011111) {
-                    case 0b1110100000000101:
-                        // Weird min/max encoding : they are both extended instructions with the same lower 16b pattern
-                        statement.setInstruction(TxInstructionSet.getMinMaxInstructionForStatement(statement.getBinaryStatement()));
-                        break;
-                    case 0b1110100000000111:
-                        // Weird Bs1f/Bfins encoding : they are both extended instructions with the same lower 16b pattern
-                        statement.setInstruction(TxInstructionSet.getBs1fBfinsInstructionForStatement(statement.getBinaryStatement()));
-                        break;
-                    default:
-                        // Normal case for EXTENDed instructions. Decode based on lower 16 bits
-                        statement.setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
-                }
-                break;
-            case 0b0001100000000000:
-                // This is the JAL/JALX prefix.
-                int fullStatement = (binaryStatement << 16) | memory.loadInstruction16(pc + 2);
-                statement.setBinaryStatement(4, fullStatement);
-
-                try {
-                    statement.setInstruction(TxInstructionSet.getJalInstructionForStatement(fullStatement));
-                } catch (DisassemblyException e) {
-                    System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(pc, 8) + ": " + e.getClass().getName());
-                }
-                break;
-            default:
-                // Normal non-EXTENDed 16-bit instructions
-                statement.setBinaryStatement(2, binaryStatement);
-                statement.setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
-                break;
-        }
-    }
-
     @Override
     protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
-        statement.setBinaryStatement(4, memory.loadInstruction32(cpuState.pc));
 
-        try {
-            statement.setInstruction(TxInstructionSet.getInstructionFor32BitStatement(statement.getBinaryStatement()));
+        int binaryStatement32 = memory.loadInstruction32(cpuState.pc);
 
-            statement.decode32BitOperands(cpuState.pc, memory);
+        statement.fill32bInstruction(binaryStatement32);
 
-            statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
-        } catch (DisassemblyException e) {
-            System.err.println("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 8) + " at 0x" + Format.asHex(cpuState.pc, 8) + ": " + e.getClass().getName());
-        }
+        statement.decode32BitOperands();
+
+        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {

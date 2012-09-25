@@ -2,10 +2,7 @@ package com.nikonhacker.disassembly.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.disassembly.Instruction;
-import com.nikonhacker.disassembly.OutputOption;
-import com.nikonhacker.disassembly.Statement;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.Memory;
 
 import java.util.EnumSet;
@@ -510,4 +507,14 @@ public class FrStatement extends Statement {
         return numData * 2;
     }
 
+    public void fillInstruction() {
+        FrInstruction instruction = FrInstructionSet.instructionMap[data[0]];
+
+        if (instruction == null) {
+            setInstruction(FrInstructionSet.opData[RangeType.Width.MD_WORD.getIndex()]);
+        }
+        else {
+            setInstruction(instruction);
+        }
+    }
 }
