@@ -60,15 +60,10 @@ public class Dfr extends Disassembler
     /* output */
     protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         FrStatement statement = new FrStatement(memRange.getStart());
-        statement.getNextStatement(memory, cpuState.pc);
-        FrInstruction instruction = FrInstructionSet.instructionMap[statement.data[0]];
 
-        if (instruction == null) {
-            statement.setInstruction(FrInstructionSet.opData[RangeType.Width.MD_WORD.getIndex()]);
-        }
-        else {
-            statement.setInstruction(instruction);
-        }
+        statement.getNextStatement(memory, cpuState.pc);
+
+        statement.fillInstruction();
 
         statement.decodeOperands(cpuState.pc, memory);
 

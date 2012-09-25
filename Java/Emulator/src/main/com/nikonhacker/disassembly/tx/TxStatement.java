@@ -2,10 +2,7 @@ package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.disassembly.Instruction;
-import com.nikonhacker.disassembly.OutputOption;
-import com.nikonhacker.disassembly.Statement;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -63,6 +60,10 @@ public class TxStatement extends Statement {
         initFormatChars(EnumSet.noneOf(OutputOption.class));
     }
 
+    public TxStatement() {
+        reset();
+    }
+
     public TxStatement(int memRangeStart) {
         this.memRangeStart = memRangeStart;
         reset();
@@ -100,7 +101,7 @@ public class TxStatement extends Statement {
 
 
 
-    public void decode32BitOperands(int pc, Memory memory) {
+    public void decode32BitOperands() {
         switch (((TxInstruction)instruction).getInstructionFormat32())
         {
             case R:
@@ -170,7 +171,7 @@ public class TxStatement extends Statement {
         }
     }
 
-    public void decode16BitOperands(int pc, Memory memory) {
+    public void decode16BitOperands(int pc) {
         if (numBytes == 2) {
             // Not EXTENDed
             switch (((TxInstruction)instruction).getInstructionFormat16())
@@ -782,7 +783,7 @@ public class TxStatement extends Statement {
         return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
-    protected String formatAsHex() {
+    public String formatAsHex() {
         if (numBytes == 4)
         {
             // 32b, or extended 16b
@@ -801,5 +802,53 @@ public class TxStatement extends Statement {
 
     public boolean isExtended() {
         return (numBytes == 4);
+    }
+
+    public void fill16bInstruction(int binaryStatement, int pc, Memory memory) throws DisassemblyException {
+        // In 16-bit ISA, all instructions are on 16-bits, except EXTENDed instructions and JAL/JALX.
+        // Handle these 3 cases, based on the 5 MSBs of the 16 bits read:
+        switch (binaryStatement & 0b1111100000000000) {
+            case 0b1111000000000000:
+                // This is the EXTEND prefix. Get real instruction
+                int realBinaryStatement = memory.loadInstruction16(pc + 2);
+                setBinaryStatement(4, (binaryStatement << 16) | realBinaryStatement);
+
+                // Now most of the instructions can be determined based only on the lower 16bits, except two cases: Min/Max and Bs1f/Bfins:
+                switch (realBinaryStatement & 0b1111100000011111) {
+                    case 0b1110100000000101:
+                        // Weird min/max encoding : they are both extended instructions with the same lower 16b pattern
+                        setInstruction(TxInstructionSet.getMinMaxInstructionForStatement(getBinaryStatement()));
+                        break;
+                    case 0b1110100000000111:
+                        // Weird Bs1f/Bfins encoding : they are both extended instructions with the same lower 16b pattern
+                        setInstruction(TxInstructionSet.getBs1fBfinsInstructionForStatement(getBinaryStatement()));
+                        break;
+                    default:
+                        // Normal case for EXTENDed instructions. Decode based on lower 16 bits
+                        setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
+                }
+                break;
+            case 0b0001100000000000:
+                // This is the JAL/JALX prefix.
+                int fullStatement = (binaryStatement << 16) | memory.loadInstruction16(pc + 2);
+                setBinaryStatement(4, fullStatement);
+
+                try {
+                    setInstruction(TxInstructionSet.getJalInstructionForStatement(fullStatement));
+                } catch (DisassemblyException e) {
+                    System.err.println("Could not decode statement 0x" + Format.asHex(getBinaryStatement(), 4) + " at 0x" + Format.asHex(pc, 8) + ": " + e.getClass().getName());
+                }
+                break;
+            default:
+                // Normal non-EXTENDed 16-bit instructions
+                setBinaryStatement(2, binaryStatement);
+                setInstruction(TxInstructionSet.getInstructionFor16BitStatement(binaryStatement));
+                break;
+        }
+    }
+
+    public void fill32bInstruction(int binaryStatement32) throws DisassemblyException {
+        setBinaryStatement(4, binaryStatement32);
+        setInstruction(TxInstructionSet.getInstructionFor32BitStatement(binaryStatement32));
     }
 }
