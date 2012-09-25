@@ -74,6 +74,7 @@ public class FrEmulator extends Emulator {
      * @return the BreakCondition that caused the emulator to stop
      * @throws EmulationException
      */
+    @Override
     public BreakCondition play() throws EmulationException {
         /* temporary variables */
         int result32, S1, S2, Sr, n;
