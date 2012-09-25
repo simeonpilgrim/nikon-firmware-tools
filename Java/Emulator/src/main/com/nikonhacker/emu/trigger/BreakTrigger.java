@@ -28,8 +28,8 @@ import java.util.Map;
  */
 public class BreakTrigger {
     private String name;
-    private FrCPUState cpuStateValues;
-    private FrCPUState cpuStateFlags;
+    private CPUState cpuStateValues;
+    private CPUState cpuStateFlags;
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
@@ -52,7 +52,7 @@ public class BreakTrigger {
         this.name = name;
     }
 
-    public FrCPUState getCpuStateValues() {
+    public CPUState getCpuStateValues() {
         return cpuStateValues;
     }
 
@@ -96,15 +96,15 @@ public class BreakTrigger {
         this.pcToSet = pcToSet;
     }
 
-    public void setCpuStateValues(FrCPUState cpuStateValues) {
+    public void setCpuStateValues(CPUState cpuStateValues) {
         this.cpuStateValues = cpuStateValues;
     }
 
-    public FrCPUState getCpuStateFlags() {
+    public CPUState getCpuStateFlags() {
         return cpuStateFlags;
     }
 
-    public void setCpuStateFlags(FrCPUState cpuStateFlags) {
+    public void setCpuStateFlags(CPUState cpuStateFlags) {
         this.cpuStateFlags = cpuStateFlags;
     }
 
@@ -148,14 +148,16 @@ public class BreakTrigger {
                 conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
             }
         }
-        if (cpuStateFlags.getCCR() != 0) {
-            conditions.add(new CCRBreakCondition(cpuStateValues.getCCR(), cpuStateFlags.getCCR(), this));
-        }
-        if (cpuStateFlags.getSCR() != 0) {
-            conditions.add(new SCRBreakCondition(cpuStateValues.getSCR(), cpuStateFlags.getSCR(), this));
-        }
-        if (cpuStateFlags.getILM() != 0) {
-            conditions.add(new ILMBreakCondition(cpuStateValues.getILM(), cpuStateFlags.getILM(), this));
+        if (cpuStateFlags instanceof FrCPUState) {
+            if (((FrCPUState)cpuStateFlags).getCCR() != 0) {
+                conditions.add(new CCRBreakCondition(((FrCPUState)cpuStateValues).getCCR(), ((FrCPUState)cpuStateFlags).getCCR(), this));
+            }
+            if (((FrCPUState)cpuStateFlags).getSCR() != 0) {
+                conditions.add(new SCRBreakCondition(((FrCPUState)cpuStateValues).getSCR(), ((FrCPUState)cpuStateFlags).getSCR(), this));
+            }
+            if (((FrCPUState)cpuStateFlags).getILM() != 0) {
+                conditions.add(new ILMBreakCondition(((FrCPUState)cpuStateValues).getILM(), ((FrCPUState)cpuStateFlags).getILM(), this));
+            }
         }
 
         conditions.addAll(memoryValueBreakConditions);

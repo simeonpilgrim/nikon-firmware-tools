@@ -1,9 +1,14 @@
 package com.nikonhacker.gui.component.breakTrigger;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.component.cpu.CPUStateComponent;
+import com.nikonhacker.gui.component.cpu.FrCPUStateComponent;
+import com.nikonhacker.gui.component.cpu.TxCPUStateComponent;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,7 +27,7 @@ public class BreakTriggerEditDialog extends JDialog {
     private final JTextField interruptToTriggerField;
     private final JTextField pcToSetField;
 
-    public BreakTriggerEditDialog(JDialog owner, final BreakTrigger trigger, String title) {
+    public BreakTriggerEditDialog(JDialog owner, int chip, final BreakTrigger trigger, String title) {
         super(owner, title, true);
         this.trigger = trigger;
 
@@ -39,7 +44,12 @@ public class BreakTriggerEditDialog extends JDialog {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // CPU condition
-        cpuStateComponent = new CPUStateComponent(trigger.getCpuStateValues(), trigger.getCpuStateFlags(), true);
+        if (chip == Constants.CHIP_FR) {
+            cpuStateComponent = new FrCPUStateComponent((FrCPUState)trigger.getCpuStateValues(), (FrCPUState)trigger.getCpuStateFlags(), true);
+        }
+        else {
+            cpuStateComponent = new TxCPUStateComponent((TxCPUState)trigger.getCpuStateValues(), (TxCPUState)trigger.getCpuStateFlags(), true);
+        }
         cpuStateComponent.refresh();
         tabbedPane.addTab("CPU conditions", null, cpuStateComponent);
 
