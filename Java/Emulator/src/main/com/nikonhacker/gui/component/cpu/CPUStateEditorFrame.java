@@ -1,6 +1,8 @@
 package com.nikonhacker.gui.component.cpu;
 
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -18,10 +20,15 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
     private boolean editable;
 
-    public CPUStateEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final FrCPUState cpuState, EmulatorUI ui) {
+    public CPUStateEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable, ui);
 
-        cpuPanel = new CPUStateComponent(cpuState, false);
+        if (cpuState instanceof FrCPUState) {
+            cpuPanel = new FrCPUStateComponent((FrCPUState) cpuState, false);
+        }
+        else {
+            cpuPanel = new TxCPUStateComponent((TxCPUState) cpuState, false);
+        }
 
         getContentPane().add(cpuPanel);
 
