@@ -250,6 +250,13 @@ public class TxStatement extends Statement {
                     immBitWidth = 4;
                     sa_cc = (binaryStatement >>> 4) & 0b111; // ra|s0|s1
                     break;
+                case FPB_SPB:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = rs_fs; // TODO useful ?
+                    imm   =  binaryStatement  & 0b1111111;
+                    immBitWidth = 7;
+                    rd_fd = rt_ft;
+                    break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
                     rs_fs = 0b11; // base = fp
@@ -325,6 +332,15 @@ public class TxStatement extends Statement {
                     sa_cc =   ((binaryStatement >> (20- 7)) & 0b1110000000)
                             | ((binaryStatement >> (16- 3)) & 0b0001111000)
                             | ((binaryStatement >> 4)       & 0b0000000111); // xsregs|aregs|ra|s0|s1
+                    break;
+                case FPB_SPB:
+                    // same as RI in 32bit
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = rs_fs; // TODO useful ?
+                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
+                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
+                            | ((binaryStatement           ) & 0b0000000000011111);
+                    immBitWidth = 16;
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3

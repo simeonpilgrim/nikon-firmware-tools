@@ -2066,13 +2066,26 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    int address = statement.imm;
+                    int address = 0;
                     switch (statement.rs_fs) {
-                        //case 0b00: address += 0; break; // useless
-                        case 0b01: address += context.cpuState.getReg(TxCPUState.GP); break;
-                        case 0b10: address += context.cpuState.getReg(TxCPUState.SP); break;
-                        case 0b11: address += context.cpuState.getReg(TxCPUState.FP); break;
+                        case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
+                        case 0b01: address = statement.imm + context.cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address = statement.imm + context.cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
+                    context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
+                    return false;
+                }
+            });
+
+    public static final TxInstruction bclrfpInstruction = new TxInstruction("bclr", "u(F), l", "", "bclr 4(fp), 7",
+            "Bit CLeaR: clear given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                    int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
                     return false;
                 }
@@ -2146,19 +2159,30 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    int address = statement.imm;
+                    int address = 0;
                     switch (statement.rs_fs) {
-                        //case 0b00: address += 0; break; // useless
-                        case 0b01: address += context.cpuState.getReg(TxCPUState.GP); break;
-                        case 0b10: address += context.cpuState.getReg(TxCPUState.SP); break;
-                        case 0b11: address += context.cpuState.getReg(TxCPUState.FP); break;
+                        case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
+                        case 0b01: address = statement.imm + context.cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address = statement.imm + context.cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
                     return false;
                 }
             });
 
-
+    public static final TxInstruction bextfpInstruction = new TxInstruction("bext", "u(F), l", "", "bext 4(sp), 7",
+            "Bit EXTract: extract given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                    int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
+                    context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
+                    return false;
+                }
+            });
 
     public static final TxInstruction binsInstruction = new TxInstruction("bins", "u(i), l", "", "bins 4(sp), 7",
             "Bit INSert: insert given bit at memory address",
@@ -2167,13 +2191,33 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    int address = statement.imm;
+                    int address = 0;
                     switch (statement.rs_fs) {
-                        //case 0b00: address += 0; break; // useless
-                        case 0b01: address += context.cpuState.getReg(TxCPUState.GP); break;
-                        case 0b10: address += context.cpuState.getReg(TxCPUState.SP); break;
-                        case 0b11: address += context.cpuState.getReg(TxCPUState.FP); break;
+                        case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
+                        case 0b01: address = statement.imm + context.cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address = statement.imm + context.cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
+                    if ((context.cpuState.getReg(TxCPUState.T8) & 1) == 0) {
+                        // Clear bit
+                        context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
+                    }
+                    else {
+                        // set bit
+                        context.memory.store8(address, context.memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
+                    }
+                    return false;
+                }
+            });
+
+    public static final TxInstruction binsfpInstruction = new TxInstruction("bins", "u(F), l", "", "bins 4(sp), 7",
+            "Bit INSert: insert given bit at memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                    int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     if ((context.cpuState.getReg(TxCPUState.T8) & 1) == 0) {
                         // Clear bit
                         context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
@@ -2209,13 +2253,26 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    int address = statement.imm;
+                    int address = 0;
                     switch (statement.rs_fs) {
-                        //case 0b00: address += 0; break; // useless
-                        case 0b01: address += context.cpuState.getReg(TxCPUState.GP); break;
-                        case 0b10: address += context.cpuState.getReg(TxCPUState.SP); break;
-                        case 0b11: address += context.cpuState.getReg(TxCPUState.FP); break;
+                        case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
+                        case 0b01: address = statement.imm + context.cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address = statement.imm + context.cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
+                    context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
+                    return false;
+                }
+            });
+
+    public static final TxInstruction bsetfpInstruction = new TxInstruction("bset", "u(F), l", "", "bset 4(sp), 7",
+            "Bit SET: set given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                    int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
                     return false;
                 }
@@ -2260,13 +2317,26 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    int address = statement.imm;
+                    int address = 0;
                     switch (statement.rs_fs) {
-                        //case 0b00: address += 0; break; // useless
-                        case 0b01: address += context.cpuState.getReg(TxCPUState.GP); break;
-                        case 0b10: address += context.cpuState.getReg(TxCPUState.SP); break;
-                        case 0b11: address += context.cpuState.getReg(TxCPUState.FP); break;
+                        case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
+                        case 0b01: address = statement.imm + context.cpuState.getReg(TxCPUState.GP); break;
+                        case 0b10: address = statement.imm + context.cpuState.getReg(TxCPUState.SP); break;
+                        case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
+                    context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?1:0); // !bext
+                    return false;
+                }
+            });
+
+    public static final TxInstruction btstfpInstruction = new TxInstruction("btst", "u(F), l", "", "btst 4(sp), 7",
+            "Bit TeST: extract given bit from memory address",
+            null, InstructionFormat16.SPC_BIT,
+            "",
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                    int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?1:0); // !bext
                     return false;
                 }
@@ -2451,7 +2521,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lbufpInstruction = new TxInstruction("lbu", "j, s(F)", "jw", "lbu $t1,-100($fp)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -2465,7 +2535,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lbufp16Instruction = new TxInstruction("lbu", "j, u(F)", "jw", "lbu $t1,-100($fp)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -2481,7 +2551,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lbuspInstruction = new TxInstruction("lbu", "j, s(S)", "jw", "lbu $t1,-100($sp)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -2495,7 +2565,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lbusp16Instruction = new TxInstruction("lbu", "j, u(S)", "jw", "lbu $t1,-100($sp)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -3142,7 +3212,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction sbfpInstruction = new TxInstruction("sb", "j, s(F)", "", "sb $t1,-100($fp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -3159,7 +3229,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction sbfp16Instruction = new TxInstruction("sb", "j, s(F)", "", "sb $t1,-100($fp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -3176,7 +3246,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction sbspInstruction = new TxInstruction("sb", "j, s(S)", "", "sb $t1,-100($sp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -3193,7 +3263,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction sbsp16Instruction = new TxInstruction("sb", "j, s(S)", "", "sb $t1,-100($sp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPB_SPB,
             "",
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -4054,20 +4124,20 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b1111100100000000, 0b1111111100000000, bclrInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111100100000000, 0b1111111100000000, bclrInstruction);
+        expandInstruction(opcode16Map,         0b1111100100000000, 0b1111111100000000, bclrfpInstruction);
 
         expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz16Instruction);
         expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz16Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111110100000000, 0b1111111100000000, bextInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextInstruction);
+        expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextfpInstruction);
 
         /* bs1f and bfins instructions differ in the upper 16-bits and are processed separately */
 
         expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsInstruction);
+        expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsfpInstruction);
 
         expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez16Instruction);
         expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez16Instruction);
@@ -4076,7 +4146,7 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b1111101000000000, 0b1111111100000000, bsetInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111101000000000, 0b1111111100000000, bsetInstruction);
+        expandInstruction(opcode16Map,         0b1111101000000000, 0b1111111100000000, bsetfpInstruction);
 
         expandInstruction(opcode16Map,         0b0110000000000000, 0b1111111100000000, bteqzInstruction);
         expandInstruction(extendedOpcode16Map, 0b0110000000000000, 0b1111111111100000, bteqzInstruction);
@@ -4086,7 +4156,7 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b1111100000000000, 0b1111111100000000, btstInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111100000000000, 0b1111111100000000, btstInstruction);
+        expandInstruction(opcode16Map,         0b1111100000000000, 0b1111111100000000, btstfpInstruction);
 
         expandInstruction(opcode16Map,         0b1110100000001010, 0b1111100000011111, cmpInstruction);
 
