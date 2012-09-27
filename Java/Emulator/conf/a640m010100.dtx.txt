@@ -3,7 +3,7 @@
 
 ############################### File map: D5100
 -i 0xBFC00000-0xBFCBFFFF=0x00000000
- 
+
 ############################### Memory map:
 
 -m 0xBFC00000-0xBFC0000F=CODE:32
@@ -30,7 +30,7 @@
 
 -m 0xBFC0D9F8-0xBFC0ED43=CODE:32
 
--m 0xBFC11C28-0xBFC1417D=CODE:16
+-m 0xBFC10000-0xBFC1417D=CODE:16
 
 -m 0xBFC14180-0xBFC15AB7=CODE:32
 
