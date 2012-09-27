@@ -283,4 +283,6 @@ public class FrCPUState extends CPUState {
                 '}';
     }
 
+
+
 }

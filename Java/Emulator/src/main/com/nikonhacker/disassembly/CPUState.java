@@ -89,4 +89,12 @@ public abstract class CPUState {
     }
 
     public abstract void reset();
+
+    public int getPc() {
+        return pc;
+    }
+
+    public void setPc(int pc) {
+        this.pc = pc;
+    }
 }

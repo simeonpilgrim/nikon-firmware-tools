@@ -13,6 +13,10 @@ import java.io.PrintWriter;
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
+
+    public TxEmulator() {
+    }
+
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
         TxInstructionSet.init(outputOptions);
@@ -36,6 +40,8 @@ public class TxEmulator extends Emulator {
 
         txCpuState.setAllRegistersDefined();
 
+        EmulationContext emulationContext = new EmulationContext(cpuState, memory, nextPC, nextReturnAddress);
+
         try {
             for (;;) {
 
@@ -55,8 +61,6 @@ public class TxEmulator extends Emulator {
                     statement.decode32BitOperands();
                 }
 
-                ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, (TxCPUState) cpuState, memory);
-
                 if (instructionPrintWriter != null) {
                     // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
                     PrintWriter printWriter = instructionPrintWriter;
@@ -67,23 +71,30 @@ public class TxEmulator extends Emulator {
                     }
                 }
 
-//                totalCycles += cycles;
-//
-//                /* Delay slot processing */
-//                if (nextPC != null) {
-//                    if (delaySlotDone) {
-//                        txCpuState.pc = nextPC;
-//                        nextPC = null;
-//                        if (nextRP != null) {
-//                            txCpuState.setReg(TxCPUState.RP, nextRP);
-//                            nextRP = null;
-//                        }
-//                    }
-//                    else {
-//                        delaySlotDone = true;
-//                    }
-//                }
-//                else {
+                // EXECUTE INSTRUCTION
+                if (!((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, emulationContext)) {
+                    // Execution did not modify PC. Increment it.
+                    cpuState.pc += statement.getNumBytes();
+                }
+
+                totalCycles ++; // approximation
+
+                /* Delay slot processing */
+                if (emulationContext.nextPC != null) {
+                    if (delaySlotDone) {
+                        txCpuState.setPc(emulationContext.nextPC);
+                        emulationContext.nextPC = null;
+                        if (emulationContext.nextReturnAddress != null) {
+                            txCpuState.setReg(TxCPUState.RA, emulationContext.nextReturnAddress);
+                            emulationContext.nextReturnAddress = null;
+                        }
+                    }
+                    else {
+                        delaySlotDone = true;
+                    }
+                }
+                else {
+// TODO
 //                    // If not in a delay slot, check interrupts
 //                    if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
 //                        InterruptRequest interruptRequest = interruptController.getNextRequest();
@@ -102,7 +113,7 @@ public class TxEmulator extends Emulator {
 //                            }
 //                        }
 //                    }
-//                }
+                }
 
                 /* Break if requested */
                 if (!breakConditions.isEmpty()) {
@@ -116,7 +127,7 @@ public class TxEmulator extends Emulator {
                                         trigger.log(breakLogPrintWriter, txCpuState, callStack, memory);
                                     }
                                     if (trigger.getInterruptToRequest() != null) {
-//                                        interruptController.request(trigger.getInterruptToRequest());
+// TODO                                 interruptController.request(trigger.getInterruptToRequest());
                                     }
                                     if (trigger.getPcToSet() != null) {
                                         txCpuState.pc = trigger.getPcToSet();
@@ -154,7 +165,8 @@ public class TxEmulator extends Emulator {
                     }
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
             System.err.println(txCpuState);
