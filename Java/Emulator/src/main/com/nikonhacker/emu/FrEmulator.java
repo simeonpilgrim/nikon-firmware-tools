@@ -29,10 +29,6 @@ public class FrEmulator extends Emulator {
 
     private InterruptController interruptController;
 
-    private Integer nextPC = null;
-    private Integer nextRP = null;
-    private boolean delaySlotDone = false;
-
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
             System.err.println("Usage Emulator <file> <initialPc>");
@@ -2277,9 +2273,9 @@ public class FrEmulator extends Emulator {
                     if (delaySlotDone) {
                         frCpuState.pc = nextPC;
                         nextPC = null;
-                        if (nextRP != null) {
-                            frCpuState.setReg(FrCPUState.RP, nextRP);
-                            nextRP = null;
+                        if (nextReturnAddress != null) {
+                            frCpuState.setReg(FrCPUState.RP, nextReturnAddress);
+                            nextReturnAddress = null;
                         }
                     }
                     else {
@@ -2401,7 +2397,7 @@ public class FrEmulator extends Emulator {
 
     private void setDelayedChanges(Integer nextPC, Integer nextRP) {
         this.nextPC = nextPC;
-        this.nextRP = nextRP;
+        this.nextReturnAddress = nextRP;
         this.delaySlotDone = false;
     }
 

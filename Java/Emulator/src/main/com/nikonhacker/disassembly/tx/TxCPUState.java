@@ -219,6 +219,10 @@ public class TxCPUState extends CPUState {
         throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
 
+    public void toggle16bitIsaMode() {
+        is16bitIsaMode = !is16bitIsaMode;
+    }
+
     public enum PowerMode {
         RUN,
         HALT,

@@ -20,6 +20,10 @@ public abstract class Emulator {
     protected Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
     protected boolean exitSleepLoop = false;
 
+    protected Integer nextPC = null;
+    protected Integer nextReturnAddress = null;
+    protected boolean delaySlotDone = false;
+
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
      * @param instructionPrintWriter

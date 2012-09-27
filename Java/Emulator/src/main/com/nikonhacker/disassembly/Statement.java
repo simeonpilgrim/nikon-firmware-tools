@@ -75,18 +75,24 @@ public abstract class Statement {
     public String toString() {
         String out = formatAsHex();
 
-        switch (delaySlotType) {
-            case NONE:
-                out += "              " + StringUtils.rightPad(instruction.getName(), 7) + " " + getOperandString();
-                break;
-            case NORMAL:
-                out += "               " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
-                break;
-            case LIKELY:
-                out += "               ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
-                break;
-            default:
-                throw new RuntimeException("Unknown delay slot type : " + delaySlotType);
+        // todo why not instruction.delaySlotType ? Why does this field exist on Statement ?
+        if (delaySlotType == null) {
+            System.out.println("Error : delaySlotType = null");
+        }
+        else {
+            switch (delaySlotType) {
+                case NONE:
+                    out += "              " + StringUtils.rightPad(instruction.getName(), 7) + " " + getOperandString();
+                    break;
+                case NORMAL:
+                    out += "               " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
+                    break;
+                case LIKELY:
+                    out += "               ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
+                    break;
+                default:
+                    throw new RuntimeException("Unknown delay slot type : " + delaySlotType);
+            }
         }
 
         if (StringUtils.isNotBlank(getCommentString())) {

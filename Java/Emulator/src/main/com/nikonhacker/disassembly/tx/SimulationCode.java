@@ -1,7 +1,7 @@
 package com.nikonhacker.disassembly.tx;
 
+import com.nikonhacker.emu.EmulationContext;
 import com.nikonhacker.emu.EmulationException;
-import com.nikonhacker.emu.memory.Memory;
 
 /*
 Copyright (c) 2003-2006,  Pete Sanderson and Kenneth Vollmar
@@ -46,12 +46,10 @@ public interface SimulationCode {
     /**
      * Method to simulate the execution of a specific MIPS basic instruction.
      *
-     *
      * @param statement A ProgramStatement representing the MIPS instruction to simulate.
-     * @param cpuState
-     * @param memory
+     * @param emulationContext
      * @throws EmulationException This is a run-time exception generated during simulation.
+     * @return true if the simulation code updates the PC (no more PC increment is needed)
      **/
-
-    public void simulate(TxStatement statement, TxCPUState cpuState, Memory memory) throws EmulationException;
+    public boolean simulate(TxStatement statement, EmulationContext emulationContext) throws EmulationException;
 }
