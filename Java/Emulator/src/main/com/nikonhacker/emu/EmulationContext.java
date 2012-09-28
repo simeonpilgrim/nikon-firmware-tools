@@ -8,4 +8,12 @@ public class EmulationContext {
     public Memory memory;
     public Integer nextPC;
     public Integer nextReturnAddress;
+    public boolean delaySlotDone;
+
+    public void setDelayedChanges(Integer nextPC, Integer nextRP) {
+        this.nextPC = nextPC;
+        this.nextReturnAddress = nextRP;
+        this.delaySlotDone = false;
+    }
+
 }

@@ -17,8 +17,6 @@ import java.util.Set;
 public class TxEmulator extends Emulator {
     EmulationContext emulationContext = new EmulationContext();
 
-    protected boolean delaySlotDone = false;
-
     public TxEmulator() {
     }
 
@@ -84,7 +82,7 @@ public class TxEmulator extends Emulator {
 
                 /* Delay slot processing */
                 if (emulationContext.nextPC != null) {
-                    if (delaySlotDone) {
+                    if (emulationContext.delaySlotDone) {
                         txCpuState.setPc(emulationContext.nextPC);
                         emulationContext.nextPC = null;
                         if (emulationContext.nextReturnAddress != null) {
@@ -93,7 +91,7 @@ public class TxEmulator extends Emulator {
                         }
                     }
                     else {
-                        delaySlotDone = true;
+                        emulationContext.delaySlotDone = true;
                     }
                 }
                 else {
