@@ -2360,7 +2360,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public TrackingMemoryActivityListener getTrackingMemoryActivityListener(int chip) {
-        if (memoryActivityViewerFrame != null) {
+        if (memoryActivityViewerFrame[chip] != null) {
             return memoryActivityViewerFrame[chip].getTrackingMemoryActivityListener();
         }
         else {
