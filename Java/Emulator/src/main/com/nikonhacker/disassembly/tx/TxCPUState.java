@@ -273,7 +273,7 @@ public class TxCPUState extends CPUState {
 
     public void setPc(int pc) {
         this.is16bitIsaMode = ((pc & 1) == 1);
-        this.pc = pc & 0xFFFE;
+        this.pc = pc & 0xFFFFFFFE;
     }
 
 
