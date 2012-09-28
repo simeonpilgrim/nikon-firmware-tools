@@ -1,8 +1,10 @@
 package com.nikonhacker.gui.component.memoryHexEditor;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
@@ -77,7 +79,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
     private JPanel createEditor(int baseAddress, boolean editable) {
         JPanel editorPanel = new JPanel(new BorderLayout());
-        
+
         JPanel selectionPanel = new JPanel();
 
         fpButton = new JButton("Go to FP");
@@ -95,7 +97,12 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         selectionPanel.add(new JLabel("Go to reg"));
         Vector<String> labels = new Vector<String>();
         labels.add("--");
-        labels.addAll(Arrays.asList(FrCPUState.REG_LABEL));
+        if (chip == Constants.CHIP_FR) {
+            labels.addAll(Arrays.asList(FrCPUState.REG_LABEL));
+        }
+        else {
+            labels.addAll(Arrays.asList(TxCPUState.REG_LABEL));
+        }
         registerCombo = new JComboBox(labels);
         registerCombo.setMaximumRowCount(17);
         registerCombo.addActionListener(this);
@@ -213,13 +220,23 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         int selectionLength = 1;
         // Handle "FP" button
         if (fpButton.equals(e.getSource())) {
-            addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.FP), 8));
+            if (chip == Constants.CHIP_FR) {
+                addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.FP), 8));
+            }
+            else {
+                addressField.setText(Format.asHex(cpuState.getReg(TxCPUState.FP), 8));
+            }
             registerCombo.setSelectedIndex(0);
             selectionLength = 4;
         }
         // Handle "SP" button
         else if (spButton.equals(e.getSource())) {
-            addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.SP), 8));
+            if (chip == Constants.CHIP_FR) {
+                addressField.setText(Format.asHex(cpuState.getReg(FrCPUState.SP), 8));
+            }
+            else {
+                addressField.setText(Format.asHex(cpuState.getReg(TxCPUState.SP), 8));
+            }
             registerCombo.setSelectedIndex(0);
             selectionLength = 4;
         }
