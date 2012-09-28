@@ -1,11 +1,13 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -13,6 +15,9 @@ import java.io.PrintWriter;
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
+    EmulationContext emulationContext = new EmulationContext();
+
+    protected boolean delaySlotDone = false;
 
     public TxEmulator() {
     }
@@ -39,8 +44,6 @@ public class TxEmulator extends Emulator {
         TxCPUState txCpuState = (TxCPUState) cpuState;
 
         txCpuState.setAllRegistersDefined();
-
-        EmulationContext emulationContext = new EmulationContext(cpuState, memory, nextPC, nextReturnAddress);
 
         try {
             for (;;) {
@@ -71,7 +74,7 @@ public class TxEmulator extends Emulator {
                     }
                 }
 
-                // EXECUTE INSTRUCTION
+                // ACTUAL INSTRUCTION EXECUTION
                 if (!((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, emulationContext)) {
                     // Execution did not modify PC. Increment it.
                     cpuState.pc += statement.getNumBytes();
@@ -180,5 +183,15 @@ public class TxEmulator extends Emulator {
             throw new EmulationException(e);
         }
 
+    }
+
+    public void setCpuState(CPUState cpuState) {
+        this.cpuState = cpuState;
+        emulationContext.cpuState = cpuState;
+    }
+
+    public void setMemory(Memory memory) {
+        this.memory = memory;
+        emulationContext.memory = memory;
     }
 }

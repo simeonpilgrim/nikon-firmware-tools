@@ -9,8 +9,6 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public abstract class Emulator {
-    protected Memory memory;
-    protected CPUState cpuState;
     protected long totalCycles;
     protected PrintWriter instructionPrintWriter;
     protected PrintWriter breakLogPrintWriter;
@@ -20,9 +18,8 @@ public abstract class Emulator {
     protected Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
     protected boolean exitSleepLoop = false;
 
-    protected Integer nextPC = null;
-    protected Integer nextReturnAddress = null;
-    protected boolean delaySlotDone = false;
+    protected Memory memory;
+    protected CPUState cpuState;
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -72,17 +69,13 @@ public abstract class Emulator {
         }
     }
 
-    public void setMemory(Memory memory) {
-        this.memory = memory;
-    }
-
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
-    }
-
     public void exitSleepLoop() {
         this.exitSleepLoop = true;
     }
+
+    public abstract void setMemory(Memory memory);
+
+    public abstract void setCpuState(CPUState cpuState);
 
     public abstract void setOutputOptions(Set<OutputOption> outputOptions);
 
