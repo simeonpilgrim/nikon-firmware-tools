@@ -3492,7 +3492,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction sll5Instruction = new TxInstruction("sll", "j, l", "jw", "sll $t2,10",
+    public static final TxInstruction sll5Instruction = new TxInstruction("sll", "j, d", "jw", "sll $t2, 10",
             "Shift Left Logical: Shift $t2 left by number of bits specified by immediate",
             null, InstructionFormat16.RRR2,
             "",
@@ -3504,7 +3504,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction sra5Instruction = new TxInstruction("sra", "j, l", "jw", "sra $t2,10",
+    public static final TxInstruction sra5Instruction = new TxInstruction("sra", "j, d", "jw", "sra $t2, 10",
             "Shift Right Arithmetic: Shift $t2 right arithmetically by number of bits specified by immediate",
             null, InstructionFormat16.RRR2,
             "",
@@ -3516,7 +3516,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction srl5Instruction = new TxInstruction("srl", "j, u", "jw", "srl $t2,10",
+    public static final TxInstruction srl5Instruction = new TxInstruction("srl", "j, d", "jw", "srl $t2, 10",
             "Shift Right Logical: Shift $t2 right by number of bits specified by immediate",
             null, InstructionFormat16.RRR2,
             "",
