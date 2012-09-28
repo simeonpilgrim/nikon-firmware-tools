@@ -44,7 +44,7 @@ v : outputs current PC value as a vector id (0xFF being the first of this memory
 c : outputs coprocessor operation (c)<br/>
 </pre>
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
- * <pre>
+* <pre>
 'A': current register is AC<br/>
 'C': current register is CCR<br/>
 'F': current register is FP<br/>
@@ -66,7 +66,7 @@ c : outputs coprocessor operation (c)<br/>
     public TxInstruction(String name, String displayFormat, String action, String sampleUse, String description,
                          TxInstructionSet.InstructionFormat32 instructionFormat32,
                          TxInstructionSet.InstructionFormat16 instructionFormat16,
-                         String marsOperationMask, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
+                         FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
         super(name, displayFormat, action, flowType, isConditional, delaySlotType);
         this.instructionFormat32 = instructionFormat32;
         this.instructionFormat16 = instructionFormat16;
