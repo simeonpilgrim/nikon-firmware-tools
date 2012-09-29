@@ -31,7 +31,7 @@ public class FrEmulator extends Emulator {
 
     private InterruptController interruptController;
 
-    protected Integer nextPC = null;
+    protected Integer nextPc = null;
     protected Integer nextReturnAddress = null;
     protected boolean delaySlotDone = false;
 
@@ -1544,7 +1544,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F00: /* JMP:D @Ri */
-                        setDelayedChanges(frCpuState.getReg(statement.i), null);
+                        setDelayedPc(frCpuState.getReg(statement.i));
     
                         /* No change to NZVC */
 
@@ -1562,7 +1562,7 @@ public class FrEmulator extends Emulator {
                                 }
                             }
                         }
-                        setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(11, statement.imm) * 2, frCpuState.pc + 4);  // TODO check *2
+                        setDelayedPcAndRa(frCpuState.pc + 2 + BinaryArithmetics.signExtend(11, statement.imm) * 2, frCpuState.pc + 4);  // TODO check *2
     
                         /* No change to NZVC */
 
@@ -1580,7 +1580,7 @@ public class FrEmulator extends Emulator {
                                 }
                             }
                         }
-                        setDelayedChanges(frCpuState.getReg(statement.i), frCpuState.pc + 4);
+                        setDelayedPcAndRa(frCpuState.getReg(statement.i), frCpuState.pc + 4);
     
                         /* No change to NZVC */
 
@@ -1598,7 +1598,7 @@ public class FrEmulator extends Emulator {
                                 }
                             }
                         }
-                        setDelayedChanges(frCpuState.getReg(FrCPUState.RP), null);
+                        setDelayedPc(frCpuState.getReg(FrCPUState.RP));
     
                         /* No change to NZVC */
 
@@ -1618,7 +1618,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xF000: /* BRA:D label9 */
-                        setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                        setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
     
                         /* No change to NZVC */
 
@@ -1629,7 +1629,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF200: /* BEQ:D label9 */
                         if (frCpuState.Z == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1641,7 +1641,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF300: /* BNE:D label9 */
                         if (frCpuState.Z == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1653,7 +1653,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF400: /* BC:D label9 */
                         if (frCpuState.C == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1665,7 +1665,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF500: /* BNC:D label9 */
                         if (frCpuState.C == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1677,7 +1677,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF600: /* BN:D label9 */
                         if (frCpuState.N == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1689,7 +1689,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF700: /* BP:D label9 */
                         if (frCpuState.N == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1701,7 +1701,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF800: /* BV:D label9 */
                         if (frCpuState.V == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1713,7 +1713,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xF900: /* BNV:D label9 */
                         if (frCpuState.V == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1725,7 +1725,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFA00: /* BLT:D label9 */
                         if ((frCpuState.V ^ frCpuState.N) == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1737,7 +1737,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFB00: /* BGE:D label9 */
                         if ((frCpuState.V ^ frCpuState.N) == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1749,7 +1749,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFC00: /* BLE:D label9 */
                         if (((frCpuState.V ^ frCpuState.N) | frCpuState.Z) == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1761,7 +1761,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFD00: /* BGT:D label9 */
                         if (((frCpuState.V ^ frCpuState.N) | frCpuState.Z) == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1773,7 +1773,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFE00: /* BLS:D label9 */
                         if ((frCpuState.C | frCpuState.Z) == 1) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -1785,7 +1785,7 @@ public class FrEmulator extends Emulator {
     
                     case 0xFF00: /* BHI:D label9 */
                         if ((frCpuState.C | frCpuState.Z) == 0) {
-                            setDelayedChanges(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2, null);
+                            setDelayedPc(frCpuState.pc + 2 + BinaryArithmetics.signExtend(8, statement.imm) * 2);
                         }
 
                         frCpuState.pc += 2;
@@ -2275,10 +2275,10 @@ public class FrEmulator extends Emulator {
                 totalCycles += cycles;
 
                 /* Delay slot processing */
-                if (nextPC != null) {
+                if (nextPc != null) {
                     if (delaySlotDone) {
-                        frCpuState.pc = nextPC;
-                        nextPC = null;
+                        frCpuState.pc = nextPc;
+                        nextPc = null;
                         if (nextReturnAddress != null) {
                             frCpuState.setReg(FrCPUState.RP, nextReturnAddress);
                             nextReturnAddress = null;
@@ -2401,9 +2401,14 @@ public class FrEmulator extends Emulator {
         frCpuState.pc = memory.load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
     }
 
-    private void setDelayedChanges(Integer nextPC, Integer nextRP) {
-        this.nextPC = nextPC;
-        this.nextReturnAddress = nextRP;
+    private void setDelayedPc(Integer nextPc) {
+        this.nextPc = nextPc;
+        this.delaySlotDone = false;
+    }
+
+    private void setDelayedPcAndRa(Integer nextPc, Integer nextReturnAddress) {
+        this.nextPc = nextPc;
+        this.nextReturnAddress = nextReturnAddress;
         this.delaySlotDone = false;
     }
 
