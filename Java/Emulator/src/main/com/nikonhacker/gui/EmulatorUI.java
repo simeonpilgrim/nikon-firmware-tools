@@ -307,6 +307,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         super(ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
 
         prefs = Prefs.load();
+        // Apply register label prefs immediately
+        FrCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_FR));
+        TxCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_TX));
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -1472,6 +1475,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         {
             // save
             dumpOptionCheckboxes(outputOptionsCheckBoxes, prefs.getOutputOptions(chip));
+            // apply
+            TxCPUState.initRegisterLabels(prefs.getOutputOptions(chip));
         }
     }
 
