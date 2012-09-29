@@ -225,22 +225,22 @@ public class FrStatement extends Statement {
                     break;
 
                 case 'A':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.AC]);
+                    currentBuffer.append(FrCPUState.registerLabels[FrCPUState.AC]);
                     break;
                 case 'C':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.CCR]);
+                    currentBuffer.append(FrCPUState.registerLabels[FrCPUState.CCR]);
                     break;
                 case 'F':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.FP]);
+                    currentBuffer.append(FrCPUState.registerLabels[FrCPUState.FP]);
                     break;
                 case 'M':
                     currentBuffer.append("ILM");
                     break;
                 case 'P':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.PS]);
+                    currentBuffer.append(FrCPUState.registerLabels[FrCPUState.PS]);
                     break;
                 case 'S':
-                    currentBuffer.append(FrCPUState.REG_LABEL[FrCPUState.SP]);
+                    currentBuffer.append(FrCPUState.registerLabels[FrCPUState.SP]);
                     break;
 
                 case 'I':
@@ -307,17 +307,17 @@ public class FrStatement extends Statement {
                     break;
                 case 'g':
                     decodedI += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedI]);
                     break;
                 case 'h':
                     decodedJ += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedJ]);
                     break;
                 case 'i':
-                    currentBuffer.append(FrCPUState.REG_LABEL[decodedI]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedI]);
                     break;
                 case 'j':
-                    currentBuffer.append(FrCPUState.REG_LABEL[decodedJ]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedJ]);
                     break;
                 case 'k':
                     decodedI += FrCPUState.COPROCESSOR_REG_OFFSET;
@@ -394,9 +394,9 @@ public class FrStatement extends Statement {
                                 currentBuffer.append(",");
 
                             if ((decodedImm & 0x100) != 0)
-                                currentBuffer.append(FrCPUState.REG_LABEL[c + 7 - i]);
+                                currentBuffer.append(FrCPUState.registerLabels[c + 7 - i]);
                             else
-                                currentBuffer.append(FrCPUState.REG_LABEL[c + i]);
+                                currentBuffer.append(FrCPUState.registerLabels[c + i]);
                         }
                     }
                     currentBuffer.append(fmt_ens);

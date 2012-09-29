@@ -205,7 +205,7 @@ public class OptionHandler
         return rangeType;
     }
 
-    public static void parseSymbol(Map<Integer, Symbol> symbols, String argument, String[] registerLabels) throws ParsingException {
+    public static void parseSymbol(Map<Integer, Symbol> symbols, String argument, String[][] registerLabels) throws ParsingException {
         Integer address = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
         String text = StringUtils.substringAfter(argument, "=").trim();
         symbols.put(address, new Symbol(address, text, registerLabels));

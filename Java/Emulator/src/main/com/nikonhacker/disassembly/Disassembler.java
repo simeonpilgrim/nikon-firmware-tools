@@ -399,7 +399,7 @@ public abstract class Disassembler {
         return true;
     }
 
-    protected abstract String[] getRegisterLabels();
+    protected abstract String[][] getRegisterLabels();
 
     public void readOptions(int chip, String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));

@@ -68,10 +68,10 @@ public class FrEmulatorTest extends TestCase {
 
     private void checkRegister(int registerNumber, int expectedValue) {
         if (cpuState.getReg(registerNumber)==expectedValue) {
-            if (!STAY_SILENT_IF_OK) System.out.println(" OK    : " + FrCPUState.REG_LABEL[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8));
+            if (!STAY_SILENT_IF_OK) System.out.println(" OK    : " + FrCPUState.registerLabels[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8));
         }
         else {
-            System.out.println(" ERROR : " + FrCPUState.REG_LABEL[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8)
+            System.out.println(" ERROR : " + FrCPUState.registerLabels[registerNumber] + "=" + toHexString(cpuState.getReg(registerNumber), 8)
                     + ", should be " + toHexString(expectedValue, 8) + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             if (STOP_ON_ERROR) fail();
         }

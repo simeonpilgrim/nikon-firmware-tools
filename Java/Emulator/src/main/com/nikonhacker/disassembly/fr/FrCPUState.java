@@ -6,28 +6,49 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.emu.InterruptRequest;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 public class FrCPUState extends CPUState {
-    public static String[] REG_LABEL = new String[]{
-            "R0",       "R1",       "R2",       "R3",
-            "R4",       "R5",       "R6",       "R7",
-            "R8",       "R9",       "R10",      "R11",
-            "R12",      "R13",      "R14",      "R15",  /* standard names by default */
+    /** Register names (first array is "standard", second array is "alternate") */
+    static String[][] REG_LABEL = new String[][]{
+            {
+                    "R0",       "R1",       "R2",       "R3",
+                    "R4",       "R5",       "R6",       "R7",
+                    "R8",       "R9",       "R10",      "R11",
+                    "R12",      "R13",      "R14",      "R15",  /* standard names by default */
 
-            "TBR",      "RP",       "SSP",      "USP",
-            "MDH",      "MDL",      "D6",       "D7",
-            "D8",       "D9",       "D10",      "D11",
-            "D12",      "D13",      "D14",      "D15",
+                    "TBR",      "RP",       "SSP",      "USP",
+                    "MDH",      "MDL",      "D6",       "D7",
+                    "D8",       "D9",       "D10",      "D11",
+                    "D12",      "D13",      "D14",      "D15",
 
-            "CR0",      "CR1",      "CR2",      "CR3",
-            "CR4",      "CR5",      "CR6",      "CR7",
-            "CR8",      "CR9",      "CR10",     "CR11",
-            "CR12",     "CR13",     "CR14",     "CR15",
+                    "CR0",      "CR1",      "CR2",      "CR3",
+                    "CR4",      "CR5",      "CR6",      "CR7",
+                    "CR8",      "CR9",      "CR10",     "CR11",
+                    "CR12",     "CR13",     "CR14",     "CR15",
 
-            "PS",       "CCR"
+                    "PS",       "CCR"
+            },
+            {
+                    "R0",       "R1",       "R2",       "R3",
+                    "R4",       "R5",       "R6",       "R7",
+                    "R8",       "R9",       "R10",      "R11",
+                    "R12",      "AC",       "FP",       "SP",  /* alternate names */
+
+                    "TBR",      "RP",       "SSP",      "USP",
+                    "MDH",      "MDL",      "D6",       "D7",
+                    "D8",       "D9",       "D10",      "D11",
+                    "D12",      "D13",      "D14",      "D15",
+
+                    "CR0",      "CR1",      "CR2",      "CR3",
+                    "CR4",      "CR5",      "CR6",      "CR7",
+                    "CR8",      "CR9",      "CR10",     "CR11",
+                    "CR12",     "CR13",     "CR14",     "CR15",
+
+                    "PS",       "CCR"
+            }
     };
+
     public final static int DEDICATED_REG_OFFSET =   16;
     public final static int COPROCESSOR_REG_OFFSET = 32;
 
@@ -64,13 +85,25 @@ public class FrCPUState extends CPUState {
     public int V=0;
     public int C=0;
 
+    public static String[] registerLabels;
+
     /**
-     * Default decoding upon class loading
+     * Init with default names upon class loading
      */
     static {
-        initRegisterLabels(EnumSet.noneOf(OutputOption.class));
+        registerLabels = new String[REG_LABEL[0].length];
+        System.arraycopy(REG_LABEL[0], 0, registerLabels, 0, REG_LABEL[0].length);
     }
 
+    public static void initRegisterLabels(Set<OutputOption> outputOptions) {
+        // Patch names if requested
+        if (outputOptions.contains(OutputOption.REGISTER)) {
+            System.arraycopy(REG_LABEL[1], 0, registerLabels, 0, REG_LABEL[1].length);
+        }
+        else {
+            System.arraycopy(REG_LABEL[0], 0, registerLabels, 0, REG_LABEL[0].length);
+        }
+    }
 
     /**
      * Constructor
@@ -86,15 +119,6 @@ public class FrCPUState extends CPUState {
     public FrCPUState(int startPc) {
         reset();
         pc = startPc;
-    }
-
-    public static void initRegisterLabels(Set<OutputOption> outputOptions) {
-        // Patch names if requested
-        if (outputOptions.contains(OutputOption.REGISTER)) {
-            REG_LABEL[AC] = "AC";
-            REG_LABEL[FP] = "FP";
-            REG_LABEL[SP] = "SP";
-        }
     }
 
     /**
@@ -221,7 +245,7 @@ public class FrCPUState extends CPUState {
 
     @Override
     public void reset() {
-        regValue = new Register32[REG_LABEL.length];
+        regValue = new Register32[registerLabels.length];
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);
         }
@@ -273,7 +297,7 @@ public class FrCPUState extends CPUState {
     public String toString() {
         String registers = "";
         for (int i = 0; i < regValue.length; i++) {
-            registers += REG_LABEL[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
+            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
         }
         registers = registers.trim() + "]";
         return "CPUState : " +

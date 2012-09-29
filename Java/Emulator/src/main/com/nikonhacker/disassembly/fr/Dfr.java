@@ -138,7 +138,7 @@ public class Dfr extends Disassembler
     }
 
 
-    protected String[] getRegisterLabels() {
+    protected String[][] getRegisterLabels() {
         return FrCPUState.REG_LABEL;
     }
 

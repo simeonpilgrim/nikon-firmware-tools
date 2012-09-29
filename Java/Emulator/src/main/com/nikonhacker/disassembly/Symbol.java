@@ -1,12 +1,12 @@
 package com.nikonhacker.disassembly;
 
-import com.nikonhacker.disassembly.ParsingException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Symbol {
+    private static final int REG_NONE = -1;
     int address;
     String name;
     String comment;
@@ -31,7 +31,7 @@ public class Symbol {
      * @param rawText of the form "MOD_int(R4 [IN dividend, OUT remainder], R5 [IN divisor])" with optional comment between the parenthesis
      * @throws com.nikonhacker.disassembly.ParsingException
      */
-    public Symbol(Integer address, String rawText, String[] registerLabels) throws ParsingException {
+    public Symbol(Integer address, String rawText, String[][] registerLabels) throws ParsingException {
         this.address = address;
         this.rawText = rawText;
         if (rawText.contains("(")) {
@@ -120,29 +120,27 @@ public class Symbol {
 
     public class Parameter {
 
-        private int register = -1;
-        private String inVariable = null;
-        private String outVariable = null;
+        private int register = REG_NONE;
+        private String inVariableName = null;
+        private String outVariableName = null;
 
         /**
          * Parses a param from a String
          * @param parameterString string of the form "R4 [IN dividend, OUT remainder]"
          */
-        public Parameter(String parameterString, String[] registerLabels) throws ParsingException {
-            String registerText = StringUtils.substringBefore(parameterString, "[").trim().toUpperCase();
-            for (int i = 0; i < registerLabels.length; i++) {
-                if (registerLabels[i].equals(registerText)) {
-                    register = i;
-                    break;
+        public Parameter(String parameterString, String[][] registerLabels) throws ParsingException {
+            String registerText = StringUtils.substringBefore(parameterString, "[").trim();
+            for (int list = 0; list < 2; list++) {
+                for (int reg = 0; reg < registerLabels[list].length; reg++) {
+                    if (registerLabels[list][reg].equalsIgnoreCase(registerText)) {
+                        register = reg;
+                        break;
+                    }
                 }
+                if (register != REG_NONE) break;
             }
-            if (register == -1) {
-                // try both std and alt names
-                if ("AC".equals(registerText) || "R13".equals(registerText)) register = 13;
-                else if ("FP".equals(registerText) || "R14".equals(registerText)) register = 14;
-                else if ("SP".equals(registerText) || "R15".equals(registerText)) register = 15;
-                else throw new ParsingException("Invalid register in function parameter '" + registerText + "'");
-            }
+            if (register == REG_NONE) throw new ParsingException("Invalid register in function parameter '" + registerText + "'");
+
             String details = StringUtils.substringAfter(parameterString, "[");
             if (!details.contains("]")) {
                 throw new ParsingException("Invalid function parameter details '" + details + "' : no closing bracket");
@@ -155,20 +153,20 @@ public class Symbol {
 
         /**
          * Parses a parameter detail
-         * @param detail string of the form "IN variablename" or "OUT variable name
+         * @param detail string of the form "IN variablename" or "OUT variablename"
          * @param registerLabels
          */
-        private void parseDetail(String detail, String[] registerLabels) throws ParsingException {
+        private void parseDetail(String detail, String[][] registerLabels) throws ParsingException {
             String type = StringUtils.substringBefore(detail, " ").toUpperCase().trim();
-            String variable = StringUtils.replace(StringUtils.substringAfter(detail, " ").trim(), " ", "_");
-            if (StringUtils.isEmpty(variable)) {
-                variable = registerLabels[register];
+            String variableName = StringUtils.replace(StringUtils.substringAfter(detail, " ").trim(), " ", "_");
+            if (StringUtils.isEmpty(variableName)) {
+                variableName = registerLabels[0][register];
             }
             if ("IN".equals(type)) {
-                inVariable = variable;
+                inVariableName = variableName;
             }
             else if ("OUT".equals(type)) {
-                outVariable = variable;
+                outVariableName = variableName;
             }
             else {
                 throw new ParsingException("Unknown variable type in function parameter: '" + type + "'");
@@ -183,28 +181,28 @@ public class Symbol {
             this.register = register;
         }
 
-        public String getInVariable() {
-            return inVariable;
+        public String getInVariableName() {
+            return inVariableName;
         }
 
-        public void setInVariable(String inVariable) {
-            this.inVariable = inVariable;
+        public void setInVariableName(String inVariableName) {
+            this.inVariableName = inVariableName;
         }
 
-        public String getOutVariable() {
-            return outVariable;
+        public String getOutVariableName() {
+            return outVariableName;
         }
 
-        public void setOutVariable(String outVariable) {
-            this.outVariable = outVariable;
+        public void setOutVariableName(String outVariableName) {
+            this.outVariableName = outVariableName;
         }
 
         @Override
         public String toString() {
             return "Parameter{" +
                     "register=" + register +
-                    ", inVariable='" + inVariable + '\'' +
-                    ", outVariable='" + outVariable + '\'' +
+                    ", inVariable='" + inVariableName + '\'' +
+                    ", outVariable='" + outVariableName + '\'' +
                     '}';
         }
     }

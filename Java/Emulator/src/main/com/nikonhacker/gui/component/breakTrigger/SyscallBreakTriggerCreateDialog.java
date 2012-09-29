@@ -2,8 +2,8 @@ package com.nikonhacker.gui.component.breakTrigger;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.Symbol;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -109,8 +109,8 @@ public class SyscallBreakTriggerCreateDialog extends JDialog implements ActionLi
         Map<Integer,String> inParameterMap = new HashMap<Integer, String>();
         if (parameterList != null) {
             for (Symbol.Parameter parameter : parameterList) {
-                if (StringUtils.isNotBlank(parameter.getInVariable())) {
-                    inParameterMap.put(parameter.getRegister(), parameter.getInVariable());
+                if (StringUtils.isNotBlank(parameter.getInVariableName())) {
+                    inParameterMap.put(parameter.getRegister(), parameter.getInVariableName());
                 }
             }
         }
@@ -154,8 +154,8 @@ public class SyscallBreakTriggerCreateDialog extends JDialog implements ActionLi
         Map<Integer,String> inParameterMap = new HashMap<Integer, String>();
         if (parameterList != null) {
             for (Symbol.Parameter parameter : parameterList) {
-                if (StringUtils.isNotBlank(parameter.getInVariable())) {
-                    inParameterMap.put(parameter.getRegister(), parameter.getInVariable());
+                if (StringUtils.isNotBlank(parameter.getInVariableName())) {
+                    inParameterMap.put(parameter.getRegister(), parameter.getInVariableName());
                 }
             }
         }

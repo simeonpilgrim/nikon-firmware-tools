@@ -9,6 +9,6 @@ public class FrCodeStructure extends CodeStructure {
     }
 
     public String[] getRegisterLabels() {
-        return FrCPUState.REG_LABEL;
+        return FrCPUState.registerLabels;
     }
 }

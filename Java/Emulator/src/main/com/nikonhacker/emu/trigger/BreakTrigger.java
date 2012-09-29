@@ -184,10 +184,10 @@ public class BreakTrigger {
             msg = function.getName() + "(";
             if (function.getParameterList() != null) {
                 for (Symbol.Parameter parameter : function.getParameterList()) {
-                    if (parameter.getInVariable() != null) {
-                        String paramString = parameter.getInVariable() + "=";
+                    if (parameter.getInVariableName() != null) {
+                        String paramString = parameter.getInVariableName() + "=";
                         int value = cpuState.getReg(parameter.getRegister());
-                        if (parameter.getInVariable().startsWith("sz")) {
+                        if (parameter.getInVariableName().startsWith("sz")) {
                             paramString+="\"";
                             // Dump as String
                             int character = memory.loadUnsigned8(value++);

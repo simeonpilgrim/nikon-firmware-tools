@@ -135,7 +135,7 @@ public class Dtx extends Disassembler
     ///* options */
 
 
-    protected String[] getRegisterLabels() {
+    protected String[][] getRegisterLabels() {
         return TxCPUState.REG_LABEL;
     }
 
