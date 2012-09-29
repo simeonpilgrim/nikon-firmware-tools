@@ -73,10 +73,7 @@ public class TxEmulator extends Emulator {
                 }
 
                 // ACTUAL INSTRUCTION EXECUTION
-                if (!((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, emulationContext)) {
-                    // Execution did not modify PC. Increment it.
-                    cpuState.pc += statement.getNumBytes();
-                }
+                ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, emulationContext);
 
                 totalCycles ++; // approximation
 
