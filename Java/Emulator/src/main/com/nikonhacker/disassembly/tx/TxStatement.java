@@ -478,16 +478,16 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'A':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA]);
+                    currentBuffer.append(TxCPUState.registerLabels[TxCPUState.RA]);
                     break;
                 case 'F':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.FP]);
+                    currentBuffer.append(TxCPUState.registerLabels[TxCPUState.FP]);
                     break;
                 case 'P':
                     currentBuffer.append("pc");
                     break;
                 case 'S':
-                    currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.SP]);
+                    currentBuffer.append(TxCPUState.registerLabels[TxCPUState.SP]);
                     break;
 
                 case 'I':
@@ -560,14 +560,14 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'i':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRsFs == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRsFs]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRsFs == 0)) currentBuffer.append(TxCPUState.registerLabels[decodedRsFs]);
                     break;
                 case 'j':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRtFt == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRtFt]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRtFt == 0)) currentBuffer.append(TxCPUState.registerLabels[decodedRtFt]);
                     break;
                 case 'k':
                     try {
-                        if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.REG_LABEL[decodedRdFd]);
+                        if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) currentBuffer.append(TxCPUState.registerLabels[decodedRdFd]);
                     }
                     catch (Exception e) {
                         e.printStackTrace();
@@ -646,43 +646,43 @@ public class TxStatement extends Statement {
                 case 'z':
                     /* register list */
                     if ((sa_cc & 0b100) != 0) { // RA
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.RA] + ",");
+                        currentBuffer.append(TxCPUState.registerLabels[TxCPUState.RA] + ",");
                     }
                     if ((sa_cc & 0b010) != 0) { // S0
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S0] + ",");
+                        currentBuffer.append(TxCPUState.registerLabels[TxCPUState.S0] + ",");
                     }
                     if ((sa_cc & 0b001) != 0) { // S1
-                        currentBuffer.append(TxCPUState.REG_LABEL[TxCPUState.S1] + ",");
+                        currentBuffer.append(TxCPUState.registerLabels[TxCPUState.S1] + ",");
                     }
 
                     int xsregs = (binaryStatement >> 24) & 0b111;
                     if (xsregs > 0) {
-                        currentBuffer.append(TxCPUState.REG_LABEL[18]);
+                        currentBuffer.append(TxCPUState.registerLabels[18]);
                         int lastReg = Math.min(xsregs + 17, 23);
                         if (lastReg >= 18) {
-                            currentBuffer.append("-" + TxCPUState.REG_LABEL[lastReg]);
+                            currentBuffer.append("-" + TxCPUState.registerLabels[lastReg]);
                         }
                         currentBuffer.append(",");
                         if (xsregs == 7) {
-                            currentBuffer.append(TxCPUState.REG_LABEL[30] + ",");
+                            currentBuffer.append(TxCPUState.registerLabels[30] + ",");
                         }
                     }
 
                     switch ((binaryStatement >> 16) & 0b1111) {
-                        case 0b0001:currentBuffer.append("[" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b0010:currentBuffer.append("[" + TxCPUState.REG_LABEL[6] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b0011:currentBuffer.append("[" + TxCPUState.REG_LABEL[5] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b1011:currentBuffer.append("[" + TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b0100:currentBuffer.append(TxCPUState.REG_LABEL[4]);break;
-                        case 0b0101:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b0110:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[6]+ "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b0111:currentBuffer.append(TxCPUState.REG_LABEL[4] + ",[" + TxCPUState.REG_LABEL[5]+ "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b1000:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ", ");break;
-                        case 0b1001:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b1010:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[5] + ",[" + TxCPUState.REG_LABEL[6] + "-" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b1100:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[6] + ", ");break;
-                        case 0b1101:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[6] + ",[" + TxCPUState.REG_LABEL[7] + "], ");break;
-                        case 0b1110:currentBuffer.append(TxCPUState.REG_LABEL[4] + "-" + TxCPUState.REG_LABEL[7] + ", ");break;
+                        case 0b0001:currentBuffer.append("[" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b0010:currentBuffer.append("[" + TxCPUState.registerLabels[6] + "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b0011:currentBuffer.append("[" + TxCPUState.registerLabels[5] + "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b1011:currentBuffer.append("[" + TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b0100:currentBuffer.append(TxCPUState.registerLabels[4]);break;
+                        case 0b0101:currentBuffer.append(TxCPUState.registerLabels[4] + ",[" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b0110:currentBuffer.append(TxCPUState.registerLabels[4] + ",[" + TxCPUState.registerLabels[6]+ "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b0111:currentBuffer.append(TxCPUState.registerLabels[4] + ",[" + TxCPUState.registerLabels[5]+ "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b1000:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[5] + ", ");break;
+                        case 0b1001:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[5] + ",[" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b1010:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[5] + ",[" + TxCPUState.registerLabels[6] + "-" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b1100:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[6] + ", ");break;
+                        case 0b1101:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[6] + ",[" + TxCPUState.registerLabels[7] + "], ");break;
+                        case 0b1110:currentBuffer.append(TxCPUState.registerLabels[4] + "-" + TxCPUState.registerLabels[7] + ", ");break;
                     }
 
                     if (isExtended() && imm == 0) {

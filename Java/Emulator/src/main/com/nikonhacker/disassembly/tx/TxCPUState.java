@@ -5,43 +5,79 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 
-import java.util.EnumSet;
 import java.util.Set;
 
 public class TxCPUState extends CPUState {
-    /** registers names */
-    public static String[] REG_LABEL = new String[]{
-            "r0",       "r1",       "r2",       "r3",   /* standard names by default */
-            "r4",       "r5",       "r6",       "r7",
-            "r8",       "r9",       "r10",      "r11",
-            "r12",      "r13",      "r14",      "r15",
+    /** Register names (first array is "standard", second array is "alternate") */
+    final static String[][] REG_LABEL = new String[][]{
+            {
+                    /* standard registers names (default) */
+                    "r0",       "r1",       "r2",       "r3",
+                    "r4",       "r5",       "r6",       "r7",
+                    "r8",       "r9",       "r10",      "r11",
+                    "r12",      "r13",      "r14",      "r15",
 
-            "r16",      "r17",      "r18",      "r19",
-            "r20",      "r21",      "r22",      "r23",
-            "r24",      "r25",      "r26",      "r27",
-            "r28",      "r29",      "r30",      "r31",
+                    "r16",      "r17",      "r18",      "r19",
+                    "r20",      "r21",      "r22",      "r23",
+                    "r24",      "r25",      "r26",      "r27",
+                    "r28",      "r29",      "r30",      "r31",
 
-            "hi",       "lo",
+                    "hi",       "lo",
 
-            // CP0 Registers
-            "Config",   "Config1", "Config2",   "Config3",
-            "BadVAddr", "Count",   "Compare",   "Status",
-            "Cause",    "EPC",     "ErrorEPC",  "PRId",
-            "IER",      "SSCR",    "Debug",     "DEPC",
-            "DESAVE",
+                    // CP0 Registers
+                    "Config",   "Config1", "Config2",   "Config3",
+                    "BadVAddr", "Count",   "Compare",   "Status",
+                    "Cause",    "EPC",     "ErrorEPC",  "PRId",
+                    "IER",      "SSCR",    "Debug",     "DEPC",
+                    "DESAVE",
 
-            // CP1 Registers
-            "$f0",  "$f1",  "$f2",  "$f3",
-            "$f4",  "$f5",  "$f6",  "$f7",
-            "$f8",  "$f9",  "$f10", "$f11",
-            "$f12", "$f13", "$f14", "$f15",
-            "$f16", "$f17", "$f18", "$f19",
-            "$f20", "$f21", "$f22", "$f23",
-            "$f24", "$f25", "$f26", "$f27",
-            "$f28", "$f29", "$f30", "$f31",
+                    // CP1 Registers
+                    "$f0",  "$f1",  "$f2",  "$f3",
+                    "$f4",  "$f5",  "$f6",  "$f7",
+                    "$f8",  "$f9",  "$f10", "$f11",
+                    "$f12", "$f13", "$f14", "$f15",
+                    "$f16", "$f17", "$f18", "$f19",
+                    "$f20", "$f21", "$f22", "$f23",
+                    "$f24", "$f25", "$f26", "$f27",
+                    "$f28", "$f29", "$f30", "$f31",
 
-            // CP1 Control Registers
-            "FIR", "FCCR", "FEXR", "FENR", "FCSR"
+                    // CP1 Control Registers
+                    "FIR", "FCCR", "FEXR", "FENR", "FCSR"
+            },
+            {
+                    /* alternate registers names */
+                    "$zero",    "$at",      "$v0",      "$v1",
+                    "$a0",      "$a1",      "$a2",      "$a3",
+                    "$t0",      "$t1",      "$t2",      "$t3",
+                    "$t4",      "$t5",      "$t6",      "$t7",
+
+                    "$s0",      "$s1",      "$s2",      "$s3",
+                    "$s4",      "$s5",      "$s6",      "$s7",
+                    "$t8",      "$t9",      "$k0",      "$k1",
+                    "$gp",      "$sp",      "$fp",      "$ra",
+
+                    "hi",       "lo",
+
+                    // CP0 Registers
+                    "Config",   "Config1", "Config2",   "Config3",
+                    "BadVAddr", "Count",   "Compare",   "Status",
+                    "Cause",    "EPC",     "ErrorEPC",  "PRId",
+                    "IER",      "SSCR",    "Debug",     "DEPC",
+                    "DESAVE",
+
+                    // CP1 Registers
+                    "$f0",  "$f1",  "$f2",  "$f3",
+                    "$f4",  "$f5",  "$f6",  "$f7",
+                    "$f8",  "$f9",  "$f10", "$f11",
+                    "$f12", "$f13", "$f14", "$f15",
+                    "$f16", "$f17", "$f18", "$f19",
+                    "$f20", "$f21", "$f22", "$f23",
+                    "$f24", "$f25", "$f26", "$f27",
+                    "$f28", "$f29", "$f30", "$f31",
+
+                    // CP1 Control Registers
+                    "FIR", "FCCR", "FEXR", "FENR", "FCSR"
+            }
     };
 
     public final static int S0 = 16;
@@ -182,6 +218,27 @@ public class TxCPUState extends CPUState {
             +1, +2, +4, +8, -1, -2, -4, -8
     };
 
+    public static String[] registerLabels;
+
+    /**
+     * Init with default names upon class loading
+     */
+    static {
+        registerLabels = new String[REG_LABEL[0].length];
+        System.arraycopy(REG_LABEL[0], 0, registerLabels, 0, REG_LABEL[0].length);
+    }
+
+    public static void initRegisterLabels(Set<OutputOption> outputOptions) {
+        // Patch names if requested
+        if (outputOptions.contains(OutputOption.REGISTER)) {
+            System.arraycopy(REG_LABEL[1], 0, registerLabels, 0, REG_LABEL[1].length);
+        }
+        else {
+            System.arraycopy(REG_LABEL[0], 0, registerLabels, 0, REG_LABEL[0].length);
+        }
+    }
+
+
     public int getCp1CrReg(int regNumber) {
         switch(regNumber) {
             case FIR:
@@ -244,14 +301,6 @@ public class TxCPUState extends CPUState {
 
 
     /**
-     * Default decoding upon class loading
-     */
-    static {
-        initRegisterLabels(EnumSet.noneOf(OutputOption.class));
-    }
-
-
-    /**
      * Constructor
      */
     public TxCPUState() {
@@ -293,48 +342,10 @@ public class TxCPUState extends CPUState {
         this.powerMode = powerMode;
     }
 
-    public static void initRegisterLabels(Set<OutputOption> outputOptions) {
-        // Patch names if requested
-        if (outputOptions.contains(OutputOption.REGISTER)) {
-            TxCPUState.REG_LABEL[0] = "$zero";
-            TxCPUState.REG_LABEL[1] = "$at";
-            TxCPUState.REG_LABEL[2] = "$v0";
-            TxCPUState.REG_LABEL[3] = "$v1";
-            TxCPUState.REG_LABEL[4] = "$a0";
-            TxCPUState.REG_LABEL[5] = "$a1";
-            TxCPUState.REG_LABEL[6] = "$a2";
-            TxCPUState.REG_LABEL[7] = "$a3";
-            TxCPUState.REG_LABEL[8] = "$t0";
-            TxCPUState.REG_LABEL[9] = "$t1";
-            TxCPUState.REG_LABEL[10] = "$t2";
-            TxCPUState.REG_LABEL[11] = "$t3";
-            TxCPUState.REG_LABEL[12] = "$t4";
-            TxCPUState.REG_LABEL[13] = "$t5";
-            TxCPUState.REG_LABEL[14] = "$t6";
-            TxCPUState.REG_LABEL[15] = "$t7";
-            TxCPUState.REG_LABEL[16] = "$s0";
-            TxCPUState.REG_LABEL[17] = "$s1";
-            TxCPUState.REG_LABEL[18] = "$s2";
-            TxCPUState.REG_LABEL[19] = "$s3";
-            TxCPUState.REG_LABEL[20] = "$s4";
-            TxCPUState.REG_LABEL[21] = "$s5";
-            TxCPUState.REG_LABEL[22] = "$s6";
-            TxCPUState.REG_LABEL[23] = "$s7";
-            TxCPUState.REG_LABEL[24] = "$t8";
-            TxCPUState.REG_LABEL[25] = "$t9";
-            TxCPUState.REG_LABEL[26] = "$k0";
-            TxCPUState.REG_LABEL[27] = "$k1";
-            TxCPUState.REG_LABEL[28] = "$gp";
-            TxCPUState.REG_LABEL[29] = "$sp";
-            TxCPUState.REG_LABEL[30] = "$fp";
-            TxCPUState.REG_LABEL[31] = "$ra";
-        }
-    }
-
     public String toString() {
         String registers = "";
         for (int i = 0; i < regValue.length; i++) {
-            registers += REG_LABEL[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
+            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
         }
         registers = registers.trim() + "]";
         return "CPUState : " +
@@ -345,7 +356,7 @@ public class TxCPUState extends CPUState {
     }
 
     public void reset() {
-        shadowRegisterSets = new Register32[8][REG_LABEL.length];
+        shadowRegisterSets = new Register32[8][registerLabels.length];
         activeRegisterSet = 0;
         regValue = shadowRegisterSets[activeRegisterSet];
 
@@ -404,6 +415,8 @@ public class TxCPUState extends CPUState {
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
+        cloneCpuState.setStoredDelaySlotType(getStoredDelaySlotType());
+        cloneCpuState.setLineBreakRequest(isLineBreakRequested());
         return cloneCpuState;
     }
 

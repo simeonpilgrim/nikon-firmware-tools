@@ -98,10 +98,10 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         Vector<String> labels = new Vector<String>();
         labels.add("--");
         if (chip == Constants.CHIP_FR) {
-            labels.addAll(Arrays.asList(FrCPUState.REG_LABEL));
+            labels.addAll(Arrays.asList(FrCPUState.registerLabels));
         }
         else {
-            labels.addAll(Arrays.asList(TxCPUState.REG_LABEL));
+            labels.addAll(Arrays.asList(TxCPUState.registerLabels));
         }
         registerCombo = new JComboBox(labels);
         registerCombo.setMaximumRowCount(17);

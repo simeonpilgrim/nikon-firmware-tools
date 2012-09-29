@@ -9,6 +9,6 @@ public class TxCodeStructure extends CodeStructure {
     }
 
     public String[] getRegisterLabels() {
-        return TxCPUState.REG_LABEL;
+        return TxCPUState.registerLabels;
     }
 }

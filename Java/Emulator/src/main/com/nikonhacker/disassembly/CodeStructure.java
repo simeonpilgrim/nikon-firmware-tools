@@ -163,11 +163,11 @@ public abstract class CodeStructure {
                             text +="(";
                             String prefix = "";
                             for (Symbol.Parameter parameter : function.getParameterList()) {
-                                if (parameter.getInVariable() != null) {
+                                if (parameter.getInVariableName() != null) {
                                     if(!text.endsWith("(")) {
                                         text+=", ";
                                     }
-                                    text+=parameter.getInVariable() + "=";
+                                    text+=parameter.getInVariableName() + "=";
                                     if (statement.getCpuState().isRegisterDefined(parameter.getRegister())) {
                                         text+="0x" + Integer.toHexString(statement.getCpuState().getReg(parameter.getRegister()));
                                     }
@@ -175,7 +175,7 @@ public abstract class CodeStructure {
                                         text+= getRegisterLabels()[parameter.getRegister()];
                                     }
                                 }
-                                else if (parameter.getOutVariable() != null) {
+                                else if (parameter.getOutVariableName() != null) {
                                     if (prefix.length() > 0) {
                                         prefix += ",";
                                     }

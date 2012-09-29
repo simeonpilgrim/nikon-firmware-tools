@@ -75,9 +75,9 @@ public class TxCPUStateComponent extends CPUStateComponent {
         add(new JLabel());
 
         for (int i = 0; i < 16; i++) {
-            add(new JLabel(TxCPUState.REG_LABEL[i*2]+" = 0x", JLabel.RIGHT));
+            add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x", JLabel.RIGHT));
             add(regTextFields[i*2]);
-            add(new JLabel(TxCPUState.REG_LABEL[i*2+1]+" = 0x", JLabel.RIGHT));
+            add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x", JLabel.RIGHT));
             add(regTextFields[i*2+1]);
         }
 
