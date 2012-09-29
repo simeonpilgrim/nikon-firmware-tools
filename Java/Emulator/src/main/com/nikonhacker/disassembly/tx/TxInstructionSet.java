@@ -828,6 +828,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -846,6 +847,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -892,6 +894,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -910,6 +913,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -941,6 +945,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -974,6 +979,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -1005,6 +1011,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -1036,6 +1043,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -1067,6 +1075,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
@@ -1100,6 +1109,7 @@ public class TxInstructionSet
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                        context.setStoredDelaySlotType(Instruction.DelaySlotType.NONE);  // Cancel the delay slot info used to display the next statement indented
                     }
                 }
             });
