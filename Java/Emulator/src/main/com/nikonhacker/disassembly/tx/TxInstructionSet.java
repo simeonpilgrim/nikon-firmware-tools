@@ -64,31 +64,31 @@ public class TxInstructionSet
     static TxInstruction[] opData = {
             new TxInstruction("dw",  "u;a", "", "", "", null, null, Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
                 @Override
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new EmulationException("Cannot execute data at 0x" + Format.asHex(context.cpuState.pc, 8));
                 }
             }),
             new TxInstruction("dl",  "u;a", "", "", "", null, null, Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
                 @Override
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new EmulationException("Cannot execute data at 0x" + Format.asHex(context.cpuState.pc, 8));
                 }
             }),
             new TxInstruction("dl",  "u;a", "", "", "", null, null, Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
                 @Override
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new EmulationException("Cannot execute data at 0x" + Format.asHex(context.cpuState.pc, 8));
                 }
             }),
             new TxInstruction("dl",  "u;T #v", "", "", "", null, null, Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
                 @Override
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new EmulationException("Cannot execute data at 0x" + Format.asHex(context.cpuState.pc, 8));
                 }
             }),
             new TxInstruction("dr",  "q;f", "", "", "", null, null, Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE, new SimulationCode() {
                 @Override
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new EmulationException("Cannot execute data at 0x" + Format.asHex(context.cpuState.pc, 8));
                 }
             }),
@@ -236,7 +236,7 @@ public class TxInstructionSet
             InstructionFormat32.W, InstructionFormat16.W,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     throw new TxEmulationException("Could not decode statement 0x" + Format.asHex(statement.getBinaryStatement(), 4) + " at 0x" + Format.asHex(context.cpuState.pc, 8) + ": ReservedInstructionException");
                 }
             });
@@ -245,7 +245,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int add1 = context.cpuState.getReg(statement.rs_fs);
                     int add2 = context.cpuState.getReg(statement.rt_ft);
                     int sum = add1 + add2;
@@ -254,7 +254,7 @@ public class TxInstructionSet
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
                     context.cpuState.setReg(statement.rd_fd, sum);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction subInstruction = new TxInstruction("sub", "k, [i, ]j", "kw", "sub $t1,$t2,$t3",
@@ -262,7 +262,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int sub1 = context.cpuState.getReg(statement.rs_fs);
                     int sub2 = context.cpuState.getReg(statement.rt_ft);
                     int dif = sub1 - sub2;
@@ -271,7 +271,7 @@ public class TxInstructionSet
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
                     context.cpuState.setReg(statement.rd_fd, dif);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction addiInstruction = new TxInstruction("addi", "j, [i, ]s", "j+", "addi $t1,$t2,-100",
@@ -279,7 +279,7 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int add1 = context.cpuState.getReg(statement.rs_fs);
                     int add2 = statement.imm << 16 >> 16;
                     int sum = add1 + add2;
@@ -288,7 +288,7 @@ public class TxInstructionSet
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.ARITHMETIC_OVERFLOW_EXCEPTION);
                     }
                     context.cpuState.setReg(statement.rt_ft, sum);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction adduInstruction = new TxInstruction("addu", "k, [i, ]j", "kw", "addu $t1,$t2,$t3",
@@ -296,9 +296,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRR1,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs) + context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rt=r0
@@ -307,9 +307,9 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction subuInstruction = new TxInstruction("subu", "k, [i, ]j", "kw", "subu $t1,$t2,$t3",
@@ -317,9 +317,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRR1,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs) - context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "j+", "addiu $t1,$t2,-100",
@@ -327,10 +327,10 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRIA,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs) + (statement.imm << shift >> shift));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rs=r0
@@ -339,9 +339,9 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, statement.imm << 16 >> 16);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction multInstruction = new TxInstruction("mult", "[k, ]i, j", "kw", "mult $t1,$t2",
@@ -349,13 +349,13 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRI /* not RR because rd must be rt here */,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     context.cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction multuInstruction = new TxInstruction("multu", "[k, ]i, j", "kw", "multu $t1,$t2",
@@ -363,14 +363,14 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
                             * (((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     context.cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction mulInstruction = new TxInstruction("mul", "k, i, j", "kw", "mul $t1,$t2,$t3",
@@ -378,10 +378,10 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     context.cpuState.setReg(statement.rd_fd, (int) ((product << 32) >> 32));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction maddInstruction = new TxInstruction("madd", "[k, ]i, j", "kw", "madd $t1,$t2",
@@ -389,7 +389,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
                     long sum = contentsHiLo + product;
@@ -397,7 +397,7 @@ public class TxInstructionSet
                     int lo = Format.lowOrderLongToInt(sum);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction madduInstruction = new TxInstruction("maddu", "[k, ]i, j", "kw", "maddu $t1,$t2",
@@ -405,7 +405,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
                             * (((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
@@ -414,7 +414,7 @@ public class TxInstructionSet
                     int lo = Format.lowOrderLongToInt(sum);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction msubInstruction = new TxInstruction("msub", "[k, ]i, j", "kw", "msub $t1,$t2",
@@ -422,7 +422,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
                     long diff = contentsHiLo - product;
@@ -430,7 +430,7 @@ public class TxInstructionSet
                     int lo = Format.lowOrderLongToInt(diff);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction msubuInstruction = new TxInstruction("msubu", "[k, ]i, j", "kw", "msubu $t1,$t2",
@@ -438,7 +438,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
                             * (((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
@@ -447,7 +447,7 @@ public class TxInstructionSet
                     int lo = Format.lowOrderLongToInt(diff);
                     context.cpuState.setReg(TxCPUState.LO, lo);
                     context.cpuState.setReg(statement.rd_fd, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction divInstruction = new TxInstruction("div", "i, j", "iw", "div $t1,$t2",
@@ -455,14 +455,15 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) == 0) {
                         // Note: no exceptions, and undefined results for zero divide
-                        return false;
                     }
-                    context.cpuState.setReg(TxCPUState.HI, context.cpuState.getReg(statement.rs_fs) % context.cpuState.getReg(statement.rt_ft));
-                    context.cpuState.setReg(TxCPUState.LO, context.cpuState.getReg(statement.rs_fs) / context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    else {
+                        context.cpuState.setReg(TxCPUState.HI, context.cpuState.getReg(statement.rs_fs) % context.cpuState.getReg(statement.rt_ft));
+                        context.cpuState.setReg(TxCPUState.LO, context.cpuState.getReg(statement.rs_fs) / context.cpuState.getReg(statement.rt_ft));
+                    }
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction divuInstruction = new TxInstruction("divu", "i, j", "iw", "divu $t1,$t2",
@@ -470,16 +471,17 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) == 0) {
                         // Note: no exceptions, and undefined results for zero divide
-                        return false;
                     }
-                    long oper1 = ((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32;
-                    long oper2 = ((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32;
-                    context.cpuState.setReg(TxCPUState.HI, (int) (((oper1 % oper2) << 32) >> 32));
-                    context.cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
-                    return false;
+                    else {
+                        long oper1 = ((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32;
+                        long oper2 = ((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32;
+                        context.cpuState.setReg(TxCPUState.HI, (int) (((oper1 % oper2) << 32) >> 32));
+                        context.cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
+                    }
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction mfhiInstruction = new TxInstruction("mfhi", "k", "kw", "mfhi $t1",
@@ -487,9 +489,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(TxCPUState.HI));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction mfloInstruction = new TxInstruction("mflo", "k", "kw", "mflo $t1",
@@ -497,9 +499,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(TxCPUState.LO));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "", "mthi $t1",
@@ -507,9 +509,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.HI, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "", "mtlo $t1",
@@ -517,9 +519,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.LO, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction andInstruction = new TxInstruction("and", "k, [i, ]j", "kw", "and $t1,$t2,$t3",
@@ -527,9 +529,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs) & context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction orInstruction = new TxInstruction("or", "k, [i, ]j", "kw", "or $t1,$t2,$t3",
@@ -537,9 +539,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs) | context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rs=r0
@@ -548,9 +550,9 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction andiInstruction = new TxInstruction("andi", "j, [i, ]u", "jw", "andi $t1,$t2,100",
@@ -558,9 +560,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs) & statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]u", "jw", "ori $t1,$t2,100",
@@ -568,9 +570,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs) | statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rs=r0
@@ -579,9 +581,9 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction norInstruction = new TxInstruction("nor", "k, [i, ]j", "kw", "nor $t1,$t2,$t3",
@@ -590,9 +592,9 @@ public class TxInstructionSet
             null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, ~(context.cpuState.getReg(statement.rs_fs) | context.cpuState.getReg(statement.rt_ft)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction xorInstruction = new TxInstruction("xor", "k, i, j", "kw", "xor $t1,$t2,$t3",
@@ -600,9 +602,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs) ^ context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction xoriInstruction = new TxInstruction("xori", "j, [i, ]u", "jw", "xori $t1,$t2,100",
@@ -610,9 +612,9 @@ public class TxInstructionSet
             InstructionFormat32.I,  InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs) ^ statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sllInstruction = new TxInstruction("sll", "k, [j, ]l", "kw", "sll $t1,$t2,10",
@@ -620,9 +622,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.SHIFT1,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft) << statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternate 32-bit SLL with 0 registers, or alternate 16-bit move to $zero
@@ -631,9 +633,9 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // nop
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sllvInstruction = new TxInstruction("sllv", "k, [j, ]i", "kw", "sllv $t1,$t2,$t3",
@@ -641,11 +643,11 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount.
                     context.cpuState.setReg(statement.rd_fd,
                             (context.cpuState.getReg(statement.rt_ft) << (context.cpuState.getReg(statement.rs_fs)) & 0b11111));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction srlInstruction = new TxInstruction("srl", "k, [j, ]l", "kw", "srl $t1,$t2,10",
@@ -653,10 +655,10 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.SHIFT1,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // must zero-fill, so use ">>>" instead of ">>".
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft) >>> statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sraInstruction = new TxInstruction("sra", "k, [j, ]l", "kw", "sra $t1,$t2,10",
@@ -664,10 +666,10 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.SHIFT1,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // must sign-fill, so use ">>".
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft) >> statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sravInstruction = new TxInstruction("srav", "k, [j, ]i", "kw", "srav $t1,$t2,$t3",
@@ -675,10 +677,10 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>" to sign-fill.
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft) >> (context.cpuState.getReg(statement.rs_fs) & 0b11111));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction srlvInstruction = new TxInstruction("srlv", "k, [j, ]i", "kw", "srlv $t1,$t2,$t3",
@@ -686,10 +688,10 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount. Use ">>>" to zero-fill.
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft) >>> (context.cpuState.getReg(statement.rs_fs) & 0b11111));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -698,10 +700,10 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // Changed from MARS : Added sign extension to offset
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "jw", "lwl $t1,-100($t2)",
@@ -709,14 +711,14 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int result = context.cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         result = Format.setByte(result, 3 - i, context.memory.loadUnsigned8(address - i));
                     }
                     context.cpuState.setReg(statement.rt_ft, result);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "jw", "lwr $t1,-100($t2)",
@@ -724,14 +726,14 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int result = context.cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         result = Format.setByte(result, i, context.memory.loadUnsigned8(address + i));
                     }
                     context.cpuState.setReg(statement.rt_ft, result);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -740,9 +742,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "", "swl $t1,-100($t2)",
@@ -750,13 +752,13 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int source = context.cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= address % 4; i++) {
                         context.memory.store8(address - i, Format.getByte(source, 3 - i));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction swrInstruction = new TxInstruction("swr", "j, s(i)", "", "swr $t1,-100($t2)",
@@ -764,13 +766,13 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16);
                     int source = context.cpuState.getReg(statement.rt_ft);
                     for (int i = 0; i <= 3 - (address % 4); i++) {
                         context.memory.store8(address + i, Format.getByte(source, i));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", "jV", "lui $t1,100",
@@ -778,9 +780,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, statement.imm << 16);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction beqInstruction = new TxInstruction("beq", "i, j, 4rs", "", "beq $t1,$t2,label",
@@ -788,13 +790,13 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == context.cpuState.getReg(statement.rt_ft)) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rt=r0
@@ -803,44 +805,48 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction beqlInstruction = new TxInstruction("beql", "i, j, 4rs", "", "beql $t1,$t2,label",
             "Branch if EQual (Likely): Branch to statement at label's address if $t1 and $t2 are equal",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == context.cpuState.getReg(statement.rt_ft)) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     // alternative if rt=r0
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction beqzlInstruction = new TxInstruction("beqzl", "i, 4rs", "", "beqzl $t1,label",
             "Branch if EQual Zero (Likely): Branch to statement at label's address if $t1 is zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bneInstruction = new TxInstruction("bne", "i, j, 4rs", "", "bne $t1,$t2,label",
@@ -848,13 +854,13 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != context.cpuState.getReg(statement.rt_ft)) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rt=r0
@@ -863,44 +869,48 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bnelInstruction = new TxInstruction("bnel", "i, j, 4rs", "", "bnel $t1,$t2,label",
             "Branch if Not Equal (Likely): Branch to statement at label's address if $t1 and $t2 are not equal",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != context.cpuState.getReg(statement.rt_ft)) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     // alternative if rt=r0
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bnezlInstruction = new TxInstruction("bnezl", "i, 4rs", "", "bnezl $t1,label",
             "Branch if Not Equal Zero (Likely): Branch to statement at label's address if $t1 is not zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bgezInstruction = new TxInstruction("bgez", "i, 4rs", "", "bgez $t1,label",
@@ -908,28 +918,30 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bgezlInstruction = new TxInstruction("bgezl", "i, 4rs", "", "bgezl $t1,label",
             "Branch if Greater than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is greater than or equal to zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bgezalInstruction = new TxInstruction("bgezal", "i, 4rs", "", "bgezal $t1,label",
@@ -937,30 +949,32 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bgezallInstruction = new TxInstruction("bgezall", "i, 4rs", "", "bgezall $t1,label",
             "Branch if Greater then or Equal to Zero And Link (Likely): If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.CALL, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bgtzInstruction = new TxInstruction("bgtz", "i, 4rs", "", "bgtz $t1,label",
@@ -968,28 +982,30 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) > 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bgtzlInstruction = new TxInstruction("bgtzl", "i, 4rs", "", "bgtzl $t1,label",
             "Branch if Greater Than Zero (Likely): Branch to statement at label's address if $t1 is greater than zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) > 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction blezInstruction = new TxInstruction("blez", "i, 4rs", "", "blez $t1,label",
@@ -997,28 +1013,30 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) <= 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction blezlInstruction = new TxInstruction("blezl", "i, 4rs", "", "blezl $t1,label",
             "Branch if Less than or Equal to Zero (Likely): Branch to statement at label's address if $t1 is less than or equal to zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) <= 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bltzInstruction = new TxInstruction("bltz", "i, 4rs", "", "bltz $t1,label",
@@ -1026,28 +1044,30 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bltzlInstruction = new TxInstruction("bltzl", "i, 4rs", "", "bltzl $t1,label",
             "Branch if Less Than Zero (Likely): Branch to statement at label's address if $t1 is less than zero",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPc(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction bltzalInstruction = new TxInstruction("bltzal", "i, 4rs", "", "bltzal $t1,label",
@@ -1055,30 +1075,32 @@ public class TxInstructionSet
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    // TODO check likely : does it make a difference ?
     public static final TxInstruction bltzallInstruction = new TxInstruction("bltzall", "i, 4rs", "", "bltzall $t1,label",
             "Branch if Less Than Zero And Link (Likely): If $t1 is less than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             InstructionFormat32.I_BRANCH, null,
             Instruction.FlowType.CALL, true, Instruction.DelaySlotType.LIKELY,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
+                        context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes() << 1; // if a 'likely' test fails, the statement in the delay slot is nullified (skipped)
+                    }
                 }
             });
     public static final TxInstruction sltInstruction = new TxInstruction("slt", "k, i, j", "kw", "slt $t1,$t2,$t3",
@@ -1086,9 +1108,9 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, (context.cpuState.getReg(statement.rs_fs) < context.cpuState.getReg(statement.rt_ft)) ? 1 : 0);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sltuInstruction = new TxInstruction("sltu", "k, i, j", "kw", "sltu $t1,$t2,$t3",
@@ -1096,7 +1118,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     int second = context.cpuState.getReg(statement.rt_ft);
                     if (first >= 0 && second >= 0 || first < 0 && second < 0) {
@@ -1104,7 +1126,7 @@ public class TxInstructionSet
                     } else {
                         context.cpuState.setReg(statement.rd_fd, (first >= 0) ? 1 : 0);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sltiInstruction = new TxInstruction("slti", "j, i, s", "jw", "slti $t1,$t2,-100",
@@ -1112,10 +1134,10 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // 16 bit immediate value in statement.imm is sign-extended
                     context.cpuState.setReg(statement.rt_ft, (context.cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) ? 1 : 0);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction sltiuInstruction = new TxInstruction("sltiu", "j, i, s", "jw", "sltiu $t1,$t2,-100",
@@ -1123,7 +1145,7 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
@@ -1132,7 +1154,7 @@ public class TxInstructionSet
                     } else {
                         context.cpuState.setReg(statement.rt_ft, (first >= 0) ? 1 : 0);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction movnInstruction = new TxInstruction("movn", "k, i, j", "kw", "movn $t1,$t2,$t3",
@@ -1140,11 +1162,11 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) != 0) {
                         context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction movzInstruction = new TxInstruction("movz", "k, i, j", "kw", "movz $t1,$t2,$t3",
@@ -1152,11 +1174,11 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) == 0) {
                         context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction breakInstruction = new TxInstruction("break", "u", "", "break 100",
@@ -1164,7 +1186,7 @@ public class TxInstructionSet
             InstructionFormat32.BREAK, InstructionFormat16.BREAK,
             Instruction.FlowType.INT, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // so will just halt execution with a message.
                     throw new TxEmulationException(statement, "break instruction executed; code = " +
                             statement.imm + ".", Exceptions.BREAKPOINT_EXCEPTION);
@@ -1175,11 +1197,11 @@ public class TxInstructionSet
             InstructionFormat32.J, null,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPc(
                             (context.cpuState.pc & 0xF0000000) | (statement.imm << 2)
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction jrInstruction = new TxInstruction("jr", "i;Iu", "", "jr $t1",
@@ -1187,11 +1209,11 @@ public class TxInstructionSet
             InstructionFormat32.R, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPc(
                             context.cpuState.getReg(statement.rs_fs)
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     // alternative if rs=ra
@@ -1200,11 +1222,11 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "", "jal target", // TODO put address in comment
@@ -1212,12 +1234,12 @@ public class TxInstructionSet
             InstructionFormat32.J, InstructionFormat16.JAL_JALX,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
                             (context.cpuState.pc & 0xF0000000) | (statement.imm << 2),
                             context.cpuState.getPc() + 8
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target", // TODO put address in comment
@@ -1225,12 +1247,12 @@ public class TxInstructionSet
             InstructionFormat32.J, InstructionFormat16.JAL_JALX,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
                             ((context.cpuState.pc & 0xF0000001) ^ 1) | (statement.imm << 2),
                             context.cpuState.getPc() + 8
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction jalrInstruction = new TxInstruction("jalr", "(k,) i;Iu", "", "jalr $t1,$t2", // TODO omit rd if rd=$ra
@@ -1238,13 +1260,13 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // todo this should be done after delay slot :
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getPc() + 8);
                     context.setDelayedPc(
                             context.cpuState.getReg(statement.rs_fs)
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction cloInstruction = new TxInstruction("clo", "k, i", "kw", "clo $t1,$t2",
@@ -1252,7 +1274,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int value = context.cpuState.getReg(statement.rs_fs);
                     int leadingOnes = 0;
                     int bitPosition = 31;
@@ -1261,7 +1283,7 @@ public class TxInstructionSet
                         bitPosition--;
                     }
                     context.cpuState.setReg(statement.rd_fd, leadingOnes);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction clzInstruction = new TxInstruction("clz", "k, i", "kw", "clz $t1,$t2",
@@ -1269,7 +1291,7 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int value = context.cpuState.getReg(statement.rs_fs);
                     int leadingZeros = 0;
                     int bitPosition = 31;
@@ -1278,7 +1300,7 @@ public class TxInstructionSet
                         bitPosition--;
                     }
                     context.cpuState.setReg(statement.rd_fd, leadingZeros);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1287,9 +1309,9 @@ public class TxInstructionSet
             InstructionFormat32.CP0, InstructionFormat16.SHIFT2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rd_fd));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1298,9 +1320,9 @@ public class TxInstructionSet
             InstructionFormat32.CP0, InstructionFormat16.SHIFT2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rt_ft)) ;
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1310,9 +1332,9 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs/*fs*/));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1321,9 +1343,9 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs/*fs*/, context.cpuState.getReg(statement.rt_ft)) ;
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1332,9 +1354,9 @@ public class TxInstructionSet
             InstructionFormat32.CP1_CR1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, ((TxCPUState)context.cpuState).getCp1CrReg(statement.rs_fs/*cr#*/));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1342,10 +1364,11 @@ public class TxInstructionSet
             "move Control To Coprocessor 1: Set coprocessor 1 control register $8 to value stored in $t1",
             InstructionFormat32.CP1_CR1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            // Crash @BFC00600 : Unknown CP1 register number 71
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     ((TxCPUState)context.cpuState).setCp1CrReg(statement.rs_fs/*cr#*/, context.cpuState.getReg(statement.rt_ft)) ;
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1355,9 +1378,9 @@ public class TxInstructionSet
             InstructionFormat32.CP1_I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1366,9 +1389,9 @@ public class TxInstructionSet
             InstructionFormat32.CP1_I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1377,7 +1400,7 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float add1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float add2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     float sum = add1 + add2;
@@ -1388,7 +1411,7 @@ public class TxInstructionSet
                     }
                     */
                     context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(sum));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             }
     );
@@ -1397,12 +1420,12 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float sub1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float sub2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     float diff = sub1 - sub2;
                     context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(diff));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             }
     );
@@ -1411,12 +1434,12 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float mul1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float mul2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     float prod = mul1 * mul2;
                     context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(prod));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "kw", "div.s $f0,$f1,$f3",
@@ -1424,12 +1447,12 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float div1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float div2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     float quot = div1 / div2;
                     context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(quot));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1438,12 +1461,13 @@ public class TxInstructionSet
             InstructionFormat32.CP1_CC_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 0) {
                         context.cpuState.pc = context.cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
     public static final TxInstruction bc1tInstruction = new TxInstruction("bc1t", "[l, ]4rs", "", "bc1t 1,label",
@@ -1451,12 +1475,13 @@ public class TxInstructionSet
             InstructionFormat32.CP1_CC_BRANCH, null,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 1) {
                         context.cpuState.pc = context.cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
 
@@ -1465,10 +1490,10 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // convert integer to single (interpret $f1 value as int?)
                     context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits((float) context.cpuState.getReg(statement.rs_fs)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "kw", "cvt.w.s $f0,$f1",
@@ -1476,10 +1501,10 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R2, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // convert single precision in $f1 to integer stored in $f0
                     context.cpuState.setReg(statement.rd_fd, (int) Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1489,14 +1514,14 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R_CC, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     if (op1 == op2)
                         ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
                     else
                         ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "", "c.le.s 1,$f0,$f1",
@@ -1504,14 +1529,14 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R_CC, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     if (op1 <= op2)
                         ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
                     else
                         ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "", "c.lt.s 1,$f0,$f1",
@@ -1519,14 +1544,14 @@ public class TxInstructionSet
             InstructionFormat32.CP1_R_CC, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.rs_fs));
                     float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rt_ft));
                     if (op1 < op2)
                         ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
                     else
                         ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1536,11 +1561,11 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == context.cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction teqiInstruction = new TxInstruction("teqi", "i, s", "", "teqi $t1,-100",
@@ -1548,11 +1573,11 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tneInstruction = new TxInstruction("tne", "i, j, u", "", "tne $t1,$t2",
@@ -1560,11 +1585,11 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != context.cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tneiInstruction = new TxInstruction("tnei", "i, s", "", "tnei $t1,-100",
@@ -1572,11 +1597,11 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tgeInstruction = new TxInstruction("tge", "i, j, u", "", "tge $t1,$t2",
@@ -1584,11 +1609,11 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= context.cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tgeuInstruction = new TxInstruction("tgeu", "i, j, u", "", "tgeu $t1,$t2",
@@ -1596,14 +1621,14 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     int second = context.cpuState.getReg(statement.rt_ft);
                     // if signs same, do straight compare; if signs differ & first negative then first greater else second
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first >= second) : (first < 0)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tgeiInstruction = new TxInstruction("tgei", "i, s", "", "tgei $t1,-100",
@@ -1611,11 +1636,11 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tgeiuInstruction = new TxInstruction("tgeiu", "i, s", "", "tgeiu $t1,-100",
@@ -1623,7 +1648,7 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
@@ -1631,7 +1656,7 @@ public class TxInstructionSet
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first >= second) : (first < 0)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tltInstruction = new TxInstruction("tlt", "i, j, u", "", "tlt $t1,$t2",
@@ -1639,11 +1664,11 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < context.cpuState.getReg(statement.rt_ft)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tltuInstruction = new TxInstruction("tltu", "i, j, u", "", "tltu $t1,$t2",
@@ -1651,14 +1676,14 @@ public class TxInstructionSet
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     int second = context.cpuState.getReg(statement.rt_ft);
                     // if signs same, do straight compare; if signs differ & first positive then first is less else second
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first < second) : (first >= 0)) {
                         throw new TxEmulationException(statement, "trap with code " + statement.imm, Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tltiInstruction = new TxInstruction("tlti", "i, s", "", "tlti $t1,-100",
@@ -1666,11 +1691,11 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction tltiuInstruction = new TxInstruction("tltiu", "i, s", "", "tltiu $t1,-100",
@@ -1678,7 +1703,7 @@ public class TxInstructionSet
             InstructionFormat32.I, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
@@ -1686,7 +1711,7 @@ public class TxInstructionSet
                     if ((first >= 0 && second >= 0 || first < 0 && second < 0) ? (first < second) : (first >= 0)) {
                         throw new TxEmulationException(statement, "trap", Exceptions.TRAP_EXCEPTION);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1696,10 +1721,10 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded signed
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadSigned8(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -1708,9 +1733,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -1719,10 +1744,10 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded signed
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadSigned16(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -1731,10 +1756,10 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded unsigned
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -1743,11 +1768,11 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
@@ -1756,11 +1781,11 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(statement.rs_fs) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction syncInstruction = new TxInstruction("sync", "", "", "sync",
@@ -1768,9 +1793,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     /* nop. Simulator does not have any pipeline */
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction waitInstruction = new TxInstruction("wait", "", "", "wait",
@@ -1778,14 +1803,14 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (Format.bitValue(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_RP_bit) == 1) {
                         ((TxCPUState)context.cpuState).setPowerMode(TxCPUState.PowerMode.DOZE);
                     }
                     else {
                         ((TxCPUState)context.cpuState).setPowerMode(TxCPUState.PowerMode.HALT);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1794,11 +1819,10 @@ public class TxInstructionSet
             InstructionFormat32.R, null,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // set EXL bit (bit 1) in Status register to 0 and set PC to EPC
                     context.cpuState.setReg(TxCPUState.Status, Format.clearBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_EXL_bit));
                     context.cpuState.pc = context.cpuState.getReg(TxCPUState.EPC);
-                    return true;
                 }
             });
 
@@ -1815,9 +1839,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRR3,
             Instruction.FlowType.NONE , false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rt_ft) + statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1827,10 +1851,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // If not EXTENDed, "The 8-bit immediate is shifted left by two bits and sign-extended"
                     context.cpuState.setReg(TxCPUState.FP, context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 24 >> 22));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1840,10 +1864,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // "When EXTENDed, the immediate operand is not shifted at all"
                     context.cpuState.setReg(TxCPUState.FP, context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1852,10 +1876,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rs_fs) + (statement.imm << shift >> shift));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1865,10 +1889,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1878,10 +1902,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1891,10 +1915,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1904,10 +1928,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
                     context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1917,10 +1941,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // If not EXTENDed, "The 8-bit immediate is shifted left by two bits, zero-extended and added"
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 2));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /* EXTENDed : sign-extended and not shifted */
@@ -1929,10 +1953,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // "When EXTENDed, the immediate operand is not shifted at all"
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1941,7 +1965,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (statement.immBitWidth == 8) {
                         // If not EXTENDed, "The 8-bit immediate is shifted left by three bits and sign-extended"
                         context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 24 >> 21));
@@ -1950,7 +1974,7 @@ public class TxInstructionSet
                         // "When EXTENDed, the immediate operand is not shifted at all"
                         context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -1959,10 +1983,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                    return true;
                 }
             });
 
@@ -1971,11 +1994,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 5); // TODO check 5 ?
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                    return true;
                 }
             });
 
@@ -1984,7 +2006,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = 0;
                     switch (statement.rs_fs) {
                         case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
@@ -1993,7 +2015,7 @@ public class TxInstructionSet
                         case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
                     context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2002,10 +2024,10 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.memory.store8(address, context.memory.loadUnsigned8(address) & (~(1 << statement.sa_cc)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2014,13 +2036,14 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == 0) {
                         int shift = 32 - statement.immBitWidth;
                         context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
 
@@ -2029,7 +2052,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR_BS1F_BFINS,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int bit1 = statement.sa_cc;
                     int bit2 = statement.imm;
                     // Create a mask such as 00..001110000 for 6:4 by
@@ -2041,7 +2064,7 @@ public class TxInstructionSet
                     context.cpuState.setReg(statement.rt_ft,
                             ( context.cpuState.getReg(statement.rt_ft)          & ~mask)
                                     | ((context.cpuState.getReg(statement.rs_fs) << bit1 )&  mask));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2050,7 +2073,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR_BS1F_BFINS,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int rx = context.cpuState.getReg(statement.rs_fs);
                     if (rx == 0) {
                         context.cpuState.setReg(statement.rt_ft, 0);
@@ -2063,7 +2086,7 @@ public class TxInstructionSet
                             }
                         }
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2072,7 +2095,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = 0;
                     switch (statement.rs_fs) {
                         case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
@@ -2081,7 +2104,7 @@ public class TxInstructionSet
                         case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2090,10 +2113,10 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?0:1);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2102,7 +2125,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = 0;
                     switch (statement.rs_fs) {
                         case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
@@ -2118,7 +2141,7 @@ public class TxInstructionSet
                         // set bit
                         context.memory.store8(address, context.memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2127,7 +2150,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     if ((context.cpuState.getReg(TxCPUState.T8) & 1) == 0) {
                         // Clear bit
@@ -2137,7 +2160,7 @@ public class TxInstructionSet
                         // set bit
                         context.memory.store8(address, context.memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2146,13 +2169,14 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != 0) {
                         int shift = 32 - statement.immBitWidth;
                         context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
 
@@ -2161,7 +2185,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = 0;
                     switch (statement.rs_fs) {
                         case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
@@ -2170,7 +2194,7 @@ public class TxInstructionSet
                         case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
                     context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2179,10 +2203,10 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2191,13 +2215,14 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(TxCPUState.T8) == 0) {
                         int shift = 32 - statement.immBitWidth;
                         context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
 
@@ -2206,13 +2231,14 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(TxCPUState.T8) != 0) {
                         int shift = 32 - statement.immBitWidth;
                         context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
-                        return true;
                     }
-                    return false;
+                    else {
+                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    }
                 }
             });
 
@@ -2221,7 +2247,7 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = 0;
                     switch (statement.rs_fs) {
                         case 0b00: address = statement.imm << 18 >> 18; break; // sign extend for R0 : shift = 32 - statement.immBitWidth = 32 - 14;
@@ -2230,7 +2256,7 @@ public class TxInstructionSet
                         case 0b11: address = statement.imm + context.cpuState.getReg(TxCPUState.FP); break;
                     }
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?1:0); // !bext
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2239,10 +2265,10 @@ public class TxInstructionSet
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int address = statement.imm + context.cpuState.getReg(TxCPUState.FP);
                     context.cpuState.setReg(TxCPUState.T8, ((context.memory.loadUnsigned8(address) & (1 << statement.sa_cc)) == 0)?1:0); // !bext
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2251,9 +2277,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.T8, context.cpuState.getReg(statement.rs_fs) ^ context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2262,9 +2288,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.T8, context.cpuState.getReg(statement.rs_fs) ^ statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2273,9 +2299,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.Status, Format.clearBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2284,13 +2310,13 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) == 0) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.DIVIDE_BY_ZERO_EXCEPTION);
                     }
                     context.cpuState.setReg(TxCPUState.HI, context.cpuState.getReg(statement.rs_fs) % context.cpuState.getReg(statement.rt_ft));
                     context.cpuState.setReg(TxCPUState.LO, context.cpuState.getReg(statement.rs_fs) / context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2299,7 +2325,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rt_ft) == 0) {
                         throw new TxEmulationException(statement, "arithmetic overflow", Exceptions.DIVIDE_BY_ZERO_EXCEPTION);
                     }
@@ -2307,7 +2333,7 @@ public class TxInstructionSet
                     long oper2 = ((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32;
                     context.cpuState.setReg(TxCPUState.HI, (int) (((oper1 % oper2) << 32) >> 32));
                     context.cpuState.setReg(TxCPUState.LO, (int) (((oper1 / oper2) << 32) >> 32));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2316,9 +2342,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.Status, Format.setBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2327,12 +2353,12 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
                             context.cpuState.pc + 5 // TODO 5 ?? getPc ??
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2341,10 +2367,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 3); // TODO 3 ?? getPc ??
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
-                    return true;
                 }
             });
 
@@ -2353,11 +2378,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2366,9 +2391,8 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
-                    return true;
                 }
             });
 
@@ -2377,9 +2401,8 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
-                    return true;
                 }
             });
 
@@ -2391,9 +2414,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadSigned8(context.cpuState.getReg(statement.rs_fs) + statement.imm));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2405,9 +2428,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(statement.rs_fs) + statement.imm));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2419,9 +2442,9 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2432,9 +2455,9 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(TxCPUState.FP) + statement.imm));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2447,9 +2470,9 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2460,9 +2483,9 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(TxCPUState.SP) + statement.imm));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2475,9 +2498,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadSigned16(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 1)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2489,9 +2512,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 1)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2503,9 +2526,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 15)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2516,9 +2539,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 1)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2531,9 +2554,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 15)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2544,9 +2567,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 1)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2560,9 +2583,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 2)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2574,9 +2597,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2587,9 +2610,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 2)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2602,11 +2625,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // TODO mask PC
                     // getPc ??
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2617,11 +2640,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // TODO mask PC
                     // getPc ??
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 2)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2633,9 +2656,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
@@ -2646,9 +2669,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 2)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2657,9 +2680,9 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2669,14 +2692,14 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
                     long sum = contentsHiLo + product;
                     context.cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
                     int lo = Format.lowOrderLongToInt(sum);
                     context.cpuState.setReg(TxCPUState.LO, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2686,7 +2709,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
                             * (((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     long contentsHiLo = Format.twoIntsToLong(context.cpuState.getReg(TxCPUState.HI), context.cpuState.getReg(TxCPUState.LO));
@@ -2694,7 +2717,7 @@ public class TxInstructionSet
                     context.cpuState.setReg(TxCPUState.HI, Format.highOrderLongToInt(sum));
                     int lo = Format.lowOrderLongToInt(sum);
                     context.cpuState.setReg(TxCPUState.LO, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2703,9 +2726,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I8MOVFP,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.FP, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2714,9 +2737,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I8MOVR32,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2725,9 +2748,9 @@ public class TxInstructionSet
             null, InstructionFormat16.I8MOV32R,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getReg(statement.rs_fs));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2737,12 +2760,12 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (long) context.cpuState.getReg(statement.rs_fs) * (long) context.cpuState.getReg(statement.rt_ft);
                     context.cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     context.cpuState.setReg(TxCPUState.LO, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2752,13 +2775,13 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     long product = (((long) context.cpuState.getReg(statement.rs_fs)) << 32 >>> 32)
                             * (((long) context.cpuState.getReg(statement.rt_ft)) << 32 >>> 32);
                     context.cpuState.setReg(TxCPUState.HI, (int) (product >> 32));
                     int lo = (int) ((product << 32) >> 32);
                     context.cpuState.setReg(TxCPUState.LO, lo);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2767,9 +2790,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, 0 - context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2778,9 +2801,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, ~context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2789,7 +2812,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int add1 = context.cpuState.getReg(statement.rs_fs);
                     int add2 = context.cpuState.getReg(statement.rt_ft);
                     int sum = add1 + add2;
@@ -2800,7 +2823,7 @@ public class TxInstructionSet
                         sum = Integer.MIN_VALUE;
                     }
                     context.cpuState.setReg(statement.rt_ft, sum);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2810,7 +2833,7 @@ public class TxInstructionSet
             null, InstructionFormat16.I8SVRS,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
                     int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
 
@@ -2907,7 +2930,7 @@ public class TxInstructionSet
                     }
 
                     context.cpuState.setReg(TxCPUState.SP, temp2);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -2917,7 +2940,7 @@ public class TxInstructionSet
             null, InstructionFormat16.I8SVRS,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
                     int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
 
@@ -3049,7 +3072,7 @@ public class TxInstructionSet
                         temp = context.cpuState.getReg(TxCPUState.SP) - (statement.imm << 3);
                     }
                     context.cpuState.setReg(TxCPUState.SP, temp);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3063,11 +3086,11 @@ public class TxInstructionSet
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(statement.rs_fs) + statement.imm,
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3079,11 +3102,11 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3095,11 +3118,11 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(TxCPUState.FP) + statement.imm,
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3111,11 +3134,11 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3127,11 +3150,11 @@ public class TxInstructionSet
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(TxCPUState.SP) + statement.imm,
                             context.cpuState.getReg(statement.rt_ft) & 0x000000ff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3144,11 +3167,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(statement.rs_fs) + (statement.imm << 1),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3160,11 +3183,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 15),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3176,11 +3199,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 1),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3192,11 +3215,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 15),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3208,11 +3231,11 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 1),
                             context.cpuState.getReg(statement.rt_ft) & 0x0000ffff);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3224,9 +3247,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(statement.rs_fs) + (statement.imm << 2), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3239,9 +3262,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 2), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3253,9 +3276,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3267,9 +3290,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 2), context.cpuState.getReg(TxCPUState.RA));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3281,9 +3304,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16), context.cpuState.getReg(TxCPUState.RA));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3295,9 +3318,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 2), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3309,9 +3332,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rt_ft));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3321,9 +3344,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, context.cpuState.getReg(statement.rs_fs) << 24 >> 24);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3332,9 +3355,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, context.cpuState.getReg(statement.rs_fs) << 16 >> 16);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3343,9 +3366,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRR2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rt_ft) << statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3354,9 +3377,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRR2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rt_ft) >> statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3365,9 +3388,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RRR2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rt_ft, context.cpuState.getReg(statement.rt_ft) >>> statement.imm);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3377,9 +3400,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(TxCPUState.T8, (context.cpuState.getReg(statement.rs_fs) < context.cpuState.getReg(statement.rt_ft)) ? 1 : 0);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3389,10 +3412,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // 16 bit immediate value in statement.imm is sign-extended
                     context.cpuState.setReg(TxCPUState.T8, (context.cpuState.getReg(statement.rs_fs) < statement.imm) ? 1 : 0);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3402,10 +3425,10 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // 16 bit immediate value in statement.imm is sign-extended
                     context.cpuState.setReg(TxCPUState.T8, (context.cpuState.getReg(statement.rs_fs) < (statement.imm << 16 >> 16)) ? 1 : 0);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3415,7 +3438,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     // 8 bit immediate value in statement.imm is zero-extended
                     int second = statement.imm ;
@@ -3424,7 +3447,7 @@ public class TxInstructionSet
                     } else {
                         context.cpuState.setReg(TxCPUState.T8, (first >= 0) ? 1 : 0);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /** 16-bit EXTENDed version of sltiuInstruction uses t8 as fixed destination and sign-extends imm */
@@ -3433,7 +3456,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     // 16 bit immediate value in statement.imm is sign-extended
                     int second = statement.imm << 16 >> 16;
@@ -3442,7 +3465,7 @@ public class TxInstructionSet
                     } else {
                         context.cpuState.setReg(TxCPUState.T8, (first >= 0) ? 1 : 0);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3452,7 +3475,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int first = context.cpuState.getReg(statement.rs_fs);
                     int second = context.cpuState.getReg(statement.rt_ft);
                     if (first >= 0 && second >= 0 || first < 0 && second < 0) {
@@ -3460,7 +3483,7 @@ public class TxInstructionSet
                     } else {
                         context.cpuState.setReg(TxCPUState.T8, (first >= 0) ? 1 : 0);
                     }
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3469,7 +3492,7 @@ public class TxInstructionSet
             null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     int sub1 = context.cpuState.getReg(statement.rs_fs);
                     int sub2 = context.cpuState.getReg(statement.rt_ft);
                     int dif = sub1 + sub2;
@@ -3480,7 +3503,7 @@ public class TxInstructionSet
                         dif = Integer.MIN_VALUE;
                     }
                     context.cpuState.setReg(statement.rt_ft, dif);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3489,9 +3512,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, context.cpuState.getReg(statement.rs_fs) & 0x000000FF);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3500,9 +3523,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rs_fs, context.cpuState.getReg(statement.rs_fs) & 0x0000FFFF);
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3511,9 +3534,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RR_MIN_MAX,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, Math.min(context.cpuState.getReg(statement.rs_fs), context.cpuState.getReg(statement.rt_ft)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
     public static final TxInstruction maxInstruction = new TxInstruction("max", "k, [i, ]j", "kw", "min $t1, $t2, $t3",
@@ -3521,9 +3544,9 @@ public class TxInstructionSet
             null, InstructionFormat16.RR_MIN_MAX,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
-                public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
+                public void simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rd_fd, Math.max(context.cpuState.getReg(statement.rs_fs), context.cpuState.getReg(statement.rt_ft)));
-                    return false;
+                    context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
@@ -3539,7 +3562,7 @@ public class TxInstructionSet
 //                        "000000 00000 00000 00000 00000 001100",
 //                        new SimulationCode()
 //                        {
-//                            public boolean simulate(TxStatement statement) throws EmulationException
+//                            public void simulate(TxStatement statement) throws EmulationException
 //                            {
 //                                findAndSimulateSyscall(RegisterFile.getValue(2),statement);
 //                            }
