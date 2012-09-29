@@ -276,10 +276,6 @@ public class TxCPUState extends CPUState {
         throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
 
-    public void toggle16bitIsaMode() {
-        is16bitIsaMode = !is16bitIsaMode;
-    }
-
     public enum PowerMode {
         RUN,
         HALT,
@@ -415,8 +411,6 @@ public class TxCPUState extends CPUState {
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
-        cloneCpuState.setStoredDelaySlotType(getStoredDelaySlotType());
-        cloneCpuState.setLineBreakRequest(isLineBreakRequested());
         return cloneCpuState;
     }
 

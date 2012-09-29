@@ -6,8 +6,9 @@ import java.util.Set;
 
 public abstract class Statement {
     protected Instruction instruction = null;
-    /** cached CPUState, for CALLs and INTs */
-    public CPUState cpuState = null;
+
+    /** cached context including CPUState, for CALLs and INTs */
+    public StatementContext context = null;
 
     /** The delay slot this instruction is *in*
      * In other words, that the delay slot type of the previous statement's instruction
@@ -42,8 +43,8 @@ public abstract class Statement {
         this.commentString = commentString;
     }
 
-    public CPUState getCpuState() {
-        return cpuState;
+    public StatementContext getContext() {
+        return context;
     }
 
     /** formatted operand list */

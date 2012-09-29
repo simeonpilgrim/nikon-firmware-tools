@@ -1,6 +1,6 @@
 package com.nikonhacker.disassembly.tx;
 
-import com.nikonhacker.emu.EmulationContext;
+import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.EmulationException;
 
 /*
@@ -47,8 +47,8 @@ public interface SimulationCode {
      * Method to simulate the execution of a specific MIPS basic instruction.
      *
      * @param statement A ProgramStatement representing the MIPS instruction to simulate.
-     * @param emulationContext The context the emulation runs in (CPU, memory and delay slot status)
+     * @param context The context the emulation runs in (CPU, memory and delay slot status)
      * @throws EmulationException This is a run-time exception generated during simulation.
      **/
-    public void simulate(TxStatement statement, EmulationContext emulationContext) throws EmulationException;
+    public void simulate(TxStatement statement, StatementContext context) throws EmulationException;
 }

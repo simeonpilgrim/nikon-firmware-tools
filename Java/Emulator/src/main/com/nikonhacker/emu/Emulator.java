@@ -2,6 +2,7 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -20,6 +21,8 @@ public abstract class Emulator {
 
     protected Memory memory;
     protected CPUState cpuState;
+
+    StatementContext context = new StatementContext();
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -73,9 +76,16 @@ public abstract class Emulator {
         this.exitSleepLoop = true;
     }
 
-    public abstract void setMemory(Memory memory);
 
-    public abstract void setCpuState(CPUState cpuState);
+    public void setCpuState(CPUState cpuState) {
+        this.cpuState = cpuState;
+        context.cpuState = cpuState;
+    }
+
+    public void setMemory(Memory memory) {
+        this.memory = memory;
+        context.memory = memory;
+    }
 
     public abstract void setOutputOptions(Set<OutputOption> outputOptions);
 

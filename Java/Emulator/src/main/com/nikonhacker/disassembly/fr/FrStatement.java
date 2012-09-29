@@ -165,10 +165,10 @@ public class FrStatement extends Statement {
     /**
      * Disassemble FrInstruction for presentation
      * must be called after decodeOperands()
-     * @param cpuState This stores CPU state.
+     * @param context
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
      */
-    public void formatOperandsAndComment(CPUState cpuState, boolean updateRegisters, Set<OutputOption> outputOptions) {
+    public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) {
 
         /* DISPLAY FORMAT processing */
 
@@ -244,9 +244,9 @@ public class FrStatement extends Statement {
                     break;
 
                 case 'I':
-                    if (cpuState.isRegisterDefined(decodedI))
+                    if (context.cpuState.isRegisterDefined(decodedI))
                     {
-                        decodedImm = cpuState.getReg(decodedI);
+                        decodedImm = context.cpuState.getReg(decodedI);
                         immBitWidth = 32;
                     }
                     else
@@ -256,9 +256,9 @@ public class FrStatement extends Statement {
                     }
                     break;
                 case 'J':
-                    if (cpuState.isRegisterDefined(decodedJ))
+                    if (context.cpuState.isRegisterDefined(decodedJ))
                     {
-                        decodedImm = cpuState.getReg(decodedJ);
+                        decodedImm = context.cpuState.getReg(decodedJ);
                         immBitWidth = 32;
                     }
                     else
@@ -348,7 +348,7 @@ public class FrStatement extends Statement {
                     break;
                 case 'r':
                     /* relative */
-                    decodedImm = cpuState.pc + 2 + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
+                    decodedImm = context.cpuState.pc + 2 + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
                     immBitWidth = 32;
                     break;
                 case 's':
@@ -372,7 +372,7 @@ public class FrStatement extends Statement {
                     break;
                 case 'v':
                     /* vector */
-                    currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(0xFF - (0xFF & ((cpuState.pc - memRangeStart) / 4)), 1));
+                    currentBuffer.append((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x") + Format.asHex(0xFF - (0xFF & ((context.cpuState.pc - memRangeStart) / 4)), 1));
                     break;
                 case 'x':
                     decodedImm |= 0x100;
@@ -443,20 +443,20 @@ public class FrStatement extends Statement {
                     break;
                 case 'w':
                     if (updateRegisters) {
-                        cpuState.setRegisterUndefined(r);
+                        context.cpuState.setRegisterUndefined(r);
                     }
                     break;
                 case 'v':
-                    if (updateRegisters && cpuState.registerExists(r)) {
-                        cpuState.setRegisterDefined(r);
-                        cpuState.setReg(r, decodedImm);
+                    if (updateRegisters && context.cpuState.registerExists(r)) {
+                        context.cpuState.setRegisterDefined(r);
+                        context.cpuState.setReg(r, decodedImm);
                     }
                     break;
                 case 'x':
                     r = FrCPUState.NOREG;
                     break;
                 default:
-                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(cpuState.pc, 8));
+                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(context.cpuState.pc, 8));
                     break;
             }
         }
@@ -465,10 +465,10 @@ public class FrStatement extends Statement {
         /* LINE BREAKS and INDENT (delay slot) processing */
 
         // Retrieve stored delay slot type to print this instruction
-        setDelaySlotType(cpuState.getStoredDelaySlotType());
+        setDelaySlotType(context.getStoredDelaySlotType());
 
         // Store the one of this instruction for printing next one
-        cpuState.setStoredDelaySlotType(instruction.getDelaySlotType());
+        context.setStoredDelaySlotType(instruction.getDelaySlotType());
 
 
         boolean newIsBreak = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET).contains(instruction.getFlowType());
@@ -476,16 +476,16 @@ public class FrStatement extends Statement {
         if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
             // Current instruction has no delay slot
             // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
-            setMustInsertLineBreak(cpuState.isLineBreakRequested() || newIsBreak);
+            setMustInsertLineBreak(context.isLineBreakRequested() || newIsBreak);
             // Clear break request for next one
-            cpuState.setLineBreakRequest(false);
+            context.setLineBreakRequest(false);
         }
         else {
             // Current instruction has a delay slot
             // Don't break now
             setMustInsertLineBreak(false);
             // Request a break after the next instruction if needed (current instruction is a JMP or RET)
-            cpuState.setLineBreakRequest(newIsBreak);
+            context.setLineBreakRequest(newIsBreak);
         }
     }
 

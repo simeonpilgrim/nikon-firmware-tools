@@ -502,10 +502,12 @@ public abstract class Disassembler {
 
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
 
-        CPUState dummyCpuState = getCPUState(memRange); // TODO : get rid of it (! take care, used for interrupt vector counter)
-        while (dummyCpuState.pc < memRange.getEnd())
+        // TODO : get rid of this (! take care, used for interrupt vector counter)
+        StatementContext dummyContext = new StatementContext();
+        dummyContext.cpuState = getCPUState(memRange);
+        while (dummyContext.cpuState.pc < memRange.getEnd())
         {
-            dummyCpuState.pc += disassembleOneDataRecord(dummyCpuState, memRange, memoryFileOffset, outputOptions);
+            dummyContext.cpuState.pc += disassembleOneDataRecord(dummyContext, memRange, memoryFileOffset, outputOptions);
         }
     }
 
@@ -514,29 +516,30 @@ public abstract class Disassembler {
 
         int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
 
-        CPUState cpuState = getCPUState(memRange);
+        StatementContext context = new StatementContext();
+        context.cpuState = getCPUState(memRange);
 
         if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
-            while (cpuState.pc < memRange.getEnd())
+            while (context.cpuState.pc < memRange.getEnd())
             {
-                cpuState.pc += disassembleOne32BitStatement(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
+                context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
             }
         }
         else {
-            while (cpuState.pc < memRange.getEnd())
+            while (context.cpuState.pc < memRange.getEnd())
             {
-                cpuState.pc += disassembleOne16BitStatement(cpuState, memRange, memoryFileOffset, codeStructure, outputOptions);
+                context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
             }
         }
     }
 
     protected abstract CPUState getCPUState(Range memRange);
 
-    protected abstract int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+    protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
     public void initialize() throws IOException {
         startTime = new Date().toString();

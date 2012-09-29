@@ -16,10 +16,6 @@ public abstract class CPUState {
 
     /** Used for disassembly formatting */
     protected long regValidityBitmap = 0;
-    /** Temp storage */
-    private Instruction.DelaySlotType storedDelaySlotType = Instruction.DelaySlotType.NONE;
-    /** Temp storage */
-    private boolean isLineBreakRequested;
 
     /**
      * Tests if such a register number exists
@@ -70,22 +66,6 @@ public abstract class CPUState {
 
     public int getReg(int registerNumber) {
         return regValue[registerNumber].getValue();
-    }
-
-    public void setStoredDelaySlotType(Instruction.DelaySlotType storedDelaySlotType) {
-        this.storedDelaySlotType = storedDelaySlotType;
-    }
-
-    public Instruction.DelaySlotType getStoredDelaySlotType() {
-        return storedDelaySlotType;
-    }
-
-    public void setLineBreakRequest(boolean request) {
-        isLineBreakRequested = request;
-    }
-
-    public boolean isLineBreakRequested() {
-        return isLineBreakRequested;
     }
 
     public abstract void reset();

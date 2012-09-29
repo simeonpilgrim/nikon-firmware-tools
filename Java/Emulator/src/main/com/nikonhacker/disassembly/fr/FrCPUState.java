@@ -288,8 +288,6 @@ public class FrCPUState extends CPUState {
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
-        cloneCpuState.setStoredDelaySlotType(getStoredDelaySlotType());
-        cloneCpuState.setLineBreakRequest(isLineBreakRequested());
         return cloneCpuState;
     }
 

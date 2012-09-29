@@ -1,13 +1,11 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
-import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -15,7 +13,6 @@ import java.io.PrintWriter;
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
-    EmulationContext emulationContext = new EmulationContext();
 
     public TxEmulator() {
     }
@@ -67,28 +64,28 @@ public class TxEmulator extends Emulator {
                     PrintWriter printWriter = instructionPrintWriter;
                     if (printWriter != null) {
                         // OK. copy is still not null
-                        statement.formatOperandsAndComment(txCpuState, false, outputOptions);
+                        statement.formatOperandsAndComment(context, false, outputOptions);
                         printWriter.print("0x" + Format.asHex(txCpuState.pc, 8) + " " + statement.toString(outputOptions));
                     }
                 }
 
                 // ACTUAL INSTRUCTION EXECUTION
-                ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, emulationContext);
+                ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, context);
 
                 totalCycles ++; // approximation
 
                 /* Delay slot processing */
-                if (emulationContext.nextPc != null) {
-                    if (emulationContext.delaySlotDone) {
-                        txCpuState.setPc(emulationContext.nextPc);
-                        emulationContext.nextPc = null;
-                        if (emulationContext.nextReturnAddress != null) {
-                            txCpuState.setReg(TxCPUState.RA, emulationContext.nextReturnAddress);
-                            emulationContext.nextReturnAddress = null;
+                if (context.nextPc != null) {
+                    if (context.delaySlotDone) {
+                        txCpuState.setPc(context.nextPc);
+                        context.nextPc = null;
+                        if (context.nextReturnAddress != null) {
+                            txCpuState.setReg(TxCPUState.RA, context.nextReturnAddress);
+                            context.nextReturnAddress = null;
                         }
                     }
                     else {
-                        emulationContext.delaySlotDone = true;
+                        context.delaySlotDone = true;
                     }
                 }
                 else {
@@ -169,7 +166,7 @@ public class TxEmulator extends Emulator {
             System.err.println(e.getMessage());
             System.err.println(txCpuState);
             try {
-                statement.formatOperandsAndComment(txCpuState, false, outputOptions);
+                statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
             } catch (Exception e1) {
                 System.err.println("Cannot disassemble offending instruction :" + statement.formatAsHex());
@@ -178,15 +175,5 @@ public class TxEmulator extends Emulator {
             throw new EmulationException(e);
         }
 
-    }
-
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
-        emulationContext.cpuState = cpuState;
-    }
-
-    public void setMemory(Memory memory) {
-        this.memory = memory;
-        emulationContext.memory = memory;
     }
 }
