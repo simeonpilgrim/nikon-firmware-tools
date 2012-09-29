@@ -120,7 +120,7 @@ public class FrEmulator extends Emulator {
                     if (printWriter != null) {
                         // OK. copy is still not null
                         statement.formatOperandsAndComment(frCpuState, false, outputOptions);
-                        printWriter.print("0x" + Format.asHex(frCpuState.pc, 8) + " " + statement);
+                        printWriter.print("0x" + Format.asHex(frCpuState.pc, 8) + " " + statement.toString(outputOptions));
                     }
                 }
                 
@@ -2378,7 +2378,7 @@ public class FrEmulator extends Emulator {
 
     private void pushInstruction(FrStatement statement) {
         statement.formatOperandsAndComment(cpuState, false, outputOptions);
-        callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(FrCPUState.SP), statement.toString()));
+        callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(FrCPUState.SP), statement.toString(outputOptions)));
     }
 
     private int bitSearch(int value, int testBit) {

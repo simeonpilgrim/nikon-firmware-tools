@@ -39,11 +39,13 @@ public enum OutputOption {
     VERBOSE     ("verbose",         "verbose messages", false),
     DEBUG       ("debug",           "debug disassembler", false)
     ;
+
     private String key;
     private String[] help;
     private boolean defaultValue;
 
-    public static EnumSet<OutputOption> formatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, OFFSET, HEXCODE, BLANKS);
+    public static EnumSet<OutputOption> allFormatOptions =     EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, OFFSET, HEXCODE, BLANKS);
+    public static EnumSet<OutputOption> defaultFormatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, HEXCODE);
 
     /**
      * @param key the option's key

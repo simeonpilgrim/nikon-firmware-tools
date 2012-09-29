@@ -68,7 +68,7 @@ public class TxEmulator extends Emulator {
                     if (printWriter != null) {
                         // OK. copy is still not null
                         statement.formatOperandsAndComment(txCpuState, false, outputOptions);
-                        printWriter.print("0x" + Format.asHex(txCpuState.pc, 8) + " " + statement);
+                        printWriter.print("0x" + Format.asHex(txCpuState.pc, 8) + " " + statement.toString(outputOptions));
                     }
                 }
 
