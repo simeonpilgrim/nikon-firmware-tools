@@ -168,8 +168,8 @@ public abstract class CodeStructure {
                                         text+=", ";
                                     }
                                     text+=parameter.getInVariableName() + "=";
-                                    if (statement.getCpuState().isRegisterDefined(parameter.getRegister())) {
-                                        text+="0x" + Integer.toHexString(statement.getCpuState().getReg(parameter.getRegister()));
+                                    if (statement.getContext().cpuState.isRegisterDefined(parameter.getRegister())) {
+                                        text+="0x" + Integer.toHexString(statement.getContext().cpuState.getReg(parameter.getRegister()));
                                     }
                                     else {
                                         text+= getRegisterLabels()[parameter.getRegister()];

@@ -31,10 +31,6 @@ public class FrEmulator extends Emulator {
 
     private InterruptController interruptController;
 
-    protected Integer nextPc = null;
-    protected Integer nextReturnAddress = null;
-    protected boolean delaySlotDone = false;
-
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
             System.err.println("Usage Emulator <file> <initialPc>");
@@ -119,7 +115,7 @@ public class FrEmulator extends Emulator {
                     PrintWriter printWriter = instructionPrintWriter;
                     if (printWriter != null) {
                         // OK. copy is still not null
-                        statement.formatOperandsAndComment(frCpuState, false, outputOptions);
+                        statement.formatOperandsAndComment(context, false, outputOptions);
                         printWriter.print("0x" + Format.asHex(frCpuState.pc, 8) + " " + statement.toString(outputOptions));
                     }
                 }
@@ -2275,17 +2271,17 @@ public class FrEmulator extends Emulator {
                 totalCycles += cycles;
 
                 /* Delay slot processing */
-                if (nextPc != null) {
-                    if (delaySlotDone) {
-                        frCpuState.pc = nextPc;
-                        nextPc = null;
-                        if (nextReturnAddress != null) {
-                            frCpuState.setReg(FrCPUState.RP, nextReturnAddress);
-                            nextReturnAddress = null;
+                if (context.nextPc != null) {
+                    if (context.delaySlotDone) {
+                        frCpuState.pc = context.nextPc;
+                        context.nextPc = null;
+                        if (context.nextReturnAddress != null) {
+                            frCpuState.setReg(FrCPUState.RP, context.nextReturnAddress);
+                            context.nextReturnAddress = null;
                         }
                     }
                     else {
-                        delaySlotDone = true;
+                        context.delaySlotDone = true;
                     }
                 }
                 else {
@@ -2365,7 +2361,7 @@ public class FrEmulator extends Emulator {
             System.err.println(e.getMessage());
             System.err.println(frCpuState);
             try {
-                statement.formatOperandsAndComment(frCpuState, false, outputOptions);
+                statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
             }
             catch(Exception e1) {
@@ -2377,7 +2373,7 @@ public class FrEmulator extends Emulator {
     }
 
     private void pushInstruction(FrStatement statement) {
-        statement.formatOperandsAndComment(cpuState, false, outputOptions);
+        statement.formatOperandsAndComment(context, false, outputOptions);
         callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(FrCPUState.SP), statement.toString(outputOptions)));
     }
 
@@ -2402,14 +2398,14 @@ public class FrEmulator extends Emulator {
     }
 
     private void setDelayedPc(Integer nextPc) {
-        this.nextPc = nextPc;
-        this.delaySlotDone = false;
+        context.nextPc = nextPc;
+        context.delaySlotDone = false;
     }
 
     private void setDelayedPcAndRa(Integer nextPc, Integer nextReturnAddress) {
-        this.nextPc = nextPc;
-        this.nextReturnAddress = nextReturnAddress;
-        this.delaySlotDone = false;
+        context.nextPc = nextPc;
+        context.nextReturnAddress = nextReturnAddress;
+        context.delaySlotDone = false;
     }
 
     public void setMemory(Memory memory) {

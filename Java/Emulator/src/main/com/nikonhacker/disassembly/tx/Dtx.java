@@ -16,63 +16,65 @@ public class Dtx extends Disassembler
 
 
     /* output */
-    protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
-        int binaryStatement16 = memory.loadInstruction16(cpuState.pc);
+        int binaryStatement16 = memory.loadInstruction16(context.cpuState.pc);
 
-        statement.fill16bInstruction(binaryStatement16, cpuState.pc, memory);
+        statement.fill16bInstruction(binaryStatement16, context.cpuState.pc, memory);
 
-        statement.decode16BitOperands(cpuState.pc);
+        statement.decode16BitOperands(context.cpuState.pc);
 
-        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
+        statement.formatOperandsAndComment(context, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-                statement.cpuState = ((TxCPUState) cpuState).clone();
+                statement.context = new StatementContext();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
             }
 
-            codeStructure.getStatements().put(cpuState.pc, statement);
+            codeStructure.getStatements().put(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now
             if (outWriter != null) {
-                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
+                Disassembler.printDisassembly(outWriter, statement, context.cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
         return statement.getNumBytes();
     }
 
     @Override
-    protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
-        int binaryStatement32 = memory.loadInstruction32(cpuState.pc);
+        int binaryStatement32 = memory.loadInstruction32(context.cpuState.pc);
 
         statement.fill32bInstruction(binaryStatement32);
 
         statement.decode32BitOperands();
 
-        statement.formatOperandsAndComment((TxCPUState) cpuState, true, this.outputOptions);
+        statement.formatOperandsAndComment(context, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-                statement.cpuState = ((TxCPUState)cpuState).clone();
+                statement.context = new StatementContext();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
             }
 
-            codeStructure.getStatements().put(cpuState.pc, statement);
+            codeStructure.getStatements().put(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now
             if (outWriter != null) {
-                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
+                Disassembler.printDisassembly(outWriter, statement, context.cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
         return 4;
     }
 
 
-    protected int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
 
         int sizeInBytes = 0;
 
@@ -81,26 +83,26 @@ public class Dtx extends Disassembler
             TxStatement statement = new TxStatement(memRange.getStart());
             switch (spec.getWidth()) {
                 case 1:
-                    statement.imm = memory.loadUnsigned8(dummyCpuState.pc);
+                    statement.imm = memory.loadUnsigned8(context.cpuState.pc);
                     statement.immBitWidth = 8;
                     break;
                 case 2:
-                    statement.imm = memory.loadUnsigned16(dummyCpuState.pc);
+                    statement.imm = memory.loadUnsigned16(context.cpuState.pc);
                     statement.immBitWidth = 16;
                     break;
                 default:
-                    statement.imm = memory.load32(dummyCpuState.pc);
+                    statement.imm = memory.load32(context.cpuState.pc);
                     statement.immBitWidth = 32;
                     break;
             }
-            statement.setBinaryStatement(statement.immBitWidth / 4, statement.imm);
+            statement.setBinaryStatement(statement.immBitWidth / 8, statement.imm);
 
             statement.setInstruction(TxInstructionSet.opData[spec.getIndex()]);
 
-            statement.formatOperandsAndComment((TxCPUState) dummyCpuState, true, this.outputOptions);
+            statement.formatOperandsAndComment(context, true, this.outputOptions);
 
             if (outWriter != null) {
-                Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
+                Disassembler.printDisassembly(outWriter, statement, context.cpuState.pc, memoryFileOffset, outputOptions);
             }
 
             sizeInBytes += statement.getNumBytes();

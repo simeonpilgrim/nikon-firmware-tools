@@ -58,28 +58,29 @@ public class Dfr extends Disassembler
 
 
     /* output */
-    protected int disassembleOne16BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
         FrStatement statement = new FrStatement(memRange.getStart());
 
-        statement.getNextStatement(memory, cpuState.pc);
+        statement.getNextStatement(memory, context.cpuState.pc);
 
         statement.fillInstruction();
 
-        statement.decodeOperands(cpuState.pc, memory);
+        statement.decodeOperands(context.cpuState.pc, memory);
 
-        statement.formatOperandsAndComment(cpuState, true, this.outputOptions);
+        statement.formatOperandsAndComment(context, true, this.outputOptions);
 
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
-                statement.cpuState = ((FrCPUState)cpuState).clone();
+                statement.context = new StatementContext();
+                statement.context.cpuState = ((FrCPUState) context.cpuState).clone();
             }
 
-            codeStructure.getStatements().put(cpuState.pc, statement);
+            codeStructure.getStatements().put(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now
             if (outWriter != null) {
-                Disassembler.printDisassembly(outWriter, statement, cpuState.pc, memoryFileOffset, outputOptions);
+                Disassembler.printDisassembly(outWriter, statement, context.cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
 
@@ -87,31 +88,31 @@ public class Dfr extends Disassembler
     }
 
     @Override
-    protected int disassembleOne32BitStatement(CPUState cpuState, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws DisassemblyException {
+    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws DisassemblyException {
         throw new DisassemblyException("Dfr only has 16-bit instructions. Please check your dfr.txt config file for wrong CODE ranges");
     }
 
 
-    protected int disassembleOneDataRecord(CPUState dummyCpuState, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
 
         int sizeInBytes = 0;
 
         for (RangeType.Width spec : memRange.getRangeType().widths)
         {
             FrStatement statement = new FrStatement(memRange.getStart());
-            statement.getNextData(memory, dummyCpuState.pc);
+            statement.getNextData(memory, context.cpuState.pc);
             statement.imm = statement.data[0];
             statement.immBitWidth = 16;
             statement.setInstruction(FrInstructionSet.opData[spec.getIndex()]);
 
-            statement.decodeOperands(dummyCpuState.pc, memory);
+            statement.decodeOperands(context.cpuState.pc, memory);
 
-            statement.formatOperandsAndComment(dummyCpuState, true, this.outputOptions);
+            statement.formatOperandsAndComment(context, true, this.outputOptions);
 
             sizeInBytes += statement.numData << 1;
 
             if (outWriter != null) {
-                Disassembler.printDisassembly(outWriter, statement, dummyCpuState.pc, memoryFileOffset, outputOptions);
+                Disassembler.printDisassembly(outWriter, statement, context.cpuState.pc, memoryFileOffset, outputOptions);
             }
         }
 
