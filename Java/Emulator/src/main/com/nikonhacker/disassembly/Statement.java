@@ -9,8 +9,12 @@ public abstract class Statement {
     /** cached CPUState, for CALLs and INTs */
     public CPUState cpuState = null;
 
-    /** "flags" (for display only) */
+    /** The delay slot this instruction is *in*
+     * In other words, that the delay slot type of the previous statement's instruction
+     */
     private Instruction.DelaySlotType delaySlotType;
+
+    /** "flags" (for display only) */
     private boolean mustInsertLineBreak;
 
     private String operandString;
@@ -51,11 +55,12 @@ public abstract class Statement {
         this.operandString = operandString;
     }
 
-    /** flags (for display only) */
+    /** Gets the delay slot this instruction is *in* */
     public Instruction.DelaySlotType getDelaySlotType() {
         return delaySlotType;
     }
 
+    /** Sets the delay slot this instruction is *in* */
     public void setDelaySlotType(Instruction.DelaySlotType delaySlotType) {
         this.delaySlotType = delaySlotType;
     }
@@ -69,45 +74,7 @@ public abstract class Statement {
     }
 
     /**
-     * Simple and fast version used by realtime disassembly trace
-     */
-    @Override
-    public String toString() {
-        String out = formatAsHex();
-
-        // todo why not instruction.delaySlotType ? Why does this field exist on Statement ?
-        if (delaySlotType == null) {
-            System.out.println("Error : delaySlotType = null");
-        }
-        else {
-            switch (delaySlotType) {
-                case NONE:
-                    out += "              " + StringUtils.rightPad(instruction.getName(), 7) + " " + getOperandString();
-                    break;
-                case NORMAL:
-                    out += "               " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
-                    break;
-                case LIKELY:
-                    out += "               ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
-                    break;
-                default:
-                    throw new RuntimeException("Unknown delay slot type : " + delaySlotType);
-            }
-        }
-
-        if (StringUtils.isNotBlank(getCommentString())) {
-            out += StringUtils.leftPad("; " + getCommentString(), 22);
-        }
-        out += "\n";
-        if (mustInsertLineBreak) {
-            out += "\n";
-        }
-        return out;
-    }
-
-
-    /**
-     * Full fledged version used for offline disassembly
+     * toString() taking options into account
      * @param options
      * @return
      */
@@ -122,16 +89,28 @@ public abstract class Statement {
             out += "              ";
         }
 
-        if (instruction != null) {
-            if (delaySlotType != Instruction.DelaySlotType.NONE) {
-                out += "  " + StringUtils.rightPad(instruction.getName(), 6) + " " + operandString;
-            }
-            else {
-                out += " " + StringUtils.rightPad(instruction.getName(), 7) + " " + operandString;
-            }
+        if (instruction == null) {
+            out += " (no instruction) " + operandString;
         }
         else {
-            out += " (no instruction)" + operandString;
+            if (delaySlotType == null) {
+                System.out.println("Error : delaySlotType = null");
+            }
+            else {
+                switch (delaySlotType) {
+                    case NONE:
+                        out += " " + StringUtils.rightPad(instruction.getName(), 7) + " " + getOperandString();
+                        break;
+                    case NORMAL:
+                        out += "  " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
+                        break;
+                    case LIKELY:
+                        out += "  ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
+                        break;
+                    default:
+                        throw new RuntimeException("Unknown delay slot type : " + delaySlotType);
+                }
+            }
         }
 
         if (StringUtils.isNotBlank(commentString)) {
@@ -144,6 +123,15 @@ public abstract class Statement {
         }
         return out;
     }
+
+    /**
+     * Default toString. Normally not used
+     */
+    @Override
+    public String toString() {
+        return toString(OutputOption.defaultFormatOptions);
+    }
+
 
     public abstract String formatAsHex();
 

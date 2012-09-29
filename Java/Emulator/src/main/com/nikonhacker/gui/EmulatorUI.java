@@ -1448,7 +1448,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
         };
-        for (OutputOption outputOption : OutputOption.formatOptions) {
+        for (OutputOption outputOption : OutputOption.allFormatOptions) {
             JCheckBox checkBox = makeOutputOptionCheckBox(chip, outputOption, prefs.getOutputOptions(chip), false);
             if (checkBox != null) {
                 outputOptionsCheckBoxes.add(checkBox);
