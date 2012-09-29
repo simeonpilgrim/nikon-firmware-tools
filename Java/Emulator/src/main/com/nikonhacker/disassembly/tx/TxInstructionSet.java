@@ -790,9 +790,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == context.cpuState.getReg(statement.rt_ft)) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -806,9 +805,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -822,9 +820,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == context.cpuState.getReg(statement.rt_ft)) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -839,9 +836,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) == 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -854,9 +850,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != context.cpuState.getReg(statement.rt_ft)) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -870,9 +865,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -886,9 +880,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != context.cpuState.getReg(statement.rt_ft)) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -903,9 +896,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) != 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -918,9 +910,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -934,9 +925,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -949,7 +939,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
-                        context.setDelayedChanges(
+                        context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
@@ -965,7 +955,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
-                        context.setDelayedChanges(
+                        context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
@@ -980,9 +970,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) > 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -996,9 +985,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) > 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -1011,9 +999,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) <= 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -1027,9 +1014,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) <= 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -1042,9 +1028,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -1058,9 +1043,8 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
-                        context.setDelayedChanges(
-                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                null
+                        context.setDelayedPc(
+                                context.cpuState.pc + 4 + (statement.imm << 16 >> 14) // sign extend and x4
                         );
                     }
                     return false;
@@ -1073,7 +1057,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
-                        context.setDelayedChanges(
+                        context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
@@ -1089,7 +1073,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
-                        context.setDelayedChanges(
+                        context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
                                 context.cpuState.getPc() + 8 // the "and link" part
                         );
@@ -1192,9 +1176,8 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
-                            (context.cpuState.pc & 0xF0000000) | (statement.imm << 2),
-                            null
+                    context.setDelayedPc(
+                            (context.cpuState.pc & 0xF0000000) | (statement.imm << 2)
                     );
                     return false;
                 }
@@ -1205,9 +1188,8 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
-                            context.cpuState.getReg(statement.rs_fs),
-                            null
+                    context.setDelayedPc(
+                            context.cpuState.getReg(statement.rs_fs)
                     );
                     return false;
                 }
@@ -1219,9 +1201,8 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
-                            context.cpuState.getReg(TxCPUState.RA),
-                            null
+                    context.setDelayedPc(
+                            context.cpuState.getReg(TxCPUState.RA)
                     );
                     return false;
                 }
@@ -1232,7 +1213,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
+                    context.setDelayedPcAndRa(
                             (context.cpuState.pc & 0xF0000000) | (statement.imm << 2),
                             context.cpuState.getPc() + 8
                     );
@@ -1245,7 +1226,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
+                    context.setDelayedPcAndRa(
                             ((context.cpuState.pc & 0xF0000001) ^ 1) | (statement.imm << 2),
                             context.cpuState.getPc() + 8
                     );
@@ -1260,9 +1241,8 @@ public class TxInstructionSet
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
                     // todo this should be done after delay slot :
                     context.cpuState.setReg(statement.rd_fd, context.cpuState.getPc() + 8);
-                    context.setDelayedChanges(
-                            context.cpuState.getReg(statement.rs_fs),
-                            null
+                    context.setDelayedPc(
+                            context.cpuState.getReg(statement.rs_fs)
                     );
                     return false;
                 }
@@ -2348,7 +2328,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
+                    context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
                             context.cpuState.pc + 5 // TODO 5 ?? getPc ??
                     );
@@ -2374,9 +2354,8 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public boolean simulate(TxStatement statement, EmulationContext context) throws EmulationException {
-                    context.setDelayedChanges(
-                            context.cpuState.getReg(TxCPUState.RA),
-                            null
+                    context.setDelayedPc(
+                            context.cpuState.getReg(TxCPUState.RA)
                     );
                     return false;
                 }

@@ -81,10 +81,10 @@ public class TxEmulator extends Emulator {
                 totalCycles ++; // approximation
 
                 /* Delay slot processing */
-                if (emulationContext.nextPC != null) {
+                if (emulationContext.nextPc != null) {
                     if (emulationContext.delaySlotDone) {
-                        txCpuState.setPc(emulationContext.nextPC);
-                        emulationContext.nextPC = null;
+                        txCpuState.setPc(emulationContext.nextPc);
+                        emulationContext.nextPc = null;
                         if (emulationContext.nextReturnAddress != null) {
                             txCpuState.setReg(TxCPUState.RA, emulationContext.nextReturnAddress);
                             emulationContext.nextReturnAddress = null;
