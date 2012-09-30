@@ -1917,8 +1917,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int maskedBasePc = context.cpuState.getPc() & 0xFFFFFFFC; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, maskedBasePc + (statement.imm << 2));
+                    context.cpuState.setReg(statement.rt_ft, getMaskedBasePc(statement, context) + (statement.imm << 2));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -1930,8 +1929,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int maskedBasePc = context.cpuState.getPc() & 0xFFFFFFFC; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, maskedBasePc + (statement.imm << 16 >> 16));
+                    context.cpuState.setReg(statement.rt_ft, getMaskedBasePc(statement, context) + (statement.imm << 16 >> 16));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2627,12 +2625,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int maskedBasePc = context.cpuState.pc & 0xFFFFFFFC; // 2 LSB masked
-                    // We should test (statement.delaySlotType != Instruction.DelaySlotType.NONE) and if so,
-                    // subract 2 or 4 to the PC to point on the JR, JALR, JAL or JALX's pc.
-                    // But we don't know anymore if it was 2 or 4 bytes :-(
-                    // TODO Instead of storing the delay slot type we're in, we should store the statement whose delay slot we're in...
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(maskedBasePc + (statement.imm << 16 >> 16)));
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(getMaskedBasePc(statement, context) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2645,9 +2638,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int maskedBasePc = context.cpuState.pc & 0xFFFFFFFC; // 2 LSB masked
-                    // TODO see above
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(maskedBasePc + (statement.imm << 2)));
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(getMaskedBasePc(statement, context) + (statement.imm << 2)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -3607,6 +3598,16 @@ public class TxInstructionSet
 //                        number + " ", Exceptions.SYSCALL_EXCEPTION);
 //    }
 
+    private static int getMaskedBasePc(TxStatement statement, StatementContext context) throws EmulationException {
+        if (statement.getDelaySlotType() != Instruction.DelaySlotType.NONE) {
+            // TODO We should test (statement.delaySlotType != Instruction.DelaySlotType.NONE) and if so,
+            // TODO subract 2 or 4 to the PC to point on the JR, JALR, JAL or JALX's pc.
+            // TODO But we don't know anymore if it was 2 or 4 bytes :-(
+            // TODO Instead of storing the delay slot type we're in, we should store the statement whose delay slot we're in...
+            throw new EmulationException("Determining masked base PC in a delay slot is not implemented.");
+        }
+        return context.cpuState.getPc() & 0xFFFFFFFC;         // 2 LSB masked
+    }
 
 
     public static TxInstruction getInstructionFor16BitStatement(int binStatement) {
