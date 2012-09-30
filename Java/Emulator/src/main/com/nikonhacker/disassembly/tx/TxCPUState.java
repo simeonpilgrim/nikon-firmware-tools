@@ -306,11 +306,11 @@ public class TxCPUState extends CPUState {
 
     /**
      * Constructor
-     * @param startPc initial value for the Program Counter
+     * @param startPc initial value for the Program Counter, including ISA mode as LSB
      */
     public TxCPUState(int startPc) {
         reset();
-        pc = startPc;
+        setPc(startPc);
     }
 
     /**
