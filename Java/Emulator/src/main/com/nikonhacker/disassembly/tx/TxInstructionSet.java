@@ -1249,7 +1249,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
-                            pc + 8                      // and the return after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
@@ -1263,7 +1263,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
-                            pc + 8
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
