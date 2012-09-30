@@ -1208,8 +1208,11 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    // We keep the last bit so ISA mode is unchanged, because
+                    // "The JALX, JR, JRC or JALRC instructions can be used to switch from 32-bit mode to 16-bit mode or vice versa"
+                    // Anyway, as this instruction only exists in 32bit, the ISA mode LSB is always 0. No matter.
                     context.setDelayedPc(
-                            (context.cpuState.pc & 0xF0000000) | (statement.imm << 2)
+                            (context.cpuState.pc & 0xF0000001) | (statement.imm << 2)
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1239,27 +1242,27 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "", "jal target", // TODO put address in comment
+    public static final TxInstruction jalInstruction = new TxInstruction("jal", "4Ru", "", "jal target",
             "Jump And Link: Set $ra to Program Counter (return address) then jump to statement at target address",
             InstructionFormat32.J, InstructionFormat16.JAL_JALX,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
-                            (context.cpuState.pc & 0xF0000000) | (statement.imm << 2),
-                            context.cpuState.getPc() + 8
+                            (context.cpuState.pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
+                            context.cpuState.getPc() + 8                      // and the return after the delay slot
                     );
-                    context.cpuState.pc += statement.getNumBytes();
+                    context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
             });
-    public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target", // TODO put address in comment
+    public static final TxInstruction jalxInstruction = new TxInstruction("jalx", "4Ru", "", "jalx target",
             "Jump And Link eXchanging isa mode: Set $ra to Program Counter (return address) then jump to statement at target address, toggling ISA mode",
             InstructionFormat32.J, InstructionFormat16.JAL_JALX,
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
-                            ((context.cpuState.pc & 0xF0000001) ^ 1) | (statement.imm << 2),
+                            ((context.cpuState.pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
                             context.cpuState.getPc() + 8
                     );
                     context.cpuState.pc += statement.getNumBytes();
@@ -3811,14 +3814,14 @@ public class TxInstructionSet
     static InstructionResolver starResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            throw new ReservedInstructionException();
+            throw new ReservedInstructionException("Disassembly of statement 0x" + Format.asHex(binStatement, 8) + " is reserved (star case)");
         }
     };
 
     static InstructionResolver betaResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            throw new ReservedInstructionException();
+            throw new ReservedInstructionException("Disassembly of statement 0x" + Format.asHex(binStatement, 8) + " is reserved (beta case)");
         }
     };
 
@@ -3828,14 +3831,14 @@ public class TxInstructionSet
             // Formally, See section 3.5:
             // If the corresponding CU bit in the Status register is cleared, a Coprocessor Unusable exception is taken.
             // If the CU bit is set, a Reserved Instruction exception is taken.
-            throw new ReservedInstructionException();
+            throw new ReservedInstructionException("Disassembly of statement 0x" + Format.asHex(binStatement, 8) + " is reserved (theta case)");
         }
     };
 
     static InstructionResolver unimplementedResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
-            throw new ReservedInstructionException("Not yet implemented");
+            throw new ReservedInstructionException("Disassembly of statement 0x" + Format.asHex(binStatement, 8) + " is not yet implemented");
         }
     };
 
