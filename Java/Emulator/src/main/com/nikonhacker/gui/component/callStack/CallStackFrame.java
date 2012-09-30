@@ -23,7 +23,6 @@ public class CallStackFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
-    private int chip;
     private Emulator emulator;
     private CPUState cpuState;
     private final LinkedList<CallStackItem> callStack;
@@ -33,8 +32,8 @@ public class CallStackFrame extends DocumentFrame {
     private Timer _timer;
     private final JList callStackList;
 
-    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, Emulator emulator, CPUState cpuState, CodeStructure codeStructure, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
+    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, CPUState cpuState, CodeStructure codeStructure) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;
 

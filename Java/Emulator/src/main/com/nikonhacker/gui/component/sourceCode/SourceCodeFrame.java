@@ -30,7 +30,6 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 500;
 
-    int chip;
     private final RSyntaxTextArea listingArea;
     private final ImageIcon enabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointIcon.png"));
     private final ImageIcon disabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointIcon.png"));
@@ -53,10 +52,9 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
+    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
 
-        this.chip = chip;
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
 
