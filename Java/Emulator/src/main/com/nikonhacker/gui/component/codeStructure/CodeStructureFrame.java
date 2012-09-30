@@ -31,8 +31,6 @@ public class CodeStructureFrame extends DocumentFrame
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
 
-    int chip;
-
     CodeStructureMxGraph graph;
     CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
@@ -53,9 +51,8 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, CPUState cpuState, final CodeStructure codeStructure, final EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
-        this.chip = chip;
+    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
 

@@ -31,16 +31,14 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
-    int chip;
     private List<BreakTrigger> breakTriggers;
     private DebuggableMemory memory;
     private final EventList<BreakTrigger> triggerList;
     private final JTable triggerTable;
     private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
-        this.chip = chip;
+    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
         this.memory = memory;
