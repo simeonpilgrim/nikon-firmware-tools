@@ -964,6 +964,20 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
+    // alternative if rs=0
+    public static final TxInstruction balInstruction = new TxInstruction("bal", "4rs", "", "bal label",
+            "Branch And Link: Set $ra to the Program Counter and branch to statement at label's address",
+            InstructionFormat32.I_BRANCH, null,
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.setDelayedPcAndRa(
+                            context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
+                            context.cpuState.getPc() + 8 // return address after the delay slot
+                    );
+                    context.cpuState.pc += statement.getNumBytes();
+                }
+            });
     public static final TxInstruction bgezallInstruction = new TxInstruction("bgezall", "i, 4rs", "", "bgezall $t1,label",
             "Branch if Greater then or Equal to Zero And Link (Likely): If $t1 is greater than or equal to zero, then set $ra to the Program Counter and branch to statement at label's address",
             InstructionFormat32.I_BRANCH, null,
@@ -2002,13 +2016,13 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction balInstruction = new TxInstruction("bal", "2rs", "", "bal 100",
+    public static final TxInstruction bal16Instruction = new TxInstruction("bal", "2rs", "", "bal 100",
             "unconditional Branch And Link: branch to target address",
             null, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 5); // TODO check 5 ?
+                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 5);  // TODO check 5 ?
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
@@ -3731,6 +3745,19 @@ public class TxInstructionSet
         }
     };
 
+    static InstructionResolver balOrBgezalInstructionResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0) { // rs == 0
+                return balInstruction;
+            }
+            else {
+                return bgezalInstruction;
+            }
+
+        }
+    };
+
     static InstructionResolver addiuOrLiResolver = new InstructionResolver() {
         @Override
         public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
@@ -3987,8 +4014,8 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0001000000000000, 0b1111100000000000, bInstruction);
         expandInstruction(extendedOpcode16Map, 0b0001000000000000, 0b1111111111100000, bInstruction);
 
-        expandInstruction(opcode16Map,         0b1111110000000000, 0b1111111100000000, balInstruction);
-        expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, balInstruction);
+        expandInstruction(opcode16Map,         0b1111110000000000, 0b1111111100000000, bal16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, bal16Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111100100000000, 0b1111111100000000, bclrInstruction); // incl with $r0
 
@@ -4461,6 +4488,9 @@ public class TxInstructionSet
 
         regImmRtResolvers[0b10000] = new DirectInstructionResolver(bltzalInstruction);
         regImmRtResolvers[0b10001] = new DirectInstructionResolver(bgezalInstruction);
+        if (true) { // TODO make this an option
+            regImmRtResolvers[0b10001] = balOrBgezalInstructionResolver;
+        }
         regImmRtResolvers[0b10010] = new DirectInstructionResolver(bltzallInstruction);
         regImmRtResolvers[0b10011] = new DirectInstructionResolver(bgezallInstruction);
         regImmRtResolvers[0b10100] = starResolver;
