@@ -313,10 +313,20 @@ public class TxCPUState extends CPUState {
         pc = startPc;
     }
 
+    /**
+     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB
+     * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
+     * @return
+     */
     public int getPc() {
         return pc | (is16bitIsaMode?1:0);
     }
 
+    /**
+     * Sets the PC value as defined by the specification, including the ISA mode as LSB
+     * Technically, the value is split between the pc (address) int field and the is16bitIsaMode boolean field
+     * @return
+     */
     public void setPc(int pc) {
         this.is16bitIsaMode = ((pc & 1) == 1);
         this.pc = pc & 0xFFFFFFFE;
