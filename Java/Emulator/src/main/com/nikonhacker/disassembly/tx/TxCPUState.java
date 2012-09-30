@@ -271,9 +271,10 @@ public class TxCPUState extends CPUState {
                 break;
             case FENR:
                 setReg(FCSR, (getReg(FCSR) & 0b11111111111111111111000001111000) | (value & 0b00000000000000000000111110000011) | ((value & 0b100) << 22));
-            break;
+                break;
+            default:
+                throw new RuntimeException("Unknown CP1 register number " + regNumber);
         }
-        throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
 
     public enum PowerMode {
