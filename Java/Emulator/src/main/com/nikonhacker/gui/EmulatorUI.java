@@ -248,8 +248,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private boolean[] isImageLoaded = {false, false};
     private boolean[] isEmulatorPlaying = {false, false};
 
-    long lastUpdateCycles = 0;
-    long lastUpdateTime = 0;
+    long lastUpdateCycles[] = {0, 0};
+    long lastUpdateTime[] = {0, 0};
 
     private Prefs prefs = new Prefs();
     private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
@@ -419,13 +419,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             long now = System.currentTimeMillis();
             long cps;
             try {
-                cps = (1000 * (totalCycles - lastUpdateCycles))/(now - lastUpdateTime);
+                cps = (1000 * (totalCycles - lastUpdateCycles[chip]))/(now - lastUpdateTime[chip]);
             } catch (Exception e) {
                 cps = -1;
             }
 
-            lastUpdateCycles = totalCycles;
-            lastUpdateTime = now;
+            lastUpdateCycles[chip] = totalCycles;
+            lastUpdateTime[chip] = now;
             statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps<0?"?":(""+cps)) + "Hz)");
         }
         else {
