@@ -335,6 +335,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
 
+        mdiPane[Constants.CHIP_FR].setBackground(new Color(240,240,255));
+        mdiPane[Constants.CHIP_TX].setBackground(new Color(248,255,248));
+
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, contentPane[Constants.CHIP_FR], contentPane[Constants.CHIP_TX]);
         splitPane.setOneTouchExpandable(true);
