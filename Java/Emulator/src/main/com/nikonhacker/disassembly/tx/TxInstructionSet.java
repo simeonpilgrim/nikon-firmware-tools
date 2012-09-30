@@ -958,7 +958,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                     }
                     context.cpuState.pc += statement.getNumBytes();
@@ -973,7 +973,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                         context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
@@ -1088,7 +1088,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                     }
                     context.cpuState.pc += statement.getNumBytes();
@@ -1103,7 +1103,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                         context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
@@ -1249,7 +1249,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
-                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
@@ -1263,7 +1263,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
-                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1274,10 +1274,10 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // todo this should be done after delay slot :
-                    context.cpuState.setReg(statement.rd_fd, context.cpuState.getPc() + 8);
-                    context.setDelayedPc(
-                            context.cpuState.getReg(statement.rs_fs)
+                    context.setDelayedPcAndRaAndTarget(
+                            context.cpuState.getReg(statement.rs_fs), // Next PC
+                            context.cpuState.getPc() + 8, // return address after the delay slot
+                            statement.rd_fd // register to store return address into, after delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
