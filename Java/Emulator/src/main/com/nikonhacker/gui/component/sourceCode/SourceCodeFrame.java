@@ -166,6 +166,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      * @return
      */
     public boolean exploreAddress(int address) {
+        address = address & 0xFFFFFFFE; // ignore LSB (error in FR, ISA mode in TX)
         targetField.setText(Format.asHex(address, 8));
         Function function = codeStructure.getFunctions().get(address);
         if (function == null) {
