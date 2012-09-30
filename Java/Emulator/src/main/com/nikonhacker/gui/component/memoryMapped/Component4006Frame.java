@@ -11,8 +11,8 @@ import java.awt.event.ActionListener;
 
 
 public class Component4006Frame extends MemoryPageMappedComponentFrame {
-    public Component4006Frame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final DebuggableMemory memory, int page, CPUState cpuState, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, memory, page, cpuState, ui);
+    public Component4006Frame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final DebuggableMemory memory, int page, CPUState cpuState) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui, memory, page, cpuState);
 
         JButton addButton = new JButton("Store 0x1000 at 0x40060010");
         addButton.addActionListener(new ActionListener() {

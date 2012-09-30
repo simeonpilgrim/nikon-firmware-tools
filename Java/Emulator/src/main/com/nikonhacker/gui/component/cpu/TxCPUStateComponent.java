@@ -20,6 +20,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
     private boolean filterMode;
 
     private JTextField pcTextField = new JTextField();
+    private JCheckBox pcIsaMode16bCheckBox = new JCheckBox();
     private JTextField hiTextField = new JTextField();
     private JTextField loTextField = new JTextField();
 
@@ -58,16 +59,17 @@ public class TxCPUStateComponent extends CPUStateComponent {
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);
         }
         pcTextField.setHorizontalAlignment(JTextField.RIGHT);
+        pcIsaMode16bCheckBox.setHorizontalAlignment(SwingConstants.CENTER);
         hiTextField.setHorizontalAlignment(JTextField.RIGHT);
         loTextField.setHorizontalAlignment(JTextField.RIGHT);
 
         //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         setLayout(new GridLayout(0, 4));
 
-        add(new JLabel("pc = 0x", JLabel.RIGHT));
+        add(new JLabel("pc (addr)=0x", JLabel.RIGHT));
         add(pcTextField);
-        add(new JLabel());
-        add(new JLabel());
+        add(new JLabel("pc (ISA 16b):", JLabel.RIGHT));
+        add(pcIsaMode16bCheckBox);
 
         add(new JLabel());
         add(new JLabel());
@@ -124,6 +126,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
     public void refresh() {
         if (filterMode) {
             pcTextField.setText((cpuStateValidityFlags.pc == 0)?"":Format.asHex(cpuState.pc, 8));
+            pcIsaMode16bCheckBox.setSelected(cpuStateValidityFlags.pc == 0 && ((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.HI) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.LO) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
 
@@ -134,6 +137,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
         }
         else {
             pcTextField.setText(Format.asHex(cpuState.pc, 8));
+            pcIsaMode16bCheckBox.setSelected(((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
 
@@ -176,6 +180,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
             cpuState.pc = pc;
+            cpuState.is16bitIsaMode = pcIsaMode16bCheckBox.isSelected();
             cpuState.setReg(TxCPUState.HI, mdh);
             cpuState.setReg(TxCPUState.LO, mdl);
 
@@ -220,6 +225,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
         pcTextField.setEditable(editable);
         pcTextField.setBackground(Color.WHITE);
+
+        pcIsaMode16bCheckBox.setEnabled(editable);
 
         hiTextField.setEditable(editable);
         hiTextField.setBackground(Color.WHITE);

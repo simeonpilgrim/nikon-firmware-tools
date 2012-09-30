@@ -50,7 +50,7 @@ public class FrInstructionSet {
      * These are the official names from Fujitsu's spec
      */
     private static final FrInstruction[] baseInstructions = {
-/*      new FrInstruction( encod ,  mask , format  ,nX,nY, name,     displayFmt,     action     , Type,     isCond, delay) */
+/*      new FrInstruction( encod ,  mask , format             ,nX,nY, name,     displayFmt,     action     , Type                     ,isCond, delay) */
         new FrInstruction( 0x0000, 0xFF00, InstructionFormat.A, 0, 0, "LD",     "@(A&j),i",     "iw"       , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0100, 0xFF00, InstructionFormat.A, 0, 0, "LDUH",   "@(A&j),i",     "iw"       , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0200, 0xFF00, InstructionFormat.A, 0, 0, "LDUB",   "@(A&j),i",     "iw"       , Instruction.FlowType.NONE, false, false),

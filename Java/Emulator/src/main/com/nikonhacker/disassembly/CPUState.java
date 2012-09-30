@@ -5,7 +5,9 @@ public abstract class CPUState {
     public final static int NOREG = -1;
 
     /**
-     * Program Counter
+     * Program Counter.
+     * This is the actual address of the instruction being executed,
+     * so the LSB is always 0 in this field (no matter the ISA mode for TX CPUs)
      */
     public int pc;
 

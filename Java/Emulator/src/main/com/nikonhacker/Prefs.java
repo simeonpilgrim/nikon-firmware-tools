@@ -129,38 +129,42 @@ public class Prefs {
         this.triggers[chip] = triggers;
     }
 
-    public int getWindowPositionX(String windowName) {
+    public int getWindowPositionX(String windowName, int chip) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
-        WindowPosition windowPosition = windowPositionMap.get(windowName);
+        WindowPosition windowPosition = windowPositionMap.get(getKey(windowName, chip));
         return (windowPosition==null)?0:windowPosition.getX();
     }
 
-    public int getWindowPositionY(String windowName) {
+    private String getKey(String windowName, int chip) {
+        return windowName + "_" + Constants.CHIP_LABEL[chip];
+    }
+
+    public int getWindowPositionY(String windowName, int chip) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
-        WindowPosition windowPosition = windowPositionMap.get(windowName);
+        WindowPosition windowPosition = windowPositionMap.get(getKey(windowName, chip));
         return (windowPosition==null)?0:windowPosition.getY();
     }
 
-    public void setWindowPosition(String windowName, int x, int y) {
+    public void setWindowPosition(String windowName, int chip, int x, int y) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
-        windowPositionMap.put(windowName, new WindowPosition(x, y));
+        windowPositionMap.put(getKey(windowName, chip), new WindowPosition(x, y));
     }
 
-    public int getWindowSizeX(String windowName) {
+    public int getWindowSizeX(String windowName, int chip) {
         if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
-        WindowPosition windowSize = windowSizeMap.get(windowName);
+        WindowPosition windowSize = windowSizeMap.get(getKey(windowName, chip));
         return (windowSize==null)?0:windowSize.getX();
     }
 
-    public int getWindowSizeY(String windowName) {
+    public int getWindowSizeY(String windowName, int chip) {
         if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
-        WindowPosition windowSize = windowSizeMap.get(windowName);
+        WindowPosition windowSize = windowSizeMap.get(getKey(windowName, chip));
         return (windowSize==null)?0:windowSize.getY();
     }
 
-    public void setWindowSize(String windowName, int x, int y) {
+    public void setWindowSize(String windowName, int chip, int x, int y) {
         if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
-        windowSizeMap.put(windowName, new WindowPosition(x, y));
+        windowSizeMap.put(getKey(windowName, chip), new WindowPosition(x, y));
     }
 
     public String getCodeStructureGraphOrientation() {

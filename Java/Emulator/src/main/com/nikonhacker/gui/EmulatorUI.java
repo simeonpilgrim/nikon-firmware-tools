@@ -335,6 +335,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
 
+        mdiPane[Constants.CHIP_FR].setBackground(new Color(240,240,255));
+        mdiPane[Constants.CHIP_TX].setBackground(new Color(248,255,248));
+
 
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, contentPane[Constants.CHIP_FR], contentPane[Constants.CHIP_TX]);
         splitPane.setOneTouchExpandable(true);
@@ -1726,7 +1729,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleBreakTriggerList(int chip) {
         if (breakTriggerListFrame[chip] == null) {
-            breakTriggerListFrame[chip] = new BreakTriggerListFrame("Setup " + Constants.CHIP_LABEL[chip] + " breakpoints and triggers", true, true, true, true, chip, emulator[chip], prefs.getTriggers(chip), memory[chip], this);
+            breakTriggerListFrame[chip] = new BreakTriggerListFrame("Setup " + Constants.CHIP_LABEL[chip] + " breakpoints and triggers", true, true, true, true, chip, this, emulator[chip], prefs.getTriggers(chip), memory[chip]);
             addDocumentFrame(chip, breakTriggerListFrame[chip]);
             breakTriggerListFrame[chip].display(true);
         }
@@ -1739,7 +1742,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleDisassemblyLog(int chip) {
         if (disassemblyLogFrame[chip] == null) {
-            disassemblyLogFrame[chip] = new DisassemblyFrame("Real-time " + Constants.CHIP_LABEL[chip] + " disassembly log", true, true, true, true, emulator[chip], this);
+            disassemblyLogFrame[chip] = new DisassemblyFrame("Real-time " + Constants.CHIP_LABEL[chip] + " disassembly log", true, true, true, true, chip, this, emulator[chip]);
             addDocumentFrame(chip, disassemblyLogFrame[chip]);
             disassemblyLogFrame[chip].display(true);
         }
@@ -1752,7 +1755,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCPUState(int chip) {
         if (cpuStateEditorFrame[chip] == null) {
-            cpuStateEditorFrame[chip] = new CPUStateEditorFrame(Constants.CHIP_LABEL[chip] + " CPU State", false, true, false, true, cpuState[chip], this);
+            cpuStateEditorFrame[chip] = new CPUStateEditorFrame(Constants.CHIP_LABEL[chip] + " CPU State", false, true, false, true, chip, this, cpuState[chip]);
             cpuStateEditorFrame[chip].setEnabled(!isEmulatorPlaying[chip]);
             addDocumentFrame(chip, cpuStateEditorFrame[chip]);
             cpuStateEditorFrame[chip].display(true);
@@ -1766,7 +1769,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleMemoryActivityViewer(int chip) {
         if (memoryActivityViewerFrame[chip] == null) {
-            memoryActivityViewerFrame[chip] = new MemoryActivityViewerFrame(Constants.CHIP_LABEL[chip] + " Base memory activity viewer (each cell=64k, click to zoom)", true, true, true, true, chip, memory[chip], this);
+            memoryActivityViewerFrame[chip] = new MemoryActivityViewerFrame(Constants.CHIP_LABEL[chip] + " Base memory activity viewer (each cell=64k, click to zoom)", true, true, true, true, chip, this, memory[chip]);
             addDocumentFrame(chip, memoryActivityViewerFrame[chip]);
             memoryActivityViewerFrame[chip].display(true);
         }
@@ -1779,7 +1782,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleMemoryHexEditor(int chip) {
         if (memoryHexEditorFrame[chip] == null) {
-            memoryHexEditorFrame[chip] = new MemoryHexEditorFrame(Constants.CHIP_LABEL[chip] + " Memory hex editor", true, true, true, true, chip, memory[chip], cpuState[chip], 0, !isEmulatorPlaying[chip], this);
+            memoryHexEditorFrame[chip] = new MemoryHexEditorFrame(Constants.CHIP_LABEL[chip] + " Memory hex editor", true, true, true, true, chip, this, memory[chip], cpuState[chip], 0, !isEmulatorPlaying[chip]);
             addDocumentFrame(chip, memoryHexEditorFrame[chip]);
             memoryHexEditorFrame[chip].display(true);
         }
@@ -1792,7 +1795,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, memory[Constants.CHIP_FR], CAMERA_SCREEN_MEMORY_Y, CAMERA_SCREEN_MEMORY_U, CAMERA_SCREEN_MEMORY_V, CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, this);
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", true, true, true, true, Constants.CHIP_FR, this, memory[Constants.CHIP_FR], CAMERA_SCREEN_MEMORY_Y, CAMERA_SCREEN_MEMORY_U, CAMERA_SCREEN_MEMORY_V, CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT);
             addDocumentFrame(Constants.CHIP_FR, screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
@@ -1806,7 +1809,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleComponent4006() {
         if (component4006Frame == null) {
-            component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, memory[Constants.CHIP_FR], 0x4006, cpuState[Constants.CHIP_FR], this);
+            component4006Frame = new Component4006Frame("Component 4006", true, true, false, true, Constants.CHIP_FR, this, memory[Constants.CHIP_FR], 0x4006, cpuState[Constants.CHIP_FR]);
             addDocumentFrame(Constants.CHIP_FR, component4006Frame);
             component4006Frame.display(true);
         }
@@ -1819,7 +1822,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCustomMemoryRangeLoggerComponentFrame(int chip) {
         if (customMemoryRangeLoggerFrame[chip] == null) {
-            customMemoryRangeLoggerFrame[chip] = new CustomMemoryRangeLoggerFrame("Custom " + Constants.CHIP_LABEL[chip] + " Logger", true, true, false, true, memory[chip], cpuState[chip], this);
+            customMemoryRangeLoggerFrame[chip] = new CustomMemoryRangeLoggerFrame("Custom " + Constants.CHIP_LABEL[chip] + " Logger", true, true, false, true, chip, this, memory[chip], cpuState[chip]);
             addDocumentFrame(chip, customMemoryRangeLoggerFrame[chip]);
             customMemoryRangeLoggerFrame[chip].display(true);
         }
@@ -1833,7 +1836,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleInterruptController() {
         if (interruptControllerFrame == null) {
-            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, interruptController, memory[Constants.CHIP_FR], this);
+            interruptControllerFrame = new InterruptControllerFrame("Interrupt controller", true, true, false, true, Constants.CHIP_FR, this, interruptController, memory[Constants.CHIP_FR]);
             addDocumentFrame(Constants.CHIP_FR, interruptControllerFrame);
             interruptControllerFrame.display(true);
         }
@@ -1894,7 +1897,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleSerialInterfaces() {
         if (serialInterfaceFrame == null) {
-            serialInterfaceFrame = new SerialInterfaceFrame("Serial interfaces", true, true, false, true, serialInterfaces, this);
+            serialInterfaceFrame = new SerialInterfaceFrame("Serial interfaces", true, true, false, true, Constants.CHIP_FR, this, serialInterfaces);
             addDocumentFrame(Constants.CHIP_FR, serialInterfaceFrame);
             serialInterfaceFrame.display(true);
         }
@@ -1908,7 +1911,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCallStack(int chip) {
         if (callStackFrame[chip] == null) {
-            callStackFrame[chip] = new CallStackFrame(Constants.CHIP_LABEL[chip] + " Call Stack", true, true, false, true, chip, emulator[chip], cpuState[chip], codeStructure[chip], this);
+            callStackFrame[chip] = new CallStackFrame(Constants.CHIP_LABEL[chip] + " Call Stack", true, true, false, true, chip, this, emulator[chip], cpuState[chip], codeStructure[chip]);
             callStackFrame[chip].setAutoRefresh(!isEmulatorPlaying[chip]);
             addDocumentFrame(chip, callStackFrame[chip]);
             callStackFrame[chip].display(true);
@@ -1940,7 +1943,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCodeStructureWindow(int chip) {
         if (codeStructureFrame[chip] == null) {
-            codeStructureFrame[chip] = new CodeStructureFrame(Constants.CHIP_LABEL[chip] + " code structure", true, true, true, true, chip, cpuState[chip], codeStructure[chip], this);
+            codeStructureFrame[chip] = new CodeStructureFrame(Constants.CHIP_LABEL[chip] + " code structure", true, true, true, true, chip, this, cpuState[chip], codeStructure[chip]);
             addDocumentFrame(chip, codeStructureFrame[chip]);
             codeStructureFrame[chip].display(true);
         }
@@ -1953,7 +1956,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleSourceCodeWindow(int chip) {
         if (sourceCodeFrame[chip] == null) {
-            sourceCodeFrame[chip] = new SourceCodeFrame(Constants.CHIP_LABEL[chip] + " source code", true, true, true, true, chip, cpuState[chip], codeStructure[chip], this);
+            sourceCodeFrame[chip] = new SourceCodeFrame(Constants.CHIP_LABEL[chip] + " source code", true, true, true, true, chip, this, cpuState[chip], codeStructure[chip]);
             addDocumentFrame(chip, sourceCodeFrame[chip]);
             sourceCodeFrame[chip].display(true);
         }

@@ -28,8 +28,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private Timer _timer;
     private final JTextField yAddressField, uAddressField, vAddressField;
 
-    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, DebuggableMemory memory, int yStart, int uStart, int vStart, int screenWidth, int screenHeight, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
+    public ScreenEmulatorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int yStart, int uStart, int vStart, int screenWidth, int screenHeight) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
         this.yStart = yStart;
         this.uStart = uStart;
