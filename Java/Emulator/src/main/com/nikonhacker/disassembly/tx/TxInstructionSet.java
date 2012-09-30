@@ -1911,53 +1911,27 @@ public class TxInstructionSet
             });
 
     /* non-EXTENDED : zero extended and multiplied by 4 */
-    public static final TxInstruction addiupc16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
+    public static final TxInstruction addiupc16Instruction = new TxInstruction("addiu", "i, P, 4ru", "iw", "addiu r3, ABCD0123",
             "ADD Immediate Unsigned with PC",
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
+                    int maskedBasePc = context.cpuState.getPc() & 0xFFFFFFFC; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    context.cpuState.setReg(statement.rt_ft, maskedBasePc + (statement.imm << 2));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
     /* EXTENDed : sign-extended and not shifted */
-    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
+    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, P, rs", "iw", "addiu r3, ABCD0123",
             "ADD Immediate Unsigned with PC",
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
-                    context.cpuState.pc += statement.getNumBytes();
-                }
-            });
-
-    /* non-EXTENDED : zero extended and multiplied by 4 */
-    public static final TxInstruction la16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
-            "ADD Immediate Unsigned with PC",
-            null, InstructionFormat16.RI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
-                    context.cpuState.pc += statement.getNumBytes();
-                }
-            });
-
-    /* EXTENDed : sign-extended and not shifted */
-    public static final TxInstruction laInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
-            "ADD Immediate Unsigned with PC",
-            null, InstructionFormat16.RI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
+                    int maskedBasePc = context.cpuState.getPc() & 0xFFFFFFFC; // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
+                    context.cpuState.setReg(statement.rt_ft, maskedBasePc + (statement.imm << 16 >> 16));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2022,7 +1996,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 5);  // TODO check 5 ?
+                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.getPc() /* incl ISA 16 LSB*/ + statement.getNumBytes());
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
@@ -2383,7 +2357,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
-                            context.cpuState.pc + 5 // TODO 5 ?? getPc ??
+                            context.cpuState.getPc() /* incl ISA 16 LSB*/ + 4 /* only exists in EXTENDed form */
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -2395,7 +2369,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 3); // TODO 3 ?? getPc ??
+                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.getPc() /* incl ISA 16 LSB*/ + 2 /* no EXTENDed form exists */);
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
                 }
             });
@@ -2653,9 +2627,12 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // TODO mask PC
-                    // getPc ??
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 16 >> 16)));
+                    int maskedBasePc = context.cpuState.pc & 0xFFFFFFFC; // 2 LSB masked
+                    // We should test (statement.delaySlotType != Instruction.DelaySlotType.NONE) and if so,
+                    // subract 2 or 4 to the PC to point on the JR, JALR, JAL or JALX's pc.
+                    // But we don't know anymore if it was 2 or 4 bytes :-(
+                    // TODO Instead of storing the delay slot type we're in, we should store the statement whose delay slot we're in...
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(maskedBasePc + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2668,9 +2645,9 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // TODO mask PC
-                    // getPc ??
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 2)));
+                    int maskedBasePc = context.cpuState.pc & 0xFFFFFFFC; // 2 LSB masked
+                    // TODO see above
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(maskedBasePc + (statement.imm << 2)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
