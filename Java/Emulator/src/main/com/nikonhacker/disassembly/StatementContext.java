@@ -18,6 +18,9 @@ public class StatementContext {
     /** This is the requested return address to set after having executed the statement in the delay slot */
     public Integer nextReturnAddress;
 
+    /** A custom register to be used as target for the return address, after having executed the statement in the delay slot */
+    public Integer nextReturnAddressTargetRegister;
+
     /**
      * This variable is set and used by the emulator to remember if the delaySlot has been done or not
      */
@@ -37,6 +40,13 @@ public class StatementContext {
     public void setDelayedPcAndRa(Integer nextPC, Integer nextReturnAddress) {
         this.nextPc = nextPC;
         this.nextReturnAddress = nextReturnAddress;
+        this.delaySlotDone = false;
+    }
+
+    public void setDelayedPcAndRaAndTarget(Integer nextPC, Integer nextReturnAddress, Integer nextReturnAddressTargetRegister) {
+        this.nextPc = nextPC;
+        this.nextReturnAddress = nextReturnAddress;
+        this.nextReturnAddressTargetRegister = nextReturnAddressTargetRegister;
         this.delaySlotDone = false;
     }
 
