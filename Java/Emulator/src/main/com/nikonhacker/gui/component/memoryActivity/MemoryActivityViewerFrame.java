@@ -26,8 +26,6 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
 
     private static final int NO_SELECTION = -1;
 
-    private int chip;
-
     private Timer _timer;
 
     BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -48,9 +46,8 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
     /**
      *  Create a viewer frame in "master" mode (1 cell = 1 memory page) 
      */
-    public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, DebuggableMemory memory, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
-        this.chip = chip;
+    public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.isMaster = true;
         this.memory = memory;
 
@@ -72,8 +69,8 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
     /**
      * Create a viewer frame in "detail" mode (1 cell = 1 memory byte) 
      */
-    public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int[] activityMap, int baseAddress, MemoryActivityViewerFrame parentFrame, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
+    public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, int[] activityMap, int baseAddress, MemoryActivityViewerFrame parentFrame) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.isMaster = false;
         this.parentFrame = parentFrame;
         this.baseAddress = baseAddress;
@@ -99,7 +96,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
         int address = getAddressFromPosition(x, y);
         if (isMaster && ui != null) {
             if (trackingMemoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS) != null) {
-                MemoryActivityViewerFrame subFrame = new MemoryActivityViewerFrame("Memory activity from 0x" + Format.asHex(address, 8), true, true, true, true, trackingMemoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS), address, this, ui);
+                MemoryActivityViewerFrame subFrame = new MemoryActivityViewerFrame("Memory activity from 0x" + Format.asHex(address, 8), true, true, true, true, chip, ui, trackingMemoryActivityListener.getCellActivityMap(address >>> PAGE_SIZE_BITS), address, this);
                 ui.addDocumentFrame(chip, subFrame);
                 children.add(subFrame);
                 subFrame.display(false);

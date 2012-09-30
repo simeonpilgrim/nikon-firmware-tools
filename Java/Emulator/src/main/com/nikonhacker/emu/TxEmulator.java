@@ -80,7 +80,12 @@ public class TxEmulator extends Emulator {
                         txCpuState.setPc(context.nextPc);
                         context.nextPc = null;
                         if (context.nextReturnAddress != null) {
-                            txCpuState.setReg(TxCPUState.RA, context.nextReturnAddress);
+                            int targetRegister = TxCPUState.RA;
+                            if (context.nextReturnAddressTargetRegister != null) {
+                                targetRegister = context.nextReturnAddressTargetRegister;
+                                context.nextReturnAddressTargetRegister = null;
+                            }
+                            txCpuState.setReg(targetRegister, context.nextReturnAddress);
                             context.nextReturnAddress = null;
                         }
                     }

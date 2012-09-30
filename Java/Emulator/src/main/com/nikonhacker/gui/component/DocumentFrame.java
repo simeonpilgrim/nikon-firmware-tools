@@ -7,11 +7,14 @@ import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
 public class DocumentFrame extends JInternalFrame implements InternalFrameListener {
+    protected int chip;
     protected EmulatorUI ui;
+
     private boolean rememberLastPosition;
 
-    public DocumentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, EmulatorUI ui) {
+    public DocumentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable);
+        this.chip = chip;
         this.ui = ui;
         addInternalFrameListener(this);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -32,8 +35,9 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
         // Called no matter how the close is initiated
         if (this.rememberLastPosition) {
             String windowName = this.getClass().getSimpleName();
-            ui.getPrefs().setWindowPosition(windowName, getX(), getY());
-            ui.getPrefs().setWindowSize(windowName, getWidth(), getHeight());
+            // TODO differenciate between FR/TX
+            ui.getPrefs().setWindowPosition(windowName, chip, getX(), getY());
+            ui.getPrefs().setWindowSize(windowName, chip, getWidth(), getHeight());
         }
     }
 
@@ -50,10 +54,10 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
         pack();
         if (this.rememberLastPosition) {
             String windowName = this.getClass().getSimpleName();
-            setLocation(ui.getPrefs().getWindowPositionX(windowName), ui.getPrefs().getWindowPositionY(windowName));
-            int windowSizeX = ui.getPrefs().getWindowSizeX(windowName);
+            setLocation(ui.getPrefs().getWindowPositionX(windowName, chip), ui.getPrefs().getWindowPositionY(windowName, chip));
+            int windowSizeX = ui.getPrefs().getWindowSizeX(windowName, chip);
             if (windowSizeX > 0) {
-                setSize(windowSizeX, ui.getPrefs().getWindowSizeY(windowName));
+                setSize(windowSizeX, ui.getPrefs().getWindowSizeY(windowName, chip));
             }
         }
         setVisible(true);

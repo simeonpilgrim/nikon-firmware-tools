@@ -27,8 +27,6 @@ public class RealOsObjectFrame extends DocumentFrame {
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
 
-    int chip;
-
     private JButton updateAllButton;
     private JCheckBox autoUpdateCheckbox;
     private final EventList<TaskInformation> taskInformationList;
@@ -39,8 +37,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
     public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
-        this.chip = chip;
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 

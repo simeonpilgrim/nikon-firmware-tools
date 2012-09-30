@@ -26,8 +26,6 @@ import java.util.Vector;
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
-    private int chip;
-
     private DebuggableMemory memory;
     private CPUState cpuState;
     private String baseTitle;
@@ -44,14 +42,11 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JComboBox registerCombo;
     private JButton saveLoadButton;
 
-    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
-
-        this.chip = chip;
+    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.baseTitle = title;
         this.memory = memory;
         this.cpuState = cpuState;
-
 
         getContentPane().add(createEditor(baseAddress, editable));
 

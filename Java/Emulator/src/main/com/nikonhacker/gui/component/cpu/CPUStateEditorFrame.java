@@ -20,8 +20,8 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
     private boolean editable;
 
-    public CPUStateEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final CPUState cpuState, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, ui);
+    public CPUStateEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final CPUState cpuState) {
+        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
 
         if (cpuState instanceof FrCPUState) {
             cpuPanel = new FrCPUStateComponent((FrCPUState) cpuState, false);

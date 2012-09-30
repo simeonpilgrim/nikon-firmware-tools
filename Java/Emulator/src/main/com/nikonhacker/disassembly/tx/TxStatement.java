@@ -36,7 +36,8 @@ public class TxStatement extends Statement {
     public int decodedRdFd; // interpreted
 
     /** sa (shift amount) of cc (CP1 condition code) operand */
-    // TODO use imm instead ?? what is decodedSa ??
+    // TODO use imm instead ??
+    // TODO what does decodedSa mean ??
     public int sa_cc; // as-is from binary code
     public int decodedSaCc; // interpreted
 
@@ -756,6 +757,11 @@ public class TxStatement extends Statement {
                 case '+':
                     if (updateRegisters && context.cpuState.registerExists(r)) {
                         context.cpuState.setReg(r, context.cpuState.getReg(r) + (decodedImm << 16 >> 16));
+                    }
+                    break;
+                case '|':
+                    if (updateRegisters && context.cpuState.registerExists(r)) {
+                        context.cpuState.setReg(r, context.cpuState.getReg(r) | decodedImm);
                     }
                     break;
                 case 'x':

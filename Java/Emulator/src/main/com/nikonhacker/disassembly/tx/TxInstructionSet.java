@@ -231,7 +231,7 @@ public class TxInstructionSet
         W
     }
 
-    public static final TxInstruction unknownInstruction = new TxInstruction("unk", "u", "", "unk",
+    public static final TxInstruction unknownInstruction = new TxInstruction("unk", "", "", "unk",
             "UNKnown instruction",
             InstructionFormat32.W, InstructionFormat16.W,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -302,7 +302,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rt=r0
-    public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i", "kw", "move $t1,$t2",
+    public static final TxInstruction moveAdduInstruction = new TxInstruction("move", "k, i;Iu", "kw", "move $t1,$t2",
             "MOVE (formally an ADDU with rt=r0): set $t1 to $t2, no overflow",
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -504,7 +504,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i", "", "mthi $t1",
+    public static final TxInstruction mthiInstruction = new TxInstruction("mthi", "i;Iu", "", "mthi $t1",
             "Move To HI registerr: Set HI to contents of $t1 (see multiply and divide operations)",
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -514,7 +514,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i", "", "mtlo $t1",
+    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i:Iu", "", "mtlo $t1",
             "Move To LO register: Set LO to contents of $t1 (see multiply and divide operations)",
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -545,7 +545,7 @@ public class TxInstructionSet
                 }
             });
     // alternative if rs=r0
-    public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j", "kw", "move $t1,$t3",
+    public static final TxInstruction moveOrInstruction = new TxInstruction("move", "k, j;Ju", "kw", "move $t1,$t3",
             "MOVE (formally an OR with rs=r0): Set $t1 to $t3",
             InstructionFormat32.R, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -565,7 +565,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]u", "jw", "ori $t1,$t2,100",
+    public static final TxInstruction oriInstruction = new TxInstruction("ori", "j, [i, ]u", "j|", "ori $t1,$t2,100",
             "bitwise OR Immediate: Set $t1 to bitwise OR of $t2 and zero-extended 16-bit immediate",
             InstructionFormat32.I, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -737,7 +737,7 @@ public class TxInstructionSet
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "", "sw $t1,-100($t2)",
+    public static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i);Ju", "", "sw $t1,-100($t2)",
             "Store Word: Store contents of $t1 into effective memory word address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -958,9 +958,23 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                     }
+                    context.cpuState.pc += statement.getNumBytes();
+                }
+            });
+    // alternative if rs=0
+    public static final TxInstruction balInstruction = new TxInstruction("bal", "4rs", "", "bal label",
+            "Branch And Link: Set $ra to the Program Counter and branch to statement at label's address",
+            InstructionFormat32.I_BRANCH, null,
+            Instruction.FlowType.CALL, true, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.setDelayedPcAndRa(
+                            context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
+                            context.cpuState.getPc() + 8 // return address after the delay slot
+                    );
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -973,7 +987,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) >= 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                         context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
@@ -1088,7 +1102,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                     }
                     context.cpuState.pc += statement.getNumBytes();
@@ -1103,7 +1117,7 @@ public class TxInstructionSet
                     if (context.cpuState.getReg(statement.rs_fs) < 0) {
                         context.setDelayedPcAndRa(
                                 context.cpuState.pc + 4 + (statement.imm << 16 >> 14), // sign extend and x4
-                                context.cpuState.getPc() + 8 // the "and link" part
+                                context.cpuState.getPc() + 8 // return address after the delay slot
                         );
                         context.cpuState.pc += statement.getNumBytes(); // We take care of the incrementing the PC because it varies in 'likely' instructions
                     }
@@ -1249,7 +1263,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
-                            pc + 8                      // and the return after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
@@ -1263,7 +1277,7 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
-                            pc + 8
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1274,10 +1288,10 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // todo this should be done after delay slot :
-                    context.cpuState.setReg(statement.rd_fd, context.cpuState.getPc() + 8);
-                    context.setDelayedPc(
-                            context.cpuState.getReg(statement.rs_fs)
+                    context.setDelayedPcAndRaAndTarget(
+                            context.cpuState.getReg(statement.rs_fs), // Next PC
+                            context.cpuState.getPc() + 8, // return address after the delay slot
+                            statement.rd_fd // register to store return address into, after delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1328,7 +1342,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k", "", "mtc0 $t1,$8",
+    public static final TxInstruction mtc0Instruction = new TxInstruction("mtc0", "j, k;Ju", "", "mtc0 $t1,$8",
             "Move To Coprocessor 0: Set Coprocessor 0 register $8 to value stored in $t1",
             InstructionFormat32.CP0, InstructionFormat16.SHIFT2,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1351,7 +1365,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction mtc1Instruction = new TxInstruction("mtc1", "j, i", "", "mtc1 $t1,$8",
+    public static final TxInstruction mtc1Instruction = new TxInstruction("mtc1", "j, i;Ju", "", "mtc1 $t1,$8",
             "Move To Coprocessor 1: Set Coprocessor 1 register $8 to value stored in $t1",
             InstructionFormat32.CP1_R1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1373,7 +1387,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction ctc1Instruction = new TxInstruction("ctc1", "j, i", "", "ctc1 $t1,$8",
+    public static final TxInstruction ctc1Instruction = new TxInstruction("ctc1", "j, i;Ju", "", "ctc1 $t1,$8",
             "move Control To Coprocessor 1: Set coprocessor 1 control register $8 to value stored in $t1",
             InstructionFormat32.CP1_CR1, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1397,7 +1411,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i)", "", "swc1 $f1,-100($t2)",
+    public static final TxInstruction swc1Instruction = new TxInstruction("swc1", "j, s(i);Ju", "", "swc1 $f1,-100($t2)",
             "Store Word from Coprocessor 1 (FPU): Store 32 bit value in $f1 to effective memory word address",
             InstructionFormat32.CP1_I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1569,7 +1583,7 @@ public class TxInstructionSet
             });
 
     // TRAP instructions
-    public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u", "", "teq $t1,$t2,$t3",
+    public static final TxInstruction teqInstruction = new TxInstruction("teq", "i, j, u;Iu, Ju", "", "teq $t1,$t2,$t3",
             "Trap if EQual: Trap with code $t3 if $t1 is equal to $t2",
             InstructionFormat32.TRAP, null,
             Instruction.FlowType.INT, true, Instruction.DelaySlotType.NONE,
@@ -1897,53 +1911,25 @@ public class TxInstructionSet
             });
 
     /* non-EXTENDED : zero extended and multiplied by 4 */
-    public static final TxInstruction addiupc16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
+    public static final TxInstruction addiupc16Instruction = new TxInstruction("addiu", "i, P, 4ru", "iw", "addiu r3, ABCD0123",
             "ADD Immediate Unsigned with PC",
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
+                    context.cpuState.setReg(statement.rt_ft, getMaskedBasePc(statement, context) + (statement.imm << 2));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
     /* EXTENDed : sign-extended and not shifted */
-    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
+    public static final TxInstruction addiupcInstruction = new TxInstruction("addiu", "i, P, rs", "iw", "addiu r3, ABCD0123",
             "ADD Immediate Unsigned with PC",
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
-                    context.cpuState.pc += statement.getNumBytes();
-                }
-            });
-
-    /* non-EXTENDED : zero extended and multiplied by 4 */
-    public static final TxInstruction la16Instruction = new TxInstruction("addiu", "i, 4ru", "iw", "addiu r3, ABCD0123",
-            "ADD Immediate Unsigned with PC",
-            null, InstructionFormat16.RI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 2));
-                    context.cpuState.pc += statement.getNumBytes();
-                }
-            });
-
-    /* EXTENDed : sign-extended and not shifted */
-    public static final TxInstruction laInstruction = new TxInstruction("addiu", "i, rs", "iw", "addiu r3, ABCD0123",
-            "ADD Immediate Unsigned with PC",
-            null, InstructionFormat16.RI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    int basePc = context.cpuState.getPc(); // TODO: if in delay slot of JAL or JALX, should be the upper halfword of the JAL or JALX instruction
-                    context.cpuState.setReg(statement.rt_ft, (basePc & 0xFFFFFFFC) + (statement.imm << 16 >> 16));
+                    context.cpuState.setReg(statement.rt_ft, getMaskedBasePc(statement, context) + (statement.imm << 16 >> 16));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2002,13 +1988,13 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction balInstruction = new TxInstruction("bal", "2rs", "", "bal 100",
+    public static final TxInstruction bal16Instruction = new TxInstruction("bal", "2rs", "", "bal 100",
             "unconditional Branch And Link: branch to target address",
             null, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 5); // TODO check 5 ?
+                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.getPc() /* incl ISA 16 LSB*/ + statement.getNumBytes());
                     int shift = 32 - statement.immBitWidth;
                     context.cpuState.pc += statement.getNumBytes() + (statement.imm << shift >> (shift-1)); // sign extend and x2
                 }
@@ -2369,7 +2355,7 @@ public class TxInstructionSet
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
-                            context.cpuState.pc + 5 // TODO 5 ?? getPc ??
+                            context.cpuState.getPc() /* incl ISA 16 LSB*/ + 4 /* only exists in EXTENDed form */
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -2381,7 +2367,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.pc + 3); // TODO 3 ?? getPc ??
+                    context.cpuState.setReg(TxCPUState.RA, context.cpuState.getPc() /* incl ISA 16 LSB*/ + 2 /* no EXTENDed form exists */);
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
                 }
             });
@@ -2639,9 +2625,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // TODO mask PC
-                    // getPc ??
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 16 >> 16)));
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(getMaskedBasePc(statement, context) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2654,9 +2638,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // TODO mask PC
-                    // getPc ??
-                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(context.cpuState.pc + (statement.imm << 2)));
+                    context.cpuState.setReg(statement.rt_ft, context.memory.load32(getMaskedBasePc(statement, context) + (statement.imm << 2)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -3616,6 +3598,16 @@ public class TxInstructionSet
 //                        number + " ", Exceptions.SYSCALL_EXCEPTION);
 //    }
 
+    private static int getMaskedBasePc(TxStatement statement, StatementContext context) throws EmulationException {
+        if (statement.getDelaySlotType() != Instruction.DelaySlotType.NONE) {
+            // TODO We should test (statement.delaySlotType != Instruction.DelaySlotType.NONE) and if so,
+            // TODO subract 2 or 4 to the PC to point on the JR, JALR, JAL or JALX's pc.
+            // TODO But we don't know anymore if it was 2 or 4 bytes :-(
+            // TODO Instead of storing the delay slot type we're in, we should store the statement whose delay slot we're in...
+            throw new EmulationException("Determining masked base PC in a delay slot is not implemented.");
+        }
+        return context.cpuState.getPc() & 0xFFFFFFFC;         // 2 LSB masked
+    }
 
 
     public static TxInstruction getInstructionFor16BitStatement(int binStatement) {
@@ -3726,6 +3718,19 @@ public class TxInstructionSet
             }
             else {
                 return orInstruction;
+            }
+
+        }
+    };
+
+    static InstructionResolver balOrBgezalInstructionResolver = new InstructionResolver() {
+        @Override
+        public TxInstruction resolve(int binStatement) throws ReservedInstructionException {
+            if (((binStatement >> 21) & 0b11111) == 0) { // rs == 0
+                return balInstruction;
+            }
+            else {
+                return bgezalInstruction;
             }
 
         }
@@ -3987,8 +3992,8 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b0001000000000000, 0b1111100000000000, bInstruction);
         expandInstruction(extendedOpcode16Map, 0b0001000000000000, 0b1111111111100000, bInstruction);
 
-        expandInstruction(opcode16Map,         0b1111110000000000, 0b1111111100000000, balInstruction);
-        expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, balInstruction);
+        expandInstruction(opcode16Map,         0b1111110000000000, 0b1111111100000000, bal16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, bal16Instruction);
 
         expandInstruction(extendedOpcode16Map, 0b1111100100000000, 0b1111111100000000, bclrInstruction); // incl with $r0
 
@@ -4461,6 +4466,9 @@ public class TxInstructionSet
 
         regImmRtResolvers[0b10000] = new DirectInstructionResolver(bltzalInstruction);
         regImmRtResolvers[0b10001] = new DirectInstructionResolver(bgezalInstruction);
+        if (true) { // TODO make this an option
+            regImmRtResolvers[0b10001] = balOrBgezalInstructionResolver;
+        }
         regImmRtResolvers[0b10010] = new DirectInstructionResolver(bltzallInstruction);
         regImmRtResolvers[0b10011] = new DirectInstructionResolver(bgezallInstruction);
         regImmRtResolvers[0b10100] = starResolver;
