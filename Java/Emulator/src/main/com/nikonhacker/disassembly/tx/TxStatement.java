@@ -759,6 +759,11 @@ public class TxStatement extends Statement {
                         context.cpuState.setReg(r, context.cpuState.getReg(r) + (decodedImm << 16 >> 16));
                     }
                     break;
+                case '|':
+                    if (updateRegisters && context.cpuState.registerExists(r)) {
+                        context.cpuState.setReg(r, context.cpuState.getReg(r) | decodedImm);
+                    }
+                    break;
                 case 'x':
                     r = TxCPUState.NOREG;
                     break;

@@ -56,6 +56,7 @@ c : outputs coprocessor operation (c)<br/>
 'v': current register is marked valid and loaded with the given value<br/>
 'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
 '+': current register is incremented by given value<br/>
+'|': current register is or'ed with given value<br/>
 'x': current register is undefined<br/>
      * @param instructionFormat32 pattern that specifies how the instruction word should be split in parts
      * @param instructionFormat16
