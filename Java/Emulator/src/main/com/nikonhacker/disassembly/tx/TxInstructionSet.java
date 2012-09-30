@@ -1208,11 +1208,9 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // We keep the last bit so ISA mode is unchanged, because
-                    // "The JALX, JR, JRC or JALRC instructions can be used to switch from 32-bit mode to 16-bit mode or vice versa"
-                    // Anyway, as this instruction only exists in 32bit, the ISA mode LSB is always 0. No matter.
+                    // The ISA mode is unchanged by the J instruction, but it only exists in 32bit, so the ISA mode LSB is always 0 anyway.
                     context.setDelayedPc(
-                            (context.cpuState.pc & 0xF0000001) | (statement.imm << 2)
+                            (context.cpuState.pc & 0xF0000000) | (statement.imm << 2)
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1248,9 +1246,10 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
-                            (context.cpuState.pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
-                            context.cpuState.getPc() + 8                      // and the return after the delay slot
+                            (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
+                            pc + 8                      // and the return after the delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
@@ -1261,9 +1260,10 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
-                            ((context.cpuState.pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
-                            context.cpuState.getPc() + 8
+                            ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
+                            pc + 8
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
