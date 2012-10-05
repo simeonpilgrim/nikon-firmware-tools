@@ -298,7 +298,7 @@ public class FrCPUState extends CPUState {
             registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
         }
         registers = registers.trim() + "]";
-        return "CPUState : " +
+        return "FrCPUState : " +
                 "pc=0x" + Format.asHex(pc, 8) +
                 ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
                 ", reg=" + registers +

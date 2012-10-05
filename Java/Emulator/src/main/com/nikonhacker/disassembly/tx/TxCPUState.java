@@ -349,19 +349,6 @@ public class TxCPUState extends CPUState {
         this.powerMode = powerMode;
     }
 
-    public String toString() {
-        String registers = "";
-        for (int i = 0; i < regValue.length; i++) {
-            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
-        }
-        registers = registers.trim() + "]";
-        return "CPUState : " +
-                "pc=0x" + Format.asHex(pc, 8) +
-                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
-                ", reg=" + registers +
-                '}';
-    }
-
     public void reset() {
         shadowRegisterSets = new Register32[8][registerLabels.length];
         activeRegisterSet = 0;
@@ -602,6 +589,19 @@ public class TxCPUState extends CPUState {
         // TODO check
         // return numCp1ConditionFlags;
         throw new RuntimeException("Unimplemented");
+    }
+
+    public String toString() {
+        String registers = "";
+        for (int i = 0; i < regValue.length; i++) {
+            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
+        }
+        registers = registers.trim() + "]";
+        return "TxCPUState : " +
+                "pc=0x" + Format.asHex(pc, 8) +
+                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
+                ", reg=" + registers +
+                '}';
     }
 
 }
