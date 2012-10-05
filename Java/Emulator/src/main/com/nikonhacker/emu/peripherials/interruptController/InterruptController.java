@@ -2,6 +2,8 @@ package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.emu.InterruptRequest;
 
+import java.util.List;
+
 public interface InterruptController {
     public boolean request(int interruptNumber);
 
@@ -16,4 +18,6 @@ public interface InterruptController {
     public InterruptRequest getNextRequest();
 
     public void updateRequestICR(int i, byte value);
+
+    List<InterruptRequest> getInterruptRequestQueue();
 }
