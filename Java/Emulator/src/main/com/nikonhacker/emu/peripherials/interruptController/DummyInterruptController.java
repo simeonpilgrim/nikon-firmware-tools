@@ -2,6 +2,8 @@ package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.emu.InterruptRequest;
 
+import java.util.List;
+
 /**
  * Dummy implementation to be used when no interrupt controller is needed
  */
@@ -32,5 +34,9 @@ public class DummyInterruptController implements InterruptController {
 
     public void updateRequestICR(int i, byte value) {
       
+    }
+
+    public List<InterruptRequest> getInterruptRequestQueue() {
+        return null;
     }
 }
