@@ -2,7 +2,6 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -10,7 +9,6 @@ import com.nikonhacker.disassembly.fr.FrInstruction;
 import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
-import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -2406,13 +2404,5 @@ public class FrEmulator extends Emulator {
         context.nextPc = nextPc;
         context.nextReturnAddress = nextReturnAddress;
         context.delaySlotDone = false;
-    }
-
-    public void setMemory(Memory memory) {
-        this.memory = memory;
-    }
-
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
     }
 }
