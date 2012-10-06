@@ -6,6 +6,7 @@ import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 
@@ -26,7 +27,7 @@ import java.util.Vector;
  */
 public class InterruptControllerFrame extends DocumentFrame {
 
-    private FrInterruptController interruptController;
+    private InterruptController interruptController;
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
@@ -35,7 +36,7 @@ public class InterruptControllerFrame extends DocumentFrame {
 
     Timer interruptTimer = null;
 
-    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final FrInterruptController interruptController, final DebuggableMemory memory) {
+    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory) {
         super(title, resizable, closable, maximizable, iconifiable, chip, ui);
         this.interruptController = interruptController;
 
