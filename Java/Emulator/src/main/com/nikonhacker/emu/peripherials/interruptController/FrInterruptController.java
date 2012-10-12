@@ -1,34 +1,28 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.FrInterruptRequest;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Behaviour is Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf
  * (and for some better understanding hm90360-cm44-10136-1e.pdf)
  */
-public class FrInterruptController implements InterruptController {
+public class FrInterruptController extends AbstractInterruptController implements InterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
 
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
 
-    private final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
     private Memory memory;
 
     public FrInterruptController(Memory memory) {
         this.memory = memory;
-    }
-
-    public List<InterruptRequest> getInterruptRequestQueue() {
-        return interruptRequestQueue;
     }
 
     /**
@@ -62,24 +56,26 @@ public class FrInterruptController implements InterruptController {
             return false;
         }
         else {
-            return request(new InterruptRequest(interruptNumber, isNMI, icr));
+            return request(new FrInterruptRequest(interruptNumber, isNMI, icr));
         }
     }
 
     /**
      * This is a way to cause completely custom (or even bogus) InterruptRequests
-     * @param newInterruptRequest
+     * @param interruptRequest
      * @return
      */
-    public boolean request(InterruptRequest newInterruptRequest) {
+    public boolean request(InterruptRequest interruptRequest) {
+        FrInterruptRequest newInterruptRequest = (FrInterruptRequest) interruptRequest;
         synchronized (interruptRequestQueue) {
             for (InterruptRequest currentInterruptRequest : interruptRequestQueue) {
-                if (currentInterruptRequest.getInterruptNumber() == newInterruptRequest.getInterruptNumber()) {
+                FrInterruptRequest currentFrInterruptRequest = (FrInterruptRequest) currentInterruptRequest;
+                if (currentFrInterruptRequest.getInterruptNumber() == newInterruptRequest.getInterruptNumber()) {
                     // Same number. Keep highest priority one
-                    if ((newInterruptRequest.isNMI() && !currentInterruptRequest.isNMI())
-                            || (newInterruptRequest.getICR() < currentInterruptRequest.getICR())) {
+                    if ((newInterruptRequest.isNMI() && !currentFrInterruptRequest.isNMI())
+                            || (newInterruptRequest.getICR() < currentFrInterruptRequest.getICR())) {
                         // New is better. Remove old one then go on adding
-                        interruptRequestQueue.remove(currentInterruptRequest);
+                        interruptRequestQueue.remove(currentFrInterruptRequest);
                         break;
                     }
                     else {
@@ -100,10 +96,11 @@ public class FrInterruptController implements InterruptController {
      */
     public void removeRequest(int requestNumber) {
         synchronized (interruptRequestQueue) {
-            InterruptRequest requestToRemove = null;
+            FrInterruptRequest requestToRemove = null;
             for (InterruptRequest interruptRequest : interruptRequestQueue) {
-                if (interruptRequest.getInterruptNumber() == requestNumber) {
-                    requestToRemove = interruptRequest;
+                FrInterruptRequest frInterruptRequest = (FrInterruptRequest) interruptRequest;
+                if (frInterruptRequest.getInterruptNumber() == requestNumber) {
+                    requestToRemove = frInterruptRequest;
                     break;
                 }
             }
@@ -113,47 +110,15 @@ public class FrInterruptController implements InterruptController {
         }
     }
 
-    /**
-     * This is the way to remove a specific request object
-     * @param interruptRequest
-     */
-    public void removeRequest(InterruptRequest interruptRequest) {
-        synchronized (interruptRequestQueue) {
-            interruptRequestQueue.remove(interruptRequest);
-        }
-    }
-
-    /**
-     * Determine if there is at least one request pending
-     * @return
-     */
-    public boolean hasPendingRequests() {
-        return !interruptRequestQueue.isEmpty();
-    }
-
-    /**
-     * Return the highest priority request in queue
-     * @return
-     */
-    public InterruptRequest getNextRequest() {
-        synchronized (interruptRequestQueue) {
-            if (interruptRequestQueue.isEmpty()) {
-                return null;
-            }
-            else {
-                return interruptRequestQueue.get(0);
-            }
-        }
-    }
-
     public void updateRequestICR(int interruptNumber, byte icr) {
         synchronized (interruptRequestQueue) {
-            for (InterruptRequest request : interruptRequestQueue) {
-                if (request.getInterruptNumber() == interruptNumber) {
+            for (InterruptRequest interruptRequest : interruptRequestQueue) {
+                FrInterruptRequest frInterruptRequest = (FrInterruptRequest) interruptRequest;
+                if (frInterruptRequest.getInterruptNumber() == interruptNumber) {
                     if (icr == 0x1F) {
                         System.err.println("Disabling interrupt 0x" + Format.asHex(interruptNumber, 2));
                     }
-                    request.setICR(icr & 0x1F | 0x10);
+                    frInterruptRequest.setICR(icr & 0x1F | 0x10);
                     Collections.sort(interruptRequestQueue);
                     break;
                 }

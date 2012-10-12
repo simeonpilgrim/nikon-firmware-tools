@@ -171,7 +171,7 @@ public class ExpeedIoListener implements IoActivityListener {
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
             // Interrupt request level registers
-            interruptController.updateRequestICR(addr - REGISTER_ICR00, value);
+            ((FrInterruptController)interruptController).updateRequestICR(addr - REGISTER_ICR00, value);
         }
         else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
             // Serial Interface configuration registers

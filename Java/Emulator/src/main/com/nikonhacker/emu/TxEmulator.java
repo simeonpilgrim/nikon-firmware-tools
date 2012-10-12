@@ -94,25 +94,24 @@ public class TxEmulator extends Emulator {
                     }
                 }
                 else {
-// TODO
-//                    // If not in a delay slot, check interrupts
-//                    if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-//                        InterruptRequest interruptRequest = interruptController.getNextRequest();
-//                        //Double test because lack of synchronization means the status could have changed in between
-//                        if (interruptRequest != null) {
-//                            if (txCpuState.accepts(interruptRequest)){
-//                                if (instructionPrintWriter != null) {
-//                                    PrintWriter printWriter = instructionPrintWriter;
-//                                    if (printWriter != null) {
-//                                        printWriter.println("------------------------- Accepting " + interruptRequest);
-//                                    }
-//                                }
-//                                interruptController.removeRequest(interruptRequest);
+                    // If not in a delay slot, check interrupts
+                    if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
+                        InterruptRequest interruptRequest = interruptController.getNextRequest();
+                        //Double test because lack of synchronization means the status could have changed in between
+                        if (interruptRequest != null) {
+                            if (txCpuState.accepts(interruptRequest)){
+                                if (instructionPrintWriter != null) {
+                                    PrintWriter printWriter = instructionPrintWriter;
+                                    if (printWriter != null) {
+                                        printWriter.println("------------------------- Accepting " + interruptRequest);
+                                    }
+                                }
+                                interruptController.removeRequest(interruptRequest);
 //                                processInterrupt(interruptRequest.getInterruptNumber(), txCpuState.pc);
 //                                txCpuState.setILM(interruptRequest.getICR(), false);
-//                            }
-//                        }
-//                    }
+                            }
+                        }
+                    }
                 }
 
                 /* Break if requested */

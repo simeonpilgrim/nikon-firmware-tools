@@ -4,6 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
+import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.Set;
 
@@ -368,6 +369,7 @@ public class TxCPUState extends CPUState {
 
         // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
         for (int registerSet = 1; registerSet < 8; registerSet++) {
+            //noinspection ManualArrayCopy
             for (int i = 26; i <= 28; i++) {
                 shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
             }
@@ -387,6 +389,11 @@ public class TxCPUState extends CPUState {
         }
 
         regValidityBitmap = 0;
+    }
+
+    @Override
+    public boolean accepts(InterruptRequest interruptRequest) {
+        return false;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
     public void clear() {

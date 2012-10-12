@@ -2,6 +2,7 @@ package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.FrInterruptRequest;
 import com.nikonhacker.emu.InterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
@@ -68,7 +69,7 @@ public class InterruptControllerFrame extends DocumentFrame {
                     icr = memory.loadUnsigned8(icrAddress) & 0x1F;
                     isNMI = false;
                 }
-                InterruptRequest interruptRequest = new InterruptRequest(interruptNumber, isNMI, icr);
+                FrInterruptRequest interruptRequest = new FrInterruptRequest(interruptNumber, isNMI, icr);
                 if (interruptController.request(interruptRequest)) {
                     ui.setStatusText(Constants.CHIP_FR, interruptName + " (" +  interruptRequest + ") was requested.");
                 }
@@ -120,7 +121,7 @@ public class InterruptControllerFrame extends DocumentFrame {
             public void actionPerformed(ActionEvent e) {
                 JInterruptButton button = (JInterruptButton) e.getSource();
                 int interruptNumber = button.getInterruptNumber();
-                if (interruptController.request(new InterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
+                if (interruptController.request(new FrInterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
                     ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
                 }
                 else {
@@ -299,7 +300,7 @@ public class InterruptControllerFrame extends DocumentFrame {
         interruptTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                interruptController.request(new InterruptRequest(interruptNumber, isNmi, icr));
+                interruptController.request(new FrInterruptRequest(interruptNumber, isNmi, icr));
             }
         }, 0, interval);
         ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
