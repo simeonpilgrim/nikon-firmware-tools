@@ -19,8 +19,8 @@ public class MemoryPageMappedComponentFrame extends DocumentFrame {
     DebuggableMemory memory;
     private final MemoryActivityListener listener;
 
-    public MemoryPageMappedComponentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int page, CPUState cpuState) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public MemoryPageMappedComponentFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int page, CPUState cpuState) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
         final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));

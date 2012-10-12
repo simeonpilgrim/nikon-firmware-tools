@@ -36,8 +36,8 @@ public class RealOsObjectFrame extends DocumentFrame {
     private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
     private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
-    public RealOsObjectFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 

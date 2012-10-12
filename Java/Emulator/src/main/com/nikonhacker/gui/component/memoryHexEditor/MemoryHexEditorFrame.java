@@ -42,8 +42,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JComboBox registerCombo;
     private JButton saveLoadButton;
 
-    public MemoryHexEditorFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public MemoryHexEditorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.baseTitle = title;
         this.memory = memory;
         this.cpuState = cpuState;

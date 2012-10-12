@@ -52,8 +52,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
