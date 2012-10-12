@@ -14,8 +14,8 @@ public class DisassemblyFrame extends DocumentFrame {
     private static final int COLUMNS = 100;
     private Emulator emulator;
 
-    public DisassemblyFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public DisassemblyFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
 
         PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);

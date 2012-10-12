@@ -36,8 +36,8 @@ public class InterruptControllerFrame extends DocumentFrame {
 
     Timer interruptTimer = null;
 
-    public InterruptControllerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public InterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.interruptController = interruptController;
 
         Insets buttonInsets = new Insets(1,1,1,1);

@@ -51,8 +51,8 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public CodeStructureFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
 

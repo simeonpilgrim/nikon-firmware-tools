@@ -37,8 +37,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JTable triggerTable;
     private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
         this.memory = memory;
