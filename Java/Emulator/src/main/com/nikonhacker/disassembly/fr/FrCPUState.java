@@ -4,6 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
+import com.nikonhacker.emu.FrInterruptRequest;
 import com.nikonhacker.emu.InterruptRequest;
 
 import java.util.Set;
@@ -274,10 +275,12 @@ public class FrCPUState extends CPUState {
     }
 
 
+    @Override
     public boolean accepts(InterruptRequest interruptRequest) {
+        FrInterruptRequest frInterruptRequest = (FrInterruptRequest) interruptRequest;
         return(
-                (I == 1 && interruptRequest.getICR() < getILM())
-             || (getILM() > 15 && interruptRequest.isNMI())
+                (I == 1 && frInterruptRequest.getICR() < getILM())
+             || (getILM() > 15 && frInterruptRequest.isNMI())
               );
     }
 

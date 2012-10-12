@@ -24,6 +24,7 @@ import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -1680,7 +1681,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory[chip]);
 
-            interruptController[chip] = (chip == Constants.CHIP_FR)?(new FrInterruptController(memory[chip])):null; // TODO TxInterruptController
+            interruptController[chip] = (chip == Constants.CHIP_FR)?(new FrInterruptController(memory[chip])):new TxInterruptController();
 
             reloadTimers = new ReloadTimer[]{
                     new ReloadTimer(0, interruptController[chip]),

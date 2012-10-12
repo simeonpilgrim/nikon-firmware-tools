@@ -17,7 +17,5 @@ public interface InterruptController {
 
     public InterruptRequest getNextRequest();
 
-    public void updateRequestICR(int i, byte value);
-
     List<InterruptRequest> getInterruptRequestQueue();
 }

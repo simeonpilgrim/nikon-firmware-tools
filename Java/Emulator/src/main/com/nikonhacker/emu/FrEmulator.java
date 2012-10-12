@@ -10,7 +10,6 @@ import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -26,8 +25,6 @@ import java.util.Set;
  * All implemented operations can be tested with the EmulatorTest class
  */
 public class FrEmulator extends Emulator {
-
-    private InterruptController interruptController;
 
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
@@ -52,10 +49,6 @@ public class FrEmulator extends Emulator {
     public FrEmulator() {
     }
 
-
-    public void setInterruptController(InterruptController interruptController) {
-        this.interruptController = interruptController;
-    }
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
@@ -2285,7 +2278,7 @@ public class FrEmulator extends Emulator {
                 else {
                     // If not in a delay slot, check interrupts
                     if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-                        InterruptRequest interruptRequest = interruptController.getNextRequest();
+                        FrInterruptRequest interruptRequest = (FrInterruptRequest) interruptController.getNextRequest();
                         //Double test because lack of synchronization means the status could have changed in between
                         if (interruptRequest != null) {
                             if (frCpuState.accepts(interruptRequest)){
