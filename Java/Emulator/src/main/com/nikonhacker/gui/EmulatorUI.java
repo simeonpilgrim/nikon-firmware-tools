@@ -1700,7 +1700,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new SerialInterface(5, interruptController[chip], 0x1B)
                 };
                 memory[chip].setIoActivityListener(new ExpeedIoListener((FrCPUState) cpuState[chip], interruptController[chip], reloadTimers, serialInterfaces[chip]));
-                ((FrEmulator)emulator[chip]).setInterruptController(interruptController[chip]);
             }
             else {
                 serialInterfaces[chip] = new SerialInterface[]{
@@ -1713,10 +1712,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new SerialInterface(5, interruptController[chip], 0x1B)
 */
                 };
-//                memory[chip].setIoActivityListener(new ExpeedIoListener((FrCPUState) cpuState[chip], interruptController, reloadTimers, serialInterfaces));
-//                ((FrEmulator)emulator[chip]).setInterruptController(interruptController);
+//                memory[chip].setIoActivityListener(new ExpeedIoListener((FrCPUState) cpuState[chip], interruptController[chip], reloadTimers, serialInterfaces[chip]));
             }
 
+            emulator[chip].setInterruptController(interruptController[chip]);
 
             setEmulatorSleepCode(chip, prefs.getSleepTick());
 
