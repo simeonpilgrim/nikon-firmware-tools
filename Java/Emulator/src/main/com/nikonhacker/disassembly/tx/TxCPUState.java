@@ -9,6 +9,9 @@ import com.nikonhacker.emu.interrupt.InterruptRequest;
 import java.util.Set;
 
 public class TxCPUState extends CPUState {
+
+    public static final int RESET_ADDRESS = 0xBFC00000;
+
     /** Register names (first array is "standard", second array is "alternate") */
     final static String[][] REG_LABEL = new String[][]{
             {
@@ -268,6 +271,338 @@ public class TxCPUState extends CPUState {
         }
     }
 
+    public enum PowerMode {
+        RUN,
+        HALT,
+        DOZE
+    }
+
+    // Fields
+
+    private Register32[][] shadowRegisterSets;
+
+    private int activeRegisterSet;
+
+    private PowerMode powerMode;
+
+    public boolean is16bitIsaMode = false;
+
+    // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
+    private Register32 cp1Condition = new Register32(0);
+    private int numCp1ConditionFlags = 8;
+
+
+    /**
+     * Constructor
+     */
+    public TxCPUState() {
+        reset();
+    }
+
+    /**
+     * Constructor
+     * @param startPc initial value for the Program Counter, including ISA mode as LSB
+     */
+    public TxCPUState(int startPc) {
+        reset();
+        setPc(startPc);
+    }
+
+    @Override
+    public int getResetAddress() {
+        return RESET_ADDRESS;
+    }
+
+    /**
+     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB
+     * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
+     * @return
+     */
+    public int getPc() {
+        return pc | (is16bitIsaMode?1:0);
+    }
+
+    /**
+     * Sets the PC value as defined by the specification, including the ISA mode as LSB
+     * Technically, the value is split between the pc (address) int field and the is16bitIsaMode boolean field
+     * @return
+     */
+    public void setPc(int pc) {
+        this.is16bitIsaMode = ((pc & 1) == 1);
+        this.pc = pc & 0xFFFFFFFE;
+    }
+
+
+    public int getActiveRegisterSet() {
+        return activeRegisterSet;
+    }
+
+    public void setActiveRegisterSet(int activeRegisterSet) {
+        this.activeRegisterSet = activeRegisterSet;
+    }
+
+    public PowerMode getPowerMode() {
+        return powerMode;
+    }
+
+    public void setPowerMode(PowerMode powerMode) {
+        this.powerMode = powerMode;
+    }
+
+    public void reset() {
+        shadowRegisterSets = new Register32[8][registerLabels.length];
+        activeRegisterSet = 0;
+        regValue = shadowRegisterSets[activeRegisterSet];
+
+        Register32 reg0 = new NullRegister32();
+
+        // All general registers have different values in each set (except 0 is dummy)
+        for (int registerSet = 0; registerSet < 8; registerSet++) {
+            // register 0 is dummy
+            shadowRegisterSets[registerSet][0] = reg0;
+            // base layout : all sets have separate register values
+            for (int i = 1; i < HI; i++) {
+                shadowRegisterSets[registerSet][i] = new Register32(0);
+            }
+        }
+
+        // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
+        for (int registerSet = 1; registerSet < 8; registerSet++) {
+            //noinspection ManualArrayCopy
+            for (int i = 26; i <= 28; i++) {
+                shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
+            }
+        }
+
+        // other exception: r29 is separate in set 0, but common to sets 1-7
+        for (int registerSet = 2; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][29] = shadowRegisterSets[1][29];
+        }
+
+        // All registers starting from HI are a single set, so share them
+        for (int i = HI; i < regValue.length; i++) {
+            Register32 r = new Register32();
+            for (int registerSet = 0; registerSet < 8; registerSet++) {
+               shadowRegisterSets[registerSet][i] = r;
+            }
+        }
+
+        regValidityBitmap = 0;
+
+        setStatusBEV();
+        setStatusERL();
+        setReg(PRId, 0x00074000);
+        setSscrSSD();
+        setReg(Debug, 0x00010000);
+        setPc(RESET_ADDRESS);
+    }
+
+    @Override
+    public boolean accepts(InterruptRequest interruptRequest) {
+        return false;  //TODO
+    }
+
+    public void clear() {
+        for (int registerSet = 0; registerSet < 8; registerSet++) {
+            setActiveRegisterSet(registerSet);
+            for (int i = 0; i < regValue.length; i++) {
+                setReg(i, 0);
+            }
+        }
+        setActiveRegisterSet(0);
+
+        regValidityBitmap = 0;
+    }
+
+
+    public TxCPUState clone() {
+        TxCPUState cloneCpuState = new TxCPUState();
+        for (int i = 0; i < regValue.length; i++) {
+            cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
+        }
+        cloneCpuState.regValidityBitmap = regValidityBitmap;
+        cloneCpuState.pc = pc;
+        return cloneCpuState;
+    }
+
+
+    /**
+     *  Sets the value of the FPU register given to the value given.
+     *   @param reg Register to set the value of.
+     *   @param val The desired float value for the register.
+     **/
+    public void setRegisterToFloat(int reg, float val){
+        regValue[reg].setValue(Float.floatToRawIntBits(val));
+    }
+
+    /**
+     *  Sets the value of the FPU register given to the 32-bit
+     *  pattern given by the int parameter.
+     *   @param reg Register to set the value of.
+     *   @param val The desired int bit pattern for the register.
+     **/
+    public void setRegisterToInt(int reg, int val){
+        regValue[reg].setValue(val);
+    }
+
+    /**
+     *  Sets the value of the FPU register given to the double value given.  The register
+     *  must be even-numbered, and the low order 32 bits are placed in it.  The high order
+     *  32 bits are placed in the (odd numbered) register that follows it.
+     *   @param reg Register to set the value of.
+     *   @param val The desired double value for the register.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public void setRegisterPairToDouble(int reg, double val) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        long bits = Double.doubleToRawLongBits(val);
+        regValue[reg+1].setValue(Format.highOrderLongToInt(bits));  // high order 32 bits
+        regValue[reg].setValue(Format.lowOrderLongToInt(bits)); // low order 32 bits
+    }
+
+    /**
+     *  Sets the value of the FPU register pair given to the long value containing 64 bit pattern
+     *  given.  The register
+     *  must be even-numbered, and the low order 32 bits from the long are placed in it.  The high order
+     *  32 bits from the long are placed in the (odd numbered) register that follows it.
+     *   @param reg Register to set the value of.  Must be even register of even/odd pair.
+     *   @param val The desired double value for the register.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public void setRegisterPairToLong(int reg, long val)
+            throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        regValue[reg+1].setValue(Format.highOrderLongToInt(val));  // high order 32 bits
+        regValue[reg].setValue(Format.lowOrderLongToInt(val)); // low order 32 bits
+    }
+
+
+    /**
+     *  Gets the float value stored in the given FPU register.
+     *   @param reg Register to get the value of.
+     *   @return The  float value stored by that register.
+     **/
+
+    public float getFloatFromRegister(int reg){
+        return Float.intBitsToFloat(regValue[reg].getValue());
+    }
+
+    /**
+     *  Gets the double value stored in the given FPU register.  The register
+     *  must be even-numbered.
+     *   @param reg Register to get the value of. Must be even number of even/odd pair.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public double getDoubleFromRegisterPair(int reg) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        return Double.longBitsToDouble(Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue()));
+    }
+
+    /**
+     *  Gets a long representing the double value stored in the given double
+     *  precision FPU register.
+     *  The register must be even-numbered.
+     *   @param reg Register to get the value of. Must be even number of even/odd pair.
+     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
+     **/
+
+    public long getLongFromRegisterPair(int reg) throws InvalidRegisterAccessException {
+        if (reg % 2 != 0) {
+            throw new InvalidRegisterAccessException();
+        }
+        return Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue());
+    }
+
+
+    /**
+     *  Set condition flag to 1 (true).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return previous flag setting (0 or 1)
+     */
+    public void setConditionFlag(int flag) {
+        // TODO check
+        // cp1Condition.setValue(Format.setBit(cp1Condition.getValue(), flag));
+        throw new RuntimeException("Unimplemented");
+    }
+
+    /**
+     *  Set condition flag to 0 (false).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return previous flag setting (0 or 1)
+     */
+    public void clearConditionFlag(int flag) {
+        // TODO check
+        // cp1Condition.setValue(Format.clearBit(cp1Condition.getValue(), flag));
+        throw new RuntimeException("Unimplemented");
+    }
+
+
+    /**
+     *  Get value of specified condition flag (0-7).
+     *
+     *  @param flag condition flag number (0-7)
+     *  @return 0 if condition is false, 1 if condition is true
+     */
+    public int getConditionFlag(int flag) {
+        // TODO check
+        // return Format.bitValue(cp1Condition.getValue(), flag);
+        throw new RuntimeException("Unimplemented");
+    }
+
+
+    /**
+     *  Get array of condition flags (0-7).
+     *
+     *  @return array of int condition flags
+     */
+    public int getConditionFlags() {
+        // TODO check
+        // return cp1Condition.getValue();
+        throw new RuntimeException("Unimplemented");
+    }
+
+
+    /**
+     *  Clear all condition flags (0-7).
+     *
+     */
+    public void clearConditionFlags() {
+        // TODO check
+        // cp1Condition.setValue(0);  // sets all 32 bits to 0.
+        throw new RuntimeException("Unimplemented");
+    }
+
+    /**
+     *  Set all condition flags (0-7).
+     *
+     */
+    public void setConditionFlags() {
+        // TODO check
+        // cp1Condition.setValue(-1);  // sets all 32 bits to 1.
+        throw new RuntimeException("Unimplemented");
+    }
+
+    /**
+     *  Get count of condition flags.
+     *
+     *  @return number of condition flags
+     */
+    public int getConditionFlagCount() {
+        // TODO check
+        // return numCp1ConditionFlags;
+        throw new RuntimeException("Unimplemented");
+    }
 
     public int getCp1CrReg(int regNumber) {
         switch(regNumber) {
@@ -637,332 +972,6 @@ public class TxCPUState extends CPUState {
 
     public void setSscrCSS(int statusCSS) {
         setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (statusCSS << Sscr_CSS_pos));
-    }
-
-    public enum PowerMode {
-        RUN,
-        HALT,
-        DOZE
-    }
-
-
-    private Register32[][] shadowRegisterSets;
-
-    private int activeRegisterSet;
-
-    private PowerMode powerMode;
-
-    public boolean is16bitIsaMode = false;
-
-    // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
-    private Register32 cp1Condition = new Register32(0);
-    private int numCp1ConditionFlags = 8;
-
-
-    /**
-     * Constructor
-     */
-    public TxCPUState() {
-        reset();
-    }
-
-    /**
-     * Constructor
-     * @param startPc initial value for the Program Counter, including ISA mode as LSB
-     */
-    public TxCPUState(int startPc) {
-        reset();
-        setPc(startPc);
-    }
-
-    /**
-     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB
-     * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
-     * @return
-     */
-    public int getPc() {
-        return pc | (is16bitIsaMode?1:0);
-    }
-
-    /**
-     * Sets the PC value as defined by the specification, including the ISA mode as LSB
-     * Technically, the value is split between the pc (address) int field and the is16bitIsaMode boolean field
-     * @return
-     */
-    public void setPc(int pc) {
-        this.is16bitIsaMode = ((pc & 1) == 1);
-        this.pc = pc & 0xFFFFFFFE;
-    }
-
-
-    public int getActiveRegisterSet() {
-        return activeRegisterSet;
-    }
-
-    public void setActiveRegisterSet(int activeRegisterSet) {
-        this.activeRegisterSet = activeRegisterSet;
-    }
-
-    public PowerMode getPowerMode() {
-        return powerMode;
-    }
-
-    public void setPowerMode(PowerMode powerMode) {
-        this.powerMode = powerMode;
-    }
-
-    public void reset() {
-        shadowRegisterSets = new Register32[8][registerLabels.length];
-        activeRegisterSet = 0;
-        regValue = shadowRegisterSets[activeRegisterSet];
-
-        Register32 reg0 = new NullRegister32();
-
-        // All general registers have different values in each set (except 0 is dummy)
-        for (int registerSet = 0; registerSet < 8; registerSet++) {
-            // register 0 is dummy
-            shadowRegisterSets[registerSet][0] = reg0;
-            // base layout : all sets have separate register values
-            for (int i = 1; i < HI; i++) {
-                shadowRegisterSets[registerSet][i] = new Register32(0);
-            }
-        }
-
-        // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
-        for (int registerSet = 1; registerSet < 8; registerSet++) {
-            //noinspection ManualArrayCopy
-            for (int i = 26; i <= 28; i++) {
-                shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
-            }
-        }
-
-        // other exception: r29 is separate in set 0, but common to sets 1-7
-        for (int registerSet = 2; registerSet < 8; registerSet++) {
-            shadowRegisterSets[registerSet][29] = shadowRegisterSets[1][29];
-        }
-
-        // All registers starting from HI are a single set, so share them
-        for (int i = HI; i < regValue.length; i++) {
-            Register32 r = new Register32();
-            for (int registerSet = 0; registerSet < 8; registerSet++) {
-               shadowRegisterSets[registerSet][i] = r;
-            }
-        }
-
-        regValidityBitmap = 0;
-
-        setStatusBEV();
-        setStatusERL();
-        setReg(PRId, 0x00074000);
-        setSscrSSD();
-        setReg(Debug, 0x00010000);
-    }
-
-    @Override
-    public boolean accepts(InterruptRequest interruptRequest) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
-    }
-
-    public void clear() {
-        for (int registerSet = 0; registerSet < 8; registerSet++) {
-            setActiveRegisterSet(registerSet);
-            for (int i = 0; i < regValue.length; i++) {
-                setReg(i, 0);
-            }
-        }
-        setActiveRegisterSet(0);
-
-        regValidityBitmap = 0;
-    }
-
-
-    public TxCPUState clone() {
-        TxCPUState cloneCpuState = new TxCPUState();
-        for (int i = 0; i < regValue.length; i++) {
-            cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
-        }
-        cloneCpuState.regValidityBitmap = regValidityBitmap;
-        cloneCpuState.pc = pc;
-        return cloneCpuState;
-    }
-
-
-    /**
-     *  Sets the value of the FPU register given to the value given.
-     *   @param reg Register to set the value of.
-     *   @param val The desired float value for the register.
-     **/
-    public void setRegisterToFloat(int reg, float val){
-        regValue[reg].setValue(Float.floatToRawIntBits(val));
-    }
-
-    /**
-     *  Sets the value of the FPU register given to the 32-bit
-     *  pattern given by the int parameter.
-     *   @param reg Register to set the value of.
-     *   @param val The desired int bit pattern for the register.
-     **/
-    public void setRegisterToInt(int reg, int val){
-        regValue[reg].setValue(val);
-    }
-
-    /**
-     *  Sets the value of the FPU register given to the double value given.  The register
-     *  must be even-numbered, and the low order 32 bits are placed in it.  The high order
-     *  32 bits are placed in the (odd numbered) register that follows it.
-     *   @param reg Register to set the value of.
-     *   @param val The desired double value for the register.
-     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
-     **/
-
-    public void setRegisterPairToDouble(int reg, double val) throws InvalidRegisterAccessException {
-        if (reg % 2 != 0) {
-            throw new InvalidRegisterAccessException();
-        }
-        long bits = Double.doubleToRawLongBits(val);
-        regValue[reg+1].setValue(Format.highOrderLongToInt(bits));  // high order 32 bits
-        regValue[reg].setValue(Format.lowOrderLongToInt(bits)); // low order 32 bits
-    }
-
-    /**
-     *  Sets the value of the FPU register pair given to the long value containing 64 bit pattern
-     *  given.  The register
-     *  must be even-numbered, and the low order 32 bits from the long are placed in it.  The high order
-     *  32 bits from the long are placed in the (odd numbered) register that follows it.
-     *   @param reg Register to set the value of.  Must be even register of even/odd pair.
-     *   @param val The desired double value for the register.
-     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
-     **/
-
-    public void setRegisterPairToLong(int reg, long val)
-            throws InvalidRegisterAccessException {
-        if (reg % 2 != 0) {
-            throw new InvalidRegisterAccessException();
-        }
-        regValue[reg+1].setValue(Format.highOrderLongToInt(val));  // high order 32 bits
-        regValue[reg].setValue(Format.lowOrderLongToInt(val)); // low order 32 bits
-    }
-
-
-    /**
-     *  Gets the float value stored in the given FPU register.
-     *   @param reg Register to get the value of.
-     *   @return The  float value stored by that register.
-     **/
-
-    public float getFloatFromRegister(int reg){
-        return Float.intBitsToFloat(regValue[reg].getValue());
-    }
-
-    /**
-     *  Gets the double value stored in the given FPU register.  The register
-     *  must be even-numbered.
-     *   @param reg Register to get the value of. Must be even number of even/odd pair.
-     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
-     **/
-
-    public double getDoubleFromRegisterPair(int reg) throws InvalidRegisterAccessException {
-        if (reg % 2 != 0) {
-            throw new InvalidRegisterAccessException();
-        }
-        return Double.longBitsToDouble(Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue()));
-    }
-
-    /**
-     *  Gets a long representing the double value stored in the given double
-     *  precision FPU register.
-     *  The register must be even-numbered.
-     *   @param reg Register to get the value of. Must be even number of even/odd pair.
-     *   @throws InvalidRegisterAccessException if register ID is invalid or odd-numbered.
-     **/
-
-    public long getLongFromRegisterPair(int reg) throws InvalidRegisterAccessException {
-        if (reg % 2 != 0) {
-            throw new InvalidRegisterAccessException();
-        }
-        return Format.twoIntsToLong(regValue[reg + 1].getValue(), regValue[reg].getValue());
-    }
-
-
-    /**
-     *  Set condition flag to 1 (true).
-     *
-     *  @param flag condition flag number (0-7)
-     *  @return previous flag setting (0 or 1)
-     */
-    public void setConditionFlag(int flag) {
-        // TODO check
-        // cp1Condition.setValue(Format.setBit(cp1Condition.getValue(), flag));
-        throw new RuntimeException("Unimplemented");
-    }
-
-    /**
-     *  Set condition flag to 0 (false).
-     *
-     *  @param flag condition flag number (0-7)
-     *  @return previous flag setting (0 or 1)
-     */
-    public void clearConditionFlag(int flag) {
-        // TODO check
-        // cp1Condition.setValue(Format.clearBit(cp1Condition.getValue(), flag));
-        throw new RuntimeException("Unimplemented");
-    }
-
-
-    /**
-     *  Get value of specified condition flag (0-7).
-     *
-     *  @param flag condition flag number (0-7)
-     *  @return 0 if condition is false, 1 if condition is true
-     */
-    public int getConditionFlag(int flag) {
-        // TODO check
-        // return Format.bitValue(cp1Condition.getValue(), flag);
-        throw new RuntimeException("Unimplemented");
-    }
-
-
-    /**
-     *  Get array of condition flags (0-7).
-     *
-     *  @return array of int condition flags
-     */
-    public int getConditionFlags() {
-        // TODO check
-        // return cp1Condition.getValue();
-        throw new RuntimeException("Unimplemented");
-    }
-
-
-    /**
-     *  Clear all condition flags (0-7).
-     *
-     */
-    public void clearConditionFlags() {
-        // TODO check
-        // cp1Condition.setValue(0);  // sets all 32 bits to 0.
-        throw new RuntimeException("Unimplemented");
-    }
-
-    /**
-     *  Set all condition flags (0-7).
-     *
-     */
-    public void setConditionFlags() {
-        // TODO check
-        // cp1Condition.setValue(-1);  // sets all 32 bits to 1.
-        throw new RuntimeException("Unimplemented");
-    }
-
-    /**
-     *  Get count of condition flags.
-     *
-     *  @return number of condition flags
-     */
-    public int getConditionFlagCount() {
-        // TODO check
-        // return numCp1ConditionFlags;
-        throw new RuntimeException("Unimplemented");
     }
 
     public String toString() {

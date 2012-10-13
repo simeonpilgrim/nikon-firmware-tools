@@ -4,7 +4,6 @@ import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public class TxInterruptController extends AbstractInterruptController implements InterruptController {
 
-    public static final int ADDRESS_RESET = 0xBFC00000;
     public static final int ADDRESS_INTERRUPT_BEV0_IV0 = 0x80000180;
     public static final int ADDRESS_INTERRUPT_BEV0_IV1 = 0x80000200;
     public static final int ADDRESS_INTERRUPT_BEV1_IV0 = 0xBFC00380;

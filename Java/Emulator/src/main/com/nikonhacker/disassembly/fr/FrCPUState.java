@@ -10,6 +10,9 @@ import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import java.util.Set;
 
 public class FrCPUState extends CPUState {
+
+    public static final int RESET_ADDRESS = 0x00040000;
+
     /** Register names (first array is "standard", second array is "alternate") */
     static String[][] REG_LABEL = new String[][]{
             {
@@ -120,6 +123,11 @@ public class FrCPUState extends CPUState {
     public FrCPUState(int startPc) {
         reset();
         pc = startPc;
+    }
+
+    @Override
+    public int getResetAddress() {
+        return RESET_ADDRESS;
     }
 
     /**
@@ -258,6 +266,7 @@ public class FrCPUState extends CPUState {
         setReg(TBR, 0x000FFC00);
         setReg(SSP, 0x00000000);
         regValidityBitmap = 0;
+        setPc(RESET_ADDRESS);
     }
 
     public void clear() {
@@ -307,7 +316,5 @@ public class FrCPUState extends CPUState {
                 ", reg=" + registers +
                 '}';
     }
-
-
 
 }
