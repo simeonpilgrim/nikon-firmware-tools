@@ -92,6 +92,8 @@ public class TxCPUState extends CPUState {
     public final static int HI = 32;
     public final static int LO = 33;
 
+    // CP0
+
     public final static int Config = 34;
     public final static int Config1 = 35;
     public final static int Config2 = 36;
@@ -110,6 +112,8 @@ public class TxCPUState extends CPUState {
     public final static int DEPC = 49;
     public final static int DESAVE = 50;
 
+    // CP1
+
     public final static int CP1_F0 = 51;
 
     public final static int FIR = 67;
@@ -118,21 +122,46 @@ public class TxCPUState extends CPUState {
     public final static int FENR = 70;
     public final static int FCSR = 71;
 
-    public final static int Status_RP_bit = 27;
-    public final static int Status_FR_bit = 26;
-    public final static int Status_RE_bit = 25;
-    public final static int Status_MX_bit = 24;
-    public final static int Status_PX_bit = 23;
-    public final static int Status_BEV_bit = 22;
-    public final static int Status_NMI_bit = 19;
-    public final static int Status_KX_bit = 7;
-    public final static int Status_SX_bit = 6;
-    public final static int Status_UX_bit = 5;
-    public final static int Status_UM_bit = 4;
-    public final static int Status_R0_bit = 3;
-    public final static int Status_ERL_bit = 2;
-    public final static int Status_EXL_bit = 1;
-    public final static int Status_IE_bit = 0;
+
+    // CP0 register fields
+    // Status
+    public final static int Status_CU_pos       = 28;
+    public final static int Status_CU_mask      = 0b11110000000000000000000000000000;
+    public final static int Status_RP_pos       = 27;
+    public final static int Status_FR_pos       = 26;
+    public final static int Status_RE_pos       = 25;
+    public final static int Status_MX_pos       = 24;
+    public final static int Status_PX_pos       = 23;
+    public final static int Status_BEV_pos      = 22;
+    public final static int Status_NMI_pos      = 19;
+    public final static int Status_Impl_pos     = 16;
+    public final static int Status_Impl_mask    = 0b00000000000000110000000000000000;
+    public final static int Status_IM_pos       = 8;
+    public final static int Status_IM_mask      = 0b00000000000000001111111100000000;
+    public final static int Status_KX_pos       = 7;
+    public final static int Status_SX_pos       = 6;
+    public final static int Status_UX_pos       = 5;
+    public final static int Status_UM_pos       = 4;
+    public final static int Status_R0_pos       = 3;
+    public final static int Status_ERL_pos      = 2;
+    public final static int Status_EXL_pos      = 1;
+    public final static int Status_IE_pos       = 0;
+    // Cause
+    public final static int Cause_BD_pos        = 31;
+    public final static int Cause_CE_pos        = 28;
+    public final static int Cause_CE_mask       = 0b00110000000000000000000000000000;
+    public final static int Cause_IV_pos        = 23;
+    public final static int Cause_WP_pos        = 22;
+    public final static int Cause_IP_pos        = 8;
+    public final static int Cause_IP_mask       = 0b00000000000000001111111100000000;
+    public final static int Cause_ExcCode_pos   = 2;
+    public final static int Cause_ExcCode_mask  = 0b00000000000000000000000001111100;
+    // SSCR
+    public final static int Sscr_SSD_pos        = 31;
+    public final static int Sscr_PSS_pos        = 8;
+    public final static int Sscr_PSS_mask       = 0b00000000000000000000111100000000;
+    public final static int Sscr_CSS_pos        = 0;
+    public final static int Sscr_CSS_mask       = 0b00000000000000000000000000001111;
 
     /** This array is used to decode the mfc0 and mtc0 instruction operands
      * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
@@ -276,6 +305,332 @@ public class TxCPUState extends CPUState {
             default:
                 throw new RuntimeException("Unknown CP1 register number " + regNumber);
         }
+    }
+
+    // -------------------------  FIELD ACCESSORS  ---------------------------
+
+    // Status
+
+    public int getStatusCU() {
+        return (getReg(Status) & Status_CU_mask) >>> Status_CU_pos;
+    }
+
+    public void setStatusCU(int statusCU) {
+        setReg(Status, (getReg(Status) & ~Status_CU_mask) | (statusCU << Status_CU_pos));
+    }
+
+
+    public boolean isStatusRPSet() {
+        return Format.isBitSet(getReg(Status), Status_RP_pos);
+    }
+
+    public void setStatusRP() {
+        setReg(Status, Format.setBit(getReg(Status), Status_RP_pos));
+    }
+
+    public void clearStatusRP() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_RP_pos));
+    }
+
+
+    public boolean isStatusFRSet() {
+        return Format.isBitSet(getReg(Status), Status_FR_pos);
+    }
+
+    public void setStatusFR() {
+        setReg(Status, Format.setBit(getReg(Status), Status_FR_pos));
+    }
+
+    public void clearStatusFR() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_FR_pos));
+    }
+
+
+    public boolean isStatusRESet() {
+        return Format.isBitSet(getReg(Status), Status_RE_pos);
+    }
+
+    public void setStatusRE() {
+        setReg(Status, Format.setBit(getReg(Status), Status_RE_pos));
+    }
+
+    public void clearStatusRE() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_RE_pos));
+    }
+
+
+    public boolean isStatusMXSet() {
+        return Format.isBitSet(getReg(Status), Status_MX_pos);
+    }
+
+    public void setStatusMX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_MX_pos));
+    }
+
+    public void clearStatusMX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_MX_pos));
+    }
+
+
+    public boolean isStatusPXSet() {
+        return Format.isBitSet(getReg(Status), Status_PX_pos);
+    }
+
+    public void setStatusPX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_PX_pos));
+    }
+
+    public void clearStatusPX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_PX_pos));
+    }
+
+
+    public boolean isStatusBEVSet() {
+        return Format.isBitSet(getReg(Status), Status_BEV_pos);
+    }
+
+    public void setStatusBEV() {
+        setReg(Status, Format.setBit(getReg(Status), Status_BEV_pos));
+    }
+
+    public void clearStatusBEV() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_BEV_pos));
+    }
+
+
+    public boolean isStatusNMISet() {
+        return Format.isBitSet(getReg(Status), Status_NMI_pos);
+    }
+
+    public void setStatusNMI() {
+        setReg(Status, Format.setBit(getReg(Status), Status_NMI_pos));
+    }
+
+    public void clearStatusNMI() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_NMI_pos));
+    }
+
+
+    public int getStatusImpl() {
+        return (getReg(Status) & Status_Impl_mask) >>> Status_Impl_pos;
+    }
+
+    public void setStatusImpl(int statusImpl) {
+        setReg(Status, (getReg(Status) & ~Status_Impl_mask) | (statusImpl << Status_Impl_pos));
+    }
+
+
+    public int getStatusIM() {
+        return (getReg(Status) & Status_IM_mask) >>> Status_IM_pos;
+    }
+
+    public void setStatusIM(int statusIM) {
+        setReg(Status, (getReg(Status) & ~Status_IM_mask) | (statusIM << Status_IM_pos));
+    }
+
+
+    public boolean isStatusKXSet() {
+        return Format.isBitSet(getReg(Status), Status_KX_pos);
+    }
+
+    public void setStatusKX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_KX_pos));
+    }
+
+    public void clearStatusKX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_KX_pos));
+    }
+
+
+    public boolean isStatusSXSet() {
+        return Format.isBitSet(getReg(Status), Status_SX_pos);
+    }
+
+    public void setStatusSX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_SX_pos));
+    }
+
+    public void clearStatusSX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_SX_pos));
+    }
+
+
+    public boolean isStatusUXSet() {
+        return Format.isBitSet(getReg(Status), Status_UX_pos);
+    }
+
+    public void setStatusUX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_UX_pos));
+    }
+
+    public void clearStatusUX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_UX_pos));
+    }
+
+
+    public boolean isStatusUMSet() {
+        return Format.isBitSet(getReg(Status), Status_UM_pos);
+    }
+
+    public void setStatusUM() {
+        setReg(Status, Format.setBit(getReg(Status), Status_UM_pos));
+    }
+
+    public void clearStatusUM() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_UM_pos));
+    }
+
+
+    public boolean isStatusR0Set() {
+        return Format.isBitSet(getReg(Status), Status_R0_pos);
+    }
+
+    public void setStatusR0() {
+        setReg(Status, Format.setBit(getReg(Status), Status_R0_pos));
+    }
+
+    public void clearStatusR0() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_R0_pos));
+    }
+
+
+    public boolean isStatusERLSet() {
+        return Format.isBitSet(getReg(Status), Status_ERL_pos);
+    }
+
+    public void setStatusERL() {
+        setReg(Status, Format.setBit(getReg(Status), Status_ERL_pos));
+    }
+
+    public void clearStatusERL() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_ERL_pos));
+    }
+
+
+    public boolean isStatusEXLSet() {
+        return Format.isBitSet(getReg(Status), Status_EXL_pos);
+    }
+
+    public void setStatusEXL() {
+        setReg(Status, Format.setBit(getReg(Status), Status_EXL_pos));
+    }
+
+    public void clearStatusEXL() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_EXL_pos));
+    }
+
+
+    public boolean isStatusIESet() {
+        return Format.isBitSet(getReg(Status), Status_IE_pos);
+    }
+
+    public void setStatusIE() {
+        setReg(Status, Format.setBit(getReg(Status), Status_IE_pos));
+    }
+
+    public void clearStatusIE() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_IE_pos));
+    }
+
+
+    // Cause
+
+    public boolean isCauseBDSet() {
+        return Format.isBitSet(getReg(Cause), Cause_BD_pos);
+    }
+
+    public void setCauseBD() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_BD_pos));
+    }
+
+    public void clearCauseBD() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_BD_pos));
+    }
+
+
+    public int getCauseCE() {
+        return (getReg(Cause) & Cause_CE_mask) >>> Cause_CE_pos;
+    }
+
+    public void setCauseCE(int statusCE) {
+        setReg(Cause, (getReg(Cause) & ~Cause_CE_mask) | (statusCE << Cause_CE_pos));
+    }
+
+
+    public boolean isCauseIVSet() {
+        return Format.isBitSet(getReg(Cause), Cause_IV_pos);
+    }
+
+    public void setCauseIV() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_IV_pos));
+    }
+
+    public void clearCauseIV() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_IV_pos));
+    }
+
+
+    public boolean isCauseWPSet() {
+        return Format.isBitSet(getReg(Cause), Cause_WP_pos);
+    }
+
+    public void setCauseWP() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_WP_pos));
+    }
+
+    public void clearCauseWP() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_WP_pos));
+    }
+
+
+    public int getCauseIP() {
+        return (getReg(Cause) & Cause_IP_mask) >>> Cause_IP_pos;
+    }
+
+    public void setCauseIP(int statusIP) {
+        setReg(Cause, (getReg(Cause) & ~Cause_IP_mask) | (statusIP << Cause_IP_pos));
+    }
+
+
+    public int getCauseExcCode() {
+        return (getReg(Cause) & Cause_ExcCode_mask) >>> Cause_ExcCode_pos;
+    }
+
+    public void setCauseExcCode(int statusExcCode) {
+        setReg(Cause, (getReg(Cause) & ~Cause_ExcCode_mask) | (statusExcCode << Cause_ExcCode_pos));
+    }
+
+
+    // SSCR
+
+    public boolean isSscrSSDSet() {
+        return Format.isBitSet(getReg(SSCR), Sscr_SSD_pos);
+    }
+
+    public void setSscrSSD() {
+        setReg(SSCR, Format.setBit(getReg(SSCR), Sscr_SSD_pos));
+    }
+
+    public void clearSscrSSD() {
+        setReg(SSCR, Format.clearBit(getReg(SSCR), Sscr_SSD_pos));
+    }
+
+
+    public int getSscrPSS() {
+        return (getReg(SSCR) & Sscr_PSS_mask) >>> Sscr_PSS_pos;
+    }
+
+    public void setSscrPSS(int statusPSS) {
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_PSS_mask) | (statusPSS << Sscr_PSS_pos));
+    }
+
+
+    public int getSscrCSS() {
+        return (getReg(SSCR) & Sscr_CSS_mask) >>> Sscr_CSS_pos;
+    }
+
+    public void setSscrCSS(int statusCSS) {
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (statusCSS << Sscr_CSS_pos));
     }
 
     public enum PowerMode {

@@ -1831,7 +1831,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    if (Format.bitValue(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_RP_bit) == 1) {
+                    if (Format.bitValue(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_RP_pos) == 1) {
                         ((TxCPUState)context.cpuState).setPowerMode(TxCPUState.PowerMode.DOZE);
                     }
                     else {
@@ -1847,8 +1847,8 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // set EXL bit (bit 1) in Status register to 0 and set PC to EPC
-                    context.cpuState.setReg(TxCPUState.Status, Format.clearBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_EXL_bit));
+                    // clear EXL bit in Status register and set PC to EPC
+                    ((TxCPUState)context.cpuState).clearStatusEXL();
                     context.cpuState.pc = context.cpuState.getReg(TxCPUState.EPC);
                 }
             });
@@ -2299,7 +2299,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.Status, Format.clearBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
+                    ((TxCPUState)context.cpuState).clearStatusIE();
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2342,7 +2342,7 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(TxCPUState.Status, Format.setBit(context.cpuState.getReg(TxCPUState.Status), TxCPUState.Status_IE_bit));
+                    ((TxCPUState)context.cpuState).setStatusIE();
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
