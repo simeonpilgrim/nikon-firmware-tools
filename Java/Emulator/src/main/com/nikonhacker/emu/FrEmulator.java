@@ -2379,6 +2379,7 @@ public class FrEmulator extends Emulator {
         return 32;
     }
 
+    // Shouldn't this code be part of FrInterruptController ? Using context for CPU and memory
     private void processInterrupt(int interruptNumber, int pcToStore) {
         FrCPUState frCpuState = (FrCPUState) cpuState;
         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
@@ -2386,6 +2387,8 @@ public class FrEmulator extends Emulator {
         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
         memory.store32(frCpuState.getReg(FrCPUState.SSP), pcToStore);
         frCpuState.setS(0);
+
+        // Branch to handler
         frCpuState.pc = memory.load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
     }
 
