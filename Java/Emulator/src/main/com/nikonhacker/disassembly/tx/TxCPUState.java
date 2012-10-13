@@ -547,6 +547,12 @@ public class TxCPUState extends CPUState {
         setReg(Cause, Format.clearBit(getReg(Cause), Cause_BD_pos));
     }
 
+    public void setCauseBD(boolean value) {
+        if (value) setCauseBD();
+        else clearCauseBD();
+    }
+
+
 
     public int getCauseCE() {
         return (getReg(Cause) & Cause_CE_mask) >>> Cause_CE_pos;
@@ -744,6 +750,12 @@ public class TxCPUState extends CPUState {
         }
 
         regValidityBitmap = 0;
+
+        setStatusBEV();
+        setStatusERL();
+        setReg(PRId, 0x00074000);
+        setSscrSSD();
+        setReg(Debug, 0x00010000);
     }
 
     @Override
