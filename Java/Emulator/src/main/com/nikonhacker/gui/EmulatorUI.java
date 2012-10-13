@@ -124,8 +124,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
     public static final String BUTTON_SIZE_LARGE = "LARGE";
 
-    private static final int[] BASE_ADDRESS = {FrInterruptController.ADDRESS_RESET, TxInterruptController.ADDRESS_RESET};
-
     private static final int BASE_ADDRESS_FUNCTION_CALL = 0xFFFFFFF0;
     private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
 
@@ -240,7 +238,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static File[] imageFile = new File[2];
 
     private Emulator[] emulator = new Emulator[2];
-    private CPUState[] cpuState = new CPUState[2];
+    private CPUState[] cpuState = new CPUState[]{new FrCPUState(), new TxCPUState()};
     private DebuggableMemory[] memory = new DebuggableMemory[2];
     private InterruptController[] interruptController = new InterruptController[2];
     private java.util.Timer reloadAnimationTimer;
@@ -1384,7 +1382,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 try {
                     Set<OutputOption> sampleOptions = EnumSet.noneOf(OutputOption.class);
                     dumpOptionCheckboxes(outputOptionsCheckBoxes, sampleOptions);
-                    int baseAddress = BASE_ADDRESS[chip];
+                    int baseAddress = cpuState[chip].getResetAddress();
                     int lastAddress = baseAddress;
                     Memory sampleMemory = new DebuggableMemory();
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
@@ -1662,21 +1660,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void loadImage(int chip) {
         try {
-            memory[chip] = new DebuggableMemory();
-            memory[chip].loadFile(imageFile[chip], BASE_ADDRESS[chip]);
+            cpuState[chip].reset();
 
-            if (cpuState[chip] == null) {
-                if (chip == Constants.CHIP_FR) {
-                    cpuState[chip] = new FrCPUState(BASE_ADDRESS[chip]);
-                }
-                else {
-                    cpuState[chip] = new TxCPUState(BASE_ADDRESS[chip]);
-                }
-            }
-            else {
-                cpuState[chip].reset();
-                cpuState[chip].pc = BASE_ADDRESS[chip];
-            }
+            memory[chip] = new DebuggableMemory();
+            memory[chip].loadFile(imageFile[chip], cpuState[chip].getResetAddress());
 
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory[chip]);

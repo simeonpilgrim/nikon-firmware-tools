@@ -19,8 +19,6 @@ public class FrInterruptController extends AbstractInterruptController implement
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
 
-    public static final int ADDRESS_RESET = 0x00040000;
-
     private Memory memory;
 
     public FrInterruptController(Memory memory) {
