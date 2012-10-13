@@ -51,6 +51,7 @@ public class FrInterruptController extends AbstractInterruptController implement
         else {
             throw new InterruptControllerException("Cannot determine ICR value for interrupt 0x" + Format.asHex(interruptNumber, 2));
         }
+        //noinspection SimplifiableIfStatement
         if (icr == 0x1F) {
             /* ICR = 0b11111 is Interrupt disabled. See page 259 */
             return false;
