@@ -399,8 +399,6 @@ public abstract class Disassembler {
         return true;
     }
 
-    protected abstract String[][] getRegisterLabels();
-
     public void readOptions(int chip, String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
@@ -493,8 +491,6 @@ public abstract class Disassembler {
         }
     }
 
-    protected abstract CodeStructure getCodeStructure(int start);
-
 
     protected void disassembleDataMemoryRange(Range memRange, Range fileRange) throws IOException, DisassemblyException {
 
@@ -532,14 +528,6 @@ public abstract class Disassembler {
             }
         }
     }
-
-    protected abstract CPUState getCPUState(Range memRange);
-
-    protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
-
-    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
-
-    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
     public void initialize() throws IOException {
         startTime = new Date().toString();
@@ -615,5 +603,19 @@ public abstract class Disassembler {
         System.out.println("Disassembly done.");
     }
 
+    protected abstract CodeStructure getCodeStructure(int start);
+
+    protected abstract CPUState getCPUState(Range memRange);
+
     protected abstract String getDefaultOptionsFilename();
+
+    protected abstract String[][] getRegisterLabels();
+
+    protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+
 }
