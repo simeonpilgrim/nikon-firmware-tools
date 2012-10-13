@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
-import com.nikonhacker.emu.FrInterruptRequest;
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 
 import java.util.List;
 

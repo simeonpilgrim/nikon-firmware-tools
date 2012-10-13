@@ -1,6 +1,6 @@
 package com.nikonhacker.disassembly;
 
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public abstract class CPUState {
 

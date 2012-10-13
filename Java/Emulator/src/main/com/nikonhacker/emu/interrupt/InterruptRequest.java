@@ -1,4 +1,4 @@
-package com.nikonhacker.emu;
+package com.nikonhacker.emu.interrupt;
 
 public interface InterruptRequest extends Comparable {
 }

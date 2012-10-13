@@ -8,6 +8,7 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.FrInstruction;
 import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
+import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
