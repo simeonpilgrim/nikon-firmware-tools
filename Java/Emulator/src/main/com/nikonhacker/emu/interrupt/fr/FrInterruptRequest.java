@@ -1,6 +1,7 @@
-package com.nikonhacker.emu;
+package com.nikonhacker.emu.interrupt.fr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public class FrInterruptRequest implements InterruptRequest {
     private int interruptNumber;

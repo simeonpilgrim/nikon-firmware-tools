@@ -4,7 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 import java.util.Set;
 

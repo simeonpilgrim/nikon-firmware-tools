@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public class TxInterruptController extends AbstractInterruptController implements InterruptController {
     @Override
