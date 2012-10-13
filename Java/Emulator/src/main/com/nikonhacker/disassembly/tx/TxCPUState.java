@@ -882,12 +882,6 @@ public class TxCPUState extends CPUState {
         setReg(Cause, Format.clearBit(getReg(Cause), Cause_BD_pos));
     }
 
-    public void setCauseBD(boolean value) {
-        if (value) setCauseBD();
-        else clearCauseBD();
-    }
-
-
 
     public int getCauseCE() {
         return (getReg(Cause) & Cause_CE_mask) >>> Cause_CE_pos;
