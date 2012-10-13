@@ -26,21 +26,19 @@ import java.util.List;
  */
 public class DebuggableMemory extends AbstractMemory implements Memory {
 
+    public static final int NO_IO_LISTENER = -1;
+
     private List<MemoryActivityListener> activityListeners = new ArrayList<MemoryActivityListener>();
-
     private IoActivityListener ioActivityListener;
+    private int ioPage = NO_IO_LISTENER;
 
-    /** Constructor - used when this is the instantiated class */
+
     public DebuggableMemory() {
         clear();
     }
 
     public void clear() {
         super.clear();
-    }
-
-    public List<MemoryActivityListener> getActivityListeners() {
-        return activityListeners;
     }
 
     public void addActivityListener(MemoryActivityListener activityListener) {
@@ -51,11 +49,17 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
         return activityListeners.remove(activityListener);
     }
 
-    public IoActivityListener getIoActivityListener() {
-        return ioActivityListener;
-    }
-
+    /**
+     * Sets a listener for IO page activity
+     * @param ioActivityListener new listener, or null to remove
+     */
     public void setIoActivityListener(IoActivityListener ioActivityListener) {
+        if (ioActivityListener == null) {
+            this.ioPage = NO_IO_LISTENER;
+        }
+        else {
+            this.ioPage = ioActivityListener.getIoPage();
+        }
         this.ioActivityListener = ioActivityListener;
     }
 
@@ -84,12 +88,11 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     activityListener.onLoadData8(addr, value);
                 }
-                if (getPTE(addr) == 0) {
-                    if (ioActivityListener != null) {
-                        Byte b = ioActivityListener.onIoLoad8(pageData, addr, value);
-                        if (b != null) {
-                            value = b;
-                        }
+                if (getPTE(addr) == ioPage) {
+                    // if it matches, we have a listener AND we're in its page
+                    Byte b = ioActivityListener.onIoLoad8(pageData, addr, value);
+                    if (b != null) {
+                        value = b;
                     }
                 }
             }

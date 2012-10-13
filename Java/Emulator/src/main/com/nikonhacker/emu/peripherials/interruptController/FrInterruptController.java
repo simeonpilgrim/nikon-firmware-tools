@@ -4,7 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
+import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 
 import java.util.Collections;
 

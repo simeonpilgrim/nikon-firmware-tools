@@ -20,8 +20,9 @@ import com.nikonhacker.emu.FrEmulator;
 import com.nikonhacker.emu.TxEmulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.memory.listener.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
+import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
@@ -177,6 +178,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JMenuItem[] saveLoadMemoryMenuItem = new JMenuItem[2];
     private JMenuItem[] disassemblyOptionsMenuItem = new JMenuItem[2];
 
+    @SuppressWarnings("FieldCanBeLocal")
     private JMenuItem uiOptionsMenuItem;
 
     // Buttons
@@ -1686,7 +1688,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new SerialInterface(4, interruptController[chip], 0x1B),
                         new SerialInterface(5, interruptController[chip], 0x1B)
                 };
-                memory[chip].setIoActivityListener(new ExpeedIoListener((FrCPUState) cpuState[chip], interruptController[chip], reloadTimers, serialInterfaces[chip]));
+                memory[chip].setIoActivityListener(
+                        new ExpeedIoListener(
+                                (FrCPUState) cpuState[chip],
+                                (FrInterruptController) interruptController[chip],
+                                reloadTimers,
+                                serialInterfaces[chip]
+                        )
+                );
             }
             else {
                 serialInterfaces[chip] = new SerialInterface[]{
@@ -1699,7 +1708,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new SerialInterface(5, interruptController[chip], 0x1B)
 */
                 };
-//                memory[chip].setIoActivityListener(new ExpeedIoListener((FrCPUState) cpuState[chip], interruptController[chip], reloadTimers, serialInterfaces[chip]));
+                memory[chip].setIoActivityListener(
+                        new TxIoListener(
+                                (TxCPUState) cpuState[chip],
+                                (TxInterruptController) interruptController[chip],
+                                reloadTimers,
+                                serialInterfaces[chip]
+                        )
+                );
             }
 
             emulator[chip].setInterruptController(interruptController[chip]);
