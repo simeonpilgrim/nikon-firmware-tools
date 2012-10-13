@@ -1,11 +1,16 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.Type;
+import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -107,8 +112,8 @@ public class TxEmulator extends Emulator {
                                     }
                                 }
                                 interruptController.removeRequest(interruptRequest);
-//                                processInterrupt(interruptRequest.getInterruptNumber(), txCpuState.pc);
-//                                txCpuState.setILM(interruptRequest.getICR(), false);
+                                // TODO : pc or address of branch instruction if in delay slot !
+                                processInterrupt((TxInterruptRequest) interruptRequest, txCpuState.pc);
                             }
                         }
                     }
@@ -126,7 +131,7 @@ public class TxEmulator extends Emulator {
                                         trigger.log(breakLogPrintWriter, txCpuState, callStack, memory);
                                     }
                                     if (trigger.getInterruptToRequest() != null) {
-// TODO                                 interruptController.request(trigger.getInterruptToRequest());
+                                        interruptController.request(trigger.getInterruptToRequest());
                                     }
                                     if (trigger.getPcToSet() != null) {
                                         txCpuState.pc = trigger.getPcToSet();
@@ -180,4 +185,99 @@ public class TxEmulator extends Emulator {
         }
 
     }
+
+    private void processInterrupt(TxInterruptRequest interruptRequest, int pcToStore) {
+        TxCPUState txCPUState = (TxCPUState) cpuState;
+
+        txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+
+        // This follows the graphs in the architecture document, but then some info was added from the HW spec (ex : setting EXL or ERL)
+        switch (interruptRequest.getType()) {
+            case RESET_EXCEPTION:
+                txCPUState.setStatusBEV();
+                txCPUState.clearStatusNMI();
+                txCPUState.setStatusERL();
+                txCPUState.clearStatusRP();
+                txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+
+                // Branch to reset routine
+                txCPUState.setPc(TxCPUState.RESET_ADDRESS);
+                break;
+            case NMI:
+                txCPUState.setStatusNMI();
+                txCPUState.setStatusERL();
+                // hardware spec section 6.2.2.1 says BD should be modified but table 6.3 section 6.1.3.3 says it should not.
+                // architecture spec also says it shouldn't
+                // txCPUState.setCauseBD(context.inDelaySlot);
+                txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+
+                // Branch to reset routine
+                txCPUState.setPc(TxCPUState.RESET_ADDRESS);
+                break;
+            default:
+                if (!txCPUState.isStatusEXLSet()) {
+                    if (context.getStoredDelaySlotType() == Instruction.DelaySlotType.NONE) {
+                        txCPUState.clearCauseBD();
+                    }
+                    else {
+                        txCPUState.setCauseBD();
+                    }
+                }
+                txCPUState.setStatusEXL();
+                txCPUState.setCauseExcCode(interruptRequest.getCode());
+                txCPUState.setReg(TxCPUState.EPC, pcToStore);
+
+                if (interruptRequest.getType().isInterrupt()) {
+                    if (!txCPUState.isSscrSSDSet()) {
+                        txCPUState.setSscrCSS(interruptRequest.getLevel());
+                    }
+                    ((TxInterruptController)interruptController).pushIlevCmask(interruptRequest.getLevel());
+
+                    // Branch to handler
+                    if (txCPUState.isStatusBEVSet()) {
+                        if (txCPUState.isCauseIVSet()) {
+                            // BEV=1 & IV=1
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV1);
+                        }
+                        else {
+                            // BEV=1 & IV=0
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV0);
+                        }
+                    }
+                    else {
+                        if (txCPUState.isCauseIVSet()) {
+                            // BEV=0 & IV=1
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV1);
+                        }
+                        else {
+                            // BEV=0 & IV=0
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
+                        }
+                    }
+                }
+                else {
+                    if (interruptRequest.getType() == Type.COPROCESSOR_UNUSABLE_EXCEPTION) {
+                        txCPUState.setCauseCE(interruptRequest.getCoprocessorNumber());
+                    }
+
+                    if (   (interruptRequest.getType() == Type.INSTRUCTION_ADDRESS_ERROR_EXCEPTION)
+                        || (interruptRequest.getType() == Type.DATA_ADDRESS_ERROR_EXCEPTION)) {
+                        txCPUState.setReg(TxCPUState.BadVAddr, interruptRequest.getBadVAddr());
+                    }
+
+                    // Branch to handler
+                    if (txCPUState.isStatusBEVSet()) {
+                        // BEV=1
+                        txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV0);
+                    }
+                    else {
+                        // BEV=0
+                        txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
+                    }
+                }
+        }
+
+        txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+    }
+
 }
