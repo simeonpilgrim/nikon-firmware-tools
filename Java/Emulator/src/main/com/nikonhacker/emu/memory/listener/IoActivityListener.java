@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
 public interface IoActivityListener {
+    int getIoPage();
 
     Byte onIoLoad8(byte[] ioPage, int addr, byte value);
 

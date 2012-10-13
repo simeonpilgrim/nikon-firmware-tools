@@ -1,12 +1,14 @@
-package com.nikonhacker.emu.memory.listener;
+package com.nikonhacker.emu.memory.listener.fr;
 
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 public class ExpeedIoListener implements IoActivityListener {
+
+    public static final int IO_PAGE = 0x0000;
 
     private static final int REGISTER_DICR    = 0x44;
 
@@ -46,16 +48,21 @@ public class ExpeedIoListener implements IoActivityListener {
 
 
     private final FrCPUState cpuState;
-    private final InterruptController interruptController;
+    private final FrInterruptController interruptController;
 
     private final ReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
 
-    public ExpeedIoListener(FrCPUState cpuState, InterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
+    public ExpeedIoListener(FrCPUState cpuState, FrInterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
         this.interruptController = interruptController;
         this.reloadTimers = reloadTimers;
         this.serialInterfaces = serialInterfaces;
+    }
+
+    @Override
+    public int getIoPage() {
+        return IO_PAGE;
     }
 
     /**
@@ -171,7 +178,7 @@ public class ExpeedIoListener implements IoActivityListener {
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
             // Interrupt request level registers
-            ((FrInterruptController)interruptController).updateRequestICR(addr - REGISTER_ICR00, value);
+            interruptController.updateRequestICR(addr - REGISTER_ICR00, value);
         }
         else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
             // Serial Interface configuration registers
