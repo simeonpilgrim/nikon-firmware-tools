@@ -19,6 +19,8 @@ public class FrInterruptController extends AbstractInterruptController implement
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
 
+    public static final int ADDRESS_RESET = 0x00040000;
+
     private Memory memory;
 
     public FrInterruptController(Memory memory) {
@@ -28,9 +30,6 @@ public class FrInterruptController extends AbstractInterruptController implement
     /**
      * This is the standard way to request an interrupt.
      * This method determines if it is a NMI and the respective levels and created the actual request
-     * TODO : Note that it means that once an interrupt has been requested, its level cannot change,
-     * TODO : although a real CPU would recompute priority if the ICRxx change in between
-     * TODO : The listener on the ICR should update the InterruptRequest and re-sort the queue
      * @param interruptNumber The number of the interrupt to request (0x0F - 0x3F)
      * @return true if request was queued. false otherwise.
      */

@@ -124,7 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
     public static final String BUTTON_SIZE_LARGE = "LARGE";
 
-    private static final int[] BASE_ADDRESS = {0x00040000, 0xBFC00000}; // TODO de-hardcode these
+    private static final int[] BASE_ADDRESS = {FrInterruptController.ADDRESS_RESET, TxInterruptController.ADDRESS_RESET};
 
     private static final int BASE_ADDRESS_FUNCTION_CALL = 0xFFFFFFF0;
     private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
