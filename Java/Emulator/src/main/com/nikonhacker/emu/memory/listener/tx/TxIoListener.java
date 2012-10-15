@@ -97,6 +97,9 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
+        if (addr == REGISTER_ILEV) {
+            return interruptController.getIlev();
+        }
         return null;
     }
 
@@ -115,9 +118,9 @@ public class TxIoListener implements IoActivityListener {
     }
 
     public void onIoStore32(byte[] ioPage, int addr, int value) {
-//        if (addr == xxx) {
-//            return yyy;
-//        }
+        if (addr == REGISTER_ILEV) {
+            interruptController.setIlev(value);
+        }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 }

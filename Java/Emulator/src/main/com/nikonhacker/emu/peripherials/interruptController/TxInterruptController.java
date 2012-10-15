@@ -3,7 +3,6 @@ package com.nikonhacker.emu.peripherials.interruptController;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 
 public class TxInterruptController extends AbstractInterruptController implements InterruptController {
 
@@ -18,6 +17,8 @@ public class TxInterruptController extends AbstractInterruptController implement
     public final static int Ilev_Cmask_mask      = 0b00000000000000000000000000000111;
 
     private Memory memory;
+
+    private int ilev;
 
     public TxInterruptController(Memory memory) {
         this.memory = memory;
@@ -41,11 +42,10 @@ public class TxInterruptController extends AbstractInterruptController implement
     // ----------------------- Field accessors
 
     public int getIlev() {
-        return memory.load32(TxIoListener.REGISTER_ILEV);
+        return ilev;
     }
 
     public void setIlev(int newIlev) {
-        int ilev = memory.load32(TxIoListener.REGISTER_ILEV);
         if (Format.isBitSet(newIlev, Ilev_Mlev_pos)) {
             // MLEV = 1 : shift up
             ilev = ilev << 4 | newIlev & Ilev_Cmask_mask;
@@ -54,7 +54,6 @@ public class TxInterruptController extends AbstractInterruptController implement
             // MLEV = 0 : shift down
             ilev = ilev >>> 4;
         }
-        memory.store32(TxIoListener.REGISTER_ILEV, ilev);
     }
 
     public void pushIlevCmask(int cmask) {
