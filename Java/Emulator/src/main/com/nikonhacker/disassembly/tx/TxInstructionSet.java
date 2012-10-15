@@ -1490,7 +1490,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 0) {
-                        context.cpuState.pc = context.cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes(); // normal flow
@@ -1504,7 +1504,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 1) {
-                        context.cpuState.pc = context.cpuState.pc + 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
                     }
                     else {
                         context.cpuState.pc += statement.getNumBytes(); // normal flow
@@ -1847,9 +1847,15 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    // clear EXL bit in Status register and set PC to EPC
-                    ((TxCPUState)context.cpuState).clearStatusEXL();
-                    context.cpuState.pc = context.cpuState.getReg(TxCPUState.EPC);
+                    if (((TxCPUState)context.cpuState).isStatusERLSet()) {
+                        context.cpuState.setPc(context.cpuState.getReg(TxCPUState.ErrorEPC));
+                        ((TxCPUState)context.cpuState).clearStatusERL();
+                    }
+                    else {
+                        context.cpuState.setPc(context.cpuState.getReg(TxCPUState.EPC));
+                        ((TxCPUState)context.cpuState).clearStatusEXL();
+                    }
+                    ((TxCPUState)context.cpuState).popSscrCSS();
                 }
             });
 
