@@ -276,8 +276,7 @@ public class TxEmulator extends Emulator {
                     }
                 }
         }
-
-        txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+        txCPUState.pushSscrCSS(interruptRequest.getLevel());
     }
 
 }
