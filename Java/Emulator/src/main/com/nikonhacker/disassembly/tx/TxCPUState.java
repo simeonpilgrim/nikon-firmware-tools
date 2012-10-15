@@ -4,6 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
+import com.nikonhacker.disassembly.WriteListenerRegister32;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 import java.util.Set;
@@ -281,8 +282,6 @@ public class TxCPUState extends CPUState {
 
     private Register32[][] shadowRegisterSets;
 
-    private int activeRegisterSet;
-
     private PowerMode powerMode;
 
     public boolean is16bitIsaMode = false;
@@ -333,14 +332,6 @@ public class TxCPUState extends CPUState {
     }
 
 
-    public int getActiveRegisterSet() {
-        return activeRegisterSet;
-    }
-
-    public void setActiveRegisterSet(int activeRegisterSet) {
-        this.activeRegisterSet = activeRegisterSet;
-    }
-
     public PowerMode getPowerMode() {
         return powerMode;
     }
@@ -351,8 +342,7 @@ public class TxCPUState extends CPUState {
 
     public void reset() {
         shadowRegisterSets = new Register32[8][registerLabels.length];
-        activeRegisterSet = 0;
-        regValue = shadowRegisterSets[activeRegisterSet];
+        regValue = shadowRegisterSets[0];
 
         Register32 reg0 = new NullRegister32();
 
@@ -366,7 +356,7 @@ public class TxCPUState extends CPUState {
             }
         }
 
-        // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
+        // patch exceptions: r26-27-28 are common to all sets
         for (int registerSet = 1; registerSet < 8; registerSet++) {
             //noinspection ManualArrayCopy
             for (int i = 26; i <= 28; i++) {
@@ -387,6 +377,25 @@ public class TxCPUState extends CPUState {
             }
         }
 
+        // Finally, IER register (in all register sets) is special because it toggles the IE bit
+        // Create one
+        shadowRegisterSets[0][IER] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void onWrite(int newValue) {
+                if (newValue == 0) {
+                    clearStatusIE();
+                }
+                else {
+                    setStatusIE();
+                }
+            }
+        });
+        // And point all sets to it
+        for (int registerSet = 1; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
+        }
+
+
         regValidityBitmap = 0;
 
         setStatusBEV();
@@ -404,12 +413,12 @@ public class TxCPUState extends CPUState {
 
     public void clear() {
         for (int registerSet = 0; registerSet < 8; registerSet++) {
-            setActiveRegisterSet(registerSet);
+            regValue = shadowRegisterSets[registerSet];
             for (int i = 0; i < regValue.length; i++) {
                 setReg(i, 0);
             }
         }
-        setActiveRegisterSet(0);
+        regValue = shadowRegisterSets[0];
 
         regValidityBitmap = 0;
     }
@@ -942,12 +951,16 @@ public class TxCPUState extends CPUState {
         return Format.isBitSet(getReg(SSCR), Sscr_SSD_pos);
     }
 
+    /** This method sets the SSD bit and switches to register set 0 */
     public void setSscrSSD() {
         setReg(SSCR, Format.setBit(getReg(SSCR), Sscr_SSD_pos));
+        regValue = shadowRegisterSets[0];
     }
 
+    /** This method clears the SSD bit and switches register set according to current CSS value */
     public void clearSscrSSD() {
         setReg(SSCR, Format.clearBit(getReg(SSCR), Sscr_SSD_pos));
+        regValue = shadowRegisterSets[getSscrCSS()];
     }
 
 
@@ -960,13 +973,32 @@ public class TxCPUState extends CPUState {
     }
 
 
+    /** This method returns the current shadow register set */
     public int getSscrCSS() {
-        return (getReg(SSCR) & Sscr_CSS_mask) >>> Sscr_CSS_pos;
+        return (getReg(SSCR) & Sscr_CSS_mask) /*>>> Sscr_CSS_pos*/;
     }
 
-    public void setSscrCSS(int statusCSS) {
-        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (statusCSS << Sscr_CSS_pos));
+    /** This method sets the CSS field and switches the current shadow register set accordingly */
+    public void setSscrCSS(int css) {
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (css /*<< Sscr_CSS_pos*/));
+        regValue = shadowRegisterSets[css];
     }
+
+    /** This method moves CSS to PSS and switches to the given CSS */
+    public void pushSscrCSS(int css) {
+        if (!isSscrSSDSet()) {
+            setSscrPSS(getSscrCSS());
+            setSscrCSS(css);
+        }
+    }
+
+    /** This method moves back CSS from PSS and switches back to the old CSS */
+    public void popSscrCSS() {
+        if (!isSscrSSDSet()) {
+            setSscrCSS(getSscrPSS());
+        }
+    }
+
 
     public String toString() {
         String registers = "";
