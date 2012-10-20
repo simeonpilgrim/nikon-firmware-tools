@@ -6,6 +6,9 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.disassembly.WriteListenerRegister32;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.Type;
+import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 
 import java.util.Set;
 
@@ -286,10 +289,11 @@ public class TxCPUState extends CPUState {
 
     public boolean is16bitIsaMode = false;
 
+    TxInterruptController interruptController = null;
+
     // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
     private Register32 cp1Condition = new Register32(0);
     private int numCp1ConditionFlags = 8;
-
 
     /**
      * Constructor
@@ -377,11 +381,12 @@ public class TxCPUState extends CPUState {
             }
         }
 
-        // Finally, IER register (in all register sets) is special because it toggles the IE bit
-        // Create one
+        // Finally, create special registers with listeners:
+
+        // IER register (in all register sets) is special because it toggles the IE bit
         shadowRegisterSets[0][IER] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
             @Override
-            public void onWrite(int newValue) {
+            public void afterWrite(int newValue) {
                 if (newValue == 0) {
                     clearStatusIE();
                 }
@@ -390,8 +395,27 @@ public class TxCPUState extends CPUState {
                 }
             }
         });
-        // And point all sets to it
+
+        // Status register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Status] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+
+        // Cause register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Cause] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+
+        // And point all sets to them
         for (int registerSet = 1; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][Status] = shadowRegisterSets[0][Status];
+            shadowRegisterSets[registerSet][Cause] = shadowRegisterSets[0][Cause];
             shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
         }
 
@@ -404,11 +428,6 @@ public class TxCPUState extends CPUState {
         setSscrSSD();
         setReg(Debug, 0x00010000);
         setPc(RESET_ADDRESS);
-    }
-
-    @Override
-    public boolean accepts(InterruptRequest interruptRequest) {
-        return false;  //TODO
     }
 
     public void clear() {
@@ -997,6 +1016,32 @@ public class TxCPUState extends CPUState {
         if (!isSscrSSDSet()) {
             setSscrCSS(getSscrPSS());
         }
+    }
+
+
+    // -------------------------  Interrupt related methods  ---------------------------
+
+    /**
+     * This is needed because setting CPU registers can cause a software interrupt
+     * @param interruptController
+     */
+    public void setInterruptController(TxInterruptController interruptController) {
+        this.interruptController = interruptController;
+    }
+    /**
+     * if Status<IM>[1:0] == 1 and Cause<IP>[1:0] and Status<IE> == 1, generate a software interrupt request
+     */
+    private void checkSoftwareInterruptGeneration() {
+        if (((getStatusIM() & 0b11) == 1) && ((getCauseIP() & 0b11) == 1) & (isStatusIESet())) {
+            if (interruptController != null) {
+                interruptController.request(new TxInterruptRequest(Type.SOFTWARE_INTERRUPT));
+            }
+        }
+    }
+
+    @Override
+    public boolean accepts(InterruptRequest interruptRequest) {
+        return !isStatusERLSet() && !isStatusEXLSet() && (getPowerMode() == PowerMode.RUN) ;
     }
 
 

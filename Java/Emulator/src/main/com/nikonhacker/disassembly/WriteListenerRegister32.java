@@ -8,13 +8,13 @@ public class WriteListenerRegister32 extends Register32{
     }
 
     public void setValue(int value) {
-        writeListener.onWrite(value);
         super.setValue(value);
+        writeListener.afterWrite(value);
     }
 
 
     public interface WriteListener {
-        public void onWrite(int newValue);
+        public void afterWrite(int newValue);
     }
 
 }
