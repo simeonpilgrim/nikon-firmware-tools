@@ -3630,7 +3630,7 @@ public class TxInstructionSet
     }
 
     public static Instruction getJalInstructionForStatement(int binaryStatement)  throws DisassemblyException {
-        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+        if ((binaryStatement & 0b00000100_00000000_00000000_00000000) == 0) {
             return jalInstruction;
         }
         else {
@@ -3639,7 +3639,7 @@ public class TxInstructionSet
     }
 
     public static Instruction getMinMaxInstructionForStatement(int binaryStatement) {
-        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+        if ((binaryStatement & 0b00000100_00000000_00000000_00000000) == 0) {
             return maxInstruction;
         }
         else {
@@ -3648,7 +3648,7 @@ public class TxInstructionSet
     }
 
     public static Instruction getBs1fBfinsInstructionForStatement(int binaryStatement) {
-        if ((binaryStatement & 0b00000100000000000000000000000000) == 0) {
+        if ((binaryStatement & 0b00000100_00000000_00000000_00000000) == 0) {
             return bfinsInstruction;
         }
         else {
@@ -3965,304 +3965,304 @@ public class TxInstructionSet
 
         // Now patch with defined 16-bit instruction and operand combinations
         //                map                , encoding          , mask              , instruction
-        expandInstruction(opcode16Map,         0b1110000000000000, 0b1111100010000011, ac0iuInstruction);
+        expandInstruction(opcode16Map,         0b11100000_00000000, 0b11111000_10000011, ac0iuInstruction);
 
-        expandInstruction(opcode16Map,         0b0110011000000000, 0b1111111100000000, addiufp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0110011000000000, 0b1111111111100000, addiufpInstruction);
+        expandInstruction(opcode16Map,         0b01100110_00000000, 0b11111111_00000000, addiufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01100110_00000000, 0b11111111_11100000, addiufpInstruction);
 
-        expandInstruction(opcode16Map,         0b0100100000000000, 0b1111100000000000, addiu8Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0100100000000000, 0b1111100011100000, addiu8Instruction);
+        expandInstruction(opcode16Map,         0b01001000_00000000, 0b11111000_00000000, addiu8Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01001000_00000000, 0b11111000_11100000, addiu8Instruction);
 
-        expandInstruction(opcode16Map,         0b0000100000000000, 0b1111100000000000, addiupc16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0000100000000000, 0b1111100011100000, addiupcInstruction);
+        expandInstruction(opcode16Map,         0b00001000_00000000, 0b11111000_00000000, addiupc16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00001000_00000000, 0b11111000_11100000, addiupcInstruction);
 
-        expandInstruction(opcode16Map,         0b0000000000000000, 0b1111100000000000, addiusp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0000000000000000, 0b1111100011100000, addiuspInstruction);
+        expandInstruction(opcode16Map,         0b00000000_00000000, 0b11111000_00000000, addiusp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00000000_00000000, 0b11111000_11100000, addiuspInstruction);
 
-        expandInstruction(opcode16Map,         0b0100000000000000, 0b1111100000010000, addiuInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0100000000000000, 0b1111100000010000, addiuInstruction);
+        expandInstruction(opcode16Map,         0b01000000_00000000, 0b11111000_00010000, addiuInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01000000_00000000, 0b11111000_00010000, addiuInstruction);
 
-        expandInstruction(opcode16Map,         0b0110001100000000, 0b1111111100000000, adjspInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0110001100000000, 0b1111111111100000, adjspInstruction);
+        expandInstruction(opcode16Map,         0b01100011_00000000, 0b11111111_00000000, adjspInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01100011_00000000, 0b11111111_11100000, adjspInstruction);
 
 /*
-        expandInstruction(extendedOpcode16Map, 0b0100100001000000, 0b1111100011100000, addmiuInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b01001000_01000000, 0b11111000_11100000, addmiuInstruction); // incl with $r0
 */
 
-        expandInstruction(opcode16Map,         0b1110000000000001, 0b1111100000000011, adduInstruction);
+        expandInstruction(opcode16Map,         0b11100000_00000001, 0b11111000_00000011, adduInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001100, 0b1111100000011111, andInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001100, 0b11111000_00011111, andInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100010000000, 0b1111100011100000, andiInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01001000_10000000, 0b11111000_11100000, andiInstruction);
 
-        expandInstruction(opcode16Map,         0b0001000000000000, 0b1111100000000000, bInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0001000000000000, 0b1111111111100000, bInstruction);
+        expandInstruction(opcode16Map,         0b00010000_00000000, 0b11111000_00000000, bInstruction);
+        expandInstruction(extendedOpcode16Map, 0b00010000_00000000, 0b11111111_11100000, bInstruction);
 
-        expandInstruction(opcode16Map,         0b1111110000000000, 0b1111111100000000, bal16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1111110000000000, 0b1111111111100000, bal16Instruction);
+        expandInstruction(opcode16Map,         0b11111100_00000000, 0b11111111_00000000, bal16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11111100_00000000, 0b11111111_11100000, bal16Instruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1111100100000000, 0b1111111100000000, bclrInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b11111001_00000000, 0b11111111_00000000, bclrInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111100100000000, 0b1111111100000000, bclrfpInstruction);
+        expandInstruction(opcode16Map,         0b11111001_00000000, 0b11111111_00000000, bclrfpInstruction);
 
-        expandInstruction(opcode16Map,         0b0010000000000000, 0b1111100000000000, beqz16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010000000000000, 0b1111100011100000, beqz16Instruction);
+        expandInstruction(opcode16Map,         0b00100000_00000000, 0b11111000_00000000, beqz16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00100000_00000000, 0b11111000_11100000, beqz16Instruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1111110100000000, 0b1111111100000000, bextInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b11111101_00000000, 0b11111111_00000000, bextInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111110100000000, 0b1111111100000000, bextfpInstruction);
+        expandInstruction(opcode16Map,         0b11111101_00000000, 0b11111111_00000000, bextfpInstruction);
 
         /* bs1f and bfins instructions differ in the upper 16-bits and are processed separately */
 
-        expandInstruction(extendedOpcode16Map, 0b1111101100000000, 0b1111111100000000, binsInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b11111011_00000000, 0b11111111_00000000, binsInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111101100000000, 0b1111111100000000, binsfpInstruction);
+        expandInstruction(opcode16Map,         0b11111011_00000000, 0b11111111_00000000, binsfpInstruction);
 
-        expandInstruction(opcode16Map,         0b0010100000000000, 0b1111100000000000, bnez16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0010100000000000, 0b1111100011100000, bnez16Instruction);
+        expandInstruction(opcode16Map,         0b00101000_00000000, 0b11111000_00000000, bnez16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00101000_00000000, 0b11111000_11100000, bnez16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000101, 0b1111100000011111, breakInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000101, 0b11111000_00011111, breakInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1111101000000000, 0b1111111100000000, bsetInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b11111010_00000000, 0b11111111_00000000, bsetInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111101000000000, 0b1111111100000000, bsetfpInstruction);
+        expandInstruction(opcode16Map,         0b11111010_00000000, 0b11111111_00000000, bsetfpInstruction);
 
-        expandInstruction(opcode16Map,         0b0110000000000000, 0b1111111100000000, bteqzInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0110000000000000, 0b1111111111100000, bteqzInstruction);
+        expandInstruction(opcode16Map,         0b01100000_00000000, 0b11111111_00000000, bteqzInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01100000_00000000, 0b11111111_11100000, bteqzInstruction);
 
-        expandInstruction(opcode16Map,         0b0110000100000000, 0b1111111100000000, btnezInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0110000100000000, 0b1111111111100000, btnezInstruction);
+        expandInstruction(opcode16Map,         0b01100001_00000000, 0b11111111_00000000, btnezInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01100001_00000000, 0b11111111_11100000, btnezInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1111100000000000, 0b1111111100000000, btstInstruction); // incl with $r0
+        expandInstruction(extendedOpcode16Map, 0b11111000_00000000, 0b11111111_00000000, btstInstruction); // incl with $r0
 
-        expandInstruction(opcode16Map,         0b1111100000000000, 0b1111111100000000, btstfpInstruction);
+        expandInstruction(opcode16Map,         0b11111000_00000000, 0b11111111_00000000, btstfpInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001010, 0b1111100000011111, cmpInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001010, 0b11111000_00011111, cmpInstruction);
 
-        expandInstruction(opcode16Map,         0b0111000000000000, 0b1111100000000000, cmpiInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0111000000000000, 0b1111100011100000, cmpiInstruction);
+        expandInstruction(opcode16Map,         0b01110000_00000000, 0b11111000_00000000, cmpiInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01110000_00000000, 0b11111000_11100000, cmpiInstruction);
 
 /*
-        expandInstruction(extendedOpcode16Map, 0b1110100000011111, 0b1111111111111111, deretInstruction); // + constraints on extended part
+        expandInstruction(extendedOpcode16Map, 0b11101000_00011111, 0b11111111_11111111, deretInstruction); // + constraints on extended part
 */
         /* di is defined later as a patch on sll5 when sa == 0 */
 
-        expandInstruction(opcode16Map,         0b1110100000011010, 0b1111100000011111, divInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011010, 0b11111000_00011111, divInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011110, 0b1111100000011111, diveInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011110, 0b11111000_00011111, diveInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011111, 0b1111100000011111, diveuInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011111, 0b11111000_00011111, diveuInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011011, 0b1111100000011111, divuInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011011, 0b11111000_00011111, divuInstruction);
 
         /* ei is defined later as a patch on sll5 when sa == 0 */
 
-        expandInstruction(extendedOpcode16Map, 0b1110100000011000, 0b1111111111111111, eretInstruction); // + constraints on extended part ?
+        expandInstruction(extendedOpcode16Map, 0b11101000_00011000, 0b11111111_11111111, eretInstruction); // + constraints on extended part ?
 
-        expandInstruction(opcode16Map,         0b1110100001000000, 0b1111100011111111, jalr16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_01000000, 0b11111000_11111111, jalr16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100011000000, 0b1111100011111111, jalrcInstruction);
+        expandInstruction(opcode16Map,         0b11101000_11000000, 0b11111000_11111111, jalrcInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000000, 0b1111100011111111, jrInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000000, 0b11111000_11111111, jrInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000100000, 0b1111111111111111, jrraInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00100000, 0b11111111_11111111, jrraInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100010100000, 0b1111111111111111, jrcraInstruction);
+        expandInstruction(opcode16Map,         0b11101000_10100000, 0b11111111_11111111, jrcraInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100010000000, 0b1111100011111111, jrcInstruction);
+        expandInstruction(opcode16Map,         0b11101000_10000000, 0b11111000_11111111, jrcInstruction);
 
-        expandInstruction(opcode16Map,         0b1000000000000000, 0b1111100000000000, lb16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1000000000000000, 0b1111100000000000, lbInstruction);
+        expandInstruction(opcode16Map,         0b10000000_00000000, 0b11111000_00000000, lb16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10000000_00000000, 0b11111000_00000000, lbInstruction);
 
-        expandInstruction(opcode16Map,         0b1010000000000000, 0b1111100000000000, lbu16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1010000000000000, 0b1111100000000000, lbuInstruction);
+        expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10100000_00000000, 0b11111000_00000000, lbuInstruction);
 
-        expandInstruction(opcode16Map,         0b0011100000000000, 0b1111100010000000, lbufp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0011100000000000, 0b1111100011100000, lbufpInstruction);
+        expandInstruction(opcode16Map,         0b00111000_00000000, 0b11111000_10000000, lbufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00111000_00000000, 0b11111000_11100000, lbufpInstruction);
 
-        expandInstruction(opcode16Map,         0b0111100000000000, 0b1111100010000000, lbusp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0111100000000000, 0b1111100011100000, lbuspInstruction);
+        expandInstruction(opcode16Map,         0b01111000_00000000, 0b11111000_10000000, lbusp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01111000_00000000, 0b11111000_11100000, lbuspInstruction);
 
-        expandInstruction(opcode16Map,         0b1000100000000000, 0b1111100000000000, lh16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1000100000000000, 0b1111100000000000, lhInstruction);
+        expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10001000_00000000, 0b11111000_00000000, lhInstruction);
 
-        expandInstruction(opcode16Map,         0b1010100000000000, 0b1111100000000000, lhu16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1010100000000000, 0b1111100000000000, lhuInstruction);
+        expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10101000_00000000, 0b11111000_00000000, lhuInstruction);
 
-        expandInstruction(opcode16Map,         0b1011100000000001, 0b1111100010000001, lhufp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100000000001, 0b1111100011100001, lhufpInstruction);
+        expandInstruction(opcode16Map,         0b10111000_00000001, 0b11111000_10000001, lhufp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10111000_00000001, 0b11111000_11100001, lhufpInstruction);
 
-        expandInstruction(opcode16Map,         0b1011100000000000, 0b1111100010000001, lhusp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100000000000, 0b1111100011100001, lhuspInstruction);
+        expandInstruction(opcode16Map,         0b10111000_00000000, 0b11111000_10000001, lhusp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10111000_00000000, 0b11111000_11100001, lhuspInstruction);
 
 
-        expandInstruction(opcode16Map,         0b0110100000000000, 0b1111100000000000, liInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0110100000000000, 0b1111100011100000, liInstruction);
+        expandInstruction(opcode16Map,         0b01101000_00000000, 0b11111000_00000000, liInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01101000_00000000, 0b11111000_11100000, liInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100011100000, 0b1111100011100000, luiInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01001000_11100000, 0b11111000_11100000, luiInstruction);
 
-        expandInstruction(opcode16Map,         0b1001100000000000, 0b1111100000000000, lw16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1001100000000000, 0b1111100000000000, lwInstruction);
+        expandInstruction(opcode16Map,         0b10011000_00000000, 0b11111000_00000000, lw16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10011000_00000000, 0b11111000_00000000, lwInstruction);
 
-        expandInstruction(opcode16Map,         0b1111111000000000, 0b1111111100000000, lwfp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1111111000000000, 0b1111111100000000, lwfpInstruction);
+        expandInstruction(opcode16Map,         0b11111110_00000000, 0b11111111_00000000, lwfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11111110_00000000, 0b11111111_00000000, lwfpInstruction);
 
-        expandInstruction(opcode16Map,         0b1001000000000000, 0b1111100000000000, lwsp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1001000000000000, 0b1111100011100000, lwspInstruction);
+        expandInstruction(opcode16Map,         0b10010000_00000000, 0b11111000_00000000, lwsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10010000_00000000, 0b11111000_11100000, lwspInstruction);
 
-        expandInstruction(opcode16Map,         0b1011000000000000, 0b1111100000000000, lwpc16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011000000000000, 0b1111100011100000, lwpcInstruction);
+        expandInstruction(opcode16Map,         0b10110000_00000000, 0b11111000_00000000, lwpc16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10110000_00000000, 0b11111000_11100000, lwpcInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010110, 0b1111100000011111, madd16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00010110, 0b11111000_00011111, madd16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010111, 0b1111100000011111, maddu16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00010111, 0b11111000_00011111, maddu16Instruction);
 
         /* min and max instructions look like extended breaks. They differ in the upper 16-bits and are processed separately */
 
-        expandInstruction(opcode16Map,         0b0011000000000001, 0b1111100000000111, mfc0Instruction);
-        expandInstruction(opcode16Map,         0b0011000000000101, 0b1111100000000111, mtc0Instruction);
+        expandInstruction(opcode16Map,         0b00110000_00000001, 0b11111000_00000111, mfc0Instruction);
+        expandInstruction(opcode16Map,         0b00110000_00000101, 0b11111000_00000111, mtc0Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010000, 0b1111100011111111, mfhiInstruction);
-        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100011111111, mthiInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00010000, 0b11111000_11111111, mfhiInstruction);
+        expandInstruction(opcode16Map,         0b11100000_00000010, 0b11111000_11111111, mthiInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010010, 0b1111100011111111, mfloInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00010010, 0b11111000_11111111, mfloInstruction);
 
         /* mtlo is defined later as a patch on srl when sa == 0 */
 
-        expandInstruction(opcode16Map,         0b1110110000001000, 0b1111110000011111, movefpInstruction);
+        expandInstruction(opcode16Map,         0b11101100_00001000, 0b11111100_00011111, movefpInstruction);
 
-        expandInstruction(opcode16Map,         0b0110011100000000, 0b1111111100000000, moveR32Instruction);
+        expandInstruction(opcode16Map,         0b01100111_00000000, 0b11111111_00000000, moveR32Instruction);
 
-        expandInstruction(opcode16Map,         0b0110010100000000, 0b1111111100000000, move32RInstruction);
+        expandInstruction(opcode16Map,         0b01100101_00000000, 0b11111111_00000000, move32RInstruction);
         if (outputOptions.contains(OutputOption.DMOV)) {
             // Patch : replace "move $zero, $xx" > "nop"
-            expandInstruction(opcode16Map,     0b0110010100000000, 0b1111111111111000, nopInstruction);
+            expandInstruction(opcode16Map,     0b01100101_00000000, 0b11111111_11111000, nopInstruction);
         }
-        expandInstruction(opcode16Map,         0b1110100000011100, 0b1111100000011111, multInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011100, 0b11111000_00011111, multInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011000, 0b1111100000011111, mult16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00011000, 0b11111000_00011111, mult16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011001, 0b1111100000011111, multu16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00011001, 0b11111000_00011111, multu16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000011101, 0b1111100000011111, multuInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00011101, 0b11111000_00011111, multuInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001011, 0b1111100000011111, negInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001011, 0b11111000_00011111, negInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001111, 0b1111100000011111, notInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001111, 0b11111000_00011111, notInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001101, 0b1111100000011111, orInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001101, 0b11111000_00011111, orInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100010100000, 0b1111100011100000, oriInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01001000_10100000, 0b11111000_11100000, oriInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010100, 0b1111100000011111, saddInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00010100, 0b11111000_00011111, saddInstruction);
 
-        expandInstruction(opcode16Map,         0b0110010000000000, 0b1111111110000000, restoreInstruction);
+        expandInstruction(opcode16Map,         0b01100100_00000000, 0b11111111_10000000, restoreInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0110010000000000, 0b1111111110000000, restoreInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01100100_00000000, 0b11111111_10000000, restoreInstruction);
 
-        expandInstruction(opcode16Map,         0b0110010010000000, 0b1111111110000000, saveInstruction);
+        expandInstruction(opcode16Map,         0b01100100_10000000, 0b11111111_10000000, saveInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0110010010000000, 0b1111111110000000, saveInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01100100_10000000, 0b11111111_10000000, saveInstruction);
 
-        expandInstruction(opcode16Map,         0b1100000000000000, 0b1111100000000000, sb16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1100000000000000, 0b1111100000000000, sbInstruction);
+        expandInstruction(opcode16Map,         0b11000000_00000000, 0b11111000_00000000, sb16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11000000_00000000, 0b11111000_00000000, sbInstruction);
 
-        expandInstruction(opcode16Map,         0b0011100010000000, 0b1111100010000000, sbfp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0011100010000000, 0b1111100011100000, sbfpInstruction);
+        expandInstruction(opcode16Map,         0b00111000_10000000, 0b11111000_10000000, sbfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b00111000_10000000, 0b11111000_11100000, sbfpInstruction);
 
-        expandInstruction(opcode16Map,         0b0111100010000000, 0b1111100010000000, sbsp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0111100010000000, 0b1111100011100000, sbspInstruction);
+        expandInstruction(opcode16Map,         0b01111000_10000000, 0b11111000_10000000, sbsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01111000_10000000, 0b11111000_11100000, sbspInstruction);
 
-        expandInstruction(opcode16Map,         0b1100100000000000, 0b1111100000000000, sh16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1100100000000000, 0b1111100000000000, shInstruction);
+        expandInstruction(opcode16Map,         0b11001000_00000000, 0b11111000_00000000, sh16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11001000_00000000, 0b11111000_00000000, shInstruction);
 
-        expandInstruction(opcode16Map,         0b1011100010000001, 0b1111100010000001, shfp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100010000001, 0b1111100011100001, shfpInstruction);
+        expandInstruction(opcode16Map,         0b10111000_10000001, 0b11111000_10000001, shfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10111000_10000001, 0b11111000_11100001, shfpInstruction);
 
-        expandInstruction(opcode16Map,         0b1011100010000000, 0b1111100010000001, shsp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1011100010000000, 0b1111100011100001, shspInstruction);
+        expandInstruction(opcode16Map,         0b10111000_10000000, 0b11111000_10000001, shsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b10111000_10000000, 0b11111000_11100001, shspInstruction);
 
-        expandInstruction(opcode16Map,         0b1101100000000000, 0b1111100000000000, sw16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1101100000000000, 0b1111100000000000, swInstruction);
+        expandInstruction(opcode16Map,         0b11011000_00000000, 0b11111000_00000000, sw16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11011000_00000000, 0b11111000_00000000, swInstruction);
 
-        expandInstruction(opcode16Map,         0b1111111100000000, 0b1111111100000000, swfp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1111111100000000, 0b1111111100000000, swfpInstruction);
+        expandInstruction(opcode16Map,         0b11111111_00000000, 0b11111111_00000000, swfp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11111111_00000000, 0b11111111_00000000, swfpInstruction);
 
-        expandInstruction(opcode16Map,         0b1101000000000000, 0b1111100000000000, swsp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b1101000000000000, 0b1111100011100000, swspInstruction);
+        expandInstruction(opcode16Map,         0b11010000_00000000, 0b11111000_00000000, swsp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b11010000_00000000, 0b11111000_11100000, swspInstruction);
 
-        expandInstruction(opcode16Map,         0b0110001000000000, 0b1111111100000000, swrasp16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0110001000000000, 0b1111111111100000, swraspInstruction);
+        expandInstruction(opcode16Map,         0b01100010_00000000, 0b11111111_00000000, swrasp16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01100010_00000000, 0b11111111_11100000, swraspInstruction);
 
 /*
         // if EJTAG
-        expandInstruction(opcode16Map,         0b1110100000000001, 0b1111100000011111, sdbbpInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000001, 0b11111000_00011111, sdbbpInstruction);
 */
 
-        expandInstruction(opcode16Map,         0b1110100010010001, 0b1111100011111111, sebInstruction);
+        expandInstruction(opcode16Map,         0b11101000_10010001, 0b11111000_11111111, sebInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100010110001, 0b1111100011111111, sehInstruction);
+        expandInstruction(opcode16Map,         0b11101000_10110001, 0b11111000_11111111, sehInstruction);
 
-        expandInstruction(opcode16Map,         0b0011000000000000, 0b1111100000000011, sllInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0011000000000000, 0b1111100000011111, sllInstruction);
+        expandInstruction(opcode16Map,         0b00110000_00000000, 0b11111000_00000011, sllInstruction);
+        expandInstruction(extendedOpcode16Map, 0b00110000_00000000, 0b11111000_00011111, sllInstruction);
 
-        expandInstruction(opcode16Map,         0b1110000010000000, 0b1111100010000011, sll5Instruction);
+        expandInstruction(opcode16Map,         0b11100000_10000000, 0b11111000_10000011, sll5Instruction);
         // all values are valid for the sa field, except 00000. So override them with unknown:
-        expandInstruction(opcode16Map,         0b1110000010000000, 0b1111100011111111, unknownInstruction);
+        expandInstruction(opcode16Map,         0b11100000_10000000, 0b11111000_11111111, unknownInstruction);
         // Then patch those that have other meanings (di, ei, ...):
-        expandInstruction(opcode16Map,         0b1110000010000000, 0b1111111111111111, diInstruction);
-        expandInstruction(opcode16Map,         0b1110000110000000, 0b1111111111111111, eiInstruction);
+        expandInstruction(opcode16Map,         0b11100000_10000000, 0b11111111_11111111, diInstruction);
+        expandInstruction(opcode16Map,         0b11100001_10000000, 0b11111111_11111111, eiInstruction);
         // end patches
 
-        expandInstruction(opcode16Map,         0b1110100000000100, 0b1111100000011111, sllvInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000100, 0b11111000_00011111, sllvInstruction);
 
-        expandInstruction(opcode16Map,         0b0011000000000011, 0b1111100000000011, sraInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0011000000000011, 0b1111100000011111, sraInstruction);
+        expandInstruction(opcode16Map,         0b00110000_00000011, 0b11111000_00000011, sraInstruction);
+        expandInstruction(extendedOpcode16Map, 0b00110000_00000011, 0b11111000_00011111, sraInstruction);
 
-        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100010000011, sra5Instruction);
+        expandInstruction(opcode16Map,         0b11100000_00000010, 0b11111000_10000011, sra5Instruction);
         // all values are valid for the sa field, except 00000. So override them with unknown:
-        expandInstruction(opcode16Map,         0b1110000000000010, 0b1111100011111111, unknownInstruction);
+        expandInstruction(opcode16Map,         0b11100000_00000010, 0b11111000_11111111, unknownInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000111, 0b1111100000011111, sravInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000111, 0b11111000_00011111, sravInstruction);
 
-        expandInstruction(opcode16Map,         0b0011000000000010, 0b1111100000000011, srlInstruction);
-        expandInstruction(extendedOpcode16Map, 0b0011000000000010, 0b1111100000011111, srlInstruction);
+        expandInstruction(opcode16Map,         0b00110000_00000010, 0b11111000_00000011, srlInstruction);
+        expandInstruction(extendedOpcode16Map, 0b00110000_00000010, 0b11111000_00011111, srlInstruction);
 
-        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100010000011, srl5Instruction);
+        expandInstruction(opcode16Map,         0b11100000_10000010, 0b11111000_10000011, srl5Instruction);
         // all values are valid for the sa field, except 00000, which is mtlo. So patch it:
-        expandInstruction(opcode16Map,         0b1110000010000010, 0b1111100011111111, mtloInstruction);
+        expandInstruction(opcode16Map,         0b11100000_10000010, 0b11111000_11111111, mtloInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000110, 0b1111100000011111, srlvInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00000110, 0b11111000_00011111, srlvInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000010, 0b1111100000011111, slt16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00000010, 0b11111000_00011111, slt16Instruction);
 
-        expandInstruction(opcode16Map,         0b0101000000000000, 0b1111100000000000, slti16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0101000000000000, 0b1111100011100000, slti16eInstruction);
+        expandInstruction(opcode16Map,         0b01010000_00000000, 0b11111000_00000000, slti16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01010000_00000000, 0b11111000_11100000, slti16eInstruction);
 
-        expandInstruction(opcode16Map,         0b0101100000000000, 0b1111100000000000, sltiu16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b0101100000000000, 0b1111100011100000, sltiu16eInstruction);
+        expandInstruction(opcode16Map,         0b01011000_00000000, 0b11111000_00000000, sltiu16Instruction);
+        expandInstruction(extendedOpcode16Map, 0b01011000_00000000, 0b11111000_11100000, sltiu16eInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000000011, 0b1111100000011111, sltu16Instruction);
+        expandInstruction(opcode16Map,         0b11101000_00000011, 0b11111000_00011111, sltu16Instruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010101, 0b1111100000011111, ssubInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00010101, 0b11111000_00011111, ssubInstruction);
 
-        expandInstruction(opcode16Map,         0b1110000000000011, 0b1111100000000011, subuInstruction);
+        expandInstruction(opcode16Map,         0b11100000_00000011, 0b11111000_00000011, subuInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b1110100000001111, 0b1111111111111111, syncInstruction);
+        expandInstruction(extendedOpcode16Map, 0b11101000_00001111, 0b11111111_11111111, syncInstruction);
 
 /*
         expandInstruction(extendedOpcode16Map, 0b1110100000001100, 0b1111100000011111, syscallInstruction);
 */
 
-        expandInstruction(extendedOpcode16Map, 0b1110100000000000, 0b1111111111111111, waitInstruction);
+        expandInstruction(extendedOpcode16Map, 0b11101000_00000000, 0b11111111_11111111, waitInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000001110, 0b1111100000011111, xorInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00001110, 0b11111000_00011111, xorInstruction);
 
-        expandInstruction(extendedOpcode16Map, 0b0100100011000000, 0b1111100011100000, xoriInstruction);
+        expandInstruction(extendedOpcode16Map, 0b01001000_11000000, 0b11111000_11100000, xoriInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000010001, 0b1111100011111111, zebInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00010001, 0b11111000_11111111, zebInstruction);
 
-        expandInstruction(opcode16Map,         0b1110100000110001, 0b1111100011111111, zehInstruction);
+        expandInstruction(opcode16Map,         0b11101000_00110001, 0b11111000_11111111, zehInstruction);
 
 
         // ----------------- 32-bits -----------------
