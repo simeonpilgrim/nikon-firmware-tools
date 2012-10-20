@@ -113,7 +113,8 @@ public class TxEmulator extends Emulator {
                                 }
                                 interruptController.removeRequest(interruptRequest);
                                 // TODO : pc or address of branch instruction if in delay slot !
-                                processInterrupt((TxInterruptRequest) interruptRequest, txCpuState.pc);
+                                // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
+                                processInterrupt((TxInterruptRequest) interruptRequest, txCpuState.getPc());
                             }
                         }
                     }
@@ -199,6 +200,8 @@ public class TxEmulator extends Emulator {
                 txCPUState.setStatusERL();
                 txCPUState.clearStatusRP();
                 txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+                // set PSS to CSS without changing CSS
+                txCPUState.setSscrPSS(txCPUState.getSscrCSS());
 
                 // Branch to reset routine
                 txCPUState.setPc(TxCPUState.RESET_ADDRESS);
@@ -206,10 +209,13 @@ public class TxEmulator extends Emulator {
             case NMI:
                 txCPUState.setStatusNMI();
                 txCPUState.setStatusERL();
-                // hardware spec section 6.2.2.1 says BD should be modified but table 6.3 section 6.1.3.3 says it should not.
-                // architecture spec also says it shouldn't
+                // hardware spec section 6.2.2.1 says BD should be modified in this case,
+                // but table 6.3 section 6.1.3.3 says it should not.
+                // Architecture spec also says it shouldn't, so...
                 // txCPUState.setCauseBD(context.inDelaySlot);
                 txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+                // set PSS to CSS without changing CSS
+                txCPUState.setSscrPSS(txCPUState.getSscrCSS());
 
                 // Branch to reset routine
                 txCPUState.setPc(TxCPUState.RESET_ADDRESS);
@@ -228,6 +234,7 @@ public class TxEmulator extends Emulator {
                 txCPUState.setReg(TxCPUState.EPC, pcToStore);
 
                 if (interruptRequest.getType().isInterrupt()) {
+                    // Interrupt
                     if (!txCPUState.isSscrSSDSet()) {
                         txCPUState.setSscrCSS(interruptRequest.getLevel());
                     }
@@ -254,8 +261,14 @@ public class TxEmulator extends Emulator {
                             txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
                         }
                     }
+
+                    // TODO ?? Section 6.1.3.6 (2) says "The following is required only for a **hardware** interrupt : If the interrupt occurs, its interrupt level is set to ILEV<CSS>."
+
+                    // set CSS to PSS and change CSS
+                    txCPUState.pushSscrCSS(interruptRequest.getLevel());
                 }
                 else {
+                    // Other Exceptions
                     if (interruptRequest.getType() == Type.COPROCESSOR_UNUSABLE_EXCEPTION) {
                         txCPUState.setCauseCE(interruptRequest.getCoprocessorNumber());
                     }
@@ -274,9 +287,10 @@ public class TxEmulator extends Emulator {
                         // BEV=0
                         txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
                     }
+                    // set PSS to CSS without changing CSS
+                    txCPUState.setSscrPSS(txCPUState.getSscrCSS());
                 }
         }
-        txCPUState.pushSscrCSS(interruptRequest.getLevel());
     }
 
 }
