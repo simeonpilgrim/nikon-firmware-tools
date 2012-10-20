@@ -9,8 +9,6 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 public class TxIoListener implements IoActivityListener {
     public static final int IO_PAGE = 0xFF00;
 
-    public static final int REGISTER_IVR     =    0xFF00_1080; // Interrupt vector register         
-    public static final int REGISTER_ILEV    =    0xFF00_110C; // Interrupt level register
     public static final int REGISTER_IMC00   =    0xFF00_1000; // Interrupt mode control register 00
     public static final int REGISTER_IMC01   =    0xFF00_1004; // Interrupt mode control register 01
     public static final int REGISTER_IMC02   =    0xFF00_1008; // Interrupt mode control register 02
@@ -39,6 +37,17 @@ public class TxIoListener implements IoActivityListener {
     public static final int REGISTER_IMC19   =    0xFF00_1064; // Interrupt mode control register 19
     public static final int REGISTER_INTCLR  =    0xFF00_10C0; // Interrupt request clear register  
     public static final int REGISTER_DREQFLG =    0xFF00_10C4; // DMA request clear flag register   
+    public static final int REGISTER_IVR     =    0xFF00_1080; // Interrupt vector register
+    public static final int REGISTER_ILEV    =    0xFF00_110C; // Interrupt level register
+
+    public static final int REGISTER_ICRCG   =    0xFF00_1714; // CG interrupt request clear register
+    public static final int REGISTER_NMIFLG  =    0xFF00_1718; // NMI flag register
+    public static final int REGISTER_RSTFLG  =    0xFF00_171C; // Reset flag register
+    public static final int REGISTER_IMCGA   =    0xFF00_1720; // CG interrupt mode control register A
+    public static final int REGISTER_IMCGB   =    0xFF00_1724; // CG interrupt mode control register A
+    public static final int REGISTER_IMCGC   =    0xFF00_1728; // CG interrupt mode control register A
+    public static final int REGISTER_IMCGD   =    0xFF00_172C; // CG interrupt mode control register A
+    public static final int REGISTER_IMCGE   =    0xFF00_1730; // CG interrupt mode control register A
 
 
     private final TxCPUState cpuState;
