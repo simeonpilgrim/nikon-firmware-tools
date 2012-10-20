@@ -130,7 +130,7 @@ public class TxCPUState extends CPUState {
     // CP0 register fields
     // Status
     public final static int Status_CU_pos       = 28;
-    public final static int Status_CU_mask      = 0b11110000000000000000000000000000;
+    public final static int Status_CU_mask      = 0b11110000_00000000_00000000_00000000;
     public final static int Status_RP_pos       = 27;
     public final static int Status_FR_pos       = 26;
     public final static int Status_RE_pos       = 25;
@@ -139,9 +139,9 @@ public class TxCPUState extends CPUState {
     public final static int Status_BEV_pos      = 22;
     public final static int Status_NMI_pos      = 19;
     public final static int Status_Impl_pos     = 16;
-    public final static int Status_Impl_mask    = 0b00000000000000110000000000000000;
+    public final static int Status_Impl_mask    = 0b00000000_00000011_00000000_00000000;
     public final static int Status_IM_pos       = 8;
-    public final static int Status_IM_mask      = 0b00000000000000001111111100000000;
+    public final static int Status_IM_mask      = 0b00000000_00000000_11111111_00000000;
     public final static int Status_KX_pos       = 7;
     public final static int Status_SX_pos       = 6;
     public final static int Status_UX_pos       = 5;
@@ -153,19 +153,19 @@ public class TxCPUState extends CPUState {
     // Cause
     public final static int Cause_BD_pos        = 31;
     public final static int Cause_CE_pos        = 28;
-    public final static int Cause_CE_mask       = 0b00110000000000000000000000000000;
+    public final static int Cause_CE_mask       = 0b00110000_00000000_00000000_00000000;
     public final static int Cause_IV_pos        = 23;
     public final static int Cause_WP_pos        = 22;
     public final static int Cause_IP_pos        = 8;
-    public final static int Cause_IP_mask       = 0b00000000000000001111111100000000;
+    public final static int Cause_IP_mask       = 0b00000000_00000000_11111111_00000000;
     public final static int Cause_ExcCode_pos   = 2;
-    public final static int Cause_ExcCode_mask  = 0b00000000000000000000000001111100;
+    public final static int Cause_ExcCode_mask  = 0b00000000_00000000_00000000_01111100;
     // SSCR
     public final static int Sscr_SSD_pos        = 31;
     public final static int Sscr_PSS_pos        = 8;
-    public final static int Sscr_PSS_mask       = 0b00000000000000000000111100000000;
+    public final static int Sscr_PSS_mask       = 0b00000000_00000000_00001111_00000000;
     public final static int Sscr_CSS_pos        = 0;
-    public final static int Sscr_CSS_mask       = 0b00000000000000000000000000001111;
+    public final static int Sscr_CSS_mask       = 0b00000000_00000000_00000000_00001111;
 
     /** This array is used to decode the mfc0 and mtc0 instruction operands
      * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
@@ -617,15 +617,15 @@ public class TxCPUState extends CPUState {
         switch(regNumber) {
             case FIR:
                 //       0000Impl06LW3PDSProcesidRevision
-                return 0b00000000000100010000000000000000;
+                return 0b00000000_00010001_00000000_00000000;
             case FCSR:
                 return getReg(FCSR);
             case FCCR:
-                return ((getReg(FCSR) & 0b11111110000000000000000000000000) >> 24) | ((getReg(FCSR) & 0b00000000100000000000000000000000) >> 23);
+                return ((getReg(FCSR) & 0b11111110_00000000_00000000_00000000) >> 24) | ((getReg(FCSR) & 0b00000000_10000000_00000000_00000000) >> 23);
             case FEXR:
-                return getReg(FCSR) & 0b00000000000000111111000001111100;
+                return getReg(FCSR)   & 0b00000000_00000011_11110000_01111100;
             case FENR:
-                return (getReg(FCSR) & 0b00000000000000000000111110000011) | ((getReg(FCSR) & 0b00000001000000000000000000000000) >> 22);
+                return (getReg(FCSR)  & 0b00000000_00000000_00001111_10000011) | ((getReg(FCSR) & 0b00000001_00000000_00000000_00000000) >> 22);
         }
         throw new RuntimeException("Unknown CP1 register number " + regNumber);
     }
@@ -638,13 +638,13 @@ public class TxCPUState extends CPUState {
                 setReg(FCSR, value);
                 break;
             case FCCR:
-                setReg(FCSR, (getReg(FCSR) & 0b00000001011111111111111111111111) | ((value & 0b11111110) << 24) | ((value & 0b1) << 23));
+                setReg(FCSR, (getReg(FCSR) & 0b00000001_01111111_11111111_11111111) | ((value & 0b11111110) << 24) | ((value & 0b1) << 23));
                 break;
             case FEXR:
-                setReg(FCSR, (getReg(FCSR) & 0b11111111111111000000111110000011) | (value & 0b00000000000000111111000001111100));
+                setReg(FCSR, (getReg(FCSR) & 0b11111111_11111100_00001111_10000011) | (value & 0b00000000_00000011_11110000_01111100));
                 break;
             case FENR:
-                setReg(FCSR, (getReg(FCSR) & 0b11111111111111111111000001111000) | (value & 0b00000000000000000000111110000011) | ((value & 0b100) << 22));
+                setReg(FCSR, (getReg(FCSR) & 0b11111111_11111111_11110000_01111000) | (value & 0b00000000_00000000_00001111_10000011) | ((value & 0b100) << 22));
                 break;
             default:
                 throw new RuntimeException("Unknown CP1 register number " + regNumber);
