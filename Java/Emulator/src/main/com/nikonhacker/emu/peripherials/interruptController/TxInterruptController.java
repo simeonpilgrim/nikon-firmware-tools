@@ -14,7 +14,7 @@ public class TxInterruptController extends AbstractInterruptController implement
     // Register fields
     // Ilev
     public final static int Ilev_Mlev_pos        = 31;
-    public final static int Ilev_Cmask_mask      = 0b00000000000000000000000000000111;
+    public final static int Ilev_Cmask_mask      = 0b00000000_00000000_00000000_00000111;
 
     private Memory memory;
 
@@ -57,7 +57,7 @@ public class TxInterruptController extends AbstractInterruptController implement
     }
 
     public void pushIlevCmask(int cmask) {
-        setIlev(0b10000000000000000000000000000000 | cmask);
+        setIlev(0b10000000_00000000_00000000_00000000 | cmask);
     }
 
 }
