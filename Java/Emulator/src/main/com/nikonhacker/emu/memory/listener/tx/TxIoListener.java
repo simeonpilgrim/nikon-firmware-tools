@@ -108,7 +108,11 @@ public class TxIoListener implements IoActivityListener {
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
         if (addr == REGISTER_ILEV) {
             return interruptController.getIlev();
+        } else if (addr == REGISTER_IVR) {
+            // TODO Until the IVR is read, no hardware interrupt from INTC is accepted (see HW spec section 6.4.1.4)
+            return interruptController.getIvr();
         }
+
         return null;
     }
 
@@ -129,6 +133,8 @@ public class TxIoListener implements IoActivityListener {
     public void onIoStore32(byte[] ioPage, int addr, int value) {
         if (addr == REGISTER_ILEV) {
             interruptController.setIlev(value);
+        } else if (addr == REGISTER_IVR) {
+            interruptController.setIvr(value);
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }

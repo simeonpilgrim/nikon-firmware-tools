@@ -19,6 +19,7 @@ public class TxInterruptController extends AbstractInterruptController implement
     private Memory memory;
 
     private int ilev;
+    private int ivr;
 
     public TxInterruptController(Memory memory) {
         this.memory = memory;
@@ -54,6 +55,14 @@ public class TxInterruptController extends AbstractInterruptController implement
             // MLEV = 0 : shift down
             ilev = ilev >>> 4;
         }
+    }
+
+    public int getIvr() {
+        return ivr;
+    }
+
+    public void setIvr(int ivr) {
+        this.ivr = ivr;
     }
 
     public void pushIlevCmask(int cmask) {
