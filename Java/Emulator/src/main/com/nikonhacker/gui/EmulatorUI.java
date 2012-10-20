@@ -1679,6 +1679,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             };
 
             if (chip == Constants.CHIP_FR) {
+                // FR
+
                 serialInterfaces[chip] = new SerialInterface[]{
                         /** The number of actual serial interfaces is pure speculation. See ExpeedIoListener for more info */
                         new SerialInterface(0, interruptController[chip], 0x1B),
@@ -1698,6 +1700,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 );
             }
             else {
+                // TX
+
+                ((TxCPUState)cpuState[chip]).setInterruptController((TxInterruptController) interruptController[chip]);
+
                 serialInterfaces[chip] = new SerialInterface[]{
 /*
                         new SerialInterface(0, interruptController[chip], 0x1B), //TODO
