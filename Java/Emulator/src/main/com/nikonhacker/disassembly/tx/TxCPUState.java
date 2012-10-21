@@ -342,6 +342,7 @@ public class TxCPUState extends CPUState {
     }
 
     public void setPowerMode(PowerMode powerMode) {
+        // TODO actually halt or restart processor
         this.powerMode = powerMode;
     }
 
@@ -1049,8 +1050,9 @@ public class TxCPUState extends CPUState {
         return !isStatusERLSet()
                 && !isStatusEXLSet()
                 && (getPowerMode() == PowerMode.RUN)
-                // TODO check last paragraph of section 6.5.1.6 : if lower level is higher priority, setting 000 in cMask would *disable* all, right ?
-                && ((TxInterruptRequest)interruptRequest).getLevel() > interruptController.getIlevCmask()
+                // Cfr last paragraph of section 6.5.1.6 : 000 means all interrupts enabled.
+                // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspendzed
+                && (interruptController.getIlevCmask() == 0 || ((TxInterruptRequest)interruptRequest).getLevel() <= interruptController.getIlevCmask())
                 ;
     }
 
