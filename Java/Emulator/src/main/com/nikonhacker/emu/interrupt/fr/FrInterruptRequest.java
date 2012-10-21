@@ -3,7 +3,7 @@ package com.nikonhacker.emu.interrupt.fr;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
-public class FrInterruptRequest implements InterruptRequest {
+public class FrInterruptRequest extends InterruptRequest {
     private int interruptNumber;
     private boolean isNMI;
     private int icr;
@@ -49,19 +49,13 @@ public class FrInterruptRequest implements InterruptRequest {
         return (isNMI?"Non-maskable ":"") + "InterruptRequest 0x" + Format.asHex(interruptNumber,2) + " with ICR=0b" + Format.asBinary(icr,5);
     }
 
-    public int compareTo(Object o) {
-        FrInterruptRequest i = (FrInterruptRequest) o;
-        // returns a negative number if this object has higher priority (NMI or lower ICR) than o and should appear first
-        if (i.isNMI != this.isNMI) {
-            // If only one is NMI (should be the case), it comes first
-            return (isNMI ? -1 : 1);
-        }
-        else if (icr != i.icr) {
-            // Lower ICR gets a higher priority
-            return icr - i.icr;
-        }
-        else {
-            return interruptNumber - i.interruptNumber;
-        }
+    /**
+     * Returns an absolute priority for this request, for comparison
+     * Lower number = higher priority
+     * NMI is the most important (normally only one), then lower icr, then lower interruptnumber
+     * @return
+     */
+    public int getPriority() {
+        return (isNMI?-0x10000:0) + (icr << 8) + interruptNumber;
     }
 }
