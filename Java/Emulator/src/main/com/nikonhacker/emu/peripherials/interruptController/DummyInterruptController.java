@@ -18,10 +18,6 @@ public class DummyInterruptController implements InterruptController {
         return false;
     }
 
-    public void removeRequest(int requestNumber) {
-      
-    }
-
     @Override
     public void removeRequest(InterruptRequest interruptRequest) {
 
@@ -33,10 +29,6 @@ public class DummyInterruptController implements InterruptController {
 
     public FrInterruptRequest getNextRequest() {
         return null;
-    }
-
-    public void updateRequestICR(int i, byte value) {
-      
     }
 
     public List<InterruptRequest> getInterruptRequestQueue() {
