@@ -1670,7 +1670,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory[chip]);
 
-            interruptController[chip] = (chip == Constants.CHIP_FR)?new FrInterruptController(memory[chip]):new TxInterruptController(memory[chip]);
+            interruptController[chip] = (chip == Constants.CHIP_FR)?new FrInterruptController(memory[chip]):new TxInterruptController((TxCPUState)cpuState[chip], memory[chip]);
 
             reloadTimers = new ReloadTimer[]{
                     new ReloadTimer(0, interruptController[chip]),

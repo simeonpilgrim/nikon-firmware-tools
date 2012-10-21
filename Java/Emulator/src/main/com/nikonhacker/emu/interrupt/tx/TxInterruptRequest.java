@@ -8,10 +8,13 @@ public class TxInterruptRequest extends InterruptRequest {
     Type type = Type.UNDEFINED;
 
     /** only meaningful for software/hardware interrupts */
-    int level = 0;
+    private int level = 0;
+
+    /** only meaningful for software/hardware interrupts */
+    private int interruptNumber;
 
     /** only meaningful for some interrupts */
-    int code = 0;
+    private int code = 0;
 
     /** only meaningful for coprocessor unusable exceptions */
     protected int coprocessorNumber;
@@ -19,14 +22,25 @@ public class TxInterruptRequest extends InterruptRequest {
     /** only meaningful for address error exceptions */
     protected int badVAddr;
 
+    /**
+     * Create request of a custom type (not to be used for Hardware interrupt as they also need an interrupt number)
+     * @param type
+     */
     public TxInterruptRequest(Type type) {
         super();
         this.type = type;
     }
 
-    public TxInterruptRequest(Type type, int level) {
+    /**
+     * Create custom requests
+     * @param type
+     * @param interruptNumber only meaningful for HW interrupt
+     * @param level only meaningful for HW interrupt
+     */
+    public TxInterruptRequest(Type type, int interruptNumber, int level) {
         super();
         this.type = type;
+        this.interruptNumber = interruptNumber;
         this.level = level;
     }
 
@@ -43,6 +57,13 @@ public class TxInterruptRequest extends InterruptRequest {
         this.level = level;
     }
 
+    public int getInterruptNumber() {
+        return interruptNumber;
+    }
+
+    public void setInterruptNumber(int interruptNumber) {
+        this.interruptNumber = interruptNumber;
+    }
 
     public int getCode() {
         return code;

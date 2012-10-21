@@ -53,8 +53,4 @@ public abstract class AbstractInterruptController implements InterruptController
     }
 
     public abstract boolean request(int interruptNumber);
-
-    public abstract void removeRequest(int requestNumber);
-
-
 }

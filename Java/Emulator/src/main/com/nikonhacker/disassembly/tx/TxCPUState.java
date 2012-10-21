@@ -12,6 +12,7 @@ import com.nikonhacker.emu.peripherials.interruptController.TxInterruptControlle
 
 import java.util.Set;
 
+@SuppressWarnings("UnusedDeclaration")
 public class TxCPUState extends CPUState {
 
     public static final int RESET_ADDRESS = 0xBFC00000;
@@ -1041,7 +1042,16 @@ public class TxCPUState extends CPUState {
 
     @Override
     public boolean accepts(InterruptRequest interruptRequest) {
-        return !isStatusERLSet() && !isStatusEXLSet() && (getPowerMode() == PowerMode.RUN) ;
+        if (interruptController == null) {
+            System.out.println("TxCPUState.accepts() called while no InterruptController was defined");
+            return false;
+        }
+        return !isStatusERLSet()
+                && !isStatusEXLSet()
+                && (getPowerMode() == PowerMode.RUN)
+                // TODO check last paragraph of section 6.5.1.6 : if lower level is higher priority, setting 000 in cMask would *disable* all, right ?
+                && ((TxInterruptRequest)interruptRequest).getLevel() > interruptController.getIlevCmask()
+                ;
     }
 
 

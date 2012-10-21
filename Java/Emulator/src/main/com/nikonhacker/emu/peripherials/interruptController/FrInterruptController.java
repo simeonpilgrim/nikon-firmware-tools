@@ -12,7 +12,7 @@ import java.util.Collections;
  * Behaviour is Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf
  * (and for some better understanding hm90360-cm44-10136-1e.pdf)
  */
-public class FrInterruptController extends AbstractInterruptController implements InterruptController {
+public class FrInterruptController extends AbstractInterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
 

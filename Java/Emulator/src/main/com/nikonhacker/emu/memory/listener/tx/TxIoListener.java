@@ -6,9 +6,16 @@ import com.nikonhacker.emu.peripherials.interruptController.TxInterruptControlle
 import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
+/**
+ * This is based on the Toshiba hardware specification for TMP19A44FDA/FE/F10XBG
+ * Available at http://www.semicon.toshiba.co.jp/info/docget.jsp?type=datasheet&lang=en&pid=TMP19A44FEXBG
+ */
 public class TxIoListener implements IoActivityListener {
     public static final int IO_PAGE = 0xFF00;
 
+    // See section 22 for addresses
+
+    // Interrupt Controller
     public static final int REGISTER_IMC00   =    0xFF00_1000; // Interrupt mode control register 00
     public static final int REGISTER_IMC01   =    0xFF00_1004; // Interrupt mode control register 01
     public static final int REGISTER_IMC02   =    0xFF00_1008; // Interrupt mode control register 02
@@ -35,19 +42,31 @@ public class TxIoListener implements IoActivityListener {
     public static final int REGISTER_IMC17   =    0xFF00_105C; // Interrupt mode control register 17
     public static final int REGISTER_IMC18   =    0xFF00_1060; // Interrupt mode control register 18
     public static final int REGISTER_IMC19   =    0xFF00_1064; // Interrupt mode control register 19
+
     public static final int REGISTER_INTCLR  =    0xFF00_10C0; // Interrupt request clear register  
     public static final int REGISTER_DREQFLG =    0xFF00_10C4; // DMA request clear flag register   
     public static final int REGISTER_IVR     =    0xFF00_1080; // Interrupt vector register
     public static final int REGISTER_ILEV    =    0xFF00_110C; // Interrupt level register
 
-    public static final int REGISTER_ICRCG   =    0xFF00_1714; // CG interrupt request clear register
-    public static final int REGISTER_NMIFLG  =    0xFF00_1718; // NMI flag register
-    public static final int REGISTER_RSTFLG  =    0xFF00_171C; // Reset flag register
-    public static final int REGISTER_IMCGA   =    0xFF00_1720; // CG interrupt mode control register A
-    public static final int REGISTER_IMCGB   =    0xFF00_1724; // CG interrupt mode control register A
-    public static final int REGISTER_IMCGC   =    0xFF00_1728; // CG interrupt mode control register A
-    public static final int REGISTER_IMCGD   =    0xFF00_172C; // CG interrupt mode control register A
-    public static final int REGISTER_IMCGE   =    0xFF00_1730; // CG interrupt mode control register A
+
+    // Clock Generator.
+    // Note: section 6.6.1 lists FF0017xx while section 22 lists FF0019xx
+    public static final int REGISTER_SYSCR   =    0xFF00_1900; //
+    public static final int REGISTER_OSCCR   =    0xFF00_1904; //
+    public static final int REGISTER_SDBYCR  =    0xFF00_1908; //
+    public static final int REGISTER_PLLSEL  =    0xFF00_190C; //
+    public static final int REGISTER_SCKSEL  =    0xFF00_1910; //
+    public static final int REGISTER_ICRCG   =    0xFF00_1914; // CG interrupt request clear register
+    public static final int REGISTER_NMIFLG  =    0xFF00_1918; // NMI flag register
+    public static final int REGISTER_RSTFLG  =    0xFF00_191C; // Reset flag register
+    public static final int REGISTER_IMCGA   =    0xFF00_1920; // CG interrupt mode control register A
+    public static final int REGISTER_IMCGB   =    0xFF00_1924; // CG interrupt mode control register B
+    public static final int REGISTER_IMCGC   =    0xFF00_1928; // CG interrupt mode control register C
+    public static final int REGISTER_IMCGD   =    0xFF00_192C; // CG interrupt mode control register D
+    public static final int REGISTER_IMCGE   =    0xFF00_1930; // CG interrupt mode control register E
+    public static final int REGISTER_IMCGF   =    0xFF00_1934; // CG interrupt mode control register F
+    public static final int REGISTER_IMCG10  =    0xFF00_1938; // CG interrupt mode control register 10
+    public static final int REGISTER_IMCG11  =    0xFF00_193C; // CG interrupt mode control register 11
 
 
     private final TxCPUState cpuState;
@@ -135,6 +154,10 @@ public class TxIoListener implements IoActivityListener {
             interruptController.setIlev(value);
         } else if (addr == REGISTER_IVR) {
             interruptController.setIvr(value);
+        }
+        else {
+            // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
+            // See section 6.5.1.2 , 3rd bullet
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
