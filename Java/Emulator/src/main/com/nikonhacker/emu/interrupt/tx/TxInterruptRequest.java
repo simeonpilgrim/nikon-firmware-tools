@@ -2,7 +2,7 @@ package com.nikonhacker.emu.interrupt.tx;
 
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
-public class TxInterruptRequest implements InterruptRequest {
+public class TxInterruptRequest extends InterruptRequest {
 
     /** the type of this interrupt/exception */
     Type type = Type.UNDEFINED;
@@ -63,17 +63,13 @@ public class TxInterruptRequest implements InterruptRequest {
     }
 
     /**
-     * Priority is first based on the type, then, for interrupts, on level (7 is the highest)
+     * Returns an absolute priority for this request, for comparison
+     * Lower number = higher priority
+     * Priority is first based on the type, then, for interrupts, on level (7 is the highest), and finally on interrupt number (lower had more priority
      * See table 6.2 at section 6.1.3.2
      * @return
      */
     public int getPriority() {
-        return (getType().getPriority() << 4) + getLevel();
-    }
-
-    @Override
-    public int compareTo(Object o) {
-        TxInterruptRequest other = (TxInterruptRequest) o;
-        return other.getPriority() - getPriority();
+        return -(getType().getPriority() << 4) - getLevel();
     }
 }
