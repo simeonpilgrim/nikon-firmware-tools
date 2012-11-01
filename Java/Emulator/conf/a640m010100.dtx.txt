@@ -23,6 +23,23 @@
 
 -m 0xBFC02BE8-0xBFC03F8B=CODE:16
 
+# Indirection table for interrupts using 16-bit ISA
+-m 0xBFC03F90-0xBFC041CF=DATA:L
+
+# Interrupt table
+-m 0xBFC041D0-0xBFC043CF=DATA:L
+
+# Unknown data
+# -m 0xBFC043D0-0xBFC0478B=DATA:L
+
+## 0xFF area
+
+# Copyright msg
+-m 0xBFC07FB0-0xBFC07FDF=DATA:L
+
+# Unknown data
+# -m 0xBFC08054-0xBFC0A000=DATA:L
+
 -m 0xBFC0A008-0xBFC0A12B=CODE:32
 
 -m 0xBFC0A12C-0xBFC0D66F=CODE:16
@@ -36,23 +53,72 @@
 -m 0xBFC15AB8-0xBFC8DD39=CODE:16
 
 
-# Table of offsets used by INT 0x40 :
-#-m 0x0004070A-0x00040869=DATA:W
-
-
 # Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
 #-m 0x000DC310-0x000DC9A3=DATA:L
-
-# Interrupt vector table.
-#-t 0x000dfc00
-#-m 0x000dfc00-0x000dffff=DATA:L
-
 
 ############################### Symbols
 
 -s 0xBFC00000=reset_or_nmi
 -s 0xBFC00400=interrupt
 -s 0xBFC14F98=nmi
+-s 0xBFC14504=interrupt_INT0
+-s 0xBFC17F90=interrupt_INT4
+-s 0xBFC17FA8=interrupt_INT5
+-s 0xBFC145C8=interrupt_INT6
+-s 0xBFC17FC0=interrupt_INT7
+-s 0xBFC1469C=interrupt_INT9
+-s 0xBFC14764=interrupt_INTA
+-s 0xBFC17FD8=interrupt_INTD
+-s 0xBFC17FF1=interrupt_INTE
+-s 0xBFC18008=interrupt_INTF
+-s 0xBFC1482C=interrupt_KWUP
+-s 0xBFC1494C=interrupt_INT12
+-s 0xBFC14A14=interrupt_INT17
+-s 0xBFC18020=interrupt_INT18
+-s 0xBFC18038=interrupt_INT19
+-s 0xBFC18050=interrupt_INT1A
+-s 0xBFC18068=interrupt_INT1E
+-s 0xBFC18080=interrupt_INTRX0
+-s 0xBFC18098=interrupt_INTTX0
+-s 0xBFC180B0=interrupt_INTRX1
+-s 0xBFC180C8=interrupt_INTTX1
+-s 0xBFC180E0=interrupt_HINTRX0
+-s 0xBFC180F8=interrupt_HINTTX0
+-s 0xBFC18110=interrupt_HINTRX1
+-s 0xBFC18128=interrupt_HINTTX1
+-s 0xBFC18140=interrupt_HINTRX2
+-s 0xBFC18158=interrupt_HINTTX2
+-s 0xBFC18170=interrupt_INTSBI0
+-s 0xBFC18188=interrupt_INTADMB
+-s 0xBFC181A0=interrupt_INTTB1
+-s 0xBFC18210=interrupt_INTTB2
+-s 0xBFC18280=interrupt_INTTB5
+-s 0xBFC182F0=interrupt_INTTB6
+-s 0xBFC18360=interrupt_INTTB9
+-s 0xBFC183D0=interrupt_INTTBA
+-s 0xBFC18440=interrupt_INTTBB
+-s 0xBFC18458=interrupt_INTTBC
+-s 0xBFC184C8=interrupt_INTTBD
+-s 0xBFC17B35=interrupt_INTTBF
+-s 0xBFC18538=interrupt_INTTB10
+-s 0xBFC185A8=interrupt_INTCAP0
+-s 0xBFC185C0=interrupt_INTCAP2
+-s 0xBFC185D8=interrupt_INTCMP0
+-s 0xBFC185F0=interrupt_INTCMP1
+-s 0xBFC18608=interrupt_INTCMP2
+-s 0xBFC18620=interrupt_INTCMP3
+-s 0xBFC18638=interrupt_INTCMP4
+-s 0xBFC18650=interrupt_INTCMP5
+-s 0xBFC18668=interrupt_INTCMP6
+-s 0xBFC18680=interrupt_INTCMP7
+-s 0xBFC14ADC=interrupt_INTRTC
+-s 0xBFC18698=interrupt_INTDMA1
+-s 0xBFC186B0=interrupt_INTDMA3
+-s 0xBFC186C8=interrupt_INTDMA4
+-s 0xBFC186E0=interrupt_INTDMA6
+-s 0xBFC186F8=interrupt_INTDMA7
+
+
 -s 0xBFC12B0C=sys_set_flg_TBC($a0 [IN flag_id], $a1 [IN set_pattern], $a2 [OUT err_code_TBC_guessed] /* Set Eventflag */)
 -s 0xBFC12B18=sys_clr_flg1_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
 -s 0xBFC12B24=sys_clr_flg2_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
