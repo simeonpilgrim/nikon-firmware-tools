@@ -50,6 +50,9 @@
 
 ############################### Symbols
 
+-s 0xBFC00000=reset_or_nmi
+-s 0xBFC00400=interrupt
+-s 0xBFC14F98=nmi
 -s 0xBFC12B0C=sys_set_flg_TBC($a0 [IN flag_id], $a1 [IN set_pattern], $a2 [OUT err_code_TBC_guessed] /* Set Eventflag */)
 -s 0xBFC12B18=sys_clr_flg1_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
 -s 0xBFC12B24=sys_clr_flg2_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
