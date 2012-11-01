@@ -515,17 +515,21 @@ public abstract class Disassembler {
         StatementContext context = new StatementContext();
         context.cpuState = getCPUState(memRange);
 
-        if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
-            while (context.cpuState.pc < memRange.getEnd())
-            {
-                context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+        try {
+            if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
+                while (context.cpuState.pc < memRange.getEnd())
+                {
+                    context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+                }
             }
-        }
-        else {
-            while (context.cpuState.pc < memRange.getEnd())
-            {
-                context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+            else {
+                while (context.cpuState.pc < memRange.getEnd())
+                {
+                    context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+                }
             }
+        } catch (DisassemblyException e) {
+            throw new DisassemblyException(e.getMessage() + " at 0x" + Format.asHex(context.cpuState.pc, 8), e);
         }
     }
 
