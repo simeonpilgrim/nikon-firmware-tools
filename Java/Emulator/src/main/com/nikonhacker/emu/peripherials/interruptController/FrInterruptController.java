@@ -88,26 +88,6 @@ public class FrInterruptController extends AbstractInterruptController {
         }
     }
 
-    /**
-     * This is the way to remove a request by number
-     * @param requestNumber
-     */
-    public void removeRequest(int requestNumber) {
-        synchronized (interruptRequestQueue) {
-            FrInterruptRequest requestToRemove = null;
-            for (InterruptRequest interruptRequest : interruptRequestQueue) {
-                FrInterruptRequest frInterruptRequest = (FrInterruptRequest) interruptRequest;
-                if (frInterruptRequest.getInterruptNumber() == requestNumber) {
-                    requestToRemove = frInterruptRequest;
-                    break;
-                }
-            }
-            if (requestToRemove != null) {
-                interruptRequestQueue.remove(requestToRemove);
-            }
-        }
-    }
-
     public void updateRequestICR(int interruptNumber, byte icr) {
         synchronized (interruptRequestQueue) {
             for (InterruptRequest interruptRequest : interruptRequestQueue) {
