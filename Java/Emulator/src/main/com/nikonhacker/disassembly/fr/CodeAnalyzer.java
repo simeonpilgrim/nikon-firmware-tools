@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly.fr;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
+import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,7 +71,7 @@ public class CodeAnalyzer {
             }
         }
 
-        if (outputOptions.contains(OutputOption.INT40)) {
+        if (outputOptions.contains(OutputOption.INT40)) { // Only meaningful for FR CPU
             try {
                 // Determine base address to which offsets will be added
                 Integer int40address = interruptTable.get(0x40);
@@ -138,10 +139,11 @@ public class CodeAnalyzer {
             Integer address = entry.getKey();
             Instruction instruction = codeStructure.getStatements().get(address).getInstruction();
             if (!processedStatements.contains(address)
-                && ((!(instruction instanceof FrInstruction)) || ((FrInstruction) instruction).encoding != 0x9FA0 /* NOP stuffing */ )
-                && ((!(instruction instanceof FrInstruction)) || memory.loadInstruction16(address) != 0x0000 /* 0x0000 stuffing */ )
-                ) {
-                // Not a 0000 nor a NOP
+                && (!(instruction instanceof FrInstruction && ((FrInstruction) instruction).encoding == 0x9FA0 /* FR NOP stuffing */ ))
+                && (!(instruction instanceof FrInstruction && memory.loadInstruction16(address) == 0x0000 /* FR 0x0000 stuffing */ ))
+                && (!(instruction instanceof TxInstruction && memory.loadInstruction16(address) == 0xFFFF && address % 4 != 0 /* TX 0xFFFF stuffing in 16-bit ISA mode*/ ))
+                    ) {
+                // Not stuffing. Process
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 codeStructure.getFunctions().put(address, function);
                 try {
