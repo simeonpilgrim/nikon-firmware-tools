@@ -32,6 +32,8 @@ public class TxInterruptController extends AbstractInterruptController {
 
     private int ilev;
     private int ivr;
+    private int intClr;
+
     private RegisterSectionMapping[] imcgMapping = new RegisterSectionMapping[] {
             /* 00 */ null,
             /* 01 */ null,
@@ -251,8 +253,21 @@ public class TxInterruptController extends AbstractInterruptController {
         return ivr;
     }
 
-    public void setIvr(int ivr) {
-        this.ivr = ivr;
+    public void setIvr31_9(int ivr31_9) {
+        this.ivr = (ivr & 0x000001FF) | (ivr31_9 & 0xFFFFFE00) ;
+    }
+
+    public void setIvr8_0(int ivr8_0) {
+        this.ivr = (ivr & 0xFFFFFE00) | (ivr8_0 & 0x000001FF) ;
+    }
+
+    public int getIntClr() {
+        return intClr;
+    }
+
+    public void setIntClr(int intclr) {
+        this.intClr = intclr & 0x1FF;
+        removeRequest(this.intClr);
     }
 
     public void pushIlevCmask(int cmask) {
