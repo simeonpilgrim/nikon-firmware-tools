@@ -45,7 +45,9 @@ import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
 import com.nikonhacker.gui.component.image.BackgroundImagePanel;
+import com.nikonhacker.gui.component.interruptController.FrInterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.InterruptControllerFrame;
+import com.nikonhacker.gui.component.interruptController.TxInterruptControllerFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
@@ -1906,7 +1908,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleInterruptController(int chip) {
         if (interruptControllerFrame[chip] == null) {
-            interruptControllerFrame[chip] = new InterruptControllerFrame("Interrupt controller", "interrupt", true, true, false, true, chip, this, interruptController[chip], memory[Constants.CHIP_FR]);
+            interruptControllerFrame[chip] = (chip == Constants.CHIP_FR)
+                    ?new FrInterruptControllerFrame("Interrupt controller", "interrupt", true, true, false, true, chip, this, interruptController[chip], memory[chip])
+                    :new TxInterruptControllerFrame("Interrupt controller", "interrupt", true, true, false, true, chip, this, interruptController[chip], memory[chip]);
             addDocumentFrame(chip, interruptControllerFrame[chip]);
             interruptControllerFrame[chip].display(true);
         }
