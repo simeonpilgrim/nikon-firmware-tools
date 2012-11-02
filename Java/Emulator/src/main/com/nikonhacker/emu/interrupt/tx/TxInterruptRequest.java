@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.interrupt.tx;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public class TxInterruptRequest extends InterruptRequest {
@@ -82,4 +83,11 @@ public class TxInterruptRequest extends InterruptRequest {
     public int getPriority() {
         return -(getType().getPriority() << 4) - getLevel();
     }
+
+    @Override
+    public String toString() {
+        return type + (type==Type.HARDWARE_INTERRUPT?(" #" + interruptNumber + " (0x" + Format.asHex(interruptNumber, 2) + ")"):"");
+    }
+
+
 }
