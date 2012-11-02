@@ -9,6 +9,8 @@ public interface InterruptController {
 
     public boolean request(InterruptRequest newInterruptRequest);
 
+    public void removeRequest(int interruptNumber);
+
     public void removeRequest(InterruptRequest interruptRequest);
 
     public boolean hasPendingRequests();

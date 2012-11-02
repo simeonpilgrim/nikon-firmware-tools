@@ -8,12 +8,34 @@ import java.util.List;
 public abstract class AbstractInterruptController implements InterruptController {
     protected final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
 
+    public abstract boolean request(int interruptNumber);
+
     /**
      * This is a way to cause completely custom (or even bogus) InterruptRequests
      * @param interruptRequest
      * @return
      */
     public abstract boolean request(InterruptRequest interruptRequest);
+
+    /**
+     * This is the way to remove a request by number
+     * @param interruptNumber
+     */
+    @Override
+    public void removeRequest(int interruptNumber) {
+        synchronized (interruptRequestQueue) {
+            InterruptRequest requestToRemove = null;
+            for (InterruptRequest interruptRequest : interruptRequestQueue) {
+                if (interruptRequest.getInterruptNumber() == interruptNumber) {
+                    requestToRemove = interruptRequest;
+                    break;
+                }
+            }
+            if (requestToRemove != null) {
+                interruptRequestQueue.remove(requestToRemove);
+            }
+        }
+    }
 
     /**
      * This is the way to remove a specific request object
@@ -52,5 +74,4 @@ public abstract class AbstractInterruptController implements InterruptController
         return interruptRequestQueue;
     }
 
-    public abstract boolean request(int interruptNumber);
 }
