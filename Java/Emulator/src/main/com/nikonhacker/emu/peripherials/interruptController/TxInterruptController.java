@@ -188,9 +188,13 @@ public class TxInterruptController extends AbstractInterruptController {
     public boolean request(InterruptRequest interruptRequest) {
         if (cpuState.getPowerMode() != TxCPUState.PowerMode.RUN) {
             // See if this interrupt can clear standby state
-            int interruptNumber = ((TxInterruptRequest) interruptRequest).getInterruptNumber();
+            int interruptNumber = interruptRequest.getInterruptNumber();
             if (isImcgIntxen(getIMCGSectionForInterrupt(interruptNumber))) {
                 cpuState.setPowerMode(TxCPUState.PowerMode.RUN);
+            }
+            else {
+                // CPU is asleep and cannot be woken up by this interrupt. Request cancelled
+                return false;
             }
         }
         TxInterruptRequest newInterruptRequest = (TxInterruptRequest) interruptRequest;
