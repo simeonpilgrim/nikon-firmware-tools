@@ -10,9 +10,6 @@ public class TxInterruptRequest extends InterruptRequest {
     /** only meaningful for software/hardware interrupts */
     private int level = 0;
 
-    /** only meaningful for software/hardware interrupts */
-    private int interruptNumber;
-
     /** only meaningful for some interrupts */
     private int code = 0;
 
@@ -23,7 +20,7 @@ public class TxInterruptRequest extends InterruptRequest {
     protected int badVAddr;
 
     /**
-     * Create request of a custom type (not to be used for Hardware interrupt as they also need an interrupt number)
+     * Create request of a custom type (not to be used for Hardware interrupt as they also require an interrupt number)
      * @param type
      */
     public TxInterruptRequest(Type type) {
@@ -55,14 +52,6 @@ public class TxInterruptRequest extends InterruptRequest {
 
     public void setLevel(int level) {
         this.level = level;
-    }
-
-    public int getInterruptNumber() {
-        return interruptNumber;
-    }
-
-    public void setInterruptNumber(int interruptNumber) {
-        this.interruptNumber = interruptNumber;
     }
 
     public int getCode() {
