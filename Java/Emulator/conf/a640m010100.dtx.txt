@@ -30,7 +30,10 @@
 -m 0xBFC041D0-0xBFC043CF=DATA:L
 
 # Unknown data
-# -m 0xBFC043D0-0xBFC0478B=DATA:L
+# -m 0xBFC043D0-0xBFC044BB=DATA:L
+
+# TCB Task table
+-m 0xBFC044BC-0xBFC0478B=DATA:L
 
 ## 0xFF area
 
@@ -60,6 +63,13 @@
 
 -s 0xBFC00000=reset_or_nmi
 -s 0xBFC00400=interrupt
+
+-s 0xBFC12A80=sys_act_tsk_TBC($a0 [IN task_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC12B0C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
+-s 0xBFC12B18=sys_clr_flg1($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B24=sys_clr_flg2($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+
 -s 0xBFC14F98=nmi
 -s 0xBFC14504=interrupt_INT0
 -s 0xBFC17F90=interrupt_INT4
@@ -119,10 +129,20 @@
 -s 0xBFC186F8=interrupt_INTDMA7
 
 
--s 0xBFC12B0C=sys_set_flg_TBC($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
--s 0xBFC12B18=sys_clr_flg1_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
--s 0xBFC12B24=sys_clr_flg2_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
--s 0xBFC12B30=sys_wai_flg_TBC($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+-s 0xBFC15AB8=Tsk00
+-s 0xBFC1A3B0=Tsk01
+-s 0xBFC1DF78=Tsk02
+-s 0xBFC1FD60=Tsk03
+-s 0xBFC3FE40=Tsk04
+-s 0xBFC408EC=Tsk05
+-s 0xBFC43FCC=Tsk06
+-s 0xBFC47148=Tsk07
+-s 0xBFC48330=Tsk08
+-s 0xBFC57984=Tsk09
+-s 0xBFC7A8C4=Tsk0A
+-s 0xBFC8AF6C=Tsk0B
+-s 0xBFC8D030=Tsk0C
+
 
 ########## Global variables
 
