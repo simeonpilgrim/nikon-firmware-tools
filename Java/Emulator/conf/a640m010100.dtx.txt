@@ -119,10 +119,10 @@
 -s 0xBFC186F8=interrupt_INTDMA7
 
 
--s 0xBFC12B0C=sys_set_flg_TBC($a0 [IN flag_id], $a1 [IN set_pattern], $a2 [OUT err_code_TBC_guessed] /* Set Eventflag */)
--s 0xBFC12B18=sys_clr_flg1_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
--s 0xBFC12B24=sys_clr_flg2_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $a2 [OUT err_code_TBC_guessed] /* Clear Eventflag */)
--s 0xBFC12B30=sys_wai_flg_TBC($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_TBC], $a3 [OUT err_code_TBC_guessed], $t0 [OUT flag_pattern_TBC_guessed] /* Wait for Eventflag */)
+-s 0xBFC12B0C=sys_set_flg_TBC($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
+-s 0xBFC12B18=sys_clr_flg1_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B24=sys_clr_flg2_TBC($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B30=sys_wai_flg_TBC($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
 
 ########## Global variables
 
