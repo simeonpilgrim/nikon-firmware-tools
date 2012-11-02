@@ -1847,6 +1847,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    // See architecture spec, section 6.1.3.6
                     if (((TxCPUState)context.cpuState).isStatusERLSet()) {
                         context.cpuState.setPc(context.cpuState.getReg(TxCPUState.ErrorEPC));
                         ((TxCPUState)context.cpuState).clearStatusERL();
