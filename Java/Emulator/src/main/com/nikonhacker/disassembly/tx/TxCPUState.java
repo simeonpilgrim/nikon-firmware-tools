@@ -318,7 +318,7 @@ public class TxCPUState extends CPUState {
     }
 
     /**
-     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB
+     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB.
      * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
      * @return
      */
