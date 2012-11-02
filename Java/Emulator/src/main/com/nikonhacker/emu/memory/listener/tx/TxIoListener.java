@@ -136,24 +136,28 @@ public class TxIoListener implements IoActivityListener {
     }
 
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
-//        if (addr == xxx) {
-//            return yyy;
-//        }
+        if (addr == REGISTER_INTCLR) {
+            throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
+        }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore16(byte[] ioPage, int addr, int value) {
-//        if (addr == xxx) {
-//            return yyy;
-//        }
+        if (addr == REGISTER_INTCLR) {
+            interruptController.setIntClr(value);
+        }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore32(byte[] ioPage, int addr, int value) {
         if (addr == REGISTER_ILEV) {
             interruptController.setIlev(value);
-        } else if (addr == REGISTER_IVR) {
-            interruptController.setIvr(value);
+        }
+        else if (addr == REGISTER_IVR) {
+            interruptController.setIvr31_9(value);
+        }
+        else if (addr == REGISTER_INTCLR) {
+            throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
         }
         else {
             // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
