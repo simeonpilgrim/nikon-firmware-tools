@@ -70,15 +70,15 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         JPanel standardButtonGrid = new JPanel(new GridLayout(0,4));
 
-        JInterruptButton nmiButton = new JInterruptButton("INT 0x0F = NMI", 0x0F);
+        JInterruptButton nmiButton = createInterruptButton("INT 0x0F = NMI", 0x0F);
         nmiButton.setForeground(Color.RED);
         nmiButton.setMargin(buttonInsets);
         nmiButton.addActionListener(standardInterruptButtonListener);
         standardButtonGrid.add(nmiButton);
 
         for (int value = 0; value < 47; value++) {
-            JInterruptButton button = new JInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
-                    + " = IR" + (value<10?"0":"") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
+            JInterruptButton button = createInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
+                    + " = IR" + (value<10?"0":"") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET) ;
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
             standardButtonGrid.add(button);
@@ -123,7 +123,7 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 final int value = i * 16 + j;
-                JInterruptButton button = new JInterruptButton(Format.asHex(value, 2), value);
+                JInterruptButton button = createInterruptButton(Format.asHex(value, 2), value);
                 button.setMargin(buttonInsets);
                 button.addActionListener(customInterruptButtonListener);
                 customButtonGrid.add(button);
@@ -198,5 +198,71 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         timerPanel.add(timerIntermediaryPanel,BorderLayout.CENTER);
 
         tabbedPane.addTab("Timer", null, timerPanel);
+    }
+
+    private JInterruptButton createInterruptButton(String text, int interruptNumber) {
+        JInterruptButton button = new JInterruptButton(text, interruptNumber);
+
+        // Set custom Tooltip
+        String tooltip = "INT 0x" + Format.asHex(interruptNumber,2);
+        switch (interruptNumber) {
+            case 0x00:
+                button.setForeground(Color.RED.darker());
+                tooltip = "Reset";
+                break;
+            case 0x01:
+                button.setForeground(Color.ORANGE.darker());
+                tooltip = "System reserved or Mode Vector";
+                break;
+            case 0x02:
+            case 0x03:
+            case 0x04:
+            case 0x05:
+            case 0x06:
+                button.setForeground(Color.ORANGE.darker());
+                tooltip = "System reserved";
+                break;
+            case 0x09:
+                button.setForeground(Color.BLUE);
+                tooltip = "Emulator Exception";
+                break;
+            case 0x0A:
+                button.setForeground(Color.BLUE);
+                tooltip = "Instruction break trap";
+                break;
+            case 0x0B:
+                button.setForeground(Color.BLUE);
+                tooltip = "Operand break trap";
+                break;
+            case 0x0C:
+                button.setForeground(Color.BLUE);
+                tooltip = "Step trace break trap";
+                break;
+            case 0x0D:
+                button.setForeground(Color.BLUE);
+                tooltip = "Emulator exception";
+                break;
+            case 0x0E:
+                button.setForeground(Color.BLUE);
+                tooltip = "Undefined instruction exception";
+                break;
+            case 0x0F:
+                tooltip += " or NMI";
+                break;
+            case 0x40:
+            case 0x41:
+                button.setForeground(Color.ORANGE.darker());
+                tooltip = "System reserved";
+                break;
+        }
+
+        if (interruptNumber >= 0x10 && interruptNumber <= 0x2F) {
+            int irNumber = interruptNumber - FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
+            tooltip += " or IR" + (irNumber <10?"0":"") + irNumber;
+        }
+
+        button.setToolTipText(tooltip);
+
+        return button;
     }
 }
