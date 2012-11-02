@@ -1,9 +1,6 @@
 package com.nikonhacker.gui.component.interruptController;
 
-import com.nikonhacker.Constants;
-import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
-import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
@@ -16,7 +13,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * This component emulates an interrupt controller with manual operations
@@ -120,24 +116,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     }
 
 
-    protected void stopTimer() {
-        if (interruptTimer != null) {
-            interruptTimer.cancel();
-            interruptTimer = null;
-        }
-        ui.setStatusText(Constants.CHIP_FR, "Stopped interrupt timer");
-    }
-
-    protected void startTimer(final int interruptNumber, final boolean isNmi, final int icr, int interval) {
-        interruptTimer = new Timer(false);
-        interruptTimer.scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                interruptController.request(new FrInterruptRequest(interruptNumber, isNmi, icr));
-            }
-        }, 0, interval);
-        ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
-    }
+    protected abstract void stopTimer();
 
     public void dispose() {
         stopTimer();

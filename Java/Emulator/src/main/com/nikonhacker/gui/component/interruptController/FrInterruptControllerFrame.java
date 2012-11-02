@@ -13,6 +13,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.TimerTask;
 import java.util.Vector;
 
 /**
@@ -78,7 +79,7 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         for (int value = 0; value < 47; value++) {
             JInterruptButton button = createInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
-                    + " = IR" + (value<10?"0":"") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET) ;
+                    + " = IR" + (value < 10 ? "0" : "") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET) ;
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
             standardButtonGrid.add(button);
@@ -265,4 +266,24 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         return button;
     }
+
+    protected void startTimer(final int interruptNumber, final boolean isNmi, final int icr, int interval) {
+        interruptTimer = new java.util.Timer(false);
+        interruptTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                interruptController.request(new FrInterruptRequest(interruptNumber, isNmi, icr));
+            }
+        }, 0, interval);
+        ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
+    }
+
+    protected void stopTimer() {
+        if (interruptTimer != null) {
+            interruptTimer.cancel();
+            interruptTimer = null;
+        }
+        ui.setStatusText(Constants.CHIP_FR, "Stopped interrupt timer");
+    }
+
 }

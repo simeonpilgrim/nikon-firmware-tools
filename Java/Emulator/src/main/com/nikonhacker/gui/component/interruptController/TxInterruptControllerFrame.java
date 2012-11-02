@@ -1,11 +1,18 @@
 package com.nikonhacker.gui.component.interruptController;
 
+import com.nikonhacker.Constants;
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.TimerTask;
+import java.util.Vector;
 
 /**
  * This component emulates a TX interrupt controller with manual operations
@@ -25,8 +32,8 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
      * @param tabbedPane
      */
     protected void addTabs(final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory, Insets buttonInsets, JTabbedPane tabbedPane) {
-/*
-        // Standard button interrupt panel (only the ones defined as External + NMI)
+
+        // Standard button interrupt panel ("hardware interrupts")
 
         JPanel standardInterruptControllerPanel = new JPanel(new BorderLayout());
 
@@ -34,42 +41,21 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
             public void actionPerformed(ActionEvent e) {
                 JInterruptButton button = (JInterruptButton) e.getSource();
                 int interruptNumber = button.getInterruptNumber();
-                String interruptName;
-                int icr;
-                boolean isNMI;
-                if (interruptNumber == 0xF) {
-                    interruptName = "NMI";
-                    icr = 0;
-                    isNMI = true;
+
+                String interruptName = "Interrupt " + button.getText() + " (" + interruptNumber + ")";
+                if (interruptController.request(interruptNumber)) {
+                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was requested.");
                 }
                 else {
-                    int irNumber = interruptNumber - FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET;
-                    interruptName = "IR" + (irNumber < 10 ? "0" : "") + irNumber;
-                    int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
-                    icr = memory.loadUnsigned8(icrAddress) & 0x1F;
-                    isNMI = false;
-                }
-                FrInterruptRequest interruptRequest = new FrInterruptRequest(interruptNumber, isNMI, icr);
-                if (interruptController.request(interruptRequest)) {
-                    ui.setStatusText(Constants.CHIP_FR, interruptName + " (" +  interruptRequest + ") was requested.");
-                }
-                else {
-                    ui.setStatusText(Constants.CHIP_FR, interruptName + " (" +  interruptRequest + ") was rejected (already requested).");
+                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was rejected !");
                 }
             }
         };
 
-        JPanel standardButtonGrid = new JPanel(new GridLayout(0,4));
+        JPanel standardButtonGrid = new JPanel(new GridLayout(0,8));
 
-        JInterruptButton nmiButton = new JInterruptButton("INT 0x0F = NMI", 0x0F);
-        nmiButton.setForeground(Color.RED);
-        nmiButton.setMargin(buttonInsets);
-        nmiButton.addActionListener(standardInterruptButtonListener);
-        standardButtonGrid.add(nmiButton);
-
-        for (int value = 0; value < 47; value++) {
-            JInterruptButton button = new JInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
-                    + " = IR" + (value<10?"0":"") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET);
+        for (int value = 0; value < 128; value++) {
+            JInterruptButton button = createInterruptButton(value);
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
             standardButtonGrid.add(button);
@@ -78,53 +64,6 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         standardInterruptControllerPanel.add(standardButtonGrid, BorderLayout.CENTER);
 
         tabbedPane.addTab("Standard", null, standardInterruptControllerPanel);
-
-        // Custom 256 button panel
-
-        JPanel customInterruptControllerPanel = new JPanel(new BorderLayout());
-
-        JPanel topToolbar = new JPanel(new FlowLayout());
-        topToolbar.add(new JLabel("ICR : "));
-        Vector<String> labels = new Vector<String>();
-        for (int i = 0; i < 32; i++) {
-            labels.add(Format.asBinary(i, 5));
-        }
-        final JComboBox icrComboBox = new JComboBox(labels);
-        topToolbar.add(icrComboBox);
-
-        final JCheckBox nmiCheckBox = new JCheckBox("NMI");
-        topToolbar.add(nmiCheckBox);
-
-        customInterruptControllerPanel.add(topToolbar, BorderLayout.NORTH);
-
-        ActionListener customInterruptButtonListener = new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                JInterruptButton button = (JInterruptButton) e.getSource();
-                int interruptNumber = button.getInterruptNumber();
-                if (interruptController.request(new FrInterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
-                    ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
-                }
-                else {
-                    ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was rejected (already requested).");
-                }
-            }
-        };
-
-        JPanel customButtonGrid = new JPanel(new GridLayout(16, 16));
-        for (int i = 0; i < 16; i++) {
-            for (int j = 0; j < 16; j++) {
-                final int value = i * 16 + j;
-                JInterruptButton button = new JInterruptButton(Format.asHex(value, 2), value);
-                button.setMargin(buttonInsets);
-                button.addActionListener(customInterruptButtonListener);
-                customButtonGrid.add(button);
-            }
-        }
-
-        customInterruptControllerPanel.add(customButtonGrid, BorderLayout.CENTER);
-
-        tabbedPane.addTab("Custom", null, customInterruptControllerPanel);
-
 
         // Timer panel
 
@@ -135,26 +74,15 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         JPanel timerParamPanel = new JPanel(new GridLayout(0, 3));
 
         timerParamPanel.add(new JLabel("Request INT"));
-        Vector<String> timerInterruptNumber = new Vector<String>();
-        for (int i = 0; i < 255; i++) {
-            timerInterruptNumber.add("0x" + Format.asHex(i, 2));
+        Vector<ListEntry> timerInterruptNumber = new Vector<ListEntry>();
+        for (int i = 0; i < 128; i++) {
+            String description = TxInterruptController.hardwareInterruptDescription[i].description;
+            if (description != null) {
+                timerInterruptNumber.add(new ListEntry(i, "0x" + Format.asHex(i, 2) + " " + description));
+            }
         }
         final JComboBox timerInterruptComboBox = new JComboBox(timerInterruptNumber);
         timerParamPanel.add(timerInterruptComboBox);
-        timerParamPanel.add(new JLabel(""));
-
-        timerParamPanel.add(new JLabel("with ICR : "));
-        Vector<String> timerIcrLabels = new Vector<String>();
-        for (int i = 0; i < 32; i++) {
-            timerIcrLabels.add(Format.asBinary(i, 5));
-        }
-        final JComboBox timerIcrComboBox = new JComboBox(timerIcrLabels);
-        timerParamPanel.add(timerIcrComboBox);
-        timerParamPanel.add(new JLabel(""));
-
-        timerParamPanel.add(new JLabel("NMI"));
-        final JCheckBox timerNmiCheckBox = new JCheckBox();
-        timerParamPanel.add(timerNmiCheckBox);
         timerParamPanel.add(new JLabel(""));
 
         timerParamPanel.add(new JLabel("every "));
@@ -173,7 +101,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         startTimerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (interruptTimer == null) {
-                    startTimer(timerInterruptComboBox.getSelectedIndex(), timerNmiCheckBox.isSelected(), timerIcrComboBox.getSelectedIndex(), Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
+                    startTimer(((ListEntry)(timerInterruptComboBox.getSelectedItem())).value, Integer.parseInt((String) intervalsComboBox.getSelectedItem()));
                     ((JButton) e.getSource()).setText("Stop");
                 }
                 else {
@@ -189,6 +117,53 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         timerPanel.add(timerIntermediaryPanel,BorderLayout.CENTER);
 
         tabbedPane.addTab("Timer", null, timerPanel);
-*/
+    }
+
+    private JInterruptButton createInterruptButton(int value) {
+        TxInterruptController.InterruptDescription interruptDescription = TxInterruptController.hardwareInterruptDescription[value];
+        String symbolicName = interruptDescription.symbolicName;
+        JInterruptButton button = new JInterruptButton(symbolicName, value);
+        if (symbolicName == null) {
+            button.setText("-");
+            button.setForeground(Color.ORANGE.darker());
+        }
+
+        button.setToolTipText(Format.asHex(value, 2) + " " + interruptDescription.description);
+
+        return button;
+    }
+
+    protected void startTimer(final int interruptNumber, int interval) {
+        interruptTimer = new java.util.Timer(false);
+        interruptTimer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                interruptController.request(interruptNumber);
+            }
+        }, 0, interval);
+        ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " will be requested every " + interval + "ms");
+    }
+
+    protected void stopTimer() {
+        if (interruptTimer != null) {
+            interruptTimer.cancel();
+            interruptTimer = null;
+        }
+        ui.setStatusText(Constants.CHIP_TX, "Stopped interrupt timer");
+    }
+
+    private class ListEntry {
+        int value;
+        String text;
+
+        public ListEntry(int value, String text) {
+            this.value = value;
+            this.text = text;
+        }
+
+        @Override
+        public String toString() {
+            return text;
+        }
     }
 }
