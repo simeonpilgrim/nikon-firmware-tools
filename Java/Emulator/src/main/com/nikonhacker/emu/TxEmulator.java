@@ -111,6 +111,8 @@ public class TxEmulator extends Emulator {
                                         printWriter.println("------------------------- Accepting " + interruptRequest);
                                     }
                                 }
+                                // TODO we probably should not remove the request from queue automatically.
+                                // TODO this has to be done explicitely by writing to INTCLR register
                                 interruptController.removeRequest(interruptRequest);
                                 // TODO : pc or address of branch instruction if in delay slot !
                                 // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
@@ -192,7 +194,7 @@ public class TxEmulator extends Emulator {
 
         txCPUState.setSscrPSS(txCPUState.getSscrCSS());
 
-        // This follows the graphs in the architecture document, but then some info was added from the HW spec (ex : setting EXL or ERL)
+        // This follows the graphs in the architecture document (Table 6.3), but then some info was added from the HW spec (ex : setting EXL or ERL)
         switch (interruptRequest.getType()) {
             case RESET_EXCEPTION:
                 txCPUState.setStatusBEV();
@@ -235,9 +237,12 @@ public class TxEmulator extends Emulator {
 
                 if (interruptRequest.getType().isInterrupt()) {
                     // Interrupt
+                    // set CSS to PSS and change CSS, if shadow register switching is enabled
                     if (!txCPUState.isSscrSSDSet()) {
-                        txCPUState.setSscrCSS(interruptRequest.getLevel());
+                        txCPUState.pushSscrCSS(interruptRequest.getLevel());
                     }
+
+                    // set ILEV
                     ((TxInterruptController)interruptController).pushIlevCmask(interruptRequest.getLevel());
 
                     // Branch to handler
@@ -262,10 +267,8 @@ public class TxEmulator extends Emulator {
                         }
                     }
 
-                    // TODO ?? Section 6.1.3.6 (2) says "The following is required only for a **hardware** interrupt : If the interrupt occurs, its interrupt level is set to ILEV<CSS>."
+                    ((TxInterruptController) interruptController).setIvr8_0(interruptRequest.getInterruptNumber());
 
-                    // set CSS to PSS and change CSS
-                    txCPUState.pushSscrCSS(interruptRequest.getLevel());
                 }
                 else {
                     // Other Exceptions
