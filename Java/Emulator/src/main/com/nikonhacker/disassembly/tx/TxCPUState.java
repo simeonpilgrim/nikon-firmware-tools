@@ -347,6 +347,7 @@ public class TxCPUState extends CPUState {
     }
 
     public void reset() {
+        powerMode = TxCPUState.PowerMode.RUN;
         shadowRegisterSets = new Register32[8][registerLabels.length];
         regValue = shadowRegisterSets[0];
 
