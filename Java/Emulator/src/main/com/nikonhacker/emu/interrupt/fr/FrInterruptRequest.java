@@ -4,7 +4,6 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 public class FrInterruptRequest extends InterruptRequest {
-    private int interruptNumber;
     private boolean isNMI;
     private int icr;
 
@@ -18,14 +17,6 @@ public class FrInterruptRequest extends InterruptRequest {
         this.interruptNumber = interruptNumber;
         isNMI = NMI;
         this.icr = icr;
-    }
-
-    public int getInterruptNumber() {
-        return interruptNumber;
-    }
-
-    public void setInterruptNumber(int interruptNumber) {
-        this.interruptNumber = interruptNumber;
     }
 
     public boolean isNMI() {

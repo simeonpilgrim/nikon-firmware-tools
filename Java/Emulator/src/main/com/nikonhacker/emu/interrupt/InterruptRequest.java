@@ -1,6 +1,18 @@
 package com.nikonhacker.emu.interrupt;
 
 public abstract class InterruptRequest implements Comparable {
+
+    /** only meaningful for TX software/hardware interrupts, or for FR interrupts */
+    protected int interruptNumber;
+
+    public int getInterruptNumber() {
+        return interruptNumber;
+    }
+
+    public void setInterruptNumber(int interruptNumber) {
+        this.interruptNumber = interruptNumber;
+    }
+
     /**
      * Returns an absolute priority for this request, for comparison
      * Lower number = higher priority
