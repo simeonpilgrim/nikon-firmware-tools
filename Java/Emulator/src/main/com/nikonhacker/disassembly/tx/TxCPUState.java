@@ -398,7 +398,6 @@ public class TxCPUState extends CPUState {
                 }
             }
         });
-
         // Status register (in all register sets) is special because it can trigger a software interrupt
         shadowRegisterSets[0][Status] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
             @Override
@@ -406,7 +405,6 @@ public class TxCPUState extends CPUState {
                 checkSoftwareInterruptGeneration();
             }
         });
-
         // Cause register (in all register sets) is special because it can trigger a software interrupt
         shadowRegisterSets[0][Cause] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
             @Override
@@ -414,12 +412,11 @@ public class TxCPUState extends CPUState {
                 checkSoftwareInterruptGeneration();
             }
         });
-
         // And point all sets to them
         for (int registerSet = 1; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
             shadowRegisterSets[registerSet][Status] = shadowRegisterSets[0][Status];
             shadowRegisterSets[registerSet][Cause] = shadowRegisterSets[0][Cause];
-            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
         }
 
 
@@ -1007,7 +1004,7 @@ public class TxCPUState extends CPUState {
     }
 
     /** This method moves CSS to PSS and switches to the given CSS */
-    public void pushSscrCSS(int css) {
+    public void pushSscrCssIfSwitchingEnabled(int css) {
         if (!isSscrSSDSet()) {
             setSscrPSS(getSscrCSS());
             setSscrCSS(css);
@@ -1015,7 +1012,7 @@ public class TxCPUState extends CPUState {
     }
 
     /** This method moves back CSS from PSS and switches back to the old CSS */
-    public void popSscrCSS() {
+    public void popSscrCssIfSwitchingEnabled() {
         if (!isSscrSSDSet()) {
             setSscrCSS(getSscrPSS());
         }
@@ -1048,11 +1045,12 @@ public class TxCPUState extends CPUState {
             System.out.println("TxCPUState.accepts() called while no InterruptController was defined");
             return false;
         }
-        return !isStatusERLSet()
+        return  getPowerMode() == PowerMode.RUN
+                && isStatusIESet() // TBC IE is a filter for acceptance, not generation
+                && !isStatusERLSet()
                 && !isStatusEXLSet()
-                && (getPowerMode() == PowerMode.RUN)
                 // Cfr last paragraph of section 6.5.1.6 : 000 means all interrupts enabled.
-                // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspendzed
+                // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspended
                 && (interruptController.getIlevCmask() == 0 || ((TxInterruptRequest)interruptRequest).getLevel() <= interruptController.getIlevCmask())
                 ;
     }
