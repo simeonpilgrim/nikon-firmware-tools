@@ -66,6 +66,7 @@
 
 -s 0xBFC12A5C=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code] /* Start task */)
 -s 0xBFC12A80=sys_act_tsk_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC12A98=sys_ref_tsk($a1 [IN ptr_to_pk_rtsk], $a0 [IN tsk_id], $v0 [OUT err_code] /* Get Task Status */)
 -s 0xBFC12B0C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
 -s 0xBFC12B18=sys_clr_flg1($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC12B24=sys_clr_flg2($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
