@@ -269,6 +269,7 @@ public class FrCPUState extends CPUState {
         setPc(RESET_ADDRESS);
     }
 
+    @Override
     public void clear() {
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);

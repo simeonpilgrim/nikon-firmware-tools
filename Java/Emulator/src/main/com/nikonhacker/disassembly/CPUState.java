@@ -82,6 +82,8 @@ public abstract class CPUState {
 
     public abstract void reset();
 
+    public abstract void clear();
+
     public abstract boolean accepts(InterruptRequest interruptRequest);
 
     public abstract int getResetAddress();

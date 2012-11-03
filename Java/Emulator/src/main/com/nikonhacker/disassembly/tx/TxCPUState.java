@@ -430,6 +430,7 @@ public class TxCPUState extends CPUState {
         setPc(RESET_ADDRESS);
     }
 
+    @Override
     public void clear() {
         for (int registerSet = 0; registerSet < 8; registerSet++) {
             regValue = shadowRegisterSets[registerSet];
@@ -994,12 +995,12 @@ public class TxCPUState extends CPUState {
 
     /** This method returns the current shadow register set */
     public int getSscrCSS() {
-        return (getReg(SSCR) & Sscr_CSS_mask) /*>>> Sscr_CSS_pos*/;
+        return (getReg(SSCR) & Sscr_CSS_mask) /*>>> Sscr_CSS_pos = 0*/;
     }
 
     /** This method sets the CSS field and switches the current shadow register set accordingly */
     public void setSscrCSS(int css) {
-        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (css /*<< Sscr_CSS_pos*/));
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (css /*<< Sscr_CSS_pos = 0*/));
         regValue = shadowRegisterSets[css];
     }
 
