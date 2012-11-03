@@ -514,7 +514,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i:Iu", "", "mtlo $t1",
+    public static final TxInstruction mtloInstruction = new TxInstruction("mtlo", "i;Iu", "", "mtlo $t1",
             "Move To LO register: Set LO to contents of $t1 (see multiply and divide operations)",
             InstructionFormat32.R, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
