@@ -150,7 +150,7 @@ public class TxInstructionSet
         FPB_SPB,
 
         /** Layout of type FP_SP_H instructions is as follows   : <pre>[ op  |rx |F| imm  |F]</pre> */
-        FP_SP_H,
+        FPH_SPH,
 
         /** Layout of type SWFP_LWFP instructions is as follows : <pre>[ op  | F |ry | imm ]</pre> */
         SWFP_LWFP,
@@ -2530,7 +2530,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lhufpInstruction = new TxInstruction("lhu", "j, 2s(F)", "jw", "lhu $t1,-100($fp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -2543,7 +2543,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lhufp16Instruction = new TxInstruction("lhu", "j, 2u(F)", "jw", "lhu $t1,-100($fp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -2558,7 +2558,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lhuspInstruction = new TxInstruction("lhu", "j, 2s(S)", "jw", "lhu $t1,-100($sp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -2571,7 +2571,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction lhusp16Instruction = new TxInstruction("lhu", "j, 2u(S)", "jw", "lhu $t1,-100($sp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -3183,7 +3183,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction shfpInstruction = new TxInstruction("sh", "j, 2s(F)", "", "sh $t1,-100($fp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -3199,7 +3199,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction shfp16Instruction = new TxInstruction("sh", "j, 2s(F)", "", "sh $t1,-100($fp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -3215,7 +3215,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction shspInstruction = new TxInstruction("sh", "j, 2s(S)", "", "sh $t1,-100($sp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
@@ -3231,7 +3231,7 @@ public class TxInstructionSet
      */
     public static final TxInstruction shsp16Instruction = new TxInstruction("sh", "j, 2s(S)", "", "sh $t1,-100($sp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
