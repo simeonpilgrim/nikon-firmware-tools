@@ -1,5 +1,7 @@
 package com.nikonhacker.disassembly;
 
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+
 public abstract class CPUState {
 
     public final static int NOREG = -1;
@@ -70,8 +72,6 @@ public abstract class CPUState {
         return regValue[registerNumber].getValue();
     }
 
-    public abstract void reset();
-
     public int getPc() {
         return pc;
     }
@@ -79,4 +79,12 @@ public abstract class CPUState {
     public void setPc(int pc) {
         this.pc = pc;
     }
+
+    public abstract void reset();
+
+    public abstract void clear();
+
+    public abstract boolean accepts(InterruptRequest interruptRequest);
+
+    public abstract int getResetAddress();
 }

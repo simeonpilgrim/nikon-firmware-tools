@@ -32,8 +32,8 @@ public class CallStackFrame extends DocumentFrame {
     private Timer _timer;
     private final JList callStackList;
 
-    public CallStackFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, CPUState cpuState, CodeStructure codeStructure) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public CallStackFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, CPUState cpuState, CodeStructure codeStructure) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;
 

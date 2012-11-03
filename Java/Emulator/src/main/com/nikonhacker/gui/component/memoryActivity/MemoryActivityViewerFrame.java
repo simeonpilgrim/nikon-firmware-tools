@@ -46,8 +46,8 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
     /**
      *  Create a viewer frame in "master" mode (1 cell = 1 memory page) 
      */
-    public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public MemoryActivityViewerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.isMaster = true;
         this.memory = memory;
 
@@ -70,7 +70,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
      * Create a viewer frame in "detail" mode (1 cell = 1 memory byte) 
      */
     public MemoryActivityViewerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, int[] activityMap, int baseAddress, MemoryActivityViewerFrame parentFrame) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+        super(title, null, resizable, closable, maximizable, iconifiable, chip, ui);
         this.isMaster = false;
         this.parentFrame = parentFrame;
         this.baseAddress = baseAddress;

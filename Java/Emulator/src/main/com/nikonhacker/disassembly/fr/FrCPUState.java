@@ -4,11 +4,15 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 
 import java.util.Set;
 
 public class FrCPUState extends CPUState {
+
+    public static final int RESET_ADDRESS = 0x00040000;
+
     /** Register names (first array is "standard", second array is "alternate") */
     static String[][] REG_LABEL = new String[][]{
             {
@@ -119,6 +123,11 @@ public class FrCPUState extends CPUState {
     public FrCPUState(int startPc) {
         reset();
         pc = startPc;
+    }
+
+    @Override
+    public int getResetAddress() {
+        return RESET_ADDRESS;
     }
 
     /**
@@ -257,8 +266,10 @@ public class FrCPUState extends CPUState {
         setReg(TBR, 0x000FFC00);
         setReg(SSP, 0x00000000);
         regValidityBitmap = 0;
+        setPc(RESET_ADDRESS);
     }
 
+    @Override
     public void clear() {
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);
@@ -274,10 +285,12 @@ public class FrCPUState extends CPUState {
     }
 
 
+    @Override
     public boolean accepts(InterruptRequest interruptRequest) {
+        FrInterruptRequest frInterruptRequest = (FrInterruptRequest) interruptRequest;
         return(
-                (I == 1 && interruptRequest.getICR() < getILM())
-             || (getILM() > 15 && interruptRequest.isNMI())
+                (I == 1 && frInterruptRequest.getICR() < getILM())
+             || (getILM() > 15 && frInterruptRequest.isNMI())
               );
     }
 
@@ -298,13 +311,11 @@ public class FrCPUState extends CPUState {
             registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
         }
         registers = registers.trim() + "]";
-        return "CPUState : " +
+        return "FrCPUState : " +
                 "pc=0x" + Format.asHex(pc, 8) +
                 ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
                 ", reg=" + registers +
                 '}';
     }
-
-
 
 }

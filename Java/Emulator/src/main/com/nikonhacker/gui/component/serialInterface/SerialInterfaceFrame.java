@@ -24,8 +24,8 @@ public class SerialInterfaceFrame extends DocumentFrame {
     private SerialInterface[] serialInterfaces;
     private java.util.List<Integer> buffer = new ArrayList<Integer>();
 
-    public SerialInterfaceFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final SerialInterface[] serialInterfaces) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public SerialInterfaceFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final SerialInterface[] serialInterfaces) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.serialInterfaces = serialInterfaces;
 
         JTabbedPane tabbedPane = new JTabbedPane();

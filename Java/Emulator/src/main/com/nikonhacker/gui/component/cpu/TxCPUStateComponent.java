@@ -23,12 +23,13 @@ public class TxCPUStateComponent extends CPUStateComponent {
     private JCheckBox pcIsaMode16bCheckBox = new JCheckBox();
     private JTextField hiTextField = new JTextField();
     private JTextField loTextField = new JTextField();
+    private JTextField statusTextField = new JTextField();
+    private JTextField causeTextField = new JTextField();
+    private JTextField epcTextField = new JTextField();
+    private JTextField errorEpcTextField = new JTextField();
 
     public TxCPUStateComponent(final TxCPUState cpuState, boolean filterMode) {
         TxCPUState allFlagsSet = new TxCPUState();
-
-        regTextFields = new JTextField[32];
-
         setAllCpuStateFlags(allFlagsSet, true);
 
         init(cpuState, allFlagsSet, filterMode);
@@ -54,6 +55,9 @@ public class TxCPUStateComponent extends CPUStateComponent {
         this.filterMode = filterMode;
 
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+
+        this.regTextFields = new JTextField[32];
+
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);
@@ -62,6 +66,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
         pcIsaMode16bCheckBox.setHorizontalAlignment(SwingConstants.CENTER);
         hiTextField.setHorizontalAlignment(JTextField.RIGHT);
         loTextField.setHorizontalAlignment(JTextField.RIGHT);
+        statusTextField.setHorizontalAlignment(JTextField.RIGHT);
+        causeTextField.setHorizontalAlignment(JTextField.RIGHT);
+        epcTextField.setHorizontalAlignment(JTextField.RIGHT);
+        errorEpcTextField.setHorizontalAlignment(JTextField.RIGHT);
 
         //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         setLayout(new GridLayout(0, 4));
@@ -94,6 +102,20 @@ public class TxCPUStateComponent extends CPUStateComponent {
         add(hiTextField);
         add(loTextField);
         add(new JLabel());
+
+        add(new JLabel());
+        add(new JLabel());
+        add(new JLabel());
+        add(new JLabel());
+
+        add(new JLabel("Status = 0x", JLabel.RIGHT));
+        add(statusTextField);
+        add(new JLabel("Cause = 0x", JLabel.RIGHT));
+        add(causeTextField);
+        add(new JLabel("EPC = 0x", JLabel.RIGHT));
+        add(epcTextField);
+        add(new JLabel("ErrEPC=0x", JLabel.RIGHT));
+        add(errorEpcTextField);
 
         if (!filterMode) {
             add(new JLabel());
@@ -129,6 +151,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
             pcIsaMode16bCheckBox.setSelected(cpuStateValidityFlags.pc == 0 && ((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.HI) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.LO) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
+            statusTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Status) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.Status), 8));
+            causeTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Cause) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.Cause), 8));
+            epcTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.EPC) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
+            errorEpcTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.ErrorEPC) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
 
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
@@ -140,6 +166,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
             pcIsaMode16bCheckBox.setSelected(((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
+            statusTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.Status), 8));
+            causeTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.Cause), 8));
+            epcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
+            errorEpcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
 
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
@@ -157,6 +187,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
 //        pcTextField.setText("");
 //        hiTextField.setText("");
 //        loTextField.setText("");
+//        statusTextField.setText("");
+//        causeTextField.setText("");
+//        epcTextField.setText("");
+//        errorEpcTextField.setText("");
 //
 //        // General purpose registers
 //        for (JTextField regTextField : regTextFields) {
@@ -168,8 +202,12 @@ public class TxCPUStateComponent extends CPUStateComponent {
     private void validateAndSaveValues(TxCPUState cpuState) {
         try {
             int pc = Format.parseIntHexField(pcTextField);
-            int mdh = Format.parseIntHexField(hiTextField);
-            int mdl = Format.parseIntHexField(loTextField);
+            int hi = Format.parseIntHexField(hiTextField);
+            int lo = Format.parseIntHexField(loTextField);
+            int status = Format.parseIntHexField(statusTextField);
+            int cause = Format.parseIntHexField(causeTextField);
+            int epc = Format.parseIntHexField(epcTextField);
+            int errorPc = Format.parseIntHexField(errorEpcTextField);
 
             // General purpose registers
             int regs[] = new int[regTextFields.length];
@@ -181,8 +219,12 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
             cpuState.pc = pc;
             cpuState.is16bitIsaMode = pcIsaMode16bCheckBox.isSelected();
-            cpuState.setReg(TxCPUState.HI, mdh);
-            cpuState.setReg(TxCPUState.LO, mdl);
+            cpuState.setReg(TxCPUState.HI, hi);
+            cpuState.setReg(TxCPUState.LO, lo);
+            cpuState.setReg(TxCPUState.Status, status);
+            cpuState.setReg(TxCPUState.Cause, status);
+            cpuState.setReg(TxCPUState.EPC, status);
+            cpuState.setReg(TxCPUState.ErrorEPC, status);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 cpuState.setReg(i, regs[i]);
@@ -210,6 +252,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
             dumpFieldToRegister(hiTextField, TxCPUState.HI);
             dumpFieldToRegister(loTextField, TxCPUState.LO);
+            dumpFieldToRegister(statusTextField, TxCPUState.Status);
+            dumpFieldToRegister(causeTextField, TxCPUState.Cause);
+            dumpFieldToRegister(epcTextField, TxCPUState.EPC);
+            dumpFieldToRegister(errorEpcTextField, TxCPUState.ErrorEPC);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 dumpFieldToRegister(regTextFields[i], i);
@@ -233,6 +279,18 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
         loTextField.setEditable(editable);
         loTextField.setBackground(Color.WHITE);
+
+        statusTextField.setEditable(editable);
+        statusTextField.setBackground(Color.WHITE);
+
+        causeTextField.setEditable(editable);
+        causeTextField.setBackground(Color.WHITE);
+
+        epcTextField.setEditable(editable);
+        epcTextField.setBackground(Color.WHITE);
+
+        errorEpcTextField.setEditable(editable);
+        errorEpcTextField.setBackground(Color.WHITE);
 
         for (JTextField regTextField : regTextFields) {
             regTextField.setEditable(editable);

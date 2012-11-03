@@ -254,8 +254,15 @@ public class TxStatement extends Statement {
                 case FPB_SPB:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = rs_fs; // TODO useful ?
-                    imm   =  binaryStatement  & 0b1111111;
+                    imm   =  binaryStatement & 0b1111111;
                     immBitWidth = 7;
+                    rd_fd = rt_ft;
+                    break;
+                case FPH_SPH:
+                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rt_ft = rs_fs; // TODO useful ?
+                    imm   =  (binaryStatement >>> 1) & 0b111111;
+                    immBitWidth = 6;
                     rd_fd = rt_ft;
                     break;
                 case SPC_BIT:
@@ -279,25 +286,25 @@ public class TxStatement extends Statement {
             switch (((TxInstruction)instruction).getInstructionFormat16())
             {
                 case I:
-                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
-                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
-                            | ((binaryStatement           ) & 0b0000000000011111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case RI:
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rs_fs = rt_ft;
-                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
-                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
-                            | ((binaryStatement           ) & 0b0000000000011111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case RRI:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
-                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
-                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
-                            | ((binaryStatement           ) & 0b0000000000011111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case RRR1:
@@ -315,9 +322,9 @@ public class TxStatement extends Statement {
                 case RRIA:
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
-                    imm   =   ((binaryStatement >> (16-11)) & 0b0111100000000000)
-                            | ((binaryStatement >> (20- 4)) & 0b0000011111110000)
-                            | ((binaryStatement           ) & 0b0000000000001111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b01111000_00000000)
+                            | ((binaryStatement >> (20- 4)) & 0b00000111_11110000)
+                            | ((binaryStatement           ) & 0b00000000_00001111);
                     immBitWidth = 15;
                     break;
                 case SHIFT1:
@@ -330,31 +337,32 @@ public class TxStatement extends Statement {
                     imm   =   ((binaryStatement >> (20- 4)) & 0b11110000)
                             | ( binaryStatement             & 0b00001111); // framesize
                     immBitWidth = 8;
-                    sa_cc =   ((binaryStatement >> (20- 7)) & 0b1110000000)
-                            | ((binaryStatement >> (16- 3)) & 0b0001111000)
-                            | ((binaryStatement >> 4)       & 0b0000000111); // xsregs|aregs|ra|s0|s1
+                    sa_cc =   ((binaryStatement >> (20- 7)) & 0b11_10000000)
+                            | ((binaryStatement >> (16- 3)) & 0b00_01111000)
+                            | ((binaryStatement >> 4)       & 0b00_00000111); // xsregs|aregs|ra|s0|s1
                     break;
                 case FPB_SPB:
+                case FPH_SPH:
                     // same as RI in 32bit
                     rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rt_ft = rs_fs; // TODO useful ?
-                    imm   =   ((binaryStatement >> (16-11)) & 0b1111100000000000)
-                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
-                            | ((binaryStatement           ) & 0b0000000000011111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
                     rs_fs = (binaryStatement >>> 19) & 0b11; // base
-                    imm   =   ((binaryStatement >> (16-11)) & 0b0011100000000000)
-                            | ((binaryStatement >> (21- 5)) & 0b0000011111100000)
-                            | ((binaryStatement           ) & 0b0000000000011111);
+                    imm   =   ((binaryStatement >> (16-11)) & 0b00111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 14;
                     break;
                 case JAL_JALX:
-                    imm   =   ((binaryStatement << (21-16)) & 0b00000011111000000000000000000000)
-                            | ((binaryStatement >> (21-16)) & 0b00000000000111110000000000000000)
-                            | ( binaryStatement             & 0b00000000000000001111111111111111);
+                    imm   =   ((binaryStatement << (21-16)) & 0b00000011_11100000_00000000_00000000)
+                            | ((binaryStatement >> (21-16)) & 0b00000000_00011111_00000000_00000000)
+                            | ( binaryStatement             & 0b00000000_00000000_11111111_11111111);
                     immBitWidth = 26;
                     break;
                 case RR_BS1F_BFINS:
@@ -830,19 +838,19 @@ public class TxStatement extends Statement {
     public void fill16bInstruction(int binaryStatement, int pc, Memory memory) throws DisassemblyException {
         // In 16-bit ISA, all instructions are on 16-bits, except EXTENDed instructions and JAL/JALX.
         // Handle these 3 cases, based on the 5 MSBs of the 16 bits read:
-        switch (binaryStatement & 0b1111100000000000) {
-            case 0b1111000000000000:
+        switch (binaryStatement & 0b11111000_00000000) {
+            case 0b11110000_00000000:
                 // This is the EXTEND prefix. Get real instruction
                 int realBinaryStatement = memory.loadInstruction16(pc + 2);
                 setBinaryStatement(4, (binaryStatement << 16) | realBinaryStatement);
 
                 // Now most of the instructions can be determined based only on the lower 16bits, except two cases: Min/Max and Bs1f/Bfins:
-                switch (realBinaryStatement & 0b1111100000011111) {
-                    case 0b1110100000000101:
+                switch (realBinaryStatement & 0b11111000_00011111) {
+                    case 0b11101000_00000101:
                         // Weird min/max encoding : they are both extended instructions with the same lower 16b pattern
                         setInstruction(TxInstructionSet.getMinMaxInstructionForStatement(getBinaryStatement()));
                         break;
-                    case 0b1110100000000111:
+                    case 0b11101000_00000111:
                         // Weird Bs1f/Bfins encoding : they are both extended instructions with the same lower 16b pattern
                         setInstruction(TxInstructionSet.getBs1fBfinsInstructionForStatement(getBinaryStatement()));
                         break;
@@ -851,7 +859,7 @@ public class TxStatement extends Statement {
                         setInstruction(TxInstructionSet.getExtendedInstructionFor16BitStatement(realBinaryStatement));
                 }
                 break;
-            case 0b0001100000000000:
+            case 0b00011000_00000000:
                 // This is the JAL/JALX prefix.
                 int fullStatement = (binaryStatement << 16) | memory.loadInstruction16(pc + 2);
                 setBinaryStatement(4, fullStatement);
