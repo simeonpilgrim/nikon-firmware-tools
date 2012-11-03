@@ -35,9 +35,6 @@ public class FrCPUStateComponent extends CPUStateComponent {
 
     public FrCPUStateComponent(final FrCPUState cpuState, boolean filterMode) {
         FrCPUState allFlagsSet = new FrCPUState();
-
-        regTextFields = new JTextField[32];
-
         setAllCpuStateFlags(allFlagsSet, true);
 
         init(cpuState, allFlagsSet, filterMode);
@@ -68,6 +65,9 @@ public class FrCPUStateComponent extends CPUStateComponent {
         this.filterMode = filterMode;
 
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+
+        this.regTextFields = new JTextField[32];
+
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);
@@ -242,7 +242,7 @@ public class FrCPUStateComponent extends CPUStateComponent {
             uspTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.USP), 8));
             mdhTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDH), 8));
             mdlTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDL), 8));
-    
+
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
                 regTextFields[i].setText(Format.asHex(cpuState.getReg(i), 8));

@@ -30,9 +30,6 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
     public TxCPUStateComponent(final TxCPUState cpuState, boolean filterMode) {
         TxCPUState allFlagsSet = new TxCPUState();
-
-        regTextFields = new JTextField[32];
-
         setAllCpuStateFlags(allFlagsSet, true);
 
         init(cpuState, allFlagsSet, filterMode);
@@ -58,6 +55,9 @@ public class TxCPUStateComponent extends CPUStateComponent {
         this.filterMode = filterMode;
 
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+
+        this.regTextFields = new JTextField[32];
+
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);

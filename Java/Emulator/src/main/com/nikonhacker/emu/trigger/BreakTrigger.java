@@ -4,6 +4,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.Syscall;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
@@ -37,7 +38,7 @@ public class BreakTrigger {
     private Integer pcToSet = null;
     private Function function;
 
-    public BreakTrigger(String name, FrCPUState cpuStateValues, FrCPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
+    public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
         this.name = name;
         this.cpuStateValues = cpuStateValues;
         this.cpuStateFlags = cpuStateFlags;
@@ -143,12 +144,12 @@ public class BreakTrigger {
             }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
-        for (int i = 0; i <= FrCPUState.MDL; i++) {
-            if (cpuStateFlags.getReg(i) != 0) {
-                conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
-            }
-        }
         if (cpuStateFlags instanceof FrCPUState) {
+            for (int i = 0; i <= FrCPUState.MDL; i++) {
+                if (cpuStateFlags.getReg(i) != 0) {
+                    conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
+                }
+            }
             if (((FrCPUState)cpuStateFlags).getCCR() != 0) {
                 conditions.add(new CCRBreakCondition(((FrCPUState)cpuStateValues).getCCR(), ((FrCPUState)cpuStateFlags).getCCR(), this));
             }
@@ -158,6 +159,14 @@ public class BreakTrigger {
             if (((FrCPUState)cpuStateFlags).getILM() != 0) {
                 conditions.add(new ILMBreakCondition(((FrCPUState)cpuStateValues).getILM(), ((FrCPUState)cpuStateFlags).getILM(), this));
             }
+        }
+        else {
+            for (int i = 0; i < TxCPUState.Status; i++) {
+                if (cpuStateFlags.getReg(i) != 0) {
+                    conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
+                }
+            }
+            // TODO other TX registers
         }
 
         conditions.addAll(memoryValueBreakConditions);
