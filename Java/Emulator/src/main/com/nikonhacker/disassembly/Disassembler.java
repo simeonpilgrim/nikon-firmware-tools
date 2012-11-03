@@ -399,8 +399,6 @@ public abstract class Disassembler {
         return true;
     }
 
-    protected abstract String[][] getRegisterLabels();
-
     public void readOptions(int chip, String filename) throws IOException, ParsingException {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
@@ -493,8 +491,6 @@ public abstract class Disassembler {
         }
     }
 
-    protected abstract CodeStructure getCodeStructure(int start);
-
 
     protected void disassembleDataMemoryRange(Range memRange, Range fileRange) throws IOException, DisassemblyException {
 
@@ -519,27 +515,23 @@ public abstract class Disassembler {
         StatementContext context = new StatementContext();
         context.cpuState = getCPUState(memRange);
 
-        if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
-            while (context.cpuState.pc < memRange.getEnd())
-            {
-                context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+        try {
+            if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
+                while (context.cpuState.pc < memRange.getEnd())
+                {
+                    context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+                }
             }
-        }
-        else {
-            while (context.cpuState.pc < memRange.getEnd())
-            {
-                context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+            else {
+                while (context.cpuState.pc < memRange.getEnd())
+                {
+                    context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
+                }
             }
+        } catch (DisassemblyException e) {
+            throw new DisassemblyException(e.getMessage() + " at 0x" + Format.asHex(context.cpuState.pc, 8), e);
         }
     }
-
-    protected abstract CPUState getCPUState(Range memRange);
-
-    protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
-
-    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
-
-    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
     public void initialize() throws IOException {
         startTime = new Date().toString();
@@ -615,5 +607,19 @@ public abstract class Disassembler {
         System.out.println("Disassembly done.");
     }
 
+    protected abstract CodeStructure getCodeStructure(int start);
+
+    protected abstract CPUState getCPUState(Range memRange);
+
     protected abstract String getDefaultOptionsFilename();
+
+    protected abstract String[][] getRegisterLabels();
+
+    protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+
+
 }

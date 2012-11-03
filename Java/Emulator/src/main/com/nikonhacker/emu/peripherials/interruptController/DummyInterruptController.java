@@ -1,6 +1,9 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
-import com.nikonhacker.emu.InterruptRequest;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
+
+import java.util.List;
 
 /**
  * Dummy implementation to be used when no interrupt controller is needed
@@ -10,27 +13,29 @@ public class DummyInterruptController implements InterruptController {
         return false;
     }
 
+    @Override
     public boolean request(InterruptRequest newInterruptRequest) {
         return false;
     }
 
-    public void removeRequest(int requestNumber) {
-      
+    @Override
+    public void removeRequest(int interruptNumber) {
     }
 
+    @Override
     public void removeRequest(InterruptRequest interruptRequest) {
-      
+
     }
 
     public boolean hasPendingRequests() {
         return false;
     }
 
-    public InterruptRequest getNextRequest() {
+    public FrInterruptRequest getNextRequest() {
         return null;
     }
 
-    public void updateRequestICR(int i, byte value) {
-      
+    public List<InterruptRequest> getInterruptRequestQueue() {
+        return null;
     }
 }

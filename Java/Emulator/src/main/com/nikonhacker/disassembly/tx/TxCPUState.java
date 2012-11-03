@@ -4,10 +4,19 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
+import com.nikonhacker.disassembly.WriteListenerRegister32;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
+import com.nikonhacker.emu.interrupt.tx.Type;
+import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 
 import java.util.Set;
 
+@SuppressWarnings("UnusedDeclaration")
 public class TxCPUState extends CPUState {
+
+    public static final int RESET_ADDRESS = 0xBFC00000;
+
     /** Register names (first array is "standard", second array is "alternate") */
     final static String[][] REG_LABEL = new String[][]{
             {
@@ -91,6 +100,8 @@ public class TxCPUState extends CPUState {
     public final static int HI = 32;
     public final static int LO = 33;
 
+    // CP0
+
     public final static int Config = 34;
     public final static int Config1 = 35;
     public final static int Config2 = 36;
@@ -109,6 +120,8 @@ public class TxCPUState extends CPUState {
     public final static int DEPC = 49;
     public final static int DESAVE = 50;
 
+    // CP1
+
     public final static int CP1_F0 = 51;
 
     public final static int FIR = 67;
@@ -117,21 +130,46 @@ public class TxCPUState extends CPUState {
     public final static int FENR = 70;
     public final static int FCSR = 71;
 
-    public final static int Status_RP_bit = 27;
-    public final static int Status_FR_bit = 26;
-    public final static int Status_RE_bit = 25;
-    public final static int Status_MX_bit = 24;
-    public final static int Status_PX_bit = 23;
-    public final static int Status_BEV_bit = 22;
-    public final static int Status_NMI_bit = 19;
-    public final static int Status_KX_bit = 7;
-    public final static int Status_SX_bit = 6;
-    public final static int Status_UX_bit = 5;
-    public final static int Status_UM_bit = 4;
-    public final static int Status_R0_bit = 3;
-    public final static int Status_ERL_bit = 2;
-    public final static int Status_EXL_bit = 1;
-    public final static int Status_IE_bit = 0;
+
+    // CP0 register fields
+    // Status
+    public final static int Status_CU_pos       = 28;
+    public final static int Status_CU_mask      = 0b11110000_00000000_00000000_00000000;
+    public final static int Status_RP_pos       = 27;
+    public final static int Status_FR_pos       = 26;
+    public final static int Status_RE_pos       = 25;
+    public final static int Status_MX_pos       = 24;
+    public final static int Status_PX_pos       = 23;
+    public final static int Status_BEV_pos      = 22;
+    public final static int Status_NMI_pos      = 19;
+    public final static int Status_Impl_pos     = 16;
+    public final static int Status_Impl_mask    = 0b00000000_00000011_00000000_00000000;
+    public final static int Status_IM_pos       = 8;
+    public final static int Status_IM_mask      = 0b00000000_00000000_11111111_00000000;
+    public final static int Status_KX_pos       = 7;
+    public final static int Status_SX_pos       = 6;
+    public final static int Status_UX_pos       = 5;
+    public final static int Status_UM_pos       = 4;
+    public final static int Status_R0_pos       = 3;
+    public final static int Status_ERL_pos      = 2;
+    public final static int Status_EXL_pos      = 1;
+    public final static int Status_IE_pos       = 0;
+    // Cause
+    public final static int Cause_BD_pos        = 31;
+    public final static int Cause_CE_pos        = 28;
+    public final static int Cause_CE_mask       = 0b00110000_00000000_00000000_00000000;
+    public final static int Cause_IV_pos        = 23;
+    public final static int Cause_WP_pos        = 22;
+    public final static int Cause_IP_pos        = 8;
+    public final static int Cause_IP_mask       = 0b00000000_00000000_11111111_00000000;
+    public final static int Cause_ExcCode_pos   = 2;
+    public final static int Cause_ExcCode_mask  = 0b00000000_00000000_00000000_01111100;
+    // SSCR
+    public final static int Sscr_SSD_pos        = 31;
+    public final static int Sscr_PSS_pos        = 8;
+    public final static int Sscr_PSS_mask       = 0b00000000_00000000_00001111_00000000;
+    public final static int Sscr_CSS_pos        = 0;
+    public final static int Sscr_CSS_mask       = 0b00000000_00000000_00000000_00001111;
 
     /** This array is used to decode the mfc0 and mtc0 instruction operands
      * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
@@ -238,64 +276,25 @@ public class TxCPUState extends CPUState {
         }
     }
 
-
-    public int getCp1CrReg(int regNumber) {
-        switch(regNumber) {
-            case FIR:
-                //       0000Impl06LW3PDSProcesidRevision
-                return 0b00000000000100010000000000000000;
-            case FCSR:
-                return getReg(FCSR);
-            case FCCR:
-                return ((getReg(FCSR) & 0b11111110000000000000000000000000) >> 24) | ((getReg(FCSR) & 0b00000000100000000000000000000000) >> 23);
-            case FEXR:
-                return getReg(FCSR) & 0b00000000000000111111000001111100;
-            case FENR:
-                return (getReg(FCSR) & 0b00000000000000000000111110000011) | ((getReg(FCSR) & 0b00000001000000000000000000000000) >> 22);
-        }
-        throw new RuntimeException("Unknown CP1 register number " + regNumber);
-    }
-
-    public void setCp1CrReg(int regNumber, int value) {
-        switch(regNumber) {
-            case FIR:
-                throw new RuntimeException("Cannot write to read-only CP1 Control register FIR");
-            case FCSR:
-                setReg(FCSR, value);
-                break;
-            case FCCR:
-                setReg(FCSR, (getReg(FCSR) & 0b00000001011111111111111111111111) | ((value & 0b11111110) << 24) | ((value & 0b1) << 23));
-                break;
-            case FEXR:
-                setReg(FCSR, (getReg(FCSR) & 0b11111111111111000000111110000011) | (value & 0b00000000000000111111000001111100));
-                break;
-            case FENR:
-                setReg(FCSR, (getReg(FCSR) & 0b11111111111111111111000001111000) | (value & 0b00000000000000000000111110000011) | ((value & 0b100) << 22));
-                break;
-            default:
-                throw new RuntimeException("Unknown CP1 register number " + regNumber);
-        }
-    }
-
     public enum PowerMode {
         RUN,
         HALT,
         DOZE
     }
 
+    // Fields
 
     private Register32[][] shadowRegisterSets;
-
-    private int activeRegisterSet;
 
     private PowerMode powerMode;
 
     public boolean is16bitIsaMode = false;
 
+    TxInterruptController interruptController = null;
+
     // The 8 condition flags will be stored in bits 0-7 for flags 0-7.
     private Register32 cp1Condition = new Register32(0);
     private int numCp1ConditionFlags = 8;
-
 
     /**
      * Constructor
@@ -313,8 +312,13 @@ public class TxCPUState extends CPUState {
         setPc(startPc);
     }
 
+    @Override
+    public int getResetAddress() {
+        return RESET_ADDRESS;
+    }
+
     /**
-     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB
+     * Retrieves the PC value as defined by the specification, including the ISA mode as LSB.
      * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
      * @return
      */
@@ -333,39 +337,19 @@ public class TxCPUState extends CPUState {
     }
 
 
-    public int getActiveRegisterSet() {
-        return activeRegisterSet;
-    }
-
-    public void setActiveRegisterSet(int activeRegisterSet) {
-        this.activeRegisterSet = activeRegisterSet;
-    }
-
     public PowerMode getPowerMode() {
         return powerMode;
     }
 
     public void setPowerMode(PowerMode powerMode) {
+        // TODO actually halt or restart processor
         this.powerMode = powerMode;
     }
 
-    public String toString() {
-        String registers = "";
-        for (int i = 0; i < regValue.length; i++) {
-            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
-        }
-        registers = registers.trim() + "]";
-        return "CPUState : " +
-                "pc=0x" + Format.asHex(pc, 8) +
-                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
-                ", reg=" + registers +
-                '}';
-    }
-
     public void reset() {
+        powerMode = TxCPUState.PowerMode.RUN;
         shadowRegisterSets = new Register32[8][registerLabels.length];
-        activeRegisterSet = 0;
-        regValue = shadowRegisterSets[activeRegisterSet];
+        regValue = shadowRegisterSets[0];
 
         Register32 reg0 = new NullRegister32();
 
@@ -379,8 +363,9 @@ public class TxCPUState extends CPUState {
             }
         }
 
-        // patch exceptions: r26-27-28 and all registers starting at HI are common to all sets
+        // patch exceptions: r26-27-28 are common to all sets
         for (int registerSet = 1; registerSet < 8; registerSet++) {
+            //noinspection ManualArrayCopy
             for (int i = 26; i <= 28; i++) {
                 shadowRegisterSets[registerSet][i] = shadowRegisterSets[0][i];
             }
@@ -399,17 +384,61 @@ public class TxCPUState extends CPUState {
             }
         }
 
+        // Finally, create special registers with listeners:
+
+        // IER register (in all register sets) is special because it toggles the IE bit
+        shadowRegisterSets[0][IER] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                if (newValue == 0) {
+                    clearStatusIE();
+                }
+                else {
+                    setStatusIE();
+                }
+            }
+        });
+        // Status register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Status] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+        // Cause register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Cause] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+        // And point all sets to them
+        for (int registerSet = 1; registerSet < 8; registerSet++) {
+            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
+            shadowRegisterSets[registerSet][Status] = shadowRegisterSets[0][Status];
+            shadowRegisterSets[registerSet][Cause] = shadowRegisterSets[0][Cause];
+        }
+
+
         regValidityBitmap = 0;
+
+        setStatusBEV();
+        setStatusERL();
+        setReg(PRId, 0x00074000);
+        setSscrSSD();
+        setReg(Debug, 0x00010000);
+        setPc(RESET_ADDRESS);
     }
 
+    @Override
     public void clear() {
         for (int registerSet = 0; registerSet < 8; registerSet++) {
-            setActiveRegisterSet(registerSet);
+            regValue = shadowRegisterSets[registerSet];
             for (int i = 0; i < regValue.length; i++) {
                 setReg(i, 0);
             }
         }
-        setActiveRegisterSet(0);
+        regValue = shadowRegisterSets[0];
 
         regValidityBitmap = 0;
     }
@@ -602,6 +631,443 @@ public class TxCPUState extends CPUState {
         // TODO check
         // return numCp1ConditionFlags;
         throw new RuntimeException("Unimplemented");
+    }
+
+    public int getCp1CrReg(int regNumber) {
+        switch(regNumber) {
+            case FIR:
+                //       0000Impl06LW3PDSProcesidRevision
+                return 0b00000000_00010001_00000000_00000000;
+            case FCSR:
+                return getReg(FCSR);
+            case FCCR:
+                return ((getReg(FCSR) & 0b11111110_00000000_00000000_00000000) >> 24) | ((getReg(FCSR) & 0b00000000_10000000_00000000_00000000) >> 23);
+            case FEXR:
+                return getReg(FCSR)   & 0b00000000_00000011_11110000_01111100;
+            case FENR:
+                return (getReg(FCSR)  & 0b00000000_00000000_00001111_10000011) | ((getReg(FCSR) & 0b00000001_00000000_00000000_00000000) >> 22);
+        }
+        throw new RuntimeException("Unknown CP1 register number " + regNumber);
+    }
+
+    public void setCp1CrReg(int regNumber, int value) {
+        switch(regNumber) {
+            case FIR:
+                throw new RuntimeException("Cannot write to read-only CP1 Control register FIR");
+            case FCSR:
+                setReg(FCSR, value);
+                break;
+            case FCCR:
+                setReg(FCSR, (getReg(FCSR) & 0b00000001_01111111_11111111_11111111) | ((value & 0b11111110) << 24) | ((value & 0b1) << 23));
+                break;
+            case FEXR:
+                setReg(FCSR, (getReg(FCSR) & 0b11111111_11111100_00001111_10000011) | (value & 0b00000000_00000011_11110000_01111100));
+                break;
+            case FENR:
+                setReg(FCSR, (getReg(FCSR) & 0b11111111_11111111_11110000_01111000) | (value & 0b00000000_00000000_00001111_10000011) | ((value & 0b100) << 22));
+                break;
+            default:
+                throw new RuntimeException("Unknown CP1 register number " + regNumber);
+        }
+    }
+
+    // -------------------------  FIELD ACCESSORS  ---------------------------
+
+    // Status
+
+    public int getStatusCU() {
+        return (getReg(Status) & Status_CU_mask) >>> Status_CU_pos;
+    }
+
+    public void setStatusCU(int statusCU) {
+        setReg(Status, (getReg(Status) & ~Status_CU_mask) | (statusCU << Status_CU_pos));
+    }
+
+
+    public boolean isStatusRPSet() {
+        return Format.isBitSet(getReg(Status), Status_RP_pos);
+    }
+
+    public void setStatusRP() {
+        setReg(Status, Format.setBit(getReg(Status), Status_RP_pos));
+    }
+
+    public void clearStatusRP() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_RP_pos));
+    }
+
+
+    public boolean isStatusFRSet() {
+        return Format.isBitSet(getReg(Status), Status_FR_pos);
+    }
+
+    public void setStatusFR() {
+        setReg(Status, Format.setBit(getReg(Status), Status_FR_pos));
+    }
+
+    public void clearStatusFR() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_FR_pos));
+    }
+
+
+    public boolean isStatusRESet() {
+        return Format.isBitSet(getReg(Status), Status_RE_pos);
+    }
+
+    public void setStatusRE() {
+        setReg(Status, Format.setBit(getReg(Status), Status_RE_pos));
+    }
+
+    public void clearStatusRE() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_RE_pos));
+    }
+
+
+    public boolean isStatusMXSet() {
+        return Format.isBitSet(getReg(Status), Status_MX_pos);
+    }
+
+    public void setStatusMX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_MX_pos));
+    }
+
+    public void clearStatusMX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_MX_pos));
+    }
+
+
+    public boolean isStatusPXSet() {
+        return Format.isBitSet(getReg(Status), Status_PX_pos);
+    }
+
+    public void setStatusPX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_PX_pos));
+    }
+
+    public void clearStatusPX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_PX_pos));
+    }
+
+
+    public boolean isStatusBEVSet() {
+        return Format.isBitSet(getReg(Status), Status_BEV_pos);
+    }
+
+    public void setStatusBEV() {
+        setReg(Status, Format.setBit(getReg(Status), Status_BEV_pos));
+    }
+
+    public void clearStatusBEV() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_BEV_pos));
+    }
+
+
+    public boolean isStatusNMISet() {
+        return Format.isBitSet(getReg(Status), Status_NMI_pos);
+    }
+
+    public void setStatusNMI() {
+        setReg(Status, Format.setBit(getReg(Status), Status_NMI_pos));
+    }
+
+    public void clearStatusNMI() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_NMI_pos));
+    }
+
+
+    public int getStatusImpl() {
+        return (getReg(Status) & Status_Impl_mask) >>> Status_Impl_pos;
+    }
+
+    public void setStatusImpl(int statusImpl) {
+        setReg(Status, (getReg(Status) & ~Status_Impl_mask) | (statusImpl << Status_Impl_pos));
+    }
+
+
+    public int getStatusIM() {
+        return (getReg(Status) & Status_IM_mask) >>> Status_IM_pos;
+    }
+
+    public void setStatusIM(int statusIM) {
+        setReg(Status, (getReg(Status) & ~Status_IM_mask) | (statusIM << Status_IM_pos));
+    }
+
+
+    public boolean isStatusKXSet() {
+        return Format.isBitSet(getReg(Status), Status_KX_pos);
+    }
+
+    public void setStatusKX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_KX_pos));
+    }
+
+    public void clearStatusKX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_KX_pos));
+    }
+
+
+    public boolean isStatusSXSet() {
+        return Format.isBitSet(getReg(Status), Status_SX_pos);
+    }
+
+    public void setStatusSX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_SX_pos));
+    }
+
+    public void clearStatusSX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_SX_pos));
+    }
+
+
+    public boolean isStatusUXSet() {
+        return Format.isBitSet(getReg(Status), Status_UX_pos);
+    }
+
+    public void setStatusUX() {
+        setReg(Status, Format.setBit(getReg(Status), Status_UX_pos));
+    }
+
+    public void clearStatusUX() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_UX_pos));
+    }
+
+
+    public boolean isStatusUMSet() {
+        return Format.isBitSet(getReg(Status), Status_UM_pos);
+    }
+
+    public void setStatusUM() {
+        setReg(Status, Format.setBit(getReg(Status), Status_UM_pos));
+    }
+
+    public void clearStatusUM() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_UM_pos));
+    }
+
+
+    public boolean isStatusR0Set() {
+        return Format.isBitSet(getReg(Status), Status_R0_pos);
+    }
+
+    public void setStatusR0() {
+        setReg(Status, Format.setBit(getReg(Status), Status_R0_pos));
+    }
+
+    public void clearStatusR0() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_R0_pos));
+    }
+
+
+    public boolean isStatusERLSet() {
+        return Format.isBitSet(getReg(Status), Status_ERL_pos);
+    }
+
+    public void setStatusERL() {
+        setReg(Status, Format.setBit(getReg(Status), Status_ERL_pos));
+    }
+
+    public void clearStatusERL() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_ERL_pos));
+    }
+
+
+    public boolean isStatusEXLSet() {
+        return Format.isBitSet(getReg(Status), Status_EXL_pos);
+    }
+
+    public void setStatusEXL() {
+        setReg(Status, Format.setBit(getReg(Status), Status_EXL_pos));
+    }
+
+    public void clearStatusEXL() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_EXL_pos));
+    }
+
+
+    public boolean isStatusIESet() {
+        return Format.isBitSet(getReg(Status), Status_IE_pos);
+    }
+
+    public void setStatusIE() {
+        setReg(Status, Format.setBit(getReg(Status), Status_IE_pos));
+    }
+
+    public void clearStatusIE() {
+        setReg(Status, Format.clearBit(getReg(Status), Status_IE_pos));
+    }
+
+
+    // Cause
+
+    public boolean isCauseBDSet() {
+        return Format.isBitSet(getReg(Cause), Cause_BD_pos);
+    }
+
+    public void setCauseBD() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_BD_pos));
+    }
+
+    public void clearCauseBD() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_BD_pos));
+    }
+
+
+    public int getCauseCE() {
+        return (getReg(Cause) & Cause_CE_mask) >>> Cause_CE_pos;
+    }
+
+    public void setCauseCE(int statusCE) {
+        setReg(Cause, (getReg(Cause) & ~Cause_CE_mask) | (statusCE << Cause_CE_pos));
+    }
+
+
+    public boolean isCauseIVSet() {
+        return Format.isBitSet(getReg(Cause), Cause_IV_pos);
+    }
+
+    public void setCauseIV() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_IV_pos));
+    }
+
+    public void clearCauseIV() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_IV_pos));
+    }
+
+
+    public boolean isCauseWPSet() {
+        return Format.isBitSet(getReg(Cause), Cause_WP_pos);
+    }
+
+    public void setCauseWP() {
+        setReg(Cause, Format.setBit(getReg(Cause), Cause_WP_pos));
+    }
+
+    public void clearCauseWP() {
+        setReg(Cause, Format.clearBit(getReg(Cause), Cause_WP_pos));
+    }
+
+
+    public int getCauseIP() {
+        return (getReg(Cause) & Cause_IP_mask) >>> Cause_IP_pos;
+    }
+
+    public void setCauseIP(int statusIP) {
+        setReg(Cause, (getReg(Cause) & ~Cause_IP_mask) | (statusIP << Cause_IP_pos));
+    }
+
+
+    public int getCauseExcCode() {
+        return (getReg(Cause) & Cause_ExcCode_mask) >>> Cause_ExcCode_pos;
+    }
+
+    public void setCauseExcCode(int statusExcCode) {
+        setReg(Cause, (getReg(Cause) & ~Cause_ExcCode_mask) | (statusExcCode << Cause_ExcCode_pos));
+    }
+
+
+    // SSCR
+
+    public boolean isSscrSSDSet() {
+        return Format.isBitSet(getReg(SSCR), Sscr_SSD_pos);
+    }
+
+    /** This method sets the SSD bit and switches to register set 0 */
+    public void setSscrSSD() {
+        setReg(SSCR, Format.setBit(getReg(SSCR), Sscr_SSD_pos));
+        regValue = shadowRegisterSets[0];
+    }
+
+    /** This method clears the SSD bit and switches register set according to current CSS value */
+    public void clearSscrSSD() {
+        setReg(SSCR, Format.clearBit(getReg(SSCR), Sscr_SSD_pos));
+        regValue = shadowRegisterSets[getSscrCSS()];
+    }
+
+
+    public int getSscrPSS() {
+        return (getReg(SSCR) & Sscr_PSS_mask) >>> Sscr_PSS_pos;
+    }
+
+    public void setSscrPSS(int statusPSS) {
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_PSS_mask) | (statusPSS << Sscr_PSS_pos));
+    }
+
+
+    /** This method returns the current shadow register set */
+    public int getSscrCSS() {
+        return (getReg(SSCR) & Sscr_CSS_mask) /*>>> Sscr_CSS_pos = 0*/;
+    }
+
+    /** This method sets the CSS field and switches the current shadow register set accordingly */
+    public void setSscrCSS(int css) {
+        setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (css /*<< Sscr_CSS_pos = 0*/));
+        regValue = shadowRegisterSets[css];
+    }
+
+    /** This method moves CSS to PSS and switches to the given CSS */
+    public void pushSscrCssIfSwitchingEnabled(int css) {
+        if (!isSscrSSDSet()) {
+            setSscrPSS(getSscrCSS());
+            setSscrCSS(css);
+        }
+    }
+
+    /** This method moves back CSS from PSS and switches back to the old CSS */
+    public void popSscrCssIfSwitchingEnabled() {
+        if (!isSscrSSDSet()) {
+            setSscrCSS(getSscrPSS());
+        }
+    }
+
+
+    // -------------------------  Interrupt related methods  ---------------------------
+
+    /**
+     * This is needed because setting CPU registers can cause a software interrupt
+     * @param interruptController
+     */
+    public void setInterruptController(TxInterruptController interruptController) {
+        this.interruptController = interruptController;
+    }
+    /**
+     * if Status<IM>[1:0] == 1 and Cause<IP>[1:0] and Status<IE> == 1, generate a software interrupt request
+     */
+    private void checkSoftwareInterruptGeneration() {
+        if (((getStatusIM() & 0b11) == 1) && ((getCauseIP() & 0b11) == 1) & (isStatusIESet())) {
+            if (interruptController != null) {
+                interruptController.request(new TxInterruptRequest(Type.SOFTWARE_INTERRUPT));
+            }
+        }
+    }
+
+    @Override
+    public boolean accepts(InterruptRequest interruptRequest) {
+        if (interruptController == null) {
+            System.out.println("TxCPUState.accepts() called while no InterruptController was defined");
+            return false;
+        }
+        return  getPowerMode() == PowerMode.RUN
+                && isStatusIESet() // TBC IE is a filter for acceptance, not generation
+                && !isStatusERLSet()
+                && !isStatusEXLSet()
+                // Cfr last paragraph of section 6.5.1.6 : 000 means all interrupts enabled.
+                // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspended
+                && (interruptController.getIlevCmask() == 0 || ((TxInterruptRequest)interruptRequest).getLevel() <= interruptController.getIlevCmask())
+                ;
+    }
+
+
+    public String toString() {
+        String registers = "";
+        for (int i = 0; i < regValue.length; i++) {
+            registers += registerLabels[i] + "=0x" + Format.asHex(getReg(i), 8) + "\n";
+        }
+        registers = registers.trim() + "]";
+        return "TxCPUState : " +
+                "pc=0x" + Format.asHex(pc, 8) +
+                ", rvalid=0b" + Long.toString(regValidityBitmap, 2) +
+                ", reg=" + registers +
+                '}';
     }
 
 }

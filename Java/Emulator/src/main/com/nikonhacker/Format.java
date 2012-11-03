@@ -234,6 +234,11 @@ public class Format {
         return value &  ~(1 << bit);
     }
 
+
+    public static boolean isBitSet(int value, int bit) {
+        return (value & (1 << bit)) != 0;
+    }
+
     // setByte and getByte added by DPS on 12 July 2006
 
     /**
@@ -260,5 +265,4 @@ public class Format {
     public static int getByte(int value, int position) {
         return value << ((3-position)<<3) >>> 24;
     }
-
 }

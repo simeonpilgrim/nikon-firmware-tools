@@ -4,6 +4,7 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
 import java.io.PrintWriter;
@@ -23,6 +24,7 @@ public abstract class Emulator {
     protected CPUState cpuState;
 
     StatementContext context = new StatementContext();
+    protected InterruptController interruptController;
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -85,6 +87,11 @@ public abstract class Emulator {
     public void setMemory(Memory memory) {
         this.memory = memory;
         context.memory = memory;
+    }
+
+
+    public void setInterruptController(InterruptController interruptController) {
+        this.interruptController = interruptController;
     }
 
     public abstract void setOutputOptions(Set<OutputOption> outputOptions);

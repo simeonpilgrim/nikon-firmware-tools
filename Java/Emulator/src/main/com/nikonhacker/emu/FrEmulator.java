@@ -2,17 +2,15 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.FrInstruction;
 import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
+import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
-import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -28,8 +26,6 @@ import java.util.Set;
  * All implemented operations can be tested with the EmulatorTest class
  */
 public class FrEmulator extends Emulator {
-
-    private InterruptController interruptController;
 
     public static void main(String[] args) throws IOException, EmulationException, ParsingException {
         if (args.length < 2) {
@@ -54,10 +50,6 @@ public class FrEmulator extends Emulator {
     public FrEmulator() {
     }
 
-
-    public void setInterruptController(InterruptController interruptController) {
-        this.interruptController = interruptController;
-    }
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
@@ -2287,7 +2279,7 @@ public class FrEmulator extends Emulator {
                 else {
                     // If not in a delay slot, check interrupts
                     if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-                        InterruptRequest interruptRequest = interruptController.getNextRequest();
+                        FrInterruptRequest interruptRequest = (FrInterruptRequest) interruptController.getNextRequest();
                         //Double test because lack of synchronization means the status could have changed in between
                         if (interruptRequest != null) {
                             if (frCpuState.accepts(interruptRequest)){
@@ -2387,6 +2379,7 @@ public class FrEmulator extends Emulator {
         return 32;
     }
 
+    // Shouldn't this code be part of FrInterruptController ? Using context for CPU and memory
     private void processInterrupt(int interruptNumber, int pcToStore) {
         FrCPUState frCpuState = (FrCPUState) cpuState;
         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
@@ -2394,6 +2387,8 @@ public class FrEmulator extends Emulator {
         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
         memory.store32(frCpuState.getReg(FrCPUState.SSP), pcToStore);
         frCpuState.setS(0);
+
+        // Branch to handler
         frCpuState.pc = memory.load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
     }
 
@@ -2406,13 +2401,5 @@ public class FrEmulator extends Emulator {
         context.nextPc = nextPc;
         context.nextReturnAddress = nextReturnAddress;
         context.delaySlotDone = false;
-    }
-
-    public void setMemory(Memory memory) {
-        this.memory = memory;
-    }
-
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
     }
 }

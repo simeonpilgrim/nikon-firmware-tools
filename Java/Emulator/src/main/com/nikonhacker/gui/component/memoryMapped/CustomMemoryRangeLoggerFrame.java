@@ -25,8 +25,8 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
     private final JTextField minAddressField, maxAddressField;
     private final PrintWriterArea textArea;
 
-    public CustomMemoryRangeLoggerFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public CustomMemoryRangeLoggerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
         this.cpuState = cpuState;
 

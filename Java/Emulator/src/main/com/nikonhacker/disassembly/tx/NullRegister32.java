@@ -10,7 +10,7 @@ public class NullRegister32 extends Register32 {
 
     @Override
     public String toString() {
-        return super.toString();
+        return "0";
     }
 
     @Override

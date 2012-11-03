@@ -7,9 +7,12 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.EventTableModel;
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -37,8 +40,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JTable triggerTable;
     private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
-        super(title, resizable, closable, maximizable, iconifiable, chip, ui);
+    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
+        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
         this.memory = memory;
@@ -65,7 +68,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         editPanel.add(listScroller, BorderLayout.CENTER);
 
         JPanel rightPanel = new JPanel();
-        rightPanel.setLayout(new GridLayout(4, 1));
+        rightPanel.setLayout(new GridLayout(0, 1));
 
         JButton addButton = new JButton("Add");
         addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -76,14 +79,16 @@ public class BreakTriggerListFrame extends DocumentFrame {
         });
         rightPanel.add(addButton);
 
-        JButton addSyscallButton = new JButton("Add syscall");
-        addSyscallButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        addSyscallButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addSyscallTrigger();
-            }
-        });
-        rightPanel.add(addSyscallButton);
+        if (chip == Constants.CHIP_FR) {
+            JButton addSyscallButton = new JButton("Add syscall");
+            addSyscallButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+            addSyscallButton.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    addSyscallTrigger();
+                }
+            });
+            rightPanel.add(addSyscallButton);
+        }
 
         JButton editButton = new JButton("Edit");
         editButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -156,9 +161,18 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void addTrigger() {
-        FrCPUState cpuStateFlags = new FrCPUState();
+        CPUState cpuStateFlags;
+        CPUState cpuStateValues;
+        if (chip == Constants.CHIP_FR) {
+            cpuStateFlags = new FrCPUState();
+            cpuStateValues = new FrCPUState();
+        }
+        else {
+            cpuStateFlags = new TxCPUState();
+            cpuStateValues = new TxCPUState();
+        }
         cpuStateFlags.clear();
-        BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
+        BreakTrigger trigger = new BreakTrigger(findNewName(), cpuStateValues, cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange(chip);
 

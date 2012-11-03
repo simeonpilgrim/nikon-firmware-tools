@@ -5,6 +5,7 @@ import com.nikonhacker.gui.EmulatorUI;
 import javax.swing.*;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
+import java.net.URL;
 
 public class DocumentFrame extends JInternalFrame implements InternalFrameListener {
     protected int chip;
@@ -12,12 +13,18 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
 
     private boolean rememberLastPosition;
 
-    public DocumentFrame(String title, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui) {
+    public DocumentFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui) {
         super(title, resizable, closable, maximizable, iconifiable);
         this.chip = chip;
         this.ui = ui;
         addInternalFrameListener(this);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+        if (imageName != null) {
+            String imgLocation = "images/" + imageName + ".png";
+            URL imageURL = EmulatorUI.class.getResource(imgLocation);
+            ImageIcon resizedIcon = new ImageIcon(new ImageIcon(imageURL).getImage().getScaledInstance(20, 20, java.awt.Image.SCALE_SMOOTH));
+            setFrameIcon(resizedIcon);
+        }
     }
 
     public EmulatorUI getEmulatorUi() {
