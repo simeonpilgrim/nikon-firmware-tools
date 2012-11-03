@@ -1848,15 +1848,18 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     // See architecture spec, section 6.1.3.6
-                    if (((TxCPUState)context.cpuState).isStatusERLSet()) {
-                        context.cpuState.setPc(context.cpuState.getReg(TxCPUState.ErrorEPC));
-                        ((TxCPUState)context.cpuState).clearStatusERL();
+                    TxCPUState txCPUState = (TxCPUState) context.cpuState;
+                    if (txCPUState.isStatusERLSet()) {
+                        txCPUState.setPc(txCPUState.getReg(TxCPUState.ErrorEPC));
+                        txCPUState.clearStatusERL();
                     }
                     else {
-                        context.cpuState.setPc(context.cpuState.getReg(TxCPUState.EPC));
-                        ((TxCPUState)context.cpuState).clearStatusEXL();
+                        context.cpuState.setPc(txCPUState.getReg(TxCPUState.EPC));
+                        txCPUState.clearStatusEXL();
                     }
-                    ((TxCPUState)context.cpuState).popSscrCSS();
+                    if (!txCPUState.isSscrSSDSet()) {
+                        txCPUState.popSscrCSS();
+                    }
                 }
             });
 
