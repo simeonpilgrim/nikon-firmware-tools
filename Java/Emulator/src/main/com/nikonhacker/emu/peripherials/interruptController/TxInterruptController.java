@@ -250,7 +250,7 @@ public class TxInterruptController extends AbstractInterruptController {
     public void setIlev(int newIlev) {
         if (Format.isBitSet(newIlev, Ilev_Mlev_pos)) {
             // MLEV = 1 : shift up
-            ilev = ilev << 4 | newIlev & Ilev_Cmask_mask;
+            ilev = (ilev << 4) | (newIlev & Ilev_Cmask_mask);
         }
         else {
             // MLEV = 0 : shift down
