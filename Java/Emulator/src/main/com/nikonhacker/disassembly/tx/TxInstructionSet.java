@@ -2392,9 +2392,33 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
+    // alternate naming
+    public static final TxInstruction jrraRetInstruction = new TxInstruction("ret", "", "", "ret",
+            "RETurn: Jump to statement whose address is in $ra",
+            null, InstructionFormat16.RI,
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.setDelayedPc(
+                            context.cpuState.getReg(TxCPUState.RA)
+                    );
+                    context.cpuState.pc += statement.getNumBytes();
+                }
+            });
 
     public static final TxInstruction jrcraInstruction = new TxInstruction("jrc", "A", "", "jrc $ra",
-            "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra",
+            "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra (no delay slot)",
+            null, InstructionFormat16.RI,
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
+                }
+            });
+
+    // alternate naming
+    public static final TxInstruction jrcraRetInstruction = new TxInstruction("ret", "", "", "ret",
+            "RETurn compact: Jump to statement whose address is in $ra (no delay slot)",
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -2404,7 +2428,7 @@ public class TxInstructionSet
             });
 
     public static final TxInstruction jrcInstruction = new TxInstruction("jrc", "i;Iu", "", "jrc $t2",
-            "Jump Register unconditionally Compact: Jump to statement whose address is in $t2",
+            "Jump Register unconditionally Compact: Jump to statement whose address is in $t2 (no delay slot)",
             null, InstructionFormat16.RI,
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
@@ -4067,9 +4091,16 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b11101000_00000000, 0b11111000_11111111, jrInstruction);
 
-        expandInstruction(opcode16Map,         0b11101000_00100000, 0b11111111_11111111, jrraInstruction);
+        if (outputOptions.contains(OutputOption.RET)) {
+            expandInstruction(opcode16Map,         0b11101000_00100000, 0b11111111_11111111, jrraRetInstruction);
 
-        expandInstruction(opcode16Map,         0b11101000_10100000, 0b11111111_11111111, jrcraInstruction);
+            expandInstruction(opcode16Map,         0b11101000_10100000, 0b11111111_11111111, jrcraRetInstruction);
+        }
+        else {
+            expandInstruction(opcode16Map,         0b11101000_00100000, 0b11111111_11111111, jrraInstruction);
+
+            expandInstruction(opcode16Map,         0b11101000_10100000, 0b11111111_11111111, jrcraInstruction);
+        }
 
         expandInstruction(opcode16Map,         0b11101000_10000000, 0b11111000_11111111, jrcInstruction);
 
