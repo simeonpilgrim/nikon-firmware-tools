@@ -29,6 +29,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
     private JTextField errorEpcTextField = new JTextField();
 
     public TxCPUStateComponent(final TxCPUState cpuState, boolean filterMode) {
+        this.regTextFields = new JTextField[32];
+
         TxCPUState allFlagsSet = new TxCPUState();
         setAllCpuStateFlags(allFlagsSet, true);
 
@@ -36,6 +38,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
     }
 
     public TxCPUStateComponent(final TxCPUState cpuState, TxCPUState cpuStateValidityFlags, boolean filterMode) {
+        this.regTextFields = new JTextField[32];
+
         init(cpuState, cpuStateValidityFlags, filterMode);
     }
 
@@ -55,8 +59,6 @@ public class TxCPUStateComponent extends CPUStateComponent {
         this.filterMode = filterMode;
 
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-
-        this.regTextFields = new JTextField[32];
 
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
