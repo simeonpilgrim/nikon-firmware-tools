@@ -237,10 +237,8 @@ public class TxEmulator extends Emulator {
 
                 if (interruptRequest.getType().isInterrupt()) {
                     // Interrupt
-                    // set CSS to PSS and change CSS, if shadow register switching is enabled
-                    if (!txCPUState.isSscrSSDSet()) {
-                        txCPUState.pushSscrCSS(interruptRequest.getLevel());
-                    }
+                    // set CSS to PSS and change CSS
+                    txCPUState.pushSscrCssIfSwitchingEnabled(interruptRequest.getLevel());
 
                     // set ILEV
                     ((TxInterruptController)interruptController).pushIlevCmask(interruptRequest.getLevel());

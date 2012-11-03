@@ -1857,9 +1857,7 @@ public class TxInstructionSet
                         context.cpuState.setPc(txCPUState.getReg(TxCPUState.EPC));
                         txCPUState.clearStatusEXL();
                     }
-                    if (!txCPUState.isSscrSSDSet()) {
-                        txCPUState.popSscrCSS();
-                    }
+                    txCPUState.popSscrCssIfSwitchingEnabled();
                 }
             });
 
