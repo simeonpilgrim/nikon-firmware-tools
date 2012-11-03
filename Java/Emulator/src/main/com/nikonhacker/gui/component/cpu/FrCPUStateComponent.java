@@ -34,6 +34,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
     JLabel r15Label1 = new JLabel(" ", JLabel.LEFT);
 
     public FrCPUStateComponent(final FrCPUState cpuState, boolean filterMode) {
+        this.regTextFields = new JTextField[32];
+
         FrCPUState allFlagsSet = new FrCPUState();
         setAllCpuStateFlags(allFlagsSet, true);
 
@@ -41,6 +43,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
     }
 
     public FrCPUStateComponent(final FrCPUState cpuState, FrCPUState cpuStateValidityFlags, boolean filterMode) {
+        this.regTextFields = new JTextField[32];
+
         init(cpuState, cpuStateValidityFlags, filterMode);
     }
 
@@ -65,8 +69,6 @@ public class FrCPUStateComponent extends CPUStateComponent {
         this.filterMode = filterMode;
 
         setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-
-        this.regTextFields = new JTextField[32];
 
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
