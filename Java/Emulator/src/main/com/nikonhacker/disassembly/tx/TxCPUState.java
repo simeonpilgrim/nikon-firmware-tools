@@ -248,6 +248,10 @@ public class TxCPUState extends CPUState {
             -1, FCCR, FEXR, -1, FENR, -1, -1, FCSR
     };
 
+    /**
+     * In 16-bit ISA mode, only 8 registers (3 bits) are available in generic instructions
+     * Here is the mapping of those 3-bit values to the actual register numbers
+     */
     static final int[] REGISTER_MAP_16B = new int[] {
             16, 17, 2, 3, 4, 5, 6, 7
     };
