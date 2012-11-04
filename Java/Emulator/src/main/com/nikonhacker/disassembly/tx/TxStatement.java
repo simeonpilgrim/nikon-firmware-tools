@@ -486,6 +486,10 @@ public class TxStatement extends Statement {
                     decodedImm <<= 2;
                     immBitWidth += 2;
                     break;
+                case '8':
+                    decodedImm <<= 3;
+                    immBitWidth += 3;
+                    break;
 
                 case 'A':
                     currentBuffer.append(TxCPUState.registerLabels[TxCPUState.RA]);
