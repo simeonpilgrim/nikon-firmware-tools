@@ -4,6 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
@@ -576,11 +577,20 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         if (matchedTrigger == null) {
             // No match. Create a new one
-            FrCPUState values = new FrCPUState(addressFromLine);
-            FrCPUState flags = new FrCPUState();
+            CPUState values;
+            CPUState flags;
+            if (chip == Constants.CHIP_FR) {
+                values = new FrCPUState(addressFromLine);
+                flags = new FrCPUState();
+                ((FrCPUState)flags).setILM(0, false);
+                flags.setReg(FrCPUState.TBR, 0);
+            }
+            else {
+                values = new TxCPUState(addressFromLine);
+                flags = new TxCPUState();
+            }
             flags.pc = 1;
-            flags.setILM(0, false);
-            flags.setReg(FrCPUState.TBR, 0);
+
             String triggerName;
             if (codeStructure.getFunctions().containsKey(addressFromLine)) {
                 triggerName = codeStructure.getFunctions().get(addressFromLine).getName() + "()";
