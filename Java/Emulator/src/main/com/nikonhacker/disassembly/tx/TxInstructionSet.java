@@ -1967,20 +1967,26 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction adjspInstruction = new TxInstruction("addiu", "S, 4s", "" /* TODO action */, "addiu sp, 16",
+    /* non-EXTENDED : "The 8-bit immediate is shifted left by three bits and sign-extended" */
+    public static final TxInstruction adjsp16Instruction = new TxInstruction("addiu", "S, 8s", "" /* TODO action */, "addiu sp, 16",
             "ADD Immediate Unsigned with SP",
             null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    if (statement.immBitWidth == 8) {
-                        // If not EXTENDed, "The 8-bit immediate is shifted left by three bits and sign-extended"
-                        context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 24 >> 21));
-                    }
-                    else {
-                        // "When EXTENDed, the immediate operand is not shifted at all"
-                        context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
-                    }
+                    // If not EXTENDed, "The 8-bit immediate is shifted left by three bits and sign-extended"
+                    context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 24 >> 21));
+                    context.cpuState.pc += statement.getNumBytes();
+                }
+            });
+    /* EXTENDed : "When EXTENDed, the immediate operand is not shifted at all" */
+    public static final TxInstruction adjspInstruction = new TxInstruction("addiu", "S, s", "" /* TODO action */, "addiu sp, 16",
+            "ADD Immediate Unsigned with SP",
+            null, InstructionFormat16.RI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            new SimulationCode() {
+                public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.cpuState.setReg(TxCPUState.SP, context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -4008,7 +4014,7 @@ public class TxInstructionSet
         expandInstruction(opcode16Map,         0b01000000_00000000, 0b11111000_00010000, addiuInstruction);
         expandInstruction(extendedOpcode16Map, 0b01000000_00000000, 0b11111000_00010000, addiuInstruction);
 
-        expandInstruction(opcode16Map,         0b01100011_00000000, 0b11111111_00000000, adjspInstruction);
+        expandInstruction(opcode16Map,         0b01100011_00000000, 0b11111111_00000000, adjsp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b01100011_00000000, 0b11111111_11100000, adjspInstruction);
 
 /*
