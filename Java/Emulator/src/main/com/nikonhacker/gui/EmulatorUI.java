@@ -1004,10 +1004,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         aboutMenuItem.addActionListener(this);
         helpMenu.add(aboutMenuItem);
 
-        JMenuItem testMenuItem = new JMenuItem("Test");
-        testMenuItem.setActionCommand(COMMAND_TEST);
-        testMenuItem.addActionListener(this);
-        helpMenu.add(testMenuItem);
+//        JMenuItem testMenuItem = new JMenuItem("Test");
+//        testMenuItem.setActionCommand(COMMAND_TEST);
+//        testMenuItem.addActionListener(this);
+//        helpMenu.add(testMenuItem);
 
         return menuBar;
     }
@@ -1121,10 +1121,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             showAboutDialog();
         }
         else if (COMMAND_TEST.equals(e.getActionCommand())) {
-            String msg = "keepHidden=" + String.valueOf(getKeepHidden(splitPane));
-            setStatusText(0, msg);
-            setStatusText(1, msg);
-            //togglePane(true);
+            // noop
         }
         else {
             System.err.println("Unknown menu command : " + e.getActionCommand());
