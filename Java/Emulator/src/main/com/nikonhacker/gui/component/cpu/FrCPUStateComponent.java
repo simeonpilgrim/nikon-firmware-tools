@@ -313,6 +313,27 @@ public class FrCPUStateComponent extends CPUStateComponent {
 
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
+            // Log changes to real-time disassembly window
+            if (instructionPrintWriter != null) {
+                String msg = "";
+                if (pc != cpuState.getPc()) msg += changeString("PC", cpuState.getPc(), pc);
+                if (ilm != cpuState.getILM()) msg += changeString("ILM", cpuState.getILM(), ilm);
+                if (scr != cpuState.getSCR()) msg += changeString("SCR", cpuState.getSCR(), scr);
+                if (ccr != cpuState.getCCR()) msg += changeString("CCR", cpuState.getCCR(), ccr);
+                if (tbr != cpuState.getReg(FrCPUState.TBR)) msg += changeString("TBR", cpuState.getReg(FrCPUState.TBR), tbr);
+                if (rp != cpuState.getReg(FrCPUState.RP)) msg += changeString("RP", cpuState.getReg(FrCPUState.RP), rp);
+                if (ssp != cpuState.getReg(FrCPUState.SSP)) msg += changeString("SSP", cpuState.getReg(FrCPUState.SSP), ssp);
+                if (usp != cpuState.getReg(FrCPUState.USP)) msg += changeString("USP", cpuState.getReg(FrCPUState.USP), usp);
+                if (mdh != cpuState.getReg(FrCPUState.MDH)) msg += changeString("MDH", cpuState.getReg(FrCPUState.MDH), mdh);
+                if (mdl != cpuState.getReg(FrCPUState.MDL)) msg += changeString("MDL", cpuState.getReg(FrCPUState.MDL), mdl);
+                for (int i = 0; i < regs.length; i++) {
+                    if (regs[i] != cpuState.getReg(i)) msg += changeString(FrCPUState.registerLabels[i], cpuState.getReg(i), regs[i]);
+                }
+                if (msg.length() > 0) {
+                    instructionPrintWriter.print("=====> Manual CPU state change:\n" + msg);
+                }
+            }
+
             cpuState.pc = pc;
             cpuState.setILM(ilm, false);
             cpuState.setSCR(scr);

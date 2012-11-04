@@ -5,6 +5,7 @@ import com.nikonhacker.disassembly.CPUState;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import java.io.PrintWriter;
 
 public abstract class CPUStateComponent extends JComponent {
     protected CPUState cpuState;
@@ -12,6 +13,8 @@ public abstract class CPUStateComponent extends JComponent {
     protected JButton saveButton;
     protected JButton cancelButton = new JButton("Cancel");
     protected JTextField[] regTextFields;
+
+    protected PrintWriter instructionPrintWriter;
 
     protected void dumpFieldToRegister(JTextField textField, int registerNumber) {
         if (StringUtils.isBlank(textField.getText())) {
@@ -23,8 +26,6 @@ public abstract class CPUStateComponent extends JComponent {
         }
     }
 
-    public abstract void refresh();
-
     protected void setAllCpuStateFlags(CPUState cpuStateFlags, boolean validity) {
         int value = validity?1:0;
 
@@ -32,6 +33,21 @@ public abstract class CPUStateComponent extends JComponent {
             cpuStateFlags.setReg(i, value);
         }
     }
+
+    protected static String changeString(String label, int oldValue, int newValue) {
+        return changeString(label, "0x" + Format.asHex(oldValue, 8) + " -> 0x" + Format.asHex(newValue, 8));
+    }
+
+    protected static String changeString(String label, String text) {
+        return "        " + label + ": " + text + "\n";
+    }
+
+    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
+        this.instructionPrintWriter = instructionPrintWriter;
+    }
+
+
+    public abstract void refresh();
 
     public abstract void setEditable(boolean editable);
 

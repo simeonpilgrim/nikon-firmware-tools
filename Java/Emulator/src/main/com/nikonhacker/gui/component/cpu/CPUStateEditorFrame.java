@@ -9,6 +9,7 @@ import com.nikonhacker.gui.component.DocumentFrame;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintWriter;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
@@ -42,6 +43,12 @@ public class CPUStateEditorFrame extends DocumentFrame {
         });
         if (!editable) {
             _timer.start();
+        }
+    }
+
+    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
+        if (cpuPanel != null) {
+            cpuPanel.setInstructionPrintWriter(instructionPrintWriter);
         }
     }
 
