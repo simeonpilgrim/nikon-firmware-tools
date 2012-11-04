@@ -176,7 +176,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return name + (getMustBreak()?"break":"") + (getMustBeLogged()?" log":"");
+        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (pcToSet!=null?"jump ":"")).trim() + "]";
     }
 
     /**
