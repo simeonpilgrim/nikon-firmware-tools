@@ -220,7 +220,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DocumentFrame screenEmulatorFrame;
 
     private CPUStateEditorFrame[] cpuStateEditorFrame = new CPUStateEditorFrame[2];
-    private DocumentFrame[] disassemblyLogFrame = new DocumentFrame[2];
+    private DisassemblyFrame[] disassemblyLogFrame = new DisassemblyFrame[2];
     private BreakTriggerListFrame[] breakTriggerListFrame = new BreakTriggerListFrame[2];
     private MemoryActivityViewerFrame[] memoryActivityViewerFrame = new MemoryActivityViewerFrame[2];
     private MemoryHexEditorFrame[] memoryHexEditorFrame = new MemoryHexEditorFrame[2];
@@ -1888,10 +1888,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void toggleDisassemblyLog(int chip) {
         if (disassemblyLogFrame[chip] == null) {
             disassemblyLogFrame[chip] = new DisassemblyFrame("Real-time " + Constants.CHIP_LABEL[chip] + " disassembly log", "disassembly_log", true, true, true, true, chip, this, emulator[chip]);
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(disassemblyLogFrame[chip].getInstructionPrintWriter());
             addDocumentFrame(chip, disassemblyLogFrame[chip]);
             disassemblyLogFrame[chip].display(true);
         }
         else {
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(null);
             disassemblyLogFrame[chip].dispose();
             disassemblyLogFrame[chip] = null;
         }
@@ -1902,6 +1904,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (cpuStateEditorFrame[chip] == null) {
             cpuStateEditorFrame[chip] = new CPUStateEditorFrame(Constants.CHIP_LABEL[chip] + " CPU State", "cpu", false, true, false, true, chip, this, cpuState[chip]);
             cpuStateEditorFrame[chip].setEnabled(!isEmulatorPlaying[chip]);
+            if (disassemblyLogFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(disassemblyLogFrame[chip].getInstructionPrintWriter());
             addDocumentFrame(chip, cpuStateEditorFrame[chip]);
             cpuStateEditorFrame[chip].display(true);
         }

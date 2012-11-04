@@ -209,7 +209,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
             int status = Format.parseIntHexField(statusTextField);
             int cause = Format.parseIntHexField(causeTextField);
             int epc = Format.parseIntHexField(epcTextField);
-            int errorPc = Format.parseIntHexField(errorEpcTextField);
+            int errorEpc = Format.parseIntHexField(errorEpcTextField);
 
             // General purpose registers
             int regs[] = new int[regTextFields.length];
@@ -219,6 +219,25 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
+            // Log changes to real-time disassembly window
+            if (instructionPrintWriter != null) {
+                String msg = "";
+                if (pc != cpuState.pc) msg += changeString("PC", cpuState.pc, pc);
+                if (pcIsaMode16bCheckBox.isSelected() != cpuState.is16bitIsaMode) msg += changeString("PC ISA 16-bit", String.valueOf(cpuState.is16bitIsaMode) + " -> " + String.valueOf(pcIsaMode16bCheckBox.isSelected()));
+                if (hi != cpuState.getReg(TxCPUState.HI)) msg += changeString("HI", cpuState.getReg(TxCPUState.HI), hi);
+                if (lo != cpuState.getReg(TxCPUState.LO)) msg += changeString("LO", cpuState.getReg(TxCPUState.LO), lo);
+                if (status != cpuState.getReg(TxCPUState.Status)) msg += changeString("Status", cpuState.getReg(TxCPUState.Status), status);
+                if (cause != cpuState.getReg(TxCPUState.Cause)) msg += changeString("Cause", cpuState.getReg(TxCPUState.Cause), cause);
+                if (epc != cpuState.getReg(TxCPUState.EPC)) msg += changeString("EPC", cpuState.getReg(TxCPUState.EPC), epc);
+                if (errorEpc != cpuState.getReg(TxCPUState.ErrorEPC)) msg += changeString("ErrorEPC", cpuState.getReg(TxCPUState.ErrorEPC), errorEpc);
+                for (int i = 0; i < regs.length; i++) {
+                    if (regs[i] != cpuState.getReg(i)) msg += changeString(TxCPUState.registerLabels[i], cpuState.getReg(i), regs[i]);
+                }
+                if (msg.length() > 0) {
+                    instructionPrintWriter.print("=====> Manual CPU state change:\n" + msg);
+                }
+            }
+
             cpuState.pc = pc;
             cpuState.is16bitIsaMode = pcIsaMode16bCheckBox.isSelected();
             cpuState.setReg(TxCPUState.HI, hi);
@@ -226,7 +245,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
             cpuState.setReg(TxCPUState.Status, status);
             cpuState.setReg(TxCPUState.Cause, cause);
             cpuState.setReg(TxCPUState.EPC, epc);
-            cpuState.setReg(TxCPUState.ErrorEPC, errorPc);
+            cpuState.setReg(TxCPUState.ErrorEPC, errorEpc);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 cpuState.setReg(i, regs[i]);
