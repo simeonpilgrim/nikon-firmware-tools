@@ -111,10 +111,11 @@ public class TxEmulator extends Emulator {
                                         printWriter.println("------------------------- Accepting " + interruptRequest);
                                     }
                                 }
-                                // TODO we probably should not remove the request from queue automatically.
-                                // TODO this has to be done explicitely by writing to INTCLR register
+                                // TODO : We probably should not remove the request from queue automatically.
+                                // TODO   This has to be done explicitely by writing to INTCLR register
                                 interruptController.removeRequest(interruptRequest);
-                                // TODO : pc or address of branch instruction if in delay slot !
+                                // TODO : Currently, interrupts are not checked in delay slots (see above).
+                                // TODO   Permit that and use address of branch instruction instead of PC if in delay slot !
                                 // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
                                 processInterrupt((TxInterruptRequest) interruptRequest, txCpuState.getPc());
                             }
