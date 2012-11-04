@@ -152,7 +152,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA500: /* ADD2 #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + (BinaryArithmetics.extn(4, statement.imm) & 0xFFFFFFFFL);
+                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
                         result32 = (int) result64;
                         S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
@@ -210,7 +210,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA100: /* ADDN2 #i4, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) + BinaryArithmetics.extn(4, statement.imm));
+                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) + BinaryArithmetics.negativeExtend(4, statement.imm));
     
                         /* No change to NZVC */
 
@@ -299,7 +299,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA900: /* CMP2 #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (BinaryArithmetics.extn(4, statement.imm) & 0xFFFFFFFFL);
+                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
                         S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);

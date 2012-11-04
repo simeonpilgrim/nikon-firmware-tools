@@ -598,7 +598,7 @@ public class TxStatement extends Statement {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (decodedImmBitWidth + 1)) - 1) & BinaryArithmetics.NEG(decodedImmBitWidth, (1 << (decodedImmBitWidth)) | decodedImm), decodedImmBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (decodedImmBitWidth + 1)) - 1) & BinaryArithmetics.neg(decodedImmBitWidth, (1 << (decodedImmBitWidth)) | decodedImm), decodedImmBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
@@ -631,12 +631,12 @@ public class TxStatement extends Statement {
                         currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
                     }
                     else {
-                        if (BinaryArithmetics.IsNeg(decodedImmBitWidth, decodedImm)) {
+                        if (BinaryArithmetics.isNegative(decodedImmBitWidth, decodedImm)) {
                             /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                             if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                                 currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                             }
-                            currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(decodedImmBitWidth, decodedImm), decodedImmBitWidth));
+                            currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.neg(decodedImmBitWidth, decodedImm), decodedImmBitWidth));
                         }
                         else {
                             currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth - 1));

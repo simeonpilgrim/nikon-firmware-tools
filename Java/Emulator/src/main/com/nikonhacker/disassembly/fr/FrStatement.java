@@ -330,7 +330,7 @@ public class FrStatement extends Statement {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.NEG(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.neg(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
@@ -353,13 +353,13 @@ public class FrStatement extends Statement {
                     break;
                 case 's':
                     /* signed constant */
-                    if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm))
+                    if (BinaryArithmetics.isNegative(immBitWidth, decodedImm))
                     {
                         /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                         if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                             currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                         }
-                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
+                        currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.neg(immBitWidth, decodedImm), immBitWidth));
                     }
                     else
                     {
