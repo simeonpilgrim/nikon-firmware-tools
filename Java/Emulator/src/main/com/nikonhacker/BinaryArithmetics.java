@@ -2,40 +2,47 @@ package com.nikonhacker;
 
 public class BinaryArithmetics {
     /**
-     * Extend with Negative sign
-     * @param i number of used bits in original number
-     * @param x original number
-     * @return
+     * Extend with negative sign
+     * @param numBits the number of significant bits in value
+     * @param value the original value
      */
-    public static int extn(int i, int x) {
-        int mask = (1 << i) - 1;
-        return ~mask | x;
-    }
-
-    public static int signExtendMask(int b, int x)
-    {
-        return ((-b) * ((b & x) != 0 ? 1 : 0));
+    public static int negativeExtend(int numBits, int value) {
+        int mask = (1 << numBits) - 1;
+        return ~mask | value;
     }
 
     /**
-     * Interpret value as a signed value based on its last numBits bits, and extend the higher bits
-     * so that return represents the same number, but on 32 bits
-     * @param numBits the number of bits to take into account
-     * @param value the original number
+     * Sign-extend
+     * Interpret value as a signed number based on its last numBits bits, and extend the higher bits
+     * so that the returned value represents the same number, but on 32 bits
+     * @param numBits the number of significant bits in value
+     * @param value the original value
      */
     public static int signExtend(int numBits, int value)
     {
-        return (value | signExtendMask((1 << (numBits - 1)), value));
+        int shift = 32 - numBits;
+        return value << shift >> shift;
     }
 
-    public static int NEG(int n, int x)
+    /**
+     * Returns the opposite of value, interpreting it on numBits bits
+     * @param numBits the number of significant bits in value
+     * @param value the original value
+     */
+    public static int neg(int numBits, int value)
     {
-        return (-signExtend(n, x));
+        return (-signExtend(numBits, value));
     }
 
-    public static boolean IsNeg(int n, int x)
+    /**
+     * Tests if a number is negative, interpreting it on numBits bits
+     * @param numBits the number of significant bits in value
+     * @param value the original value
+     * @return
+     */
+    public static boolean isNegative(int numBits, int value)
     {
-        return (x & (1 << (n - 1))) != 0;
+        return (value & (1 << (numBits - 1))) != 0;
     }
 
     /**
