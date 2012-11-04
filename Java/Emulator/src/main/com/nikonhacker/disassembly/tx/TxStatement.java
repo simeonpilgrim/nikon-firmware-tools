@@ -45,8 +45,11 @@ public class TxStatement extends Statement {
     public int c;
 
 
-    /** number of significant bits in decodedX (for display only) */
+    /** number of significant bits in imm */
     public int immBitWidth;
+
+    /** number of significant bits in decodedImm */
+    public int decodedImmBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
     public int memRangeStart = 0;
@@ -419,6 +422,7 @@ public class TxStatement extends Statement {
         decodedRdFd = rd_fd;
         decodedSaCc = sa_cc;
         decodedImm = imm;
+        decodedImmBitWidth = immBitWidth;
 
         boolean isOptionalExpression = false; // sections between square brackets are "optional"
 
@@ -480,15 +484,15 @@ public class TxStatement extends Statement {
 
                 case '2':
                     decodedImm <<= 1;
-                    immBitWidth += 1;
+                    decodedImmBitWidth += 1;
                     break;
                 case '4':
                     decodedImm <<= 2;
-                    immBitWidth += 2;
+                    decodedImmBitWidth += 2;
                     break;
                 case '8':
                     decodedImm <<= 3;
-                    immBitWidth += 3;
+                    decodedImmBitWidth += 3;
                     break;
 
                 case 'A':
@@ -508,41 +512,41 @@ public class TxStatement extends Statement {
                     if (context.cpuState.isRegisterDefined(decodedRsFs))
                     {
                         decodedImm = context.cpuState.getReg(decodedRsFs);
-                        immBitWidth = 32;
+                        decodedImmBitWidth = 32;
                     }
                     else
                     {
                         decodedImm = 0;
-                        immBitWidth = 0;
+                        decodedImmBitWidth = 0;
                     }
                     break;
                 case 'J':
                     if (context.cpuState.isRegisterDefined(decodedRtFt))
                     {
                         decodedImm = context.cpuState.getReg(decodedRtFt);
-                        immBitWidth = 32;
+                        decodedImmBitWidth = 32;
                     }
                     else
                     {
                         decodedImm = 0;
-                        immBitWidth = 0;
+                        decodedImmBitWidth = 0;
                     }
                     break;
                 case 'K':
                     if (context.cpuState.isRegisterDefined(decodedRdFd))
                     {
                         decodedImm = context.cpuState.getReg(decodedRdFd);
-                        immBitWidth = 32;
+                        decodedImmBitWidth = 32;
                     }
                     else
                     {
                         decodedImm = 0;
-                        immBitWidth = 0;
+                        decodedImmBitWidth = 0;
                     }
                     break;
 
                 case 'a':
-                    pos = immBitWidth;
+                    pos = decodedImmBitWidth;
                     while (pos >= 8){
                         pos -= 8;
                         currentBuffer.append(Format.asAscii(decodedImm >> pos));
@@ -551,7 +555,7 @@ public class TxStatement extends Statement {
                 case 'b':
                     /* shift2 */
                     decodedImm += 16;
-                    immBitWidth += 1;
+                    decodedImmBitWidth += 1;
                     break;
                 case 'c':
                     /* coprocessor operation */
@@ -562,7 +566,7 @@ public class TxStatement extends Statement {
                     if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedImm == 0)) currentBuffer.append(decodedImm);
                     break;
                 case 'f':
-                    pos = immBitWidth >> 1;
+                    pos = decodedImmBitWidth >> 1;
 
                     tmp = (int)(((1L << pos) - 1) & (decodedImm >> pos));
                     int tmq = (int)(((1L << pos) - 1) & decodedImm);
@@ -594,18 +598,18 @@ public class TxStatement extends Statement {
                 case 'n':
                     /* negative constant */
                     //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.NEG(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (decodedImmBitWidth + 1)) - 1) & BinaryArithmetics.NEG(decodedImmBitWidth, (1 << (decodedImmBitWidth)) | decodedImm), decodedImmBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
-                    pos = immBitWidth >> 1;
+                    pos = decodedImmBitWidth >> 1;
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & (decodedImm >> pos), pos));
                     currentBuffer.append(fmt_nxt);
                     currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << pos) - 1) & decodedImm, pos));
                     break;
                 case 'q':
                     /* rational */
-                    pos = immBitWidth >> 1;
+                    pos = decodedImmBitWidth >> 1;
                     currentBuffer.append(((1L << pos) - 1) & (decodedImm >> pos));
                     currentBuffer.append("/");
                     currentBuffer.append(((1L << pos) - 1) & decodedImm);
@@ -622,20 +626,20 @@ public class TxStatement extends Statement {
                     /* signed constant */
                     if (offset != 0) {
                         // relative signed means immediate must be sign-extended before appending, then printed unsigned
-                        decodedImm = offset + BinaryArithmetics.signExtend(immBitWidth, decodedImm);
-                        immBitWidth = 32;
-                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth));
+                        decodedImm = offset + BinaryArithmetics.signExtend(decodedImmBitWidth, decodedImm);
+                        decodedImmBitWidth = 32;
+                        currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
                     }
                     else {
-                        if (BinaryArithmetics.IsNeg(immBitWidth, decodedImm)) {
+                        if (BinaryArithmetics.IsNeg(decodedImmBitWidth, decodedImm)) {
                             /* avoid "a+-b" : remove the last "+" so that output is "a-b" */
                             if (outputOptions.contains(OutputOption.CSTYLE) && (currentBuffer.charAt(currentBuffer.length() - 1) == '+')) {
                                 currentBuffer.delete(currentBuffer.length() - 1, currentBuffer.length() - 1);
                             }
-                            currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(immBitWidth, decodedImm), immBitWidth));
+                            currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.NEG(decodedImmBitWidth, decodedImm), decodedImmBitWidth));
                         }
                         else {
-                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth - 1));
+                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth - 1));
                         }
                     }
                     break;
@@ -643,9 +647,9 @@ public class TxStatement extends Statement {
                     /* unsigned constant */
                     if (offset != 0) {
                         decodedImm = offset + decodedImm;
-                        immBitWidth = 32;
+                        decodedImmBitWidth = 32;
                     }
-                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, immBitWidth));
+                    currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
                     break;
                 case 'v':
                     /* vector */
