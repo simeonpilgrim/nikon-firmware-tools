@@ -224,9 +224,9 @@ public class TxCPUStateComponent extends CPUStateComponent {
             cpuState.setReg(TxCPUState.HI, hi);
             cpuState.setReg(TxCPUState.LO, lo);
             cpuState.setReg(TxCPUState.Status, status);
-            cpuState.setReg(TxCPUState.Cause, status);
-            cpuState.setReg(TxCPUState.EPC, status);
-            cpuState.setReg(TxCPUState.ErrorEPC, status);
+            cpuState.setReg(TxCPUState.Cause, cause);
+            cpuState.setReg(TxCPUState.EPC, epc);
+            cpuState.setReg(TxCPUState.ErrorEPC, errorPc);
 
             for (int i = 0; i < regTextFields.length; i++) {
                 cpuState.setReg(i, regs[i]);
