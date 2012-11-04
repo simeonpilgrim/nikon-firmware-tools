@@ -12,6 +12,8 @@ import java.io.FileOutputStream;
 import java.util.*;
 
 public class Prefs {
+    public static final String KEY_WINDOW_MAIN = "MAIN";
+
     int sleepTick = 2;
     List<BreakTrigger>[] triggers = new ArrayList[2];
     EnumSet<OutputOption>[] outputOptions = new EnumSet[2];
@@ -29,6 +31,10 @@ public class Prefs {
     private String codeStructureGraphOrientation;
 
     private boolean autoUpdateRealOsObjects = true;
+
+    private int dividerLocation;
+    private int lastDividerLocation;
+    private boolean dividerKeepHidden;
 
     public static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -129,14 +135,16 @@ public class Prefs {
         this.triggers[chip] = triggers;
     }
 
+
+    private String getKey(String windowName, int chip) {
+        return windowName + "_" + Constants.CHIP_LABEL[chip];
+    }
+
+
     public int getWindowPositionX(String windowName, int chip) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
         WindowPosition windowPosition = windowPositionMap.get(getKey(windowName, chip));
         return (windowPosition==null)?0:windowPosition.getX();
-    }
-
-    private String getKey(String windowName, int chip) {
-        return windowName + "_" + Constants.CHIP_LABEL[chip];
     }
 
     public int getWindowPositionY(String windowName, int chip) {
@@ -149,6 +157,25 @@ public class Prefs {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
         windowPositionMap.put(getKey(windowName, chip), new WindowPosition(x, y));
     }
+
+
+    public int getMainWindowPositionX() {
+        if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowPosition = windowPositionMap.get(KEY_WINDOW_MAIN);
+        return (windowPosition==null)?0:windowPosition.getX();
+    }
+
+    public int getMainWindowPositionY() {
+        if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowPosition = windowPositionMap.get(KEY_WINDOW_MAIN);
+        return (windowPosition==null)?0:windowPosition.getY();
+    }
+
+    public void setMainWindowPosition(int x, int y) {
+        if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
+        windowPositionMap.put(KEY_WINDOW_MAIN, new WindowPosition(x, y));
+    }
+
 
     public int getWindowSizeX(String windowName, int chip) {
         if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
@@ -167,6 +194,25 @@ public class Prefs {
         windowSizeMap.put(getKey(windowName, chip), new WindowPosition(x, y));
     }
 
+
+    public int getMainWindowSizeX() {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowSize = windowSizeMap.get(KEY_WINDOW_MAIN);
+        return (windowSize==null)?0:windowSize.getX();
+    }
+
+    public int getMainWindowSizeY() {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        WindowPosition windowSize = windowSizeMap.get(KEY_WINDOW_MAIN);
+        return (windowSize==null)?0:windowSize.getY();
+    }
+
+    public void setMainWindowSize(int x, int y) {
+        if (windowSizeMap==null) windowSizeMap = new HashMap<String, WindowPosition>();
+        windowSizeMap.put(KEY_WINDOW_MAIN, new WindowPosition(x, y));
+    }
+
+
     public String getCodeStructureGraphOrientation() {
         return codeStructureGraphOrientation;
     }
@@ -183,15 +229,39 @@ public class Prefs {
         return autoUpdateRealOsObjects;
     }
 
+    public int getDividerLocation() {
+        return dividerLocation;
+    }
+
+    public void setDividerLocation(int dividerLocation) {
+        this.dividerLocation = dividerLocation;
+    }
+
+    public int getLastDividerLocation() {
+        return lastDividerLocation;
+    }
+
+    public void setLastDividerLocation(int lastDividerLocation) {
+        this.lastDividerLocation = lastDividerLocation;
+    }
+
+    public boolean isDividerKeepHidden() {
+        return dividerKeepHidden;
+    }
+
+    public void setDividerKeepHidden(boolean dividerKeepHidden) {
+        this.dividerKeepHidden = dividerKeepHidden;
+    }
+
     /**
      * This is basically just a structure with an X Y value.
      * Now used for position but also for size
-     * Should probably have used java.awt.Point but didn't want to break saved prefs ...
+     * java.awt.Point looks similar but has double as getters :-(. Moreover, it would break current config files
      */
     public class WindowPosition {
         int x = 0;
         int y = 0;
-        
+
         public WindowPosition(int x, int y) {
             this.x = x;
             this.y = y;
