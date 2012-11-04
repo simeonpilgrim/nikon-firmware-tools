@@ -72,11 +72,13 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.*;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -122,6 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String COMMAND_ENCODE = "ENCODE";
     private static final String COMMAND_QUIT = "QUIT";
     private static final String COMMAND_ABOUT = "ABOUT";
+    private static final String COMMAND_TEST = "TEST";
 
     public static final String BUTTON_SIZE_SMALL = "SMALL";
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
@@ -259,6 +262,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private Prefs prefs = new Prefs();
     private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
+    private final JSplitPane splitPane;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -323,11 +327,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
-        //Make the app window indented 50 pixels from each edge of the screen.
-        int inset = 50;
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
-
         //Set up the GUI.
         setJMenuBar(createMenuBar());
 
@@ -356,9 +355,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 Toolkit.getDefaultToolkit().getImage(EmulatorUI.class.getResource("images/nh_64x64.png"))
         ));
 
-        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, contentPane[Constants.CHIP_FR], contentPane[Constants.CHIP_TX]);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, contentPane[Constants.CHIP_FR], contentPane[Constants.CHIP_TX]);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(0.5);
+
+        //togglePane(false);
+
         setContentPane(splitPane);
 
         applyPrefsToUI();
@@ -369,6 +371,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 loadImage(chip);
             }
         }
+
+        restoreMainWindowSettings();
 
         updateStates();
 
@@ -382,6 +386,67 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 updateStatusBar(Constants.CHIP_TX);
             }
         }).start();
+    }
+    private void saveMainWindowSettings() {
+        prefs.setMainWindowPosition(getX(), getY());
+        prefs.setMainWindowSize(getWidth(), getHeight());
+
+        prefs.setDividerLocation(splitPane.getDividerLocation());
+        prefs.setLastDividerLocation(splitPane.getLastDividerLocation());
+        prefs.setDividerKeepHidden(getKeepHidden(splitPane));
+    }
+
+    private void restoreMainWindowSettings() {
+        if (prefs.getMainWindowSizeX() == 0) {
+            //Settings were never saved. Make the app window indented 50 pixels from each edge of the screen.
+            int inset = 50;
+            Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
+        }
+        else {
+            setBounds(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY(), prefs.getMainWindowSizeX(), prefs.getMainWindowSizeY());
+
+            splitPane.setDividerLocation(prefs.getDividerLocation());
+            splitPane.setLastDividerLocation(prefs.getLastDividerLocation());
+            setKeepHidden(splitPane, prefs.isDividerKeepHidden());
+        }
+    }
+
+    /**
+     * Method circumventing package access to setKeepHidden() method of BasicSplitPaneUI
+     * @param splitPane
+     * @param keepHidden
+     * @author taken from http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
+     */
+    private void setKeepHidden(JSplitPane splitPane, boolean keepHidden) {
+        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try{
+                Method setKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("setKeepHidden", new Class<?>[] { Boolean.TYPE }); //boolean.class });
+                setKeepHidden.setAccessible(true);
+                setKeepHidden.invoke(splitPane.getUI(), new Object[] { keepHidden });
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Method circumventing package access to getKeepHidden() method of BasicSplitPaneUI
+     * @param splitPane
+     * @return true if one panel is hidden
+     * @author inspired by http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
+     */
+    private boolean getKeepHidden(JSplitPane splitPane) {
+        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try{
+                Method getKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("getKeepHidden", new Class<?>[]{});
+                getKeepHidden.setAccessible(true);
+                return (Boolean)(getKeepHidden.invoke(splitPane.getUI()));
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     private void applyPrefsToUI() {
@@ -939,6 +1004,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         aboutMenuItem.addActionListener(this);
         helpMenu.add(aboutMenuItem);
 
+        JMenuItem testMenuItem = new JMenuItem("Test");
+        testMenuItem.setActionCommand(COMMAND_TEST);
+        testMenuItem.addActionListener(this);
+        helpMenu.add(testMenuItem);
+
         return menuBar;
     }
 
@@ -1049,6 +1119,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_ABOUT.equals(e.getActionCommand())) {
             showAboutDialog();
+        }
+        else if (COMMAND_TEST.equals(e.getActionCommand())) {
+            String msg = "keepHidden=" + String.valueOf(getKeepHidden(splitPane));
+            setStatusText(0, msg);
+            setStatusText(1, msg);
+            //togglePane(true);
         }
         else {
             System.err.println("Unknown menu command : " + e.getActionCommand());
@@ -2470,6 +2546,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void dispose() {
         super.dispose();
         closeAllFrames();
+        saveMainWindowSettings();
         Prefs.save(prefs);
         System.exit(0);
     }
