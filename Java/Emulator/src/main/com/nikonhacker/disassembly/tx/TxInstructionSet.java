@@ -3430,7 +3430,7 @@ public class TxInstructionSet
     /** 16-bit version of sltInstruction uses t8 as fixed destination */
     public static final TxInstruction slt16Instruction = new TxInstruction("slt", "i, j", "", "slt $t1,$t2",
             "Set on Less Than: If $t1 is less than $t2, then set $t8 to 1 else set $t8 to 0",
-            null, InstructionFormat16.RI,
+            null, InstructionFormat16.RR,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
