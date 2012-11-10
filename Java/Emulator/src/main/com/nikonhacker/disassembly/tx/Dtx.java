@@ -74,7 +74,7 @@ public class Dtx extends Disassembler
     }
 
 
-    protected int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
 
         int sizeInBytes = 0;
 
