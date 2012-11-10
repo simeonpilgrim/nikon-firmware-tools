@@ -2014,7 +2014,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bclrInstruction = new TxInstruction("bclr", "u(i), l", "", "bclr 4(sp), 7",
+    public static final TxInstruction bclrInstruction = new TxInstruction("bclr", "B, l", "", "bclr 4(sp), 7",
             "Bit CLeaR: clear given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2103,7 +2103,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bextInstruction = new TxInstruction("bext", "u(i), l", "", "bext 4(sp), 7",
+    public static final TxInstruction bextInstruction = new TxInstruction("bext", "B, l", "", "bext 4(sp), 7",
             "Bit EXTract: extract given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2133,7 +2133,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction binsInstruction = new TxInstruction("bins", "u(i), l", "", "bins 4(sp), 7",
+    public static final TxInstruction binsInstruction = new TxInstruction("bins", "B, l", "", "bins 4(sp), 7",
             "Bit INSert: insert given bit at memory address",
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2193,7 +2193,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction bsetInstruction = new TxInstruction("bset", "u(i), l", "", "bset 4(sp), 7",
+    public static final TxInstruction bsetInstruction = new TxInstruction("bset", "B, l", "", "bset 4(sp), 7",
             "Bit SET: set given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2255,7 +2255,7 @@ public class TxInstructionSet
                 }
             });
 
-    public static final TxInstruction btstInstruction = new TxInstruction("btst", "u(i), l", "", "btst 4(sp), 7",
+    public static final TxInstruction btstInstruction = new TxInstruction("btst", "B, l", "", "btst 4(sp), 7",
             "Bit TeST: extract given bit from memory address",
             null, InstructionFormat16.SPC_BIT,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,

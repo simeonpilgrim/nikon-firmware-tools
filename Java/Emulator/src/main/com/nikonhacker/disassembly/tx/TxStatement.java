@@ -408,7 +408,7 @@ public class TxStatement extends Statement {
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
      * @see TxInstruction for a description of all possible chars
      */
-    public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) {
+    public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException {
 
         /* DISPLAY FORMAT processing */
 
@@ -506,6 +506,36 @@ public class TxStatement extends Statement {
                     break;
                 case 'S':
                     currentBuffer.append(TxCPUState.registerLabels[TxCPUState.SP]);
+                    break;
+
+                case 'B': // Bit operations such as bext, bins, etc (using SPECIAL_BIT encoding), have an offset on a varying base register.
+                          // 'B' prints this full expression, such as "0x12(SP)"
+                    switch (rs_fs) {
+                        case 0b00:
+                            if (BinaryArithmetics.isNegative(decodedImmBitWidth, decodedImm)) {
+                                currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), BinaryArithmetics.neg(decodedImmBitWidth, decodedImm), decodedImmBitWidth));
+                            }
+                            else {
+                                currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth - 1));
+                            }
+                            currentBuffer.append("(" + TxCPUState.registerLabels[0] + ")");
+                            break;
+                        case 0b01:
+                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
+                            currentBuffer.append("(" + TxCPUState.registerLabels[TxCPUState.GP] + ")");
+                            break;
+                        case 0b10:
+                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
+                            currentBuffer.append("(" + TxCPUState.registerLabels[TxCPUState.SP] + ")");
+                            break;
+                        case 0b11:
+                            currentBuffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth));
+                            currentBuffer.append("(" + TxCPUState.registerLabels[TxCPUState.FP] + ")");
+                            break;
+                        default:
+                            throw new DisassemblyException("Unrecognized base for Bit operation : " + sa_cc);
+
+                    }
                     break;
 
                 case 'I':
