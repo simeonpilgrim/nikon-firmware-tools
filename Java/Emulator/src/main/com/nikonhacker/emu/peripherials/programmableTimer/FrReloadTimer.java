@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.peripherials.reloadTimer;
+package com.nikonhacker.emu.peripherials.programmableTimer;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
  * Based on spec http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
  */
-public class ReloadTimer {
+public class FrReloadTimer extends ProgrammableTimer {
     /** PCLK @50MHz was determined based on the system clock ticking every ms */
     public final static int PCLK_FREQUENCY = 50000000;
 
@@ -23,17 +23,6 @@ public class ReloadTimer {
     /** Underlying scheduler */
     ScheduledExecutorService executorService;
 
-    /** This is the number of this timer (0-2 normally) */
-    private int timerNumber;
-
-    /** InterruptController is passed to constructor to be able to actually trigger requests */
-    private InterruptController interruptController;
-
-
-    /**
-     * This is an emulator setting allowing to pause timers even though their emulated state is enabled
-     */
-    private boolean enabled = false;
 
     /** The scale compensates for the fact that emulated clocks cannot run faster than MAX_EMULATOR_FREQUENCY
      *  So emulated timers running faster are triggered at a (emulated frequency / scale)
@@ -56,17 +45,8 @@ public class ReloadTimer {
     private boolean isInUnderflowCondition; // indicates an underflow has occurred
 
 
-    public ReloadTimer(int timerNumber, InterruptController interruptController) {
-        this.timerNumber = timerNumber;
-        this.interruptController = interruptController;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
-
-    public boolean isEnabled() {
-        return enabled;
+    public FrReloadTimer(int timerNumber, InterruptController interruptController) {
+        super(interruptController, timerNumber);
     }
 
 

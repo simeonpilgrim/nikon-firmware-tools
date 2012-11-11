@@ -3,7 +3,7 @@ package com.nikonhacker.emu.memory.listener.tx;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
-import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 /**
@@ -68,17 +68,33 @@ public class TxIoListener implements IoActivityListener {
     public static final int REGISTER_IMCG10  =    0xFF00_1938; // CG interrupt mode control register 10
     public static final int REGISTER_IMCG11  =    0xFF00_193C; // CG interrupt mode control register 11
 
+    // Timer
+    private static final int NB_TIMER          = 18;
+    private static final int TIMER_OFFSET_BITS = 6;
+    private static final int TIMER_OFFSET      = 1 << TIMER_OFFSET_BITS;
+    private static final int REGISTER_TB0EN   =    0xFF00_4500; // Timer enable register
+    private static final int REGISTER_TB0RUN  =    0xFF00_4504; // Timer RUN register
+    private static final int REGISTER_TB0CR   =    0xFF00_4508; // Timer control register
+    private static final int REGISTER_TB0MOD  =    0xFF00_450C; // Timer mode register
+    private static final int REGISTER_TB0FFCR =    0xFF00_4510; // Timer flip-flop control register
+    private static final int REGISTER_TB0ST   =    0xFF00_4514; // Timer status register
+    private static final int REGISTER_TB0IM   =    0xFF00_4518; // Timer Interrupt mask register
+    private static final int REGISTER_TB0UC   =    0xFF00_451C; // Timer up counter register
+    private static final int REGISTER_TB0RG0  =    0xFF00_4520; // Timer register low word
+    private static final int REGISTER_TB0RG1  =    0xFF00_4524; // Timer register hi word
+    private static final int REGISTER_TB0CP0  =    0xFF00_4528; // Timer Capture register lo word
+    private static final int REGISTER_TB0CP1  =    0xFF00_452C; // Timer Capture register hi word
 
     private final TxCPUState cpuState;
     private final TxInterruptController interruptController;
 
-    private final ReloadTimer[] reloadTimers;
+    private final TxTimer[] timers;
     private SerialInterface[] serialInterfaces;
 
-    public TxIoListener(TxCPUState cpuState, TxInterruptController interruptController, ReloadTimer[] reloadTimers, SerialInterface[] serialInterfaces) {
+    public TxIoListener(TxCPUState cpuState, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
         this.interruptController = interruptController;
-        this.reloadTimers = reloadTimers;
+        this.timers = timers;
         this.serialInterfaces = serialInterfaces;
     }
 
