@@ -46,7 +46,7 @@ public class FrReloadTimer extends ProgrammableTimer {
 
 
     public FrReloadTimer(int timerNumber, InterruptController interruptController) {
-        super(interruptController, timerNumber);
+        super(timerNumber, interruptController);
     }
 
 
