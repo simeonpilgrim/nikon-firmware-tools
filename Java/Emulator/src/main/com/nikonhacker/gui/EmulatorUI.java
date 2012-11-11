@@ -26,7 +26,9 @@ import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
-import com.nikonhacker.emu.peripherials.reloadTimer.ReloadTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
@@ -249,7 +251,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DebuggableMemory[] memory = new DebuggableMemory[2];
     private InterruptController[] interruptController = new InterruptController[2];
     private java.util.Timer reloadAnimationTimer;
-    private ReloadTimer[] reloadTimers;
+    private ProgrammableTimer[][] programmableTimers = new ProgrammableTimer[2][];
     private SerialInterface[][] serialInterfaces = new SerialInterface[2][];
 
     private CodeStructure[] codeStructure = new CodeStructure[2];
@@ -1747,14 +1749,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             interruptController[chip] = (chip == Constants.CHIP_FR)?new FrInterruptController(memory[chip]):new TxInterruptController((TxCPUState)cpuState[chip], memory[chip]);
 
-            reloadTimers = new ReloadTimer[]{
-                    new ReloadTimer(0, interruptController[chip]),
-                    new ReloadTimer(1, interruptController[chip]),
-                    new ReloadTimer(2, interruptController[chip])
-            };
-
             if (chip == Constants.CHIP_FR) {
                 // FR
+                programmableTimers[chip] = new FrReloadTimer[]{
+                        new FrReloadTimer(0, interruptController[chip]),
+                        new FrReloadTimer(1, interruptController[chip]),
+                        new FrReloadTimer(2, interruptController[chip])
+                };
 
                 serialInterfaces[chip] = new SerialInterface[]{
                         /** The number of actual serial interfaces is pure speculation. See ExpeedIoListener for more info */
@@ -1765,17 +1766,38 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new SerialInterface(4, interruptController[chip], 0x1B),
                         new SerialInterface(5, interruptController[chip], 0x1B)
                 };
+
                 memory[chip].setIoActivityListener(
                         new ExpeedIoListener(
                                 (FrCPUState) cpuState[chip],
                                 (FrInterruptController) interruptController[chip],
-                                reloadTimers,
+                                (FrReloadTimer[]) programmableTimers[chip],
                                 serialInterfaces[chip]
                         )
                 );
             }
             else {
                 // TX
+                programmableTimers[chip] = new TxTimer[]{
+                        new TxTimer(0x0, interruptController[chip]),
+                        new TxTimer(0x1, interruptController[chip]),
+                        new TxTimer(0x2, interruptController[chip]),
+                        new TxTimer(0x3, interruptController[chip]),
+                        new TxTimer(0x4, interruptController[chip]),
+                        new TxTimer(0x5, interruptController[chip]),
+                        new TxTimer(0x6, interruptController[chip]),
+                        new TxTimer(0x7, interruptController[chip]),
+                        new TxTimer(0x8, interruptController[chip]),
+                        new TxTimer(0x9, interruptController[chip]),
+                        new TxTimer(0xA, interruptController[chip]),
+                        new TxTimer(0xB, interruptController[chip]),
+                        new TxTimer(0xC, interruptController[chip]),
+                        new TxTimer(0xD, interruptController[chip]),
+                        new TxTimer(0xE, interruptController[chip]),
+                        new TxTimer(0xF, interruptController[chip]),
+                        new TxTimer(0x10, interruptController[chip]),
+                        new TxTimer(0x11, interruptController[chip])
+                };
 
                 ((TxCPUState)cpuState[chip]).setInterruptController((TxInterruptController) interruptController[chip]);
 
@@ -1793,7 +1815,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         new TxIoListener(
                                 (TxCPUState) cpuState[chip],
                                 (TxInterruptController) interruptController[chip],
-                                reloadTimers,
+                                (TxTimer[]) programmableTimers[chip],
                                 serialInterfaces[chip]
                         )
                 );
@@ -2013,9 +2035,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private void toggleReloadTimers(final int chip) {
-        if (!reloadTimers[0].isEnabled()) {
-            for (ReloadTimer reloadTimer : reloadTimers) {
-                reloadTimer.setEnabled(true);
+        if (!programmableTimers[chip][0].isEnabled()) {
+            for (ProgrammableTimer timer : programmableTimers[chip]) {
+                timer.setEnabled(true);
             }
             setStatusText(chip, "Reload Timers enabled");
             // Animate button
@@ -2032,8 +2054,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }, 0, 300 /*ms*/);
         }
         else {
-            for (ReloadTimer reloadTimer : reloadTimers) {
-                reloadTimer.setEnabled(false);
+            for (ProgrammableTimer timer : programmableTimers[chip]) {
+                timer.setEnabled(false);
             }
             setStatusText(chip, "Reload Timers disabled");
             // Stop button animation
