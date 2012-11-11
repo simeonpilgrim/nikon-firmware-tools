@@ -23,6 +23,7 @@ public class MemoryPageMappedComponentFrame extends DocumentFrame {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
         final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
+        textArea.setAutoScroll(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
         listener = new PageAccessLoggerActivityListener(textArea.getPrintWriter(), page, cpuState);
         memory.addActivityListener(listener);

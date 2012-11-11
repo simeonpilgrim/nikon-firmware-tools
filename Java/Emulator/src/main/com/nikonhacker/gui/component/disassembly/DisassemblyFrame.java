@@ -21,7 +21,7 @@ public class DisassemblyFrame extends DocumentFrame {
         this.emulator = emulator;
 
         PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
-
+        textArea.setAutoScroll(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
 
         instructionPrintWriter = textArea.getPrintWriter();
