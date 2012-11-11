@@ -31,6 +31,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
         this.cpuState = cpuState;
 
         textArea = new PrintWriterArea(ROWS, COLUMNS);
+        textArea.setAutoScroll(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
 
         JPanel selectionPanel = new JPanel();
