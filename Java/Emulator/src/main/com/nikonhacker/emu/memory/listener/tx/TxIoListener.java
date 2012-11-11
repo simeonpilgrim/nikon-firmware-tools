@@ -89,7 +89,7 @@ public class TxIoListener implements IoActivityListener {
     private final TxInterruptController interruptController;
 
     private final TxTimer[] timers;
-    private SerialInterface[] serialInterfaces;
+    private final SerialInterface[] serialInterfaces;
 
     public TxIoListener(TxCPUState cpuState, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
@@ -111,9 +111,38 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
-//        if (addr == xxx) {
-//            return yyy;
-//        }
+
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    return (byte) timers[timerNr].getEn();
+                case REGISTER_TB0RUN:
+                    return (byte) timers[timerNr].getRun();
+                case REGISTER_TB0CR:
+                    return (byte) timers[timerNr].getCr();
+                case REGISTER_TB0MOD:
+                    return (byte) timers[timerNr].getMod();
+                case REGISTER_TB0FFCR:
+                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                case REGISTER_TB0ST:
+                    return (byte) timers[timerNr].getSt();
+                case REGISTER_TB0IM:
+                    return (byte) timers[timerNr].getIm();
+                case REGISTER_TB0UC:
+                    return (byte) timers[timerNr].getUc();
+                case REGISTER_TB0RG0:
+                    return (byte) timers[timerNr].getRg0();
+                case REGISTER_TB0RG1:
+                    return (byte) timers[timerNr].getRg1();
+                case REGISTER_TB0CP0:
+                    return (byte) timers[timerNr].getCp0();
+                case REGISTER_TB0CP1:
+                    return (byte) timers[timerNr].getCp1();
+            }
+        }
+
         return null;
     }
 
@@ -126,9 +155,37 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onIoLoad16(byte[] ioPage, int addr, int value) {
-//        if (addr == xxx) {
-//            return yyy;
-//        }
+
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    return timers[timerNr].getEn();
+                case REGISTER_TB0RUN:
+                    return timers[timerNr].getRun();
+                case REGISTER_TB0CR:
+                    return timers[timerNr].getCr();
+                case REGISTER_TB0MOD:
+                    return timers[timerNr].getMod();
+                case REGISTER_TB0FFCR:
+                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                case REGISTER_TB0ST:
+                    return timers[timerNr].getSt();
+                case REGISTER_TB0IM:
+                    return timers[timerNr].getIm();
+                case REGISTER_TB0UC:
+                    return timers[timerNr].getUc();
+                case REGISTER_TB0RG0:
+                    return timers[timerNr].getRg0();
+                case REGISTER_TB0RG1:
+                    return timers[timerNr].getRg1();
+                case REGISTER_TB0CP0:
+                    return timers[timerNr].getCp0();
+                case REGISTER_TB0CP1:
+                    return timers[timerNr].getCp1();
+            }
+        }
         return null;
     }
 
@@ -141,43 +198,162 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
-        if (addr == REGISTER_ILEV) {
-            return interruptController.getIlev();
-        } else if (addr == REGISTER_IVR) {
-            // TODO Until the IVR is read, no hardware interrupt from INTC is accepted (see HW spec section 6.4.1.4)
-            return interruptController.getIvr();
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    return timers[timerNr].getEn();
+                case REGISTER_TB0RUN:
+                    return timers[timerNr].getRun();
+                case REGISTER_TB0CR:
+                    return timers[timerNr].getCr();
+                case REGISTER_TB0MOD:
+                    return timers[timerNr].getMod();
+                case REGISTER_TB0FFCR:
+                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                case REGISTER_TB0ST:
+                    return timers[timerNr].getSt();
+                case REGISTER_TB0IM:
+                    return timers[timerNr].getIm();
+                case REGISTER_TB0UC:
+                    return timers[timerNr].getUc();
+                case REGISTER_TB0RG0:
+                    return timers[timerNr].getRg0();
+                case REGISTER_TB0RG1:
+                    return timers[timerNr].getRg1();
+                case REGISTER_TB0CP0:
+                    return timers[timerNr].getCp0();
+                case REGISTER_TB0CP1:
+                    return timers[timerNr].getCp1();
+            }
         }
-
+        switch (addr) {
+            case REGISTER_ILEV:
+                return interruptController.getIlev();
+            case REGISTER_IVR:
+                // TODO Until the IVR is read, no hardware interrupt from INTC is accepted (see HW spec section 6.4.1.4)
+                return interruptController.getIvr();
+            }
         return null;
     }
 
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
-        if (addr == REGISTER_INTCLR) {
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    timers[timerNr].setEn(value); break;
+                case REGISTER_TB0RUN:
+                    timers[timerNr].setRun(value); break;
+                case REGISTER_TB0CR:
+                    timers[timerNr].setCr(value); break;
+                case REGISTER_TB0MOD:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0FFCR:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0ST:
+                    timers[timerNr].setSt(value); break;
+                case REGISTER_TB0IM:
+                    timers[timerNr].setIm(value); break;
+                case REGISTER_TB0UC:
+                    timers[timerNr].setUc(value); break;
+                case REGISTER_TB0RG0:
+                    timers[timerNr].setRg0(value); break;
+                case REGISTER_TB0RG1:
+                    timers[timerNr].setRg1(value); break;
+                case REGISTER_TB0CP0:
+                    timers[timerNr].setCp0(value); break;
+                case REGISTER_TB0CP1:
+                    timers[timerNr].setCp1(value); break;
+            }
+        }
+        else if (addr == REGISTER_INTCLR) {
             throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
         }
+
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore16(byte[] ioPage, int addr, int value) {
-        if (addr == REGISTER_INTCLR) {
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    timers[timerNr].setEn(value); break;
+                case REGISTER_TB0RUN:
+                    timers[timerNr].setRun(value); break;
+                case REGISTER_TB0CR:
+                    timers[timerNr].setCr(value); break;
+                case REGISTER_TB0MOD:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0FFCR:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0ST:
+                    timers[timerNr].setSt(value); break;
+                case REGISTER_TB0IM:
+                    timers[timerNr].setIm(value); break;
+                case REGISTER_TB0UC:
+                    timers[timerNr].setUc(value); break;
+                case REGISTER_TB0RG0:
+                    timers[timerNr].setRg0(value); break;
+                case REGISTER_TB0RG1:
+                    timers[timerNr].setRg1(value); break;
+                case REGISTER_TB0CP0:
+                    timers[timerNr].setCp0(value); break;
+                case REGISTER_TB0CP1:
+                    timers[timerNr].setCp1(value); break;
+            }
+        }
+        else if (addr == REGISTER_INTCLR) {
             interruptController.setIntClr(value);
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore32(byte[] ioPage, int addr, int value) {
-        if (addr == REGISTER_ILEV) {
-            interruptController.setIlev(value);
+        // Timer configuration registers
+        if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
+            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+                case REGISTER_TB0EN:
+                    timers[timerNr].setEn(value); break;
+                case REGISTER_TB0RUN:
+                    timers[timerNr].setRun(value); break;
+                case REGISTER_TB0CR:
+                    timers[timerNr].setCr(value); break;
+                case REGISTER_TB0MOD:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0FFCR:
+                    timers[timerNr].setMod(value); break;
+                case REGISTER_TB0ST:
+                    timers[timerNr].setSt(value); break;
+                case REGISTER_TB0IM:
+                    timers[timerNr].setIm(value); break;
+                case REGISTER_TB0UC:
+                    timers[timerNr].setUc(value); break;
+                case REGISTER_TB0RG0:
+                    timers[timerNr].setRg0(value); break;
+                case REGISTER_TB0RG1:
+                    timers[timerNr].setRg1(value); break;
+                case REGISTER_TB0CP0:
+                    timers[timerNr].setCp0(value); break;
+                case REGISTER_TB0CP1:
+                    timers[timerNr].setCp1(value); break;
+            }
         }
-        else if (addr == REGISTER_IVR) {
-            interruptController.setIvr31_9(value);
-        }
-        else if (addr == REGISTER_INTCLR) {
-            throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
-        }
-        else {
-            // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
-            // See section 6.5.1.2 , 3rd bullet
+        else switch(addr) {
+            case REGISTER_ILEV:
+                interruptController.setIlev(value); break;
+            case REGISTER_IVR:
+                interruptController.setIvr31_9(value); break;
+            case REGISTER_INTCLR:
+                throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
+            default:
+                // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
+                // See section 6.5.1.2 , 3rd bullet
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }

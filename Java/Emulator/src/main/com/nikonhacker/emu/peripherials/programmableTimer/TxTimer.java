@@ -21,8 +21,7 @@ public class TxTimer extends ProgrammableTimer {
     int cp1;
 
     public TxTimer(int timerNumber, InterruptController interruptController) {
-        this.timerNumber = timerNumber;
-        this.interruptController = interruptController;
+        super(timerNumber, interruptController);
     }
 
     public int getEn() {
