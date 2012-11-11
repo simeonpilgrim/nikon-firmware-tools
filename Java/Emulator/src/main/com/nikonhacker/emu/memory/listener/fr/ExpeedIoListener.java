@@ -29,7 +29,8 @@ public class ExpeedIoListener implements IoActivityListener {
      *  Let's assume the SerialInterface at 0x60 is the first in the Expeed, and that there are 6 serial interfaces
      *  (60, 70, 80, 90, A0, B0). This is pure speculation of course.
      */
-    private static final int NB_SERIAL_IF = 6;
+    private static final int NB_SERIAL_IF     = 6;
+    private static final int SERIAL_IF_OFFSET = 0x10;
     private static final int REGISTER_SCR_IBRC0  = 0x60;
     private static final int REGISTER_SMR0       = 0x61;
     private static final int REGISTER_SSR0       = 0x62;
@@ -74,7 +75,7 @@ public class ExpeedIoListener implements IoActivityListener {
      */
     public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
         // Serial Interface configuration registers
-        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
+        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> 4;
             switch (addr - (serialInterfaceNr << 4)) {
                 case REGISTER_SCR_IBRC0:
@@ -118,7 +119,7 @@ public class ExpeedIoListener implements IoActivityListener {
      */
     public Integer onIoLoad16(byte[] ioPage, int addr, int value) {
         // Serial Interface configuration registers
-        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
+        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> 4;
             switch (addr - (serialInterfaceNr << 4)) {
                 case REGISTER_SCR_IBRC0:
@@ -180,7 +181,7 @@ public class ExpeedIoListener implements IoActivityListener {
             // Interrupt request level registers
             interruptController.updateRequestICR(addr - REGISTER_ICR00, value);
         }
-        else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
+        else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * SERIAL_IF_OFFSET) {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> 4;
             switch (addr - (serialInterfaceNr << 4)) {
@@ -243,7 +244,7 @@ public class ExpeedIoListener implements IoActivityListener {
 
     public void onIoStore16(byte[] ioPage, int addr, int value) {
         // Serial Interface configuration registers
-        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * 0x10) {
+        if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NB_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> 4;
             switch (addr - (serialInterfaceNr << 4)) {
                 case REGISTER_SCR_IBRC0:   // normally written by 8-bit
