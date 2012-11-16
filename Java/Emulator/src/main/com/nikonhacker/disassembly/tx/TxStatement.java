@@ -533,7 +533,7 @@ public class TxStatement extends Statement {
                             currentBuffer.append("(" + TxCPUState.registerLabels[TxCPUState.FP] + ")");
                             break;
                         default:
-                            throw new DisassemblyException("Unrecognized base for Bit operation : " + sa_cc);
+                            throw new DisassemblyException("Unrecognized base for Bit operation : " + rs_fs);
 
                     }
                     break;
