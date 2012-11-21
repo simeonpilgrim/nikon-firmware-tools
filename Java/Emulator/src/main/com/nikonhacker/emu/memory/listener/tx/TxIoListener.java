@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.memory.listener.tx;
 
 import com.nikonhacker.disassembly.tx.TxCPUState;
+import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
@@ -51,7 +52,7 @@ public class TxIoListener implements IoActivityListener {
 
     // Clock Generator.
     // Note: section 6.6.1 lists FF0017xx while section 22 lists FF0019xx
-    public static final int REGISTER_SYSCR   =    0xFF00_1900; //
+    public static final int REGISTER_SYSCR   =    0xFF00_1900; // System Control Registers
     public static final int REGISTER_OSCCR   =    0xFF00_1904; //
     public static final int REGISTER_SDBYCR  =    0xFF00_1908; //
     public static final int REGISTER_PLLSEL  =    0xFF00_190C; //
@@ -86,13 +87,15 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_TB0CP1  =    0xFF00_452C; // Timer Capture register hi word
 
     private final TxCPUState cpuState;
+    private final TxClockGenerator clockGenerator;
     private final TxInterruptController interruptController;
 
     private final TxTimer[] timers;
     private final SerialInterface[] serialInterfaces;
 
-    public TxIoListener(TxCPUState cpuState, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
+    public TxIoListener(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
         this.cpuState = cpuState;
+        this.clockGenerator = clockGenerator;
         this.interruptController = interruptController;
         this.timers = timers;
         this.serialInterfaces = serialInterfaces;
@@ -125,22 +128,36 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     return (byte) timers[timerNr].getMod();
                 case REGISTER_TB0FFCR:
-                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                    throw new RuntimeException("The TBnFFCR register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0ST:
                     return (byte) timers[timerNr].getSt();
                 case REGISTER_TB0IM:
                     return (byte) timers[timerNr].getIm();
                 case REGISTER_TB0UC:
-                    return (byte) timers[timerNr].getUc();
+                    throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
-                    return (byte) timers[timerNr].getRg0();
+                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
+                case REGISTER_TB0RG0 + 1:
+                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0RG1:
-                    return (byte) timers[timerNr].getRg1();
+                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
+                case REGISTER_TB0RG1 + 1:
+                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
                     return (byte) timers[timerNr].getCp0();
                 case REGISTER_TB0CP1:
                     return (byte) timers[timerNr].getCp1();
             }
+        }
+        switch (addr) {
+            case REGISTER_SYSCR:
+                throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
+            case REGISTER_SYSCR + 1:
+                return clockGenerator.getSysCr2();
+            case REGISTER_SYSCR + 2:
+                return clockGenerator.getSysCr1();
+            case REGISTER_SYSCR + 3:
+                return clockGenerator.getSysCr0();
         }
 
         return null;
@@ -169,7 +186,7 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     return timers[timerNr].getMod();
                 case REGISTER_TB0FFCR:
-                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                    return timers[timerNr].getFfcr();
                 case REGISTER_TB0ST:
                     return timers[timerNr].getSt();
                 case REGISTER_TB0IM:
@@ -185,6 +202,12 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0CP1:
                     return timers[timerNr].getCp1();
             }
+        }
+        else switch (addr){
+            case REGISTER_SYSCR:
+                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+            case REGISTER_SYSCR + 2:
+                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
         }
         return null;
     }
@@ -211,7 +234,7 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     return timers[timerNr].getMod();
                 case REGISTER_TB0FFCR:
-                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
+                    return timers[timerNr].getFfcr();
                 case REGISTER_TB0ST:
                     return timers[timerNr].getSt();
                 case REGISTER_TB0IM:
@@ -229,6 +252,8 @@ public class TxIoListener implements IoActivityListener {
             }
         }
         switch (addr) {
+            case REGISTER_SYSCR:
+                return (clockGenerator.getSysCr2() << 16) |(clockGenerator.getSysCr1() << 8) | clockGenerator.getSysCr0();
             case REGISTER_ILEV:
                 return interruptController.getIlev();
             case REGISTER_IVR:
@@ -252,25 +277,42 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     timers[timerNr].setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setMod(value); break;
+                    timers[timerNr].setFfcr(value); break;
                 case REGISTER_TB0ST:
                     timers[timerNr].setSt(value); break;
                 case REGISTER_TB0IM:
                     timers[timerNr].setIm(value); break;
                 case REGISTER_TB0UC:
-                    timers[timerNr].setUc(value); break;
+                    throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
-                    timers[timerNr].setRg0(value); break;
+                    /* TODO To write data to the TB0RG0H/L and TB0RG1H/L timer registers, either a 2-byte data transfer
+                     * TODO instruction or a 1-byte data transfer instruction written twice in the order of low-order
+                     * TODO 8 bits followed by high-order 8 bits can be used.
+                     */
+                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
+                case REGISTER_TB0RG0 + 1:
+                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0RG1:
-                    timers[timerNr].setRg1(value); break;
+                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
+                case REGISTER_TB0RG1 + 1:
+                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
                     timers[timerNr].setCp0(value); break;
                 case REGISTER_TB0CP1:
                     timers[timerNr].setCp1(value); break;
             }
         }
-        else if (addr == REGISTER_INTCLR) {
-            throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
+        else switch (addr) {
+            case REGISTER_INTCLR:
+                throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
+            case REGISTER_SYSCR:
+                throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
+            case REGISTER_SYSCR + 1:
+                clockGenerator.setSysCr2(value); break;
+            case REGISTER_SYSCR + 2:
+                clockGenerator.setSysCr1(value); break;
+            case REGISTER_SYSCR + 3:
+                clockGenerator.setSysCr0(value); break;
         }
 
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
@@ -290,7 +332,7 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     timers[timerNr].setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setMod(value); break;
+                    timers[timerNr].setFfcr(value); break;
                 case REGISTER_TB0ST:
                     timers[timerNr].setSt(value); break;
                 case REGISTER_TB0IM:
@@ -307,8 +349,13 @@ public class TxIoListener implements IoActivityListener {
                     timers[timerNr].setCp1(value); break;
             }
         }
-        else if (addr == REGISTER_INTCLR) {
-            interruptController.setIntClr(value);
+        else switch (addr){
+            case REGISTER_INTCLR:
+                interruptController.setIntClr(value); break;
+            case REGISTER_SYSCR:
+                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+            case REGISTER_SYSCR + 2:
+                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
@@ -327,7 +374,7 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0MOD:
                     timers[timerNr].setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setMod(value); break;
+                    timers[timerNr].setFfcr(value); break;
                 case REGISTER_TB0ST:
                     timers[timerNr].setSt(value); break;
                 case REGISTER_TB0IM:
@@ -350,7 +397,9 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_IVR:
                 interruptController.setIvr31_9(value); break;
             case REGISTER_INTCLR:
-                throw new RuntimeException("The INTCLR register can only be accessed by 16-bit");
+                interruptController.setIntClr(value); break;
+            case REGISTER_SYSCR:
+                clockGenerator.setSysCr(value);
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet

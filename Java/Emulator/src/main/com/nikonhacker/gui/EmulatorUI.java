@@ -18,6 +18,9 @@ import com.nikonhacker.emu.EmulationException;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.FrEmulator;
 import com.nikonhacker.emu.TxEmulator;
+import com.nikonhacker.emu.clock.ClockGenerator;
+import com.nikonhacker.emu.clock.FrClockGenerator;
+import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
@@ -249,6 +252,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private Emulator[] emulator = new Emulator[2];
     private CPUState[] cpuState = new CPUState[]{new FrCPUState(), new TxCPUState()};
     private DebuggableMemory[] memory = new DebuggableMemory[2];
+    private ClockGenerator[] clockGenerator = new ClockGenerator[2];
     private InterruptController[] interruptController = new InterruptController[2];
     private java.util.Timer reloadAnimationTimer;
     private ProgrammableTimer[][] programmableTimers = new ProgrammableTimer[2][];
@@ -1747,78 +1751,90 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory[chip]);
 
-            interruptController[chip] = (chip == Constants.CHIP_FR)?new FrInterruptController(memory[chip]):new TxInterruptController((TxCPUState)cpuState[chip], memory[chip]);
 
-            if (chip == Constants.CHIP_FR) {
-                // FR
-                programmableTimers[chip] = new FrReloadTimer[]{
-                        new FrReloadTimer(0, interruptController[chip]),
-                        new FrReloadTimer(1, interruptController[chip]),
-                        new FrReloadTimer(2, interruptController[chip])
-                };
+            switch (chip) {
+                case Constants.CHIP_FR :
+                    clockGenerator[chip] = new FrClockGenerator();
 
-                serialInterfaces[chip] = new SerialInterface[]{
-                        /** The number of actual serial interfaces is pure speculation. See ExpeedIoListener for more info */
-                        new SerialInterface(0, interruptController[chip], 0x1B),
-                        new SerialInterface(1, interruptController[chip], 0x1B),
-                        new SerialInterface(2, interruptController[chip], 0x1B),
-                        new SerialInterface(3, interruptController[chip], 0x1B),
-                        new SerialInterface(4, interruptController[chip], 0x1B),
-                        new SerialInterface(5, interruptController[chip], 0x1B)
-                };
+                    interruptController[chip] = new FrInterruptController(memory[chip]);
 
-                memory[chip].setIoActivityListener(
-                        new ExpeedIoListener(
-                                (FrCPUState) cpuState[chip],
-                                (FrInterruptController) interruptController[chip],
-                                (FrReloadTimer[]) programmableTimers[chip],
-                                serialInterfaces[chip]
-                        )
-                );
-            }
-            else {
-                // TX
-                programmableTimers[chip] = new TxTimer[]{
-                        new TxTimer(0x0, interruptController[chip]),
-                        new TxTimer(0x1, interruptController[chip]),
-                        new TxTimer(0x2, interruptController[chip]),
-                        new TxTimer(0x3, interruptController[chip]),
-                        new TxTimer(0x4, interruptController[chip]),
-                        new TxTimer(0x5, interruptController[chip]),
-                        new TxTimer(0x6, interruptController[chip]),
-                        new TxTimer(0x7, interruptController[chip]),
-                        new TxTimer(0x8, interruptController[chip]),
-                        new TxTimer(0x9, interruptController[chip]),
-                        new TxTimer(0xA, interruptController[chip]),
-                        new TxTimer(0xB, interruptController[chip]),
-                        new TxTimer(0xC, interruptController[chip]),
-                        new TxTimer(0xD, interruptController[chip]),
-                        new TxTimer(0xE, interruptController[chip]),
-                        new TxTimer(0xF, interruptController[chip]),
-                        new TxTimer(0x10, interruptController[chip]),
-                        new TxTimer(0x11, interruptController[chip])
-                };
+                    programmableTimers[chip] = new FrReloadTimer[]{
+                            new FrReloadTimer(0, interruptController[chip]),
+                            new FrReloadTimer(1, interruptController[chip]),
+                            new FrReloadTimer(2, interruptController[chip])
+                    };
 
-                ((TxCPUState)cpuState[chip]).setInterruptController((TxInterruptController) interruptController[chip]);
+                    serialInterfaces[chip] = new SerialInterface[]{
+                            /** The number of actual serial interfaces is pure speculation. See ExpeedIoListener for more info */
+                            new SerialInterface(0, interruptController[chip], 0x1B),
+                            new SerialInterface(1, interruptController[chip], 0x1B),
+                            new SerialInterface(2, interruptController[chip], 0x1B),
+                            new SerialInterface(3, interruptController[chip], 0x1B),
+                            new SerialInterface(4, interruptController[chip], 0x1B),
+                            new SerialInterface(5, interruptController[chip], 0x1B)
+                    };
 
-                serialInterfaces[chip] = new SerialInterface[]{
-/*
-                        new SerialInterface(0, interruptController[chip], 0x1B), //TODO
-                        new SerialInterface(1, interruptController[chip], 0x1B),
-                        new SerialInterface(2, interruptController[chip], 0x1B),
-                        new SerialInterface(3, interruptController[chip], 0x1B),
-                        new SerialInterface(4, interruptController[chip], 0x1B),
-                        new SerialInterface(5, interruptController[chip], 0x1B)
-*/
-                };
-                memory[chip].setIoActivityListener(
-                        new TxIoListener(
-                                (TxCPUState) cpuState[chip],
-                                (TxInterruptController) interruptController[chip],
-                                (TxTimer[]) programmableTimers[chip],
-                                serialInterfaces[chip]
-                        )
-                );
+                    memory[chip].setIoActivityListener(
+                            new ExpeedIoListener(
+                                    (FrCPUState) cpuState[chip],
+                                    (FrInterruptController) interruptController[chip],
+                                    (FrReloadTimer[]) programmableTimers[chip],
+                                    serialInterfaces[chip]
+                            )
+                    );
+                    break;
+
+
+                case Constants.CHIP_TX:
+                    clockGenerator[chip] = new TxClockGenerator();
+
+                    interruptController[chip] = new TxInterruptController((TxCPUState)cpuState[chip], memory[chip]);
+
+                    programmableTimers[chip] = new TxTimer[]{
+                            new TxTimer(0x0, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x1, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x2, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x3, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x4, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x5, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x6, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x7, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x8, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x9, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xA, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xB, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xC, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xD, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xE, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0xF, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x10, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]),
+                            new TxTimer(0x11, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip])
+                    };
+
+                    ((TxCPUState)cpuState[chip]).setInterruptController((TxInterruptController) interruptController[chip]);
+
+                    serialInterfaces[chip] = new SerialInterface[]{
+    /*
+                            new SerialInterface(0, interruptController[chip], 0x1B), //TODO
+                            new SerialInterface(1, interruptController[chip], 0x1B),
+                            new SerialInterface(2, interruptController[chip], 0x1B),
+                            new SerialInterface(3, interruptController[chip], 0x1B),
+                            new SerialInterface(4, interruptController[chip], 0x1B),
+                            new SerialInterface(5, interruptController[chip], 0x1B)
+    */
+                    };
+                    memory[chip].setIoActivityListener(
+                            new TxIoListener(
+                                    (TxCPUState) cpuState[chip],
+                                    (TxClockGenerator) clockGenerator[chip],
+                                    (TxInterruptController) interruptController[chip],
+                                    (TxTimer[]) programmableTimers[chip],
+                                    serialInterfaces[chip]
+                            )
+                    );
+                    break;
+                default:
+                    throw new RuntimeException("Unknown chip : " + chip);
             }
 
             emulator[chip].setInterruptController(interruptController[chip]);
