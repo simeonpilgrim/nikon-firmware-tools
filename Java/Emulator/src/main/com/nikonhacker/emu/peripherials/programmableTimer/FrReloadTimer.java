@@ -1,12 +1,12 @@
 package com.nikonhacker.emu.peripherials.programmableTimer;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.clock.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -14,22 +14,6 @@ import java.util.concurrent.TimeUnit;
  * Based on spec http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
  */
 public class FrReloadTimer extends ProgrammableTimer {
-    /** PCLK @50MHz was determined based on the system clock ticking every ms */
-    public final static int PCLK_FREQUENCY = 50000000;
-
-    /** Lower boundary of sustainable interval between emulator scheduler ticks */
-    public final static int MIN_EMULATOR_INTERVAL_NANOSECONDS = 100000; //100 microseconds interval = max frequency of 10kHz
-
-    /** Underlying scheduler */
-    ScheduledExecutorService executorService;
-
-
-    /** The scale compensates for the fact that emulated clocks cannot run faster than MAX_EMULATOR_FREQUENCY
-     *  So emulated timers running faster are triggered at a (emulated frequency / scale)
-     *  And at each trigger, the reload counter is decremented by (scale)
-     */
-    private int scale;
-
 
     /** reloadValue corresponds to the Reload Timer register TMRLRAn */
     private int reloadValue;
@@ -129,7 +113,7 @@ public class FrReloadTimer extends ProgrammableTimer {
             executorService = Executors.newSingleThreadScheduledExecutor();
 
             scale = 1;
-            long intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / PCLK_FREQUENCY /*pclk tick/s*/;
+            long intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY /*pclk tick/s*/;
 
             if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
                 /* unsustainable frequency */
