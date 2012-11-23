@@ -47,7 +47,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
                     ui.setStatusText(Constants.CHIP_TX, interruptName + " was requested.");
                 }
                 else {
-                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was rejected !");
+                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was rejected (already requested) !");
                 }
             }
         };
@@ -128,7 +128,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
             button.setForeground(Color.ORANGE.darker());
         }
 
-        button.setToolTipText(Format.asHex(value, 2) + " " + interruptDescription.description);
+        button.setToolTipText("0x" + Format.asHex(value, 2) + " " + interruptDescription.description);
 
         return button;
     }
