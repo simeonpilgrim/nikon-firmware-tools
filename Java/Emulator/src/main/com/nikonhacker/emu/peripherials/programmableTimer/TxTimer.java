@@ -113,7 +113,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                         if (rg0 > 0 && (currentValue / scale == 1 + rg0 / scale)) {
                             // CP0 matches
                             if ((im & 0b001) == 0) {
-                                st &= 0b001;
+                                st |= 0b001;
                                 mustInterrupt = true;
                             }
                         }
@@ -122,7 +122,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                         if (rg1 > 0 && (currentValue / scale == 1 + rg1 / scale)) {
                             // CP1 matches
                             if ((im & 0b010) == 0) {
-                                st &= 0b010;
+                                st |= 0b010;
                                 mustInterrupt = true;
                             }
                             if (getModCle()) {
@@ -134,7 +134,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                         if (currentValue > MAX_COUNTER_VALUE) {
                             // overflow
                             if ((im & 0b100) == 0) {
-                                st &= 0b100;
+                                st |= 0b100;
                                 mustInterrupt = true;
                             }
                             currentValue -= MAX_COUNTER_VALUE;
