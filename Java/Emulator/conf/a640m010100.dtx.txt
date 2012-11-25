@@ -1,0 +1,194 @@
+# The main part of this file describes the D5100 "A" firmware, ver 1.01
+
+############################### File map: D5100
+-i 0xBFC00000-0xBFCBFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0xBFC00000-0xBFC0000F=CODE:32
+
+-m 0xBFC00400-0xBFC004CB=CODE:32
+
+#-m 0xBFC004CC-0xBFC004FF=DATA:W
+
+-m 0xBFC00500-0xBFC0084B=CODE:32
+
+#-m 0xBFC0084C-0xBFC00863=DATA:W
+
+-m 0xBFC00864-0xBFC0095B=CODE:16
+
+#-m 0xBFC0095C-0xBFC009A3=DATA:W
+
+-m 0xBFC009A4-0xBFC02BE7=CODE:32
+
+-m 0xBFC02BE8-0xBFC03F8B=CODE:16
+
+# Indirection table for interrupts using 16-bit ISA
+-m 0xBFC03F90-0xBFC041CF=DATA:L
+
+# Interrupt table
+-m 0xBFC041D0-0xBFC043CF=DATA:L
+
+# Unknown data
+# -m 0xBFC043D0-0xBFC044BB=DATA:L
+
+# TCB Task table
+-m 0xBFC044BC-0xBFC0478B=DATA:L
+
+## 0xFF area
+
+# Copyright msg
+-m 0xBFC07FB0-0xBFC07FDF=DATA:L
+
+# Unknown data
+# -m 0xBFC08054-0xBFC0A000=DATA:L
+
+-m 0xBFC0A008-0xBFC0A12B=CODE:32
+
+-m 0xBFC0A12C-0xBFC0D66F=CODE:16
+
+-m 0xBFC0D9F8-0xBFC0ED43=CODE:32
+
+-m 0xBFC10000-0xBFC1417D=CODE:16
+
+-m 0xBFC14180-0xBFC15AB7=CODE:32
+
+-m 0xBFC15AB8-0xBFC8DD39=CODE:16
+
+
+# Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
+#-m 0x000DC310-0x000DC9A3=DATA:L
+
+############################### Symbols
+
+-s 0xBFC00000=reset_or_nmi
+-s 0xBFC00400=interrupt_handler
+-s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
+-s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
+-s 0xBFC018F8=Task_Dispatch
+-s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC11534=INT0_body
+-s 0xBFC11554=INT6_body
+-s 0xBFC11574=INT9_body
+-s 0xBFC11594=INTA_body
+-s 0xBFC115B4=INT12_body
+-s 0xBFC115D4=INT17_body
+-s 0xBFC1160C=INTRTC_body
+-s 0xBFC12994=clear_WDcounter
+-s 0xBFC12A3C=Stop_TBF
+-s 0xBFC12A5C=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code] /* Start task */)
+-s 0xBFC12A80=sys_act_tsk_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC12A98=sys_ref_tsk($a1 [IN ptr_to_pk_rtsk], $a0 [IN tsk_id], $v0 [OUT err_code] /* Get Task Status */)
+-s 0xBFC12B0C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
+-s 0xBFC12B18=sys_clr_flg1($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B24=sys_clr_flg2($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+-s 0xBFC14504=interrupt_handler_INT0
+-s 0xBFC145C8=interrupt_handler_INT6
+-s 0xBFC1469C=interrupt_handler_INT9
+-s 0xBFC14764=interrupt_handler_INTA
+-s 0xBFC1482C=interrupt_handler_KWUP
+-s 0xBFC1494C=interrupt_handler_INT12
+-s 0xBFC14A14=interrupt_handler_INT17
+-s 0xBFC14ADC=interrupt_handler_INTRTC
+-s 0xBFC14F98=nmi
+-s 0xBFC15AB8=Tsk00
+-s 0xBFC16CE4=INTD_body
+-s 0xBFC174B4=INTSBI0_I2C_body
+-s 0xBFC17B35=interrupt_handler_INTTBF
+-s 0xBFC17F90=interrupt_handler_INT4
+-s 0xBFC17FA8=interrupt_handler_INT5
+-s 0xBFC17FC0=interrupt_handler_INT7
+-s 0xBFC17FD8=interrupt_handler_INTD
+-s 0xBFC17FF1=interrupt_handler_INTE
+-s 0xBFC18008=interrupt_handler_INTF
+-s 0xBFC18020=interrupt_handler_INT18
+-s 0xBFC18038=interrupt_handler_INT19
+-s 0xBFC18050=interrupt_handler_INT1A
+-s 0xBFC18068=interrupt_handler_INT1E
+-s 0xBFC18080=interrupt_handler_INTRX0
+-s 0xBFC18098=interrupt_handler_INTTX0
+-s 0xBFC180B0=interrupt_handler_INTRX1
+-s 0xBFC180C8=interrupt_handler_INTTX1
+-s 0xBFC180E0=interrupt_handler_HINTRX0
+-s 0xBFC180F8=interrupt_handler_HINTTX0
+-s 0xBFC18110=interrupt_handler_HINTRX1
+-s 0xBFC18128=interrupt_handler_HINTTX1
+-s 0xBFC18140=interrupt_handler_HINTRX2
+-s 0xBFC18158=interrupt_handler_HINTTX2
+-s 0xBFC18170=interrupt_handler_INTSBI0_I2C
+-s 0xBFC18188=interrupt_handler_INTADMB
+-s 0xBFC181A0=interrupt_handler_INTTB1
+-s 0xBFC18210=interrupt_handler_INTTB2
+-s 0xBFC18280=interrupt_handler_INTTB5
+-s 0xBFC182F0=interrupt_handler_INTTB6
+-s 0xBFC18360=interrupt_handler_INTTB9
+-s 0xBFC183D0=interrupt_handler_INTTBA
+-s 0xBFC18440=interrupt_handler_INTTBB
+-s 0xBFC18458=interrupt_handler_INTTBC
+-s 0xBFC184C8=interrupt_handler_INTTBD
+-s 0xBFC18538=interrupt_handler_INTTB10
+-s 0xBFC185A8=interrupt_handler_INTCAP0
+-s 0xBFC185C0=interrupt_handler_INTCAP2
+-s 0xBFC185D8=interrupt_handler_INTCMP0
+-s 0xBFC185F0=interrupt_handler_INTCMP1
+-s 0xBFC18608=interrupt_handler_INTCMP2
+-s 0xBFC18620=interrupt_handler_INTCMP3
+-s 0xBFC18638=interrupt_handler_INTCMP4
+-s 0xBFC18650=interrupt_handler_INTCMP5
+-s 0xBFC18668=interrupt_handler_INTCMP6
+-s 0xBFC18680=interrupt_handler_INTCMP7
+-s 0xBFC18698=interrupt_handler_INTDMA1
+-s 0xBFC186B0=interrupt_handler_INTDMA3
+-s 0xBFC186C8=interrupt_handler_INTDMA4
+-s 0xBFC186E0=interrupt_handler_INTDMA6
+-s 0xBFC186F8=interrupt_handler_INTDMA7
+-s 0xBFC190C4=get_system_time
+-s 0xBFC1A3B0=Tsk01
+-s 0xBFC1A74A=DynamicCall_table_BFC97314
+-s 0xBFC1AAE0=INTRX0_body02
+-s 0xBFC1AB8C=INTRX0_body00
+-s 0xBFC1AC98=INTTX0_body
+-s 0xBFC1D0DC=INTRX0_body01
+-s 0xBFC1DF78=Tsk02
+-s 0xBFC1FD60=Tsk03
+-s 0xBFC36740=INT1A_body
+-s 0xBFC36C60=INT4_body
+-s 0xBFC3FE40=Tsk04
+-s 0xBFC40300=HINTTX2_body02
+-s 0xBFC40354=HINTRX2_body01
+-s 0xBFC40538=HINTTX2_body01
+-s 0xBFC40594=HINTRX2_body02
+-s 0xBFC406C0=INTDMA6_body
+-s 0xBFC407D0=HINTTX2_body00
+-s 0xBFC40850=HINTRX2_body00
+-s 0xBFC408D4=INTCMP5_body
+-s 0xBFC408EC=Tsk05
+-s 0xBFC43624=INTRX1_body
+-s 0xBFC43750=INT7_body01
+-s 0xBFC437D0=INT7_body00
+-s 0xBFC43FCC=Tsk06
+-s 0xBFC45D80=Make_compare3_run
+-s 0xBFC45E94=HINTRX1_body00
+-s 0xBFC45FC6=HINTRX1_body01
+-s 0xBFC460DC=INTCMP3_body00
+-s 0xBFC4639A=INTCMP3_body01
+-s 0xBFC463EE=INTCMP3_body02
+-s 0xBFC46504=INTCMP3_body04
+-s 0xBFC46EAA=INTCMP3_body03
+-s 0xBFC470C0=INTF_body
+-s 0xBFC47148=Tsk07
+-s 0xBFC48330=Tsk08
+-s 0xBFC53894=INTDMA3_body
+-s 0xBFC57984=Tsk09
+-s 0xBFC7A8C4=Tsk0A
+-s 0xBFC7EC7C=INT5_body
+-s 0xBFC8AF6C=Tsk0B
+-s 0xBFC8D030=Tsk0C
+
+########## Global variables
+
+#-s 0x68000910=Real_Time_Clock
+
+# Jump hints
+#-j 0x001A93A0=0x001A929C, 0x001A92AE, 0x001A92EE, 0x001A930C, 0x001A9354
