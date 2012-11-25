@@ -254,7 +254,7 @@ public class FrCPUState extends CPUState {
 
     @Override
     public int getSp() {
-        return getReg(FrCPUState.SP);
+        return getReg(SP);
     }
 
     @Override
@@ -301,7 +301,7 @@ public class FrCPUState extends CPUState {
 
     public FrCPUState clone() {
         FrCPUState cloneCpuState = new FrCPUState();
-        for (int i = 0; i <= FrCPUState.CCR; i++) {
+        for (int i = 0; i <= CCR; i++) {
             cloneCpuState.setReg(i, getReg(i));
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;

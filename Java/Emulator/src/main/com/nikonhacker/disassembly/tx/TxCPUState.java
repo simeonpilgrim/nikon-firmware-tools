@@ -347,11 +347,11 @@ public class TxCPUState extends CPUState {
 
     @Override
     public int getSp() {
-        return getReg(TxCPUState.SP);
+        return getReg(SP);
     }
 
     public void reset() {
-        powerMode = TxCPUState.PowerMode.RUN;
+        powerMode = PowerMode.RUN;
         shadowRegisterSets = new Register32[8][registerLabels.length];
         regValue = shadowRegisterSets[0];
 
