@@ -165,9 +165,12 @@ public class FrStatement extends Statement {
     /**
      * Disassemble FrInstruction for presentation
      * must be called after decodeOperands()
+     *
      * @param context
      * @param updateRegisters if true, cpuState registers will be updated during action interpretation.
+     * @see FrInstruction for a description of all possible chars
      */
+    @Override
     public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) {
 
         /* DISPLAY FORMAT processing */
