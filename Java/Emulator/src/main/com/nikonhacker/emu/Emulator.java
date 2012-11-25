@@ -21,10 +21,9 @@ public abstract class Emulator {
 
     StatementContext context = new StatementContext();
 
-    // TODO : Can't all these only be in the context object ?
+    // TODO : Shouldn't these 2 only be in the context object ?
     protected Memory memory;
     protected CPUState cpuState;
-    protected Deque<CallStackItem> callStack;
 
     protected InterruptController interruptController;
 
@@ -49,7 +48,6 @@ public abstract class Emulator {
      * @param callStack
      */
     public void setCallStack(Deque<CallStackItem> callStack) {
-        this.callStack = callStack;
         context.callStack = callStack;
     }
 
