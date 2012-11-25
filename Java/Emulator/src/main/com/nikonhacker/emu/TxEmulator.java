@@ -24,10 +24,10 @@ public class TxEmulator extends Emulator {
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
+        super.setOutputOptions(outputOptions);
         TxInstructionSet.init(outputOptions);
         TxStatement.initFormatChars(outputOptions);
         TxCPUState.initRegisterLabels(outputOptions);
-        this.outputOptions = outputOptions;
     }
 
 
