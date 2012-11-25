@@ -1,6 +1,10 @@
 package com.nikonhacker.disassembly;
 
+import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.Memory;
+
+import java.util.Deque;
+import java.util.Set;
 
 /**
  * Represents the (execution or disassembly) context in which this statement is to be interpreted
@@ -20,6 +24,11 @@ public class StatementContext {
 
     /** A custom register to be used as target for the return address, after having executed the statement in the delay slot */
     public Integer nextReturnAddressTargetRegister;
+
+    /** The function call stack */
+    public Deque<CallStackItem> callStack;
+
+    public Set<OutputOption> outputOptions;
 
     /**
      * This variable is set and used by the emulator to remember if the delaySlot has been done or not
@@ -66,4 +75,26 @@ public class StatementContext {
         return isLineBreakRequested;
     }
 
+    public void pushStatement(Statement statement) {
+        if (callStack != null) {
+            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
+            synchronized (callStack) {
+                if (callStack != null) {
+                    try {
+                        statement.formatOperandsAndComment(this, false, outputOptions);
+                    } catch (DisassemblyException e) {
+                        e.printStackTrace();
+                    }
+                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.toString(outputOptions)));
+                }
+            }
+        }
+    }
+
+    public CallStackItem popStatement() {
+        if (callStack != null && !callStack.isEmpty()) {
+            return callStack.pop();
+        }
+        return null;
+    }
 }

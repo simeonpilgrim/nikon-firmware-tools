@@ -14,16 +14,18 @@ public abstract class Emulator {
     protected long totalCycles;
     protected PrintWriter instructionPrintWriter;
     protected PrintWriter breakLogPrintWriter;
-    protected Deque<CallStackItem> callStack;
     protected int sleepIntervalMs = 0;
     protected final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
     protected Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
     protected boolean exitSleepLoop = false;
 
+    StatementContext context = new StatementContext();
+
+    // TODO : Can't all these only be in the context object ?
     protected Memory memory;
     protected CPUState cpuState;
+    protected Deque<CallStackItem> callStack;
 
-    StatementContext context = new StatementContext();
     protected InterruptController interruptController;
 
     /**
@@ -48,6 +50,7 @@ public abstract class Emulator {
      */
     public void setCallStack(Deque<CallStackItem> callStack) {
         this.callStack = callStack;
+        context.callStack = callStack;
     }
 
     public long getTotalCycles() {
@@ -94,7 +97,10 @@ public abstract class Emulator {
         this.interruptController = interruptController;
     }
 
-    public abstract void setOutputOptions(Set<OutputOption> outputOptions);
+    public void setOutputOptions(Set<OutputOption> outputOptions) {
+        this.outputOptions = outputOptions;
+        context.outputOptions = outputOptions;
+    }
 
     /**
      * Starts emulating

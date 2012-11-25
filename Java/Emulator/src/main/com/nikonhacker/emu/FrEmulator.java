@@ -53,10 +53,10 @@ public class FrEmulator extends Emulator {
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
+        super.setOutputOptions(outputOptions);
         FrInstructionSet.init(outputOptions);
         FrStatement.initFormatChars(outputOptions);
         FrCPUState.initRegisterLabels(outputOptions);
-        this.outputOptions = outputOptions;
     }
 
     /**
