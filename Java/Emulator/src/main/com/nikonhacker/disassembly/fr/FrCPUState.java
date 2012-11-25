@@ -253,6 +253,11 @@ public class FrCPUState extends CPUState {
     }
 
     @Override
+    public int getSp() {
+        return getReg(FrCPUState.SP);
+    }
+
+    @Override
     public void reset() {
         regValue = new Register32[registerLabels.length];
         for (int i = 0; i < regValue.length; i++) {

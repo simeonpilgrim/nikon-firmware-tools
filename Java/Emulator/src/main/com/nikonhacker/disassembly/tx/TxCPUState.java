@@ -345,16 +345,9 @@ public class TxCPUState extends CPUState {
     }
 
 
-    public PowerMode getPowerMode() {
-        return powerMode;
-    }
-
-    public void setPowerMode(PowerMode powerMode) {
-        // TODO actually halt or restart processor
-        for (CpuPowerModeChangeListener cpuPowerModeChangeListener : cpuPowerModeChangeListeners) {
-            cpuPowerModeChangeListener.onCpuPowerModeChange(powerMode);
-        }
-        this.powerMode = powerMode;
+    @Override
+    public int getSp() {
+        return getReg(TxCPUState.SP);
     }
 
     public void reset() {
@@ -465,6 +458,18 @@ public class TxCPUState extends CPUState {
         return cloneCpuState;
     }
 
+
+    public PowerMode getPowerMode() {
+        return powerMode;
+    }
+
+    public void setPowerMode(PowerMode powerMode) {
+        // TODO actually halt or restart processor
+        for (CpuPowerModeChangeListener cpuPowerModeChangeListener : cpuPowerModeChangeListeners) {
+            cpuPowerModeChangeListener.onCpuPowerModeChange(powerMode);
+        }
+        this.powerMode = powerMode;
+    }
 
     /**
      *  Sets the value of the FPU register given to the value given.

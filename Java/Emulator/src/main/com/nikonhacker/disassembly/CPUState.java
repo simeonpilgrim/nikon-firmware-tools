@@ -80,6 +80,8 @@ public abstract class CPUState {
         this.pc = pc;
     }
 
+    public abstract int getSp();
+
     public abstract void reset();
 
     public abstract void clear();
