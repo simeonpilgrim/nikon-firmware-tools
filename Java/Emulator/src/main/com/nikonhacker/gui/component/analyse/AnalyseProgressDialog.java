@@ -11,7 +11,6 @@ import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.SearchableTextAreaPanel;
 
 import javax.swing.*;
-import javax.swing.text.DefaultCaret;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -32,9 +31,7 @@ public class AnalyseProgressDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout());
 
         printWriterArea = new PrintWriterArea(25, 70);
-
-        DefaultCaret caret = (DefaultCaret)printWriterArea.getCaret();
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
+        printWriterArea.setAutoScroll(true);
 
         panel.add(new SearchableTextAreaPanel(printWriterArea), BorderLayout.CENTER);
 

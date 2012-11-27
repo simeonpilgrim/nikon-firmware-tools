@@ -5,11 +5,14 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.disassembly.WriteListenerRegister32;
+import com.nikonhacker.emu.CpuPowerModeChangeListener;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @SuppressWarnings("UnusedDeclaration")
@@ -261,6 +264,7 @@ public class TxCPUState extends CPUState {
     };
 
     public static String[] registerLabels;
+    private List<CpuPowerModeChangeListener> cpuPowerModeChangeListeners = new ArrayList<CpuPowerModeChangeListener>();
 
     /**
      * Init with default names upon class loading
@@ -347,6 +351,9 @@ public class TxCPUState extends CPUState {
 
     public void setPowerMode(PowerMode powerMode) {
         // TODO actually halt or restart processor
+        for (CpuPowerModeChangeListener cpuPowerModeChangeListener : cpuPowerModeChangeListeners) {
+            cpuPowerModeChangeListener.onCpuPowerModeChange(powerMode);
+        }
         this.powerMode = powerMode;
     }
 
@@ -1058,6 +1065,10 @@ public class TxCPUState extends CPUState {
                 // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspended
                 && (interruptController.getIlevCmask() == 0 || ((TxInterruptRequest)interruptRequest).getLevel() <= interruptController.getIlevCmask())
                 ;
+    }
+
+    public void addCpuPowerModeChangeListener(CpuPowerModeChangeListener cpuPowerModeChangeListener) {
+        cpuPowerModeChangeListeners.add(cpuPowerModeChangeListener);
     }
 
 

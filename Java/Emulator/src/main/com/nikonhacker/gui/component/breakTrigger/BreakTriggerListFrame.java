@@ -114,6 +114,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
 
         PrintWriterArea triggerLog = new PrintWriterArea(30, 40);
+        triggerLog.setAutoScroll(true);
 
         tabbedPane.addTab("Trigger log", null, new JScrollPane(triggerLog));
 
