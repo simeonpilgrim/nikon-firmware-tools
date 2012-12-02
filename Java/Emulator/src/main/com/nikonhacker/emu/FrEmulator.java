@@ -53,10 +53,10 @@ public class FrEmulator extends Emulator {
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
+        super.setOutputOptions(outputOptions);
         FrInstructionSet.init(outputOptions);
         FrStatement.initFormatChars(outputOptions);
         FrCPUState.initRegisterLabels(outputOptions);
-        this.outputOptions = outputOptions;
     }
 
     /**
@@ -1208,14 +1208,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xD000: /* CALL label12 */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         frCpuState.setReg(FrCPUState.RP, frCpuState.pc + 2);
                         frCpuState.pc = frCpuState.pc + 2 + BinaryArithmetics.signExtend(11, statement.imm) * 2; // TODO check *2 ?
 
@@ -1225,14 +1218,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9710: /* CALL @Ri */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         frCpuState.setReg(FrCPUState.RP, frCpuState.pc + 2);
                         frCpuState.pc = frCpuState.getReg(statement.i);
     
@@ -1242,14 +1228,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9720: /* RET */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null && !callStack.isEmpty()) {
-                                    callStack.pop();
-                                }
-                            }
-                        }
+                        context.popStatement();
                         frCpuState.pc = frCpuState.getReg(FrCPUState.RP);
     
                         /* No change to NZVC */
@@ -1258,14 +1237,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1F00: /* INT #u8 */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         processInterrupt(statement.imm, frCpuState.pc + 2);
                         frCpuState.I = 0;
 
@@ -1275,14 +1247,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F30: /* INTE */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
                         memory.store32(frCpuState.getReg(FrCPUState.SSP), frCpuState.getPS());
                         frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
@@ -1297,14 +1262,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9730: /* RETI */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null && !callStack.isEmpty()) {
-                                    callStack.pop();
-                                }                                    
-                            }
-                        }
+                        context.popStatement();
                         frCpuState.pc = memory.load32(frCpuState.getReg(15));
                         frCpuState.setReg(15, frCpuState.getReg(15) + 8);
                         /* note : this is the order given in the spec but loading PS below could switch the USP<>SSP,
@@ -1542,14 +1500,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xD800: /* CALL:D label12 */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         setDelayedPcAndRa(frCpuState.pc + 2 + BinaryArithmetics.signExtend(11, statement.imm) * 2, frCpuState.pc + 4);  // TODO check *2
     
                         /* No change to NZVC */
@@ -1560,14 +1511,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F10: /* CALL:D @Ri */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
                         setDelayedPcAndRa(frCpuState.getReg(statement.i), frCpuState.pc + 4);
     
                         /* No change to NZVC */
@@ -1578,14 +1522,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F20: /* RET:D */
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null && !callStack.isEmpty()) {
-                                    callStack.pop();
-                                }
-                            }
-                        }
+                        context.popStatement();
                         setDelayedPc(frCpuState.getReg(FrCPUState.RP));
     
                         /* No change to NZVC */
@@ -2242,14 +2179,7 @@ public class FrEmulator extends Emulator {
                         if (instructionPrintWriter != null) {
                             instructionPrintWriter.println(msg);
                         }
-                        if (callStack != null) {
-                            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
-                            synchronized (callStack) {
-                                if (callStack != null) {
-                                    pushInstruction(statement);
-                                }
-                            }
-                        }
+                        context.pushStatement(statement);
 
                         processInterrupt(0x0E, frCpuState.pc);
 
@@ -2306,7 +2236,7 @@ public class FrEmulator extends Emulator {
                                 BreakTrigger trigger = breakCondition.getBreakTrigger();
                                 if (trigger != null) {
                                     if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                        trigger.log(breakLogPrintWriter, frCpuState, callStack, memory);
+                                        trigger.log(breakLogPrintWriter, frCpuState, context.callStack, memory);
                                     }
                                     if (trigger.getInterruptToRequest() != null) {
                                         interruptController.request(trigger.getInterruptToRequest());
@@ -2362,11 +2292,6 @@ public class FrEmulator extends Emulator {
             System.err.println("(on or before PC=0x" + Format.asHex(frCpuState.pc, 8) + ")");
             throw new EmulationException(e);
         }
-    }
-
-    private void pushInstruction(FrStatement statement) {
-        statement.formatOperandsAndComment(context, false, outputOptions);
-        callStack.push(new CallStackItem(cpuState.pc, cpuState.getReg(FrCPUState.SP), statement.toString(outputOptions)));
     }
 
     private int bitSearch(int value, int testBit) {

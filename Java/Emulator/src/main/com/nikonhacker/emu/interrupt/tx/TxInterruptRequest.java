@@ -11,7 +11,7 @@ public class TxInterruptRequest extends InterruptRequest {
     /** only meaningful for software/hardware interrupts */
     private int level = 0;
 
-    /** only meaningful for some interrupts */
+    /** only meaningful for some interrupts - TODO never set for now */
     private int code = 0;
 
     /** only meaningful for coprocessor unusable exceptions */
@@ -62,7 +62,6 @@ public class TxInterruptRequest extends InterruptRequest {
     public void setCode(int code) {
         this.code = code;
     }
-
 
     public int getCoprocessorNumber() {
         return coprocessorNumber;

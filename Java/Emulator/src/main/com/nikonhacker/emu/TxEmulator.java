@@ -24,10 +24,10 @@ public class TxEmulator extends Emulator {
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
+        super.setOutputOptions(outputOptions);
         TxInstructionSet.init(outputOptions);
         TxStatement.initFormatChars(outputOptions);
         TxCPUState.initRegisterLabels(outputOptions);
-        this.outputOptions = outputOptions;
     }
 
 
@@ -132,7 +132,7 @@ public class TxEmulator extends Emulator {
                                 BreakTrigger trigger = breakCondition.getBreakTrigger();
                                 if (trigger != null) {
                                     if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                        trigger.log(breakLogPrintWriter, txCpuState, callStack, memory);
+                                        trigger.log(breakLogPrintWriter, txCpuState, context.callStack, memory);
                                     }
                                     if (trigger.getInterruptToRequest() != null) {
                                         interruptController.request(trigger.getInterruptToRequest());

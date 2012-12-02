@@ -137,4 +137,6 @@ public abstract class Statement {
     public abstract String formatAsHex();
 
     public abstract int getNumBytes();
+
+    public abstract void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException;
 }

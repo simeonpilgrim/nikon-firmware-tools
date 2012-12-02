@@ -1248,6 +1248,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popStatement();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -1260,6 +1261,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
@@ -1274,6 +1276,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
@@ -1288,6 +1291,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     context.setDelayedPcAndRaAndTarget(
                             context.cpuState.getReg(statement.rs_fs), // Next PC
                             context.cpuState.getPc() + 8, // return address after the delay slot
@@ -2367,6 +2371,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
                             context.cpuState.getPc() /* incl ISA 16 LSB*/ + 4 /* only exists in EXTENDed form */
@@ -2381,6 +2386,7 @@ public class TxInstructionSet
             Instruction.FlowType.CALL, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     context.cpuState.setReg(TxCPUState.RA, context.cpuState.getPc() /* incl ISA 16 LSB*/ + 2 /* no EXTENDed form exists */);
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
                 }
@@ -2392,6 +2398,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popStatement();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -2405,6 +2412,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popStatement();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -2418,6 +2426,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popStatement();
                     context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
                 }
             });
@@ -2429,6 +2438,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popStatement();
                     context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
                 }
             });
