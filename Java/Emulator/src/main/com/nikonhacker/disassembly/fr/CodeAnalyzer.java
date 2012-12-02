@@ -341,7 +341,7 @@ public class CodeAnalyzer {
                         if (potentialTargets != null) {
                             int i = 0;
                             for (Integer potentialTarget : potentialTargets) {
-                                addCall(currentFunction, statement, address, potentialTarget, "call_target_" + Integer.toHexString(address) + "_" + i, true);
+                                addCall(currentFunction, statement, address, potentialTarget & 0xFFFFFFFE, "call_target_" + Integer.toHexString(address) + "_" + i, true);
                                 i++;
                             }
                         }
