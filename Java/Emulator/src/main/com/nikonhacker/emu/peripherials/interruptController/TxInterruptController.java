@@ -284,17 +284,22 @@ public class TxInterruptController extends AbstractInterruptController {
     /**
      * Request a hardware interrupt with the given number
      * @param interruptNumber See spec section 6.5.1.5
-     * @return
+     * @return true if interrupt could be requested
      */
     @Override
     public boolean request(int interruptNumber) {
-        return request(new TxInterruptRequest(Type.HARDWARE_INTERRUPT, interruptNumber, getRequestLevel(interruptNumber)));
+        int level = getRequestLevel(interruptNumber);
+        //noinspection SimplifiableIfStatement
+        if (level > 0) {
+            return request(new TxInterruptRequest(Type.HARDWARE_INTERRUPT, interruptNumber, level));
+        }
+        else return false;
     }
 
     /**
      * Request a custom interrupt request
      * @param interruptRequest
-     * @return
+     * @return true if interrupt could be requested
      */
     public boolean request(InterruptRequest interruptRequest) {
         if (cpuState.getPowerMode() != TxCPUState.PowerMode.RUN) {
