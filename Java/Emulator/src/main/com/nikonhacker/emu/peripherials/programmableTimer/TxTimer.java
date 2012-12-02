@@ -11,7 +11,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
-    int timerNumber;
     private TxCPUState cpuState;
     private TxClockGenerator clockGenerator;
 
