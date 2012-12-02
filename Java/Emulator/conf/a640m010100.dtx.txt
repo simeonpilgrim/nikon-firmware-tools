@@ -83,6 +83,7 @@
 -s 0xBFC12B18=sys_clr_flg1($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC12B24=sys_clr_flg2($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+-s 0xBFC13298=reset_imc_tmr_cnt_sio_ad
 -s 0xBFC14504=interrupt_handler_INT0
 -s 0xBFC145C8=interrupt_handler_INT6
 -s 0xBFC1469C=interrupt_handler_INT9
