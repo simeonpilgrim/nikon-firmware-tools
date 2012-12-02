@@ -25,7 +25,8 @@ namespace Nikon_Decode
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin"); 
+            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -40,7 +41,8 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");    
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -76,7 +78,7 @@ namespace Nikon_Decode
 
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35f218, 0x35fad8);
             //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x360890, 0x360a40);
-            SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
+            //SaveOverlays(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x35fadc, 0x360848); // Font table
 
             //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
@@ -85,10 +87,60 @@ namespace Nikon_Decode
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
+
+            //SearchDumps(@"C:\Dev\examples\D5100");
         }
 
 
+        static void SearchDumps(string dir)
+        {
+            //var bcode = new byte[] { 0x3C, 0x1A, 0xBF, 0xC0, 0x27, 0x5A, 0x05, 0x00, 0x03, 0x40, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00 };
+            var bcode = new byte[] { 0x17, 0x7A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x40, 0x1A};
+            var sw = new StreamWriter(File.Open(Path.Combine(dir, "status.txt"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
 
+            foreach (var file in Directory.GetFiles(dir, "*.bin"))
+            {
+                BinaryReader br = null;
+
+                byte[] data;
+
+                using (br = new BinaryReader(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
+
+                if (data.Length == 0) continue;
+
+                bool findB = false;
+                bool allSame = true;
+                byte first = data[0];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (allSame && first != data[i]) allSame = false;
+
+                    if (findB == false && (i + bcode.Length) < data.Length)
+                    {
+                        bool bsame = true;
+                        for (int j = 0; j < bcode.Length && bsame; j++)
+                        {
+                            bsame = data[i + j] == bcode[j];
+                        }
+
+                        if (bsame)
+                        {
+                            sw.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
+                            Console.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
+                        }
+                    }
+
+                }
+
+                sw.WriteLine("{0} all same {1}", Path.GetFileName(file), allSame);
+            }
+
+            sw.Close();
+            sw.Dispose();
+        }
         static UInt32 ReadUint32(BinaryReader br)
         {
             byte[] b = br.ReadBytes(4);
