@@ -19,7 +19,7 @@ public abstract class ProgrammableTimer {
      * This is an emulator setting allowing to pause timers even though their emulated state is enabled.
      * The Java timer continues to run, but each execution does nothing
      */
-    protected boolean enabled = false;
+    protected boolean active = false;
 
     /** Underlying scheduler */
     ScheduledExecutorService executorService;
@@ -37,14 +37,16 @@ public abstract class ProgrammableTimer {
         this.interruptController = interruptController;
     }
 
-    protected ProgrammableTimer() {
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public boolean isActive() {
+        return active;
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    @Override
+    public String toString() {
+        return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
     }
 }

@@ -139,16 +139,16 @@ public class CallStackFrame extends DocumentFrame {
         }
     }
 
-    public void setAutoRefresh(boolean editable) {
+    public void setAutoRefresh(boolean refresh) {
         updateList();
-        if (editable) {
-            if (refreshTimer.isRunning()) {
-                refreshTimer.stop();
+        if (refresh) {
+            if (!refreshTimer.isRunning()) {
+                refreshTimer.start();
             }
         }
         else {
-            if (!refreshTimer.isRunning()) {
-                refreshTimer.start();
+            if (refreshTimer.isRunning()) {
+                refreshTimer.stop();
             }
         }
     }

@@ -103,13 +103,13 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    if (enabled & operate) {
+                    if (active & operate) {
                         boolean mustInterrupt = false;
 
                         currentValue += scale;
 
                         // Comparator 0
-                        if (rg0 > 0 && (currentValue / scale == 1 + rg0 / scale)) {
+                        if (rg0 > 0 && (currentValue / scale == rg0 / scale)) {
                             // CP0 matches
                             if ((im & 0b001) == 0) {
                                 st |= 0b001;
@@ -118,7 +118,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                         }
 
                         // Comparator 1
-                        if (rg1 > 0 && (currentValue / scale == 1 + rg1 / scale)) {
+                        if (rg1 > 0 && (currentValue / scale == rg1 / scale)) {
                             // CP1 matches
                             if ((im & 0b010) == 0) {
                                 st |= 0b010;
@@ -297,4 +297,12 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     private void updateOperate() {
         operate = operateInIdle | (cpuState.getPowerMode()== TxCPUState.PowerMode.RUN);
     }
+
+    @Override
+    public String toString() {
+        return "Timer #" + timerNumber + " (value=" + currentValue
+                + ", TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getEn(), 2)
+                + ", TB" + Format.asHex(timerNumber, 1) + "RUN=0x" + Format.asHex(getRun(), 2) + ")";
+    }
+
 }
