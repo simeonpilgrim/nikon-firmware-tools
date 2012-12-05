@@ -91,7 +91,7 @@ public class CallStackFrame extends DocumentFrame {
 
         pack();
 
-        // Prepare update timer
+        // Prepare refresh timer
         refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateList();
