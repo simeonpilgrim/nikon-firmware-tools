@@ -30,7 +30,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private CPUState cpuState;
     private String baseTitle;
 
-    private Timer _timer;
+    private Timer refreshTimer;
     private JTextField addressField;
     private HexEditor hexEditor;
     private JButton leftButton;
@@ -51,12 +51,12 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         getContentPane().add(createEditor(baseAddress, editable));
 
         // Start update timer
-        _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 refreshData();
             }
         });
-        _timer.start();
+        refreshTimer.start();
     }
 
     private void refreshData() {
@@ -201,8 +201,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     public void dispose() {
-        _timer.stop();
-        _timer = null;
+        refreshTimer.stop();
+        refreshTimer = null;
         super.dispose();
     }
 

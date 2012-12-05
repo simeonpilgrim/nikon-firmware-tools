@@ -15,7 +15,7 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
-    private Timer _timer;
+    private Timer refreshTimer;
 
     final CPUStateComponent cpuPanel;
 
@@ -36,13 +36,13 @@ public class CPUStateEditorFrame extends DocumentFrame {
         cpuPanel.refresh();
 
         // Prepare update timer
-        _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cpuPanel.refresh();
             }
         });
         if (!editable) {
-            _timer.start();
+            refreshTimer.start();
         }
     }
 
@@ -57,20 +57,20 @@ public class CPUStateEditorFrame extends DocumentFrame {
         cpuPanel.refresh();
         cpuPanel.setEditable(editable);
         if (editable) {
-            if (_timer.isRunning()) {
-                _timer.stop();
+            if (refreshTimer.isRunning()) {
+                refreshTimer.stop();
             }
         }
         else {
-            if (!_timer.isRunning()) {
-                _timer.start();
+            if (!refreshTimer.isRunning()) {
+                refreshTimer.start();
             }
         }
     }
 
     public void dispose() {
-        _timer.stop();
-        _timer = null;
+        refreshTimer.stop();
+        refreshTimer = null;
         super.dispose();
     }
 }

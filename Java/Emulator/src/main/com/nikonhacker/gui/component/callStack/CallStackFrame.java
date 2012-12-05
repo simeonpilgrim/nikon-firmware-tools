@@ -28,7 +28,7 @@ public class CallStackFrame extends DocumentFrame {
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
-    private Timer _timer;
+    private Timer refreshTimer;
     private final JList callStackList;
 
     public CallStackFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, CPUState cpuState, CodeStructure codeStructure) {
@@ -92,7 +92,7 @@ public class CallStackFrame extends DocumentFrame {
         pack();
 
         // Prepare update timer
-        _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateList();
             }
@@ -142,20 +142,20 @@ public class CallStackFrame extends DocumentFrame {
     public void setAutoRefresh(boolean editable) {
         updateList();
         if (editable) {
-            if (_timer.isRunning()) {
-                _timer.stop();
+            if (refreshTimer.isRunning()) {
+                refreshTimer.stop();
             }
         }
         else {
-            if (!_timer.isRunning()) {
-                _timer.start();
+            if (!refreshTimer.isRunning()) {
+                refreshTimer.start();
             }
         }
     }
 
     public void dispose() {
-        _timer.stop();
-        _timer = null;
+        refreshTimer.stop();
+        refreshTimer = null;
         emulator.setCallStack(null);
         super.dispose();
     }

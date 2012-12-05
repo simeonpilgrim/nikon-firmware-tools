@@ -25,7 +25,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
     BufferedImage img;
 
-    private Timer _timer;
+    private Timer refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField;
 
     public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int yStart, int uStart, int vStart, int screenWidth, int screenHeight) {
@@ -64,17 +64,17 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         setPreferredSize(new Dimension(screenWidth, 600));
 
         // Start update timer
-        _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 repaint();
             }
         });
-        _timer.start();
+        refreshTimer.start();
     }
 
     public void dispose() {
-        _timer.stop();
-        _timer = null;
+        refreshTimer.stop();
+        refreshTimer = null;
         super.dispose();
     }
 
