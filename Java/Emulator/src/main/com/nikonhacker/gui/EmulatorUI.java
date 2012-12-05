@@ -242,8 +242,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JLabel[] statusBar = new JLabel[2];
     private JSlider[] intervalSlider = new JSlider[2];
 
-    private static ImageIcon[] reloadIcons;
-    private int reloadAnimationCounter = 0;
+    private static ImageIcon[] programmableTimerButtonIcons;
+    private int programmableTimerButtonAnimationCounter = 0;
 
 
     // Business fields
@@ -254,7 +254,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DebuggableMemory[] memory = new DebuggableMemory[2];
     private ClockGenerator[] clockGenerator = new ClockGenerator[2];
     private InterruptController[] interruptController = new InterruptController[2];
-    private java.util.Timer reloadAnimationTimer;
+    private java.util.Timer[] programmableTimerButtonAnimationTimer = new java.util.Timer[2];
     private ProgrammableTimer[][] programmableTimers = new ProgrammableTimer[2][];
     private SerialInterface[][] serialInterfaces = new SerialInterface[2][];
 
@@ -2055,17 +2055,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             for (ProgrammableTimer timer : programmableTimers[chip]) {
                 timer.setEnabled(true);
             }
-            setStatusText(chip, "Reload Timers enabled");
+            setStatusText(chip, "Programmable Timers enabled");
             // Animate button
-            reloadAnimationTimer = new java.util.Timer(false);
-            reloadAnimationTimer.scheduleAtFixedRate(new TimerTask() {
+            programmableTimerButtonAnimationTimer[chip] = new java.util.Timer(false);
+            programmableTimerButtonAnimationTimer[chip].scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    reloadAnimationCounter++;
-                    if (reloadAnimationCounter == reloadIcons.length) {
-                        reloadAnimationCounter = 1;
+                    programmableTimerButtonAnimationCounter++;
+                    if (programmableTimerButtonAnimationCounter == programmableTimerButtonIcons.length) {
+                        programmableTimerButtonAnimationCounter = 1;
                     }
-                    reloadTimersButton[chip].setIcon(reloadIcons[reloadAnimationCounter]);
+                    reloadTimersButton[chip].setIcon(programmableTimerButtonIcons[programmableTimerButtonAnimationCounter]);
                 }
             }, 0, 300 /*ms*/);
         }
@@ -2073,11 +2073,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             for (ProgrammableTimer timer : programmableTimers[chip]) {
                 timer.setEnabled(false);
             }
-            setStatusText(chip, "Reload Timers disabled");
+            setStatusText(chip, "Programmable Timers disabled");
             // Stop button animation
-            reloadAnimationTimer.cancel();
-            reloadAnimationTimer = null;
-            reloadTimersButton[chip].setIcon(reloadIcons[0]);
+            programmableTimerButtonAnimationTimer[chip].cancel();
+            programmableTimerButtonAnimationTimer[chip] = null;
+            reloadTimersButton[chip].setIcon(programmableTimerButtonIcons[0]);
         }
 
     }
@@ -2088,8 +2088,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     private static void initReloadIcons(String buttonSize) {
-        reloadIcons = new ImageIcon[17];
-        for (int i = 0; i < reloadIcons.length; i++) {
+        programmableTimerButtonIcons = new ImageIcon[17];
+        for (int i = 0; i < programmableTimerButtonIcons.length; i++) {
             String imgLocation = "images/reload";
             String text;
             if (i == 0) {
@@ -2099,9 +2099,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 imgLocation += "_" + i;
                 text = "Stop reload timer";
             }
-            reloadIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
+            programmableTimerButtonIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
             if (BUTTON_SIZE_SMALL.equals(buttonSize)) {
-                reloadIcons[i] = new ImageIcon(reloadIcons[i].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
+                programmableTimerButtonIcons[i] = new ImageIcon(programmableTimerButtonIcons[i].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
             }
         }
     }
