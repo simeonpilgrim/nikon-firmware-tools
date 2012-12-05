@@ -65,8 +65,10 @@
 -s 0xBFC00400=interrupt_handler
 -s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
 -s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
+-s 0xBFC01184=sub_bfc01184_($s0 [IN index])
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC11534=INT0_body
 -s 0xBFC11554=INT6_body
 -s 0xBFC11574=INT9_body
@@ -92,6 +94,7 @@
 -s 0xBFC1494C=interrupt_handler_INT12
 -s 0xBFC14A14=interrupt_handler_INT17
 -s 0xBFC14ADC=interrupt_handler_INTRTC
+-s 0xBFC14BB0=indirect_software_interrupt
 -s 0xBFC14F98=nmi
 -s 0xBFC15AB8=Tsk00
 -s 0xBFC16CE4=INTD_body
@@ -189,7 +192,13 @@
 
 ########## Global variables
 
-#-s 0x68000910=Real_Time_Clock
+#-s 0xBFC04490=jump_table_from_0xBFC119C
+#-s 0xBFC044BC=RTOS TCB table (tasks)
 
 # Jump hints
-#-j 0x001A93A0=0x001A929C, 0x001A92AE, 0x001A92EE, 0x001A930C, 0x001A9354
+-j 0xBFC01E6C=0xBFC14BB0
+#-j 0xBFC01964=0x00000000 ; This call never happens because address to jump to is 0 in FW, which causes the code to avoid the call
+#-j 0xBFC01C24=0x00000000 ; This call never happens because address to jump to is 0 in FW, which causes the code to avoid the call
+-j 0xBFC144EC=0xBFC0D9F8
+-j 0xBFC0119C=0xBFC01FAC, 0xBFC0251C, 0xBFC01DB8, 0xBFC01E80, 0xBFC00D90
+-j 0xBFC01E6C=0xBFC14BB0
