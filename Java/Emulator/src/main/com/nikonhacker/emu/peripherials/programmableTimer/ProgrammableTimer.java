@@ -7,7 +7,7 @@ import java.util.concurrent.ScheduledExecutorService;
 public abstract class ProgrammableTimer {
 
     /** Lower boundary of sustainable interval between emulator scheduler ticks */
-    public final static int MIN_EMULATOR_INTERVAL_NANOSECONDS = 100000; //100 microseconds interval = max frequency of 10kHz
+    public final static int MIN_EMULATOR_INTERVAL_NANOSECONDS = 50000; //50 microseconds interval = max frequency of 20kHz
 
     /** This is the number of this timer */
     protected int timerNumber;
