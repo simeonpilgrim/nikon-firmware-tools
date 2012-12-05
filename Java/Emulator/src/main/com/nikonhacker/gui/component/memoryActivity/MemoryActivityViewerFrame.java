@@ -26,7 +26,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
 
     private static final int NO_SELECTION = -1;
 
-    private Timer _timer;
+    private Timer refreshTimer;
 
     BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
     private double scaleX;
@@ -82,12 +82,12 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
 
     private void startTimer() {
         // Start update timer
-        _timer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 repaint();
             }
         });
-        _timer.start();
+        refreshTimer.start();
     }
 
     private void openSubWindow(int screenX, int screenY) {
@@ -129,8 +129,8 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
 
 
     public void dispose() {
-        _timer.stop();
-        _timer = null;
+        refreshTimer.stop();
+        refreshTimer = null;
         if (isMaster) {
             for (MemoryActivityViewerFrame child : children) {
                 child.dispose();

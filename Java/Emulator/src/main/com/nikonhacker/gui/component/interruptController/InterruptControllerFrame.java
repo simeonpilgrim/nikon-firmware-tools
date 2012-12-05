@@ -23,7 +23,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     protected static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
-    private javax.swing.Timer _timer;
+    private javax.swing.Timer refreshTimer;
     private final JList interruptList;
 
     Timer interruptTimer = null;
@@ -63,7 +63,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
         // Prepare update timer
 
-        _timer = new javax.swing.Timer(UPDATE_INTERVAL_MS*10, new ActionListener() {
+        refreshTimer = new javax.swing.Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateList();
             }
@@ -104,13 +104,13 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     public void setQueueAutoRefresh(boolean enabled) {
         updateList();
         if (enabled) {
-            if (!_timer.isRunning()) {
-                _timer.start();
+            if (!refreshTimer.isRunning()) {
+                refreshTimer.start();
             }
         }
         else {
-            if (_timer.isRunning()) {
-                _timer.stop();
+            if (refreshTimer.isRunning()) {
+                refreshTimer.stop();
             }
         }
     }
