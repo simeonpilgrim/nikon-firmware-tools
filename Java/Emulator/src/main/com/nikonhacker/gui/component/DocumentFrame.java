@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
     private boolean rememberLastPosition;
 
     public DocumentFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui) {
-        super(title, resizable, closable, maximizable, iconifiable);
+        super(Constants.CHIP_LABEL[chip] + " " + title, resizable, closable, maximizable, iconifiable);
         this.chip = chip;
         this.ui = ui;
         addInternalFrameListener(this);
@@ -42,7 +43,6 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
         // Called no matter how the close is initiated
         if (this.rememberLastPosition) {
             String windowName = this.getClass().getSimpleName();
-            // TODO differenciate between FR/TX
             ui.getPrefs().setWindowPosition(windowName, chip, getX(), getY());
             ui.getPrefs().setWindowSize(windowName, chip, getWidth(), getHeight());
         }
