@@ -124,7 +124,7 @@ public class FrReloadTimer extends ProgrammableTimer {
             executorService.scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    if (enabled) {
+                    if (active) {
                         currentValue -= scale;
                         if (currentValue < 0) {
                             isInUnderflowCondition = true;
@@ -160,4 +160,8 @@ public class FrReloadTimer extends ProgrammableTimer {
         return (configuration & 0x3FFA) | (isInUnderflowCondition?4:0);
     }
 
+    @Override
+    public String toString() {
+        return "Reload timer #" + timerNumber + " (value=" + currentValue + ", interrupts " + (interruptEnabled?" enabled":" disabled")+ ")";
+    }
 }
