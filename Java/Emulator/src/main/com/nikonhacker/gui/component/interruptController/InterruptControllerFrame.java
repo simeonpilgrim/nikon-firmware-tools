@@ -55,14 +55,10 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
         tabbedPane.addTab("Queue", null, queuePanel);
 
-
         // Add tab panel
-
         getContentPane().add(tabbedPane);
 
-
-        // Prepare update timer
-
+        // Prepare refresh timer
         refreshTimer = new javax.swing.Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 updateList();

@@ -33,14 +33,13 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
         getContentPane().add(cpuPanel);
 
-        cpuPanel.refresh();
-
-        // Prepare update timer
+        // Prepare refresh timer
         refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cpuPanel.refresh();
             }
         });
+
         if (!editable) {
             refreshTimer.start();
         }
