@@ -300,9 +300,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     @Override
     public String toString() {
-        return "Timer #" + timerNumber + " (value=" + currentValue
+        int requestLevel = ((TxInterruptController) interruptController).getRequestLevel(TxInterruptController.INTTB0 + timerNumber);
+        return "Timer " + Format.asHex(timerNumber, 1) + " : value=" + currentValue
                 + ", TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getEn(), 2)
-                + ", TB" + Format.asHex(timerNumber, 1) + "RUN=0x" + Format.asHex(getRun(), 2) + ")";
+                + ", TB" + Format.asHex(timerNumber, 1) + "RUN=0x" + Format.asHex(getRun(), 2)
+                + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel==0?" (interrupt disabled)":" (interrupt enabled)");
     }
 
 }
