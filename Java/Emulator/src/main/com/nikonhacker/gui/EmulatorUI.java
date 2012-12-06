@@ -2030,7 +2030,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (programmableTimersFrame[chip] == null) {
             programmableTimersFrame[chip] = new ProgrammableTimersFrame("Programmable timers", "reload", true, true, false, true, chip, this, programmableTimers[chip]);
             addDocumentFrame(chip, programmableTimersFrame[chip]);
-            programmableTimersFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
             programmableTimersFrame[chip].display(true);
         }
         else {
@@ -2298,7 +2297,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 // Editable components
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
-                if (programmableTimersFrame[chip] != null) programmableTimersFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
                 if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
             }
@@ -2312,7 +2310,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 // Editable components  TODO does it make sense ? And why true ?
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
-                if (programmableTimersFrame[chip] != null) programmableTimersFrame[chip].setAutoRefresh(false);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
                 if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(true);
             }

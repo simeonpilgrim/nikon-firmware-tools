@@ -61,6 +61,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
                 updateList();
             }
         });
+        refreshTimer.start();
 
         updateState(timers[0].isActive());
     }
@@ -82,22 +83,6 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         topPanel.setBackground(active ? Color.GREEN : new Color(255, 128, 128));
     }
 
-
-    public void setAutoRefresh(boolean refresh) {
-        updateList();
-        if (refresh) {
-            if (!refreshTimer.isRunning()) {
-                refreshTimer.start();
-            }
-        }
-        else {
-            if (refreshTimer.isRunning()) {
-                refreshTimer.stop();
-            }
-        }
-    }
-
-
     private void updateList() {
         synchronized (timers) {
             DefaultListModel model = new DefaultListModel();
@@ -110,6 +95,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
 
     public void dispose() {
         super.dispose();
+        refreshTimer.stop();
     }
 
 }
