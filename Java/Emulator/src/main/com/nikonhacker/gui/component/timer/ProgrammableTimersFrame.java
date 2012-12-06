@@ -22,6 +22,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
     private final JList timerList;
     private final JLabel statusLabel;
     private final JButton enableButton;
+    private final JPanel topPanel;
 
     public ProgrammableTimersFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final ProgrammableTimer[] timers) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -29,7 +30,6 @@ public class ProgrammableTimersFrame extends DocumentFrame {
 
         statusLabel = new JLabel();
         enableButton = new JButton();
-        updateLabels(timers[0].isActive());
         enableButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -37,9 +37,9 @@ public class ProgrammableTimersFrame extends DocumentFrame {
             }
         });
 
-        JPanel buttonPanel = new JPanel(new BorderLayout());
-        buttonPanel.add(statusLabel, BorderLayout.CENTER);
-        buttonPanel.add(enableButton, BorderLayout.EAST);
+        topPanel = new JPanel(new BorderLayout());
+        topPanel.add(statusLabel, BorderLayout.CENTER);
+        topPanel.add(enableButton, BorderLayout.EAST);
 
         JPanel listPanel = new JPanel(new BorderLayout());
         timerList = new JList();
@@ -50,7 +50,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         listPanel.add(listScroller, BorderLayout.CENTER);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.add(buttonPanel, BorderLayout.NORTH);
+        mainPanel.add(topPanel, BorderLayout.NORTH);
         mainPanel.add(listPanel, BorderLayout.CENTER);
 
         getContentPane().add(mainPanel);
@@ -61,6 +61,8 @@ public class ProgrammableTimersFrame extends DocumentFrame {
                 updateList();
             }
         });
+
+        updateState(timers[0].isActive());
     }
 
     private void toggleProgrammableTimers() {
@@ -70,13 +72,14 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         }
         // Start/stop button animation
         ui.setProgrammableTimerAnimationEnabled(chip, active);
-        updateLabels(active);
+        updateState(active);
     }
 
-    private void updateLabels(boolean active) {
+    private void updateState(boolean active) {
         // Change label/button
         statusLabel.setText("Timer emulation is " + (active ? "active" : "inactive"));
         enableButton.setText(active ? "Disable" : "Enable");
+        topPanel.setBackground(active ? Color.GREEN : new Color(255, 128, 128));
     }
 
 
