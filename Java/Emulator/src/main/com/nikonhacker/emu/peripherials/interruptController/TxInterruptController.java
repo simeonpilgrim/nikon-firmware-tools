@@ -396,7 +396,7 @@ public class TxInterruptController extends AbstractInterruptController {
 
 
     // IMC
-    private int getRequestLevel(int interruptNumber) {
+    public int getRequestLevel(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
         int imc = memory.load32(description.intcImcCtrlRegAddr);
         return getImcIl(getSection(imc, description.intcImcCtrlRegSection));

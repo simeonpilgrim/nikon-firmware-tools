@@ -162,6 +162,6 @@ public class FrReloadTimer extends ProgrammableTimer {
 
     @Override
     public String toString() {
-        return "Reload timer #" + timerNumber + " (value=" + currentValue + ", interrupts " + (interruptEnabled?" enabled":" disabled")+ ")";
+        return "Reload timer #" + timerNumber + " (value=" + currentValue + (interruptEnabled?", interrupt enabled":", interrupt disabled")+ ")";
     }
 }
