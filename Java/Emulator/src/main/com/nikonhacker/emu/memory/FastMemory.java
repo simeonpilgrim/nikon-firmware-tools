@@ -86,7 +86,7 @@ public class FastMemory extends AbstractMemory implements Memory  {
             return (loadSigned8(addr) << 24) | (loadUnsigned8(addr + 1) << 16)
                     | (loadUnsigned8(addr + 2) << 8) | loadUnsigned8(addr + 3);
         } catch (Exception e) {
-            throw new SegmentationFault(addr);
+            throw new MemoryWriteError(addr);
         }
     }
 
@@ -151,7 +151,7 @@ public class FastMemory extends AbstractMemory implements Memory  {
             store8(addr + 2, value >> 8);
             store8(addr + 3, value);
         } catch (Exception e) {
-            throw new SegmentationFault(addr, e);
+            throw new MemoryWriteError(addr, e);
         }
     }
 }

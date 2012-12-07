@@ -9,16 +9,16 @@
 package com.nikonhacker.emu.memory;
 
 /** @author Ian Rogers */
-public class SegmentationFault extends RuntimeException {
+public class MemoryWriteError extends RuntimeException {
     protected final int address;
 
     /** Constructor */
-    public SegmentationFault(int address) {
+    public MemoryWriteError(int address) {
         super("SegFault at 0x" + Integer.toHexString(address));
         this.address = address;
     }
 
-    public SegmentationFault(int address, Exception cause) {
+    public MemoryWriteError(int address, Exception cause) {
         super("SegFault at 0x" + Integer.toHexString(address), cause);
         this.address = address;
     }

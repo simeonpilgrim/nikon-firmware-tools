@@ -227,7 +227,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             }
             return value;
         } catch (Exception e) {
-            throw new SegmentationFault(addr, e);
+            throw new MemoryWriteError(addr, e);
         }
     }
 
@@ -344,7 +344,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             store8(addr, value >> 8, false);
             store8(addr + 1, value, false);
         } catch (Exception e) {
-            throw new SegmentationFault(addr, e);
+            throw new MemoryWriteError(addr, e);
         }
     }
 
@@ -374,7 +374,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             store8(addr + 2, value >> 8, false);
             store8(addr + 3, value, false);
         } catch (Exception e) {
-            throw new SegmentationFault(addr, e);
+            throw new MemoryWriteError(addr, e);
         }
     }
 
