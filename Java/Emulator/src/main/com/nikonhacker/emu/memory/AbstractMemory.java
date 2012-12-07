@@ -338,7 +338,7 @@ public abstract class AbstractMemory implements Memory {
             byte[] page = getPage(pte);
 
             if (page == null)
-                throw new SegmentationFault(address);
+                throw new MemoryWriteError(address);
 
             readableMemory[pte] = newRead ? page : null;
             writableMemory[pte] = newWrite ? page : null;
