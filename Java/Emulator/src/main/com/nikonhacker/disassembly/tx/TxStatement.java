@@ -340,7 +340,7 @@ public class TxStatement extends Statement {
                     imm   =   ((binaryStatement >> (20- 4)) & 0b11110000)
                             | ( binaryStatement             & 0b00001111); // framesize
                     immBitWidth = 8;
-                    sa_cc =   ((binaryStatement >> (20- 7)) & 0b11_10000000)
+                    sa_cc =   ((binaryStatement >> (24- 7)) & 0b11_10000000)
                             | ((binaryStatement >> (16- 3)) & 0b00_01111000)
                             | ((binaryStatement >> 4)       & 0b00_00000111); // xsregs|aregs|ra|s0|s1
                     break;

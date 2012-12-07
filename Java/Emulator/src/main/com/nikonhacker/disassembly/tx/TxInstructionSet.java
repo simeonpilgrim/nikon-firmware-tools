@@ -2878,7 +2878,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
-                    int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
+                    int xsregs = (statement.getBinaryStatement() >> 24) & 0b111; // = 0 in 16-bit form
 
                     int temp;
                     if (!statement.isExtended() && statement.imm == 0) {
@@ -2985,7 +2985,7 @@ public class TxInstructionSet
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
                     int aregs = (statement.getBinaryStatement() >> 16) & 0b1111; // = 0 in 16-bit form
-                    int xsregs = (statement.getBinaryStatement() >> 20) & 0b111; // = 0 in 16-bit form
+                    int xsregs = (statement.getBinaryStatement() >> 24) & 0b111; // = 0 in 16-bit form
 
                     int temp = context.cpuState.getReg(TxCPUState.SP);
 
