@@ -27,6 +27,9 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     int cp0;
     int cp1;
 
+    // Flip-flop output
+    boolean ff0 = false; // undefined in fact
+
     private TimerTask timerTask = null;
     private long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
     private static final int MAX_COUNTER_VALUE = (1 << 16) - 1;
@@ -115,6 +118,9 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                                 st |= 0b001;
                                 mustInterrupt = true;
                             }
+                            if ((ffcr & 0b00000100) != 0) {
+                                toggleFf0();
+                            }
                         }
 
                         // Comparator 1
@@ -123,6 +129,9 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                             if ((im & 0b010) == 0) {
                                 st |= 0b010;
                                 mustInterrupt = true;
+                            }
+                            if ((ffcr & 0b00001000) != 0) {
+                                toggleFf0();
                             }
                             if (getModCle()) {
                                 currentValue -= rg1;
@@ -220,15 +229,21 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public int getFfcr() {
-        return ffcr;
+        return ffcr | 0b11000011;
     }
 
     public void setFfcr(int ffcr) {
-        if ((ffcr & 0b111100) != 0) {
-            // TODO flip-flop according to TBnFFCR<TBnC1T1, TBnC0T1, TBnE1T1, TBnE0T1>. See section 11.3.7
-            throw new RuntimeException("Flip flop not implemented");
+        switch (ffcr & 0b11) {
+            case 0b00: toggleFf0(); break;
+            case 0b01: ff0 = true; break;
+            case 0b10: ff0 = false; break;
+            // case 0b11 : no change
         }
         this.ffcr = ffcr;
+    }
+
+    private void toggleFf0() {
+        ff0 = !ff0;
     }
 
     public int getSt() {
@@ -287,6 +302,10 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     public void setCp1(int cp1) {
         this.cp1 = cp1;
+    }
+
+    public boolean getFf0() {
+        return ff0;
     }
 
     @Override
