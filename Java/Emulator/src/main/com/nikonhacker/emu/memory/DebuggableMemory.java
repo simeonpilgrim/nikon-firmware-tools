@@ -210,25 +210,21 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public int load32(int addr, boolean enableListeners) {
-        try {
-            int value = (loadSigned8(addr, false) << 24) | (loadUnsigned8(addr + 1, false) << 16)
-                    | (loadUnsigned8(addr + 2, false) << 8) | loadUnsigned8(addr + 3, false);
-            if (enableListeners) {
-                for (MemoryActivityListener activityListener : activityListeners) {
-                    activityListener.onLoadData32(addr, value);
-                }
-                if (getPTE(addr) == ioPage) {
-                    // if it matches, we have a listener AND we're in its page
-                    Integer i = ioActivityListener.onIoLoad32(readableMemory[ioPage], addr, value);
-                    if (i != null) {
-                        value = i;
-                    }
+        int value = (loadSigned8(addr, false) << 24) | (loadUnsigned8(addr + 1, false) << 16)
+                | (loadUnsigned8(addr + 2, false) << 8) | loadUnsigned8(addr + 3, false);
+        if (enableListeners) {
+            for (MemoryActivityListener activityListener : activityListeners) {
+                activityListener.onLoadData32(addr, value);
+            }
+            if (getPTE(addr) == ioPage) {
+                // if it matches, we have a listener AND we're in its page
+                Integer i = ioActivityListener.onIoLoad32(readableMemory[ioPage], addr, value);
+                if (i != null) {
+                    value = i;
                 }
             }
-            return value;
-        } catch (Exception e) {
-            throw new MemoryWriteError(addr, e);
         }
+        return value;
     }
 
 
@@ -331,21 +327,17 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public void store16(int addr, int value, boolean enableListeners) {
-        try {
-            if (enableListeners) {
-                if (getPTE(addr) == ioPage) {
-                    // if it matches, we have a listener AND we're in its page
-                    ioActivityListener.onIoStore16(writableMemory[ioPage], addr, value);
-                }
-                for (MemoryActivityListener activityListener : activityListeners) {
-                    activityListener.onStore16(addr, value);
-                }
+        if (enableListeners) {
+            if (getPTE(addr) == ioPage) {
+                // if it matches, we have a listener AND we're in its page
+                ioActivityListener.onIoStore16(writableMemory[ioPage], addr, value);
             }
-            store8(addr, value >> 8, false);
-            store8(addr + 1, value, false);
-        } catch (Exception e) {
-            throw new MemoryWriteError(addr, e);
+            for (MemoryActivityListener activityListener : activityListeners) {
+                activityListener.onStore16(addr, value);
+            }
         }
+        store8(addr, value >> 8, false);
+        store8(addr + 1, value, false);
     }
 
     /**
@@ -359,23 +351,19 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public void store32(int addr, int value, boolean enableListeners) {
-        try {
-            if (enableListeners) {
-                if (getPTE(addr) == ioPage) {
-                    // if it matches, we have a listener AND we're in its page
-                    ioActivityListener.onIoStore32(writableMemory[ioPage], addr, value);
-                }
-                for (MemoryActivityListener activityListener : activityListeners) {
-                    activityListener.onStore32(addr, value);
-                }
+        if (enableListeners) {
+            if (getPTE(addr) == ioPage) {
+                // if it matches, we have a listener AND we're in its page
+                ioActivityListener.onIoStore32(writableMemory[ioPage], addr, value);
             }
-            store8(addr, value >> 24, false);
-            store8(addr + 1, value >> 16, false);
-            store8(addr + 2, value >> 8, false);
-            store8(addr + 3, value, false);
-        } catch (Exception e) {
-            throw new MemoryWriteError(addr, e);
+            for (MemoryActivityListener activityListener : activityListeners) {
+                activityListener.onStore32(addr, value);
+            }
         }
+        store8(addr, value >> 24, false);
+        store8(addr + 1, value >> 16, false);
+        store8(addr + 2, value >> 8, false);
+        store8(addr + 3, value, false);
     }
 
     public byte[] getPageForAddress(int addr) {

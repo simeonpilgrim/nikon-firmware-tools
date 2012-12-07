@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.memory;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.Range;
 import com.nikonhacker.emu.EmulatorOptions;
 
@@ -338,7 +339,7 @@ public abstract class AbstractMemory implements Memory {
             byte[] page = getPage(pte);
 
             if (page == null)
-                throw new MemoryWriteError(address);
+                throw new RuntimeException("Segmentation fault at 0x" + Format.asHex(address, 8));
 
             readableMemory[pte] = newRead ? page : null;
             writableMemory[pte] = newWrite ? page : null;
