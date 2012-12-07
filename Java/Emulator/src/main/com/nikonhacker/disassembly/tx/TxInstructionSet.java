@@ -1235,6 +1235,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     context.setDelayedPc(
                             context.cpuState.getReg(statement.rs_fs)
                     );
@@ -2449,6 +2450,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     context.cpuState.setPc(context.cpuState.getReg(statement.rs_fs));
                 }
             });
