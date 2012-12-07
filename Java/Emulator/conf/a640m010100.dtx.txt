@@ -68,6 +68,7 @@
 -s 0xBFC01184=sub_bfc01184_($s0 [IN index])
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
 -s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC11534=INT0_body
 -s 0xBFC11554=INT6_body
