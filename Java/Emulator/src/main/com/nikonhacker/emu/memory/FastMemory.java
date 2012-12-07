@@ -82,12 +82,8 @@ public class FastMemory extends AbstractMemory implements Memory  {
      * @return the result
      */
     public int load32(int addr) {
-        try {
-            return (loadSigned8(addr) << 24) | (loadUnsigned8(addr + 1) << 16)
-                    | (loadUnsigned8(addr + 2) << 8) | loadUnsigned8(addr + 3);
-        } catch (Exception e) {
-            throw new MemoryWriteError(addr);
-        }
+        return (loadSigned8(addr) << 24) | (loadUnsigned8(addr + 1) << 16)
+                | (loadUnsigned8(addr + 2) << 8) | loadUnsigned8(addr + 3);
     }
 
 
@@ -145,13 +141,9 @@ public class FastMemory extends AbstractMemory implements Memory  {
      * @param addr  the address of where to store
      */
     public void store32(int addr, int value) {
-        try {
-            store8(addr, value >> 24);
-            store8(addr + 1, value >> 16);
-            store8(addr + 2, value >> 8);
-            store8(addr + 3, value);
-        } catch (Exception e) {
-            throw new MemoryWriteError(addr, e);
-        }
+        store8(addr, value >> 24);
+        store8(addr + 1, value >> 16);
+        store8(addr + 2, value >> 8);
+        store8(addr + 3, value);
     }
 }
