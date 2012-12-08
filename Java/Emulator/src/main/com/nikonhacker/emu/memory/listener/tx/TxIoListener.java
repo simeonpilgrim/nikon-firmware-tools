@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.memory.listener.tx;
 
-import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
@@ -86,15 +85,13 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_TB0CP0  =    0xFF00_4528; // Timer Capture register lo word
     private static final int REGISTER_TB0CP1  =    0xFF00_452C; // Timer Capture register hi word
 
-    private final TxCPUState cpuState;
     private final TxClockGenerator clockGenerator;
     private final TxInterruptController interruptController;
 
     private final TxTimer[] timers;
     private final SerialInterface[] serialInterfaces;
 
-    public TxIoListener(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
-        this.cpuState = cpuState;
+    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
         this.clockGenerator = clockGenerator;
         this.interruptController = interruptController;
         this.timers = timers;
@@ -149,6 +146,7 @@ public class TxIoListener implements IoActivityListener {
                     return (byte) timers[timerNr].getCp1();
             }
         }
+
         switch (addr) {
             case REGISTER_SYSCR:
                 throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");

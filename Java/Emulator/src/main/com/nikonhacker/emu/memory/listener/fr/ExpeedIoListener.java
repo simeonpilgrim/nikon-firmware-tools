@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.memory.listener.fr;
 
-import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
@@ -49,14 +48,12 @@ public class ExpeedIoListener implements IoActivityListener {
     public static final int REGISTER_ICR00 = 0x440;
 
 
-    private final FrCPUState cpuState;
     private final FrInterruptController interruptController;
 
     private final FrReloadTimer[] reloadTimers;
     private SerialInterface[] serialInterfaces;
 
-    public ExpeedIoListener(FrCPUState cpuState, FrInterruptController interruptController, FrReloadTimer[] timers, SerialInterface[] serialInterfaces) {
-        this.cpuState = cpuState;
+    public ExpeedIoListener(FrInterruptController interruptController, FrReloadTimer[] timers, SerialInterface[] serialInterfaces) {
         this.interruptController = interruptController;
         this.reloadTimers = timers;
         this.serialInterfaces = serialInterfaces;
@@ -284,8 +281,7 @@ public class ExpeedIoListener implements IoActivityListener {
                     reloadTimers[0].setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR0:
-                    System.out.println("Warning: ignoring attempt to write reloadTimer0 value. CPUState is " + cpuState);
-                    break;
+                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer0 value.");
                 case REGISTER_TMCSR0:
                     reloadTimers[0].setConfiguration(value & 0xFFFF);
                     break;
@@ -294,8 +290,7 @@ public class ExpeedIoListener implements IoActivityListener {
                     reloadTimers[1].setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR1:
-                    System.out.println("Warning: ignoring attempt to write reloadTimer1 value. CPUState is " + cpuState);
-                    break;
+                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer1 value.");
                 case REGISTER_TMCSR1:
                     reloadTimers[1].setConfiguration(value & 0xFFFF);
                     break;
@@ -304,8 +299,7 @@ public class ExpeedIoListener implements IoActivityListener {
                     reloadTimers[2].setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR2:
-                    System.out.println("Warning: ignoring attempt to write reloadTimer2 value. CPUState is " + cpuState);
-                    break;
+                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer2 value");
                 case REGISTER_TMCSR2:
                     reloadTimers[2].setConfiguration(value & 0xFFFF);
                     break;
