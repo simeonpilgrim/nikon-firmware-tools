@@ -1778,7 +1778,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     memory[chip].setIoActivityListener(
                             new ExpeedIoListener(
-                                    (FrCPUState) cpuState[chip],
                                     (FrInterruptController) interruptController[chip],
                                     (FrReloadTimer[]) programmableTimers[chip],
                                     serialInterfaces[chip]
@@ -1827,7 +1826,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     };
                     memory[chip].setIoActivityListener(
                             new TxIoListener(
-                                    (TxCPUState) cpuState[chip],
                                     (TxClockGenerator) clockGenerator[chip],
                                     (TxInterruptController) interruptController[chip],
                                     (TxTimer[]) programmableTimers[chip],
