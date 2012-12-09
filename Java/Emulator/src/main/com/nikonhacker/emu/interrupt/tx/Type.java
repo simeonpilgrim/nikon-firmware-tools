@@ -27,6 +27,10 @@ public enum Type {
         this.maskable = maskable;
     }
 
+    /**
+     * Priority per type
+     * @return higher number means higher priority
+     */
     public int getPriority() {
         return priority;
     }

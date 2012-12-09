@@ -46,7 +46,10 @@ public class TxInterruptRequest extends InterruptRequest {
         return type;
     }
 
-
+    /**
+     * Interrupt level
+     * @return higher number means higher priority
+     */
     public int getLevel() {
         return level;
     }
@@ -74,13 +77,15 @@ public class TxInterruptRequest extends InterruptRequest {
 
     /**
      * Returns an absolute priority for this request, for comparison
-     * Lower number = higher priority
-     * Priority is first based on the type, then, for interrupts, on level (7 is the highest), and finally on interrupt number (lower had more priority
-     * See table 6.2 at section 6.1.3.2
-     * @return
+     * Priority is based on :
+     * 1) the type - See table 6.2 at section 6.1.3.2
+     * 2) then, for interrupts, on level ("7" is the highest)
+     * 3) finally on interrupt number (lower interrupt number means more priority)
+     * See section 6.5.1.6
+     * @return a Lower number for higher priority
      */
     public int getPriority() {
-        return -(getType().getPriority() << 4) - getLevel();
+        return -(getType().getPriority() << 8) - (getLevel() << 4) + interruptNumber;
     }
 
     @Override
