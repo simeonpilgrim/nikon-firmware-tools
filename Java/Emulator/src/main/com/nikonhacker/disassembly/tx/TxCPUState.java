@@ -1066,10 +1066,10 @@ public class TxCPUState extends CPUState {
                 && isStatusIESet() // TBC IE is a filter for acceptance, not generation
                 && !isStatusERLSet()
                 && !isStatusEXLSet()
-                // Cfr last paragraph of section 6.5.1.6 : 000 means all interrupts enabled.
-                // Otherwise, interrupt with a lower priority (=higher level?) than the CMASK are suspended
-                && (interruptController.getIlevCmask() == 0 || ((TxInterruptRequest)interruptRequest).getLevel() <= interruptController.getIlevCmask())
-                ;
+                // Cfr last paragraph of section 6.5.1.6 :
+                // ”7” is the highest priority level.
+                // 000 means all interrupts enabled.
+                && ((TxInterruptRequest)interruptRequest).getLevel() > interruptController.getIlevCmask();
     }
 
     public void addCpuPowerModeChangeListener(CpuPowerModeChangeListener cpuPowerModeChangeListener) {

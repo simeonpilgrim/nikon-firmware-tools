@@ -585,7 +585,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         if (chip == Constants.CHIP_TX) {
             ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
-//            bar.add(ioPortsButton[chip]);
+            bar.add(ioPortsButton[chip]);
         }
 
         serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
@@ -874,7 +874,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //                ioPortsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
                 ioPortsMenuItem[chip].setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW[chip]);
                 ioPortsMenuItem[chip].addActionListener(this);
-//                componentsMenu.add(ioPortsMenuItem[chip]);
+                componentsMenu.add(ioPortsMenuItem[chip]);
             }
 
         }
