@@ -3,6 +3,7 @@ package com.nikonhacker.emu.memory.listener.tx;
 import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -68,10 +69,23 @@ public class TxIoListener implements IoActivityListener {
     public static final int REGISTER_IMCG10  =    0xFF00_1938; // CG interrupt mode control register 10
     public static final int REGISTER_IMCG11  =    0xFF00_193C; // CG interrupt mode control register 11
 
+    // Port
+    private static final int NB_PORT           = 20;
+    private static final int PORT_OFFSET_SHIFT = 6;
+    private static final int PORT_OFFSET       = 1 << PORT_OFFSET_SHIFT;
+    private static final int REGISTER_PORT0    =    0xFF00_4000; // Port register (value)
+    private static final int REGISTER_PORT0CR  =    0xFF00_4004; // Port control register
+    private static final int REGISTER_PORT0FC1 =    0xFF00_4008; // Port function register 1
+    private static final int REGISTER_PORT0FC2 =    0xFF00_400C; // Port function register 2
+    private static final int REGISTER_PORT0FC3 =    0xFF00_4010; // Port function register 3
+    private static final int REGISTER_PORT0ODE =    0xFF00_4028; // Port open-drain control register
+    private static final int REGISTER_PORT0PUP =    0xFF00_402C; // Port pull-up control register
+    private static final int REGISTER_PORT0PIE =    0xFF00_4038; // Port input enable control register
+
     // Timer
-    private static final int NB_TIMER          = 18;
-    private static final int TIMER_OFFSET_BITS = 6;
-    private static final int TIMER_OFFSET      = 1 << TIMER_OFFSET_BITS;
+    private static final int NB_TIMER           = 18;
+    private static final int TIMER_OFFSET_SHIFT = 6;
+    private static final int TIMER_OFFSET       = 1 << TIMER_OFFSET_SHIFT;
     private static final int REGISTER_TB0EN   =    0xFF00_4500; // Timer enable register
     private static final int REGISTER_TB0RUN  =    0xFF00_4504; // Timer RUN register
     private static final int REGISTER_TB0CR   =    0xFF00_4508; // Timer control register
@@ -89,12 +103,14 @@ public class TxIoListener implements IoActivityListener {
     private final TxInterruptController interruptController;
 
     private final TxTimer[] timers;
+    private final TxIoPort[] ioPorts;
     private final SerialInterface[] serialInterfaces;
 
-    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, SerialInterface[] serialInterfaces) {
+    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, TxIoPort[] ioPorts, SerialInterface[] serialInterfaces) {
         this.clockGenerator = clockGenerator;
         this.interruptController = interruptController;
         this.timers = timers;
+        this.ioPorts = ioPorts;
         this.serialInterfaces = serialInterfaces;
     }
 
@@ -112,10 +128,19 @@ public class TxIoListener implements IoActivityListener {
      */
     public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
 
+//        // Port configuration registers
+//        if (addr >= REGISTER_PORT0 & addr < REGISTER_PORT0 + NB_PORT * PORT_OFFSET) {
+//            int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+//            switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
+//                case REGISTER_PORT0:
+//                    return ioPorts[portNr].getValue();
+//            }
+//        }
+
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return (byte) timers[timerNr].getEn();
                 case REGISTER_TB0RUN:
@@ -173,8 +198,8 @@ public class TxIoListener implements IoActivityListener {
 
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return timers[timerNr].getEn();
                 case REGISTER_TB0RUN:
@@ -221,8 +246,8 @@ public class TxIoListener implements IoActivityListener {
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return timers[timerNr].getEn();
                 case REGISTER_TB0RUN:
@@ -264,8 +289,8 @@ public class TxIoListener implements IoActivityListener {
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     timers[timerNr].setEn(value); break;
                 case REGISTER_TB0RUN:
@@ -319,8 +344,8 @@ public class TxIoListener implements IoActivityListener {
     public void onIoStore16(byte[] ioPage, int addr, int value) {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     timers[timerNr].setEn(value); break;
                 case REGISTER_TB0RUN:
@@ -361,8 +386,8 @@ public class TxIoListener implements IoActivityListener {
     public void onIoStore32(byte[] ioPage, int addr, int value) {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NB_TIMER * TIMER_OFFSET) {
-            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_BITS;
-            switch (addr - (timerNr << TIMER_OFFSET_BITS)) {
+            int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     timers[timerNr].setEn(value); break;
                 case REGISTER_TB0RUN:
