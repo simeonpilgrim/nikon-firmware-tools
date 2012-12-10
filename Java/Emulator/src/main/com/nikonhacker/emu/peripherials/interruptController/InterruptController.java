@@ -18,4 +18,6 @@ public interface InterruptController {
     public InterruptRequest getNextRequest();
 
     List<InterruptRequest> getInterruptRequestQueue();
+
+    public int getCurrentInterruptLevel();
 }

@@ -347,6 +347,11 @@ public class TxInterruptController extends AbstractInterruptController {
         }
     }
 
+    @Override
+    public int getCurrentInterruptLevel() {
+        return getIlevCmask();
+    }
+
 
     // ----------------------- Field accessors
 

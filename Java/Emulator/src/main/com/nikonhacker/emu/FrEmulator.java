@@ -40,8 +40,9 @@ public class FrEmulator extends Emulator {
 
         FrEmulator emulator = new FrEmulator();
         emulator.setMemory(memory);
-        emulator.setCpuState(new FrCPUState(initialPc));
-        emulator.setInterruptController(new FrInterruptController(memory));
+        FrCPUState cpuState = new FrCPUState(initialPc);
+        emulator.setCpuState(cpuState);
+        emulator.setInterruptController(new FrInterruptController(memory, cpuState));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();

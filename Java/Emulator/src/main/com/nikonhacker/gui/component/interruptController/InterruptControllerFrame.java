@@ -24,7 +24,8 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     protected static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private javax.swing.Timer refreshTimer;
-    private final JList interruptList;
+    private final JList interruptQueueJList;
+    private final JLabel levelLabel;
 
     Timer interruptTimer = null;
 
@@ -40,20 +41,23 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
         addTabs(ui, interruptController, memory, buttonInsets, tabbedPane);
 
-        // Add "Queue" panel
+        // Add "Status" panel
 
-        JPanel queuePanel = new JPanel(new BorderLayout());
+        JPanel statusPanel = new JPanel(new BorderLayout());
 
-        interruptList = new JList();
-        interruptList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        interruptList.setLayoutOrientation(JList.VERTICAL);
-        interruptList.setVisibleRowCount(10);
+        levelLabel = new JLabel("Current interrupt level...");
+        statusPanel.add(levelLabel, BorderLayout.NORTH);
 
-        JScrollPane listScroller = new JScrollPane(interruptList);
+        interruptQueueJList = new JList();
+        interruptQueueJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        interruptQueueJList.setLayoutOrientation(JList.VERTICAL);
+        interruptQueueJList.setVisibleRowCount(10);
 
-        queuePanel.add(listScroller, BorderLayout.CENTER);
+        JScrollPane listScroller = new JScrollPane(interruptQueueJList);
 
-        tabbedPane.addTab("Queue", null, queuePanel);
+        statusPanel.add(listScroller, BorderLayout.CENTER);
+
+        tabbedPane.addTab("Status", null, statusPanel);
 
         // Add tab panel
         getContentPane().add(tabbedPane);
@@ -74,10 +78,10 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
                 JTabbedPane pane = (JTabbedPane)evt.getSource();
                 // Only refresh if corresponding tab is selected
                 if (pane.getSelectedIndex() == 3) {
-                    setQueueAutoRefresh(true);
+                    setStatusAutoRefresh(true);
                 }
                 else {
-                    setQueueAutoRefresh(false);
+                    setStatusAutoRefresh(false);
                 }
             }
         });
@@ -87,17 +91,18 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     protected abstract void addTabs(EmulatorUI ui, InterruptController interruptController, DebuggableMemory memory, Insets buttonInsets, JTabbedPane tabbedPane);
 
     private void updateList() {
+        levelLabel.setText("Current interrupt level: " + interruptController.getCurrentInterruptLevel());
         synchronized (interruptController.getInterruptRequestQueue()) {
             DefaultListModel model = new DefaultListModel();
             // Real stack
             for (InterruptRequest request : interruptController.getInterruptRequestQueue()) {
                 model.addElement(request.toString());
             }
-            interruptList.setModel(model);
+            interruptQueueJList.setModel(model);
         }
     }
 
-    public void setQueueAutoRefresh(boolean enabled) {
+    public void setStatusAutoRefresh(boolean enabled) {
         updateList();
         if (enabled) {
             if (!refreshTimer.isRunning()) {
