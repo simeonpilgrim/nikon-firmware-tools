@@ -1,6 +1,8 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
@@ -20,9 +22,11 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
 
     private Memory memory;
+    private CPUState cpuState;
 
-    public FrInterruptController(Memory memory) {
+    public FrInterruptController(Memory memory, CPUState cpuState) {
         this.memory = memory;
+        this.cpuState = cpuState;
     }
 
     /**
@@ -86,6 +90,11 @@ public class FrInterruptController extends AbstractInterruptController {
             Collections.sort(interruptRequestQueue);
             return true;
         }
+    }
+
+    @Override
+    public int getCurrentInterruptLevel() {
+        return ((FrCPUState)cpuState).getILM();
     }
 
     public void updateRequestICR(int interruptNumber, byte icr) {

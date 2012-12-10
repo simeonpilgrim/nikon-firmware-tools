@@ -38,4 +38,9 @@ public class DummyInterruptController implements InterruptController {
     public List<InterruptRequest> getInterruptRequestQueue() {
         return null;
     }
+
+    @Override
+    public int getCurrentInterruptLevel() {
+        return 0;
+    }
 }

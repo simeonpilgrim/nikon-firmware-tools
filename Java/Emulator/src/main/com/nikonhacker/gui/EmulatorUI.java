@@ -1786,7 +1786,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 case Constants.CHIP_FR :
                     clockGenerator[chip] = new FrClockGenerator();
 
-                    interruptController[chip] = new FrInterruptController(memory[chip]);
+                    interruptController[chip] = new FrInterruptController(memory[chip], cpuState[chip]);
 
                     programmableTimers[chip] = new FrReloadTimer[]{
                             new FrReloadTimer(0, interruptController[chip]),
