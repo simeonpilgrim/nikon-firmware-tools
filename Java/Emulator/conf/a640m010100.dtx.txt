@@ -65,6 +65,7 @@
 -s 0xBFC00400=interrupt_handler
 -s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
 -s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
+-s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
 -s 0xBFC01184=sub_bfc01184_($s0 [IN index])
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC01E5C=Call_software_interrupt
