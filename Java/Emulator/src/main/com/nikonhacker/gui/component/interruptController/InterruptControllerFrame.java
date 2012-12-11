@@ -69,15 +69,13 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
             }
         });
 
-
         // Event upon tab change
-
         tabbedPane.addChangeListener(new ChangeListener() {
             // This method is called whenever the selected tab changes
             public void stateChanged(ChangeEvent evt) {
                 JTabbedPane pane = (JTabbedPane)evt.getSource();
                 // Only refresh if corresponding tab is selected
-                if (pane.getSelectedIndex() == 3) {
+                if (pane.getSelectedIndex() == getStatusTabIndex()) {
                     setStatusAutoRefresh(true);
                 }
                 else {
@@ -89,6 +87,8 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     }
 
     protected abstract void addTabs(EmulatorUI ui, InterruptController interruptController, DebuggableMemory memory, Insets buttonInsets, JTabbedPane tabbedPane);
+
+    protected abstract int getStatusTabIndex();
 
     private void updateList() {
         levelLabel.setText("Current interrupt level: " + interruptController.getCurrentInterruptLevel());

@@ -201,6 +201,10 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         tabbedPane.addTab("Timer", null, timerPanel);
     }
 
+    protected int getStatusTabIndex() {
+        return 3;
+    }
+
     private JInterruptButton createInterruptButton(String text, int interruptNumber) {
         JInterruptButton button = new JInterruptButton(text, interruptNumber);
 
@@ -285,5 +289,4 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         }
         ui.setStatusText(Constants.CHIP_FR, "Stopped interrupt timer");
     }
-
 }

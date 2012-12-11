@@ -119,6 +119,10 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         tabbedPane.addTab("Timer", null, timerPanel);
     }
 
+    protected int getStatusTabIndex() {
+        return 2;
+    }
+
     private JInterruptButton createInterruptButton(int value) {
         TxInterruptController.InterruptDescription interruptDescription = TxInterruptController.hardwareInterruptDescription[value];
         String symbolicName = interruptDescription.symbolicName;
