@@ -26,6 +26,16 @@ public abstract class CPUStateComponent extends JComponent {
         }
     }
 
+    protected void dumpBinFieldToRegister(JTextField textField, int registerNumber) {
+        if (StringUtils.isBlank(textField.getText())) {
+            cpuStateValidityFlags.setReg(registerNumber, 0);
+        }
+        else {
+            cpuState.setReg(registerNumber, Format.parseIntBinaryField(textField, true));
+            cpuStateValidityFlags.setReg(registerNumber, Integer.parseInt(textField.getText().replace('0', '1').replace('?', '0'), 2));
+        }
+    }
+
     protected void setAllCpuStateFlags(CPUState cpuStateFlags, boolean validity) {
         int value = validity?1:0;
 

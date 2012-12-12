@@ -68,22 +68,23 @@ public class FrCPUStateComponent extends CPUStateComponent {
         this.cpuStateValidityFlags = cpuStateValidityFlags;
         this.filterMode = filterMode;
 
-        setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+        Font fixedFont = new Font(Font.MONOSPACED, Font.PLAIN, 11);
 
         for (int i = 0; i < regTextFields.length; i++) {
             regTextFields[i] = new JTextField();
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);
+            regTextFields[i].setFont(fixedFont);
         }
-        pcTextField.setHorizontalAlignment(JTextField.RIGHT);
-        ilmTextField.setHorizontalAlignment(JTextField.RIGHT);
-        scrTextField.setHorizontalAlignment(JTextField.RIGHT);
-        ccrTextField.setHorizontalAlignment(JTextField.RIGHT);
-        tbrTextField.setHorizontalAlignment(JTextField.RIGHT);
-        rpTextField.setHorizontalAlignment(JTextField.RIGHT);
-        sspTextField.setHorizontalAlignment(JTextField.RIGHT);
-        uspTextField.setHorizontalAlignment(JTextField.RIGHT);
-        mdhTextField.setHorizontalAlignment(JTextField.RIGHT);
-        mdlTextField.setHorizontalAlignment(JTextField.RIGHT);
+        pcTextField.setHorizontalAlignment(JTextField.RIGHT); pcTextField.setFont(fixedFont);
+        ilmTextField.setHorizontalAlignment(JTextField.RIGHT); ilmTextField.setFont(fixedFont);
+        scrTextField.setHorizontalAlignment(JTextField.RIGHT); scrTextField.setFont(fixedFont);
+        ccrTextField.setHorizontalAlignment(JTextField.RIGHT); ccrTextField.setFont(fixedFont);
+        tbrTextField.setHorizontalAlignment(JTextField.RIGHT); tbrTextField.setFont(fixedFont);
+        rpTextField.setHorizontalAlignment(JTextField.RIGHT); rpTextField.setFont(fixedFont);
+        sspTextField.setHorizontalAlignment(JTextField.RIGHT); sspTextField.setFont(fixedFont);
+        uspTextField.setHorizontalAlignment(JTextField.RIGHT); uspTextField.setFont(fixedFont);
+        mdhTextField.setHorizontalAlignment(JTextField.RIGHT); mdhTextField.setFont(fixedFont);
+        mdlTextField.setHorizontalAlignment(JTextField.RIGHT); mdlTextField.setFont(fixedFont);
 
         //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
         setLayout(new GridLayout(0, 4));
@@ -99,7 +100,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
         add(regTextFields[1]);
 
         add(new JLabel());
-        add(new JLabel("43210 ", JLabel.RIGHT));
+        JLabel label1 = new JLabel("43210", JLabel.RIGHT); label1.setFont(fixedFont);
+        add(label1);
         add(new JLabel(FrCPUState.registerLabels[2]+" = 0x", JLabel.RIGHT));
         add(regTextFields[2]);
 
@@ -114,7 +116,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
         add(regTextFields[4]);
 
         add(new JLabel());
-        add(new JLabel("D01T ", JLabel.RIGHT));
+        JLabel label2 = new JLabel("D01T", JLabel.RIGHT); label2.setFont(fixedFont);
+        add(label2);
         add(new JLabel(FrCPUState.registerLabels[5]+" = 0x", JLabel.RIGHT));
         add(regTextFields[5]);
 
@@ -129,7 +132,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
         add(regTextFields[7]);
 
         add(new JLabel());
-        add(new JLabel("SINZVC ", JLabel.RIGHT));
+        JLabel label3 = new JLabel("SINZVC", JLabel.RIGHT); label3.setFont(fixedFont);
+        add(label3);
         add(new JLabel(FrCPUState.registerLabels[8]+" = 0x", JLabel.RIGHT));
         add(regTextFields[8]);
 
