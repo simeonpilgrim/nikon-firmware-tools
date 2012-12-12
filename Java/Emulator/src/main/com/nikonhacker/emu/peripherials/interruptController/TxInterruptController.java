@@ -359,18 +359,41 @@ public class TxInterruptController extends AbstractInterruptController {
         return ilev;
     }
 
+    /**
+     * Returns the current mask
+     * @return the last 3 bits of ILEV
+     */
     public int getIlevCmask() {
         return ilev & Ilev_Cmask_mask;
     }
 
+    /**
+     * Shifts ILEV left by 4 bits, then puts the given cmask as the current mask position (last 3 bits)
+     * @param cmask
+     */
+    public void pushIlevCmask(int cmask) {
+        ilev = (ilev << 4) | (cmask & Ilev_Cmask_mask);
+    }
+
+    /**
+     * Shifts ILEV right by 4 bits
+     */
+    private void popIlev() {
+        // MLEV = 0 : shift down
+        ilev = ilev >>> 4;
+    }
+
+    /**
+     * Sets a new value to ILEV.
+     * If first bit is 1, replaces the current CMASK. If 0, it shifts back the ILEV right by 4 bits (pop)
+     * @param newIlev
+     */
     public void setIlev(int newIlev) {
         if (Format.isBitSet(newIlev, Ilev_Mlev_pos)) {
-            // MLEV = 1 : shift up
-            ilev = (ilev << 4) | (newIlev & Ilev_Cmask_mask);
+            ilev = (ilev & ~Ilev_Cmask_mask) | newIlev & Ilev_Cmask_mask;
         }
         else {
-            // MLEV = 0 : shift down
-            ilev = ilev >>> 4;
+            popIlev();
         }
     }
 
@@ -394,11 +417,6 @@ public class TxInterruptController extends AbstractInterruptController {
         this.intClr = intclr & 0x1FF;
         removeRequest(this.intClr);
     }
-
-    public void pushIlevCmask(int cmask) {
-        setIlev(0b10000000_00000000_00000000_00000000 | cmask);
-    }
-
 
     // IMC
     public int getRequestLevel(int interruptNumber) {
