@@ -3,6 +3,7 @@ package com.nikonhacker.gui.component.cpu;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -19,14 +20,14 @@ import java.awt.event.ActionListener;
 public class TxCPUStateComponent extends CPUStateComponent {
     private boolean filterMode;
 
-    private JTextField pcTextField = new JTextField();
+    private JTextField pcTextField = new JTextField(8);
     private JCheckBox pcIsaMode16bCheckBox = new JCheckBox();
-    private JTextField hiTextField = new JTextField();
-    private JTextField loTextField = new JTextField();
-    private JTextField statusTextField = new JTextField();
-    private JTextField causeTextField = new JTextField();
-    private JTextField epcTextField = new JTextField();
-    private JTextField errorEpcTextField = new JTextField();
+    private JTextField hiTextField = new JTextField(8);
+    private JTextField loTextField = new JTextField(8);
+    private JTextField statusTextField = new JTextField(32);
+    private JTextField causeTextField = new JTextField(32);
+    private JTextField epcTextField = new JTextField(8);
+    private JTextField errorEpcTextField = new JTextField(8);
 
     public TxCPUStateComponent(final TxCPUState cpuState, boolean filterMode) {
         this.regTextFields = new JTextField[32];
@@ -58,66 +59,61 @@ public class TxCPUStateComponent extends CPUStateComponent {
         this.cpuStateValidityFlags = cpuStateValidityFlags;
         this.filterMode = filterMode;
 
-        setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
+        Font fixedFont = new Font(Font.MONOSPACED, Font.PLAIN, 11);
 
         for (int i = 0; i < regTextFields.length; i++) {
-            regTextFields[i] = new JTextField();
+            regTextFields[i] = new JTextField(8);
             regTextFields[i].setHorizontalAlignment(JTextField.RIGHT);
+            regTextFields[i].setFont(fixedFont);
         }
-        pcTextField.setHorizontalAlignment(JTextField.RIGHT);
-        pcIsaMode16bCheckBox.setHorizontalAlignment(SwingConstants.CENTER);
-        hiTextField.setHorizontalAlignment(JTextField.RIGHT);
-        loTextField.setHorizontalAlignment(JTextField.RIGHT);
-        statusTextField.setHorizontalAlignment(JTextField.RIGHT);
-        causeTextField.setHorizontalAlignment(JTextField.RIGHT);
-        epcTextField.setHorizontalAlignment(JTextField.RIGHT);
-        errorEpcTextField.setHorizontalAlignment(JTextField.RIGHT);
+        pcTextField.setHorizontalAlignment(JTextField.RIGHT); pcTextField.setFont(fixedFont);
+        pcIsaMode16bCheckBox.setHorizontalAlignment(SwingConstants.CENTER);pcIsaMode16bCheckBox.setFont(fixedFont);
+        hiTextField.setHorizontalAlignment(JTextField.RIGHT);hiTextField.setFont(fixedFont);
+        loTextField.setHorizontalAlignment(JTextField.RIGHT);loTextField.setFont(fixedFont);
+        statusTextField.setHorizontalAlignment(JTextField.RIGHT);statusTextField.setFont(fixedFont);
+        causeTextField.setHorizontalAlignment(JTextField.RIGHT);causeTextField.setFont(fixedFont);
+        epcTextField.setHorizontalAlignment(JTextField.RIGHT);epcTextField.setFont(fixedFont);
+        errorEpcTextField.setHorizontalAlignment(JTextField.RIGHT);errorEpcTextField.setFont(fixedFont);
 
         //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        setLayout(new GridLayout(0, 4));
+        setLayout(new MigLayout());
 
-        add(new JLabel("pc (addr)=0x", JLabel.RIGHT));
+        add(new JLabel("pc (addr)=0x"), "align right");
         add(pcTextField);
-        add(new JLabel("pc (ISA 16b):", JLabel.RIGHT));
-        add(pcIsaMode16bCheckBox);
-
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
+        add(pcIsaMode16bCheckBox, "align right");
+        add(new JLabel("pc (ISA 16b)"), "wrap 15");
 
         for (int i = 0; i < 16; i++) {
-            add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x", JLabel.RIGHT));
+            add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x"), "align right");
             add(regTextFields[i*2]);
-            add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x", JLabel.RIGHT));
-            add(regTextFields[i*2+1]);
+            add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x"), "align right");
+            add(regTextFields[i*2+1], "wrap" + (i==15?" 15":""));
         }
 
         regTextFields[0].setEnabled(false);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
-
-        add(new JLabel("hi / lo = 0x", JLabel.RIGHT));
+        add(new JLabel("hi / lo = 0x"), "align right");
         add(hiTextField);
         add(loTextField);
-        add(new JLabel());
+        add(new JLabel(), "wrap 15");
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
+        // Status
+        JLabel label1 = new JLabel("_CU_RFRMPB00N0Im___IM___KSUUREEI"); label1.setFont(fixedFont);
+        JLabel label2 = new JLabel("3210PREXXV  M pl76543210XXXM0RXE"); label2.setFont(fixedFont);
+        add(new JLabel()); add(label1, "span, wrap 0");
+        add(new JLabel()); add(label2, "span, wrap 0");
+        statusTextField.setFont(fixedFont);
+        add(new JLabel("Status = 0b"), "align right"); add(statusTextField, "span, wrap");
 
-        add(new JLabel("Status = 0x", JLabel.RIGHT));
-        add(statusTextField);
-        add(new JLabel("Cause = 0x", JLabel.RIGHT));
-        add(causeTextField);
-        add(new JLabel("EPC = 0x", JLabel.RIGHT));
-        add(epcTextField);
-        add(new JLabel("ErrEPC=0x", JLabel.RIGHT));
-        add(errorEpcTextField);
+        // Cause
+        JLabel label3 = new JLabel("B0CE0000IW000000___IP___0_Exc_00"); label3.setFont(fixedFont);
+        JLabel label4 = new JLabel("D       VP      76543210 Code_  "); label4.setFont(fixedFont);
+        add(new JLabel()); add(label3, "span, wrap 0");
+        add(new JLabel()); add(label4, "span, wrap 0");
+        add(new JLabel("Cause = 0b"), "align right"); add(causeTextField, "span 3, wrap");
+
+        add(new JLabel("EPC = 0x"), "align right"); add(epcTextField);
+        add(new JLabel("ErrEPC=0x"), "align right"); add(errorEpcTextField, "wrap");
 
         if (!filterMode) {
             add(new JLabel());
@@ -138,9 +134,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             });
             add(saveButton);
             add(cancelButton);
-            add(new JLabel());
+            add(new JLabel(), "wrap");
         }
-
     }
 
     /**
@@ -153,8 +148,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             pcIsaMode16bCheckBox.setSelected(cpuStateValidityFlags.pc == 0 && ((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.HI) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.LO) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
-            statusTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Status) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.Status), 8));
-            causeTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Cause) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.Cause), 8));
+            statusTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Status) == 0) ? "" : Format.asBinary(cpuState.getReg(TxCPUState.Status), 32));
+            causeTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.Cause) == 0) ? "" : Format.asBinary(cpuState.getReg(TxCPUState.Cause), 32));
             epcTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.EPC) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
             errorEpcTextField.setText((cpuStateValidityFlags.getReg(TxCPUState.ErrorEPC) == 0) ? "" : Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
 
@@ -168,8 +163,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             pcIsaMode16bCheckBox.setSelected(((TxCPUState)cpuState).is16bitIsaMode);
             hiTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
             loTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
-            statusTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.Status), 8));
-            causeTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.Cause), 8));
+            statusTextField.setText(Format.asBinary(cpuState.getReg(TxCPUState.Status), 32));
+            causeTextField.setText(Format.asBinary(cpuState.getReg(TxCPUState.Cause), 32));
             epcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
             errorEpcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
 
@@ -206,8 +201,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             int pc = Format.parseIntHexField(pcTextField);
             int hi = Format.parseIntHexField(hiTextField);
             int lo = Format.parseIntHexField(loTextField);
-            int status = Format.parseIntHexField(statusTextField);
-            int cause = Format.parseIntHexField(causeTextField);
+            int status = Format.parseIntBinaryField(statusTextField, false);
+            int cause = Format.parseIntBinaryField(causeTextField, false);
             int epc = Format.parseIntHexField(epcTextField);
             int errorEpc = Format.parseIntHexField(errorEpcTextField);
 
@@ -273,8 +268,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
             dumpFieldToRegister(hiTextField, TxCPUState.HI);
             dumpFieldToRegister(loTextField, TxCPUState.LO);
-            dumpFieldToRegister(statusTextField, TxCPUState.Status);
-            dumpFieldToRegister(causeTextField, TxCPUState.Cause);
+            dumpBinFieldToRegister(statusTextField, TxCPUState.Status);
+            dumpBinFieldToRegister(causeTextField, TxCPUState.Cause);
             dumpFieldToRegister(epcTextField, TxCPUState.EPC);
             dumpFieldToRegister(errorEpcTextField, TxCPUState.ErrorEPC);
 
