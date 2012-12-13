@@ -93,8 +93,8 @@ public class FrInterruptController extends AbstractInterruptController {
     }
 
     @Override
-    public int getCurrentInterruptLevel() {
-        return ((FrCPUState)cpuState).getILM();
+    public String getStatus() {
+        return "Current interrupt level: " + ((FrCPUState)cpuState).getILM();
     }
 
     public void updateRequestICR(int interruptNumber, byte icr) {

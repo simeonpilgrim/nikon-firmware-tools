@@ -40,7 +40,7 @@ public class DummyInterruptController implements InterruptController {
     }
 
     @Override
-    public int getCurrentInterruptLevel() {
-        return 0;
+    public String getStatus() {
+        return "-";
     }
 }

@@ -19,5 +19,5 @@ public interface InterruptController {
 
     List<InterruptRequest> getInterruptRequestQueue();
 
-    public int getCurrentInterruptLevel();
+    public String getStatus();
 }

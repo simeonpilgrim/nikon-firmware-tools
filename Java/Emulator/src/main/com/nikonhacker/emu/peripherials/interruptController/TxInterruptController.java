@@ -348,10 +348,9 @@ public class TxInterruptController extends AbstractInterruptController {
     }
 
     @Override
-    public int getCurrentInterruptLevel() {
-        return getIlevCmask();
+    public String getStatus() {
+        return "ILEV=0x" + Format.asHex(ilev, 8) + " - Current interrupt level: " + getIlevCmask();
     }
-
 
     // ----------------------- Field accessors
 
@@ -526,4 +525,6 @@ public class TxInterruptController extends AbstractInterruptController {
             this.cgCtrlRegSection = cgCtrlRegSection;
         }
     }
+
+
 }

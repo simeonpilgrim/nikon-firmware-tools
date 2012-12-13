@@ -25,7 +25,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     private javax.swing.Timer refreshTimer;
     private final JList interruptQueueJList;
-    private final JLabel levelLabel;
+    private final JLabel statusText;
 
     Timer interruptTimer = null;
 
@@ -45,8 +45,8 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
         JPanel statusPanel = new JPanel(new BorderLayout());
 
-        levelLabel = new JLabel("Current interrupt level...");
-        statusPanel.add(levelLabel, BorderLayout.NORTH);
+        statusText = new JLabel("Current interrupt level...");
+        statusPanel.add(statusText, BorderLayout.NORTH);
 
         interruptQueueJList = new JList();
         interruptQueueJList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -91,7 +91,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
     protected abstract int getStatusTabIndex();
 
     private void updateList() {
-        levelLabel.setText("Current interrupt level: " + interruptController.getCurrentInterruptLevel());
+        statusText.setText(interruptController.getStatus());
         synchronized (interruptController.getInterruptRequestQueue()) {
             DefaultListModel model = new DefaultListModel();
             // Real stack
