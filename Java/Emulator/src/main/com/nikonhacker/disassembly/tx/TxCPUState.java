@@ -350,6 +350,10 @@ public class TxCPUState extends CPUState {
         return getReg(SP);
     }
 
+    public int getShadowReg(int registerSet, int registerNumber) {
+        return shadowRegisterSets[registerSet][registerNumber].getValue();
+    }
+
     public void reset() {
         powerMode = PowerMode.RUN;
         shadowRegisterSets = new Register32[8][registerLabels.length];
