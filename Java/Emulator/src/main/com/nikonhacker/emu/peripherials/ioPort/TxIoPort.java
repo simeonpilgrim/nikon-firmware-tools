@@ -4,7 +4,6 @@ import com.nikonhacker.emu.peripherials.interruptController.TxInterruptControlle
 
 public class TxIoPort extends IoPort {
 
-
     /** Port register (value) */
     private byte value;
     /** Port control register */
