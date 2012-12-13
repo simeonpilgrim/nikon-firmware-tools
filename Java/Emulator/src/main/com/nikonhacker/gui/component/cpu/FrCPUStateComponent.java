@@ -258,16 +258,6 @@ public class FrCPUStateComponent extends CPUStateComponent {
         }
     }
 
-    private String maskValue(int value, int mask, int numChars) {
-        String formattedValue = Format.asBinary(value, numChars);
-        String formattedMask = Format.asBinary(mask, numChars);
-        String out = "";
-        for (int i = 0; i < numChars; i++) {
-            out += (formattedMask.charAt(i) == '1')?formattedValue.charAt(i):"?";
-        }
-        return out;
-    }
-
 
 //    /**
 //     * Clears all fields of the component
