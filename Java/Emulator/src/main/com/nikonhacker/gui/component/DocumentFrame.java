@@ -61,10 +61,15 @@ public class DocumentFrame extends JInternalFrame implements InternalFrameListen
         pack();
         if (this.rememberLastPosition) {
             String windowName = this.getClass().getSimpleName();
+            // Restore position (always)
+            // TODO limit to screen visibility
             setLocation(ui.getPrefs().getWindowPositionX(windowName, chip), ui.getPrefs().getWindowPositionY(windowName, chip));
-            int windowSizeX = ui.getPrefs().getWindowSizeX(windowName, chip);
-            if (windowSizeX > 0) {
-                setSize(windowSizeX, ui.getPrefs().getWindowSizeY(windowName, chip));
+            // Restore previous size (if resizable)
+            if (resizable) {
+                int windowSizeX = ui.getPrefs().getWindowSizeX(windowName, chip);
+                if (windowSizeX > 0) {
+                    setSize(windowSizeX, ui.getPrefs().getWindowSizeY(windowName, chip));
+                }
             }
         }
         setVisible(true);
