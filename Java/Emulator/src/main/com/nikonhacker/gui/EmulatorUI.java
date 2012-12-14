@@ -724,12 +724,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
         tmpMenuItem.setActionCommand(COMMAND_ENCODE);
         tmpMenuItem.addActionListener(this);
-        fileMenu.add(tmpMenuItem);
+//        fileMenu.add(tmpMenuItem);
 
         fileMenu.add(new JSeparator());
 
         for (int chip = 0; chip < 2; chip++) {
-            //decoder
+            //Load state
             tmpMenuItem = new JMenuItem("Load " + Constants.CHIP_LABEL[chip] + "  state");
 //            tmpMenuItem.setMnemonic(KeyEvent.VK_D);
 //            tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
@@ -737,7 +737,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             tmpMenuItem.addActionListener(this);
             fileMenu.add(tmpMenuItem);
 
-            //encoder
+            //Save state
             tmpMenuItem = new JMenuItem("Save " + Constants.CHIP_LABEL[chip] + " state");
 //            tmpMenuItem.setMnemonic(KeyEvent.VK_E);
 //            tmpMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
