@@ -6,6 +6,7 @@ import java.awt.*;
 /**
  * Original source was from http://harmoniccode.blogspot.be/2010/11/friday-fun-component-iii.html
  * @author hansolo
+ * @author vicne for vertical version
  */
 public class SteelCheckBox extends JCheckBox
 {

@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 /**
  * Original source was from http://harmoniccode.blogspot.be/2010/11/friday-fun-component-iii.html
  * @author hansolo
+ * @author vicne for vertical version
  */
 public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI implements java.beans.PropertyChangeListener, java.awt.event.ComponentListener, java.awt.event.MouseListener
 {
