@@ -1678,6 +1678,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>Glazed Lists, Copyright (c) 2003-2006, publicobject.com, O'Dell Engineering Ltd - " + makeLink("http://www.glazedlists.com/") + "</li>"
                 + "<li>Samples from the Java Tutorial (c) Sun Microsystems / Oracle - " + makeLink("http://docs.oracle.com/javase/tutorial") + "</li>"
                 + "<li>MARS, MIPS Assembler and Runtime Simulator (c) 2003-2011, Pete Sanderson and Kenneth Vollmar - " + makeLink("http://courses.missouristate.edu/KenVollmar/MARS") + "</li>"
+                + "<li>SteelSeries (and SteelCheckBox) Swing components (c) 2010, Gerrit Grunwald - " + makeLink("http://harmoniccode.blogspot.be/search/label/steelseries") + "</li>"
                 + "</ul>"
                 + "For more information, help or ideas, please join us at " + makeLink("http://nikonhacker.com") + "</body></html>");
 
