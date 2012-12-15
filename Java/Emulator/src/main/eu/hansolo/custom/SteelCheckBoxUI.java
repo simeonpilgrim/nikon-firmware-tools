@@ -14,15 +14,19 @@ public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI impl
     public static final int SLIDER_SIZE = 26;
     public static final int BUTTON_SIZE = 13;
     public static final int BTN_TEXT_HORIZONTAL_SPACING = 5;
+
+    private static BufferedImage knobStandardImage = create_KNOB_Image(false);
+    private static BufferedImage knobPressedImage = create_KNOB_Image(true);
+    private static BufferedImage horizontalBackgroundImage = create_BACKGROUND_Image(SwingConstants.HORIZONTAL);
+    private static BufferedImage verticalBackgroundImage = create_BACKGROUND_Image(SwingConstants.VERTICAL);
+
     // <editor-fold defaultstate="collapsed" desc="Variable declaration">
     private final SteelCheckBox CHECKBOX;
     private boolean mouseOver = false;
     private boolean mousePressed = false;
     private java.awt.Dimension SIZE;
     private java.awt.image.BufferedImage backgroundImage;
-    private java.awt.image.BufferedImage knobStandardImage;
-    private java.awt.image.BufferedImage knobPressedImage;
-    private java.awt.Point pos = new java.awt.Point(0,0);    
+    private java.awt.Point pos = new java.awt.Point(0,0);
     private java.awt.geom.RoundRectangle2D foreground;
     private java.awt.geom.Point2D foregroundStart;
     private java.awt.geom.Point2D foregroundStop;
@@ -62,9 +66,7 @@ public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI impl
 
         if (orientation == SwingConstants.HORIZONTAL) {
             SIZE = new java.awt.Dimension(SLIDER_SIZE, BUTTON_SIZE);
-            backgroundImage = create_BACKGROUND_Image(orientation);
-            knobStandardImage = create_KNOB_Image(false);
-            knobPressedImage = create_KNOB_Image(true);
+            backgroundImage = horizontalBackgroundImage;
             foreground = new java.awt.geom.RoundRectangle2D.Double(
                     pos.x + backgroundImage.getWidth() * 0.03846153989434242, pos.y + backgroundImage.getHeight() * 0.0714285746216774,
                     backgroundImage.getWidth() * 0.923076868057251, backgroundImage.getHeight() * 0.8571428060531616,
@@ -74,9 +76,7 @@ public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI impl
         }
         else {
             SIZE = new java.awt.Dimension(BUTTON_SIZE, SLIDER_SIZE);
-            backgroundImage = create_BACKGROUND_Image(orientation);
-            knobStandardImage = create_KNOB_Image(false);
-            knobPressedImage = create_KNOB_Image(true);
+            backgroundImage = verticalBackgroundImage;
             foreground = new java.awt.geom.RoundRectangle2D.Double(
                     pos.x + backgroundImage.getWidth() * 0.0714285746216774, pos.y + backgroundImage.getHeight() * 0.03846153989434242,
                     backgroundImage.getWidth() * 0.8571428060531616, backgroundImage.getHeight() * 0.923076868057251,
@@ -206,7 +206,7 @@ public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI impl
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Image creation methods">
-    private java.awt.image.BufferedImage create_KNOB_Image(final boolean PRESSED)
+    private static java.awt.image.BufferedImage create_KNOB_Image(final boolean PRESSED)
     {
         final java.awt.GraphicsConfiguration GFX_CONF = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
         final java.awt.image.BufferedImage IMAGE = GFX_CONF.createCompatibleImage(BUTTON_SIZE, BUTTON_SIZE, java.awt.Transparency.TRANSLUCENT);
@@ -291,7 +291,7 @@ public class SteelCheckBoxUI extends javax.swing.plaf.basic.BasicCheckBoxUI impl
         return IMAGE;
     }
 
-    private java.awt.image.BufferedImage create_BACKGROUND_Image(int orientation)
+    private static java.awt.image.BufferedImage create_BACKGROUND_Image(int orientation)
     {
         final java.awt.GraphicsConfiguration GFX_CONF = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
 
