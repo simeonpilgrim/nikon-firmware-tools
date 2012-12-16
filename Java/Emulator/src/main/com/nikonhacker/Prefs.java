@@ -15,8 +15,9 @@ public class Prefs {
     public static final String KEY_WINDOW_MAIN = "MAIN";
 
     int sleepTick = 2;
-    List<BreakTrigger>[] triggers = new ArrayList[2];
-    EnumSet<OutputOption>[] outputOptions = new EnumSet[2];
+    List<BreakTrigger>[] triggers;
+    EnumSet<OutputOption>[] outputOptions;
+    Map<Integer,Byte>[] ioPortMap;
 
     String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
 
@@ -104,6 +105,7 @@ public class Prefs {
     }
 
     public Set<OutputOption> getOutputOptions(int chip) {
+        if (outputOptions == null) outputOptions = new EnumSet[2];
         if (outputOptions[chip]==null) {
             // Prepare a new outputOptions containing only default values
             outputOptions[chip] = EnumSet.noneOf(OutputOption.class);
@@ -127,6 +129,7 @@ public class Prefs {
     }
 
     public List<BreakTrigger> getTriggers(int chip) {
+        if (triggers == null) triggers = new List[2];
         if (triggers[chip] == null) triggers[chip] = new ArrayList<BreakTrigger>();
         return triggers[chip];
     }
@@ -251,6 +254,20 @@ public class Prefs {
 
     public void setDividerKeepHidden(boolean dividerKeepHidden) {
         this.dividerKeepHidden = dividerKeepHidden;
+    }
+
+    public byte getPortValue(int chip, int portNumber) {
+        if (ioPortMap == null) ioPortMap = new Map[2];
+        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
+        Byte value = ioPortMap[chip].get(portNumber);
+        if (value == null) return 0;
+        else return value;
+    }
+
+    public void setPortValue(int chip, int portNumber, byte value) {
+        if (ioPortMap == null) ioPortMap = new Map[2];
+        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
+        ioPortMap[chip].put(portNumber, value);
     }
 
     /**
