@@ -245,6 +245,7 @@ public abstract class CodeStructure {
     public Integer getAddressFromText(String text) {
         Integer address = null;
         if (StringUtils.isNotBlank(text)) {
+            text = text.trim();
             // Try to find by name
             for (Integer candidate : getFunctions().keySet()) {
                 Function f = getFunctions().get(candidate);
