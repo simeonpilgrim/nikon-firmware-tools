@@ -215,25 +215,7 @@ public class TxIoListener implements IoActivityListener {
 
         // Port configuration registers
         if (addr >= REGISTER_PORT0 & addr < REGISTER_PORT0 + NUM_PORT * PORT_OFFSET) {
-            int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
-            switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
-                case REGISTER_PORT0:
-                    return (int) ioPorts[portNr].getValue();
-                case REGISTER_PORT0CR:
-                    return (int) ioPorts[portNr].getControlRegister();
-                case REGISTER_PORT0FC1:
-                    return (int) ioPorts[portNr].getFunctionRegister1();
-                case REGISTER_PORT0FC2:
-                    return (int) ioPorts[portNr].getFunctionRegister2();
-                case REGISTER_PORT0FC3:
-                    return (int) ioPorts[portNr].getFunctionRegister3();
-                case REGISTER_PORT0ODE:
-                    return (int) ioPorts[portNr].getOpenDrainControlRegister();
-                case REGISTER_PORT0PUP:
-                    return (int) ioPorts[portNr].getPullUpControlRegister();
-                case REGISTER_PORT0PIE:
-                    return (int) ioPorts[portNr].getInputEnableControlRegister();
-            }
+            throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
         }
 
         // Timer configuration registers
@@ -286,7 +268,25 @@ public class TxIoListener implements IoActivityListener {
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
         // Port configuration registers
         if (addr >= REGISTER_PORT0 & addr < REGISTER_PORT0 + NUM_PORT * PORT_OFFSET) {
-            throw new RuntimeException("The I/O port registers cannot be accessed by 32-bit for now");
+            int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+            switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
+                case REGISTER_PORT0:
+                    return (int) ioPorts[portNr].getValue();
+                case REGISTER_PORT0CR:
+                    return (int) ioPorts[portNr].getControlRegister();
+                case REGISTER_PORT0FC1:
+                    return (int) ioPorts[portNr].getFunctionRegister1();
+                case REGISTER_PORT0FC2:
+                    return (int) ioPorts[portNr].getFunctionRegister2();
+                case REGISTER_PORT0FC3:
+                    return (int) ioPorts[portNr].getFunctionRegister3();
+                case REGISTER_PORT0ODE:
+                    return (int) ioPorts[portNr].getOpenDrainControlRegister();
+                case REGISTER_PORT0PUP:
+                    return (int) ioPorts[portNr].getPullUpControlRegister();
+                case REGISTER_PORT0PIE:
+                    return (int) ioPorts[portNr].getInputEnableControlRegister();
+            }
         }
 
         // Timer configuration registers
@@ -337,7 +337,7 @@ public class TxIoListener implements IoActivityListener {
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0 + 3:
-                    ioPorts[portNr].setValue(value); break;
+                    ioPorts[portNr].setInternalValue(value); break;
                 case REGISTER_PORT0CR + 3:
                     ioPorts[portNr].setControlRegister(value); break;
                 case REGISTER_PORT0FC1 + 3:
@@ -462,7 +462,7 @@ public class TxIoListener implements IoActivityListener {
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0:
-                    ioPorts[portNr].setValue((byte) value); break;
+                    ioPorts[portNr].setInternalValue((byte) value); break;
                 case REGISTER_PORT0CR:
                     ioPorts[portNr].setControlRegister((byte) value); break;
                 case REGISTER_PORT0FC1:
