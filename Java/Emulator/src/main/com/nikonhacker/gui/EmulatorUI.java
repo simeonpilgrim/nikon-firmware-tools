@@ -585,7 +585,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         if (chip == Constants.CHIP_TX) {
             ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
-//            bar.add(ioPortsButton[chip]);
+            bar.add(ioPortsButton[chip]);
         }
 
         serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
@@ -874,7 +874,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //                ioPortsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK));
                 ioPortsMenuItem[chip].setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW[chip]);
                 ioPortsMenuItem[chip].addActionListener(this);
-//                componentsMenu.add(ioPortsMenuItem[chip]);
+                componentsMenu.add(ioPortsMenuItem[chip]);
             }
 
         }
@@ -1668,6 +1668,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "This software is based on, or makes use of, the following works:<ul>\n"
                 + "<li>Simeon Pilgrim's deciphering of firmware encoding and lots of information shared on his blog - " + makeLink("http://simeonpilgrim.com/blog/") + "</li>"
                 + "<li>Dfr Fujitsu FR diassembler Copyright (c) Kevin Schoedel - " + makeLink("http://scratchpad.wikia.com/wiki/Disassemblers/DFR") + "<br/>and its port to C# by Simeon Pilgrim</li>"
+                + "<li>\"How To Write a Computer Emulator\" article by Marat Fayzullin - " + makeLink("http://fms.komkon.org/EMUL8/HOWTO.html") + "</li>"
                 + "<li>The PearColator x86 emulator project - " + makeLink("http://apt.cs.man.ac.uk/projects/jamaica/tools/PearColator/") + "</li>"
                 + "<li>The Jacksum checksum library Copyright (c) Dipl.-Inf. (FH) Johann Nepomuk Löfflmann  - " + makeLink("http://www.jonelo.de/java/jacksum/") + "</li>"
                 + "<li>HexEditor & RSyntaxTextArea swing components, Copyright (c) Robert Futrell - " + makeLink("http://fifesoft.com/hexeditor/") + "</li>"
@@ -1680,7 +1681,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 + "<li>MARS, MIPS Assembler and Runtime Simulator (c) 2003-2011, Pete Sanderson and Kenneth Vollmar - " + makeLink("http://courses.missouristate.edu/KenVollmar/MARS") + "</li>"
                 + "<li>SteelSeries (and SteelCheckBox) Swing components (c) 2010, Gerrit Grunwald - " + makeLink("http://harmoniccode.blogspot.be/search/label/steelseries") + "</li>"
                 + "</ul>"
-                + "For more information, help or ideas, please join us at " + makeLink("http://nikonhacker.com") + "</body></html>");
+                + "License terms for all included code are available in the 'licenses' folder of the distribution."
+                + "<p>For more information, help or ideas, please join us at " + makeLink("http://nikonhacker.com") + "</p></body></html>");
 
         // handle link events
         editorPane.addHyperlinkListener(new HyperlinkListener() {
@@ -2056,11 +2058,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleIoPortsWindow(int chip) {
         if (ioPortsFrame[chip] == null) {
-            ioPortsFrame[chip] = new IoPortsFrame("I/O ports", "io", true, true, false, true, chip, this, ioPorts[chip]);
+            ioPortsFrame[chip] = new IoPortsFrame("I/O ports", "io", false, true, false, true, chip, this, ioPorts[chip]);
+            for (IoPort ioPort : ioPorts[chip]) {
+                ((TxIoPort)ioPort).addIoPortListener(ioPortsFrame[chip]);
+            }
             addDocumentFrame(chip, ioPortsFrame[chip]);
             ioPortsFrame[chip].display(true);
         }
         else {
+            for (IoPort ioPort : ioPorts[chip]) {
+                ((TxIoPort)ioPort).removeIoPortListener(ioPortsFrame[chip]);
+            }
             ioPortsFrame[chip].dispose();
             ioPortsFrame[chip] = null;
         }
