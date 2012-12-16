@@ -1,5 +1,8 @@
 package com.nikonhacker.emu.peripherials.ioPort;
 
+import com.nikonhacker.Constants;
+import com.nikonhacker.Prefs;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 
 import java.util.ArrayList;
@@ -29,6 +32,14 @@ public class TxIoPort extends IoPort {
     private byte inputEnableControlRegister;
 
     private List<IoPortListener> ioPortListeners = new ArrayList<IoPortListener>();
+
+    private Prefs prefs;
+
+    public TxIoPort(int portNumber, InterruptController interruptController, Prefs prefs) {
+        super(portNumber, interruptController);
+        this.prefs = prefs;
+        externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
+   }
 
     public void addIoPortListener(IoPortListener ioPortListener) {
         ioPortListeners.add(ioPortListener);
@@ -74,6 +85,7 @@ public class TxIoPort extends IoPort {
      */
     public void setExternalValue(byte value) {
         this.externalValue = value;
+        prefs.setPortValue(Constants.CHIP_TX, portNumber, value);
     }
 
     /**

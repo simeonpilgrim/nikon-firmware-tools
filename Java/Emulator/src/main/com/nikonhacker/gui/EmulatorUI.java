@@ -1828,7 +1828,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     ioPorts[chip] = new TxIoPort[TxIoListener.NUM_PORT];
                     for (int i = 0; i < ioPorts[chip].length; i++) {
-                        ioPorts[chip][i] = new TxIoPort(i, (TxInterruptController)interruptController[chip]);
+                        ioPorts[chip][i] = new TxIoPort(i, (TxInterruptController)interruptController[chip], prefs);
                     }
 
                     serialInterfaces[chip] = new SerialInterface[TxIoListener.NUM_SERIAL_IF];
