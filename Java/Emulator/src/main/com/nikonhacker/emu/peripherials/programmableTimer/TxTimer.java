@@ -14,21 +14,19 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     private TxCPUState cpuState;
     private TxClockGenerator clockGenerator;
 
-    int currentValue = 0;
-
     // Registers
-    int cr;
-    int mod;
-    int ffcr;
-    int st;
-    int im;
-    int rg0;
-    int rg1;
-    int cp0;
-    int cp1;
+    private int cr;
+    private int mod;
+    private int ffcr;
+    private int st;
+    private int im;
+    private int rg0;
+    private int rg1;
+    private int cp0;
+    private int cp1;
 
     // Flip-flop output
-    boolean ff0 = false; // undefined in fact
+    private boolean ff0 = false; // undefined in fact
 
     private TimerTask timerTask = null;
     private long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
@@ -40,6 +38,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         super(timerNumber, interruptController);
         this.cpuState = cpuState;
         this.clockGenerator = clockGenerator;
+        this.currentValue = 0;
         cpuState.addCpuPowerModeChangeListener(this);
     }
 
@@ -106,7 +105,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    if (active & operate) {
+                    if (active && operate) {
                         boolean interruptCondition = false;
 
                         currentValue += scale;
@@ -211,8 +210,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     public int getDivider() {
         switch (getModClk()) {
             case 0b00:
-                System.out.println("Timer " + timerNumber + " should tick according to external pin. Using T0 frequency...");
-                return 1;  // Incorrect, but we have no actual pin connected, so...
+                System.out.println("Timer " + timerNumber + " should tick according to external pin TBnIN0. Using T16 frequency...");
+                return 32;  // Incorrect, but we have no actual pin connected, so...
             case 0b01: return 2;  // T1  = T0/2
             case 0b10: return 8;  // T4  = T0/8
             case 0b11: return 32; // T16 = T0/32
@@ -314,7 +313,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     private void updateOperate() {
-        operate = operateInIdle | (cpuState.getPowerMode()== TxCPUState.PowerMode.RUN);
+        operate = operateInIdle || (cpuState.getPowerMode()== TxCPUState.PowerMode.RUN);
     }
 
     @Override
@@ -322,8 +321,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         int requestLevel = ((TxInterruptController) interruptController).getRequestLevel(TxInterruptController.INTTB0 + timerNumber);
         return "Timer " + Format.asHex(timerNumber, 1) + " : TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getEn(), 2)
                 + ", TB" + Format.asHex(timerNumber, 1) + "RUN=0x" + Format.asHex(getRun(), 2)
-                + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel==0?" (interrupt disabled)":" (interrupt enabled)")
                 + ", RG0=" + rg0 + ", RG1=" + rg1
+                + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel==0?" (interrupt disabled)":" (interrupt enabled)")
                 + ", value=" + currentValue;
     }
 

@@ -12,6 +12,9 @@ public abstract class ProgrammableTimer {
     /** This is the number of this timer */
     protected int timerNumber;
 
+    /** This is the current value of this timer */
+    protected int currentValue;
+
     /** InterruptController is passed to constructor to be able to actually trigger requests */
     protected InterruptController interruptController;
 
