@@ -34,9 +34,10 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
         outputs = new Led[ioPorts.length][8];
 
         JPanel panel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
+        panel.add(new JLabel("bit #"), "right");
         // Header line - bit numbers
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
-            panel.add(new JLabel(String.valueOf(bitNumber)), (bitNumber == 7 ? "skip 1" : "") + (bitNumber == 0 ? "wrap" : ""));
+            panel.add(new JLabel(String.valueOf(bitNumber)), (bitNumber == 0 ? "wrap" : ""));
         }
 
         FlowLayout noMarginLayout = new FlowLayout();
@@ -84,19 +85,28 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
 
     private void refreshComponents(int portNumber) {
         int config = ((TxIoPort)ioPorts[portNumber]).getControlRegister();
+        int ie = ((TxIoPort)ioPorts[portNumber]).getInputEnableControlRegister();
         // Loop from left to right (from bit 7 to 0)
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
             JComponent comp;
             if ((config & (1<< bitNumber)) == 0) {
                 // pin is configured as input
-                comp = inputs[portNumber][7 - bitNumber];
+                if ((ie & (1<< bitNumber)) == 0) {
+                    // input is disabled
+                    comp = null;
+                }
+                else {
+                    comp = inputs[portNumber][7 - bitNumber];
+                }
             }
             else {
                 // pin is configured as output
                 comp = outputs[portNumber][7 - bitNumber];
             }
             cells[portNumber][7 - bitNumber].removeAll();
-            cells[portNumber][7 - bitNumber].add(comp);
+            if (comp != null) {
+                cells[portNumber][7 - bitNumber].add(comp);
+            }
             refreshOutputValues(portNumber);
         }
         revalidate();
@@ -120,7 +130,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
     }
 
     @Override
-    public void onConfigChange(int portNumber, byte config) {
+    public void onConfigChange(int portNumber, byte config, byte inputEnable) {
         refreshComponents(portNumber);
     }
 
