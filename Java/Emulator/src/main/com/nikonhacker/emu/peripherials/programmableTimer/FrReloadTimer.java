@@ -17,8 +17,9 @@ public class FrReloadTimer extends ProgrammableTimer {
 
     /** reloadValue corresponds to the Reload Timer register TMRLRAn */
     private int reloadValue;
-    /** currentValue corresponds to the Reload Timer register TMRn */
-    private int currentValue;
+
+    /*  currentValue (in superclass) corresponds to the Reload Timer register TMRn */
+
     /** configuration corresponds to the Reload Timer register TMCSRn */
     private int configuration;
 

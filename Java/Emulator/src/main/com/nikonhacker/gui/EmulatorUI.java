@@ -33,6 +33,7 @@ import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
@@ -1821,10 +1822,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     interruptController[chip] = new TxInterruptController((TxCPUState)cpuState[chip], memory[chip]);
 
-                    programmableTimers[chip] = new TxTimer[TxIoListener.NUM_TIMER];
+                    // First put all 16-bit timers
+                    programmableTimers[chip] = new ProgrammableTimer[TxIoListener.NUM_TIMER + 1];
                     for (int i = 0; i < programmableTimers[chip].length; i++) {
                         programmableTimers[chip][i] = new TxTimer(i, (TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]);
                     }
+                    // Then add the 32-bit input capture timer
+                    programmableTimers[chip][TxIoListener.NUM_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState[chip], (TxClockGenerator)clockGenerator[chip], (TxInterruptController)interruptController[chip]);
 
                     ioPorts[chip] = new TxIoPort[TxIoListener.NUM_PORT];
                     for (int i = 0; i < ioPorts[chip].length; i++) {
@@ -1842,7 +1846,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                             new TxIoListener(
                                     (TxClockGenerator) clockGenerator[chip],
                                     (TxInterruptController) interruptController[chip],
-                                    (TxTimer[]) programmableTimers[chip],
+                                    programmableTimers[chip],
                                     (TxIoPort[]) ioPorts[chip],
                                     serialInterfaces[chip]
                             )
