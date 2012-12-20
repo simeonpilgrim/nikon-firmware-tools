@@ -28,6 +28,7 @@ public class ExpeedIoListener implements IoActivityListener {
     private static final int REGISTER_TMR2    = REGISTER_TMR0 + 0x10;
     private static final int REGISTER_TMCSR2  = REGISTER_TMCSR0 + 0x10;
 
+    // Serial ports
     /**
      *  Three serial registers have been spotted, configured at 0x60, 0x70 and 0xB0
      *  Let's assume the SerialInterface at 0x60 is the first in the Expeed, and that there are 6 serial interfaces
