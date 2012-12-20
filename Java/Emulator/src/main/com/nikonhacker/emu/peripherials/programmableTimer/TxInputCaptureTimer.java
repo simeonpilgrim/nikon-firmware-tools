@@ -100,6 +100,10 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
         return tbtCap;
     }
 
+    public void setTbtCap(int tbtCap) {
+        this.tbtCap = tbtCap;
+    }
+
     public int getTcCap(int captureChannel) {
         return tcCap[captureChannel];
     }
