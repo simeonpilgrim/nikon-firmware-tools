@@ -107,7 +107,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 @Override
                 public void run() {
                     if (active & operate) {
-                        boolean mustInterrupt = false;
+                        boolean interruptCondition = false;
 
                         currentValue += scale;
 
@@ -116,7 +116,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                             // CP0 matches
                             if ((im & 0b001) == 0) {
                                 st |= 0b001;
-                                mustInterrupt = true;
+                                interruptCondition = true;
                             }
                             if ((ffcr & 0b00000100) != 0) {
                                 toggleFf0();
@@ -128,7 +128,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                             // CP1 matches
                             if ((im & 0b010) == 0) {
                                 st |= 0b010;
-                                mustInterrupt = true;
+                                interruptCondition = true;
                             }
                             if ((ffcr & 0b00001000) != 0) {
                                 toggleFf0();
@@ -143,11 +143,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                             // overflow
                             if ((im & 0b100) == 0) {
                                 st |= 0b100;
-                                mustInterrupt = true;
+                                interruptCondition = true;
                             }
                             currentValue -= MAX_COUNTER_VALUE;
                         }
-                        if (mustInterrupt) {
+                        if (interruptCondition) {
                             interruptController.request(TxInterruptController.INTTB0 + timerNumber);
                         }
                     }
@@ -320,10 +320,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     @Override
     public String toString() {
         int requestLevel = ((TxInterruptController) interruptController).getRequestLevel(TxInterruptController.INTTB0 + timerNumber);
-        return "Timer " + Format.asHex(timerNumber, 1) + " : value=" + currentValue
-                + ", TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getEn(), 2)
+        return "Timer " + Format.asHex(timerNumber, 1) + " : TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getEn(), 2)
                 + ", TB" + Format.asHex(timerNumber, 1) + "RUN=0x" + Format.asHex(getRun(), 2)
-                + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel==0?" (interrupt disabled)":" (interrupt enabled)");
+                + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel==0?" (interrupt disabled)":" (interrupt enabled)")
+                + ", RG0=" + rg0 + ", RG1=" + rg1
+                + ", value=" + currentValue;
     }
 
 }
