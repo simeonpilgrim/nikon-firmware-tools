@@ -4,6 +4,7 @@ import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -99,17 +100,21 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_TB0CP0  =    0xFF00_4528; // Timer Capture register lo word
     private static final int REGISTER_TB0CP1  =    0xFF00_452C; // Timer Capture register hi word
 
-    // Timer
+    // Capture input
+    public static final int NUM_CAPTURE_CHANNEL = 4;
+    public static final int NUM_COMPARE_CHANNEL = 8;
+
+    // Serial ports
     public static final int NUM_SERIAL_IF = 0;
 
     private final TxClockGenerator clockGenerator;
     private final TxInterruptController interruptController;
 
-    private final TxTimer[] timers;
+    private final ProgrammableTimer[] timers;
     private final TxIoPort[] ioPorts;
     private final SerialInterface[] serialInterfaces;
 
-    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, TxTimer[] timers, TxIoPort[] ioPorts, SerialInterface[] serialInterfaces) {
+    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, ProgrammableTimer[] timers, TxIoPort[] ioPorts, SerialInterface[] serialInterfaces) {
         this.clockGenerator = clockGenerator;
         this.interruptController = interruptController;
         this.timers = timers;
@@ -157,21 +162,22 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return (byte) timers[timerNr].getEn();
+                    return (byte) txTimer.getEn();
                 case REGISTER_TB0RUN:
-                    return (byte) timers[timerNr].getRun();
+                    return (byte) txTimer.getRun();
                 case REGISTER_TB0CR:
-                    return (byte) timers[timerNr].getCr();
+                    return (byte) txTimer.getCr();
                 case REGISTER_TB0MOD:
-                    return (byte) timers[timerNr].getMod();
+                    return (byte) txTimer.getMod();
                 case REGISTER_TB0FFCR:
                     throw new RuntimeException("The TBnFFCR register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0ST:
-                    return (byte) timers[timerNr].getSt();
+                    return (byte) txTimer.getSt();
                 case REGISTER_TB0IM:
-                    return (byte) timers[timerNr].getIm();
+                    return (byte) txTimer.getIm();
                 case REGISTER_TB0UC:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
@@ -183,9 +189,9 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0RG1 + 1:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
-                    return (byte) timers[timerNr].getCp0();
+                    return (byte) txTimer.getCp0();
                 case REGISTER_TB0CP1:
-                    return (byte) timers[timerNr].getCp1();
+                    return (byte) txTimer.getCp1();
             }
         }
 
@@ -221,31 +227,32 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return timers[timerNr].getEn();
+                    return txTimer.getEn();
                 case REGISTER_TB0RUN:
-                    return timers[timerNr].getRun();
+                    return txTimer.getRun();
                 case REGISTER_TB0CR:
-                    return timers[timerNr].getCr();
+                    return txTimer.getCr();
                 case REGISTER_TB0MOD:
-                    return timers[timerNr].getMod();
+                    return txTimer.getMod();
                 case REGISTER_TB0FFCR:
-                    return timers[timerNr].getFfcr();
+                    return txTimer.getFfcr();
                 case REGISTER_TB0ST:
-                    return timers[timerNr].getSt();
+                    return txTimer.getSt();
                 case REGISTER_TB0IM:
-                    return timers[timerNr].getIm();
+                    return txTimer.getIm();
                 case REGISTER_TB0UC:
-                    return timers[timerNr].getUc();
+                    return txTimer.getUc();
                 case REGISTER_TB0RG0:
-                    return timers[timerNr].getRg0();
+                    return txTimer.getRg0();
                 case REGISTER_TB0RG1:
-                    return timers[timerNr].getRg1();
+                    return txTimer.getRg1();
                 case REGISTER_TB0CP0:
-                    return timers[timerNr].getCp0();
+                    return txTimer.getCp0();
                 case REGISTER_TB0CP1:
-                    return timers[timerNr].getCp1();
+                    return txTimer.getCp1();
             }
         }
         else switch (addr){
@@ -292,31 +299,32 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return timers[timerNr].getEn();
+                    return txTimer.getEn();
                 case REGISTER_TB0RUN:
-                    return timers[timerNr].getRun();
+                    return txTimer.getRun();
                 case REGISTER_TB0CR:
-                    return timers[timerNr].getCr();
+                    return txTimer.getCr();
                 case REGISTER_TB0MOD:
-                    return timers[timerNr].getMod();
+                    return txTimer.getMod();
                 case REGISTER_TB0FFCR:
-                    return timers[timerNr].getFfcr();
+                    return txTimer.getFfcr();
                 case REGISTER_TB0ST:
-                    return timers[timerNr].getSt();
+                    return txTimer.getSt();
                 case REGISTER_TB0IM:
-                    return timers[timerNr].getIm();
+                    return txTimer.getIm();
                 case REGISTER_TB0UC:
-                    return timers[timerNr].getUc();
+                    return txTimer.getUc();
                 case REGISTER_TB0RG0:
-                    return timers[timerNr].getRg0();
+                    return txTimer.getRg0();
                 case REGISTER_TB0RG1:
-                    return timers[timerNr].getRg1();
+                    return txTimer.getRg1();
                 case REGISTER_TB0CP0:
-                    return timers[timerNr].getCp0();
+                    return txTimer.getCp0();
                 case REGISTER_TB0CP1:
-                    return timers[timerNr].getCp1();
+                    return txTimer.getCp1();
             }
         }
         switch (addr) {
@@ -358,21 +366,22 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    timers[timerNr].setEn(value); break;
+                    txTimer.setEn(value); break;
                 case REGISTER_TB0RUN:
-                    timers[timerNr].setRun(value); break;
+                    txTimer.setRun(value); break;
                 case REGISTER_TB0CR:
-                    timers[timerNr].setCr(value); break;
+                    txTimer.setCr(value); break;
                 case REGISTER_TB0MOD:
-                    timers[timerNr].setMod(value); break;
+                    txTimer.setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setFfcr(value); break;
+                    txTimer.setFfcr(value); break;
                 case REGISTER_TB0ST:
-                    timers[timerNr].setSt(value); break;
+                    txTimer.setSt(value); break;
                 case REGISTER_TB0IM:
-                    timers[timerNr].setIm(value); break;
+                    txTimer.setIm(value); break;
                 case REGISTER_TB0UC:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
@@ -388,9 +397,9 @@ public class TxIoListener implements IoActivityListener {
                 case REGISTER_TB0RG1 + 1:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
-                    timers[timerNr].setCp0(value); break;
+                    txTimer.setCp0(value); break;
                 case REGISTER_TB0CP1:
-                    timers[timerNr].setCp1(value); break;
+                    txTimer.setCp1(value); break;
             }
         }
         else switch (addr) {
@@ -418,31 +427,32 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    timers[timerNr].setEn(value); break;
+                    txTimer.setEn(value); break;
                 case REGISTER_TB0RUN:
-                    timers[timerNr].setRun(value); break;
+                    txTimer.setRun(value); break;
                 case REGISTER_TB0CR:
-                    timers[timerNr].setCr(value); break;
+                    txTimer.setCr(value); break;
                 case REGISTER_TB0MOD:
-                    timers[timerNr].setMod(value); break;
+                    txTimer.setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setFfcr(value); break;
+                    txTimer.setFfcr(value); break;
                 case REGISTER_TB0ST:
-                    timers[timerNr].setSt(value); break;
+                    txTimer.setSt(value); break;
                 case REGISTER_TB0IM:
-                    timers[timerNr].setIm(value); break;
+                    txTimer.setIm(value); break;
                 case REGISTER_TB0UC:
-                    timers[timerNr].setUc(value); break;
+                    txTimer.setUc(value); break;
                 case REGISTER_TB0RG0:
-                    timers[timerNr].setRg0(value); break;
+                    txTimer.setRg0(value); break;
                 case REGISTER_TB0RG1:
-                    timers[timerNr].setRg1(value); break;
+                    txTimer.setRg1(value); break;
                 case REGISTER_TB0CP0:
-                    timers[timerNr].setCp0(value); break;
+                    txTimer.setCp0(value); break;
                 case REGISTER_TB0CP1:
-                    timers[timerNr].setCp1(value); break;
+                    txTimer.setCp1(value); break;
             }
         }
         else switch (addr){
@@ -483,31 +493,32 @@ public class TxIoListener implements IoActivityListener {
         // Timer configuration registers
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + NUM_TIMER * TIMER_OFFSET) {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
+            TxTimer txTimer = (TxTimer) timers[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    timers[timerNr].setEn(value); break;
+                    txTimer.setEn(value); break;
                 case REGISTER_TB0RUN:
-                    timers[timerNr].setRun(value); break;
+                    txTimer.setRun(value); break;
                 case REGISTER_TB0CR:
-                    timers[timerNr].setCr(value); break;
+                    txTimer.setCr(value); break;
                 case REGISTER_TB0MOD:
-                    timers[timerNr].setMod(value); break;
+                    txTimer.setMod(value); break;
                 case REGISTER_TB0FFCR:
-                    timers[timerNr].setFfcr(value); break;
+                    txTimer.setFfcr(value); break;
                 case REGISTER_TB0ST:
-                    timers[timerNr].setSt(value); break;
+                    txTimer.setSt(value); break;
                 case REGISTER_TB0IM:
-                    timers[timerNr].setIm(value); break;
+                    txTimer.setIm(value); break;
                 case REGISTER_TB0UC:
-                    timers[timerNr].setUc(value); break;
+                    txTimer.setUc(value); break;
                 case REGISTER_TB0RG0:
-                    timers[timerNr].setRg0(value); break;
+                    txTimer.setRg0(value); break;
                 case REGISTER_TB0RG1:
-                    timers[timerNr].setRg1(value); break;
+                    txTimer.setRg1(value); break;
                 case REGISTER_TB0CP0:
-                    timers[timerNr].setCp0(value); break;
+                    txTimer.setCp0(value); break;
                 case REGISTER_TB0CP1:
-                    timers[timerNr].setCp1(value); break;
+                    txTimer.setCp1(value); break;
             }
         }
         else switch(addr) {
