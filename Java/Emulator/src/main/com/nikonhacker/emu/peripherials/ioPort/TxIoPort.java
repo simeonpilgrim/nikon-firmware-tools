@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.ioPort;
 
 import com.nikonhacker.Constants;
+import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
@@ -29,7 +30,7 @@ public class TxIoPort extends IoPort {
     /** Port pull-up control register */
     private byte pullUpControlRegister;
     /** Port input enable control register */
-    private byte inputEnableControlRegister;
+    private byte inputEnableControlRegister = (byte) 0xFF;
 
     private List<IoPortListener> ioPortListeners = new ArrayList<IoPortListener>();
 
@@ -103,7 +104,7 @@ public class TxIoPort extends IoPort {
     public void setControlRegister(byte controlRegister) {
         this.controlRegister = controlRegister;
         for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onConfigChange(portNumber, controlRegister);
+            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
     }
 
@@ -112,6 +113,10 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister1(byte functionRegister1) {
+        System.out.println("Port #" + portNumber + " : setFunctionRegister1(0x" + Format.asHex( functionRegister1 & 0xFF, 2) + ")");
+//        if (functionRegister1 != 0) {
+//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister1(0x" + Format.asHex( functionRegister1 & 0xFF, 2) + ") is not supported for the moment");
+//        }
         this.functionRegister1 = functionRegister1;
     }
 
@@ -120,6 +125,10 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister2(byte functionRegister2) {
+        System.out.println("Port #" + portNumber + " : setFunctionRegister2(0x" + Format.asHex( functionRegister2 & 0xFF, 2) + ")");
+//        if (functionRegister1 != 0) {
+//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister2(0x" + Format.asHex( functionRegister2 & 0xFF, 2) + ") is not supported for the moment");
+//        }
         this.functionRegister2 = functionRegister2;
     }
 
@@ -128,6 +137,10 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister3(byte functionRegister3) {
+        System.out.println("Port #" + portNumber + " : setFunctionRegister3(0x" + Format.asHex( functionRegister3 & 0xFF, 2) + ")");
+//        if (functionRegister1 != 0) {
+//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister3(0x" + Format.asHex( functionRegister3 & 0xFF, 2) + ") is not supported for the moment");
+//        }
         this.functionRegister3 = functionRegister3;
     }
 
@@ -136,6 +149,7 @@ public class TxIoPort extends IoPort {
     }
 
     public void setOpenDrainControlRegister(byte openDrainControlRegister) {
+        System.out.println("Port #" + portNumber + " : setOpenDrainControlRegister(0x" + Format.asHex( openDrainControlRegister& 0xFF, 2) + ")");
         this.openDrainControlRegister = openDrainControlRegister;
     }
 
@@ -144,6 +158,7 @@ public class TxIoPort extends IoPort {
     }
 
     public void setPullUpControlRegister(byte pullUpControlRegister) {
+        System.out.println("Port #" + portNumber + " : setPullUpControlRegister(0x" + Format.asHex(pullUpControlRegister& 0xFF, 2) + ")");
         this.pullUpControlRegister = pullUpControlRegister;
     }
 
@@ -153,5 +168,8 @@ public class TxIoPort extends IoPort {
 
     public void setInputEnableControlRegister(byte inputEnableControlRegister) {
         this.inputEnableControlRegister = inputEnableControlRegister;
+        for (IoPortListener ioPortListener : ioPortListeners) {
+            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
+        }
     }
 }
