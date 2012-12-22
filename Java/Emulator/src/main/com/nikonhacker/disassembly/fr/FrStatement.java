@@ -493,7 +493,7 @@ public class FrStatement extends Statement {
     }
 
 
-    public String formatAsHex() {
+    public String getFormattedBinaryStatement() {
         String out = "";
         for (int i = 0; i < 3; ++i) {
             if (i < numData) {
@@ -519,5 +519,11 @@ public class FrStatement extends Statement {
         else {
             setInstruction(instruction);
         }
+    }
+
+    public boolean isPotentialStuffing() {
+        return numData == 1 && (
+                   data[0] == 0x9FA0 /* 0x9FA0 : NOP stuffing */
+                || data[0] == 0x0000 /* 0x0000 stuffing */ );
     }
 }

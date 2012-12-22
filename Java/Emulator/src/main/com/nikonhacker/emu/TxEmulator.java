@@ -182,7 +182,7 @@ public class TxEmulator extends Emulator {
                 statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
             } catch (Exception e1) {
-                System.err.println("Cannot disassemble offending instruction :" + statement.formatAsHex());
+                System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
             System.err.println("(on or before PC=0x" + Format.asHex(txCpuState.pc, 8) + ")");
             throw new EmulationException(e);
