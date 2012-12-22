@@ -332,8 +332,7 @@ public class FrStatement extends Statement {
                     break;
                 case 'n':
                     /* negative constant */
-                    //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.neg(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), -BinaryArithmetics.negativeExtend(immBitWidth, decodedImm), immBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
