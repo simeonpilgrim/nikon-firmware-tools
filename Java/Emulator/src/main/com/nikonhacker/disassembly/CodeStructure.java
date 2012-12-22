@@ -118,6 +118,33 @@ public abstract class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
+        // Replace target addresses and comments by symbol names, etc.
+        improveOperandAndComment(address, statement, outputOptions);
+
+        // print statement
+        Disassembler.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
+
+        // after return from function
+        if (isEnd(address)) {
+            Integer matchingStart = ends.get(address);
+            if (matchingStart == null) {
+                writer.write("; end of an unidentified function (never called)\n");
+            }
+            else {
+                writer.write("; end of " + getFunctionName(matchingStart) + "\n");
+            }
+            writer.write("; ------------------------------------------------------------------------\n\n");
+        }
+    }
+
+    /**
+     * This method replaces addresses in operands and comments by corresponding symbol names (if any),
+     * indicates if branches go forward (skip) or backwards (loop) and decodes call parameters
+     * @param address
+     * @param statement
+     * @param outputOptions
+     */
+    private void improveOperandAndComment(Integer address, Statement statement, Set<OutputOption> outputOptions) {
         if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA, Instruction.FlowType.CALL, Instruction.FlowType.INT).contains(statement.getInstruction().getFlowType())) {
             try {
                 int targetAddress;
@@ -199,21 +226,6 @@ public abstract class CodeStructure {
             } catch(ParsingException e){
                 // noop
             }
-        }
-
-        // print statement
-        Disassembler.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
-
-        // after return from function
-        if (isEnd(address)) {
-            Integer matchingStart = ends.get(address);
-            if (matchingStart == null) {
-                writer.write("; end of an unidentified function (never called)\n");
-            }
-            else {
-                writer.write("; end of " + getFunctionName(matchingStart) + "\n");
-            }
-            writer.write("; ------------------------------------------------------------------------\n\n");
         }
     }
 
