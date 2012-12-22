@@ -2288,7 +2288,7 @@ public class FrEmulator extends Emulator {
                 System.err.println("Offending instruction : " + statement);
             }
             catch(Exception e1) {
-                System.err.println("Cannot disassemble offending instruction :" + statement.formatAsHex());
+                System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
             System.err.println("(on or before PC=0x" + Format.asHex(frCpuState.pc, 8) + ")");
             throw new EmulationException(e);

@@ -852,7 +852,7 @@ public class TxStatement extends Statement {
         return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
-    public String formatAsHex() {
+    public String getFormattedBinaryStatement() {
         if (numBytes == 4)
         {
             // 32b, or extended 16b
@@ -919,5 +919,9 @@ public class TxStatement extends Statement {
     public void fill32bInstruction(int binaryStatement32) throws DisassemblyException {
         setBinaryStatement(4, binaryStatement32);
         setInstruction(TxInstructionSet.getInstructionFor32BitStatement(binaryStatement32));
+    }
+
+    public boolean isPotentialStuffing() {
+        return numBytes == 2 && getBinaryStatement() == 0xFFFF; /* TX 0xFFFF stuffing in 16-bit ISA mode*/
     }
 }

@@ -3,7 +3,6 @@ package com.nikonhacker.disassembly.fr;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
-import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -137,13 +136,10 @@ public class CodeAnalyzer {
         Map.Entry<Integer, Statement> entry = codeStructure.getStatements().firstEntry();
         while (entry != null) {
             Integer address = entry.getKey();
-            Instruction instruction = codeStructure.getStatements().get(address).getInstruction();
-            if (!processedStatements.contains(address)
-                && (!(instruction instanceof FrInstruction && ((FrInstruction) instruction).encoding == 0x9FA0 /* FR NOP stuffing */ ))
-                && (!(instruction instanceof FrInstruction && memory.loadInstruction16(address) == 0x0000 /* FR 0x0000 stuffing */ ))
-                && (!(instruction instanceof TxInstruction && memory.loadInstruction16(address) == 0xFFFF && address % 4 != 0 /* TX 0xFFFF stuffing in 16-bit ISA mode*/ ))
+            if (       !processedStatements.contains(address) // Not processed yet
+                    && !codeStructure.getStatements().get(address).isPotentialStuffing() // Not stuffing
                     ) {
-                // Not stuffing. Process
+                // OK, let's process it
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
                 codeStructure.getFunctions().put(address, function);
                 try {
