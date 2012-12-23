@@ -153,10 +153,6 @@ public class FrReloadTimer extends ProgrammableTimer {
         return reloadValue;
     }
 
-    public int getCurrentValue() {
-        return currentValue;
-    }
-
     public int getConfiguration() {
         return (configuration & 0x3FFA) | (isInUnderflowCondition?4:0);
     }

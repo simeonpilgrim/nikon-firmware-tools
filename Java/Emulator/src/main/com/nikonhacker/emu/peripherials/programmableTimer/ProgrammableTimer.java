@@ -40,6 +40,14 @@ public abstract class ProgrammableTimer {
         this.interruptController = interruptController;
     }
 
+    public int getCurrentValue() {
+        return currentValue;
+    }
+
+    public void setCurrentValue(int currentValue) {
+        this.currentValue = currentValue;
+    }
+
     public void setActive(boolean active) {
         this.active = active;
     }
