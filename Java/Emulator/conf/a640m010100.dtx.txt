@@ -33,6 +33,7 @@
 # -m 0xBFC043D0-0xBFC044BB=DATA:L
 
 # TCB Task table
+# Table defining REALOS Tasks (Table of 0xD records of 0x14 bytes)
 -m 0xBFC044BC-0xBFC0478B=DATA:L
 
 ## 0xFF area
@@ -40,9 +41,10 @@
 # Copyright msg
 -m 0xBFC07FB0-0xBFC07FDF=DATA:L
 
-# Unknown data
-# -m 0xBFC08054-0xBFC0A000=DATA:L
+# 2 pointers
+-m 0xBFC0A000-0xBFC0A007=DATA:L
 
+# Code
 -m 0xBFC0A008-0xBFC0A12B=CODE:32
 
 -m 0xBFC0A12C-0xBFC0D66F=CODE:16
@@ -53,11 +55,31 @@
 
 -m 0xBFC14180-0xBFC15AB7=CODE:32
 
--m 0xBFC15AB8-0xBFC8DD39=CODE:16
+-m 0xBFC15AB8-0xBFC8DD3B=CODE:16
 
+# Mostly pointers
+-m 0xBFC8DD3C-0xBFC96F9F=DATA:L
 
-# Table defining REALOS Tasks (32b header + Table of 0x3C records of 0x1C bytes)
-#-m 0x000DC310-0x000DC9A3=DATA:L
+-m 0xBFC971A0-0xBFC971A3=DATA:L
+
+-m 0xBFC97304-0xBFC9764B=DATA:L
+
+-m 0xBFC98E00-0xBFC9927B=DATA:L
+
+-m 0xBFC9A9F0-0xBFC9AAD7=DATA:L
+
+-m 0xBFC9AB8C-0xBFC9AC0B=DATA:L
+
+-m 0xBFC9C784-0xBFC9C803=DATA:L
+
+-m 0xBFC9CBD0-0xBFC9CBEF=DATA:L
+
+-m 0xBFC9D360-0xBFC9D36B=DATA:L
+
+-m 0xBFC9E45C-0xBFC9E57F=DATA:L
+
+## 0xFF area
+
 
 ############################### Symbols
 
