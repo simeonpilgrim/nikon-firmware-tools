@@ -87,6 +87,7 @@
 -s 0xBFC00400=interrupt_handler
 -s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
 -s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
+-s 0xBFC00D20=setINTCLR($a0 [IN mask])
 -s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
 -s 0xBFC00D60=getInterruptLEVel($v0 [OUT level])
 -s 0xBFC00D78=clearInterruptLEVel()
