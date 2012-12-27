@@ -266,7 +266,8 @@ public class TxEmulator extends Emulator {
                         }
                     }
 
-                    ((TxInterruptController) interruptController).setIvr8_0(interruptRequest.getInterruptNumber());
+                    // IVR = 4 x interrupt_number
+                    ((TxInterruptController) interruptController).setIvr8_0(interruptRequest.getInterruptNumber() << 2);
 
                 }
                 else {
