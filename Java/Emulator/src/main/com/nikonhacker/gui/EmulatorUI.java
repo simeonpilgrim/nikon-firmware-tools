@@ -2407,6 +2407,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             if (endAddress != null) {
+                // TODO adapt this for Tx
                 // Set a temporary break condition at given endAddress
                 FrCPUState values = new FrCPUState(endAddress);
                 FrCPUState flags = new FrCPUState();
@@ -2476,28 +2477,34 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
 
     public void playOneFunction(int chip, int address, boolean debugMode) {
-        // TODO : make the call transparent by cloning CPUState
-        // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
-        memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL, 0x9f8c);      // LD          ,R12
-        memory[chip].store32(BASE_ADDRESS_FUNCTION_CALL + 2, address); //     address
-        memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL + 6, 0x971c);  // CALL @R12
-        memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL + 8, 0xe0ff);  // HALT, infinite loop
+        if (chip == Constants.CHIP_TX) {
+            System.err.println("Not implemented for TX");
+            // TODO : implement the equivalent for TX
+        }
+        else {
+            // TODO : make the call transparent by cloning CPUState
+            // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
+            memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL, 0x9f8c);      // LD          ,R12
+            memory[chip].store32(BASE_ADDRESS_FUNCTION_CALL + 2, address); //     address
+            memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL + 6, 0x971c);  // CALL @R12
+            memory[chip].store16(BASE_ADDRESS_FUNCTION_CALL + 8, 0xe0ff);  // HALT, infinite loop
 
-        // And we put a breakpoint on the instruction after the call
-        emulator[chip].clearBreakConditions();
-        emulator[chip].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_FUNCTION_CALL + 8, null));
+            // And we put a breakpoint on the instruction after the call
+            emulator[chip].clearBreakConditions();
+            emulator[chip].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_FUNCTION_CALL + 8, null));
 
-        cpuState[chip].pc = BASE_ADDRESS_FUNCTION_CALL;
+            cpuState[chip].pc = BASE_ADDRESS_FUNCTION_CALL;
 
-        if (debugMode) {
-            for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
-                if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
-                    emulator[chip].addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure[chip], memory[chip]), breakTrigger));
+            if (debugMode) {
+                for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
+                    if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged()) {
+                        emulator[chip].addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure[chip], memory[chip]), breakTrigger));
+                    }
                 }
             }
-        }
 
-        startEmulator(chip);
+            startEmulator(chip);
+        }
     }
 
     public TaskInformation getTaskInformation(int objId) {
