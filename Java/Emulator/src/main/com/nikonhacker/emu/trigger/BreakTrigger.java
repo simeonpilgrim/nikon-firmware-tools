@@ -6,7 +6,6 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.CallStackItem;
-import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
@@ -116,7 +115,7 @@ public class BreakTrigger {
         return memoryValueBreakConditions;
     }
 
-    public List<BreakCondition> getBreakConditions(CodeStructure codeStructure, DebuggableMemory memory) {
+    public List<BreakCondition> getBreakConditions(CodeStructure codeStructure, Memory memory) {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
             if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc)) {
