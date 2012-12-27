@@ -3,7 +3,7 @@ package com.nikonhacker.gui.component.interruptController;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
@@ -23,7 +23,7 @@ import java.util.Vector;
  */
 public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
-    public FrInterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory) {
+    public FrInterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui, interruptController, memory);
     }
 
@@ -35,7 +35,7 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
      * @param buttonInsets
      * @param tabbedPane
      */
-    protected void addTabs(final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory, Insets buttonInsets, JTabbedPane tabbedPane) {
+    protected void addTabs(final EmulatorUI ui, final InterruptController interruptController, final Memory memory, Insets buttonInsets, JTabbedPane tabbedPane) {
         // Standard button interrupt panel (only the ones defined as External + NMI)
 
         JPanel standardInterruptControllerPanel = new JPanel(new BorderLayout());
