@@ -283,7 +283,7 @@ public class TxInterruptController extends AbstractInterruptController {
 
     /**
      * Request a hardware interrupt with the given number
-     * @param interruptNumber See spec section 6.5.1.5
+     * @param interruptNumber between 0 and 127d, See spec section 6.5.1.5
      * @return true if interrupt could be requested
      */
     @Override
@@ -349,7 +349,7 @@ public class TxInterruptController extends AbstractInterruptController {
 
     @Override
     public String getStatus() {
-        return "ILEV=0x" + Format.asHex(ilev, 8) + " - Current interrupt level: " + getIlevCmask();
+        return "IVR=0x" + Format.asHex(ivr, 8) + " - ILEV=0x" + Format.asHex(ilev, 8) + " - Current interrupt level: " + getIlevCmask();
     }
 
     // ----------------------- Field accessors
