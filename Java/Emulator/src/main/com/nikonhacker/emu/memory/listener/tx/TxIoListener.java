@@ -217,8 +217,8 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP + 3:
                         return (byte)txInputCaptureTimer.getTbtCap();
                     case REGISTER_TBTRDCAP + 3:
-                        return (byte)txInputCaptureTimer.getTbtCap(); // TODO: same as TBTCAP ??
-                }
+                        return (byte)txInputCaptureTimer.getCurrentValue(); // TODO is that really the value ??
+                    }
             }
             else if (addr < REGISTER_CAPCR0) {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
@@ -313,7 +313,7 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP + 2:
                         return txInputCaptureTimer.getTbtCap();
                     case REGISTER_TBTRDCAP + 2:
-                        return txInputCaptureTimer.getTbtCap(); // TODO: same as TBTCAP ??
+                        return txInputCaptureTimer.getCurrentValue(); // TODO is that really the value ??
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -422,7 +422,7 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP:
                         return txInputCaptureTimer.getTbtCap();
                     case REGISTER_TBTRDCAP:
-                        return txInputCaptureTimer.getTbtCap(); // TODO: same as TBTCAP ??
+                        return txInputCaptureTimer.getCurrentValue(); // TODO is that really the value ??
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -535,7 +535,7 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP + 3:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP + 3:
-                        txInputCaptureTimer.setTbtCap(value); break; // TODO same as TBTCAP ??
+                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is that really the value ??
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -626,7 +626,7 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP + 2:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP + 2:
-                        txInputCaptureTimer.setTbtCap(value); break; // TODO same as TBTCAP ??
+                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is that really the value ??
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -730,7 +730,7 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TBTCAP:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP:
-                        txInputCaptureTimer.setTbtCap(value); break; // TODO same as TBTCAP ??
+                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is that really the value ??
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
