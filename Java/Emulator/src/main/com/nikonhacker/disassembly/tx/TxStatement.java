@@ -922,6 +922,8 @@ public class TxStatement extends Statement {
     }
 
     public boolean isPotentialStuffing() {
-        return numBytes == 2 && getBinaryStatement() == 0xFFFF; /* TX 0xFFFF stuffing in 16-bit ISA mode*/
+        return      (numBytes == 2 && getBinaryStatement() == 0xFFFF) /* TX 0xFFFF stuffing in 16-bit ISA mode*/
+                ||  (numBytes == 4 && getBinaryStatement() == 0x00000000) /* TX NOP stuffing in 32-bit ISA mode*/
+                ;
     }
 }
