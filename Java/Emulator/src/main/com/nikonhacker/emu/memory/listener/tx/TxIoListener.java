@@ -1,13 +1,12 @@
 package com.nikonhacker.emu.memory.listener.tx;
 
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
-import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
-import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 /**
  * This is based on the Toshiba hardware specification for TMP19A44FDA/FE/F10XBG
@@ -117,19 +116,10 @@ public class TxIoListener implements IoActivityListener {
     // Serial ports
     public static final int NUM_SERIAL_IF = 0;
 
-    private final TxClockGenerator clockGenerator;
-    private final TxInterruptController interruptController;
+    private final Platform platform;
 
-    private final ProgrammableTimer[] timers;
-    private final TxIoPort[] ioPorts;
-    private final SerialInterface[] serialInterfaces;
-
-    public TxIoListener(TxClockGenerator clockGenerator, TxInterruptController interruptController, ProgrammableTimer[] timers, TxIoPort[] ioPorts, SerialInterface[] serialInterfaces) {
-        this.clockGenerator = clockGenerator;
-        this.interruptController = interruptController;
-        this.timers = timers;
-        this.ioPorts = ioPorts;
-        this.serialInterfaces = serialInterfaces;
+    public TxIoListener(Platform platform) {
+        this.platform = platform;
     }
 
     @Override
@@ -149,29 +139,30 @@ public class TxIoListener implements IoActivityListener {
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+            TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0 + 3:
-                    return ioPorts[portNr].getValue();
+                    return txIoPort.getValue();
                 case REGISTER_PORT0CR + 3:
-                    return ioPorts[portNr].getControlRegister();
+                    return txIoPort.getControlRegister();
                 case REGISTER_PORT0FC1 + 3:
-                    return ioPorts[portNr].getFunctionRegister1();
+                    return txIoPort.getFunctionRegister1();
                 case REGISTER_PORT0FC2 + 3:
-                    return ioPorts[portNr].getFunctionRegister2();
+                    return txIoPort.getFunctionRegister2();
                 case REGISTER_PORT0FC3 + 3:
-                    return ioPorts[portNr].getFunctionRegister3();
+                    return txIoPort.getFunctionRegister3();
                 case REGISTER_PORT0ODE + 3:
-                    return ioPorts[portNr].getOpenDrainControlRegister();
+                    return txIoPort.getOpenDrainControlRegister();
                 case REGISTER_PORT0PUP + 3:
-                    return ioPorts[portNr].getPullUpControlRegister();
+                    return txIoPort.getPullUpControlRegister();
                 case REGISTER_PORT0PIE + 3:
-                    return ioPorts[portNr].getInputEnableControlRegister();
+                    return txIoPort.getInputEnableControlRegister();
             }
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return (byte) txTimer.getEn();
@@ -205,7 +196,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
@@ -244,11 +235,11 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_SYSCR:
                 throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
             case REGISTER_SYSCR + 1:
-                return clockGenerator.getSysCr2();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr2();
             case REGISTER_SYSCR + 2:
-                return clockGenerator.getSysCr1();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr1();
             case REGISTER_SYSCR + 3:
-                return clockGenerator.getSysCr0();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr0();
         }
 
         return null;
@@ -271,7 +262,7 @@ public class TxIoListener implements IoActivityListener {
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return txTimer.getEn();
@@ -301,7 +292,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
@@ -358,29 +349,30 @@ public class TxIoListener implements IoActivityListener {
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+            TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0:
-                    return (int) ioPorts[portNr].getValue();
+                    return (int) txIoPort.getValue();
                 case REGISTER_PORT0CR:
-                    return (int) ioPorts[portNr].getControlRegister();
+                    return (int) txIoPort.getControlRegister();
                 case REGISTER_PORT0FC1:
-                    return (int) ioPorts[portNr].getFunctionRegister1();
+                    return (int) txIoPort.getFunctionRegister1();
                 case REGISTER_PORT0FC2:
-                    return (int) ioPorts[portNr].getFunctionRegister2();
+                    return (int) txIoPort.getFunctionRegister2();
                 case REGISTER_PORT0FC3:
-                    return (int) ioPorts[portNr].getFunctionRegister3();
+                    return (int) txIoPort.getFunctionRegister3();
                 case REGISTER_PORT0ODE:
-                    return (int) ioPorts[portNr].getOpenDrainControlRegister();
+                    return (int) txIoPort.getOpenDrainControlRegister();
                 case REGISTER_PORT0PUP:
-                    return (int) ioPorts[portNr].getPullUpControlRegister();
+                    return (int) txIoPort.getPullUpControlRegister();
                 case REGISTER_PORT0PIE:
-                    return (int) ioPorts[portNr].getInputEnableControlRegister();
+                    return (int) txIoPort.getInputEnableControlRegister();
             }
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     return txTimer.getEn();
@@ -410,7 +402,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
@@ -448,13 +440,14 @@ public class TxIoListener implements IoActivityListener {
         switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
+                TxClockGenerator clockGenerator = (TxClockGenerator) platform.getClockGenerator();
                 return (clockGenerator.getSysCr2() << 16) |(clockGenerator.getSysCr1() << 8) | clockGenerator.getSysCr0();
             // Interrupt Controller
             case REGISTER_ILEV:
-                return interruptController.getIlev();
+                return ((TxInterruptController)platform.getInterruptController()).getIlev();
             case REGISTER_IVR:
                 // TODO Until the IVR is read, no hardware interrupt from INTC is accepted (see HW spec section 6.4.1.4)
-                return interruptController.getIvr();
+                return ((TxInterruptController)platform.getInterruptController()).getIvr();
             }
         return null;
     }
@@ -463,29 +456,30 @@ public class TxIoListener implements IoActivityListener {
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+            TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0 + 3:
-                    ioPorts[portNr].setInternalValue(value); break;
+                    txIoPort.setInternalValue(value); break;
                 case REGISTER_PORT0CR + 3:
-                    ioPorts[portNr].setControlRegister(value); break;
+                    txIoPort.setControlRegister(value); break;
                 case REGISTER_PORT0FC1 + 3:
-                    ioPorts[portNr].setFunctionRegister1(value); break;
+                    txIoPort.setFunctionRegister1(value); break;
                 case REGISTER_PORT0FC2 + 3:
-                    ioPorts[portNr].setFunctionRegister2(value); break;
+                    txIoPort.setFunctionRegister2(value); break;
                 case REGISTER_PORT0FC3 + 3:
-                    ioPorts[portNr].setFunctionRegister3(value); break;
+                    txIoPort.setFunctionRegister3(value); break;
                 case REGISTER_PORT0ODE + 3:
-                    ioPorts[portNr].setOpenDrainControlRegister(value); break;
+                    txIoPort.setOpenDrainControlRegister(value); break;
                 case REGISTER_PORT0PUP + 3:
-                    ioPorts[portNr].setPullUpControlRegister(value); break;
+                    txIoPort.setPullUpControlRegister(value); break;
                 case REGISTER_PORT0PIE + 3:
-                    ioPorts[portNr].setInputEnableControlRegister(value); break;
+                    txIoPort.setInputEnableControlRegister(value); break;
             }
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     txTimer.setEn(value); break;
@@ -523,7 +517,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
@@ -546,7 +540,6 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TCCMP0 + 3:
                          txInputCaptureTimer.setTcCmp(compareChannel, value); break;
                 }
-
             }
             else {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
@@ -563,11 +556,11 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_SYSCR:
                 throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
             case REGISTER_SYSCR + 1:
-                clockGenerator.setSysCr2(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSysCr2(value); break;
             case REGISTER_SYSCR + 2:
-                clockGenerator.setSysCr1(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSysCr1(value); break;
             case REGISTER_SYSCR + 3:
-                clockGenerator.setSysCr0(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSysCr0(value); break;
             // Interrupt Controller
             case REGISTER_INTCLR:
                 throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
@@ -584,7 +577,7 @@ public class TxIoListener implements IoActivityListener {
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     txTimer.setEn(value); break;
@@ -614,7 +607,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
@@ -657,7 +650,7 @@ public class TxIoListener implements IoActivityListener {
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
             // Interrupt Controller
             case REGISTER_INTCLR:
-                interruptController.setIntClr(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
@@ -666,29 +659,30 @@ public class TxIoListener implements IoActivityListener {
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
+            TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0:
-                    ioPorts[portNr].setInternalValue((byte) value); break;
+                    txIoPort.setInternalValue((byte) value); break;
                 case REGISTER_PORT0CR:
-                    ioPorts[portNr].setControlRegister((byte) value); break;
+                    txIoPort.setControlRegister((byte) value); break;
                 case REGISTER_PORT0FC1:
-                    ioPorts[portNr].setFunctionRegister1((byte) value); break;
+                    txIoPort.setFunctionRegister1((byte) value); break;
                 case REGISTER_PORT0FC2:
-                    ioPorts[portNr].setFunctionRegister2((byte) value); break;
+                    txIoPort.setFunctionRegister2((byte) value); break;
                 case REGISTER_PORT0FC3:
-                    ioPorts[portNr].setFunctionRegister3((byte) value); break;
+                    txIoPort.setFunctionRegister3((byte) value); break;
                 case REGISTER_PORT0ODE:
-                    ioPorts[portNr].setOpenDrainControlRegister((byte) value); break;
+                    txIoPort.setOpenDrainControlRegister((byte) value); break;
                 case REGISTER_PORT0PUP:
-                    ioPorts[portNr].setPullUpControlRegister((byte) value); break;
+                    txIoPort.setPullUpControlRegister((byte) value); break;
                 case REGISTER_PORT0PIE:
-                    ioPorts[portNr].setInputEnableControlRegister((byte) value); break;
+                    txIoPort.setInputEnableControlRegister((byte) value); break;
             }
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
-            TxTimer txTimer = (TxTimer) timers[timerNr];
+            TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
                     txTimer.setEn(value); break;
@@ -718,7 +712,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer) timers[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
@@ -756,14 +750,14 @@ public class TxIoListener implements IoActivityListener {
         else switch(addr) {
             // Clock generator
             case REGISTER_SYSCR:
-                clockGenerator.setSysCr(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSysCr(value); break;
             // Interrupt Controller
             case REGISTER_ILEV:
-                interruptController.setIlev(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setIlev(value); break;
             case REGISTER_IVR:
-                interruptController.setIvr31_9(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setIvr31_9(value); break;
             case REGISTER_INTCLR:
-                interruptController.setIntClr(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet

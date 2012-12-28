@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.memory.listener.fr;
 
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
@@ -54,15 +55,10 @@ public class ExpeedIoListener implements IoActivityListener {
     public static final int REGISTER_ICR00 = 0x440;
 
 
-    private final FrInterruptController interruptController;
+    private final Platform platform;
 
-    private final FrReloadTimer[] reloadTimers;
-    private SerialInterface[] serialInterfaces;
-
-    public ExpeedIoListener(FrInterruptController interruptController, FrReloadTimer[] timers, SerialInterface[] serialInterfaces) {
-        this.interruptController = interruptController;
-        this.reloadTimers = timers;
-        this.serialInterfaces = serialInterfaces;
+    public ExpeedIoListener(Platform platform) {
+        this.platform = platform;
     }
 
     @Override
@@ -81,33 +77,34 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
+            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getScrIbcr();
+                    return (byte)serialInterface.getScrIbcr();
                 case REGISTER_SMR0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getSmr();
+                    return (byte)serialInterface.getSmr();
                 case REGISTER_SSR0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getSsr();
+                    return (byte)serialInterface.getSsr();
                 case REGISTER_ESCR_IBSR0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getEscrIbsr();
+                    return (byte)serialInterface.getEscrIbsr();
                 case REGISTER_RDR_TDR0:   // written by 16-bit
                     throw new RuntimeException("Cannot read RDR register 8 bit at a time for now");
                 case REGISTER_BGR10:      // read by 16-bit
-                    return (byte)serialInterfaces[serialInterfaceNr].getBgr1();
+                    return (byte)serialInterface.getBgr1();
                 case REGISTER_BGR00:
-                    return (byte)serialInterfaces[serialInterfaceNr].getBgr0();
+                    return (byte)serialInterface.getBgr0();
                 case REGISTER_ISMK0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getIsmk();
+                    return (byte)serialInterface.getIsmk();
                 case REGISTER_ISBA0:
-                    return (byte)serialInterfaces[serialInterfaceNr].getIsba();
+                    return (byte)serialInterface.getIsba();
                 case REGISTER_FCR10:
-                    return (byte)serialInterfaces[serialInterfaceNr].getFcr1();
+                    return (byte)serialInterface.getFcr1();
                 case REGISTER_FCR00:
-                    return (byte)serialInterfaces[serialInterfaceNr].getFcr0();
+                    return (byte)serialInterface.getFcr0();
                 case REGISTER_FBYTE20:    // read by 16-bit
-                    return (byte)serialInterfaces[serialInterfaceNr].getFbyte2();
+                    return (byte)serialInterface.getFbyte2();
                 case REGISTER_FBYTE10:
-                    return (byte)serialInterfaces[serialInterfaceNr].getFbyte1();
+                    return (byte)serialInterface.getFbyte1();
             }
         }
         return null;
@@ -125,45 +122,46 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
+            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:
-                    return (serialInterfaces[serialInterfaceNr].getScrIbcr() << 8) | serialInterfaces[serialInterfaceNr].getSmr();
+                    return (serialInterface.getScrIbcr() << 8) | serialInterface.getSmr();
                 case REGISTER_SSR0:
-                    return (serialInterfaces[serialInterfaceNr].getSsr() << 8) | serialInterfaces[serialInterfaceNr].getEscrIbsr();
+                    return (serialInterface.getSsr() << 8) | serialInterface.getEscrIbsr();
                 case REGISTER_RDR_TDR0:
-                    return serialInterfaces[serialInterfaceNr].getRdr();
+                    return serialInterface.getRdr();
                 case REGISTER_BGR00:
-                    return (serialInterfaces[serialInterfaceNr].getBgr1() << 8) | serialInterfaces[serialInterfaceNr].getBgr0();
+                    return (serialInterface.getBgr1() << 8) | serialInterface.getBgr0();
                 case REGISTER_ISMK0:
-                    return (serialInterfaces[serialInterfaceNr].getIsmk() << 8) | serialInterfaces[serialInterfaceNr].getIsba();
+                    return (serialInterface.getIsmk() << 8) | serialInterface.getIsba();
                 case REGISTER_FCR10:
-                    return (serialInterfaces[serialInterfaceNr].getFcr1() << 8) | serialInterfaces[serialInterfaceNr].getFcr0();
+                    return (serialInterface.getFcr1() << 8) | serialInterface.getFcr0();
                 case REGISTER_FBYTE20:
-                    return (serialInterfaces[serialInterfaceNr].getFbyte2() << 8) | serialInterfaces[serialInterfaceNr].getFbyte1();
+                    return (serialInterface.getFbyte2() << 8) | serialInterface.getFbyte1();
                 }
         }
         // Reload Timer configuration registers
         switch (addr) {
             case REGISTER_TMRLRA0:
-                return reloadTimers[0].getReloadValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getReloadValue();
             case REGISTER_TMR0:
-                return reloadTimers[0].getCurrentValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getCurrentValue();
             case REGISTER_TMCSR0:
-                return reloadTimers[0].getConfiguration();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getConfiguration();
 
             case REGISTER_TMRLRA1:
-                return reloadTimers[1].getReloadValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getReloadValue();
             case REGISTER_TMR1:
-                return reloadTimers[1].getCurrentValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getCurrentValue();
             case REGISTER_TMCSR1:
-                return reloadTimers[1].getConfiguration();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getConfiguration();
 
             case REGISTER_TMRLRA2:
-                return reloadTimers[2].getReloadValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getReloadValue();
             case REGISTER_TMR2:
-                return reloadTimers[2].getCurrentValue();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getCurrentValue();
             case REGISTER_TMCSR2:
-                return reloadTimers[2].getConfiguration();
+                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getConfiguration();
         }
         return null;
     }
@@ -183,49 +181,50 @@ public class ExpeedIoListener implements IoActivityListener {
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
             // Interrupt request level registers
-            interruptController.updateRequestICR(addr - REGISTER_ICR00, value);
+            ((FrInterruptController)platform.getInterruptController()).updateRequestICR(addr - REGISTER_ICR00, value);
         }
         else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
+            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:   // written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setScrIbcr(value & 0xFF);
+                    serialInterface.setScrIbcr(value & 0xFF);
                     break;
                 case REGISTER_SMR0:       // written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setSmr(value& 0xFF);
+                    serialInterface.setSmr(value& 0xFF);
                     break;
                 case REGISTER_SSR0:
-                    serialInterfaces[serialInterfaceNr].setSsr(value & 0xFF);
+                    serialInterface.setSsr(value & 0xFF);
                     break;
                 case REGISTER_ESCR_IBSR0: // written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setEscrIbsr(value & 0xFF);
+                    serialInterface.setEscrIbsr(value & 0xFF);
                     break;
                 case REGISTER_RDR_TDR0:   // written by 16-bit
                     throw new RuntimeException("Cannot write TDR register 8 bit at a time for now");
                 case REGISTER_BGR10:      // written by 16-bit
-                    serialInterfaces[serialInterfaceNr].setBgr1(value & 0xFF);
+                    serialInterface.setBgr1(value & 0xFF);
                     break;
                 case REGISTER_BGR00:
-                    serialInterfaces[serialInterfaceNr].setBgr0(value & 0xFF);
+                    serialInterface.setBgr0(value & 0xFF);
                     break;
                 case REGISTER_ISMK0:
-                    serialInterfaces[serialInterfaceNr].setIsmk(value & 0xFF);
+                    serialInterface.setIsmk(value & 0xFF);
                     break;
                 case REGISTER_ISBA0:
-                    serialInterfaces[serialInterfaceNr].setIsba(value & 0xFF);
+                    serialInterface.setIsba(value & 0xFF);
                     break;
                 case REGISTER_FCR10:
-                    serialInterfaces[serialInterfaceNr].setFcr1(value & 0xFF);
+                    serialInterface.setFcr1(value & 0xFF);
                     break;
                 case REGISTER_FCR00:      // written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setFcr0(value & 0xFF);
+                    serialInterface.setFcr0(value & 0xFF);
                     break;
                 case REGISTER_FBYTE20:    // written by 16-bit
-                    serialInterfaces[serialInterfaceNr].setFbyte2(value & 0xFF);
+                    serialInterface.setFbyte2(value & 0xFF);
                     break;
                 case REGISTER_FBYTE10:
-                    serialInterfaces[serialInterfaceNr].setFbyte1(value & 0xFF);
+                    serialInterface.setFbyte1(value & 0xFF);
                     break;
             }
         }
@@ -234,10 +233,10 @@ public class ExpeedIoListener implements IoActivityListener {
                 // Delay interrupt register
                 case REGISTER_DICR:
                     if ((value & 0x1) == 0) {
-                        interruptController.removeRequest(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        platform.getInterruptController().removeRequest(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     else {
-                        interruptController.request(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
+                        platform.getInterruptController().request(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     break;
 
@@ -250,33 +249,34 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
+            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:   // normally written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setScrIbcr((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setSmr(value & 0xFF);
+                    serialInterface.setScrIbcr((value >> 8) & 0xFF);
+                    serialInterface.setSmr(value & 0xFF);
                     break;
                 case REGISTER_SSR0:       // normally written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setSsr((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setEscrIbsr(value & 0xFF);
+                    serialInterface.setSsr((value >> 8) & 0xFF);
+                    serialInterface.setEscrIbsr(value & 0xFF);
                     break;
                 case REGISTER_RDR_TDR0:   // 16-bit register
-                    serialInterfaces[serialInterfaceNr].setTdr(value & 0xFFFF);
+                    serialInterface.setTdr(value & 0xFFFF);
                     break;
                 case REGISTER_BGR10:      // written by 16-bit
-                    serialInterfaces[serialInterfaceNr].setBgr1((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setBgr0(value & 0xFF);
+                    serialInterface.setBgr1((value >> 8) & 0xFF);
+                    serialInterface.setBgr0(value & 0xFF);
                     break;
                 case REGISTER_ISMK0:      // normally written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setIsmk((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setIsba(value & 0xFF);
+                    serialInterface.setIsmk((value >> 8) & 0xFF);
+                    serialInterface.setIsba(value & 0xFF);
                     break;
                 case REGISTER_FCR10:      // normally written by 8-bit
-                    serialInterfaces[serialInterfaceNr].setFcr1((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setFcr0(value & 0xFF);
+                    serialInterface.setFcr1((value >> 8) & 0xFF);
+                    serialInterface.setFcr0(value & 0xFF);
                     break;
                 case REGISTER_FBYTE20:    // written by 16-bit
-                    serialInterfaces[serialInterfaceNr].setFbyte2((value >> 8) & 0xFF);
-                    serialInterfaces[serialInterfaceNr].setFbyte1(value & 0xFF);
+                    serialInterface.setFbyte2((value >> 8) & 0xFF);
+                    serialInterface.setFbyte1(value & 0xFF);
                     break;
             }
         }
@@ -284,30 +284,30 @@ public class ExpeedIoListener implements IoActivityListener {
             // Reload Timer configuration registers
             switch (addr) {
                 case REGISTER_TMRLRA0:
-                    reloadTimers[0].setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR0:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer0 value.");
                 case REGISTER_TMCSR0:
-                    reloadTimers[0].setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setConfiguration(value & 0xFFFF);
                     break;
 
                 case REGISTER_TMRLRA1:
-                    reloadTimers[1].setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR1:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer1 value.");
                 case REGISTER_TMCSR1:
-                    reloadTimers[1].setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setConfiguration(value & 0xFFFF);
                     break;
 
                 case REGISTER_TMRLRA2:
-                    reloadTimers[2].setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setReloadValue(value & 0xFFFF);
                     break;
                 case REGISTER_TMR2:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer2 value");
                 case REGISTER_TMCSR2:
-                    reloadTimers[2].setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setConfiguration(value & 0xFFFF);
                     break;
             }
         }

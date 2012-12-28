@@ -34,15 +34,22 @@ public class FrEmulator extends Emulator {
             System.exit(-1);
         }
         int initialPc = Format.parseUnsigned(args[1]);
+
         AutoAllocatingMemory memory = new AutoAllocatingMemory();
         memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
         EmulatorOptions.debugMemory = false;
 
-        FrEmulator emulator = new FrEmulator();
-        emulator.setMemory(memory);
         FrCPUState cpuState = new FrCPUState(initialPc);
+
+        Platform platform = new Platform();
+        platform.setCpuState(cpuState);
+        platform.setMemory(memory);
+
+        FrEmulator emulator = new FrEmulator();
+
+        emulator.setMemory(memory);
         emulator.setCpuState(cpuState);
-        emulator.setInterruptController(new FrInterruptController(memory, cpuState));
+        emulator.setInterruptController(new FrInterruptController(platform));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();
