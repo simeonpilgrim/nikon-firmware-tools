@@ -15,6 +15,8 @@ public class TxClockGenerator implements ClockGenerator {
     private int prescalerDivider = 2;
     private boolean fpSel;
     private int scoSel;
+    private int nmiFlg;
+    private int rstFlg = 0b0001; // Power-on reset by default
 
     public TxClockGenerator() {
     }
@@ -74,6 +76,28 @@ public class TxClockGenerator implements ClockGenerator {
         setSysCr0((byte) (value & 0xFF));
         setSysCr1((byte) ((value >> 8) & 0xFF));
         setSysCr2((byte) ((value >> 16) & 0xFF));
+    }
+
+    public int readAndClearNmiFlag() {
+        int value = nmiFlg;
+        nmiFlg = 0;
+        return value;
+    }
+
+    public int getNmiFlg() {
+        return nmiFlg;
+    }
+
+    public void setNmiFlg(int nmiFlg) {
+        this.nmiFlg = nmiFlg;
+    }
+
+    public int getRstFlg() {
+        return rstFlg;
+    }
+
+    public void setRstFlg(int rstFlg) {
+        this.rstFlg = rstFlg;
     }
 
     public long getFPeriph() {
