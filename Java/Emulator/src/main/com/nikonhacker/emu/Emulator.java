@@ -21,7 +21,8 @@ public abstract class Emulator {
 
     StatementContext context = new StatementContext();
 
-    // TODO : Shouldn't these 2 only be in the context object ?
+    // TODO : Shouldn't these 2 only be in the StatementContext object ?
+    // TODO : or better yet in a Platform object
     protected Memory memory;
     protected CPUState cpuState;
 
