@@ -1812,7 +1812,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     ioPorts = new IoPort[TxIoListener.NUM_PORT];
                     serialInterfaces = new SerialInterface[TxIoListener.NUM_SERIAL_IF];
                     clockGenerator = new TxClockGenerator();
-                    interruptController = new TxInterruptController(platform[chip], (TxCPUState) cpuState, memory);
+                    interruptController = new TxInterruptController(platform[chip]);
 
                     memory.setIoActivityListener(new TxIoListener(platform[chip]));
 

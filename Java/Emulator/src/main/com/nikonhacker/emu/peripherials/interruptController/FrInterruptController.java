@@ -107,4 +107,18 @@ public class FrInterruptController extends AbstractInterruptController {
             }
         }
     }
+
+    public void processInterrupt(int interruptNumber, int pcToStore) {
+        FrCPUState frCpuState = (FrCPUState) platform.getCpuState();
+        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
+        platform.getMemory().store32(frCpuState.getReg(FrCPUState.SSP), frCpuState.getPS());
+        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
+        platform.getMemory().store32(frCpuState.getReg(FrCPUState.SSP), pcToStore);
+        frCpuState.setS(0);
+
+        // Branch to handler
+        frCpuState.pc = platform.getMemory().load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
+    }
+
+
 }

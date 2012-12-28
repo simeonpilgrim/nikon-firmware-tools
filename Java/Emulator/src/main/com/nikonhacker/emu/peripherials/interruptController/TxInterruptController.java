@@ -1,12 +1,13 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.Instruction;
+import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
-import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 
 import java.util.Collections;
@@ -273,7 +274,7 @@ public class TxInterruptController extends AbstractInterruptController {
         hardwareInterruptDescription[127] = new InterruptDescription(null, "Reserved", NULL_REGISTER, NULL_SECTION, NULL_REGISTER, NULL_SECTION);
     }
 
-    public TxInterruptController(Platform platform, TxCPUState cpuState, Memory memory) {
+    public TxInterruptController(Platform platform) {
         super(platform);
     }
 
@@ -519,6 +520,114 @@ public class TxInterruptController extends AbstractInterruptController {
             this.intcImcCtrlRegSection = intcImcCtrlRegSection;
             this.cgCtrlRegAddr = cgCtrlRegAddr;
             this.cgCtrlRegSection = cgCtrlRegSection;
+        }
+    }
+
+    public void processInterrupt(TxInterruptRequest interruptRequest, int pcToStore, StatementContext context) {
+        TxCPUState txCPUState = (TxCPUState) platform.getCpuState();
+
+        txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+
+        // This follows the graphs in the architecture document (Table 6.3), but then some info was added from the HW spec (ex : setting EXL or ERL)
+        switch (interruptRequest.getType()) {
+            case RESET_EXCEPTION:
+                txCPUState.setStatusBEV();
+                txCPUState.clearStatusNMI();
+                txCPUState.setStatusERL();
+                txCPUState.clearStatusRP();
+                txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+                // set PSS to CSS without changing CSS
+                txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+
+                // Branch to reset routine
+                txCPUState.setPc(TxCPUState.RESET_ADDRESS);
+                break;
+            case NMI:
+                txCPUState.setStatusNMI();
+                txCPUState.setStatusERL();
+                // hardware spec section 6.2.2.1 says BD should be modified in this case,
+                // but table 6.3 section 6.1.3.3 says it should not.
+                // Architecture spec also says it shouldn't, so...
+                // txCPUState.setCauseBD(context.inDelaySlot);
+                txCPUState.setReg(TxCPUState.ErrorEPC, pcToStore);
+                // set PSS to CSS without changing CSS
+                txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+
+                //platform.getClockGenerator().setNmiFlg(1);
+
+                // Branch to reset routine
+                txCPUState.setPc(TxCPUState.RESET_ADDRESS);
+                break;
+            default:
+                if (!txCPUState.isStatusEXLSet()) {
+                    if (context.getStoredDelaySlotType() == Instruction.DelaySlotType.NONE) {
+                        txCPUState.clearCauseBD();
+                    }
+                    else {
+                        txCPUState.setCauseBD();
+                    }
+                }
+                txCPUState.setStatusEXL();
+                txCPUState.setCauseExcCode(interruptRequest.getCode());
+                txCPUState.setReg(TxCPUState.EPC, pcToStore);
+
+                if (interruptRequest.getType().isInterrupt()) {
+                    // Interrupt
+                    // set CSS to PSS and change CSS
+                    txCPUState.pushSscrCssIfSwitchingEnabled(interruptRequest.getLevel());
+
+                    // set ILEV
+                    pushIlevCmask(interruptRequest.getLevel());
+
+                    // Branch to handler
+                    if (txCPUState.isStatusBEVSet()) {
+                        if (txCPUState.isCauseIVSet()) {
+                            // BEV=1 & IV=1
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV1);
+                        }
+                        else {
+                            // BEV=1 & IV=0
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV0);
+                        }
+                    }
+                    else {
+                        if (txCPUState.isCauseIVSet()) {
+                            // BEV=0 & IV=1
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV1);
+                        }
+                        else {
+                            // BEV=0 & IV=0
+                            txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
+                        }
+                    }
+
+                    // IVR = 4 x interrupt_number
+                    setIvr8_0(interruptRequest.getInterruptNumber() << 2);
+
+                }
+                else {
+                    // Other Exceptions
+                    if (interruptRequest.getType() == Type.COPROCESSOR_UNUSABLE_EXCEPTION) {
+                        txCPUState.setCauseCE(interruptRequest.getCoprocessorNumber());
+                    }
+
+                    if (   (interruptRequest.getType() == Type.INSTRUCTION_ADDRESS_ERROR_EXCEPTION)
+                            || (interruptRequest.getType() == Type.DATA_ADDRESS_ERROR_EXCEPTION)) {
+                        txCPUState.setReg(TxCPUState.BadVAddr, interruptRequest.getBadVAddr());
+                    }
+
+                    // Branch to handler
+                    if (txCPUState.isStatusBEVSet()) {
+                        // BEV=1
+                        txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV1_IV0);
+                    }
+                    else {
+                        // BEV=0
+                        txCPUState.setPc(TxInterruptController.ADDRESS_INTERRUPT_BEV0_IV0);
+                    }
+                    // set PSS to CSS without changing CSS
+                    txCPUState.setSscrPSS(txCPUState.getSscrCSS());
+                }
         }
     }
 

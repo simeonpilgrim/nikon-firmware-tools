@@ -1246,7 +1246,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x1F00: /* INT #u8 */
                         context.pushStatement(statement);
-                        processInterrupt(statement.imm, frCpuState.pc + 2);
+                        ((FrInterruptController)interruptController).processInterrupt(statement.imm, frCpuState.pc + 2);
                         frCpuState.I = 0;
 
                         /* No change to NZVC */
@@ -2189,7 +2189,7 @@ public class FrEmulator extends Emulator {
                         }
                         context.pushStatement(statement);
 
-                        processInterrupt(0x0E, frCpuState.pc);
+                        ((FrInterruptController)interruptController).processInterrupt(0x0E, frCpuState.pc);
 
                         /* No change to NZVC */
 
@@ -2228,7 +2228,8 @@ public class FrEmulator extends Emulator {
                                     }
                                 }
                                 interruptController.removeRequest(interruptRequest);
-                                processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc);
+                                ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc);
+
                                 frCpuState.setILM(interruptRequest.getICR(), false);
                             }
                         }
@@ -2310,19 +2311,6 @@ public class FrEmulator extends Emulator {
             mask >>= 1;
         }
         return 32;
-    }
-
-    // Shouldn't this code be part of FrInterruptController ? Using context for CPU and memory
-    private void processInterrupt(int interruptNumber, int pcToStore) {
-        FrCPUState frCpuState = (FrCPUState) cpuState;
-        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
-        memory.store32(frCpuState.getReg(FrCPUState.SSP), frCpuState.getPS());
-        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
-        memory.store32(frCpuState.getReg(FrCPUState.SSP), pcToStore);
-        frCpuState.setS(0);
-
-        // Branch to handler
-        frCpuState.pc = memory.load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
     }
 
     private void setDelayedPc(Integer nextPc) {
