@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.tx.TxCPUState;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
@@ -29,10 +30,6 @@ public class TxInterruptController extends AbstractInterruptController {
     public final static InterruptDescription[] hardwareInterruptDescription = new InterruptDescription[128];
     private static final int NULL_SECTION = -1;
     private static final int NULL_REGISTER = -1;
-
-    private TxCPUState cpuState;
-    private Memory memory;
-
 
     private int ilev;
     private int ivr;
@@ -276,9 +273,8 @@ public class TxInterruptController extends AbstractInterruptController {
         hardwareInterruptDescription[127] = new InterruptDescription(null, "Reserved", NULL_REGISTER, NULL_SECTION, NULL_REGISTER, NULL_SECTION);
     }
 
-    public TxInterruptController(TxCPUState cpuState, Memory memory) {
-        this.cpuState = cpuState;
-        this.memory = memory;
+    public TxInterruptController(Platform platform, TxCPUState cpuState, Memory memory) {
+        super(platform);
     }
 
     /**
@@ -302,11 +298,11 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return true if interrupt could be requested
      */
     public boolean request(InterruptRequest interruptRequest) {
-        if (cpuState.getPowerMode() != TxCPUState.PowerMode.RUN) {
+        if (((TxCPUState)platform.getCpuState()).getPowerMode() != TxCPUState.PowerMode.RUN) {
             // See if this interrupt can clear standby state
             int interruptNumber = interruptRequest.getInterruptNumber();
             if (isImcgIntxen(getIMCGSectionForInterrupt(interruptNumber))) {
-                cpuState.setPowerMode(TxCPUState.PowerMode.RUN);
+                ((TxCPUState)platform.getCpuState()).setPowerMode(TxCPUState.PowerMode.RUN);
             }
             else {
                 // CPU is asleep and cannot be woken up by this interrupt. Request cancelled
@@ -420,7 +416,7 @@ public class TxInterruptController extends AbstractInterruptController {
     // IMC
     public int getRequestLevel(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
-        int imc = memory.load32(description.intcImcCtrlRegAddr);
+        int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr);
         return getImcIl(getSection(imc, description.intcImcCtrlRegSection));
     }
 
@@ -464,7 +460,7 @@ public class TxInterruptController extends AbstractInterruptController {
             throw new RuntimeException("No IMCGxx register found for interrupt #" + interruptNumber);
         }
 
-        int registerValue = memory.load32(description.cgCtrlRegAddr);
+        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr);
         return getSection(registerValue, description.cgCtrlRegSection);
     }
 

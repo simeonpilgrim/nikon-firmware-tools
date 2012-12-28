@@ -1,11 +1,10 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
-import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 
 import java.util.Collections;
@@ -21,12 +20,8 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
 
-    private Memory memory;
-    private CPUState cpuState;
-
-    public FrInterruptController(Memory memory, CPUState cpuState) {
-        this.memory = memory;
-        this.cpuState = cpuState;
+    public FrInterruptController(Platform platform) {
+        super(platform);
     }
 
     /**
@@ -47,7 +42,7 @@ public class FrInterruptController extends AbstractInterruptController {
             int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
-            icr = memory.loadUnsigned8(icrAddress) & 0x1F | 0x10;
+            icr = platform.getMemory().loadUnsigned8(icrAddress) & 0x1F | 0x10;
         }
         else {
             throw new InterruptControllerException("Cannot determine ICR value for interrupt 0x" + Format.asHex(interruptNumber, 2));
@@ -94,7 +89,7 @@ public class FrInterruptController extends AbstractInterruptController {
 
     @Override
     public String getStatus() {
-        return "Current interrupt level: " + ((FrCPUState)cpuState).getILM();
+        return "Current interrupt level: " + ((FrCPUState)platform.getCpuState()).getILM();
     }
 
     public void updateRequestICR(int interruptNumber, byte icr) {
