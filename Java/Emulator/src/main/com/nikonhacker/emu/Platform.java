@@ -8,6 +8,10 @@ import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
+/**
+ * A platform represents a microcontroller hardware in a given state: CPU, memory, clock generator,
+ * interrupt controller, timers, i/o ports, serial interfaces, etc.
+ */
 public class Platform {
 
     private CPUState cpuState;
