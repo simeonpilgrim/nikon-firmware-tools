@@ -78,7 +78,7 @@ public class SerialInterfaceFrame extends DocumentFrame {
             serialInterfacePanel.add(new JLabel("FR MCU => External device"));
             serialInterfacePanel.add(new JScrollPane(rxTextArea));
 
-            tabbedPane.addTab("Serial #" + serialInterface.getSerialInterfaceNumber(), null, serialInterfacePanel);
+            tabbedPane.addTab(serialInterface.getName(), null, serialInterfacePanel);
         }
 
         // Add tab panel

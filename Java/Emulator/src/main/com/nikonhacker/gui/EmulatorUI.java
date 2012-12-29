@@ -32,7 +32,10 @@ import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.TxHSerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.TxSerialInterface;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -1793,14 +1796,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     memory.setIoActivityListener(new ExpeedIoListener(platform[chip]));
 
+                    // Programmable timers
                     for (int i = 0; i < programmableTimers.length; i++) {
                         programmableTimers[i] = new FrReloadTimer(i, interruptController);
                     }
-                    for (int i = 0; i < ioPorts.length; i++) {
+
+                    // I/O ports
+//                  for (int i = 0; i < ioPorts.length; i++) {
 //                        ioPorts[i] = new FrIoPort(i, interruptController, prefs);
-                    }
+//                  }
+
+                    // Serial interfaces
                     for (int i = 0; i < serialInterfaces.length; i++) {
-                        serialInterfaces[i] = new SerialInterface(i, interruptController, 0x1B);
+                        serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B);
                     }
 
                     break;
@@ -1808,29 +1816,35 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 case Constants.CHIP_TX:
                     cpuState = new TxCPUState();
-                    programmableTimers = new ProgrammableTimer[TxIoListener.NUM_TIMER + 1];
-                    ioPorts = new IoPort[TxIoListener.NUM_PORT];
-                    serialInterfaces = new SerialInterface[TxIoListener.NUM_SERIAL_IF];
+                    programmableTimers = new ProgrammableTimer[TxIoListener.NUM_16B_TIMER + TxIoListener.NUM_32B_TIMER];
+                    ioPorts = new TxIoPort[TxIoListener.NUM_PORT];
+                    serialInterfaces = new SerialInterface[TxIoListener.NUM_SERIAL_IF + TxIoListener.NUM_HSERIAL_IF];
                     clockGenerator = new TxClockGenerator();
                     interruptController = new TxInterruptController(platform[chip]);
 
                     memory.setIoActivityListener(new TxIoListener(platform[chip]));
 
+                    // Programmable timers
                     // First put all 16-bit timers
-                    for (int i = 0; i < programmableTimers.length; i++) {
+                    for (int i = 0; i < TxIoListener.NUM_16B_TIMER; i++) {
                         programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController);
                     }
                     // Then add the 32-bit input capture timer
-                    programmableTimers[TxIoListener.NUM_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController);
+                    programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController);
 
-                    ioPorts = new TxIoPort[TxIoListener.NUM_PORT];
+                    // I/O ports
                     for (int i = 0; i < ioPorts.length; i++) {
                         ioPorts[i] = new TxIoPort(i, interruptController, prefs);
                     }
 
-                    serialInterfaces = new SerialInterface[TxIoListener.NUM_SERIAL_IF];
-                    for (int i = 0; i < serialInterfaces.length; i++) {
-//                        serialInterfaces[i] = new SerialInterface(i, interruptController, 0x1B);
+                    // Serial interfaces
+                    // Standard
+                    for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
+                        serialInterfaces[i] = new TxSerialInterface(i, interruptController, 0x1B);
+                    }
+                    // Hi-speed
+                    for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
+                        serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, 0x1B);
                     }
 
                     ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);

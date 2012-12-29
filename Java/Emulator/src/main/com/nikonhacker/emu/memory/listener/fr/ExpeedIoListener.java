@@ -4,7 +4,7 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
-import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.FrSerialInterface;
 
 public class ExpeedIoListener implements IoActivityListener {
 
@@ -77,7 +77,7 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
-            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
+            FrSerialInterface serialInterface = (FrSerialInterface) platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:
                     return (byte)serialInterface.getScrIbcr();
@@ -122,7 +122,7 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
-            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
+            FrSerialInterface serialInterface = (FrSerialInterface) platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:
                     return (serialInterface.getScrIbcr() << 8) | serialInterface.getSmr();
@@ -186,7 +186,7 @@ public class ExpeedIoListener implements IoActivityListener {
         else if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
-            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
+            FrSerialInterface serialInterface = (FrSerialInterface) platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:   // written by 8-bit
                     serialInterface.setScrIbcr(value & 0xFF);
@@ -249,7 +249,7 @@ public class ExpeedIoListener implements IoActivityListener {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
-            SerialInterface serialInterface = platform.getSerialInterfaces()[serialInterfaceNr];
+            FrSerialInterface serialInterface = (FrSerialInterface) platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_IF_OFFSET_BITS)) {
                 case REGISTER_SCR_IBRC0:   // normally written by 8-bit
                     serialInterface.setScrIbcr((value >> 8) & 0xFF);
