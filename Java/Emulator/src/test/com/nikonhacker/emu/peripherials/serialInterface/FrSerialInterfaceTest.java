@@ -4,11 +4,11 @@ import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptContro
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import junit.framework.TestCase;
 
-public class SerialInterfaceTest extends TestCase {
+public class FrSerialInterfaceTest extends TestCase {
     public void testInterface() {
 
         InterruptController interruptController = new DummyInterruptController();
-        SerialInterface serialInterface = new SerialInterface(5, interruptController, 0x1B);
+        FrSerialInterface serialInterface = new FrSerialInterface(5, interruptController, 0x1B);
         serialInterface.setScrIbcr(0);
         serialInterface.setScrIbcr(0xB0);
         serialInterface.setSmr(0x45);

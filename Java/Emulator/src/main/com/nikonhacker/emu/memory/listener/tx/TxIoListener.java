@@ -83,7 +83,7 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_PORT0PIE =    0xFF00_4038; // Port input enable control register
 
     // 16-bit Timer
-    public static final int NUM_TIMER = 18;
+    public static final int NUM_16B_TIMER = 18;
     private static final int TIMER_OFFSET_SHIFT = 6; // 1 << 6 = 0x40 bytes per timer
     private static final int REGISTER_TB0EN   =    0xFF00_4500; // Timer enable register
     private static final int REGISTER_TB0RUN  =    0xFF00_4504; // Timer RUN register
@@ -99,6 +99,7 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_TB0CP1  =    0xFF00_452C; // Timer Capture register hi word
 
     // 32-bit Capture input timer
+    public static final int NUM_32B_TIMER = 1;
     private static final int REGISTER_TCEN     =    0xFF00_4A00; // Timer Enable register
     private static final int REGISTER_TBTRUN   =    0xFF00_4A04; // Timer Run register
     private static final int REGISTER_TBTCR    =    0xFF00_4A08; // Timer Control Register
@@ -114,7 +115,36 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_TCCAP0   =    0xFF00_4AA4; // Capture register
 
     // Serial ports
-    public static final int NUM_SERIAL_IF = 0;
+    public static final int NUM_SERIAL_IF = 3;
+    private static final int REGISTER_SC0EN    =    0xFF00_4C00; // Enable register
+    private static final int REGISTER_SC0BUF   =    0xFF00_4C04; // TX/RX buffer register
+    private static final int REGISTER_SC0CR    =    0xFF00_4C08; // Control register
+    private static final int REGISTER_SC0MOD0  =    0xFF00_4C0C; // Mode control register 0
+    private static final int REGISTER_BR0CR    =    0xFF00_4C10; // Baud rate generator control register
+    private static final int REGISTER_BR0ADD   =    0xFF00_4C14; // Baud rate generator control register 2
+    private static final int REGISTER_SC0MOD1  =    0xFF00_4C18; // Mode control register 1
+    private static final int REGISTER_SC0MOD2  =    0xFF00_4C1C; // Mode control register 2
+    private static final int REGISTER_SC0RFC   =    0xFF00_4C20; // Receive FIFO control register
+    private static final int REGISTER_SC0TFC   =    0xFF00_4C24; // Transmit FIFO control register
+    private static final int REGISTER_SC0RST   =    0xFF00_4C28; // Receive FIFO status register
+    private static final int REGISTER_SC0TST   =    0xFF00_4C2C; // Transmit FIFO status register
+    private static final int REGISTER_SC0FCNF  =    0xFF00_4C30; // FIFO configuration register
+
+    public static final int NUM_HSERIAL_IF = 3;
+    private static final int REGISTER_HSC0BUF   =    0xFF00_1800; // TX/RX buffer register
+    private static final int REGISTER_HBR0ADD   =    0xFF00_1804; // Baud rate generator control register 2
+    private static final int REGISTER_HSC0MOD1  =    0xFF00_1805; // Mode control register 1
+    private static final int REGISTER_HSC0MOD2  =    0xFF00_1806; // Mode control register 2
+    private static final int REGISTER_HSC0EN    =    0xFF00_1807; // Enable register
+    private static final int REGISTER_HSC0RFC   =    0xFF00_1808; // Receive FIFO control register
+    private static final int REGISTER_HSC0TFC   =    0xFF00_1809; // Transmit FIFO control register
+    private static final int REGISTER_HSC0RST   =    0xFF00_180A; // Receive FIFO status register
+    private static final int REGISTER_HSC0TST   =    0xFF00_180B; // Transmit FIFO status register
+    private static final int REGISTER_HSC0FCNF  =    0xFF00_180C; // FIFO configuration register
+    private static final int REGISTER_HSC0CR    =    0xFF00_180D; // Control register
+    private static final int REGISTER_HSC0MOD0  =    0xFF00_180E; // Mode control register 0
+    private static final int REGISTER_HBR0CR    =    0xFF00_180F; // Baud rate generator control register
+
 
     private final Platform platform;
 
@@ -159,7 +189,7 @@ public class TxIoListener implements IoActivityListener {
                     return txIoPort.getInputEnableControlRegister();
             }
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -196,7 +226,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
@@ -263,7 +293,7 @@ public class TxIoListener implements IoActivityListener {
             // Port configuration registers
             throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -296,7 +326,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
@@ -377,7 +407,7 @@ public class TxIoListener implements IoActivityListener {
                     return (int) txIoPort.getInputEnableControlRegister();
             }
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -410,7 +440,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
@@ -488,7 +518,7 @@ public class TxIoListener implements IoActivityListener {
                     txIoPort.setInputEnableControlRegister(value); break;
             }
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -529,7 +559,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
@@ -590,7 +620,7 @@ public class TxIoListener implements IoActivityListener {
             // Port configuration registers
             throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -623,7 +653,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
@@ -699,7 +729,7 @@ public class TxIoListener implements IoActivityListener {
                     txIoPort.setInputEnableControlRegister((byte) value); break;
             }
         }
-        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_TIMER << TIMER_OFFSET_SHIFT)) {
+        else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
@@ -732,7 +762,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
             // Capture Input configuration registers
-            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_TIMER];
+            TxInputCaptureTimer txInputCaptureTimer = (TxInputCaptureTimer)platform.getProgrammableTimers()[NUM_16B_TIMER];
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
