@@ -503,7 +503,7 @@ public abstract class Disassembler {
                     context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
                 }
             }
-        } catch (DisassemblyException | CloneNotSupportedException e) {
+        } catch (DisassemblyException e) {
             throw new DisassemblyException(e.getMessage() + " at 0x" + Format.asHex(context.cpuState.pc, 8), e);
         }
     }
@@ -576,9 +576,9 @@ public abstract class Disassembler {
 
     protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException;
+    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException;
+    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
 
 }

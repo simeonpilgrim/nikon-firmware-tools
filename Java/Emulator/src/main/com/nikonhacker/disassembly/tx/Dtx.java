@@ -16,7 +16,7 @@ public class Dtx extends Disassembler
 
 
     /* output */
-    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException {
+    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
         int binaryStatement16 = memory.loadInstruction16(context.cpuState.pc);
@@ -30,7 +30,7 @@ public class Dtx extends Disassembler
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
                 statement.context = new StatementContext();
-                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
             codeStructure.getStatements().put(context.cpuState.pc, statement);
@@ -45,7 +45,7 @@ public class Dtx extends Disassembler
     }
 
     @Override
-    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException {
+    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
         int binaryStatement32 = memory.loadInstruction32(context.cpuState.pc);
@@ -59,7 +59,7 @@ public class Dtx extends Disassembler
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
                 statement.context = new StatementContext();
-                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
             codeStructure.getStatements().put(context.cpuState.pc, statement);
