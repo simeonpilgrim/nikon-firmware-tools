@@ -299,8 +299,8 @@ public class FrCPUState extends CPUState {
               );
     }
 
-    public FrCPUState clone() throws CloneNotSupportedException {
-        FrCPUState cloneCpuState = (FrCPUState) super.clone();
+    public FrCPUState createCopy() {
+        FrCPUState cloneCpuState = new FrCPUState();
         for (int i = 0; i <= CCR; i++) {
             cloneCpuState.setReg(i, getReg(i));
         }
