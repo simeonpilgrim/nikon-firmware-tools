@@ -84,7 +84,7 @@ public enum OutputOption {
         return defaultValue;
     }
 
-    public static String getFullHelp(int chip, Character option) {
+    private static String getFullHelp(int chip, Character option) {
         String s = "Here are the allowed output options" + (option==null?"":" (-" + option + ") :\n");
         for (OutputOption outputOption : EnumSet.allOf(OutputOption.class)) {
             if (outputOption.help[chip] != null) {
@@ -94,7 +94,7 @@ public enum OutputOption {
         return s;
     }
 
-    public static OutputOption getByKey(String key) {
+    private static OutputOption getByKey(String key) {
         for (OutputOption outputOption : EnumSet.allOf(OutputOption.class)) {
             if (outputOption.key.equals(key)) return outputOption;
         }

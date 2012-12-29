@@ -8,7 +8,7 @@ import com.nikonhacker.Format;
  */
 public class TxClockGenerator implements ClockGenerator {
 
-    public static final long FC = 80000000; // Hz, or 80MHz
+    private static final long FC = 80000000; // Hz, or 80MHz
     private int gear;
     private int gearDivider = 1;
     private int prescaler;

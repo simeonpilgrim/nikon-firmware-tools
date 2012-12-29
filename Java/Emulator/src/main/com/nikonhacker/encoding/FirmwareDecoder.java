@@ -5,7 +5,7 @@ import java.util.List;
 
 public class FirmwareDecoder {
 
-    public static void usage() {
+    private static void usage() {
         System.out.println("Usage : " + FirmwareDecoder.class.getName() + " <infile> [<destdir>] ");
         System.exit(-1);
     }

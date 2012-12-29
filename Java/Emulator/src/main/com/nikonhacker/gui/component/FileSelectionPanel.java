@@ -11,11 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FileSelectionPanel extends JPanel implements ActionListener {
-    String label;
-    JLabel jlabel;
-    JButton button;
-    JTextField textField;
-    boolean directoryMode;
+    private String label;
+    private JLabel jlabel;
+    private JButton button;
+    private JTextField textField;
+    private boolean directoryMode;
     private List<DependentField> dependentFields;
     private String dialogTitle;
 

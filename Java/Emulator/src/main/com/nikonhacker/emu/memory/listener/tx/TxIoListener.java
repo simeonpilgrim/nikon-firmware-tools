@@ -13,7 +13,7 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
  * Available at http://www.semicon.toshiba.co.jp/info/docget.jsp?type=datasheet&lang=en&pid=TMP19A44FEXBG
  */
 public class TxIoListener implements IoActivityListener {
-    public static final int IO_PAGE = 0xFF00;
+    private static final int IO_PAGE = 0xFF00;
 
     // See section 22 for addresses
 

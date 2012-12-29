@@ -17,9 +17,9 @@ public class Syscall extends Symbol {
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
 
     private static int int40address;
-    static Map<Integer,Syscall> syscallMap;
+    private static Map<Integer,Syscall> syscallMap;
 
-    int functionCode;
+    private int functionCode;
 
     public Syscall(int functionCode, Integer address, String rawText) throws ParsingException {
         super(address, rawText, FrCPUState.REG_LABEL);

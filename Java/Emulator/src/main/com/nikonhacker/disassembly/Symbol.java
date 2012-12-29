@@ -10,7 +10,7 @@ public class Symbol {
     int address;
     String name;
     String comment;
-    List<String> aliases;
+    private List<String> aliases;
     private List<Parameter> parameterList;
     private String rawText;
 

@@ -18,11 +18,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class IoPortsFrame extends DocumentFrame implements IoPortListener {
-    protected final IoPort[] ioPorts;
+    private final IoPort[] ioPorts;
 
-    protected JPanel[][] cells;
-    protected SteelCheckBox[][] inputs;
-    protected Led[][] outputs;
+    private JPanel[][] cells;
+    private SteelCheckBox[][] inputs;
+    private Led[][] outputs;
 
     public IoPortsFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final IoPort[] ioPorts) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);

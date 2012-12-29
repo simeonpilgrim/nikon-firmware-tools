@@ -8,7 +8,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.FrSerialInterface;
 
 public class ExpeedIoListener implements IoActivityListener {
 
-    public static final int IO_PAGE = 0x0000;
+    private static final int IO_PAGE = 0x0000;
 
     private static final int REGISTER_DICR    = 0x44;
 

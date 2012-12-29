@@ -14,9 +14,9 @@ import java.awt.event.ActionListener;
  */
 public class ProgrammableTimersFrame extends DocumentFrame {
 
-    protected final ProgrammableTimer[] timers;
+    private final ProgrammableTimer[] timers;
 
-    protected static final int UPDATE_INTERVAL_MS = 99; // 10fps, but not exactly so that we don't refresh exactly at the same counter value
+    private static final int UPDATE_INTERVAL_MS = 99; // 10fps, but not exactly so that we don't refresh exactly at the same counter value
 
     private javax.swing.Timer refreshTimer;
     private final JList timerList;

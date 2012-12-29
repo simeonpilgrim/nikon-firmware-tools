@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class FrCPUState extends CPUState {
 
-    public static final int RESET_ADDRESS = 0x00040000;
+    private static final int RESET_ADDRESS = 0x00040000;
 
     /** Register names (first array is "standard", second array is "alternate") */
     static String[][] REG_LABEL = new String[][]{
@@ -70,16 +70,16 @@ public class FrCPUState extends CPUState {
     public final static int CCR = 49;
 
     /* bits of the PS register (ILM part) */
-    public int ILM4 = 0;
-    public int ILM3 = 1;
-    public int ILM2 = 1;
-    public int ILM1 = 1;
-    public int ILM0 = 1;
+    private int ILM4 = 0;
+    private int ILM3 = 1;
+    private int ILM2 = 1;
+    private int ILM1 = 1;
+    private int ILM0 = 1;
 
     /* bits of the PS register (SCR part) */
     public int D0 = 0; // 1 if the dividend is negative
     public int D1 = 0; // 1 if the dividend and divisor have opposite signs
-    public int T = 0;
+    private int T = 0;
 
     /* bits of the PS register (CCR part) */
     private int S=0; // only accessible via setter because it also points R15 to correct stack pointer
@@ -299,8 +299,8 @@ public class FrCPUState extends CPUState {
               );
     }
 
-    public FrCPUState clone() {
-        FrCPUState cloneCpuState = new FrCPUState();
+    public FrCPUState clone() throws CloneNotSupportedException {
+        FrCPUState cloneCpuState = (FrCPUState) super.clone();
         for (int i = 0; i <= CCR; i++) {
             cloneCpuState.setReg(i, getReg(i));
         }

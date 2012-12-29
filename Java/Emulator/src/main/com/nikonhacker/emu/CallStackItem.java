@@ -3,8 +3,8 @@ package com.nikonhacker.emu;
 import com.nikonhacker.Format;
 
 public class CallStackItem {
-    int address;
-    int sp;
+    private int address;
+    private int sp;
     private String instruction;
 
     public CallStackItem(int address, int sp, String instruction) {

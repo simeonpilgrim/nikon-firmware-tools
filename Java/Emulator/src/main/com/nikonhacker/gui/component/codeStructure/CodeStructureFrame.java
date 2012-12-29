@@ -31,8 +31,8 @@ public class CodeStructureFrame extends DocumentFrame
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
 
-    CodeStructureMxGraph graph;
-    CodeStructure codeStructure;
+    private CodeStructureMxGraph graph;
+    private CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
     private CPUState cpuState;
 
@@ -180,6 +180,10 @@ public class CodeStructureFrame extends DocumentFrame
         getContentPane().add(mainPanel);
 
         pack();
+    }
+
+    public CodeStructure getCodeStructure() {
+        return codeStructure;
     }
 
     private Orientation getCurrentOrientation() {

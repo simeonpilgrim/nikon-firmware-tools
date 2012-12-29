@@ -16,24 +16,27 @@ public abstract class Disassembler {
     private int chip;
 
     public Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
-    protected String inputFileName;
+
+    protected Memory memory = null;
+    protected Writer outWriter;
+
+    private String inputFileName;
     /**
      * If null, no output is created.
      * If empty, default name is used.
      * If specified, this name is used.
      */
-    String outputFileName = "";
-    boolean optLittleEndian = false;
-    boolean optSplitPerMemoryRange = false;
-    protected Memory memory = null;
-    protected Writer outWriter;
-    protected PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
-    protected MemoryMap fileMap = new MemoryMap('i', "File map");
-    protected MemoryMap memMap = new MemoryMap('m', "Memory map");
-    MemoryMap rangeMap = new MemoryMap('d', "Selected ranges");
-    protected String startTime = "";
-    protected Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
-    protected Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
+    private String outputFileName = "";
+
+    private boolean optLittleEndian = false;
+    private boolean optSplitPerMemoryRange = false;
+    private PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
+    private MemoryMap fileMap = new MemoryMap('i', "File map");
+    private MemoryMap memMap = new MemoryMap('m', "Memory map");
+    private MemoryMap rangeMap = new MemoryMap('d', "Selected ranges");
+    private String startTime = "";
+    private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
+    private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
 
     /**
      *
@@ -528,7 +531,7 @@ public abstract class Disassembler {
                     context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
                 }
             }
-        } catch (DisassemblyException e) {
+        } catch (DisassemblyException | CloneNotSupportedException e) {
             throw new DisassemblyException(e.getMessage() + " at 0x" + Format.asHex(context.cpuState.pc, 8), e);
         }
     }
@@ -617,9 +620,9 @@ public abstract class Disassembler {
 
     protected abstract int disassembleOneDataRecord(StatementContext context, Range memRange, int memoryFileOffset, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
 
-    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+    protected abstract int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException;
 
-    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException;
+    protected abstract int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException;
 
 
 }

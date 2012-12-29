@@ -39,7 +39,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 //    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
     
     private Gutter gutter;
-    Object pcHighlightTag = null;
+    private Object pcHighlightTag = null;
     private final JTextField searchField;
     private JCheckBox regexCB;
     private JCheckBox matchCaseCB;
@@ -47,7 +47,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private CPUState cpuState;
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
-    List<Integer> lineAddresses = new ArrayList<Integer>();
+    private List<Integer> lineAddresses = new ArrayList<Integer>();
     private final JTextField targetField;
     private int lastClickedTextPosition;
     private final JCheckBox followPcCheckBox;

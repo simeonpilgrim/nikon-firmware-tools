@@ -452,8 +452,8 @@ public class TxCPUState extends CPUState {
     }
 
 
-    public TxCPUState clone() {
-        TxCPUState cloneCpuState = new TxCPUState();
+    public TxCPUState clone() throws CloneNotSupportedException {
+        TxCPUState cloneCpuState = (TxCPUState) super.clone();
         for (int i = 0; i < regValue.length; i++) {
             cloneCpuState.regValue[i] = new Register32(regValue[i].getValue());
         }

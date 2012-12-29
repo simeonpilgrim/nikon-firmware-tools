@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FirmwareEncoder {
-    public static void usage() {
+    private static void usage() {
         System.out.println("Usage : " + FirmwareEncoder.class.getName() + " <infile1> [ <infile2> [...]] <outfile> ");
         System.exit(-1);
     }

@@ -58,7 +58,7 @@ public class Dfr extends Disassembler
 
 
     /* output */
-    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException {
+    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, CloneNotSupportedException {
         FrStatement statement = new FrStatement(memRange.getStart());
 
         statement.getNextStatement(memory, context.cpuState.pc);

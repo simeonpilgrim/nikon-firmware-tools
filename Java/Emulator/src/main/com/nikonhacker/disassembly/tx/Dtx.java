@@ -16,7 +16,7 @@ public class Dtx extends Disassembler
 
 
     /* output */
-    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+    protected int disassembleOne16BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
         int binaryStatement16 = memory.loadInstruction16(context.cpuState.pc);
@@ -45,7 +45,7 @@ public class Dtx extends Disassembler
     }
 
     @Override
-    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException {
+    protected int disassembleOne32BitStatement(StatementContext context, Range memRange, int memoryFileOffset, CodeStructure codeStructure, Set<OutputOption> outputOptions) throws IOException, DisassemblyException, CloneNotSupportedException {
         TxStatement statement = new TxStatement(memRange.getStart());
 
         int binaryStatement32 = memory.loadInstruction32(context.cpuState.pc);

@@ -244,7 +244,7 @@ public class FrInstructionSet {
     /**
      * This is a "catch-all" instruction used as a safety net for unknown instructions
      */
-    static FrInstruction[] defaultInstruction = {
+    private static FrInstruction[] defaultInstruction = {
         new FrInstruction( 0x97FF, 0x0000, InstructionFormat.W, 0, 0, "UNK",    "",             ""         , Instruction.FlowType.NONE, false, false),
     };
 
@@ -252,7 +252,7 @@ public class FrInstructionSet {
     /**
      * These are replacement names for all stack-related operations
      */
-    static FrInstruction[] altStackInstructions = {
+    private static FrInstruction[] altStackInstructions = {
         new FrInstruction( 0x0700, 0xFFF0, InstructionFormat.E, 0, 0, "POP",    "i",            ""         , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0780, 0xFFFF, InstructionFormat.E, 0, 0, "POP",    "g",            ""         , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0781, 0xFFFF, InstructionFormat.E, 0, 0, "POP",    "g",            ""         , Instruction.FlowType.NONE, false, false),
@@ -280,7 +280,7 @@ public class FrInstructionSet {
     /**
      * These are replacement names for all "+16" shift opcodes (LSR2, LSL2, ASR2)
      */
-    static FrInstruction[] altShiftInstructions = {
+    private static FrInstruction[] altShiftInstructions = {
         new FrInstruction( 0xB100, 0xFF00, InstructionFormat.C, 0, 0, "LSR",    "#bd,i",        "iw"       , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0xB500, 0xFF00, InstructionFormat.C, 0, 0, "LSL",    "#bd,i",        "iw"       , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0xB900, 0xFF00, InstructionFormat.C, 0, 0, "ASR",    "#bd,i",        "iw"       , Instruction.FlowType.NONE, false, false),
@@ -289,7 +289,7 @@ public class FrInstructionSet {
     /**
      * These are replacement names for all some DMOV opcodes
      */
-    static FrInstruction[] altDmovInstructions = {
+    private static FrInstruction[] altDmovInstructions = {
         new FrInstruction( 0x0800, 0xFF00, InstructionFormat.D, 0, 0, "LD",     "@4u,A",        ""         , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0900, 0xFF00, InstructionFormat.D, 0, 0, "LDUH",   "@2u,A",        ""         , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x0A00, 0xFF00, InstructionFormat.D, 0, 0, "LDUB",   "@u,A",         ""         , Instruction.FlowType.NONE, false, false),
@@ -302,7 +302,7 @@ public class FrInstructionSet {
      * These are replacement names for dedicated opcodes
      * working on ILM, CCR and SP so that they look the same as others
      */
-    static FrInstruction[] altSpecialInstructions = {
+    private static FrInstruction[] altSpecialInstructions = {
         new FrInstruction( 0x8300, 0xFF00, InstructionFormat.D, 0, 0, "AND",    "#u,C",         "Cw"       , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x8700, 0xFF00, InstructionFormat.D, 0, 0, "MOV",    "#u,M",         ""         , Instruction.FlowType.NONE, false, false),
         new FrInstruction( 0x9300, 0xFF00, InstructionFormat.D, 0, 0, "OR",     "#u,C",         "Cw"       , Instruction.FlowType.NONE, false, false),
@@ -361,7 +361,7 @@ public class FrInstructionSet {
      * @param destination the destination array to be filled
      * @param source the source array to be "expanded"
      */
-    static void expandOpCodes(Instruction[] destination, FrInstruction[] source)
+    private static void expandOpCodes(Instruction[] destination, FrInstruction[] source)
     {
         for (FrInstruction op : source)
         {
