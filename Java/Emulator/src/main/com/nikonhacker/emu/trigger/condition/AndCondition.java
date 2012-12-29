@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AndCondition extends AbstractLoggingBreakCondition implements BreakCondition {
-    List<BreakCondition> conditions = new ArrayList<BreakCondition>();
+    private List<BreakCondition> conditions = new ArrayList<BreakCondition>();
 
     public AndCondition(List<BreakCondition> conditions, BreakTrigger breakTrigger) {
         super(breakTrigger);

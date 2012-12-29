@@ -18,8 +18,8 @@ import java.io.PrintWriter;
 
 public class AnalyseProgressDialog extends JDialog {
     private PrintWriterArea printWriterArea;
-    JButton closeButton;
-    final JDialog frame = this;
+    private JButton closeButton;
+    private final JDialog frame = this;
     private EmulatorUI emulatorUI;
     private Memory memory;
 

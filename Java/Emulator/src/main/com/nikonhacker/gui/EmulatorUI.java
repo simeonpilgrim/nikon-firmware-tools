@@ -269,8 +269,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private boolean[] isImageLoaded = {false, false};
     private boolean[] isEmulatorPlaying = {false, false};
 
-    long lastUpdateCycles[] = {0, 0};
-    long lastUpdateTime[] = {0, 0};
+    private long lastUpdateCycles[] = {0, 0};
+    private long lastUpdateTime[] = {0, 0};
 
     private Prefs prefs = new Prefs();
     private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
@@ -2597,39 +2597,44 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
         // todo chip
-        // Create alternate cpuState
-        FrCPUState tmpCpuState = ((FrCPUState)platform[Constants.CHIP_FR].getCpuState()).clone();
-
-        // Tweak alt cpuState
-        tmpCpuState.I = 0; // prevent interrupts
-        tmpCpuState.setILM(0, false);
-        tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
-
-        // Set params for call
-        tmpCpuState.setReg(4, r4);
-        tmpCpuState.setReg(5, r5);
-        tmpCpuState.setReg(12, BinaryArithmetics.signExtend(8, syscallNumber));
-
-        emulator[Constants.CHIP_FR].setCpuState(tmpCpuState);
-
-        // Prepare code
-        Memory memory = platform[Constants.CHIP_FR].getMemory();
-        memory.store16(BASE_ADDRESS_SYSCALL, 0x1F40);                      // 1F40    INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
-        memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                  // HALT, infinite loop
-
-        // Put a breakpoint on the instruction after the call
-        emulator[Constants.CHIP_FR].clearBreakConditions();
-        emulator[Constants.CHIP_FR].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 2, null));
-
-        // Start emulator synchronously
         try {
-            emulator[Constants.CHIP_FR].play();
+            // Create alternate cpuState
+            FrCPUState tmpCpuState = ((FrCPUState)platform[Constants.CHIP_FR].getCpuState()).clone();
 
-            // Read error code
-            return ErrorCode.fromValue(tmpCpuState.getReg(12));
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
+            // Tweak alt cpuState
+            tmpCpuState.I = 0; // prevent interrupts
+            tmpCpuState.setILM(0, false);
+            tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
+
+            // Set params for call
+            tmpCpuState.setReg(4, r4);
+            tmpCpuState.setReg(5, r5);
+            tmpCpuState.setReg(12, BinaryArithmetics.signExtend(8, syscallNumber));
+
+            emulator[Constants.CHIP_FR].setCpuState(tmpCpuState);
+
+            // Prepare code
+            Memory memory = platform[Constants.CHIP_FR].getMemory();
+            memory.store16(BASE_ADDRESS_SYSCALL, 0x1F40);                      // 1F40    INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
+            memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                  // HALT, infinite loop
+
+            // Put a breakpoint on the instruction after the call
+            emulator[Constants.CHIP_FR].clearBreakConditions();
+            emulator[Constants.CHIP_FR].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 2, null));
+
+            // Start emulator synchronously
+            try {
+                emulator[Constants.CHIP_FR].play();
+
+                // Read error code
+                return ErrorCode.fromValue(tmpCpuState.getReg(12));
+            }
+            catch (Throwable t) {
+                t.printStackTrace();
+                return ErrorCode.E_FREMU;
+            }
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
             return ErrorCode.E_FREMU;
         }
     }

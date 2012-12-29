@@ -18,8 +18,8 @@ public class GenerateSysSymbolsDialog extends JDialog {
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
 
     private PrintWriterArea printWriterArea;
-    JButton closeButton;
-    final JDialog frame = this;
+    private JButton closeButton;
+    private final JDialog frame = this;
     private EmulatorUI emulatorUI;
     private Memory memory;
 

@@ -13,14 +13,14 @@ import java.util.Set;
  */
 public class FrStatement extends Statement {
     ///* output formatting */
-    public static String fmt_nxt;
-    public static String fmt_imm;
-    public static String fmt_and;
-    public static String fmt_inc;
-    public static String fmt_dec;
-    public static String fmt_mem;
-    public static String fmt_par;
-    public static String fmt_ens;
+    private static String fmt_nxt;
+    private static String fmt_imm;
+    private static String fmt_and;
+    private static String fmt_inc;
+    private static String fmt_dec;
+    private static String fmt_mem;
+    private static String fmt_par;
+    private static String fmt_ens;
 
     /** data read */
     public int[] data = new int[3];
@@ -34,17 +34,17 @@ public class FrStatement extends Statement {
 
     /** Rj operand */
     public int j; // as-is from binary code
-    public int decodedJ; // interpreted
+    private int decodedJ; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
-    public int c;
+    private int c;
 
 
     /** number of significant bits in decodedX (for display only) */
     public int immBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
-    public int memRangeStart = 0;
+    private int memRangeStart = 0;
 
     /**
      * Default decoding upon class loading

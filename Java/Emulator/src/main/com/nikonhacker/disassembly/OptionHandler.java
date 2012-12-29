@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 
 public class OptionHandler
 {
-    static String memtypehelp =
+    private static String memtypehelp =
             "Memtypes are:\n"
                     + "NONE              do not disassemble\n"
                     + "UNKNOWN           unknown contents\n"
@@ -26,9 +26,9 @@ public class OptionHandler
                     + "                    W or 16 -- word (16-bit) data\n"
             ;
 
-    int index;
-    String[] arguments;
-    String currentToken;
+    private int index;
+    private String[] arguments;
+    private String currentToken;
 
     public OptionHandler(String[] arguments)
     {
@@ -129,7 +129,7 @@ public class OptionHandler
         }
     }
 
-    static RangeType parseRangeType(String arg) throws ParsingException {
+    private static RangeType parseRangeType(String arg) throws ParsingException {
         if (StringUtils.isBlank(arg))  {
             throw new ParsingException("no memtype given");
         }

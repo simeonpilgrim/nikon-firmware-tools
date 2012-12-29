@@ -31,7 +31,7 @@ public class MemoryMapComponent extends JComponent {
     private int selectedX = NO_SELECTION;
     private int selectedY = NO_SELECTION;
 
-    BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
     private double scaleX;
     private double scaleY;
 

@@ -39,7 +39,7 @@ public class FrSerialInterface extends SerialInterface {
     private int savedReadPointer;
     private int fifoIdleCounter = 0; // TODO implement counter increment and detection
 
-    int rxInterruptNumber, txInterruptNumber;
+    private int rxInterruptNumber, txInterruptNumber;
 
 
     public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber) {

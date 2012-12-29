@@ -40,15 +40,15 @@ public class SearchableTextAreaPanel extends JPanel implements DocumentListener,
         FORWARD
     }
 
-    JTextArea textArea;
-    JScrollPane scrollPane;
-    JPanel searchPanel;
-    JTextField searchTextField;
-    JCheckBox highlightAllCheckBox;
-    JCheckBox matchCaseCheckBox;
-    int selectedHighlightPosition = -1;
-    Map<Integer,Object> highlights = new HashMap<Integer, Object>();
-    Color defaultSearchFieldBgColor = null;
+    private JTextArea textArea;
+    private JScrollPane scrollPane;
+    private JPanel searchPanel;
+    private JTextField searchTextField;
+    private JCheckBox highlightAllCheckBox;
+    private JCheckBox matchCaseCheckBox;
+    private int selectedHighlightPosition = -1;
+    private Map<Integer,Object> highlights = new HashMap<Integer, Object>();
+    private Color defaultSearchFieldBgColor = null;
 
     /**
      * Create a new SearchableTextAreaPanel encapsulating the given JTextArea, with the search bar hidden

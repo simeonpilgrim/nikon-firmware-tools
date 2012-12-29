@@ -21,7 +21,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     protected InterruptController interruptController;
 
-    protected static final int UPDATE_INTERVAL_MS = 100; // 10fps
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private javax.swing.Timer refreshTimer;
     private final JList interruptQueueJList;

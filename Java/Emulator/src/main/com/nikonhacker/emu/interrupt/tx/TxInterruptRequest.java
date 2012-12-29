@@ -6,7 +6,7 @@ import com.nikonhacker.emu.interrupt.InterruptRequest;
 public class TxInterruptRequest extends InterruptRequest {
 
     /** the type of this interrupt/exception */
-    Type type = Type.UNDEFINED;
+    private Type type = Type.UNDEFINED;
 
     /** only meaningful for software/hardware interrupts */
     private int level = 0;

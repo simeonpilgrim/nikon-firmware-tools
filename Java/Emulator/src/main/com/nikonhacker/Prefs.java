@@ -12,19 +12,19 @@ import java.io.FileOutputStream;
 import java.util.*;
 
 public class Prefs {
-    public static final String KEY_WINDOW_MAIN = "MAIN";
+    private static final String KEY_WINDOW_MAIN = "MAIN";
 
-    int sleepTick = 2;
-    List<BreakTrigger>[] triggers;
-    EnumSet<OutputOption>[] outputOptions;
-    Map<Integer,Byte>[] ioPortMap;
+    private int sleepTick = 2;
+    private List<BreakTrigger>[] triggers;
+    private EnumSet<OutputOption>[] outputOptions;
+    private Map<Integer,Byte>[] ioPortMap;
 
-    String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
+    private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
 
-    boolean closeAllWindowsOnStop = false;
+    private boolean closeAllWindowsOnStop = false;
 
-    boolean writeDisassemblyToFile = true;
-    boolean followPc = true;
+    private boolean writeDisassemblyToFile = true;
+    private boolean followPc = true;
 
     private HashMap<String, WindowPosition> windowPositionMap;
     private HashMap<String, WindowPosition> windowSizeMap;
@@ -37,7 +37,7 @@ public class Prefs {
     private int lastDividerLocation;
     private boolean dividerKeepHidden;
 
-    public static File getPreferenceFile() {
+    private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
     }
 
