@@ -1246,7 +1246,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x1F00: /* INT #u8 */
                         context.pushStatement(statement);
-                        ((FrInterruptController)interruptController).processInterrupt(statement.imm, frCpuState.pc + 2);
+                        ((FrInterruptController)interruptController).processInterrupt(statement.imm, frCpuState.pc + 2, context);
                         frCpuState.I = 0;
 
                         /* No change to NZVC */
@@ -2189,7 +2189,7 @@ public class FrEmulator extends Emulator {
                         }
                         context.pushStatement(statement);
 
-                        ((FrInterruptController)interruptController).processInterrupt(0x0E, frCpuState.pc);
+                        ((FrInterruptController)interruptController).processInterrupt(0x0E, frCpuState.pc, context);
 
                         /* No change to NZVC */
 
@@ -2228,7 +2228,7 @@ public class FrEmulator extends Emulator {
                                     }
                                 }
                                 interruptController.removeRequest(interruptRequest);
-                                ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc);
+                                ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc, context);
 
                                 frCpuState.setILM(interruptRequest.getICR(), false);
                             }
