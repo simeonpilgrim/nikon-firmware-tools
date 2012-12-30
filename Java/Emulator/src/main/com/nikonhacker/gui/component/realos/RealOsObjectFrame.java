@@ -51,10 +51,10 @@ public class RealOsObjectFrame extends DocumentFrame {
         topPanel.add(updateAllButton);
 
         autoUpdateCheckbox = new JCheckBox("Auto-update all");
-        autoUpdateCheckbox.setSelected(ui.getPrefs().isAutoUpdateRealOsObjects());
+        autoUpdateCheckbox.setSelected(ui.getPrefs().isAutoUpdateRealOsObjects(chip));
         autoUpdateCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.getPrefs().setAutoUpdateRealOsObjects(autoUpdateCheckbox.isSelected());
+                ui.getPrefs().setAutoUpdateRealOsObjects(chip, autoUpdateCheckbox.isSelected());
                 if (autoUpdateCheckbox.isSelected()) {
                     if (updateAllButton.isEnabled()) {
                         updateAllLists(chip);
