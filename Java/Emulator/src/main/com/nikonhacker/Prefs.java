@@ -18,6 +18,7 @@ public class Prefs {
     private List<BreakTrigger>[] triggers;
     private EnumSet<OutputOption>[] outputOptions;
     private Map<Integer,Byte>[] ioPortMap;
+    private boolean[] autoUpdateRealOsObjectWindow;
 
     private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
 
@@ -30,8 +31,6 @@ public class Prefs {
     private HashMap<String, WindowPosition> windowSizeMap;
 
     private String codeStructureGraphOrientation;
-
-    private boolean autoUpdateRealOsObjects = true;
 
     private int dividerLocation;
     private int lastDividerLocation;
@@ -224,12 +223,14 @@ public class Prefs {
         this.codeStructureGraphOrientation = codeStructureGraphOrientation;
     }
 
-    public void setAutoUpdateRealOsObjects(boolean autoUpdateRealOsObjects) {
-        this.autoUpdateRealOsObjects = autoUpdateRealOsObjects;
+    public void setAutoUpdateRealOsObjects(int chip, boolean autoUpdateRealOsObjects) {
+        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
+        this.autoUpdateRealOsObjectWindow[chip] = autoUpdateRealOsObjects;
     }
 
-    public boolean isAutoUpdateRealOsObjects() {
-        return autoUpdateRealOsObjects;
+    public boolean isAutoUpdateRealOsObjects(int chip) {
+        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
+        return autoUpdateRealOsObjectWindow[chip];
     }
 
     public int getDividerLocation() {
