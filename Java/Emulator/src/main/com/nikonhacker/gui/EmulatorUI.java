@@ -1840,11 +1840,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     // Serial interfaces
                     // Standard
                     for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                        serialInterfaces[i] = new TxSerialInterface(i, interruptController, 0x1B);
+                        serialInterfaces[i] = new TxSerialInterface(i, interruptController);
                     }
                     // Hi-speed
                     for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                        serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, 0x1B);
+                        serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController);
                     }
 
                     ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);

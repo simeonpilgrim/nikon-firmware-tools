@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.memory.listener.tx;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.clock.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
@@ -7,6 +8,7 @@ import com.nikonhacker.emu.peripherials.interruptController.TxInterruptControlle
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.TxSerialInterface;
 
 /**
  * This is based on the Toshiba hardware specification for TMP19A44FDA/FE/F10XBG
@@ -116,6 +118,7 @@ public class TxIoListener implements IoActivityListener {
 
     // Serial ports
     public static final int NUM_SERIAL_IF = 3;
+    private static final int SERIAL_OFFSET_SHIFT = 6; // 1 << 6 = 0x40 bytes per interface
     private static final int REGISTER_SC0EN    =    0xFF00_4C00; // Enable register
     private static final int REGISTER_SC0BUF   =    0xFF00_4C04; // TX/RX buffer register
     private static final int REGISTER_SC0CR    =    0xFF00_4C08; // Control register
@@ -131,6 +134,7 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_SC0FCNF  =    0xFF00_4C30; // FIFO configuration register
 
     public static final int NUM_HSERIAL_IF = 3;
+    private static final int HSERIAL_OFFSET_SHIFT = 4; // 1 << 4 = 0x10 bytes per interface
     private static final int REGISTER_HSC0BUF   =    0xFF00_1800; // TX/RX buffer register
     private static final int REGISTER_HBR0ADD   =    0xFF00_1804; // Baud rate generator control register 2
     private static final int REGISTER_HSC0MOD1  =    0xFF00_1805; // Mode control register 1
@@ -260,6 +264,72 @@ public class TxIoListener implements IoActivityListener {
                 }
             }
         }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN + 3:
+                    return (byte) txSerialInterface.getEn();
+                case REGISTER_SC0BUF + 3:
+                    return (byte) txSerialInterface.getBuf();
+                case REGISTER_SC0CR + 3:
+                    return (byte) txSerialInterface.getCr();
+                case REGISTER_SC0MOD0 + 3:
+                    return (byte) txSerialInterface.getMod0();
+                case REGISTER_SC0MOD1 + 3:
+                    return (byte) txSerialInterface.getMod1();
+                case REGISTER_SC0MOD2 + 3:
+                    return (byte) txSerialInterface.getMod2();
+                case REGISTER_BR0CR + 3:
+                    return (byte) txSerialInterface.getBrcr();
+                case REGISTER_BR0ADD + 3:
+                    return (byte) txSerialInterface.getBradd();
+                case REGISTER_SC0RFC + 3:
+                    return (byte) txSerialInterface.getRfc();
+                case REGISTER_SC0TFC + 3:
+                    return (byte) txSerialInterface.getTfc();
+                case REGISTER_SC0RST + 3:
+                    return (byte) txSerialInterface.getRst();
+                case REGISTER_SC0TST + 3:
+                    return (byte) txSerialInterface.getTst();
+                case REGISTER_SC0FCNF + 3:
+                    return (byte) txSerialInterface.getFcnf();
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF + 3:
+                    return (byte) txSerialInterface.getBuf();
+                case REGISTER_HBR0ADD:
+                    return (byte) txSerialInterface.getBradd();
+                case REGISTER_HSC0MOD1:
+                    return (byte) txSerialInterface.getMod1();
+                case REGISTER_HSC0MOD2:
+                    return (byte) txSerialInterface.getMod2();
+                case REGISTER_HSC0EN:
+                    return (byte) txSerialInterface.getEn();
+                case REGISTER_HSC0RFC:
+                    return (byte) txSerialInterface.getRfc();
+                case REGISTER_HSC0TFC:
+                    return (byte) txSerialInterface.getTfc();
+                case REGISTER_HSC0RST:
+                    return (byte) txSerialInterface.getRst();
+                case REGISTER_HSC0TST:
+                    return (byte) txSerialInterface.getTst();
+                case REGISTER_HSC0FCNF:
+                    return (byte) txSerialInterface.getFcnf();
+                case REGISTER_HSC0CR:
+                    return (byte) txSerialInterface.getCr();
+                case REGISTER_HSC0MOD0:
+                    return (byte) txSerialInterface.getMod0();
+                case REGISTER_HBR0CR:
+                    return (byte) txSerialInterface.getBrcr();
+            }
+        }
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -359,6 +429,50 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TCCAP0 + 2:
                         return  txInputCaptureTimer.getTcCap(captureChannel);
                 }
+            }
+        }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN + 2:
+                    return txSerialInterface.getEn();
+                case REGISTER_SC0BUF + 2:
+                    return txSerialInterface.getBuf();
+                case REGISTER_SC0CR + 2:
+                    return txSerialInterface.getCr();
+                case REGISTER_SC0MOD0 + 2:
+                    return txSerialInterface.getMod0();
+                case REGISTER_SC0MOD1 + 2:
+                    return txSerialInterface.getMod1();
+                case REGISTER_SC0MOD2 + 2:
+                    return txSerialInterface.getMod2();
+                case REGISTER_BR0CR + 2:
+                    return txSerialInterface.getBrcr();
+                case REGISTER_BR0ADD + 2:
+                    return txSerialInterface.getBradd();
+                case REGISTER_SC0RFC + 2:
+                    return txSerialInterface.getRfc();
+                case REGISTER_SC0TFC + 2:
+                    return txSerialInterface.getTfc();
+                case REGISTER_SC0RST + 2:
+                    return txSerialInterface.getRst();
+                case REGISTER_SC0TST + 2:
+                    return txSerialInterface.getTst();
+                case REGISTER_SC0FCNF + 2:
+                    return txSerialInterface.getFcnf();
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF + 2:
+                    return txSerialInterface.getBuf();
+                default:
+                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 16bits");
             }
         }
         else switch (addr){
@@ -473,6 +587,50 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TCCAP0:
                         return  txInputCaptureTimer.getTcCap(captureChannel);
                 }
+            }
+        }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN:
+                    return txSerialInterface.getEn();
+                case REGISTER_SC0BUF:
+                    return txSerialInterface.getBuf();
+                case REGISTER_SC0CR:
+                    return txSerialInterface.getCr();
+                case REGISTER_SC0MOD0:
+                    return txSerialInterface.getMod0();
+                case REGISTER_SC0MOD1:
+                    return txSerialInterface.getMod1();
+                case REGISTER_SC0MOD2:
+                    return txSerialInterface.getMod2();
+                case REGISTER_BR0CR:
+                    return txSerialInterface.getBrcr();
+                case REGISTER_BR0ADD:
+                    return txSerialInterface.getBradd();
+                case REGISTER_SC0RFC:
+                    return txSerialInterface.getRfc();
+                case REGISTER_SC0TFC:
+                    return txSerialInterface.getTfc();
+                case REGISTER_SC0RST:
+                    return txSerialInterface.getRst();
+                case REGISTER_SC0TST:
+                    return txSerialInterface.getTst();
+                case REGISTER_SC0FCNF:
+                    return txSerialInterface.getFcnf();
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF:
+                    return txSerialInterface.getBuf();
+                default:
+                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 8bits");
             }
         }
         switch (addr) {
@@ -593,6 +751,72 @@ public class TxIoListener implements IoActivityListener {
                 }
             }
         }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN + 3:
+                    txSerialInterface.setEn(value); break;
+                case REGISTER_SC0BUF + 3:
+                    txSerialInterface.setBuf(value); break;
+                case REGISTER_SC0CR + 3:
+                    txSerialInterface.setCr(value); break;
+                case REGISTER_SC0MOD0 + 3:
+                    txSerialInterface.setMod0(value); break;
+                case REGISTER_SC0MOD1 + 3:
+                    txSerialInterface.setMod1(value); break;
+                case REGISTER_SC0MOD2 + 3:
+                    txSerialInterface.setMod2(value); break;
+                case REGISTER_BR0CR + 3:
+                    txSerialInterface.setBrcr(value); break;
+                case REGISTER_BR0ADD + 3:
+                    txSerialInterface.setBradd(value); break;
+                case REGISTER_SC0RFC + 3:
+                    txSerialInterface.setRfc(value); break;
+                case REGISTER_SC0TFC + 3:
+                    txSerialInterface.setTfc(value); break;
+                case REGISTER_SC0RST + 3:
+                    txSerialInterface.setRst(value); break;
+                case REGISTER_SC0TST + 3:
+                    txSerialInterface.setTst(value); break;
+                case REGISTER_SC0FCNF + 3:
+                    txSerialInterface.setFcnf(value); break;
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF + 3:
+                    txSerialInterface.setBuf(value); break;
+                case REGISTER_HBR0ADD:
+                    txSerialInterface.setBradd(value); break;
+                case REGISTER_HSC0MOD1:
+                    txSerialInterface.setMod1(value); break;
+                case REGISTER_HSC0MOD2:
+                    txSerialInterface.setMod2(value); break;
+                case REGISTER_HSC0EN:
+                    txSerialInterface.setEn(value); break;
+                case REGISTER_HSC0RFC:
+                    txSerialInterface.setRfc(value); break;
+                case REGISTER_HSC0TFC:
+                    txSerialInterface.setTfc(value); break;
+                case REGISTER_HSC0RST:
+                    txSerialInterface.setRst(value); break;
+                case REGISTER_HSC0TST:
+                    txSerialInterface.setTst(value); break;
+                case REGISTER_HSC0FCNF:
+                    txSerialInterface.setFcnf(value); break;
+                case REGISTER_HSC0CR:
+                    txSerialInterface.setCr(value); break;
+                case REGISTER_HSC0MOD0:
+                    txSerialInterface.setMod0(value); break;
+                case REGISTER_HBR0CR:
+                    txSerialInterface.setBrcr(value); break;
+            }
+        }
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -686,6 +910,50 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TCCAP0 + 2:
                         throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
                 }
+            }
+        }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN + 2:
+                    txSerialInterface.setEn(value); break;
+                case REGISTER_SC0BUF + 2:
+                    txSerialInterface.setBuf(value); break;
+                case REGISTER_SC0CR + 2:
+                    txSerialInterface.setCr(value); break;
+                case REGISTER_SC0MOD0 + 2:
+                    txSerialInterface.setMod0(value); break;
+                case REGISTER_SC0MOD1 + 2:
+                    txSerialInterface.setMod1(value); break;
+                case REGISTER_SC0MOD2 + 2:
+                    txSerialInterface.setMod2(value); break;
+                case REGISTER_BR0CR + 2:
+                    txSerialInterface.setBrcr(value); break;
+                case REGISTER_BR0ADD + 2:
+                    txSerialInterface.setBradd(value); break;
+                case REGISTER_SC0RFC + 2:
+                    txSerialInterface.setRfc(value); break;
+                case REGISTER_SC0TFC + 2:
+                    txSerialInterface.setTfc(value); break;
+                case REGISTER_SC0RST + 2:
+                    txSerialInterface.setRst(value); break;
+                case REGISTER_SC0TST + 2:
+                    txSerialInterface.setTst(value); break;
+                case REGISTER_SC0FCNF + 2:
+                    txSerialInterface.setFcnf(value); break;
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF + 2:
+                    txSerialInterface.setBuf(value); break;
+                default:
+                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 16bits");
             }
         }
         else switch (addr){
@@ -795,6 +1063,50 @@ public class TxIoListener implements IoActivityListener {
                     case REGISTER_TCCAP0:
                         throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
                 }
+            }
+        }
+        else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
+            // Serial Interface configuration registers
+            int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
+                case REGISTER_SC0EN:
+                    txSerialInterface.setEn(value); break;
+                case REGISTER_SC0BUF:
+                    txSerialInterface.setBuf(value); break;
+                case REGISTER_SC0CR:
+                    txSerialInterface.setCr(value); break;
+                case REGISTER_SC0MOD0:
+                    txSerialInterface.setMod0(value); break;
+                case REGISTER_SC0MOD1:
+                    txSerialInterface.setMod1(value); break;
+                case REGISTER_SC0MOD2:
+                    txSerialInterface.setMod2(value); break;
+                case REGISTER_BR0CR:
+                    txSerialInterface.setBrcr(value); break;
+                case REGISTER_BR0ADD:
+                    txSerialInterface.setBradd(value); break;
+                case REGISTER_SC0RFC:
+                    txSerialInterface.setRfc(value); break;
+                case REGISTER_SC0TFC:
+                    txSerialInterface.setTfc(value); break;
+                case REGISTER_SC0RST:
+                    txSerialInterface.setRst(value); break;
+                case REGISTER_SC0TST:
+                    txSerialInterface.setTst(value); break;
+                case REGISTER_SC0FCNF:
+                    txSerialInterface.setFcnf(value); break;
+            }
+        }
+        else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
+            // Hi-speed Serial Interface configuration registers
+            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
+            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
+                case REGISTER_HSC0BUF:
+                    txSerialInterface.setBuf(value); break;
+                default:
+                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 8bits");
             }
         }
         else switch(addr) {
