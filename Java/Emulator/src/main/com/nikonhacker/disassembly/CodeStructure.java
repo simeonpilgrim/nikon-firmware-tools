@@ -61,6 +61,11 @@ public abstract class CodeStructure {
         return symbol==null?null:symbol.getName();
     }
 
+    public String getLabelName(Integer address) {
+        Symbol symbol = labels.get(address);
+        return symbol==null?null:symbol.getName();
+    }
+
 
     /** Map address -> Start of corresponding function */
     public Map<Integer, Integer> getReturns() {
