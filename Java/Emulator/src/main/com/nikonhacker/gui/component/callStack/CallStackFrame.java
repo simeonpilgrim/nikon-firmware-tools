@@ -9,14 +9,18 @@ import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.VerticalLayout;
+import sun.swing.DefaultLookup;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.Serializable;
 import java.util.LinkedList;
 
 
@@ -191,7 +195,8 @@ public class CallStackFrame extends DocumentFrame {
         if (codeStructure != null && item.getTargetAddress() != null) {
             try {
                 int targetAddress = Format.parseUnsigned(item.getTargetAddress());
-                String label = codeStructure.getFunctionName(targetAddress);
+                // Find back function name, ignoring last bit (16-bit ISA indicator in Tx)
+                String label = codeStructure.getFunctionName(targetAddress &0xFFFFFFFE);
                 if (label != null) {
                     s += " (" + label + ")";
                 }
@@ -202,10 +207,67 @@ public class CallStackFrame extends DocumentFrame {
         return s;
     }
 
-    private class CallStackItemRenderer extends JLabel implements ListCellRenderer {
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            setText(getFormattedElement((CallStackItem) value));
+    /**
+     * Mostly a DefaultListCellRenderer, overriding getListCellRendererComponent to have a custom String formating
+     */
+    private class CallStackItemRenderer extends DefaultListCellRenderer implements ListCellRenderer<Object>, Serializable {
+        public Component getListCellRendererComponent(
+                JList<?> list,
+                Object value,
+                int index,
+                boolean isSelected,
+                boolean cellHasFocus)
+        {
+            setComponentOrientation(list.getComponentOrientation());
+
+            Color bg = null;
+            Color fg = null;
+
+            JList.DropLocation dropLocation = list.getDropLocation();
+            if (dropLocation != null
+                    && !dropLocation.isInsert()
+                    && dropLocation.getIndex() == index) {
+
+                bg = DefaultLookup.getColor(this, ui, "List.dropCellBackground");
+                fg = DefaultLookup.getColor(this, ui, "List.dropCellForeground");
+
+                isSelected = true;
+            }
+
+            if (isSelected) {
+                setBackground(bg == null ? list.getSelectionBackground() : bg);
+                setForeground(fg == null ? list.getSelectionForeground() : fg);
+            }
+            else {
+                setBackground(list.getBackground());
+                setForeground(list.getForeground());
+            }
+
+            if (value instanceof Icon) {
+                setIcon((Icon)value);
+                setText("");
+            }
+            else {
+                setIcon(null);
+                setText((value == null) ? "" : getFormattedElement((CallStackItem) value));
+            }
+
+            setEnabled(list.isEnabled());
+            setFont(list.getFont());
+
+            Border border = null;
+            if (cellHasFocus) {
+                if (isSelected) {
+                    border = DefaultLookup.getBorder(this, ui, "List.focusSelectedCellHighlightBorder");
+                }
+                if (border == null) {
+                    border = DefaultLookup.getBorder(this, ui, "List.focusCellHighlightBorder");
+                }
+            } else {
+                border = new EmptyBorder(1, 1, 1, 1);
+            }
+            setBorder(border);
+
             return this;
         }
     }
