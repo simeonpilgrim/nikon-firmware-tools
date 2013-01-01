@@ -126,12 +126,12 @@
 -s 0xBFC15AB8=Tsk00
 -s 0xBFC16CE4=INTD_body
 -s 0xBFC174B4=INTSBI0_I2C_body
--s 0xBFC17B35=interrupt_handler_INTTBF
+-s 0xBFC17B34=interrupt_handler_INTTBF
 -s 0xBFC17F90=interrupt_handler_INT4
 -s 0xBFC17FA8=interrupt_handler_INT5
 -s 0xBFC17FC0=interrupt_handler_INT7
 -s 0xBFC17FD8=interrupt_handler_INTD
--s 0xBFC17FF1=interrupt_handler_INTE
+-s 0xBFC17FF0=interrupt_handler_INTE
 -s 0xBFC18008=interrupt_handler_INTF
 -s 0xBFC18020=interrupt_handler_INT18
 -s 0xBFC18038=interrupt_handler_INT19
