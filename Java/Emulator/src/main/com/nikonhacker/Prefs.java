@@ -49,8 +49,8 @@ public class Prefs {
     }
 
     public static Prefs load() {
+        File preferenceFile = getPreferenceFile();
         try {
-            File preferenceFile = getPreferenceFile();
             if (preferenceFile.exists()) {
                 FileInputStream inputStream = new FileInputStream(preferenceFile);
                 Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
@@ -58,6 +58,8 @@ public class Prefs {
                 return prefs;
             }
         } catch (Exception e) {
+            System.out.println("Could not load preferences file. Attempting a rename to " + preferenceFile.getAbsolutePath() + ".corrupt and creating new file.");
+            preferenceFile.renameTo(new File(preferenceFile.getAbsolutePath() + ".corrupt"));
             e.printStackTrace();
         }
         return new Prefs();
