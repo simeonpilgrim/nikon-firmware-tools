@@ -1,7 +1,9 @@
 package com.nikonhacker.gui.component.callStack;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
@@ -46,6 +48,7 @@ public class CallStackFrame extends DocumentFrame {
         callStackList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         callStackList.setLayoutOrientation(JList.VERTICAL);
         callStackList.setVisibleRowCount(10);
+        callStackList.setCellRenderer(new CallStackItemRenderer(codeStructure));
 
         updateList();
 
@@ -103,7 +106,7 @@ public class CallStackFrame extends DocumentFrame {
         synchronized (callStack) {
             DefaultListModel model = new DefaultListModel();
             // Pseudo stack element
-            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc, "");
+            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc, null, null);
             model.addElement(currentPositionItem);
             // Real stack
             for (CallStackItem callStackItem : callStack) {
@@ -158,5 +161,31 @@ public class CallStackFrame extends DocumentFrame {
         refreshTimer = null;
         emulator.setCallStack(null);
         super.dispose();
+    }
+
+    private class CallStackItemRenderer extends JLabel implements ListCellRenderer {
+        private CodeStructure codeStructure;
+        public CallStackItemRenderer(CodeStructure codeStructure) {
+            this.codeStructure = codeStructure;
+        }
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            CallStackItem item = (CallStackItem) value;
+            String s = item.toString().trim();
+            if (codeStructure != null && item.getTargetAddress() != null) {
+                try {
+                    int targetAddress = Format.parseUnsigned(item.getTargetAddress());
+                    String label = codeStructure.getFunctionName(targetAddress);
+                    if (label != null) {
+                        s += " (" + label + ")";
+                    }
+                } catch (ParsingException e) {
+                    // ignore
+                }
+            }
+            setText(s);
+            return this;
+        }
     }
 }
