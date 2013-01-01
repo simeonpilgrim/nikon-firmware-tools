@@ -12,6 +12,7 @@ import com.nikonhacker.gui.component.VerticalLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -33,10 +34,13 @@ public class CallStackFrame extends DocumentFrame {
     private Timer refreshTimer;
     private final JList callStackList;
 
+    private CodeStructure codeStructure;
+
     public CallStackFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, CPUState cpuState, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.cpuState = cpuState;
+        this.codeStructure = codeStructure;
 
         setLayout(new BorderLayout());
 
@@ -48,7 +52,7 @@ public class CallStackFrame extends DocumentFrame {
         callStackList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         callStackList.setLayoutOrientation(JList.VERTICAL);
         callStackList.setVisibleRowCount(10);
-        callStackList.setCellRenderer(new CallStackItemRenderer(codeStructure));
+        callStackList.setCellRenderer(new CallStackItemRenderer());
 
         updateList();
 
@@ -89,7 +93,16 @@ public class CallStackFrame extends DocumentFrame {
         });
 
         buttonPanel.add(showStackButton);
-        
+
+        JButton copyToClipboardButton = new JButton("Copy to clipboard");
+        copyToClipboardButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                copyToClipboard();
+            }
+        });
+
+        buttonPanel.add(copyToClipboardButton);
+
         add(buttonPanel, BorderLayout.EAST);
 
         pack();
@@ -100,6 +113,16 @@ public class CallStackFrame extends DocumentFrame {
                 updateList();
             }
         });
+    }
+
+    private void copyToClipboard() {
+        String s = "0x" + Format.asHex(cpuState.pc, 8) + System.lineSeparator();
+        for (CallStackItem callStackItem : callStack) {
+            s += getFormattedElement(callStackItem) + System.lineSeparator();
+        }
+
+        StringSelection selection = new StringSelection(s.trim());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }
 
     private void updateList() {
@@ -163,28 +186,26 @@ public class CallStackFrame extends DocumentFrame {
         super.dispose();
     }
 
-    private class CallStackItemRenderer extends JLabel implements ListCellRenderer {
-        private CodeStructure codeStructure;
-        public CallStackItemRenderer(CodeStructure codeStructure) {
-            this.codeStructure = codeStructure;
+    private String getFormattedElement(CallStackItem item) {
+        String s = item.toString().trim();
+        if (codeStructure != null && item.getTargetAddress() != null) {
+            try {
+                int targetAddress = Format.parseUnsigned(item.getTargetAddress());
+                String label = codeStructure.getFunctionName(targetAddress);
+                if (label != null) {
+                    s += " (" + label + ")";
+                }
+            } catch (ParsingException e) {
+                // ignore
+            }
         }
+        return s;
+    }
 
+    private class CallStackItemRenderer extends JLabel implements ListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            CallStackItem item = (CallStackItem) value;
-            String s = item.toString().trim();
-            if (codeStructure != null && item.getTargetAddress() != null) {
-                try {
-                    int targetAddress = Format.parseUnsigned(item.getTargetAddress());
-                    String label = codeStructure.getFunctionName(targetAddress);
-                    if (label != null) {
-                        s += " (" + label + ")";
-                    }
-                } catch (ParsingException e) {
-                    // ignore
-                }
-            }
-            setText(s);
+            setText(getFormattedElement((CallStackItem) value));
             return this;
         }
     }
