@@ -26,7 +26,7 @@ public class MemoryMapComponent extends JComponent {
 
     private int activityMap[];
 
-    private Timer _timer; 
+    private Timer refreshTimer;
 
     private int selectedX = NO_SELECTION;
     private int selectedY = NO_SELECTION;
@@ -60,12 +60,12 @@ public class MemoryMapComponent extends JComponent {
         }
         
 
-        _timer = new javax.swing.Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new javax.swing.Timer(UPDATE_INTERVAL_MS, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 repaint();
             }
         });
-        _timer.start();
+        refreshTimer.start();
 
         addMouseMotionListener(new MouseMotionListener() {
             public void mouseDragged(MouseEvent e) {/* noop */ }
