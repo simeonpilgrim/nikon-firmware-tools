@@ -1,8 +1,10 @@
 package com.nikonhacker.gui.component.callStack;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.disassembly.Instruction;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
@@ -107,6 +109,19 @@ public class CallStackFrame extends DocumentFrame {
 
         buttonPanel.add(copyToClipboardButton);
 
+        if (chip == Constants.CHIP_TX) {
+            // This distinction is not useful for FR which has separate CALL and JMP functions
+            final JCheckBox hideJumps = new JCheckBox("Hide jumps");
+            hideJumps.setSelected(ui.getPrefs().isCallStackHideJumps(chip));
+            hideJumps.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    onHideJumpsChange(hideJumps.isSelected());
+                }
+            });
+            buttonPanel.add(hideJumps);
+        }
+
         add(buttonPanel, BorderLayout.EAST);
 
         pack();
@@ -119,10 +134,18 @@ public class CallStackFrame extends DocumentFrame {
         });
     }
 
+    private void onHideJumpsChange(boolean selected) {
+        ui.getPrefs().setCallStackHideJumps(chip, selected);
+        updateList();
+    }
+
     private void copyToClipboard() {
         String s = "0x" + Format.asHex(cpuState.pc, 8) + System.lineSeparator();
+        boolean hideJumps = ui.getPrefs().isCallStackHideJumps(chip);
         for (CallStackItem callStackItem : callStack) {
-            s += getFormattedElement(callStackItem) + System.lineSeparator();
+            if (!(callStackItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) || !hideJumps) {
+                s += getFormattedElement(callStackItem) + System.lineSeparator();
+            }
         }
 
         StringSelection selection = new StringSelection(s.trim());
@@ -133,11 +156,14 @@ public class CallStackFrame extends DocumentFrame {
         synchronized (callStack) {
             DefaultListModel model = new DefaultListModel();
             // Pseudo stack element
-            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc, null, null);
+            CallStackItem currentPositionItem = new CallStackItem(cpuState.pc, cpuState.pc, null, null, null);
             model.addElement(currentPositionItem);
             // Real stack
+            boolean hideJumps = ui.getPrefs().isCallStackHideJumps(chip);
             for (CallStackItem callStackItem : callStack) {
-                model.addElement(callStackItem);
+                if (!(callStackItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) || !hideJumps) {
+                    model.addElement(callStackItem);
+                }
             }
             callStackList.setModel(model);
         }

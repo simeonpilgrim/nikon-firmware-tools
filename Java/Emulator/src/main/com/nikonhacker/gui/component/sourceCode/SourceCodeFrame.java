@@ -53,7 +53,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
+    public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         this.cpuState = cpuState;
@@ -74,7 +74,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         JButton goToPcButton = new JButton("Go to PC");
         topToolbar.add(goToPcButton);
         followPcCheckBox = new JCheckBox("Follow PC");
-        followPcCheckBox.setSelected(ui.getPrefs().isFollowPc());
+        followPcCheckBox.setSelected(ui.getPrefs().isSourceCodeFollowsPc(chip));
         topToolbar.add(followPcCheckBox);
 
         // Add listeners
@@ -105,7 +105,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addKeyListener(this);
         followPcCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.getPrefs().setFollowPc(followPcCheckBox.isSelected());
+                ui.getPrefs().setSourceCodeFollowsPc(chip, followPcCheckBox.isSelected());
                 if (followPcCheckBox.isSelected()) {
                     reachAndHighlightPc();
                 }
