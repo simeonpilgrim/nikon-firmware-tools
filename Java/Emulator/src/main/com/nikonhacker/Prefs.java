@@ -14,27 +14,25 @@ import java.util.*;
 public class Prefs {
     private static final String KEY_WINDOW_MAIN = "MAIN";
 
-    private int sleepTick = 2;
+    // Common
+    private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
+    private boolean closeAllWindowsOnStop = false;
+    private HashMap<String, WindowPosition> windowPositionMap;
+    private HashMap<String, WindowPosition> windowSizeMap;
+    private int dividerLocation;
+    private int lastDividerLocation;
+    private boolean dividerKeepHidden;
+
+    // Per chip
     private List<BreakTrigger>[] triggers;
     private EnumSet<OutputOption>[] outputOptions;
     private Map<Integer,Byte>[] ioPortMap;
     private boolean[] autoUpdateRealOsObjectWindow;
-
-    private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
-
-    private boolean closeAllWindowsOnStop = false;
-
-    private boolean writeDisassemblyToFile = true;
-    private boolean followPc = true;
-
-    private HashMap<String, WindowPosition> windowPositionMap;
-    private HashMap<String, WindowPosition> windowSizeMap;
-
-    private String codeStructureGraphOrientation;
-
-    private int dividerLocation;
-    private int lastDividerLocation;
-    private boolean dividerKeepHidden;
+    private boolean[] callStackHideJumps;
+    private int sleepTick[];
+    private boolean writeDisassemblyToFile[];
+    private boolean sourceCodeFollowsPc[];
+    private String codeStructureGraphOrientation[];
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -81,28 +79,34 @@ public class Prefs {
         this.closeAllWindowsOnStop = closeAllWindowsOnStop;
     }
 
-    public boolean isWriteDisassemblyToFile() {
-        return writeDisassemblyToFile;
+    public boolean isWriteDisassemblyToFile(int chip) {
+        if (writeDisassemblyToFile == null  || writeDisassemblyToFile.length != 2) writeDisassemblyToFile = new boolean[2];
+        return writeDisassemblyToFile[chip];
     }
 
-    public void setWriteDisassemblyToFile(boolean writeDisassemblyToFile) {
-        this.writeDisassemblyToFile = writeDisassemblyToFile;
+    public void setWriteDisassemblyToFile(int chip, boolean value) {
+        if (writeDisassemblyToFile == null || writeDisassemblyToFile.length != 2) writeDisassemblyToFile = new boolean[2];
+        this.writeDisassemblyToFile[chip] = value;
     }
 
-    public boolean isFollowPc() {
-        return followPc;
+    public boolean isSourceCodeFollowsPc(int chip) {
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        return sourceCodeFollowsPc[chip];
     }
 
-    public void setFollowPc(boolean followPc) {
-        this.followPc = followPc;
+    public void setSourceCodeFollowsPc(int chip, boolean value) {
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        this.sourceCodeFollowsPc[chip] = value;
     }
 
-    public int getSleepTick() {
-        return sleepTick;
+    public int getSleepTick(int chip) {
+        if (sleepTick == null || sleepTick.length != 2) sleepTick = new int[2];
+        return sleepTick[chip];
     }
 
-    public void setSleepTick(int sleepTick) {
-        this.sleepTick = sleepTick;
+    public void setSleepTick(int chip, int value) {
+        if (sleepTick == null || sleepTick.length != 2) sleepTick = new int[2];
+        this.sleepTick[chip] = value;
     }
 
     public Set<OutputOption> getOutputOptions(int chip) {
@@ -217,12 +221,14 @@ public class Prefs {
     }
 
 
-    public String getCodeStructureGraphOrientation() {
-        return codeStructureGraphOrientation;
+    public String getCodeStructureGraphOrientation(int chip) {
+        if (codeStructureGraphOrientation == null || codeStructureGraphOrientation.length != 2) codeStructureGraphOrientation = new String[2];
+        return codeStructureGraphOrientation[chip];
     }
 
-    public void setCodeStructureGraphOrientation(String codeStructureGraphOrientation) {
-        this.codeStructureGraphOrientation = codeStructureGraphOrientation;
+    public void setCodeStructureGraphOrientation(int chip, String value) {
+        if (codeStructureGraphOrientation == null || codeStructureGraphOrientation.length != 2) codeStructureGraphOrientation = new String[2];
+        this.codeStructureGraphOrientation[chip] = value;
     }
 
     public void setAutoUpdateRealOsObjects(int chip, boolean autoUpdateRealOsObjects) {
@@ -233,6 +239,16 @@ public class Prefs {
     public boolean isAutoUpdateRealOsObjects(int chip) {
         if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
         return autoUpdateRealOsObjectWindow[chip];
+    }
+
+    public boolean isCallStackHideJumps(int chip) {
+        if (callStackHideJumps == null) callStackHideJumps = new boolean[2];
+        return callStackHideJumps[chip];
+    }
+
+    public void setCallStackHideJumps(int chip, boolean value) {
+        if (callStackHideJumps == null) callStackHideJumps = new boolean[2];
+        this.callStackHideJumps[chip] = value;
     }
 
     public int getDividerLocation() {

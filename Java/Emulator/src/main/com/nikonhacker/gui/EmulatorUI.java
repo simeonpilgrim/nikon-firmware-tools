@@ -625,7 +625,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private JSlider makeSlider(int chip) {
-        intervalSlider[chip] = new JSlider(JSlider.HORIZONTAL, 0, 5, prefs.getSleepTick());
+        intervalSlider[chip] = new JSlider(JSlider.HORIZONTAL, 0, 5, prefs.getSleepTick(chip));
 
         intervalSlider[chip].addChangeListener(this);
         intervalSlider[chip].putClientProperty("JComponent.sizeVariant", "large");
@@ -1323,7 +1323,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
-    private void openAnalyseDialog(int chip) {
+    private void openAnalyseDialog(final int chip) {
         JTextField optionsField = new JTextField();
         JTextField destinationField = new JTextField();
 
@@ -1354,12 +1354,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             public void actionPerformed(ActionEvent e) {
                 boolean writeToFile = writeOutputCheckbox.isSelected();
                 destinationFileSelectionPanel.setEnabled(writeToFile);
-                prefs.setWriteDisassemblyToFile(writeToFile);
+                prefs.setWriteDisassemblyToFile(chip, writeToFile);
             }
         });
 
-        writeOutputCheckbox.setSelected(prefs.isWriteDisassemblyToFile());
-        destinationFileSelectionPanel.setEnabled(prefs.isWriteDisassemblyToFile());
+        writeOutputCheckbox.setSelected(prefs.isWriteDisassemblyToFile(chip));
+        destinationFileSelectionPanel.setEnabled(prefs.isWriteDisassemblyToFile(chip));
 
         final JComponent[] inputs = new JComponent[]{
                 //new FileSelectionPanel("Source file", sourceFile, false, dependencies),
@@ -1741,7 +1741,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         for (int chip = 0; chip < 2; chip++) {
             if (source == intervalSlider[chip]) {
                 setEmulatorSleepCode(chip, source.getValue());
-                prefs.setSleepTick(/*todo chip, */source.getValue());
+                prefs.setSleepTick( chip, source.getValue());
             }
         }
     }
@@ -1866,7 +1866,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip].setMemory(memory);
             emulator[chip].setInterruptController(interruptController);
 
-            setEmulatorSleepCode(chip, prefs.getSleepTick());
+            setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
             memory.loadFile(imageFile[chip], cpuState.getResetAddress());
             isImageLoaded[chip] = true;

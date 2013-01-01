@@ -1,17 +1,20 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.Instruction;
 
 public class CallStackItem {
     private int address;
     private int sp;
-    private String instruction;
+    private String statementString;
     private String targetAddress;
+    private Instruction instruction;
 
-    public CallStackItem(int address, int sp, String instruction, String targetAddress) {
+    public CallStackItem(int address, int sp, Instruction instruction, String statementString, String targetAddress) {
         this.address = address;
         this.sp = sp;
         this.instruction = instruction;
+        this.statementString = statementString;
         this.targetAddress = targetAddress;
     }
 
@@ -19,16 +22,12 @@ public class CallStackItem {
         return address;
     }
 
-    public void setAddress(int address) {
-        this.address = address;
-    }
-
     public int getSp() {
         return sp;
     }
 
-    public void setSp(int sp) {
-        this.sp = sp;
+    public Instruction getInstruction() {
+        return instruction;
     }
 
     public String getTargetAddress() {
@@ -37,7 +36,7 @@ public class CallStackItem {
 
     @Override
     public String toString() {
-        return "0x" + Format.asHex(address,8) + " " + (instruction==null?"":instruction);
+        return "0x" + Format.asHex(address,8) + " " + (statementString ==null?"": statementString);
     }
     
 }

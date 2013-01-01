@@ -51,7 +51,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
+    public CodeStructureFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -70,7 +70,7 @@ public class CodeStructureFrame extends DocumentFrame
         orientationCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Orientation selOrientation = (Orientation) orientationCombo.getSelectedItem();
-                ui.getPrefs().setCodeStructureGraphOrientation(selOrientation.name());
+                ui.getPrefs().setCodeStructureGraphOrientation(chip, selOrientation.name());
                 graph.setOrientation(selOrientation.getSwingValue());
             }
         });
@@ -189,7 +189,7 @@ public class CodeStructureFrame extends DocumentFrame
     private Orientation getCurrentOrientation() {
         Orientation currentOrientation;
         try {
-            currentOrientation = Orientation.valueOf(ui.getPrefs().getCodeStructureGraphOrientation());
+            currentOrientation = Orientation.valueOf(ui.getPrefs().getCodeStructureGraphOrientation(chip));
         } catch (Exception e) {
             currentOrientation = Orientation.HORIZONTAL;
         }

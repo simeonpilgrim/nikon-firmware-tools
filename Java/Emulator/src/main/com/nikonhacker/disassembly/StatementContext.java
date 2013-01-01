@@ -88,7 +88,7 @@ public class StatementContext {
                     }
                     String target = statement.getCommentString();
                     if (StringUtils.isBlank(target)) target = statement.getOperandString();
-                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.toString(outputOptions), target));
+                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.getInstruction(), statement.toString(outputOptions), target));
                 }
             }
         }
