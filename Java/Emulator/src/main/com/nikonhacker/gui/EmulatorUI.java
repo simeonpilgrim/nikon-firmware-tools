@@ -1073,7 +1073,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             playEmulator(chip, true, false, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_STOP)) != Constants.CHIP_NONE) {
-            stopEmulator(chip);
+            if (isEmulatorPlaying(chip)) {
+                pauseEmulator(chip);
+            }
+            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the emulator and lose the current state ?", "Reset ?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+                stopEmulator(chip);
+            }
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_SETUP_BREAKPOINTS)) != Constants.CHIP_NONE) {
             toggleBreakTriggerList(chip);
@@ -1874,7 +1879,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             cpuState.reset();
 
             if (prefs.isCloseAllWindowsOnStop()) {
-                closeAllFrames(chip);
+                closeAllFrames(chip, false);
+            }
+            else {
+                closeAllFrames(chip, true);
             }
 
             updateStates();
@@ -1885,73 +1893,89 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void closeAllFrames() {
-        closeAllFrames(Constants.CHIP_FR);
-        closeAllFrames(Constants.CHIP_TX);
+        closeAllFrames(Constants.CHIP_FR, false);
+        closeAllFrames(Constants.CHIP_TX, false);
     }
 
-    private void closeAllFrames(int chip) {
+    private void closeAllFrames(int chip, boolean mustReOpen) {
         if (chip == Constants.CHIP_FR) {
             if (component4006Frame != null) {
                 component4006Frame.dispose();
                 component4006Frame = null;
+                if (mustReOpen) toggleComponent4006();
             }
             if (screenEmulatorFrame != null) {
                 screenEmulatorFrame.dispose();
                 screenEmulatorFrame = null;
+                if (mustReOpen) toggleScreenEmulator();
             }
         }
 
         if (cpuStateEditorFrame[chip] != null) {
             cpuStateEditorFrame[chip].dispose();
             cpuStateEditorFrame[chip] = null;
+            if (mustReOpen) toggleCPUState(chip);
         }
         if (disassemblyLogFrame[chip] != null) {
             disassemblyLogFrame[chip].dispose();
             disassemblyLogFrame[chip] = null;
+            if (mustReOpen) toggleDisassemblyLog(chip);
         }
+        // TODO why close Break Trigger ?
         if (breakTriggerListFrame[chip] != null) {
             breakTriggerListFrame[chip].dispose();
             breakTriggerListFrame[chip] = null;
+            if (mustReOpen) toggleBreakTriggerList(chip);
         }
         if (memoryActivityViewerFrame[chip] != null) {
             memoryActivityViewerFrame[chip].dispose();
             memoryActivityViewerFrame[chip] = null;
+            if (mustReOpen) toggleMemoryActivityViewer(chip);
         }
         if (memoryHexEditorFrame[chip] != null) {
             memoryHexEditorFrame[chip].dispose();
             memoryHexEditorFrame[chip] = null;
+            if (mustReOpen) toggleMemoryHexEditor(chip);
         }
         if (customMemoryRangeLoggerFrame[chip] != null) {
             customMemoryRangeLoggerFrame[chip].dispose();
             customMemoryRangeLoggerFrame[chip] = null;
+            if (mustReOpen) toggleCustomMemoryRangeLoggerComponentFrame(chip);
         }
         if (codeStructureFrame[chip] != null) {
             codeStructureFrame[chip].dispose();
             codeStructureFrame[chip] = null;
+            if (mustReOpen) toggleCustomMemoryRangeLoggerComponentFrame(chip);
         }
         if (sourceCodeFrame[chip] != null) {
             sourceCodeFrame[chip].dispose();
             sourceCodeFrame[chip] = null;
+            if (mustReOpen) toggleSourceCodeWindow(chip);
         }
         if (callStackFrame[chip] != null) {
             callStackFrame[chip].dispose();
             callStackFrame[chip] = null;
+            if (mustReOpen) toggleCallStack(chip);
         }
         if (programmableTimersFrame[chip] != null) {
             programmableTimersFrame[chip].dispose();
             programmableTimersFrame[chip] = null;
+            if (mustReOpen) toggleProgrammableTimersWindow(chip);
         }
         if (ioPortsFrame[chip] != null) {
             ioPortsFrame[chip].dispose();
             ioPortsFrame[chip] = null;
+            if (mustReOpen) toggleIoPortsWindow(chip);
         }
         if (interruptControllerFrame[chip] != null) {
             interruptControllerFrame[chip].dispose();
             interruptControllerFrame[chip] = null;
+            if (mustReOpen) toggleInterruptController(chip);
         }
         if (serialInterfaceFrame[chip] != null) {
             serialInterfaceFrame[chip].dispose();
             serialInterfaceFrame[chip] = null;
+            if (mustReOpen) toggleSerialInterfaces(chip);
         }
     }
 
