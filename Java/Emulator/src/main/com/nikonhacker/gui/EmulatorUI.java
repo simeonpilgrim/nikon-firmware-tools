@@ -1874,7 +1874,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             cpuState.reset();
 
             if (prefs.isCloseAllWindowsOnStop()) {
-                closeAllFrames();
+                closeAllFrames(chip);
             }
 
             updateStates();
@@ -1885,68 +1885,73 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void closeAllFrames() {
-        if (component4006Frame != null) {
-            component4006Frame.dispose();
-            component4006Frame = null;
-        }
-        if (screenEmulatorFrame != null) {
-            screenEmulatorFrame.dispose();
-            screenEmulatorFrame = null;
-        }
-        for (int chip = 0; chip < 2; chip++) {
-            if (cpuStateEditorFrame[chip] != null) {
-                cpuStateEditorFrame[chip].dispose();
-                cpuStateEditorFrame[chip] = null;
-            }
-            if (disassemblyLogFrame[chip] != null) {
-                disassemblyLogFrame[chip].dispose();
-                disassemblyLogFrame[chip] = null;
-            }
-            if (breakTriggerListFrame[chip] != null) {
-                breakTriggerListFrame[chip].dispose();
-                breakTriggerListFrame[chip] = null;
-            }
-            if (memoryActivityViewerFrame[chip] != null) {
-                memoryActivityViewerFrame[chip].dispose();
-                memoryActivityViewerFrame[chip] = null;
-            }
-            if (memoryHexEditorFrame[chip] != null) {
-                memoryHexEditorFrame[chip].dispose();
-                memoryHexEditorFrame[chip] = null;
-            }
-            if (customMemoryRangeLoggerFrame[chip] != null) {
-                customMemoryRangeLoggerFrame[chip].dispose();
-                customMemoryRangeLoggerFrame[chip] = null;
-            }
-            if (codeStructureFrame[chip] != null) {
-                codeStructureFrame[chip].dispose();
-                codeStructureFrame[chip] = null;
-            }
-            if (sourceCodeFrame[chip] != null) {
-                sourceCodeFrame[chip].dispose();
-                sourceCodeFrame[chip] = null;
-            }
-            if (callStackFrame[chip] != null) {
-                callStackFrame[chip].dispose();
-                callStackFrame[chip] = null;
-            }
-            if (programmableTimersFrame[chip] != null) {
-                programmableTimersFrame[chip].dispose();
-                programmableTimersFrame[chip] = null;
-            }
-            if (ioPortsFrame[chip] != null) {
-                ioPortsFrame[chip].dispose();
-                ioPortsFrame[chip] = null;
-            }
-            if (interruptControllerFrame[chip] != null) {
-                interruptControllerFrame[chip].dispose();
-                interruptControllerFrame[chip] = null;
-            }
-            if (serialInterfaceFrame[chip] != null) {
+        closeAllFrames(Constants.CHIP_FR);
+        closeAllFrames(Constants.CHIP_TX);
+    }
 
-                serialInterfaceFrame[chip].dispose();
-                serialInterfaceFrame[chip] = null;
+    private void closeAllFrames(int chip) {
+        if (chip == Constants.CHIP_FR) {
+            if (component4006Frame != null) {
+                component4006Frame.dispose();
+                component4006Frame = null;
             }
+            if (screenEmulatorFrame != null) {
+                screenEmulatorFrame.dispose();
+                screenEmulatorFrame = null;
+            }
+        }
+
+        if (cpuStateEditorFrame[chip] != null) {
+            cpuStateEditorFrame[chip].dispose();
+            cpuStateEditorFrame[chip] = null;
+        }
+        if (disassemblyLogFrame[chip] != null) {
+            disassemblyLogFrame[chip].dispose();
+            disassemblyLogFrame[chip] = null;
+        }
+        if (breakTriggerListFrame[chip] != null) {
+            breakTriggerListFrame[chip].dispose();
+            breakTriggerListFrame[chip] = null;
+        }
+        if (memoryActivityViewerFrame[chip] != null) {
+            memoryActivityViewerFrame[chip].dispose();
+            memoryActivityViewerFrame[chip] = null;
+        }
+        if (memoryHexEditorFrame[chip] != null) {
+            memoryHexEditorFrame[chip].dispose();
+            memoryHexEditorFrame[chip] = null;
+        }
+        if (customMemoryRangeLoggerFrame[chip] != null) {
+            customMemoryRangeLoggerFrame[chip].dispose();
+            customMemoryRangeLoggerFrame[chip] = null;
+        }
+        if (codeStructureFrame[chip] != null) {
+            codeStructureFrame[chip].dispose();
+            codeStructureFrame[chip] = null;
+        }
+        if (sourceCodeFrame[chip] != null) {
+            sourceCodeFrame[chip].dispose();
+            sourceCodeFrame[chip] = null;
+        }
+        if (callStackFrame[chip] != null) {
+            callStackFrame[chip].dispose();
+            callStackFrame[chip] = null;
+        }
+        if (programmableTimersFrame[chip] != null) {
+            programmableTimersFrame[chip].dispose();
+            programmableTimersFrame[chip] = null;
+        }
+        if (ioPortsFrame[chip] != null) {
+            ioPortsFrame[chip].dispose();
+            ioPortsFrame[chip] = null;
+        }
+        if (interruptControllerFrame[chip] != null) {
+            interruptControllerFrame[chip].dispose();
+            interruptControllerFrame[chip] = null;
+        }
+        if (serialInterfaceFrame[chip] != null) {
+            serialInterfaceFrame[chip].dispose();
+            serialInterfaceFrame[chip] = null;
         }
     }
 
