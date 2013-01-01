@@ -2,6 +2,7 @@ package com.nikonhacker.disassembly;
 
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.memory.Memory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Deque;
 import java.util.Set;
@@ -85,7 +86,9 @@ public class StatementContext {
                     } catch (DisassemblyException e) {
                         e.printStackTrace();
                     }
-                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.toString(outputOptions)));
+                    String target = statement.getCommentString();
+                    if (StringUtils.isBlank(target)) target = statement.getOperandString();
+                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.toString(outputOptions), target));
                 }
             }
         }

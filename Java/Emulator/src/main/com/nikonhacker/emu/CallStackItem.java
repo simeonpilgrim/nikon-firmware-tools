@@ -6,11 +6,13 @@ public class CallStackItem {
     private int address;
     private int sp;
     private String instruction;
+    private String targetAddress;
 
-    public CallStackItem(int address, int sp, String instruction) {
+    public CallStackItem(int address, int sp, String instruction, String targetAddress) {
         this.address = address;
         this.sp = sp;
         this.instruction = instruction;
+        this.targetAddress = targetAddress;
     }
 
     public int getAddress() {
@@ -29,6 +31,9 @@ public class CallStackItem {
         this.sp = sp;
     }
 
+    public String getTargetAddress() {
+        return targetAddress;
+    }
 
     @Override
     public String toString() {
