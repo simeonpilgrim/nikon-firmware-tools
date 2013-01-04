@@ -136,18 +136,18 @@ public class TxIoListener implements IoActivityListener {
     public static final int NUM_HSERIAL_IF = 3;
     private static final int HSERIAL_OFFSET_SHIFT = 4; // 1 << 4 = 0x10 bytes per interface
     private static final int REGISTER_HSC0BUF   =    0xFF00_1800; // TX/RX buffer register
-    private static final int REGISTER_HBR0ADD   =    0xFF00_1804; // Baud rate generator control register 2
-    private static final int REGISTER_HSC0MOD1  =    0xFF00_1805; // Mode control register 1
-    private static final int REGISTER_HSC0MOD2  =    0xFF00_1806; // Mode control register 2
-    private static final int REGISTER_HSC0EN    =    0xFF00_1807; // Enable register
-    private static final int REGISTER_HSC0RFC   =    0xFF00_1808; // Receive FIFO control register
-    private static final int REGISTER_HSC0TFC   =    0xFF00_1809; // Transmit FIFO control register
-    private static final int REGISTER_HSC0RST   =    0xFF00_180A; // Receive FIFO status register
-    private static final int REGISTER_HSC0TST   =    0xFF00_180B; // Transmit FIFO status register
-    private static final int REGISTER_HSC0FCNF  =    0xFF00_180C; // FIFO configuration register
-    private static final int REGISTER_HSC0CR    =    0xFF00_180D; // Control register
-    private static final int REGISTER_HSC0MOD0  =    0xFF00_180E; // Mode control register 0
-    private static final int REGISTER_HBR0CR    =    0xFF00_180F; // Baud rate generator control register
+    private static final int REGISTER_HSC0EN    =    0xFF00_1804; // Enable register
+    private static final int REGISTER_HSC0MOD2  =    0xFF00_1805; // Mode control register 2
+    private static final int REGISTER_HSC0MOD1  =    0xFF00_1806; // Mode control register 1
+    private static final int REGISTER_HBR0ADD   =    0xFF00_1807; // Baud rate generator control register 2
+    private static final int REGISTER_HSC0TST   =    0xFF00_1808; // Transmit FIFO status register
+    private static final int REGISTER_HSC0RST   =    0xFF00_1809; // Receive FIFO status register
+    private static final int REGISTER_HSC0TFC   =    0xFF00_180A; // Transmit FIFO control register
+    private static final int REGISTER_HSC0RFC   =    0xFF00_180B; // Receive FIFO control register
+    private static final int REGISTER_HSC0CR    =    0xFF00_180C; // Control register
+    private static final int REGISTER_HSC0MOD0  =    0xFF00_180D; // Mode control register 0
+    private static final int REGISTER_HBR0CR    =    0xFF00_180E; // Baud rate generator control register
+    private static final int REGISTER_HSC0FCNF  =    0xFF00_180F; // FIFO configuration register
 
 
     private final Platform platform;
