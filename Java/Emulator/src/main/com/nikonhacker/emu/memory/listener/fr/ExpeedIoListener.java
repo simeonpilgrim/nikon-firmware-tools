@@ -2,9 +2,9 @@ package com.nikonhacker.emu.memory.listener.fr;
 
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
-import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
-import com.nikonhacker.emu.peripherials.programmableTimer.FrReloadTimer;
-import com.nikonhacker.emu.peripherials.serialInterface.FrSerialInterface;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
+import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
 public class ExpeedIoListener implements IoActivityListener {
 

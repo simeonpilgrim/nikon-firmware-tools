@@ -8,7 +8,7 @@ import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 

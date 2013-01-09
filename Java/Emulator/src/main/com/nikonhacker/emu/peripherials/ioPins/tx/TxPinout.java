@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.peripherials.ioPins;
+package com.nikonhacker.emu.peripherials.ioPins.tx;
 
 @SuppressWarnings("UnusedDeclaration")
 public interface TxPinout {

@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 

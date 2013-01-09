@@ -1,4 +1,6 @@
-package com.nikonhacker.emu.peripherials.ioPins;
+package com.nikonhacker.emu.peripherials.ioPins.tx;
+
+import com.nikonhacker.emu.peripherials.ioPins.IoPins;
 
 @SuppressWarnings("UnusedDeclaration")
 public class TxIoPins extends IoPins {

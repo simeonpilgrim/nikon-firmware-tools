@@ -1,9 +1,10 @@
-package com.nikonhacker.emu.peripherials.programmableTimer;
+package com.nikonhacker.emu.peripherials.programmableTimer.fr;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.clock.FrClockGenerator;
-import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
+import com.nikonhacker.emu.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
+import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
