@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
-public class NullSerialDevice implements SerialDevice {
+public class ByteEaterSerialInterfaceListener implements SerialInterfaceListener {
     public void onValueReady(SerialInterface serialInterface) {
         // useless read to empty SerialInterface's output
         serialInterface.read();
