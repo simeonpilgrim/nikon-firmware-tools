@@ -9,6 +9,7 @@ import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.TxSerialInterface;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * This is based on the Toshiba hardware specification for TMP19A44FDA/FE/F10XBG
@@ -135,7 +136,8 @@ public class TxIoListener implements IoActivityListener {
 
     public static final int NUM_HSERIAL_IF = 3;
     private static final int HSERIAL_OFFSET_SHIFT = 4; // 1 << 4 = 0x10 bytes per interface
-    private static final int REGISTER_HSC0BUF   =    0xFF00_1800; // TX/RX buffer register
+    // Note: Big endian byte encoding
+    private static final int REGISTER_HSC0BUF   =    0xFF00_1803; // TX/RX buffer register
     private static final int REGISTER_HSC0EN    =    0xFF00_1804; // Enable register
     private static final int REGISTER_HSC0MOD2  =    0xFF00_1805; // Mode control register 2
     private static final int REGISTER_HSC0MOD1  =    0xFF00_1806; // Mode control register 1
@@ -144,9 +146,9 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_HSC0RST   =    0xFF00_1809; // Receive FIFO status register
     private static final int REGISTER_HSC0TFC   =    0xFF00_180A; // Transmit FIFO control register
     private static final int REGISTER_HSC0RFC   =    0xFF00_180B; // Receive FIFO control register
-    private static final int REGISTER_HSC0CR    =    0xFF00_180C; // Control register
+    private static final int REGISTER_HBR0CR    =    0xFF00_180C; // Baud rate generator control register
     private static final int REGISTER_HSC0MOD0  =    0xFF00_180D; // Mode control register 0
-    private static final int REGISTER_HBR0CR    =    0xFF00_180E; // Baud rate generator control register
+    private static final int REGISTER_HSC0CR    =    0xFF00_180E; // Control register
     private static final int REGISTER_HSC0FCNF  =    0xFF00_180F; // FIFO configuration register
 
 
@@ -302,7 +304,7 @@ public class TxIoListener implements IoActivityListener {
             int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
             switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF + 3:
+                case REGISTER_HSC0BUF:
                     return (byte) txSerialInterface.getBuf();
                 case REGISTER_HBR0ADD:
                     return (byte) txSerialInterface.getBradd();
@@ -466,14 +468,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
-            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
-            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF + 2:
-                    return txSerialInterface.getBuf();
-                default:
-                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 16bits");
-            }
+            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
         }
         else switch (addr){
             // Clock generator
@@ -624,14 +619,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
-            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
-            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF:
-                    return txSerialInterface.getBuf();
-                default:
-                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 8bits");
-            }
+            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
         }
         switch (addr) {
             // Clock generator
@@ -755,6 +743,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN + 3:
                     txSerialInterface.setEn(value); break;
@@ -788,8 +777,9 @@ public class TxIoListener implements IoActivityListener {
             // Hi-speed Serial Interface configuration registers
             int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
+            System.err.println("Port H#" + hserialInterfaceNr + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
             switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF + 3:
+                case REGISTER_HSC0BUF:
                     txSerialInterface.setBuf(value); break;
                 case REGISTER_HBR0ADD:
                     txSerialInterface.setBradd(value); break;
@@ -916,6 +906,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 4),4));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN + 2:
                     txSerialInterface.setEn(value); break;
@@ -947,14 +938,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
-            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
-            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF + 2:
-                    txSerialInterface.setBuf(value); break;
-                default:
-                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 16bits");
-            }
+            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
         }
         else switch (addr){
             // Clock generator
@@ -1069,6 +1053,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
+            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + Format.asHex(value, 8));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN:
                     txSerialInterface.setEn(value); break;
@@ -1100,14 +1085,7 @@ public class TxIoListener implements IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
-            TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
-            switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF:
-                    txSerialInterface.setBuf(value); break;
-                default:
-                    throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " cannot be accessed by 8bits");
-            }
+            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
         }
         else switch(addr) {
             // Clock generator

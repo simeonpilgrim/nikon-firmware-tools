@@ -108,12 +108,10 @@ public class FrSerialInterface extends SerialInterface {
     public void setEscrIbsr(int escrIbsr) {
         int oldNbBits = getNbBits();
         this.escrIbsr = escrIbsr;
-        if (this.serialDevice != null) {
-            // inform emulated connected device that config changed
-            int newNbBits = getNbBits();
-            if (newNbBits != oldNbBits) {
-                this.serialDevice.onBitNumberChange(this, newNbBits);
-            }
+        // inform emulated connected device that config changed
+        int newNbBits = getNbBits();
+        if (newNbBits != oldNbBits) {
+            super.bitNumberChanged(newNbBits);
         }
     }
 
@@ -155,9 +153,7 @@ public class FrSerialInterface extends SerialInterface {
                 fbyte2 = txFifo.size();
             }
         }
-        if (this.serialDevice != null) {
-            this.serialDevice.onValueReady(this);
-        }
+        super.valueReady() ;
     }
 
     /**

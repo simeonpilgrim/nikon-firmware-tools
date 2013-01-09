@@ -2,14 +2,19 @@ package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class SerialInterface {
     protected final int serialInterfaceNumber;
     protected final InterruptController interruptController;
-    protected SerialDevice serialDevice = new NullSerialDevice();
+    protected List<SerialInterfaceListener> listeners = new ArrayList<SerialInterfaceListener>();
 
     public SerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
+        // By default, a Serial Interface uses a dummy
+        addSerialValueReadyListener(new ByteEaterSerialInterfaceListener());
     }
 
     public int getSerialInterfaceNumber() {
@@ -32,13 +37,33 @@ public abstract class SerialInterface {
      */
     public abstract void write(int value);
 
-    public void connect(SerialDevice serialDevice) {
-        this.serialDevice = serialDevice;
-    }
-
     public abstract int getNbBits();
 
     public String getName() {
         return "Serial #" + serialInterfaceNumber;
+    }
+
+    public void addSerialValueReadyListener(SerialInterfaceListener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeSerialValueReadyListener(SerialInterfaceListener listener) {
+        listeners.remove(listener);
+    }
+
+    public void clearSerialValueReadyListeners() {
+        listeners.clear();
+    }
+
+    public void bitNumberChanged(int nbBits) {
+        for (SerialInterfaceListener listener : listeners) {
+            listener.onBitNumberChange(this, nbBits);
+        }
+    }
+
+    public void valueReady() {
+        for (SerialInterfaceListener listener : listeners) {
+            listener.onValueReady(this);
+        }
     }
 }
