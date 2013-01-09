@@ -1,6 +1,7 @@
-package com.nikonhacker.emu.clock;
+package com.nikonhacker.emu.clock.tx;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.clock.ClockGenerator;
 
 /**
  * In Tx CPU, the Clock Generator can be configured specifically, and its output is used by peripherials

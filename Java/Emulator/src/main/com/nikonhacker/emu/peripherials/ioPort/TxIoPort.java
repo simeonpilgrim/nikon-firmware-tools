@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.ioPort;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 import java.util.ArrayList;
 import java.util.List;

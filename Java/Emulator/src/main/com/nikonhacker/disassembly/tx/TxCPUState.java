@@ -9,7 +9,7 @@ import com.nikonhacker.emu.CpuPowerModeChangeListener;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 import java.util.ArrayList;
 import java.util.List;

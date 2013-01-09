@@ -1,10 +1,11 @@
-package com.nikonhacker.emu.peripherials.programmableTimer;
+package com.nikonhacker.emu.peripherials.programmableTimer.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.CpuPowerModeChangeListener;
-import com.nikonhacker.emu.clock.TxClockGenerator;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.clock.tx.TxClockGenerator;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
+import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;

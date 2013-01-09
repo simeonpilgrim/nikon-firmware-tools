@@ -1,7 +1,8 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 import java.util.Deque;
 import java.util.LinkedList;

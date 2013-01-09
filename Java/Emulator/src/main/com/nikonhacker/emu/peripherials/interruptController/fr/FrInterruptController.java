@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.peripherials.interruptController;
+package com.nikonhacker.emu.peripherials.interruptController.fr;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.StatementContext;
@@ -7,6 +7,8 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
+import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptControllerException;
 
 import java.util.Collections;
 

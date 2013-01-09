@@ -2,13 +2,13 @@ package com.nikonhacker.emu.memory.listener.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
-import com.nikonhacker.emu.clock.TxClockGenerator;
+import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
-import com.nikonhacker.emu.peripherials.programmableTimer.TxInputCaptureTimer;
-import com.nikonhacker.emu.peripherials.programmableTimer.TxTimer;
-import com.nikonhacker.emu.peripherials.serialInterface.TxSerialInterface;
+import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
 import org.apache.commons.lang3.StringUtils;
 
 /**

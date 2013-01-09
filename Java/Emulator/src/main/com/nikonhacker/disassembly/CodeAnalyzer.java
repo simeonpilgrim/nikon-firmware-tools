@@ -1,8 +1,10 @@
-package com.nikonhacker.disassembly.fr;
+package com.nikonhacker.disassembly;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.*;
+import com.nikonhacker.disassembly.fr.FrInstruction;
+import com.nikonhacker.disassembly.fr.FrStatement;
+import com.nikonhacker.disassembly.fr.InterruptVectorRange;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -246,7 +248,7 @@ public class CodeAnalyzer {
             labelNumber++;
         }
 
-        // Override label names by symbols in dfr.txt file
+        // Override label names by symbols in dfr.txt or dtx.txt file
         for (Integer labelAddress : symbols.keySet()) {
             if (!codeStructure.getFunctions().containsKey(labelAddress)) {
                 // This is not a function symbol, it's a code label or a variable

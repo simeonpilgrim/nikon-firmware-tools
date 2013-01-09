@@ -4,7 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.TxInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;

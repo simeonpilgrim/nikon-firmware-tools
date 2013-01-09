@@ -25,7 +25,7 @@ public abstract class ProgrammableTimer {
     protected boolean active = false;
 
     /** Underlying scheduler */
-    ScheduledExecutorService executorService;
+    protected ScheduledExecutorService executorService;
 
     /**
      * The scale compensates for the fact that emulated clocks cannot run faster than MAX_EMULATOR_FREQUENCY

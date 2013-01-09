@@ -5,8 +5,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
-import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 
 import javax.swing.*;
