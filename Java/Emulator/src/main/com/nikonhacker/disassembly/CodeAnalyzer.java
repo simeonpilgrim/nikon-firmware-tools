@@ -427,19 +427,30 @@ public class CodeAnalyzer {
         for (int i = 0; i < currentFunction.getCodeSegments().size(); i++) {
             // take a segment
             CodeSegment segmentA = currentFunction.getCodeSegments().get(i);
-            int numBytesEndSegmentA = codeStructure.getStatements().get(segmentA.getEnd()).getNumBytes();
-            // and try to merge it with all following ones
-            for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
-                CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
-                int numBytesEndSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
-                // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ? => because they are in unprocessed statements (?)
-                // Why isn't "BFC00898 E8A0 jrc $ra" considered a RET ?
-                if ((segmentA.getStart() >= segmentB.getStart() - numBytesEndSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesEndSegmentB)
-                        || (segmentA.getEnd() + numBytesEndSegmentA >= segmentB.getStart() && segmentA.getEnd() <= segmentB.getEnd() + numBytesEndSegmentB)) {
-                    // merge
-                    segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
-                    segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
-                    currentFunction.getCodeSegments().remove(j);
+            Statement lastStatementSegmentA = codeStructure.getStatements().get(segmentA.getEnd());
+            if (lastStatementSegmentA == null) {
+                debugPrintWriter.println("Error : no disassembled statement found at 0x" + Format.asHex(segmentA.getEnd(), 8));
+            }
+            else {
+                int numBytesEndSegmentA = lastStatementSegmentA.getNumBytes();
+                // and try to merge it with all following ones
+                for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
+                    CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
+                    if (codeStructure.getStatements().get(segmentB.getEnd()) == null) {
+                        debugPrintWriter.println("Error : no disassembled statement found at 0x" + Format.asHex(segmentB.getEnd(), 8));
+                    }
+                    else {
+                        int numBytesEndSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
+                        // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ? => because they are in unprocessed statements (?)
+                        // Why isn't "BFC00898 E8A0 jrc $ra" considered a RET ?
+                        if ((segmentA.getStart() >= segmentB.getStart() - numBytesEndSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesEndSegmentB)
+                                || (segmentA.getEnd() + numBytesEndSegmentA >= segmentB.getStart() && segmentA.getEnd() <= segmentB.getEnd() + numBytesEndSegmentB)) {
+                            // merge
+                            segmentA.setStart(Math.min(segmentA.getStart(), segmentB.getStart()));
+                            segmentA.setEnd(Math.max(segmentA.getEnd(), segmentB.getEnd()));
+                            currentFunction.getCodeSegments().remove(j);
+                        }
+                    }
                 }
             }
         }
