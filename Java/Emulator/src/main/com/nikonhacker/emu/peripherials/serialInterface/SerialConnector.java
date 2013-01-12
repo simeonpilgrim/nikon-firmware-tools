@@ -22,7 +22,7 @@ public class SerialConnector implements SerialInterfaceListener {
     }
 
     @Override
-    public void onBitNumberChange(SerialInterface serialInterface, int nbBits) {
+    public void onBitNumberChange(SerialInterface serialInterface, int numBits) {
         // ignore
     }
 

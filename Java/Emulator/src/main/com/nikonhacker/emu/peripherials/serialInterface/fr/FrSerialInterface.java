@@ -107,10 +107,10 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     public void setEscrIbsr(int escrIbsr) {
-        int oldNbBits = getNbBits();
+        int oldNbBits = getNumBits();
         this.escrIbsr = escrIbsr;
         // inform emulated connected device that config changed
-        int newNbBits = getNbBits();
+        int newNbBits = getNumBits();
         if (newNbBits != oldNbBits) {
             super.bitNumberChanged(newNbBits);
         }
@@ -467,10 +467,10 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     private int mask(int value) {
-        return value & ((1 << getNbBits()) - 1);
+        return value & ((1 << getNumBits()) - 1);
     }
 
-    public int getNbBits() {
+    public int getNumBits() {
         switch (escrIbsr & 0x3) {
             case 0: // 8-bit
                 return 8;

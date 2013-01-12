@@ -6,7 +6,7 @@ public class ByteEaterSerialInterfaceListener implements SerialInterfaceListener
         serialInterface.read();
     }
 
-    public void onBitNumberChange(SerialInterface serialInterface, int nbBits) {
+    public void onBitNumberChange(SerialInterface serialInterface, int numBits) {
         // ignored
     }
 }
