@@ -3,9 +3,7 @@ package com.nikonhacker.gui.component.codeStructure;
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.util.mxRectangle;
-import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.*;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
@@ -246,12 +244,12 @@ public class CodeStructureFrame extends DocumentFrame
             mxSvgCanvas canvas = (mxSvgCanvas) mxCellRenderer.drawCells(graph, null, 1, null,
                     new mxCellRenderer.CanvasFactory() {
                         public mxICanvas createCanvas(int width, int height) {
-                            mxSvgCanvas canvas = new mxSvgCanvas(mxUtils.createSvgDocument(width, height));
+                            mxSvgCanvas canvas = new mxSvgCanvas(mxDomUtils.createSvgDocument(width, height));
                             canvas.setEmbedded(true);
                             return canvas;
                         }
                     });
-            mxUtils.writeFile(mxUtils.getXml(canvas.getDocument()), file.getAbsolutePath());
+            mxUtils.writeFile(mxXmlUtils.getXml(canvas.getDocument()), file.getAbsolutePath());
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
