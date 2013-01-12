@@ -11,7 +11,6 @@ import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.VerticalLayout;
-import sun.swing.DefaultLookup;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -254,8 +253,8 @@ public class CallStackFrame extends DocumentFrame {
                     && !dropLocation.isInsert()
                     && dropLocation.getIndex() == index) {
 
-                bg = DefaultLookup.getColor(this, ui, "List.dropCellBackground");
-                fg = DefaultLookup.getColor(this, ui, "List.dropCellForeground");
+                bg = javax.swing.UIManager.getColor("List.dropCellBackground");
+                fg = javax.swing.UIManager.getColor("List.dropCellForeground");
 
                 isSelected = true;
             }
@@ -284,10 +283,10 @@ public class CallStackFrame extends DocumentFrame {
             Border border = null;
             if (cellHasFocus) {
                 if (isSelected) {
-                    border = DefaultLookup.getBorder(this, ui, "List.focusSelectedCellHighlightBorder");
+                    border = javax.swing.UIManager.getBorder("List.focusSelectedCellHighlightBorder");
                 }
                 if (border == null) {
-                    border = DefaultLookup.getBorder(this, ui, "List.focusCellHighlightBorder");
+                    border = javax.swing.UIManager.getBorder("List.focusCellHighlightBorder");
                 }
             } else {
                 border = new EmptyBorder(1, 1, 1, 1);
