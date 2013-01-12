@@ -2,37 +2,54 @@ package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 import java.util.Deque;
 import java.util.LinkedList;
 
+/**
+ * Behaviour is Based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
+ */
 public class TxSerialInterface extends SerialInterface {
+    private static final int SERIAL_RX_FIFO_SIZE = 4;
+
+    /**
+     * Rx buffer
+     */
+    protected int rxBuf;
+
     /**
      * Rx FIFO
      */
-    private Deque<Integer> rxFifo = new LinkedList<Integer>();
-    private int rxFifoSize = Integer.MAX_VALUE;
-    private int rxFillLevel;
+    protected Deque<Integer> rxFifo = new LinkedList<Integer>();
+    protected int rxFifoSize = Integer.MAX_VALUE;
+    protected int rxInterruptFillLevel;
+
+    /**
+     * Tx buffer
+     */
+    protected int txBuf;
 
     /**
      * Tx FIFO.
      */
-    private Deque<Integer> txFifo = new LinkedList<Integer>();
-    private int txFifoSize = Integer.MAX_VALUE;
+    protected Deque<Integer> txFifo = new LinkedList<Integer>();
+    protected int txFifoSize = Integer.MAX_VALUE;
+    protected int txInterruptFillLevel;
 
-    private int en; // Enable register
-    private int cr; // Control register
-    private int mod0; // Mode control register 0
-    private int mod1; // Mode control register 1
-    private int mod2 = 0b10000000; // Mode control register 2
-    private int brcr; // Baud rate generator control register
-    private int bradd; // Baud rate generator control register 2
-    private int rfc; // Receive FIFO control register
-    private int tfc; // Transmit FIFO control register
-    private int rst; // Receive FIFO status register
-    private int tst = 0b10000000; // Transmit FIFO status register
-    private int fcnf; // FIFO configuration register
+    protected int en; // Enable register
+    protected int cr; // Control register
+    protected int mod0; // Mode control register 0
+    protected int mod1; // Mode control register 1
+    protected int mod2 = 0b10000000; // Mode control register 2
+    protected int brcr; // Baud rate generator control register
+    protected int bradd; // Baud rate generator control register 2
+    protected int rfc; // Receive FIFO control register
+    protected int tfc; // Transmit FIFO control register
+    protected int rst; // Receive FIFO status register
+    protected int tst = 0b10000000; // Transmit FIFO status register
+    protected int fcnf; // FIFO configuration register
 
     public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
         super(serialInterfaceNumber, interruptController);
@@ -51,7 +68,17 @@ public class TxSerialInterface extends SerialInterface {
 //        if (en == 0) {
 //            throw new RuntimeException("Attempt to receive data from disabled " + getName());
 //        }
-        Integer poll = rxFifo.poll();
+        Integer poll;
+
+        if (!isFcnfCnfgSet()) { // FIFO disabled
+            poll = rxBuf;
+            clearMod2Rbfll();
+        }
+        else {
+            poll = rxFifo.poll();
+            // TODO signal if empty ?
+        }
+
         if (poll == null) {
 //            System.err.println(getName() + " - Attempt to read from empty buffer");
             return 0;
@@ -64,11 +91,29 @@ public class TxSerialInterface extends SerialInterface {
 //        if (en == 0) {
 //            throw new RuntimeException("Attempt to transmit data to disabled " + getName());
 //        }
-        txFifo.add(buf);
+        if (isEnSet()) {
+            if (!isFcnfCnfgSet()) { // FIFO disabled
+                txBuf = buf;
+                // TODO if UART mode with parity, set parity
+                // TODO if UART mode 9 bits, set bit in MOD0:TB8
+                clearMod2Tbemp();
+            }
+            else {
+                txFifo.add(buf);
+                // TODO signal if full ?
+            }
+            super.valueReady();
+        }
+        else {
+            // Used to reset buffer
+            txBuf = buf;
+        }
     }
 
     public int getCr() {
+        // TODO in UART mode, if parity or 9-bit communication, set corresponding bits according to the value in buf or FIFO head!
         int value = cr;
+
         // Clear error flags upon reading
         cr = cr & 0b11100011;
         return value;
@@ -79,7 +124,9 @@ public class TxSerialInterface extends SerialInterface {
 //            throw new RuntimeException("Setting HSC2CR to " + Format.asHex(cr,8)) ;
 //        }
 //        System.out.println(getName() + ".setCr(0x" + Format.asHex(cr, 8) + ")");
-        this.cr = cr;
+
+        // RB8 and error flags are not writable
+        this.cr = (this.cr & 0b10011100) | (cr & 0b01100011);
     }
 
     public int getMod0() {
@@ -89,6 +136,9 @@ public class TxSerialInterface extends SerialInterface {
     public void setMod0(int mod0) {
 //        System.out.println(getName() + ".setMod0(0x" + Format.asHex(mod0, 8) + ")");
         this.mod0 = mod0;
+        if (getMod0Sm() != 0b00) {
+            System.err.println(getName() + " is being configured as UART. Only I/O serial mode is supported for now");
+        }
     }
 
     public int getMod1() {
@@ -98,7 +148,9 @@ public class TxSerialInterface extends SerialInterface {
     public void setMod1(int mod1) {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
         this.mod1 = mod1;
-        computeFillLevel();
+        // And in case duplex mode changes
+        computeRxFillLevel();
+        computeTxFillLevel();
     }
 
     public int getMod2() {
@@ -107,7 +159,21 @@ public class TxSerialInterface extends SerialInterface {
 
     public void setMod2(int mod2) {
 //        System.out.println(getName() + ".setMod2(0x" + Format.asHex(mod2, 8) + ")");
-        this.mod2 = mod2;
+
+        // if SWRST goes from 10 to 01, perform a Software reset
+        if ((this.mod2 & 0b11) == 0b10 && (mod2 & 0b11)== 0b01) {
+            clearMod0Rxe();
+            clearMod1Txe();
+            clearMod2Tbemp();
+            clearMod2Rbfll();
+            clearMod2Txrun();
+            clearCrOerr();
+            clearCrPerr();
+            clearCrFerr();
+        }
+
+        // TBEMP, RBFLL, TXRUN are not writable
+        this.mod2 = (this.mod2 & 0b11100000) | (mod2 & 0b00011111);
     }
 
     public int getBrcr() {
@@ -125,11 +191,11 @@ public class TxSerialInterface extends SerialInterface {
 
     public void setBradd(int bradd) {
 //        System.out.println(getName() + ".setBradd(0x" + Format.asHex(bradd, 8) + ")");
-        this.bradd = bradd;
+        this.bradd = bradd & 0b00001111;
     }
 
     public int getRfc() {
-        return rfc & 0b01000011;
+        return rfc & 0b01011111;
     }
 
     public void setRfc(int rfc) {
@@ -138,39 +204,20 @@ public class TxSerialInterface extends SerialInterface {
         }
         // TODO RFIS
         this.rfc = rfc;
-        computeFillLevel();
-    }
-
-    private void computeFillLevel() {
-        if (((mod1 >> 5) & 0b11) == 0b11) {
-            // Full duplex
-            switch (rfc & 0b1) {
-                case 0b0:
-                    rxFillLevel=2; break;
-                case 0b1:
-                    rxFillLevel=1; break;
-            }
-        }
-        else {
-            switch (rfc & 0b11) {
-                case 0b00:
-                    rxFillLevel=4; break;
-                case 0b01:
-                    rxFillLevel=1; break;
-                case 0b10:
-                    rxFillLevel=2; break;
-                case 0b11:
-                    rxFillLevel=3; break;
-            }
-        }
+        computeRxFillLevel();
     }
 
     public int getTfc() {
-        return tfc;
+        return tfc & 0b01111111;
     }
 
     public void setTfc(int tfc) {
         this.tfc = tfc;
+        if ((tfc & 0b10000000) != 0) { // TFCS
+            txFifo = new LinkedList<Integer>();
+        }
+        // TODO TFIS
+        computeTxFillLevel();
     }
 
     public int getRst() {
@@ -178,7 +225,7 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public void setRst(int rst) {
-        this.rst = rst;
+        throw new RuntimeException(getName() + " RST register should not be written");
     }
 
     public int getTst() {
@@ -186,7 +233,7 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public void setTst(int tst) {
-        this.tst = tst;
+        throw new RuntimeException(getName() + " TST register should not be written");
     }
 
     public int getFcnf() {
@@ -194,6 +241,8 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public void setFcnf(int fcnf) {
+        // TODO what's the point if fifo size here ???
+        // I think this is obsolete
         if ((fcnf & 0b00000001) == 0) {
             txFifoSize = 2;
             rxFifoSize = 2;
@@ -205,6 +254,244 @@ public class TxSerialInterface extends SerialInterface {
         this.fcnf = fcnf;
     }
 
+
+    // Utility register field accessors
+
+    /**
+     * @return true if Enabled
+     */
+    protected boolean isEnSet() {
+        return (en != 0);
+    }
+
+    /*
+     * @return true if I/O interface mode is in SCLK input clock mode
+     */
+    protected boolean isCrIocSet() {
+        return (cr & 0b00000001) != 0;
+    }
+
+    /**
+     * Set CR Overrun error flag
+     */
+    protected void setCrOerr() {
+        cr = cr | 0b00010000;
+    }
+
+    /**
+     * Clear CR Overrun error flag
+     */
+    protected void clearCrOerr() {
+        cr = cr & 0b11101111;
+    }
+
+    /**
+     * Set CR Parity/Underrun error flag
+     */
+    protected void setCrPerr() {
+        cr = cr | 0b00001000;
+    }
+
+    /**
+     * Clear CR Parity/Underrun error flag
+     */
+    protected void clearCrPerr() {
+        cr = cr & 0b11110111;
+    }
+
+    /**
+     * Set CR Framing error flag
+     */
+    protected void setCrFerr() {
+        cr = cr | 0b00000100;
+    }
+
+    /**
+     * Clear CR Framing error flag
+     */
+    protected void clearCrFerr() {
+        cr = cr & 0b11111011;
+    }
+
+
+    protected boolean isMod0RxeSet() {
+        return (mod0 & 0b00100000) != 0;
+    }
+
+    protected void clearMod0Rxe() {
+        mod0 = mod0 & 0b11011111;
+    }
+
+    protected int getMod0Sm() {
+        return (mod0 >> 2) & 0b11;
+    }
+
+    protected boolean isMod1TxeSet() {
+        return (mod1 & 0b00010000) != 0;
+    }
+
+    protected void clearMod1Txe() {
+        mod1 = mod1 & 0b11101111;
+    }
+
+    protected int getMod1Fdpx() {
+        return (mod1 >> 5) & 0b11;
+    }
+
+    protected boolean isMod1FdpxRxSet() {
+        return (mod1 & 0b00100000) != 0;
+    }
+
+    protected boolean isMod1FdpxTxSet() {
+        return (mod1 & 0b01000000) != 0;
+    }
+
+
+    /**
+     * Check if MOD2 Transmit Buffer Empty flag is set
+     */
+    protected boolean isMod2TbempSet() {
+        return (mod2 & 0b10000000) != 0;
+    }
+
+    /**
+     * Set MOD2 Transmit Buffer Empty flag
+     */
+    protected void setMod2Tbemp() {
+        mod2 = mod2 | 0b10000000;
+    }
+
+    /**
+     * Clear MOD2 Transmit Buffer Empty flag
+     */
+    protected void clearMod2Tbemp() {
+        mod2 = mod2 & 0b01111111;
+    }
+
+    /**
+     * Check if MOD2 Receive Buffer Full flag is set
+     */
+    protected boolean isMod2RbfllSet() {
+        return (mod2 & 0b01000000) != 0;
+    }
+
+    /**
+     * Set MOD2 Receive Buffer Full flag
+     */
+    protected void setMod2Rbfll() {
+        mod2 = mod2 | 0b01000000;
+    }
+
+    /**
+     * Clear MOD2 Receive Buffer Full flag
+     */
+    protected void clearMod2Rbfll() {
+        mod2 = mod2 & 0b10111111;
+    }
+
+    /**
+     * Check if MOD2 Tx Run flag is set
+     */
+    protected boolean isMod2TxrunSet() {
+        return (mod2 & 0b00100000) != 0;
+    }
+
+    /**
+     * Set MOD2 Tx Run flag
+     */
+    protected void setMod2Txrun() {
+        mod2 = mod2 | 0b00100000;
+    }
+
+    /**
+     * Clear MOD2 Tx Run flag
+     */
+    protected void clearMod2Txrun() {
+        mod2 = mod2 & 0b11011111;
+    }
+
+
+
+    protected boolean isFcnfRfstSet() {
+        return (fcnf & 0b00010000) != 0;
+    }
+
+    protected boolean isFcnfTfieSet() {
+        return (fcnf & 0b00001000) != 0;
+    }
+
+    protected boolean isFcnfRfieSet() {
+        return (fcnf & 0b00000100) != 0;
+    }
+
+    protected boolean isFcnfRxtxcntSet() {
+        return (fcnf & 0b00000010) != 0;
+    }
+
+    protected boolean isFcnfCnfgSet() {
+        return (fcnf & 0b00000001) != 0;
+    }
+
+
+    /**
+     * Compute Rx FIFO Fill Level to generate interrupts
+     * Note: overridden in TxHSerialInterface
+     */
+    protected void computeRxFillLevel() {
+        if (getMod1Fdpx() == 0b11) {
+            // Full duplex
+            rxInterruptFillLevel = rfc & 0b1;
+            if (rxInterruptFillLevel == 0) {
+                // Special case
+                rxInterruptFillLevel = 2;
+            }
+        }
+        else {
+            // Half duplex
+            rxInterruptFillLevel = rfc & 0b11;
+            if (rxInterruptFillLevel == 0) {
+                // Special case
+                rxInterruptFillLevel = 4;
+            }
+        }
+    }
+
+    /**
+     * Compute Tx FIFO Fill Level to generate interrupts
+     * Note: overridden in TxHSerialInterface
+     */
+    protected void computeTxFillLevel() {
+        if (getMod1Fdpx() == 0b11) {
+            // Full duplex
+            txInterruptFillLevel = tfc & 0b1;
+        }
+        else {
+            // Half duplex
+            txInterruptFillLevel = tfc & 0b11;
+        }
+    }
+
+
+
+    protected int getMaxFifoSize() {
+        if (getMod1Fdpx() == 0b11) {
+            return SERIAL_RX_FIFO_SIZE / 2;
+        }
+        else {
+            return SERIAL_RX_FIFO_SIZE;
+        }
+    }
+
+    protected int getUsableRxFifoSize() {
+        if (isFcnfRfstSet()) {
+            return rxInterruptFillLevel;
+        }
+        else {
+            return getMaxFifoSize();
+        }
+    }
+
+
     // TRANSMISSION LOGIC
 
     /**
@@ -214,17 +501,60 @@ public class TxSerialInterface extends SerialInterface {
      */
     @Override
     public Integer read() {
-        if ((en != 0) && (mod1 & 0b00010000) != 0) { // TXE
-            return txFifo.poll();
+        if (isEnSet() && isMod1TxeSet() && isMod1FdpxTxSet()) {
+            return getTxValue();
         }
         else {
-            if (en == 0) {
-                System.out.println(getName() + " is disabled. Returning 0.");
+            if (!isEnSet()) {
+                System.out.println(getName() + " is disabled. Returning null.");
+            }
+            else if (!isMod1TxeSet()) {
+                System.out.println("TX is disabled on " + getName() + ". Returning null.");
             }
             else {
-                System.out.println("TX is disabled on " + getName() + ". Returning 0.");
+                System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Returning null.");
             }
-            return 0;
+            return null;
+        }
+    }
+
+    private Integer getTxValue() {
+        if (!isFcnfCnfgSet()) { // FIFO disabled
+            if (isMod2TbempSet()) {
+                System.err.println(getName() + ": RX buffer underrun");
+                // There's no data in buffer => Underrun : new data to return. Return null
+                if (isCrIocSet()) { // Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
+                    setCrPerr();
+                }
+                return null;
+            }
+            setMod2Tbemp();
+            if (isMod1FdpxTxSet()) {
+                interruptController.request(getRxInterruptNumber());
+            }
+            // TODO if UART mode 9 bits, also include bit in MOD0:TB8
+            return txBuf;
+        }
+        else {
+            if (txFifo.size() == 0) {
+                System.err.println(getName() + ": RX fifo underrun");
+//                if (isCrIocSet()) {// Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
+//                    setCrPerr(); // TODO This is not explicitly specified in case of FIFO. Sounds logical but...
+//                }
+                return null;
+            }
+            else {
+                Integer value = txFifo.poll();
+                if (txFifo.size() == txInterruptFillLevel) {
+                    if (isMod1FdpxTxSet()) {
+                        interruptController.request(getTxInterruptNumber());
+                    }
+                    if (isFcnfRxtxcntSet()) {
+                        clearMod1Txe();
+                    }
+                }
+                return value;
+            }
         }
     }
 
@@ -237,22 +567,71 @@ public class TxSerialInterface extends SerialInterface {
      */
     @Override
     public void write(int value) {
-        if ((en != 0) && (mod0 & 0b00100000) != 0) { // RXE
-            rxFifo.add(value);
+        if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
+            queueRxValue(value);
         }
         else {
-            if (en == 0) {
+            if (!isEnSet()) {
                 System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
             }
-            else {
+            else if (!isMod0RxeSet()) {
                 System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
             }
+            else {
+                System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+            }
         }
+    }
+
+    private void queueRxValue(int value) {
+        // TODO if UART mode with parity, check parity and set CR:PERR accordingly
+        if (!isFcnfCnfgSet()) { // FIFO disabled
+            if (isMod2RbfllSet()) {
+                System.err.println(getName() + ": RX buffer overrun");
+                // There's already an unread data in buffer => Overrun : new data is lost. No change to current buffer
+                setCrOerr(); // TODO This is not explicitly specified in case of buffer. Sounds logical but...
+            }
+            else {
+                rxBuf = value;
+                // TODO if UART mode 9 bits, also set bit in CR:RB8
+                setMod2Rbfll();
+                if (isMod1FdpxRxSet()) {
+                    interruptController.request(getRxInterruptNumber());
+                }
+            }
+        }
+        else { // FIFO enabled
+            if (rxFifo.size() >= getUsableRxFifoSize()) {
+                System.err.println(getName() + ": RX fifo overrun");
+                // Fifo is already full => Overrun : new data is lost. No change to current fifo
+                setCrOerr(); // Signal error
+            }
+            else {
+                rxFifo.add(value);
+
+                if (rxFifo.size() == rxInterruptFillLevel) {
+                    if (isFcnfRfieSet()) {
+                        interruptController.request(getRxInterruptNumber());
+                    }
+                    if (isFcnfRxtxcntSet()) {
+                        clearMod0Rxe();
+                    }
+                }
+            }
+        }
+
+    }
+
+    protected int getRxInterruptNumber() {
+        return TxInterruptController.INTRX0 + 2 * serialInterfaceNumber;
+    }
+
+    protected int getTxInterruptNumber() {
+        return TxInterruptController.INTTX0 + 2 * serialInterfaceNumber;
     }
 
     @Override
-    public int getNbBits() {
-        return 8;  //TODO
+    public int getNumBits() {
+        return 8;  //TODO if UART
     }
-
 }

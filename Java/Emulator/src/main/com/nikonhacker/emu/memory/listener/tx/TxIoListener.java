@@ -16,6 +16,8 @@ import org.apache.commons.lang3.StringUtils;
  * Available at http://www.semicon.toshiba.co.jp/info/docget.jsp?type=datasheet&lang=en&pid=TMP19A44FEXBG
  */
 public class TxIoListener implements IoActivityListener {
+    private static final boolean DEBUG_SERIAL = false;
+
     private static final int IO_PAGE = 0xFF00;
 
     // See section 22 for addresses
@@ -743,7 +745,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
-            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
+            if (DEBUG_SERIAL) System.err.println("Serial #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN + 3:
                     txSerialInterface.setEn(value); break;
@@ -777,7 +779,7 @@ public class TxIoListener implements IoActivityListener {
             // Hi-speed Serial Interface configuration registers
             int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
-            System.err.println("Port H#" + hserialInterfaceNr + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
+            if (DEBUG_SERIAL) System.err.println("Serial H#" + hserialInterfaceNr + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 2),2));
             switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
                 case REGISTER_HSC0BUF:
                     txSerialInterface.setBuf(value); break;
@@ -906,7 +908,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
-            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 4),4));
+            if (DEBUG_SERIAL) System.err.println("Serial #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + StringUtils.right(Format.asHex(value, 4),4));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN + 2:
                     txSerialInterface.setEn(value); break;
@@ -1053,7 +1055,7 @@ public class TxIoListener implements IoActivityListener {
             // Serial Interface configuration registers
             int serialInterfaceNr = (addr - REGISTER_SC0EN) >> SERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
-            System.err.println("Port  #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + Format.asHex(value, 8));
+            if (DEBUG_SERIAL) System.err.println("Serial #" + serialInterfaceNr  + " - Storing @0x" + Format.asHex(addr, 8) + " : 0x" + Format.asHex(value, 8));
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN:
                     txSerialInterface.setEn(value); break;

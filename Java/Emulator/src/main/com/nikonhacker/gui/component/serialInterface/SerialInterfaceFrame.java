@@ -60,13 +60,18 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 @Override
                 public void onValueReady(SerialInterface serialInterface) {
                     Integer incoming = serialInterface.read();
-                    buffer.add(incoming);
-                    rxTextArea.append(Format.asHex(incoming, 2) + " ");
-                    if (buffer.size() == 2) {
-                        for (Integer i : buffer) {
-                            send(serialInterface, txTextArea, i);
+                    if (incoming == null) {
+                        rxTextArea.append("x ");
+                    }
+                    else {
+                        buffer.add(incoming);
+                        rxTextArea.append(Format.asHex(incoming, 2) + " ");
+                        if (buffer.size() == 2) {
+                            for (Integer i : buffer) {
+                                send(serialInterface, txTextArea, i);
+                            }
+                            buffer.clear();
                         }
-                        buffer.clear();
                     }
                 }
 
@@ -81,11 +86,11 @@ public class SerialInterfaceFrame extends DocumentFrame {
 
             prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNumBits());
 
-            serialInterfacePanel.add(new JLabel("Click to send data to FR SerialInterface:"));
+            serialInterfacePanel.add(new JLabel("Click to send data to SerialInterface:"));
             serialInterfacePanel.add(buttonGrid);
-            serialInterfacePanel.add(new JLabel("External device => FR MCU"));
+            serialInterfacePanel.add(new JLabel("External device => Microcontroller"));
             serialInterfacePanel.add(new JScrollPane(txTextArea));
-            serialInterfacePanel.add(new JLabel("FR MCU => External device"));
+            serialInterfacePanel.add(new JLabel("Microcontroller => External device"));
             serialInterfacePanel.add(new JScrollPane(rxTextArea));
 
             tabbedPane.addTab(serialInterface.getName(), null, serialInterfacePanel);
