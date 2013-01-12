@@ -71,15 +71,15 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 }
 
                 @Override
-                public void onBitNumberChange(SerialInterface serialInterface, int nbBits) {
-                    prepareButtonGrid(buttonGrid, valueButtonListener, nbBits);
+                public void onBitNumberChange(SerialInterface serialInterface, int numBits) {
+                    prepareButtonGrid(buttonGrid, valueButtonListener, numBits);
                 }
             };
             serialInterface.clearSerialValueReadyListeners();
             serialInterface.addSerialValueReadyListener(listener);
             interfaceListeners.put(serialInterface, listener);
 
-            prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNbBits());
+            prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNumBits());
 
             serialInterfacePanel.add(new JLabel("Click to send data to FR SerialInterface:"));
             serialInterfacePanel.add(buttonGrid);
