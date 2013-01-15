@@ -121,9 +121,9 @@ public abstract class AbstractMemory implements Memory {
             }
 
             // Allocate pages
-            readableMemory[pte + i] = read ? pages[i] : null;
-            writableMemory[pte + i] = write ? pages[i] : null;
-            executableMemory[pte + i] = exec ? pages[i] : null;
+            readableMemory[pte + i] = read ? pages[i] : new byte[0];
+            writableMemory[pte + i] = write ? pages[i] : new byte[0];
+            executableMemory[pte + i] = exec ? pages[i] : new byte[0];
         }
 
         return addr;
@@ -186,9 +186,9 @@ public abstract class AbstractMemory implements Memory {
                         file.read(page);
                     }
 
-                    readableMemory[pte + i] = read ? page : null;
-                    writableMemory[pte + i] = write ? page : null;
-                    executableMemory[pte + i] = exec ? page : null;
+                    readableMemory[pte + i] = read ? page : new byte[0];
+                    writableMemory[pte + i] = write ? page : new byte[0];
+                    executableMemory[pte + i] = exec ? page : new byte[0];
                 }
             }
             else {
@@ -341,9 +341,9 @@ public abstract class AbstractMemory implements Memory {
             if (page == null)
                 throw new RuntimeException("Segmentation fault at 0x" + Format.asHex(address, 8));
 
-            readableMemory[pte] = newRead ? page : null;
-            writableMemory[pte] = newWrite ? page : null;
-            executableMemory[pte] = newExec ? page : null;
+            readableMemory[pte] = newRead ? page : new byte[0];
+            writableMemory[pte] = newWrite ? page : new byte[0];
+            executableMemory[pte] = newExec ? page : new byte[0];
 
             address += PAGE_SIZE;
             len -= PAGE_SIZE;
@@ -361,7 +361,7 @@ public abstract class AbstractMemory implements Memory {
             byte[] page = getPage(pte);
             if (page == null) {
                 // Unallocated page, allocate it
-                map(pte << OFFSET_BITS, getPageSize(), true, true, true);
+                map(pte << OFFSET_BITS, getPageSize(), true, false, true);
                 page = getPage(pte);
             }
             int bytesRead = fis.read(page, offset, bytesToRead);
@@ -391,7 +391,7 @@ public abstract class AbstractMemory implements Memory {
 
             // Push bytes to memory
             int address = range.getStart();
-            map(address, rangeSize, true, true, true);
+            map(address, rangeSize, true, false, true);
             long bytesPushed = 0;
             buffer.position(0);
             while (bytesPushed < rangeSize) {
