@@ -99,7 +99,7 @@ public class TxEmulator extends Emulator {
                 else {
                     // If not in a delay slot, check interrupts
                     if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-                        InterruptRequest interruptRequest = interruptController.getNextRequest();
+                        final InterruptRequest interruptRequest = interruptController.getNextRequest();
                         //Double test because lack of synchronization means the status could have changed in between
                         if (interruptRequest != null) {
                             if (txCpuState.accepts(interruptRequest)){
@@ -115,6 +115,7 @@ public class TxEmulator extends Emulator {
                                 // TODO : Currently, interrupts are not checked in delay slots (see above).
                                 // TODO   Permit that and use address of branch instruction instead of PC if in delay slot !
                                 // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
+                                context.pushInterrupt(interruptRequest);
                                 ((TxInterruptController)interruptController).processInterrupt((TxInterruptRequest) interruptRequest, txCpuState.getPc(), context);
                             }
                         }

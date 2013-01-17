@@ -1236,7 +1236,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9720: /* RET */
-                        context.popStatement();
+                        context.popItem();
                         frCpuState.pc = frCpuState.getReg(FrCPUState.RP);
     
                         /* No change to NZVC */
@@ -1270,7 +1270,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9730: /* RETI */
-                        context.popStatement();
+                        context.popItem();
                         frCpuState.pc = memory.load32(frCpuState.getReg(15));
                         frCpuState.setReg(15, frCpuState.getReg(15) + 8);
                         /* note : this is the order given in the spec but loading PS below could switch the USP<>SSP,
@@ -1530,7 +1530,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F20: /* RET:D */
-                        context.popStatement();
+                        context.popItem();
                         setDelayedPc(frCpuState.getReg(FrCPUState.RP));
     
                         /* No change to NZVC */
