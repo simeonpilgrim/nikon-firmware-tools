@@ -34,15 +34,17 @@ public class Symbol {
     public Symbol(Integer address, String rawText, String[][] registerLabels) throws ParsingException {
         this.address = address;
         this.rawText = rawText;
-        if (rawText.contains("(")) {
-            this.name = StringUtils.substringBefore(rawText, "(").trim();
-            this.comment = StringUtils.substringAfter(rawText, "(");
+        // First, remove all comments between /* */
+        String cleanText = rawText.replaceAll("/\\*.*?\\*/", "");
+        if (cleanText.contains("(")) {
+            this.name = StringUtils.substringBefore(cleanText, "(").trim();
+            this.comment = StringUtils.substringAfter(cleanText, "(");
             if (!comment.contains(")")) {
-                throw new ParsingException("Invalid symbol '" + rawText + "' : no closing parenthesis");
+                throw new ParsingException("Invalid symbol '" + cleanText + "' : no closing parenthesis");
             }
             comment = StringUtils.substringBefore(comment, ")").trim();
             // Comment of the form R4 [IN dividend, OUT remainder], R5 [IN divisor]
-            String cleanComment = comment.replaceAll("/\\*.*\\*/", "");
+            String cleanComment = comment.replaceAll("/\\*.*?\\*/", "");
             String[] paramStrings = StringUtils.split(cleanComment, ',');
             for (String paramString : paramStrings) {
                 Parameter parameter = new Parameter(paramString, registerLabels);
@@ -54,7 +56,7 @@ public class Symbol {
 //            System.out.println("   Parameters:" + parameterList);
         }
         else {
-            this.name = rawText;
+            this.name = cleanText;
         }
     }
 
@@ -139,7 +141,7 @@ public class Symbol {
                 }
                 if (register != REG_NONE) break;
             }
-            if (register == REG_NONE) throw new ParsingException("Invalid register in function parameter '" + registerText + "'");
+            if (register == REG_NONE) throw new ParsingException("Invalid register name '" + registerText + "' in function parameter string '" + parameterString + "'");
 
             String details = StringUtils.substringAfter(parameterString, "[");
             if (!details.contains("]")) {
