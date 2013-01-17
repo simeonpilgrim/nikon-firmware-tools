@@ -1222,6 +1222,7 @@ public class TxInstructionSet
             Instruction.FlowType.JMP, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.pushStatement(statement);
                     // The ISA mode is unchanged by the J instruction, but it only exists in 32bit, so the ISA mode LSB is always 0 anyway.
                     context.setDelayedPc(
                             (context.cpuState.pc & 0xF0000000) | (statement.imm << 2)
@@ -1249,7 +1250,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.popStatement();
+                    context.popItem();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -1852,6 +1853,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
+                    context.popItem();
                     // See architecture spec, section 6.1.3.6
                     TxCPUState txCPUState = (TxCPUState) context.cpuState;
                     if (txCPUState.isStatusERLSet()) {
@@ -2399,7 +2401,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.popStatement();
+                    context.popItem();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -2413,7 +2415,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.popStatement();
+                    context.popItem();
                     context.setDelayedPc(
                             context.cpuState.getReg(TxCPUState.RA)
                     );
@@ -2427,7 +2429,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.popStatement();
+                    context.popItem();
                     context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
                 }
             });
@@ -2439,7 +2441,7 @@ public class TxInstructionSet
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
-                    context.popStatement();
+                    context.popItem();
                     context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
                 }
             });

@@ -160,7 +160,7 @@ public class CallStackFrame extends DocumentFrame {
             // Real stack
             boolean hideJumps = ui.getPrefs().isCallStackHideJumps(chip);
             for (CallStackItem callStackItem : callStack) {
-                if (!(callStackItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) || !hideJumps) {
+                if (callStackItem.getInstruction() == null || !(callStackItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) || !hideJumps) {
                     model.addElement(callStackItem);
                 }
             }
