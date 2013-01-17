@@ -22,6 +22,7 @@ public class Prefs {
     private int dividerLocation;
     private int lastDividerLocation;
     private boolean dividerKeepHidden;
+    private boolean usePrettyIoComponents = false;
 
     // Per chip
     private List<BreakTrigger>[] triggers;
@@ -273,6 +274,14 @@ public class Prefs {
 
     public void setDividerKeepHidden(boolean dividerKeepHidden) {
         this.dividerKeepHidden = dividerKeepHidden;
+    }
+
+    public boolean isUsePrettyIoComponents() {
+        return usePrettyIoComponents;
+    }
+
+    public void setUsePrettyIoComponents(boolean usePrettyIoComponents) {
+        this.usePrettyIoComponents = usePrettyIoComponents;
     }
 
     public byte getPortValue(int chip, int portNumber) {

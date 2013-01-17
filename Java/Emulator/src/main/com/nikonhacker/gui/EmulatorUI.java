@@ -375,7 +375,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         setContentPane(splitPane);
 
-        applyPrefsToUI();
+        applyPrefsToUI(false);
 
 
         for (int chip = 0; chip < 2; chip++) {
@@ -461,7 +461,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         return false;
     }
 
-    private void applyPrefsToUI() {
+    private void applyPrefsToUI(boolean usePrettyIoComponentsChanged) {
         if (BUTTON_SIZE_LARGE.equals(prefs.getButtonSize())) {
             toolbarButtonMargin.set(2, 14, 2, 14);
         }
@@ -500,6 +500,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         initProgrammableTimerAnimationIcons(prefs.getButtonSize());
         for (int chip = 0; chip < 2; chip++) {
             toolBar[chip].revalidate();
+        }
+        if (usePrettyIoComponentsChanged) {
+            for (int chip = 0; chip < 2; chip++) {
+                if (ioPortsFrame[chip] != null) {
+                    // Close
+                    toggleIoPortsWindow(chip);
+                    // Reopen
+                    toggleIoPortsWindow(chip);
+                }
+            }
         }
     }
 
@@ -1460,12 +1470,18 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final JCheckBox closeAllWindowsOnStopCheckBox = new JCheckBox("Close all windows on Stop");
         closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
 
+        // Use pretty I/O components
+        final JCheckBox usePrettyIoComponentsCheckBox = new JCheckBox("Use switches and leds for I/O");
+        usePrettyIoComponentsCheckBox.setSelected(prefs.isUsePrettyIoComponents());
+
+
         // Setup panel
         options.add(new JLabel("Button size :"));
         options.add(small);
         options.add(medium);
         options.add(large);
         options.add(closeAllWindowsOnStopCheckBox);
+        options.add(usePrettyIoComponentsCheckBox);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 options,
@@ -1479,7 +1495,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             // save
             prefs.setButtonSize(group.getSelection().getActionCommand());
             prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
-            applyPrefsToUI();
+            boolean isUsePrettyIoComponentsChanged = false;
+            if (prefs.isUsePrettyIoComponents() != usePrettyIoComponentsCheckBox.isSelected()) {
+                isUsePrettyIoComponentsChanged = true;
+                prefs.setUsePrettyIoComponents(usePrettyIoComponentsCheckBox.isSelected());
+            }
+            applyPrefsToUI(isUsePrettyIoComponentsChanged);
         }
     }
 

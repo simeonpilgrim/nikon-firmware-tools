@@ -21,8 +21,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
     private final IoPort[] ioPorts;
 
     private JPanel[][] cells;
-    private SteelCheckBox[][] inputs;
-    private Led[][] outputs;
+    private JCheckBox[][] inputs;
+    private JComponent[][] outputs;
 
     public IoPortsFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final IoPort[] ioPorts) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -30,8 +30,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
 
         // Components from left to right (from bit 7 to 0)
         cells = new JPanel[ioPorts.length][8];
-        inputs = new SteelCheckBox[ioPorts.length][8];
-        outputs = new Led[ioPorts.length][8];
+        inputs = new JCheckBox[ioPorts.length][8];
+        outputs = new JComponent[ioPorts.length][8];
 
         JPanel panel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
         panel.add(new JLabel("bit #"), "right");
@@ -51,11 +51,19 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
             // Bits
             // Loop from left to right (from bit 7 to 0)
             for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
-                // Prepare switch for input
-                SteelCheckBox checkBox = new SteelCheckBox(SwingConstants.VERTICAL);
-                checkBox.setColored(true);
-                checkBox.setSelectedColor(ColorDef.GREEN);
                 final int finalPortNumber = portNumber;
+                // Prepare inputs
+                JCheckBox checkBox;
+                if (ui.getPrefs().isUsePrettyIoComponents()) {
+                    // Steel switch for input
+                    checkBox = new SteelCheckBox(SwingConstants.VERTICAL);
+                    ((SteelCheckBox)checkBox).setColored(true);
+                    ((SteelCheckBox)checkBox).setSelectedColor(ColorDef.GREEN);
+                }
+                else {
+                    // Plain checkbox for input
+                    checkBox = new JCheckBox();
+                }
                 checkBox.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -66,11 +74,18 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
                 inputs[portNumber][7 - bitNumber] = checkBox;
 
                 // Prepare led for output
-                Led led = new Led();
-                led.setLedColor(LedColor.YELLOW_LED);
-                led.setLedType(LedType.ROUND);
-                led.setPreferredSize(new Dimension(30, 30));
-                outputs[portNumber][7 - bitNumber] = led;
+                JComponent outputComponent;
+                if (ui.getPrefs().isUsePrettyIoComponents()) {
+                    outputComponent = new Led();
+                    ((Led)outputComponent).setLedColor(LedColor.YELLOW_LED);
+                    ((Led)outputComponent).setLedType(LedType.ROUND);
+                    outputComponent.setPreferredSize(new Dimension(30, 30));
+                }
+                else {
+                    outputComponent = new JRadioButton();
+                    outputComponent.setEnabled(false);
+                }
+                outputs[portNumber][7 - bitNumber] = outputComponent;
 
                 // Lay out cell container
                 JPanel cell = new JPanel(noMarginLayout);
@@ -124,7 +139,13 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
     private void refreshOutputValues(int portNumber) {
         int value = ((TxIoPort)ioPorts[portNumber]).getValue();
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
-            outputs[portNumber][7 - bitNumber].setLedOn((value & (1<< bitNumber)) != 0);
+            JComponent component = outputs[portNumber][7 - bitNumber];
+            if (component instanceof Led) {
+                ((Led)component).setLedOn((value & (1 << bitNumber)) != 0);
+            }
+            else {
+                ((JRadioButton)component).setSelected((value & (1 << bitNumber)) != 0);
+            }
             inputs[portNumber][7 - bitNumber].setSelected((value & (1<< bitNumber)) != 0) ;
         }
     }
