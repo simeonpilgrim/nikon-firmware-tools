@@ -93,8 +93,7 @@
 -s 0xBFC00D20=setINTCLR($a0 [IN mask])
 -s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
 -s 0xBFC00D60=getInterruptLEVel($v0 [OUT level])
--s 0xBFC00D78=clearInterruptLEVel()
--s 0xBFC00D78=clear_ILEV
+-s 0xBFC00D78=clearInterruptLEVel
 -s 0xBFC00D90=null_BFC00D90
 -s 0xBFC01184=sub_bfc01184_($s0 [IN index])
 -s 0xBFC018F8=Task_Dispatch
@@ -135,10 +134,10 @@
 -s 0xBFC15A2C=clear_INTreq
 -s 0xBFC15AB8=Tsk00
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
--s 0xBFC15D6E=get_backup_data_from_eeprom /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
--s 0xBFC15D96=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN src_buffer], $a2 [IN counter], $a3 [IN mode_read /* 0=writing, 1=reading */])
+-s 0xBFC15D70=get_backup_data_from_eeprom /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
+-s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN src_buffer], $a2 [IN counter], $a3 [IN mode_read /* 0=writing, 1=reading */])
 -s 0xBFC15DE4=change_WDMOD
--s 0xBFC15EB6=prepare_HSC0_setting
+-s 0xBFC15EB8=prepare_HSC0_setting
 -s 0xBFC16CE4=INTD_body
 -s 0xBFC174B4=INTSBI0_I2C_body
 -s 0xBFC17B00=maybe_get_I2C_slaveaddress($v0 [OUT slave_address])
@@ -197,7 +196,7 @@
 -s 0xBFC19E74=prepare_ADB_setting($a0 [IN use_channel_3_or 1] /* 0=select analog channel 1, 1=select analog channel 3 */)
 -s 0xBFC19F00=get_ADB_conversion($a0 [IN use_channel_3_or 1] /* 0=ch1+read ADBREG1, 1=ch3+read ADBREG3 */, $v0 [OUT 10_bits_conversion])
 -s 0xBFC1A3B0=Tsk01
--s 0xBFC1A74A=DynamicCall_table_BFC97314
+-s 0xBFC1A74C=DynamicCall_table_BFC97314
 -s 0xBFC1AAE0=INTRX0_body02
 -s 0xBFC1AB8C=INTRX0_body00
 -s 0xBFC1AC98=INTTX0_body
@@ -237,7 +236,7 @@
 -s 0xBFC411EC=lens_command_0x26 /* send lens command 0x26, 0x8 bytes response expected */
 -s 0xBFC41454=lens_command_0xD6 /* send lens command 0xD6 + 5-byte parameter, no response expected */
 -s 0xBFC4166C=lens_command_0xD2 /* send lens command 0xD2 + 4-byte parameter, no response expected */
--s 0xBFC418F0=null_BFC418F0
+-s 0xBFC418F0=clear_v0
 -s 0xBFC41A28=lens_command_0xC5 /* set SC1 header0 = 0xC5, 0x8 bytes response expected */
 -s 0xBFC41AC0=lens_command_0xE3 /* no parameter, no response */
 -s 0xBFC41EA4=lens_command_0xDC /* send lens command 0xDC, 0x2 bytes response expected */
@@ -255,21 +254,21 @@
 -s 0xBFC43FCC=Tsk06
 -s 0xBFC443C0=get_HSC1_RX_data
 -s 0xBFC45678=save_HSC1_RX_data
--s 0xBFC45D3A=HSC1_RX_checksum($a0 [IN counter] /* OUT : error set bit4 of @ FFFF59C8*/)
+-s 0xBFC45D3C=HSC1_RX_checksum($a0 [IN counter] /* OUT : error set bit4 of @ FFFF59C8*/)
 -s 0xBFC45D80=Make_compare3_run
 -s 0xBFC45E24=null_BFC45E24
 -s 0xBFC45E94=HINTRX1_body00
--s 0xBFC45FC6=HINTRX1_body01
+-s 0xBFC45FC8=HINTRX1_body01
 -s 0xBFC460DC=INTCMP3_body00
 -s 0xBFC461A0=INTCMP3_body07
--s 0xBFC462AE=INTCMP3_body05
--s 0xBFC4639A=INTCMP3_body01
--s 0xBFC463EE=INTCMP3_body02
+-s 0xBFC462B0=INTCMP3_body05
+-s 0xBFC4639C=INTCMP3_body01
+-s 0xBFC463F0=INTCMP3_body02
 -s 0xBFC4641C=prepare_HSC1communication
 -s 0xBFC46504=INTCMP3_body04
--s 0xBFC46856=INTCMP3_body06
--s 0xBFC46DB6=null_BFC46DB6
--s 0xBFC46EAA=INTCMP3_body03
+-s 0xBFC46858=INTCMP3_body06
+-s 0xBFC46DB8=null_BFC46DB6
+-s 0xBFC46EAC=INTCMP3_body03
 -s 0xBFC46FF8=INTCMP4_body00
 -s 0xBFC470C0=INTF_body
 -s 0xBFC47148=Tsk07
@@ -282,7 +281,7 @@
 -s 0xBFC47FE8=setup_INT0xF($a0 [IN mode /* 1=enable */], $a1 [IN edge_falling /* 0=Raising edge, 1=Falling edge */], $a2 [IN ptr_INT0xF_body])
 -s 0xBFC480BC=set_HSC0_function_mode($a0 [IN enable /* 1=>enables RX, other=>reset HSC0 */])
 -s 0xBFC481D8=setup_INTcompare4_1
--s 0xBFC482F8=INTCMP4_body02
+-s 0xBFC482F8=null_INTCMP4_body02
 -s 0xBFC48330=Tsk08
 -s 0xBFC4A618=ADC_ch1ch3_status($a0 [IN get_or_set_status] /*1 = get_status, 0 = set_status_incomplete*/, $v0 [OUT is_incomplete])
 -s 0xBFC4E410=metering_data_convert /* IN: ADC_ch0_buffer, OUT: buffer 0xFFFF6A5C, OUT: buffer 0xFFFF8198, 0xFFFF82B0, 0xFFFF83C8 */
@@ -291,8 +290,7 @@
 -s 0xBFC53104=INT_TMRB_body00
 -s 0xBFC53604=INT_TMRB_body01
 -s 0xBFC537F8=reset_ADC_DMA3
--s 0xBFC53894=INTDMA3_body
--s 0xBFC53894=INT_DMA3_body00
+-s 0xBFC53894=INTDMA3_body00
 -s 0xBFC53B20=null_BFC53B20
 -s 0xBFC53B24=nonlinear_convert($a0 [IN value_to_convert], $v0 [OUT converted_value] /* uses table @0xBFC9AC0C*/)
 -s 0xBFC53BC4=nonlinear_convert_0($a0 [IN value_to_convert], $v0 [OUT converted_value] /* uses table @0xBFC9AE70*/)
