@@ -3516,7 +3516,7 @@ public class TxInstructionSet
                 }
             });
 
-    /** 16-bit EXTENDed version of sltiuInstruction uses t8 as fixed destination */
+    /** 16-bit EXTENDed version of sltuInstruction uses t8 as fixed destination */
     private static final TxInstruction sltu16Instruction = new TxInstruction("sltu", "i, j", "", "sltu $t1,$t2",
             "Set on Less Than Unsigned: If $t1 is less than $t2 using unsigned comparision, then set $t8 to 1 else set $t1 to 0",
             null, InstructionFormat16.RR,
