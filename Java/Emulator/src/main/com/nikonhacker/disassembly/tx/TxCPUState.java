@@ -172,7 +172,7 @@ public class TxCPUState extends CPUState {
     public final static int Sscr_PSS_pos        = 8;
     public final static int Sscr_PSS_mask       = 0b00000000_00000000_00001111_00000000;
     public final static int Sscr_CSS_pos        = 0;
-    public final static int Sscr_CSS_mask       = 0b00000000_00000000_00000000_00001111;
+    public final static int Sscr_CSS_mask       = 0b00000000_00000000_00000000_00000111;
 
     /** This array is used to decode the mfc0 and mtc0 instruction operands
      * Array is indexed by [SEL][number] and returns a register index as defined in TxCPUState
@@ -394,6 +394,22 @@ public class TxCPUState extends CPUState {
 
         // Finally, create special registers with listeners:
 
+        // Status register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Status] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+
+        // Cause register (in all register sets) is special because it can trigger a software interrupt
+        shadowRegisterSets[0][Cause] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+            @Override
+            public void afterWrite(int newValue) {
+                checkSoftwareInterruptGeneration();
+            }
+        });
+
         // IER register (in all register sets) is special because it toggles the IE bit
         shadowRegisterSets[0][IER] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
             @Override
@@ -406,27 +422,32 @@ public class TxCPUState extends CPUState {
                 }
             }
         });
-        // Status register (in all register sets) is special because it can trigger a software interrupt
-        shadowRegisterSets[0][Status] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
+
+        // SSCR register (in all register sets) is special because it switches the current register set
+        shadowRegisterSets[0][SSCR] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
             @Override
             public void afterWrite(int newValue) {
-                checkSoftwareInterruptGeneration();
+                if (isSscrSSDSet()) {
+                    /* SSD = Shadow Set Disable.
+                     * When the SSD bit is set, the Shadow Register Set is not updated by any interruptions,
+                     * only shadow set 0 is accessible, and the value of the CSS field is ignored.
+                     */
+                    regValue = shadowRegisterSets[0];
+                }
+                else {
+                    /* Otherwise, switch to corresponding register set. */
+                    regValue = shadowRegisterSets[newValue & Sscr_CSS_mask];
+                }
             }
         });
-        // Cause register (in all register sets) is special because it can trigger a software interrupt
-        shadowRegisterSets[0][Cause] = new WriteListenerRegister32(new WriteListenerRegister32.WriteListener() {
-            @Override
-            public void afterWrite(int newValue) {
-                checkSoftwareInterruptGeneration();
-            }
-        });
-        // And point all sets to them
+
+        // And point to them in all register sets
         for (int registerSet = 1; registerSet < 8; registerSet++) {
-            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
             shadowRegisterSets[registerSet][Status] = shadowRegisterSets[0][Status];
             shadowRegisterSets[registerSet][Cause] = shadowRegisterSets[0][Cause];
+            shadowRegisterSets[registerSet][IER] = shadowRegisterSets[0][IER];
+            shadowRegisterSets[registerSet][SSCR] = shadowRegisterSets[0][SSCR];
         }
-
 
         regValidityBitmap = 0;
 
@@ -986,28 +1007,32 @@ public class TxCPUState extends CPUState {
 
 
     // SSCR
-
+    /** Retrieves the SSD (Shadow Set Disable) bit of SSCR.*/
     public boolean isSscrSSDSet() {
         return Format.isBitSet(getReg(SSCR), Sscr_SSD_pos);
     }
 
-    /** This method sets the SSD bit and switches to register set 0 */
+    /** This method sets the SSD bit of SSCR.
+     * This will result in switching to register set 0 via the WriteListener on this register
+     */
     public void setSscrSSD() {
         setReg(SSCR, Format.setBit(getReg(SSCR), Sscr_SSD_pos));
-        regValue = shadowRegisterSets[0];
     }
 
-    /** This method clears the SSD bit and switches register set according to current CSS value */
+    /** This method clears the SSD bit of SSCR.
+     * This will result in switching to register set according to current CSS value via the WriteListener on this register
+     */
     public void clearSscrSSD() {
         setReg(SSCR, Format.clearBit(getReg(SSCR), Sscr_SSD_pos));
-        regValue = shadowRegisterSets[getSscrCSS()];
     }
 
 
+    /** This method returns the previous shadow register set */
     public int getSscrPSS() {
         return (getReg(SSCR) & Sscr_PSS_mask) >>> Sscr_PSS_pos;
     }
 
+    /** This method sets the previous shadow register set */
     public void setSscrPSS(int statusPSS) {
         setReg(SSCR, (getReg(SSCR) & ~Sscr_PSS_mask) | (statusPSS << Sscr_PSS_pos));
     }
@@ -1018,10 +1043,11 @@ public class TxCPUState extends CPUState {
         return (getReg(SSCR) & Sscr_CSS_mask) /*>>> Sscr_CSS_pos = 0*/;
     }
 
-    /** This method sets the CSS field and switches the current shadow register set accordingly */
+    /** This method sets the CSS field of SSCR.
+     * This will result in switching to the corresponding register set via the WriteListener on this register
+     */
     public void setSscrCSS(int css) {
         setReg(SSCR, (getReg(SSCR) & ~Sscr_CSS_mask) | (css /*<< Sscr_CSS_pos = 0*/));
-        regValue = shadowRegisterSets[css];
     }
 
     /** This method moves CSS to PSS and switches to the given CSS */
