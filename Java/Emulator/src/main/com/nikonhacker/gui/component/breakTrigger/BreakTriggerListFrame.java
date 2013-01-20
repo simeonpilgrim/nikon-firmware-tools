@@ -173,6 +173,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
             cpuStateValues = new TxCPUState();
         }
         cpuStateFlags.clear();
+        cpuStateFlags.pc = 0;
         BreakTrigger trigger = new BreakTrigger(findNewName(), cpuStateValues, cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange(chip);
