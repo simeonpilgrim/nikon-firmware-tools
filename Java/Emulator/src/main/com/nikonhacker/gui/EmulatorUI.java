@@ -1634,7 +1634,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         });
         memoryOptionsPanel.add(writeProtectFirmwareCheckBox);
         memoryOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
-        memoryOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware)"));
+        memoryOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware or performing a 'Stop and reset')"));
 
         // ------------------------ Prepare tabbed pane
 
