@@ -9,7 +9,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
     private TxCPUState cpuState;
@@ -35,8 +34,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     private boolean operateInIdle = true;
     private boolean operate;
 
-    public TxTimer(int timerNumber, TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController) {
-        super(timerNumber, interruptController);
+    public TxTimer(int timerNumber, TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, boolean isSynchronous) {
+        super(timerNumber, interruptController, isSynchronous);
         this.cpuState = cpuState;
         this.clockGenerator = clockGenerator;
         this.currentValue = 0;
@@ -66,7 +65,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+                start(timerTask, intervalNanoseconds);
             }
         }
         else {
@@ -158,7 +157,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 System.out.println("Start requested on timer " + timerNumber + " but its TB" + Format.asHex(timerNumber, 1) + "EN register is 0. Postponing...");
             }
             else {
-                executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+                start(timerTask, intervalNanoseconds);
             }
         }
         else {

@@ -124,7 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_TOGGLE_IO_PORTS_WINDOW = {"FR_COMMAND_TOGGLE_io_PORTS_WINDOW", "TX_COMMAND_TOGGLE_IO_PORTS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
     private static final String[] COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = {"FR_TOGGLE_REALOS_OBJECT_WINDOW", "TX_TOGGLE_REALOS_OBJECT_WINDOW"};
-    private static final String[] COMMAND_CHIP_OPTIONS = {"FR_DISASSEMBLY_OPTIONS", "TX_DISASSEMBLY_OPTIONS"};
+    private static final String[] COMMAND_CHIP_OPTIONS = {"FR_OPTIONS", "TX_OPTIONS"};
 
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_TOGGLE_SCREEN_EMULATOR = "TOGGLE_SCREEN_EMULATOR";

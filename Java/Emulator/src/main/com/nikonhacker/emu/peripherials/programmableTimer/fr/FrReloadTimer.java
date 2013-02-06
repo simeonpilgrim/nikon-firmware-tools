@@ -8,7 +8,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
@@ -31,8 +30,8 @@ public class FrReloadTimer extends ProgrammableTimer {
     private boolean isInUnderflowCondition; // indicates an underflow has occurred
 
 
-    public FrReloadTimer(int timerNumber, InterruptController interruptController) {
-        super(timerNumber, interruptController);
+    public FrReloadTimer(int timerNumber, InterruptController interruptController, boolean isSynchronous) {
+        super(timerNumber, interruptController, isSynchronous);
     }
 
 
@@ -123,7 +122,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                 intervalNanoseconds *= scale;
             }
 
-            executorService.scheduleAtFixedRate(new TimerTask() {
+            TimerTask command = new TimerTask() {
                 @Override
                 public void run() {
                     if (active) {
@@ -135,15 +134,16 @@ public class FrReloadTimer extends ProgrammableTimer {
                             }
                             if (mustReload) {
                                 currentValue += reloadValue;
-                            }
-                            else {
+                            } else {
                                 executorService.shutdownNow();
                                 executorService = null;
                             }
                         }
                     }
                 }
-            }, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+            };
+
+            start(command, intervalNanoseconds);
         }
 
         this.configuration = configuration;
