@@ -1,3 +1,9 @@
+-s 0xBFC12C68=setInterruptLEVel_01($a0 [IN level])
+-s 0xBFC12C74=setInterruptLEVel_02($a0 [IN level])
+-s 0xBFC12E58=clear_bit13_of_FFFFFFE8_and_Task_Dispatch_00
+-s 0xBFC12E64=set_bit5_of_FFFFFFE8_and_Task_Dispatch_00
+-s 0xBFC12E70=reload_low8_FFFFFFE8_and_Task_Dispatch_00
+-s 0xBFC12E7C=check_FFFFFFE8_low11b_nonzero_00($v0 [OUT is_non_zero])
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
 
 ############################### File map: D5100
@@ -99,7 +105,13 @@
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC01E5C=Call_software_interrupt
 -s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
+-s 0xBFC02BE8=clear_bit13_of_FFFFFFE8_and_Task_Dispatch
 -s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
+-s 0xBFC035D0=load_v0_from_FFFFFFEB($v0 [OUT from_FFFFFFEB])
+-s 0xBFC03818=get_interrupt_level_and_Task_Dispatch($a0 [IN ptr_for_interrupt_level])
+-s 0xBFC03948=reload_low8_FFFFFFE8_and_Task_Dispatch
+-s 0xBFC03984=set_bit5_of_FFFFFFE8_and_Task_Dispatch
 -s 0xBFC0ED34=null_BFC0ED34
 -s 0xBFC0ED3C=null_BFC0ED3C
 -s 0xBFC11534=INT0_body
@@ -119,6 +131,8 @@
 -s 0xBFC12B18=sys_clr_flg1($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC12B24=sys_clr_flg2($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+-s 0xBFC12C40=setInterruptLEVel_etc($a0 [IN ptr_to_level])
+-s 0xBFC12C5C=setInterruptLEVel_03($a0 [IN ptr_to_level])
 -s 0xBFC13298=reset_imc_tmr_cnt_sio_ad
 -s 0xBFC14504=interrupt_handler_INT0
 -s 0xBFC145C8=interrupt_handler_INT6
@@ -131,7 +145,7 @@
 -s 0xBFC14BB0=indirect_software_interrupt
 -s 0xBFC14F98=nmi
 -s 0xBFC15158=null_BFC15158
--s 0xBFC15A2C=clear_INTreq
+-s 0xBFC15A2C=clear_INTreq($a0 [IN interrupt_number])
 -s 0xBFC15AB8=Tsk00
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
 -s 0xBFC15D70=get_backup_data_from_eeprom /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
@@ -250,6 +264,7 @@
 -s 0xBFC437B4=INTCMP6_body02
 -s 0xBFC437D0=INT7_body00_or_INTCMP6_body00
 -s 0xBFC43C7C=enables_compare6
+-s 0xBFC43D4C=sub_bfc43d4c_($a0 [IN param1], $a1 [IN param2], $a2 [IN param3])
 -s 0xBFC43DD4=change_PI3_output($a0 [IN PI3_output_level_high] /* 0=low, <>0=high */)
 -s 0xBFC43FCC=Tsk06
 -s 0xBFC443C0=get_HSC1_RX_data
