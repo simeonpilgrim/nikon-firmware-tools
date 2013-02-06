@@ -143,7 +143,7 @@
     <!-- default target -->
     <target name="all" depends="clean,dist" description="Default target to build all"/>
 
-    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="ant-googlecode-0.0.3.jar" name="gcupload"/>
+    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="tools\googlecode_upload\ant-googlecode-0.0.3.jar" name="gcupload"/>
     <property file="build.credentials.properties" />
     <target name="upload-build" description="Upload built file to Google Code">
         <gcupload
