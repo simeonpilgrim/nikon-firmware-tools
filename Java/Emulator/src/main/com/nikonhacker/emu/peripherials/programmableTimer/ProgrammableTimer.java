@@ -2,7 +2,9 @@ package com.nikonhacker.emu.peripherials.programmableTimer;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
+import java.util.TimerTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public abstract class ProgrammableTimer {
 
@@ -34,10 +36,13 @@ public abstract class ProgrammableTimer {
      */
     protected int scale;
 
+    protected boolean isSynchronous;
 
-    public ProgrammableTimer(int timerNumber, InterruptController interruptController) {
+
+    public ProgrammableTimer(int timerNumber, InterruptController interruptController, boolean isSynchronous) {
         this.timerNumber = timerNumber;
         this.interruptController = interruptController;
+        this.isSynchronous = isSynchronous;
     }
 
     public int getCurrentValue() {
@@ -59,5 +64,14 @@ public abstract class ProgrammableTimer {
     @Override
     public String toString() {
         return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
+    }
+
+    protected void start(TimerTask timerTask, long intervalNanoseconds) {
+//        if (isSynchronous) {
+//            registerSynchronousTask(timerTask, intervalNanoseconds);
+//        }
+//        else
+            executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+
     }
 }

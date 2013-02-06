@@ -10,7 +10,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
     private TxCPUState cpuState;
@@ -49,8 +48,8 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     private boolean operateInIdle = true;
     private boolean operate;
 
-    public TxInputCaptureTimer(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController) {
-        super(0, interruptController);
+    public TxInputCaptureTimer(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, boolean isSynchronous) {
+        super(0, interruptController, isSynchronous);
         this.cpuState = cpuState;
         this.clockGenerator = clockGenerator;
         this.currentValue = 0;
@@ -83,7 +82,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+                start(timerTask, intervalNanoseconds);
             }
         }
         else {
@@ -225,7 +224,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 System.out.println("Start requested on capture timer but its TCEN register is 0. Postponing...");
             }
             else {
-                executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+                start(timerTask, intervalNanoseconds);
             }
         }
         else {
