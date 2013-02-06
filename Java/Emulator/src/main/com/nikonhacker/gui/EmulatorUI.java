@@ -959,8 +959,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         for (int chip = 0; chip < 2; chip++) {
             //analyse / disassemble
             generateSysSymbolsMenuItem[chip] = new JMenuItem("Generate " + Constants.CHIP_LABEL[chip] + " system call symbols");
-    //        if (chip == CHIP_FR) generateSysSymbolsMenuItem[chip].setMnemonic(KeyEvent.VK_A);
-    //        generateSysSymbolsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        if (chip == CHIP_FR) generateSysSymbolsMenuItem[chip].setMnemonic(KeyEvent.VK_A);
+            //        generateSysSymbolsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
             generateSysSymbolsMenuItem[chip].setActionCommand(COMMAND_GENERATE_SYS_SYMBOLS[chip]);
             generateSysSymbolsMenuItem[chip].addActionListener(this);
             sourceMenu.add(generateSysSymbolsMenuItem[chip]);
@@ -980,7 +980,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             //code structure
             codeStructureMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " code structure");
             if (chip == Constants.CHIP_FR) codeStructureMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-    //        codeStructureMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        codeStructureMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
             codeStructureMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW[chip]);
             codeStructureMenuItem[chip].addActionListener(this);
             sourceMenu.add(codeStructureMenuItem[chip]);
@@ -988,7 +988,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             //source code
             sourceCodeMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " source code");
             if (chip == Constants.CHIP_FR) sourceCodeMenuItem[chip].setMnemonic(KeyEvent.VK_S);
-    //        sourceCodeMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        sourceCodeMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
             sourceCodeMenuItem[chip].setActionCommand(COMMAND_TOGGLE_SOURCE_CODE_WINDOW[chip]);
             sourceCodeMenuItem[chip].addActionListener(this);
             sourceMenu.add(sourceCodeMenuItem[chip]);
@@ -1008,7 +1008,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             // save/load memory area
             saveLoadMemoryMenuItem[chip] = new JMenuItem("Save/Load " + Constants.CHIP_LABEL[chip] + " memory area");
             if (chip == Constants.CHIP_FR) saveLoadMemoryMenuItem[chip].setMnemonic(KeyEvent.VK_S);
-    //        saveLoadMemoryMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        saveLoadMemoryMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
             saveLoadMemoryMenuItem[chip].setActionCommand(COMMAND_SAVE_LOAD_MEMORY[chip]);
             saveLoadMemoryMenuItem[chip].addActionListener(this);
             toolsMenu.add(saveLoadMemoryMenuItem[chip]);
@@ -1245,7 +1245,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void loadState(int chip) {
         JTextField sourceFile = new JTextField();
         final JComponent[] inputs = new JComponent[] {
-            new FileSelectionPanel("Source file", sourceFile, false),
+                new FileSelectionPanel("Source file", sourceFile, false),
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
@@ -1290,7 +1290,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void saveState(int chip) {
         JTextField destinationFile = new JTextField();
         final JComponent[] inputs = new JComponent[] {
-            new FileSelectionPanel("Destination file", destinationFile, false),
+                new FileSelectionPanel("Destination file", destinationFile, false),
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
@@ -1849,7 +1849,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     // Programmable timers
                     for (int i = 0; i < programmableTimers.length; i++) {
-                        programmableTimers[i] = new FrReloadTimer(i, interruptController);
+                        programmableTimers[i] = new FrReloadTimer(i, interruptController, false);
                     }
 
                     // I/O ports
@@ -1878,10 +1878,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     // Programmable timers
                     // First put all 16-bit timers
                     for (int i = 0; i < TxIoListener.NUM_16B_TIMER; i++) {
-                        programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController);
+                        programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, false);
                     }
                     // Then add the 32-bit input capture timer
-                    programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController);
+                    programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, false);
 
                     // I/O ports
                     for (int i = 0; i < ioPorts.length; i++) {
