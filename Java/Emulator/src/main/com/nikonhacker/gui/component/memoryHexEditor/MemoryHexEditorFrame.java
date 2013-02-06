@@ -287,9 +287,16 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         hexEditor.setSelectedRange(offset, offset + selectionLength - 1);
     }
 
-    public void hexBytesChanged(HexEditorEvent e) {
-        if (e.isModification()) {
-            memory.store8((int) ((baseAddress & 0xFFFFFFFFL) + (long)e.getOffset()), hexEditor.getByte(e.getOffset()));
+    public void hexBytesChanged(HexEditorEvent event) {
+        if (event.isModification()) {
+            try {
+                memory.store8((int) ((baseAddress & 0xFFFFFFFFL) + (long)event.getOffset()), hexEditor.getByte(event.getOffset()));
+            }
+            catch (ArrayIndexOutOfBoundsException exception) {
+                JOptionPane.showMessageDialog(this, "Error writing to memory. This area is probably protected (see options)", "Write error", JOptionPane.ERROR_MESSAGE);
+                // Reload to show unedited values
+                jumpToAddress((int) ((baseAddress & 0xFFFFFFFFL) + (long)event.getOffset()), 1);
+            }
         }
     }
 }

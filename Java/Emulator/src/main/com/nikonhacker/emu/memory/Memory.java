@@ -67,9 +67,9 @@ public interface Memory {
 
     void changeProtection(int address, int len, boolean newRead, boolean newWrite, boolean newExec);
 
-    void loadFile(File file, int memoryOffset) throws IOException;
+    void loadFile(File file, int memoryOffset, boolean isWriteProtected) throws IOException;
 
-    void loadFile(File file, Collection<Range> ranges) throws IOException;
+    void loadFile(File file, Collection<Range> ranges, boolean isWriteProtected) throws IOException;
 
     void saveToFile(File file, int startAddress, int length) throws IOException;
 

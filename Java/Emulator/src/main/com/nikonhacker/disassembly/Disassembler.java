@@ -524,7 +524,7 @@ public abstract class Disassembler {
 
         if (memory == null) {
             memory = new FastMemory();
-            memory.loadFile(new File(inputFileName), fileRanges);
+            memory.loadFile(new File(inputFileName), fileRanges, true);
         }
 
     }

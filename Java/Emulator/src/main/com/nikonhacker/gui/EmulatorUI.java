@@ -124,7 +124,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_TOGGLE_IO_PORTS_WINDOW = {"FR_COMMAND_TOGGLE_io_PORTS_WINDOW", "TX_COMMAND_TOGGLE_IO_PORTS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
     private static final String[] COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = {"FR_TOGGLE_REALOS_OBJECT_WINDOW", "TX_TOGGLE_REALOS_OBJECT_WINDOW"};
-    private static final String[] COMMAND_DISASSEMBLY_OPTIONS = {"FR_DISASSEMBLY_OPTIONS", "TX_DISASSEMBLY_OPTIONS"};
+    private static final String[] COMMAND_CHIP_OPTIONS = {"FR_DISASSEMBLY_OPTIONS", "TX_DISASSEMBLY_OPTIONS"};
 
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_TOGGLE_SCREEN_EMULATOR = "TOGGLE_SCREEN_EMULATOR";
@@ -193,7 +193,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private JMenuItem[] analyseMenuItem = new JMenuItem[2];
     private JMenuItem[] saveLoadMemoryMenuItem = new JMenuItem[2];
-    private JMenuItem[] disassemblyOptionsMenuItem = new JMenuItem[2];
+    private JMenuItem[] chipOptionsMenuItem = new JMenuItem[2];
 
     @SuppressWarnings("FieldCanBeLocal")
     private JMenuItem uiOptionsMenuItem;
@@ -226,7 +226,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private JButton[] analyseButton = new JButton[2];
     private JButton[] saveLoadMemoryButton = new JButton[2];
-    private JButton[] disassemblyOptionsButton = new JButton[2];
+    private JButton[] chipOptionsButton = new JButton[2];
 
     // Frames
     private Component4006Frame component4006Frame;
@@ -628,8 +628,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        disassemblyOptionsButton[chip] = makeButton("options", COMMAND_DISASSEMBLY_OPTIONS[chip], Constants.CHIP_LABEL[chip] + " disassembly options", "Options");
-        bar.add(disassemblyOptionsButton[chip]);
+        chipOptionsButton[chip] = makeButton("options", COMMAND_CHIP_OPTIONS[chip], Constants.CHIP_LABEL[chip] + " options", "Options");
+        bar.add(chipOptionsButton[chip]);
 
         return bar;
     }
@@ -1013,13 +1013,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             saveLoadMemoryMenuItem[chip].addActionListener(this);
             toolsMenu.add(saveLoadMemoryMenuItem[chip]);
 
-            //disassembly options
-            disassemblyOptionsMenuItem[chip] = new JMenuItem(Constants.CHIP_LABEL[chip] + " disassembly options");
-            if (chip == Constants.CHIP_FR) disassemblyOptionsMenuItem[chip].setMnemonic(KeyEvent.VK_O);
-            disassemblyOptionsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
-            disassemblyOptionsMenuItem[chip].setActionCommand(COMMAND_DISASSEMBLY_OPTIONS[chip]);
-            disassemblyOptionsMenuItem[chip].addActionListener(this);
-            toolsMenu.add(disassemblyOptionsMenuItem[chip]);
+            //chip options
+            chipOptionsMenuItem[chip] = new JMenuItem(Constants.CHIP_LABEL[chip] + " options");
+            if (chip == Constants.CHIP_FR) chipOptionsMenuItem[chip].setMnemonic(KeyEvent.VK_O);
+            chipOptionsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            chipOptionsMenuItem[chip].setActionCommand(COMMAND_CHIP_OPTIONS[chip]);
+            chipOptionsMenuItem[chip].addActionListener(this);
+            toolsMenu.add(chipOptionsMenuItem[chip]);
 
             toolsMenu.add(new JSeparator());
 
@@ -1141,8 +1141,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_SERIAL_INTERFACES)) != Constants.CHIP_NONE) {
             toggleSerialInterfaces(chip);
         }
-        else if ((chip = getChipCommandMatchingAction(e, COMMAND_DISASSEMBLY_OPTIONS)) != Constants.CHIP_NONE) {
-            openDisassemblyOptionsDialog(chip);
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_CHIP_OPTIONS)) != Constants.CHIP_NONE) {
+            openChipOptionsDialog(chip);
         }
 
         else if (COMMAND_UI_OPTIONS.equals(e.getActionCommand())) {
@@ -1504,9 +1504,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
     }
 
-    private void openDisassemblyOptionsDialog(final int chip) {
-        JPanel panel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
-        panel.setName("Disassembler output");
+    private void openChipOptionsDialog(final int chip) {
+
+        // ------------------------ Disassembly options
+
+        JPanel disassemblyOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
 
         // Prepare sample code area
         final RSyntaxTextArea listingArea = new RSyntaxTextArea(15, 90);
@@ -1607,7 +1609,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             JCheckBox checkBox = makeOutputOptionCheckBox(chip, outputOption, prefs.getOutputOptions(chip), false);
             if (checkBox != null) {
                 outputOptionsCheckBoxes.add(checkBox);
-                panel.add(checkBox);
+                disassemblyOptionsPanel.add(checkBox);
                 checkBox.addActionListener(areaRefresherListener);
             }
         }
@@ -1615,13 +1617,36 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Force a refresh
         areaRefresherListener.actionPerformed(new ActionEvent(outputOptionsCheckBoxes.get(0), 0, ""));
 
-        panel.add(new JLabel("Sample output:"));
-        panel.add(new JScrollPane(listingArea));
-        panel.add(new JLabel("Tip: hover over the option checkboxes for help"));
+        disassemblyOptionsPanel.add(new JLabel("Sample output:"));
+        disassemblyOptionsPanel.add(new JScrollPane(listingArea));
+        disassemblyOptionsPanel.add(new JLabel("Tip: hover over the option checkboxes for help"));
+
+        // ------------------------ Memory protection options
+
+        JPanel memoryOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+        final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
+
+        writeProtectFirmwareCheckBox.setSelected(prefs.isFirmwareWriteProtected(chip));
+        writeProtectFirmwareCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
+            }
+        });
+        memoryOptionsPanel.add(writeProtectFirmwareCheckBox);
+        memoryOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
+        memoryOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware)"));
+
+        // ------------------------ Prepare tabbed pane
+
+        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
+        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Memory Options", null, memoryOptionsPanel);
+
+        // ------------------------ Show it
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-                panel,
-                Constants.CHIP_LABEL[chip] + " disassembly options",
+                tabbedPane,
+                Constants.CHIP_LABEL[chip] + " options",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
@@ -1894,7 +1919,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
-            memory.loadFile(imageFile[chip], cpuState.getResetAddress());
+            memory.loadFile(imageFile[chip], cpuState.getResetAddress(), prefs.isFirmwareWriteProtected(chip));
             isImageLoaded[chip] = true;
 
             cpuState.reset();
@@ -2393,7 +2418,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             stopMenuItem[chip].setEnabled(isImageLoaded[chip]); stopButton[chip].setEnabled(isImageLoaded[chip]);
 
-            disassemblyOptionsMenuItem[chip].setEnabled(!isAtLeastOneEmulatorPlaying()); disassemblyOptionsButton[chip].setEnabled(!isAtLeastOneEmulatorPlaying());
+            chipOptionsMenuItem[chip].setEnabled(!isAtLeastOneEmulatorPlaying()); chipOptionsButton[chip].setEnabled(!isAtLeastOneEmulatorPlaying());
 
             if (isImageLoaded[chip]) {
                 // Depends whether emulator is playing or not
