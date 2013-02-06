@@ -1267,7 +1267,8 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             (pc & 0xF0000001) | (statement.imm << 2), // prepare the jump. "The JAL instruction never toggles the ISA mode"
-                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?6:8)  // return address after the delay slot. In 32b, JAL+delay=4+4=8. In 16b, JAL+delay=4+2=6
+                            // Note: in 16b, the delay slot is always 16b ("There is one restriction on the use of EXTEND; it may not be placed in a jump delay slot")
                     );
                     context.cpuState.pc += statement.getNumBytes(); // Execute the statement in the delay slot
                 }
@@ -1282,7 +1283,8 @@ public class TxInstructionSet
                     int pc = context.cpuState.getPc();
                     context.setDelayedPcAndRa(
                             ((pc & 0xF0000001) ^ 1) | (statement.imm << 2),  // "The JALX instruction unconditionally toggles the ISA mode"
-                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?4:8)  // return address after the delay slot
+                            pc + (((TxCPUState)context.cpuState).is16bitIsaMode?6:8)  // return address after the delay slot. In 32b, JALX+delay=4+4=8. In 16b, JALX+delay=4+2=6
+                            // Note: in 16b, the delay slot is always 16b ("There is one restriction on the use of EXTEND; it may not be placed in a jump delay slot")
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -1296,7 +1298,7 @@ public class TxInstructionSet
                     context.pushStatement(statement);
                     context.setDelayedPcAndRaAndTarget(
                             context.cpuState.getReg(statement.rs_fs), // Next PC
-                            context.cpuState.getPc() + 8, // return address after the delay slot
+                            context.cpuState.getPc() + 8, // return address after the delay slot (this is the implementation for the 32bit ISA version : JALR+delay=4+4=8)
                             statement.rd_fd // register to store return address into, after delay slot
                     );
                     context.cpuState.pc += statement.getNumBytes();
@@ -2377,7 +2379,8 @@ public class TxInstructionSet
                     context.pushStatement(statement);
                     context.setDelayedPcAndRa(
                             context.cpuState.getReg(statement.rs_fs),
-                            context.cpuState.getPc() /* incl ISA 16 LSB*/ + 4 /* only exists in EXTENDed form */
+                            context.cpuState.getPc() + 4 // return address after the delay slot (this is the implementation for the 16bit ISA version : JALR+delay=2+2=4)
+                            // Note: in 16b, the delay slot is always 16b ("There is one restriction on the use of EXTEND; it may not be placed in a jump delay slot")
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
