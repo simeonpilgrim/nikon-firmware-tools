@@ -370,6 +370,7 @@ public class TxInterruptController extends AbstractInterruptController {
      */
     public void pushIlevCmask(int cmask) {
         ilev = (ilev << 4) | (cmask & Ilev_Cmask_mask);
+        //System.err.println("ILEV = " + ilev);
     }
 
     /**
@@ -378,6 +379,7 @@ public class TxInterruptController extends AbstractInterruptController {
     private void popIlev() {
         // MLEV = 0 : shift down
         ilev = ilev >>> 4;
+        //System.err.println("ILEV = " + ilev);
     }
 
     /**
@@ -388,6 +390,7 @@ public class TxInterruptController extends AbstractInterruptController {
     public void setIlev(int newIlev) {
         if (Format.isBitSet(newIlev, Ilev_Mlev_pos)) {
             ilev = (ilev & ~Ilev_Cmask_mask) | newIlev & Ilev_Cmask_mask;
+            //System.err.println("ILEV = " + ilev);
         }
         else {
             popIlev();
