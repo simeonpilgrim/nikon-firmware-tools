@@ -34,6 +34,7 @@ public class Prefs {
     private boolean writeDisassemblyToFile[];
     private boolean sourceCodeFollowsPc[];
     private String codeStructureGraphOrientation[];
+    private boolean firmwareWriteProtected[];
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -230,6 +231,16 @@ public class Prefs {
     public void setCodeStructureGraphOrientation(int chip, String value) {
         if (codeStructureGraphOrientation == null || codeStructureGraphOrientation.length != 2) codeStructureGraphOrientation = new String[2];
         this.codeStructureGraphOrientation[chip] = value;
+    }
+
+    public void setFirmwareWriteProtected(int chip, boolean isFirmwareWriteProtected) {
+        if (firmwareWriteProtected == null || firmwareWriteProtected.length != 2) firmwareWriteProtected = new boolean[2];
+        this.firmwareWriteProtected[chip] = isFirmwareWriteProtected;
+    }
+
+    public boolean isFirmwareWriteProtected(int chip) {
+        if (firmwareWriteProtected == null || firmwareWriteProtected.length != 2) firmwareWriteProtected = new boolean[2];
+        return firmwareWriteProtected[chip];
     }
 
     public void setAutoUpdateRealOsObjects(int chip, boolean autoUpdateRealOsObjects) {

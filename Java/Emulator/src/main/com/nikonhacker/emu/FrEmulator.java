@@ -36,7 +36,7 @@ public class FrEmulator extends Emulator {
         int initialPc = Format.parseUnsigned(args[1]);
 
         AutoAllocatingMemory memory = new AutoAllocatingMemory();
-        memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
+        memory.loadFile(new File(args[0]), initialPc, false); // TODO use ranges
         EmulatorOptions.debugMemory = false;
 
         FrCPUState cpuState = new FrCPUState(initialPc);

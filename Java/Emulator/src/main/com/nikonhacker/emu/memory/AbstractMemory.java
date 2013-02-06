@@ -350,7 +350,7 @@ public abstract class AbstractMemory implements Memory {
         }
     }
 
-    public void loadFile(File file, int startAddress) throws IOException {
+    public void loadFile(File file, int startAddress, boolean isWriteProtected) throws IOException {
         FileInputStream fis = new FileInputStream(file);
         int pte = getPTE(startAddress);
         int offset = getOffset(startAddress);
@@ -361,7 +361,7 @@ public abstract class AbstractMemory implements Memory {
             byte[] page = getPage(pte);
             if (page == null) {
                 // Unallocated page, allocate it
-                map(pte << OFFSET_BITS, getPageSize(), true, false, true);
+                map(pte << OFFSET_BITS, getPageSize(), true, !isWriteProtected, true);
                 page = getPage(pte);
             }
             int bytesRead = fis.read(page, offset, bytesToRead);
@@ -375,7 +375,7 @@ public abstract class AbstractMemory implements Memory {
         fis.close();
     }
 
-    public void loadFile(File sourceFile,  Collection<Range> ranges) throws IOException {
+    public void loadFile(File sourceFile, Collection<Range> ranges, boolean isWriteProtected) throws IOException {
         FileChannel fc = new RandomAccessFile(sourceFile, "r").getChannel();
         for (Range range : ranges) {
 
@@ -391,7 +391,7 @@ public abstract class AbstractMemory implements Memory {
 
             // Push bytes to memory
             int address = range.getStart();
-            map(address, rangeSize, true, false, true);
+            map(address, rangeSize, true, !isWriteProtected, true);
             long bytesPushed = 0;
             buffer.position(0);
             while (bytesPushed < rangeSize) {
