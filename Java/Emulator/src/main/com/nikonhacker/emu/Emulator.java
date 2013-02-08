@@ -27,6 +27,7 @@ public abstract class Emulator {
     protected CPUState cpuState;
 
     protected InterruptController interruptController;
+    protected CycleCounterListener cycleCounterListener;
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -107,4 +108,8 @@ public abstract class Emulator {
      * @throws EmulationException
      */
     public abstract BreakCondition play() throws EmulationException ;
+
+    public void setCycleCounterListener(CycleCounterListener cycleCounterListener) {
+        this.cycleCounterListener = cycleCounterListener;
+    }
 }

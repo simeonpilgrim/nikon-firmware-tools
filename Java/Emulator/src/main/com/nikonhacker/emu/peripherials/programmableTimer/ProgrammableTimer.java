@@ -36,13 +36,16 @@ public abstract class ProgrammableTimer {
      */
     protected int scale;
 
-    protected boolean isSynchronous;
+    protected TimerTask timerTask = null;
 
+    protected long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
 
-    public ProgrammableTimer(int timerNumber, InterruptController interruptController, boolean isSynchronous) {
+    private TimerCycleCounterListener cycleCounterListener;
+
+    public ProgrammableTimer(int timerNumber, InterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
         this.timerNumber = timerNumber;
         this.interruptController = interruptController;
-        this.isSynchronous = isSynchronous;
+        this.cycleCounterListener = cycleCounterListener;
     }
 
     public int getCurrentValue() {
@@ -61,17 +64,32 @@ public abstract class ProgrammableTimer {
         return active;
     }
 
+    public TimerTask getTimerTask() {
+        return timerTask;
+    }
+
+    protected void scheduleTask() {
+        if (cycleCounterListener != null) {
+            cycleCounterListener.registerTimer(this, intervalNanoseconds);
+        }
+        else {
+            executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
+        }
+    }
+
+    protected void unscheduleTask() {
+        if (cycleCounterListener != null) {
+            cycleCounterListener.unregisterTimer(this);
+        }
+        else {
+            executorService.shutdownNow();
+        }
+    }
+
+
     @Override
     public String toString() {
         return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
     }
 
-    protected void start(TimerTask timerTask, long intervalNanoseconds) {
-//        if (isSynchronous) {
-//            registerSynchronousTask(timerTask, intervalNanoseconds);
-//        }
-//        else
-            executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
-
-    }
 }

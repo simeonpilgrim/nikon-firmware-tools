@@ -6,6 +6,7 @@ import com.nikonhacker.emu.CpuPowerModeChangeListener;
 import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -28,14 +29,12 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     // Flip-flop output
     private boolean ff0 = false; // undefined in fact
 
-    private TimerTask timerTask = null;
-    private long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
     private static final int MAX_COUNTER_VALUE = (1 << 16) - 1;
     private boolean operateInIdle = true;
     private boolean operate;
 
-    public TxTimer(int timerNumber, TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, boolean isSynchronous) {
-        super(timerNumber, interruptController, isSynchronous);
+    public TxTimer(int timerNumber, TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
+        super(timerNumber, interruptController, cycleCounterListener);
         this.cpuState = cpuState;
         this.clockGenerator = clockGenerator;
         this.currentValue = 0;
@@ -57,7 +56,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // enable
             if (executorService != null) {
                 // It is a reconfiguration
-                executorService.shutdownNow();
+                unscheduleTask();
             }
             // Create a new scheduler
             executorService = Executors.newSingleThreadScheduledExecutor();
@@ -65,14 +64,14 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                start(timerTask, intervalNanoseconds);
+                scheduleTask();
             }
         }
         else {
             // disable
             if (executorService != null) {
                 // Shut down
-                executorService.shutdownNow();
+                unscheduleTask();
                 // Destroy it
                 executorService = null;
             }
@@ -157,14 +156,14 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 System.out.println("Start requested on timer " + timerNumber + " but its TB" + Format.asHex(timerNumber, 1) + "EN register is 0. Postponing...");
             }
             else {
-                start(timerTask, intervalNanoseconds);
+                scheduleTask();
             }
         }
         else {
             currentValue = 0;
             if (executorService != null) {
                 // Stop it (and prepare a new one, because it cannot be restarted)
-                executorService.shutdownNow();
+                unscheduleTask();
                 executorService = Executors.newSingleThreadScheduledExecutor();
             }
             timerTask = null;

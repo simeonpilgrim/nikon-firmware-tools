@@ -35,6 +35,7 @@ public class Prefs {
     private boolean sourceCodeFollowsPc[];
     private String codeStructureGraphOrientation[];
     private boolean firmwareWriteProtected[];
+    private boolean timersCycleSynchronous[];
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -307,6 +308,16 @@ public class Prefs {
         if (ioPortMap == null) ioPortMap = new Map[2];
         if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
         ioPortMap[chip].put(portNumber, value);
+    }
+
+    public boolean areTimersCycleSynchronous(int chip) {
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        return timersCycleSynchronous[chip];
+    }
+
+    public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
     }
 
     /**

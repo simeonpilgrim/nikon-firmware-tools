@@ -7,6 +7,7 @@ import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -42,14 +43,11 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     // Flip-flop output
     private boolean ff[] = new boolean[TxIoListener.NUM_COMPARE_CHANNEL];
 
-    private TimerTask timerTask = null;
-    private long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
-
     private boolean operateInIdle = true;
     private boolean operate;
 
-    public TxInputCaptureTimer(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, boolean isSynchronous) {
-        super(0, interruptController, isSynchronous);
+    public TxInputCaptureTimer(TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
+        super(0, interruptController, cycleCounterListener);
         this.cpuState = cpuState;
         this.clockGenerator = clockGenerator;
         this.currentValue = 0;
@@ -74,7 +72,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             // enable
             if (executorService != null) {
                 // It is a reconfiguration
-                executorService.shutdownNow();
+                unscheduleTask();
             }
             // Create a new scheduler
             executorService = Executors.newSingleThreadScheduledExecutor();
@@ -82,14 +80,14 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                start(timerTask, intervalNanoseconds);
+                scheduleTask();
             }
         }
         else {
             // disable
             if (executorService != null) {
                 // Shut down
-                executorService.shutdownNow();
+                unscheduleTask();
                 // Destroy it
                 executorService = null;
             }
@@ -224,14 +222,14 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 System.out.println("Start requested on capture timer but its TCEN register is 0. Postponing...");
             }
             else {
-                start(timerTask, intervalNanoseconds);
+                scheduleTask();
             }
         }
         else {
             currentValue = 0;
             if (executorService != null) {
                 // Stop it (and prepare a new one, because it cannot be restarted)
-                executorService.shutdownNow();
+                unscheduleTask();
                 executorService = Executors.newSingleThreadScheduledExecutor();
             }
             timerTask = null;
