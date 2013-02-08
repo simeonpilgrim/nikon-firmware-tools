@@ -106,6 +106,7 @@
 -s 0xBFC01E5C=Call_software_interrupt
 -s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
 -s 0xBFC02BE8=clear_bit13_of_FFFFFFE8_and_Task_Dispatch
+-s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
 -s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
 -s 0xBFC035D0=load_v0_from_FFFFFFEB($v0 [OUT from_FFFFFFEB])
