@@ -29,6 +29,7 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
@@ -1621,9 +1622,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         disassemblyOptionsPanel.add(new JScrollPane(listingArea));
         disassemblyOptionsPanel.add(new JLabel("Tip: hover over the option checkboxes for help"));
 
-        // ------------------------ Memory protection options
+        // ------------------------ Emulation options
 
-        JPanel memoryOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+        JPanel emulationOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
         final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
 
         writeProtectFirmwareCheckBox.setSelected(prefs.isFirmwareWriteProtected(chip));
@@ -1632,15 +1633,26 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
             }
         });
-        memoryOptionsPanel.add(writeProtectFirmwareCheckBox);
-        memoryOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
-        memoryOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware or performing a 'Stop and reset')"));
+        emulationOptionsPanel.add(writeProtectFirmwareCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
+        emulationOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware or performing a 'Stop and reset')"));
+
+        final JCheckBox timerCycleSynchronousCheckBox = new JCheckBox("Make timers synchronous with CPU");
+
+        timerCycleSynchronousCheckBox.setSelected(prefs.areTimersCycleSynchronous(chip));
+        timerCycleSynchronousCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
+            }
+        });
+        emulationOptionsPanel.add(timerCycleSynchronousCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, timers will run based on the number of cycles executed by the CPU, so slowing down the CPU slows down timers"));
 
         // ------------------------ Prepare tabbed pane
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
-        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Memory Options", null, memoryOptionsPanel);
+        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Emulation Options", null, emulationOptionsPanel);
 
         // ------------------------ Show it
 
@@ -1831,6 +1843,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             SerialInterface[] serialInterfaces;
             ClockGenerator clockGenerator;
             InterruptController interruptController;
+            TimerCycleCounterListener cycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
             // TODO We should not create a new platform, just reset it
             // TODO Otherwise, the cross-linkings risks memory leaks
@@ -1849,7 +1862,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                     // Programmable timers
                     for (int i = 0; i < programmableTimers.length; i++) {
-                        programmableTimers[i] = new FrReloadTimer(i, interruptController, false);
+                        programmableTimers[i] = new FrReloadTimer(i, interruptController, cycleCounterListener);
                     }
 
                     // I/O ports
@@ -1878,10 +1891,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     // Programmable timers
                     // First put all 16-bit timers
                     for (int i = 0; i < TxIoListener.NUM_16B_TIMER; i++) {
-                        programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, false);
+                        programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, cycleCounterListener);
                     }
                     // Then add the 32-bit input capture timer
-                    programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, false);
+                    programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, cycleCounterListener);
 
                     // I/O ports
                     for (int i = 0; i < ioPorts.length; i++) {
@@ -1916,6 +1929,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory);
             emulator[chip].setInterruptController(interruptController);
+            emulator[chip].setCycleCounterListener(cycleCounterListener);
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 

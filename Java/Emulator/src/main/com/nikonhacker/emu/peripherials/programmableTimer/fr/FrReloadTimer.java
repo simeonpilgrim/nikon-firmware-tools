@@ -5,6 +5,7 @@ import com.nikonhacker.emu.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -29,9 +30,8 @@ public class FrReloadTimer extends ProgrammableTimer {
     private boolean interruptEnabled; // underflow interrupt enabled
     private boolean isInUnderflowCondition; // indicates an underflow has occurred
 
-
-    public FrReloadTimer(int timerNumber, InterruptController interruptController, boolean isSynchronous) {
-        super(timerNumber, interruptController, isSynchronous);
+    public FrReloadTimer(int timerNumber, InterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
+        super(timerNumber, interruptController, cycleCounterListener);
     }
 
 
@@ -94,7 +94,7 @@ public class FrReloadTimer extends ProgrammableTimer {
         else {
             if (!countOperationEnabled) {
                 // Changing to disabled
-                executorService.shutdownNow();
+                unscheduleTask();
                 executorService = null;
             }
         }
@@ -108,13 +108,13 @@ public class FrReloadTimer extends ProgrammableTimer {
         if (initScheduler) {
             if (executorService != null) {
                 // It is a reconfiguration
-                executorService.shutdownNow();
+                unscheduleTask();
             }
             // Create a new scheduler
             executorService = Executors.newSingleThreadScheduledExecutor();
 
             scale = 1;
-            long intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY /*pclk tick/s*/;
+            intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
 
             if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
                 /* unsustainable frequency */
@@ -122,7 +122,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                 intervalNanoseconds *= scale;
             }
 
-            TimerTask command = new TimerTask() {
+            timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     if (active) {
@@ -135,7 +135,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                             if (mustReload) {
                                 currentValue += reloadValue;
                             } else {
-                                executorService.shutdownNow();
+                                unscheduleTask();
                                 executorService = null;
                             }
                         }
@@ -143,7 +143,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                 }
             };
 
-            start(command, intervalNanoseconds);
+            scheduleTask();
         }
 
         this.configuration = configuration;

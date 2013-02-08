@@ -75,6 +75,9 @@ public class TxEmulator extends Emulator {
                 // ACTUAL INSTRUCTION EXECUTION
                 ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, context);
 
+                if (cycleCounterListener != null) {
+                    cycleCounterListener.onCycleCountChange(totalCycles, 1);
+                }
                 totalCycles ++; // approximation
 
                 /* Delay slot processing */

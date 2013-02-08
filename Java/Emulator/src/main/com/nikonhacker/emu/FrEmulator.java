@@ -2197,7 +2197,9 @@ public class FrEmulator extends Emulator {
                         break;
 
                 }
-
+                if (cycleCounterListener != null) {
+                    cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+                }
                 totalCycles += cycles;
 
                 /* Delay slot processing */
