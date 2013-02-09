@@ -80,7 +80,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Add listeners
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                Integer address = codeStructure.getAddressFromString(targetField.getText());
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }

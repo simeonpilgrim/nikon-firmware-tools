@@ -15,7 +15,7 @@ public enum ErrorCode {
     E_TMOUT (0xffffffab, "Polling failure or timeout"),
     E_RLWAI (0xffffffaa, "WAIT state forced release"),
 
-    E_FREMU (0xffffffff, "FrEmulator exception"),;
+    E_EMULATOR(0xffffffff, "Emulator exception"),;
 
     private final int value;
     private final String comment;

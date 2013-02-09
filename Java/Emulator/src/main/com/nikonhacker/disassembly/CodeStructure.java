@@ -259,7 +259,7 @@ public abstract class CodeStructure {
      *             function name of the form xxx_address[_]
      * @return the converted address, or null if none matches
      */
-    public Integer getAddressFromText(String text) {
+    public Integer getAddressFromString(String text) {
         Integer address = null;
         if (StringUtils.isNotBlank(text)) {
             text = text.trim();

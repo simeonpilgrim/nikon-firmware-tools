@@ -68,7 +68,6 @@ import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.serialInterface.SerialInterfaceFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.gui.component.timer.ProgrammableTimersFrame;
-import com.nikonhacker.realos.*;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import org.apache.commons.io.FilenameUtils;
@@ -142,8 +141,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
     public static final String BUTTON_SIZE_LARGE = "LARGE";
 
-    private static final int BASE_ADDRESS_FUNCTION_CALL = 0xFFFFFFF0;
-    private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
+    private static final int BASE_ADDRESS_FUNCTION_CALL[] = {0xFFFFFFF0,0x10001000};
 
     private static final int CAMERA_SCREEN_MEMORY_Y = 0xCE57DC60;
     private static final int CAMERA_SCREEN_MEMORY_U = CAMERA_SCREEN_MEMORY_Y + 0x64000;
@@ -2276,7 +2274,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleRealOsObject(int chip) {
         if (realOsObjectFrame[chip] == null) {
-            realOsObjectFrame[chip] = new RealOsObjectFrame("µITRON Object Status", "os", true, true, false, true, chip, this);
+            realOsObjectFrame[chip] = new RealOsObjectFrame("µITRON Object Status", "os", true, true, false, true, chip, this, emulator[chip], platform[chip], codeStructure[chip]);
             realOsObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
             if (!isEmulatorPlaying[chip]) {
                 realOsObjectFrame[chip].updateAllLists(chip);
@@ -2585,16 +2583,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             // TODO : make the call transparent by cloning CPUState
             // To execute one function only, we put a fake CALL at a conventional place, followed by an infinite loop
-            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL, 0x9f8c);      // LD          ,R12
-            platform[chip].getMemory().store32(BASE_ADDRESS_FUNCTION_CALL + 2, address); //     address
-            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL + 6, 0x971c);  // CALL @R12
-            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL + 8, 0xe0ff);  // HALT, infinite loop
+            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL[chip], 0x9f8c);      // LD          ,R12
+            platform[chip].getMemory().store32(BASE_ADDRESS_FUNCTION_CALL[chip] + 2, address); //     address
+            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL[chip] + 6, 0x971c);  // CALL @R12
+            platform[chip].getMemory().store16(BASE_ADDRESS_FUNCTION_CALL[chip] + 8, 0xe0ff);  // HALT, infinite loop
 
             // And we put a breakpoint on the instruction after the call
             emulator[chip].clearBreakConditions();
-            emulator[chip].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_FUNCTION_CALL + 8, null));
+            emulator[chip].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_FUNCTION_CALL[chip] + 8, null));
 
-            platform[chip].getCpuState().pc = BASE_ADDRESS_FUNCTION_CALL;
+            platform[chip].getCpuState().pc = BASE_ADDRESS_FUNCTION_CALL[chip];
 
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
@@ -2607,123 +2605,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             startEmulator(chip);
         }
     }
-
-    public TaskInformation getTaskInformation(int objId) {
-        // todo chip
-        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
-
-        ErrorCode errorCode = runSysCall(0xEC, pk_robj, objId);
-
-        // Interpret result
-        if (errorCode != ErrorCode.E_OK) {
-            return new TaskInformation(objId, errorCode, 0, 0, 0);
-        }
-        else {
-            Memory memory = platform[Constants.CHIP_FR].getMemory();
-            return new TaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
-        }
-    }
-
-    public SemaphoreInformation getSemaphoreInformation(int objId) {
-        // todo chip
-        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
-
-        ErrorCode errorCode = runSysCall(0xCC, pk_robj, objId);
-
-        // Interpret result
-        if (errorCode != ErrorCode.E_OK) {
-            return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
-        }
-        else {
-            Memory memory = platform[Constants.CHIP_FR].getMemory();
-            return new SemaphoreInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
-        }
-    }
-
-    public EventFlagInformation getEventFlagInformation(int objId) {
-        // todo chip
-        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
-
-        ErrorCode errorCode = runSysCall(0xD4, pk_robj, objId);
-
-        // Interpret result
-        if (errorCode != ErrorCode.E_OK) {
-            return new EventFlagInformation(objId, errorCode, 0, 0, 0);
-        }
-        else {
-            Memory memory = platform[Constants.CHIP_FR].getMemory();
-            return new EventFlagInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
-        }
-    }
-
-    public MailboxInformation getMailboxInformation(int objId) {
-        // todo chip
-        int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
-
-        ErrorCode errorCode = runSysCall(0xC4, pk_robj, objId);
-
-        // Interpret result
-        if (errorCode != ErrorCode.E_OK) {
-            return new MailboxInformation(objId, errorCode, 0, 0, 0);
-        }
-        else {
-            return new MailboxInformation(objId, errorCode, platform[Constants.CHIP_FR].getMemory().load32(pk_robj), platform[Constants.CHIP_FR].getMemory().load32(pk_robj + 4), platform[Constants.CHIP_FR].getMemory().load32(pk_robj + 8));
-        }
-    }
-
-
-    public ErrorCode setFlagIdPattern(int flagId, int pattern) {
-        // todo chip
-        ErrorCode errorCode;
-        // Set
-        errorCode = runSysCall(0xD0, flagId, pattern);
-        if (errorCode == ErrorCode.E_OK) {
-            // Clr
-            errorCode = runSysCall(0xD1, flagId, pattern);
-        }
-        return errorCode;
-    }
-
-    private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
-        // todo chip
-
-        // Create alternate cpuState
-        FrCPUState tmpCpuState = ((FrCPUState)platform[Constants.CHIP_FR].getCpuState()).createCopy();
-
-        // Tweak alt cpuState
-        tmpCpuState.I = 0; // prevent interrupts
-        tmpCpuState.setILM(0, false);
-        tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
-
-        // Set params for call
-        tmpCpuState.setReg(4, r4);
-        tmpCpuState.setReg(5, r5);
-        tmpCpuState.setReg(12, BinaryArithmetics.signExtend(8, syscallNumber));
-
-        emulator[Constants.CHIP_FR].setCpuState(tmpCpuState);
-
-        // Prepare code
-        Memory memory = platform[Constants.CHIP_FR].getMemory();
-        memory.store16(BASE_ADDRESS_SYSCALL, 0x1F40);                      // 1F40    INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
-        memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                  // HALT, infinite loop
-
-        // Put a breakpoint on the instruction after the call
-        emulator[Constants.CHIP_FR].clearBreakConditions();
-        emulator[Constants.CHIP_FR].addBreakCondition(new BreakPointCondition(BASE_ADDRESS_SYSCALL + 2, null));
-
-        // Start emulator synchronously
-        try {
-            emulator[Constants.CHIP_FR].play();
-
-            // Read error code
-            return ErrorCode.fromValue(tmpCpuState.getReg(12));
-        }
-        catch (Throwable t) {
-            t.printStackTrace();
-            return ErrorCode.E_FREMU;
-        }
-    }
-
 
     private void pauseEmulator(int chip) {
         emulator[chip].addBreakCondition(new AlwaysBreakCondition());

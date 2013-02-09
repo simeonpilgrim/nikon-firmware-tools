@@ -7,8 +7,12 @@ import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser;
 import ca.odell.glazedlists.swing.EventTableModel;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.emu.Emulator;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.realos.*;
@@ -29,15 +33,20 @@ public class RealOsObjectFrame extends DocumentFrame {
 
     private JButton updateAllButton;
     private JCheckBox autoUpdateCheckbox;
+    private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
+    private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
+
     private final EventList<TaskInformation> taskInformationList;
     private final EventList<SemaphoreInformation> semaphoreInformationList;
     private final EventList<EventFlagInformation> eventFlagInformationList;
     private final EventList<MailboxInformation> mailboxInformationList;
-    private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
-    private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
-    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui) {
+    private final SysCallEnvironment sysCallEnvironment;
+
+    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Emulator emulator, Platform platform, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
+
+        sysCallEnvironment = new SysCallEnvironment(platform, emulator, codeStructure);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -120,7 +129,7 @@ public class RealOsObjectFrame extends DocumentFrame {
                         String newValue = JOptionPane.showInputDialog(RealOsObjectFrame.this, "New value for Pattern",  eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 2));
                         try {
                             int value = Format.parseUnsigned(newValue);
-                            ErrorCode errorCode = ui.setFlagIdPattern(flagId, value);
+                            ErrorCode errorCode = sysCallEnvironment.setFlagIdPattern(chip, flagId, value);
                             if (errorCode != ErrorCode.E_OK) {
                                 JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Setting flag returned " + errorCode);
                             }
@@ -169,16 +178,16 @@ public class RealOsObjectFrame extends DocumentFrame {
     public void updateTaskList(int chip) {
         taskInformationList.clear();
         int taskNumber = 1;
-        TaskInformation taskInformation = ui.getTaskInformation(taskNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(taskInformation.getErrorCode())) {
+        TaskInformation taskInformation = sysCallEnvironment.getTaskInformation(chip, taskNumber);
+        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(taskInformation.getErrorCode()) && taskNumber < 100) {
             taskInformationList.add(taskInformation);
             taskNumber++;
-            taskInformation = ui.getTaskInformation(taskNumber);
+            taskInformation = sysCallEnvironment.getTaskInformation(chip, taskNumber);
         }
 
         taskPanel.removeAll();
-        if (taskInformation.getErrorCode() == ErrorCode.E_FREMU) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
+        if (taskInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>" + ((chip == Constants.CHIP_FR)?"(syscall interrupt not initialized ?)":"(syscall not delcared in dtx.txt file ?)") + "<br/>See console for more info</center></html>");
             comp.setHorizontalAlignment(SwingConstants.CENTER);
             taskPanel.add(comp, BorderLayout.CENTER);
         }
@@ -191,15 +200,15 @@ public class RealOsObjectFrame extends DocumentFrame {
     public void updateSemaphoreList(int chip) {
         semaphoreInformationList.clear();
         int semaphoreNumber = 1;
-        SemaphoreInformation semaphoreInformation = ui.getSemaphoreInformation(semaphoreNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(semaphoreInformation.getErrorCode())) {
+        SemaphoreInformation semaphoreInformation = sysCallEnvironment.getSemaphoreInformation(chip, semaphoreNumber);
+        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(semaphoreInformation.getErrorCode())) {
             semaphoreInformationList.add(semaphoreInformation);
             semaphoreNumber++;
-            semaphoreInformation = ui.getSemaphoreInformation(semaphoreNumber);
+            semaphoreInformation = sysCallEnvironment.getSemaphoreInformation(chip, semaphoreNumber);
         }
 
         semaphorePanel.removeAll();
-        if (semaphoreInformation.getErrorCode() == ErrorCode.E_FREMU) {
+        if (semaphoreInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
             JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
             comp.setHorizontalAlignment(SwingConstants.CENTER);
             semaphorePanel.add(comp, BorderLayout.CENTER);
@@ -214,15 +223,15 @@ public class RealOsObjectFrame extends DocumentFrame {
     public void updateEventFlagList(int chip) {
         eventFlagInformationList.clear();
         int eventFlagNumber = 1;
-        EventFlagInformation eventFlagInformation = ui.getEventFlagInformation(eventFlagNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(eventFlagInformation.getErrorCode())) {
+        EventFlagInformation eventFlagInformation = sysCallEnvironment.getEventFlagInformation(chip, eventFlagNumber);
+        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(eventFlagInformation.getErrorCode())) {
             eventFlagInformationList.add(eventFlagInformation);
             eventFlagNumber++;
-            eventFlagInformation = ui.getEventFlagInformation(eventFlagNumber);
+            eventFlagInformation = sysCallEnvironment.getEventFlagInformation(chip, eventFlagNumber);
         }
 
         eventFlagPanel.removeAll();
-        if (eventFlagInformation.getErrorCode() == ErrorCode.E_FREMU) {
+        if (eventFlagInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
             JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
             comp.setHorizontalAlignment(SwingConstants.CENTER);
             eventFlagPanel.add(comp, BorderLayout.CENTER);
@@ -237,15 +246,15 @@ public class RealOsObjectFrame extends DocumentFrame {
     public void updateMailboxList(int chip) {
         mailboxInformationList.clear();
         int mailboxNumber = 1;
-        MailboxInformation mailboxInformation = ui.getMailboxInformation(mailboxNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_FREMU).contains(mailboxInformation.getErrorCode())) {
+        MailboxInformation mailboxInformation = sysCallEnvironment.getMailboxInformation(chip, mailboxNumber);
+        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(mailboxInformation.getErrorCode())) {
             mailboxInformationList.add(mailboxInformation);
             mailboxNumber++;
-            mailboxInformation = ui.getMailboxInformation(mailboxNumber);
+            mailboxInformation = sysCallEnvironment.getMailboxInformation(chip, mailboxNumber);
         }
 
         mailboxPanel.removeAll();
-        if (mailboxInformation.getErrorCode() == ErrorCode.E_FREMU) {
+        if (mailboxInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
             JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
             comp.setHorizontalAlignment(SwingConstants.CENTER);
             mailboxPanel.add(comp, BorderLayout.CENTER);
