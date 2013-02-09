@@ -187,7 +187,7 @@ public class RealOsObjectFrame extends DocumentFrame {
 
         taskPanel.removeAll();
         if (taskInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>" + ((chip == Constants.CHIP_FR)?"(syscall interrupt not initialized ?)":"(syscall not delcared in dtx.txt file ?)") + "<br/>See console for more info</center></html>");
+            JLabel comp = new JLabel("<html><center>Emulator Error<br/>" + ((chip == Constants.CHIP_FR)?"(syscall interrupt not initialized ?)":"(syscall not declared in dtx.txt file ?)") + "<br/>See console for more info</center></html>");
             comp.setHorizontalAlignment(SwingConstants.CENTER);
             taskPanel.add(comp, BorderLayout.CENTER);
         }
