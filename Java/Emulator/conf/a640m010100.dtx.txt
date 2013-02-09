@@ -1,9 +1,3 @@
--s 0xBFC12C68=setInterruptLEVel_01($a0 [IN level])
--s 0xBFC12C74=setInterruptLEVel_02($a0 [IN level])
--s 0xBFC12E58=clear_bit13_of_FFFFFFE8_and_Task_Dispatch_00
--s 0xBFC12E64=set_bit5_of_FFFFFFE8_and_Task_Dispatch_00
--s 0xBFC12E70=reload_low8_FFFFFFE8_and_Task_Dispatch_00
--s 0xBFC12E7C=check_FFFFFFE8_low11b_nonzero_00($v0 [OUT is_non_zero])
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
 
 ############################### File map: D5100
@@ -104,14 +98,16 @@
 -s 0xBFC01184=sub_bfc01184_($s0 [IN index])
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC026B4=useless_BFC026B4 /* disabled by a constant with value false */
 -s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
 -s 0xBFC02BE8=clear_bit13_of_FFFFFFE8_and_Task_Dispatch
 -s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
+-s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
 -s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
 -s 0xBFC035D0=load_v0_from_FFFFFFEB($v0 [OUT from_FFFFFFEB])
--s 0xBFC03818=get_interrupt_level_and_Task_Dispatch($a0 [IN ptr_for_interrupt_level])
--s 0xBFC03948=reload_low8_FFFFFFE8_and_Task_Dispatch
+-s 0xBFC03818=sys_get_ilev($a0 [IN ptr_for_interrupt_level])
+-s 0xBFC03948=sys_get_tid($v0 [OUT err_code], $a0 [IN ptr_to_task_id] /* get task id in the RUNNING state */)
 -s 0xBFC03984=set_bit5_of_FFFFFFE8_and_Task_Dispatch
 -s 0xBFC0ED34=null_BFC0ED34
 -s 0xBFC0ED3C=null_BFC0ED3C
@@ -134,6 +130,12 @@
 -s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
 -s 0xBFC12C40=setInterruptLEVel_etc($a0 [IN ptr_to_level])
 -s 0xBFC12C5C=setInterruptLEVel_03($a0 [IN ptr_to_level])
+-s 0xBFC12C68=setInterruptLEVel_01($a0 [IN level])
+-s 0xBFC12C74=setInterruptLEVel_02($a0 [IN level])
+-s 0xBFC12E58=clear_bit13_of_FFFFFFE8_and_Task_Dispatch_00
+-s 0xBFC12E64=set_bit5_of_FFFFFFE8_and_Task_Dispatch_00
+-s 0xBFC12E70=sys_get_tid_00($v0 [OUT err_code], $a0 [IN ptr_to_task_id])
+-s 0xBFC12E7C=check_FFFFFFE8_low11b_nonzero_00($v0 [OUT is_non_zero])
 -s 0xBFC13298=reset_imc_tmr_cnt_sio_ad
 -s 0xBFC14504=interrupt_handler_INT0
 -s 0xBFC145C8=interrupt_handler_INT6
