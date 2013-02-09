@@ -79,7 +79,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         ActionListener exploreActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                Integer address = codeStructure.getAddressFromString(targetField.getText());
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }
