@@ -11,7 +11,6 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -26,7 +25,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.EnumSet;
-
 
 public class RealOsObjectFrame extends DocumentFrame {
 
@@ -45,10 +43,10 @@ public class RealOsObjectFrame extends DocumentFrame {
 
     private final SysCallEnvironment sysCallEnvironment;
 
-    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Emulator emulator, Platform platform, CodeStructure codeStructure) {
+    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Platform platform, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
-        sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform, emulator, codeStructure):new TxSysCallEnvironment(platform, emulator, codeStructure);
+        sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform):new TxSysCallEnvironment(platform, codeStructure);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 

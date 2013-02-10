@@ -1,9 +1,8 @@
 package com.nikonhacker.realos.fr;
 
 import com.nikonhacker.BinaryArithmetics;
-import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.emu.Emulator;
+import com.nikonhacker.emu.FrEmulator;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
@@ -19,8 +18,14 @@ import com.nikonhacker.realos.*;
 public class FrSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
 
-    public FrSysCallEnvironment(Platform platform, Emulator emulator, CodeStructure codeStructure) {
-        super(platform, emulator, codeStructure);
+    private final FrEmulator emulator;
+
+    public FrSysCallEnvironment(Platform platform) {
+        super(platform);
+        // Use a separate emulator, but sharing memory and interrupt controller
+        emulator = new FrEmulator();
+        emulator.setMemory(platform.getMemory());
+        emulator.setInterruptController(platform.getInterruptController());
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
