@@ -28,18 +28,18 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
         emulator.setInterruptController(platform.getInterruptController());
     }
 
-    public TaskInformation getTaskInformation(int chip, int objId) {
+    public BaseTaskInformation getTaskInformation(int chip, int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
         ErrorCode errorCode = runSysCall(ITron3.SYSCALL_NUMBER_REF_TSK, pk_robj, objId);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new TaskInformation(objId, errorCode, 0, 0, 0);
+            return new FrTaskInformation(objId, errorCode, 0, 0, 0);
         }
         else {
             Memory memory = platform.getMemory();
-            return new TaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new FrTaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
 
@@ -134,5 +134,17 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             t.printStackTrace();
             return ErrorCode.E_EMULATOR;
         }
+    }
+
+    public Class getTaskInformationClass() {
+        return FrTaskInformation.class;
+    }
+
+    public String[] getTaskPropertyNames() {
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex"};
+    }
+
+    public String[] getTaskColumnLabels() {
+        return new String[]{"Task Id", "State", "Priority", "Extended Information"};
     }
 }

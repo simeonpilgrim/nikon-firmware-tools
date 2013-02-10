@@ -13,7 +13,7 @@ public abstract class SysCallEnvironment {
         this.platform = platform;
     }
 
-    public abstract TaskInformation getTaskInformation(int chip, int objId);
+    public abstract BaseTaskInformation getTaskInformation(int chip, int objId);
 
     public abstract SemaphoreInformation getSemaphoreInformation(int chip, int objId);
 
@@ -22,4 +22,11 @@ public abstract class SysCallEnvironment {
     public abstract MailboxInformation getMailboxInformation(int chip, int objId);
 
     public abstract ErrorCode setFlagIdPattern(int chip, int flagId, int pattern);
+
+    public abstract Class getTaskInformationClass();
+
+    public abstract String[] getTaskPropertyNames();
+
+    public abstract String[] getTaskColumnLabels();
+
 }

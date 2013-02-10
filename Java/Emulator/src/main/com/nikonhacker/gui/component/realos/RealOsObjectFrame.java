@@ -36,7 +36,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     private final JPanel taskPanel, semaphorePanel, eventFlagPanel, mailboxPanel;
     private JScrollPane taskScroller, semaphoreScroller, eventFlagScroller, mailboxScroller;
 
-    private final EventList<TaskInformation> taskInformationList;
+    private final EventList<BaseTaskInformation> taskInformationList;
     private final EventList<SemaphoreInformation> semaphoreInformationList;
     private final EventList<EventFlagInformation> eventFlagInformationList;
     private final EventList<MailboxInformation> mailboxInformationList;
@@ -78,12 +78,12 @@ public class RealOsObjectFrame extends DocumentFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Tasks
-        taskInformationList = GlazedLists.threadSafeList(new BasicEventList<TaskInformation>());
+        taskInformationList = GlazedLists.threadSafeList(new BasicEventList<BaseTaskInformation>());
         taskPanel = new JPanel(new BorderLayout());
-        SortedList<TaskInformation> sortedTaskInformationList = new SortedList<TaskInformation>(taskInformationList, null);
-        JTable taskTable = new JTable(new EventTableModel<TaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(TaskInformation.class,
-                new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex"},
-                new String[]{"Task Id", "State", "Priority", "Extended Information"})));
+        SortedList<BaseTaskInformation> sortedTaskInformationList = new SortedList<BaseTaskInformation>(taskInformationList, null);
+        JTable taskTable = new JTable(new EventTableModel<BaseTaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(sysCallEnvironment.getTaskInformationClass(),
+                sysCallEnvironment.getTaskPropertyNames(),
+                sysCallEnvironment.getTaskColumnLabels())));
         TableComparatorChooser.install(taskTable, sortedTaskInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
         taskScroller = new JScrollPane(taskTable);
@@ -178,7 +178,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     public void updateTaskList(int chip) {
         taskInformationList.clear();
         int taskNumber = 1;
-        TaskInformation taskInformation = sysCallEnvironment.getTaskInformation(chip, taskNumber);
+        BaseTaskInformation taskInformation = sysCallEnvironment.getTaskInformation(chip, taskNumber);
         while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(taskInformation.getErrorCode()) && taskNumber < 100) {
             taskInformationList.add(taskInformation);
             taskNumber++;
