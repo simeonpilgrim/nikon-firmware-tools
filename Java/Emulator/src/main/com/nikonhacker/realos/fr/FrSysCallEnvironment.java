@@ -35,11 +35,14 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new FrTaskInformation(objId, errorCode, 0, 0, 0);
+            return new FrTaskInformation(objId, errorCode);
         }
         else {
             Memory memory = platform.getMemory();
-            return new FrTaskInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            return new FrTaskInformation(objId, errorCode,
+                    memory.load32(pk_robj + 8),
+                    memory.load32(pk_robj + 4),
+                    memory.load32(pk_robj));
         }
     }
 
@@ -50,7 +53,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
+            return new SemaphoreInformation(objId, errorCode);
         }
         else {
             Memory memory = platform.getMemory();
