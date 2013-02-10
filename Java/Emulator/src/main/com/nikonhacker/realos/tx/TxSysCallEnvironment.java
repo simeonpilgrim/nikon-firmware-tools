@@ -2,8 +2,8 @@ package com.nikonhacker.realos.tx;
 
 import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.tx.TxCPUState;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
+import com.nikonhacker.emu.TxEmulator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.realos.*;
@@ -18,8 +18,15 @@ import com.nikonhacker.realos.*;
 public class TxSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0x10000000;
 
-    public TxSysCallEnvironment(Platform platform, Emulator emulator, CodeStructure codeStructure) {
-        super(platform, emulator, codeStructure);
+    private final TxEmulator emulator;
+    private final CodeStructure codeStructure;
+
+    public TxSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
+        super(platform);
+        this.codeStructure = codeStructure;
+        // Use a separate emulator, but sharing memory
+        this.emulator = new TxEmulator();
+        this.emulator.setMemory(platform.getMemory());
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {

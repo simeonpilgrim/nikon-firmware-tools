@@ -1,7 +1,5 @@
 package com.nikonhacker.realos;
 
-import com.nikonhacker.disassembly.CodeStructure;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
 
 /**
@@ -10,13 +8,9 @@ import com.nikonhacker.emu.Platform;
 public abstract class SysCallEnvironment {
 
     protected final Platform platform;
-    protected final Emulator emulator;
-    protected CodeStructure codeStructure;
 
-    public SysCallEnvironment(Platform platform, Emulator emulator, CodeStructure codeStructure) {
+    public SysCallEnvironment(Platform platform) {
         this.platform = platform;
-        this.emulator = emulator;
-        this.codeStructure = codeStructure;
     }
 
     public abstract TaskInformation getTaskInformation(int chip, int objId);
