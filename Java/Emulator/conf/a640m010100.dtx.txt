@@ -103,6 +103,7 @@
 -s 0xBFC02BE8=sys_clear_bit13_of_FFFFFFE8
 -s 0xBFC02C28=sys_unknown_BFC02C28
 -s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
+-s 0xBFC02D98=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
 -s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
 -s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
@@ -435,3 +436,5 @@
 -j 0xBFC144EC=0xBFC0D9F8
 -j 0xBFC0119C=0xBFC01FAC, 0xBFC0251C, 0xBFC01DB8, 0xBFC01E80, 0xBFC00D90
 -j 0xBFC01E6C=0xBFC14BB0
+# the following is *one* of the observed values:
+-j 0xBFC018F0=0xBFC017D0
