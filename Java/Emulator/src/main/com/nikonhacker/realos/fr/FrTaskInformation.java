@@ -6,8 +6,12 @@ import com.nikonhacker.realos.TaskInformation;
 
 public class FrTaskInformation extends TaskInformation {
 
-    public FrTaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
-        super(objectId, errorCode, extendedInformation, taskPriority, stateValue);
+    public FrTaskInformation(int objectId, ErrorCode errorCode) {
+        super(objectId, errorCode);
+    }
+
+    public FrTaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int extendedInformation) {
+        super(objectId, errorCode, stateValue, taskPriority, extendedInformation);
     }
 
     @Override

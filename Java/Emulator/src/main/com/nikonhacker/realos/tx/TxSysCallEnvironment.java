@@ -7,7 +7,6 @@ import com.nikonhacker.emu.TxEmulator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.realos.*;
-import com.nikonhacker.realos.fr.FrTaskInformation;
 
 /**
  * This environment is the implementation for the TX CPU
@@ -37,7 +36,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
-            return new FrTaskInformation(objId, errorCode, 0, 0, 0);
+            return new TxTaskInformation(objId, errorCode);
         }
         else {
             Memory memory = platform.getMemory();
@@ -46,10 +45,19 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                Let's return "non existent object" if state is 0.
             */
             if (stateValue == 0) {
-                return new FrTaskInformation(objId, ErrorCode.E_ID, 0, 0, 0);
+                return new TxTaskInformation(objId, ErrorCode.E_ID);
             }
             else {
-                return new FrTaskInformation(objId, errorCode, 0 /*extended information*/, memory.load32(pk_robj + 4), stateValue);
+                return new TxTaskInformation(objId, errorCode,
+                        stateValue,
+                        memory.load32(pk_robj + 4),
+                        memory.load32(pk_robj + 8),
+                        memory.load32(pk_robj + 12),
+                        memory.load32(pk_robj + 16),
+                        memory.load32(pk_robj + 20),
+                        memory.load32(pk_robj + 24),
+                        memory.load32(pk_robj + 28),
+                        memory.load32(pk_robj + 32));
             }
         }
     }
@@ -162,14 +170,14 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public Class getTaskInformationClass() {
-        return FrTaskInformation.class;
+        return TxTaskInformation.class;
     }
 
     public String[] getTaskPropertyNames() {
-        return new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex"};
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "taskBasePriority", "reasonForWaiting", "objectIdWaiting", "timeLeft", "actRequestCount", "wuRequestCount", "suspendCount"};
     }
 
     public String[] getTaskColumnLabels() {
-        return new String[]{"Task Id", "State", "Priority", "Extended Information"};
+        return new String[]{"Task Id", "State", "Priority", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount"};
     }
 }
