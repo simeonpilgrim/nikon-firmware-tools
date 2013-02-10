@@ -1,7 +1,9 @@
 package com.nikonhacker.disassembly;
 
 import com.nikonhacker.emu.CallStackItem;
+import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Deque;
 import java.util.Set;
@@ -85,16 +87,33 @@ public class StatementContext {
                     } catch (DisassemblyException e) {
                         e.printStackTrace();
                     }
-                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.toString(outputOptions)));
+                    String target = statement.getCommentString();
+                    if (StringUtils.isBlank(target)) target = statement.getOperandString();
+                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), statement.getInstruction(), statement.toString(outputOptions), target));
                 }
             }
         }
     }
 
-    public CallStackItem popStatement() {
+    public CallStackItem popItem() {
         if (callStack != null && !callStack.isEmpty()) {
-            return callStack.pop();
+            CallStackItem poppedItem = callStack.pop();
+            while (poppedItem != null && poppedItem.getInstruction() != null && poppedItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) {
+                poppedItem = callStack.pop();
+            }
+            return poppedItem;
         }
         return null;
+    }
+
+    public void pushInterrupt(InterruptRequest interruptRequest) {
+        if (callStack != null) {
+            //Double test to avoid useless synchronization if not tracking, at the cost of a double test when tracking (debug)
+            synchronized (callStack) {
+                if (callStack != null) {
+                    callStack.push(new CallStackItem(cpuState.pc, cpuState.getSp(), null, interruptRequest.toString(), ""));
+                }
+            }
+        }
     }
 }

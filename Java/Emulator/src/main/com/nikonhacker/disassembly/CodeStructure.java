@@ -61,6 +61,11 @@ public abstract class CodeStructure {
         return symbol==null?null:symbol.getName();
     }
 
+    public String getLabelName(Integer address) {
+        Symbol symbol = labels.get(address);
+        return symbol==null?null:symbol.getName();
+    }
+
 
     /** Map address -> Start of corresponding function */
     public Map<Integer, Integer> getReturns() {
@@ -118,6 +123,33 @@ public abstract class CodeStructure {
             writer.write(labels.get(address).getName() + ":\n");
         }
 
+        // Replace target addresses and comments by symbol names, etc.
+        improveOperandAndComment(address, statement, outputOptions);
+
+        // print statement
+        Disassembler.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
+
+        // after return from function
+        if (isEnd(address)) {
+            Integer matchingStart = ends.get(address);
+            if (matchingStart == null) {
+                writer.write("; end of an unidentified function (never called)\n");
+            }
+            else {
+                writer.write("; end of " + getFunctionName(matchingStart) + "\n");
+            }
+            writer.write("; ------------------------------------------------------------------------\n\n");
+        }
+    }
+
+    /**
+     * This method replaces addresses in operands and comments by corresponding symbol names (if any),
+     * indicates if branches go forward (skip) or backwards (loop) and decodes call parameters
+     * @param address
+     * @param statement
+     * @param outputOptions
+     */
+    private void improveOperandAndComment(Integer address, Statement statement, Set<OutputOption> outputOptions) {
         if (EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.BRA, Instruction.FlowType.CALL, Instruction.FlowType.INT).contains(statement.getInstruction().getFlowType())) {
             try {
                 int targetAddress;
@@ -200,21 +232,6 @@ public abstract class CodeStructure {
                 // noop
             }
         }
-
-        // print statement
-        Disassembler.printDisassembly(writer, statement, address, memoryFileOffset, outputOptions);
-
-        // after return from function
-        if (isEnd(address)) {
-            Integer matchingStart = ends.get(address);
-            if (matchingStart == null) {
-                writer.write("; end of an unidentified function (never called)\n");
-            }
-            else {
-                writer.write("; end of " + getFunctionName(matchingStart) + "\n");
-            }
-            writer.write("; ------------------------------------------------------------------------\n\n");
-        }
     }
 
     public abstract String[] getRegisterLabels();
@@ -242,9 +259,10 @@ public abstract class CodeStructure {
      *             function name of the form xxx_address[_]
      * @return the converted address, or null if none matches
      */
-    public Integer getAddressFromText(String text) {
+    public Integer getAddressFromString(String text) {
         Integer address = null;
         if (StringUtils.isNotBlank(text)) {
+            text = text.trim();
             // Try to find by name
             for (Integer candidate : getFunctions().keySet()) {
                 Function f = getFunctions().get(candidate);

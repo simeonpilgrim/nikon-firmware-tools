@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 
 public class BackgroundImagePanel extends JPanel {
-    Image backgroundImage = null;
+    private Image backgroundImage = null;
 
     public BackgroundImagePanel(Image backgroundImage) {
         super();

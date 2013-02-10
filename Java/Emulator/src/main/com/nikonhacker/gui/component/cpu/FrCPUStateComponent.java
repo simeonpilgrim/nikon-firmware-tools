@@ -30,8 +30,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
     private JTextField mdhTextField = new JTextField();
     private JTextField mdlTextField = new JTextField();
 
-    JLabel r15Label0 = new JLabel(" ", JLabel.LEFT);
-    JLabel r15Label1 = new JLabel(" ", JLabel.LEFT);
+    private JLabel r15Label0 = new JLabel(" ", JLabel.LEFT);
+    private JLabel r15Label1 = new JLabel(" ", JLabel.LEFT);
 
     public FrCPUStateComponent(final FrCPUState cpuState, boolean filterMode) {
         this.regTextFields = new JTextField[32];

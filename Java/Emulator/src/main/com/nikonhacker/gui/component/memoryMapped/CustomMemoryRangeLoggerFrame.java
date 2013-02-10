@@ -19,7 +19,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
     private static final int ROWS = 60;
     private static final int COLUMNS = 80;
 
-    DebuggableMemory memory;
+    private DebuggableMemory memory;
     private CPUState cpuState;
     private MemoryActivityListener listener;
     private final JTextField minAddressField, maxAddressField;

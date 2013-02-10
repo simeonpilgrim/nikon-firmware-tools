@@ -17,7 +17,7 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
     private Timer refreshTimer;
 
-    final CPUStateComponent cpuPanel;
+    private final CPUStateComponent cpuPanel;
 
     private boolean editable;
 

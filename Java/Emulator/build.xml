@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="NikonEmulator"/>
-    <property name="app-version"      value="2.07" />
+    <property name="app-version"      value="2.17" />
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
     <property name="class-dir"        location="ant-classes"/>
@@ -54,6 +54,7 @@
         <copy todir="${class-dir}" >
             <fileset dir="${source-dir}">
                 <include name="**/*.png"/>
+                <include name="**/*.jpg"/>
                 <include name="**/*.properties"/>
             </fileset>
         </copy>
@@ -142,7 +143,7 @@
     <!-- default target -->
     <target name="all" depends="clean,dist" description="Default target to build all"/>
 
-    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="ant-googlecode-0.0.3.jar" name="gcupload"/>
+    <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="tools\googlecode_upload\ant-googlecode-0.0.3.jar" name="gcupload"/>
     <property file="build.credentials.properties" />
     <target name="upload-build" description="Upload built file to Google Code">
         <gcupload

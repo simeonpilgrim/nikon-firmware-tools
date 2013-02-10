@@ -14,45 +14,45 @@ import java.util.Set;
  */
 public class TxStatement extends Statement {
     ///* output formatting */
-    public static String fmt_nxt;
-    public static String fmt_imm;
-    public static String fmt_and;
-    public static String fmt_inc;
-    public static String fmt_dec;
-    public static String fmt_mem;
-    public static String fmt_par;
-    public static String fmt_ens;
+    private static String fmt_nxt;
+    private static String fmt_imm;
+    private static String fmt_and;
+    private static String fmt_inc;
+    private static String fmt_dec;
+    private static String fmt_mem;
+    private static String fmt_par;
+    private static String fmt_ens;
 
     /** rs or fs operand */
     public int rs_fs; // as-is from binary code
-    public int decodedRsFs; // interpreted
+    private int decodedRsFs; // interpreted
 
     /** rt or ft operand */
     public int rt_ft; // as-is from binary code
-    public int decodedRtFt; // interpreted
+    private int decodedRtFt; // interpreted
 
     /** rd of fd operand */
     public int rd_fd; // as-is from binary code
-    public int decodedRdFd; // interpreted
+    private int decodedRdFd; // interpreted
 
     /** sa (shift amount) of cc (CP1 condition code) operand */
     // TODO use imm instead ??
     // TODO what does decodedSa mean ??
     public int sa_cc; // as-is from binary code
-    public int decodedSaCc; // interpreted
+    private int decodedSaCc; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
-    public int c;
+    private int c;
 
 
     /** number of significant bits in imm */
     public int immBitWidth;
 
     /** number of significant bits in decodedImm */
-    public int decodedImmBitWidth;
+    private int decodedImmBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
-    public int memRangeStart = 0;
+    private int memRangeStart = 0;
 
     private int binaryStatement;
     private int numBytes;
@@ -852,7 +852,7 @@ public class TxStatement extends Statement {
         return StringUtils.replace(StringUtils.replace(buffer.toString(), " ", ""), ",", "");
     }
 
-    public String formatAsHex() {
+    public String getFormattedBinaryStatement() {
         if (numBytes == 4)
         {
             // 32b, or extended 16b
@@ -919,5 +919,11 @@ public class TxStatement extends Statement {
     public void fill32bInstruction(int binaryStatement32) throws DisassemblyException {
         setBinaryStatement(4, binaryStatement32);
         setInstruction(TxInstructionSet.getInstructionFor32BitStatement(binaryStatement32));
+    }
+
+    public boolean isPotentialStuffing() {
+        return      (numBytes == 2 && getBinaryStatement() == 0xFFFF) /* TX 0xFFFF stuffing in 16-bit ISA mode*/
+                ||  (numBytes == 4 && getBinaryStatement() == 0x00000000) /* TX NOP stuffing in 32-bit ISA mode*/
+                ;
     }
 }

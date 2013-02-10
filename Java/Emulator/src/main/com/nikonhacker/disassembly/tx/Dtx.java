@@ -30,7 +30,7 @@ public class Dtx extends Disassembler
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
                 statement.context = new StatementContext();
-                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
             codeStructure.getStatements().put(context.cpuState.pc, statement);
@@ -59,7 +59,7 @@ public class Dtx extends Disassembler
         if (codeStructure != null) {
             if ((statement.getInstruction().flowType == Instruction.FlowType.CALL || statement.getInstruction().flowType == Instruction.FlowType.INT) && outputOptions.contains(OutputOption.PARAMETERS)) {
                 statement.context = new StatementContext();
-                statement.context.cpuState = ((TxCPUState) context.cpuState).clone();
+                statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
             codeStructure.getStatements().put(context.cpuState.pc, statement);

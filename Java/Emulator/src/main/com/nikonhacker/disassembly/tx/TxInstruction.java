@@ -7,7 +7,7 @@ public class TxInstruction extends Instruction {
 
     private TxInstructionSet.InstructionFormat32 instructionFormat32;
     private TxInstructionSet.InstructionFormat16 instructionFormat16;
-    public SimulationCode simulationCode;
+    private SimulationCode simulationCode;
 
     /**
      * Creates a new TxInstruction

@@ -2,8 +2,8 @@ package com.nikonhacker.disassembly;
 
 
 public class CodeSegment {
-    int start;
-    int end;
+    private int start;
+    private int end;
 
     public CodeSegment() {
     }

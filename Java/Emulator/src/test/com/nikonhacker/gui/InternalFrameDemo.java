@@ -35,16 +35,17 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 
 import javax.swing.*;
-
-import java.awt.event.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 /*
 * InternalFrameDemo.java requires:
 *   MyInternalFrame.java
 */
 public class InternalFrameDemo extends JFrame implements ActionListener {
-    JDesktopPane mdiPane;
+    private JDesktopPane mdiPane;
 
     private static DebuggableMemory memory = new DebuggableMemory();
     private static TrackingMemoryActivityListener activityListener = new TrackingMemoryActivityListener(memory.getNumPages(), memory.getPageSize());
@@ -89,7 +90,7 @@ public class InternalFrameDemo extends JFrame implements ActionListener {
 
     }
 
-    public InternalFrameDemo() {
+    private InternalFrameDemo() {
         super("InternalFrameDemo");
 
         //Make the big window be indented 50 pixels from each edge

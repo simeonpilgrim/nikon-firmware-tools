@@ -12,31 +12,32 @@ import java.io.FileOutputStream;
 import java.util.*;
 
 public class Prefs {
-    public static final String KEY_WINDOW_MAIN = "MAIN";
+    private static final String KEY_WINDOW_MAIN = "MAIN";
 
-    int sleepTick = 2;
-    List<BreakTrigger>[] triggers = new ArrayList[2];
-    EnumSet<OutputOption>[] outputOptions = new EnumSet[2];
-
-    String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
-
-    boolean closeAllWindowsOnStop = false;
-
-    boolean writeDisassemblyToFile = true;
-    boolean followPc = true;
-
+    // Common
+    private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
+    private boolean closeAllWindowsOnStop = false;
     private HashMap<String, WindowPosition> windowPositionMap;
     private HashMap<String, WindowPosition> windowSizeMap;
-
-    private String codeStructureGraphOrientation;
-
-    private boolean autoUpdateRealOsObjects = true;
-
     private int dividerLocation;
     private int lastDividerLocation;
     private boolean dividerKeepHidden;
+    private boolean usePrettyIoComponents = false;
 
-    public static File getPreferenceFile() {
+    // Per chip
+    private List<BreakTrigger>[] triggers;
+    private EnumSet<OutputOption>[] outputOptions;
+    private Map<Integer,Byte>[] ioPortMap;
+    private boolean[] autoUpdateRealOsObjectWindow;
+    private boolean[] callStackHideJumps;
+    private int sleepTick[];
+    private boolean writeDisassemblyToFile[];
+    private boolean sourceCodeFollowsPc[];
+    private String codeStructureGraphOrientation[];
+    private boolean firmwareWriteProtected[];
+    private boolean timersCycleSynchronous[];
+
+    private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
     }
 
@@ -49,8 +50,8 @@ public class Prefs {
     }
 
     public static Prefs load() {
+        File preferenceFile = getPreferenceFile();
         try {
-            File preferenceFile = getPreferenceFile();
             if (preferenceFile.exists()) {
                 FileInputStream inputStream = new FileInputStream(preferenceFile);
                 Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
@@ -58,6 +59,8 @@ public class Prefs {
                 return prefs;
             }
         } catch (Exception e) {
+            System.out.println("Could not load preferences file. Attempting a rename to " + preferenceFile.getAbsolutePath() + ".corrupt and creating new file.");
+            preferenceFile.renameTo(new File(preferenceFile.getAbsolutePath() + ".corrupt"));
             e.printStackTrace();
         }
         return new Prefs();
@@ -79,31 +82,38 @@ public class Prefs {
         this.closeAllWindowsOnStop = closeAllWindowsOnStop;
     }
 
-    public boolean isWriteDisassemblyToFile() {
-        return writeDisassemblyToFile;
+    public boolean isWriteDisassemblyToFile(int chip) {
+        if (writeDisassemblyToFile == null  || writeDisassemblyToFile.length != 2) writeDisassemblyToFile = new boolean[2];
+        return writeDisassemblyToFile[chip];
     }
 
-    public void setWriteDisassemblyToFile(boolean writeDisassemblyToFile) {
-        this.writeDisassemblyToFile = writeDisassemblyToFile;
+    public void setWriteDisassemblyToFile(int chip, boolean value) {
+        if (writeDisassemblyToFile == null || writeDisassemblyToFile.length != 2) writeDisassemblyToFile = new boolean[2];
+        this.writeDisassemblyToFile[chip] = value;
     }
 
-    public boolean isFollowPc() {
-        return followPc;
+    public boolean isSourceCodeFollowsPc(int chip) {
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        return sourceCodeFollowsPc[chip];
     }
 
-    public void setFollowPc(boolean followPc) {
-        this.followPc = followPc;
+    public void setSourceCodeFollowsPc(int chip, boolean value) {
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        this.sourceCodeFollowsPc[chip] = value;
     }
 
-    public int getSleepTick() {
-        return sleepTick;
+    public int getSleepTick(int chip) {
+        if (sleepTick == null || sleepTick.length != 2) sleepTick = new int[2];
+        return sleepTick[chip];
     }
 
-    public void setSleepTick(int sleepTick) {
-        this.sleepTick = sleepTick;
+    public void setSleepTick(int chip, int value) {
+        if (sleepTick == null || sleepTick.length != 2) sleepTick = new int[2];
+        this.sleepTick[chip] = value;
     }
 
     public Set<OutputOption> getOutputOptions(int chip) {
+        if (outputOptions == null) outputOptions = new EnumSet[2];
         if (outputOptions[chip]==null) {
             // Prepare a new outputOptions containing only default values
             outputOptions[chip] = EnumSet.noneOf(OutputOption.class);
@@ -127,6 +137,7 @@ public class Prefs {
     }
 
     public List<BreakTrigger> getTriggers(int chip) {
+        if (triggers == null) triggers = new List[2];
         if (triggers[chip] == null) triggers[chip] = new ArrayList<BreakTrigger>();
         return triggers[chip];
     }
@@ -213,20 +224,44 @@ public class Prefs {
     }
 
 
-    public String getCodeStructureGraphOrientation() {
-        return codeStructureGraphOrientation;
+    public String getCodeStructureGraphOrientation(int chip) {
+        if (codeStructureGraphOrientation == null || codeStructureGraphOrientation.length != 2) codeStructureGraphOrientation = new String[2];
+        return codeStructureGraphOrientation[chip];
     }
 
-    public void setCodeStructureGraphOrientation(String codeStructureGraphOrientation) {
-        this.codeStructureGraphOrientation = codeStructureGraphOrientation;
+    public void setCodeStructureGraphOrientation(int chip, String value) {
+        if (codeStructureGraphOrientation == null || codeStructureGraphOrientation.length != 2) codeStructureGraphOrientation = new String[2];
+        this.codeStructureGraphOrientation[chip] = value;
     }
 
-    public void setAutoUpdateRealOsObjects(boolean autoUpdateRealOsObjects) {
-        this.autoUpdateRealOsObjects = autoUpdateRealOsObjects;
+    public void setFirmwareWriteProtected(int chip, boolean isFirmwareWriteProtected) {
+        if (firmwareWriteProtected == null || firmwareWriteProtected.length != 2) firmwareWriteProtected = new boolean[2];
+        this.firmwareWriteProtected[chip] = isFirmwareWriteProtected;
     }
 
-    public boolean isAutoUpdateRealOsObjects() {
-        return autoUpdateRealOsObjects;
+    public boolean isFirmwareWriteProtected(int chip) {
+        if (firmwareWriteProtected == null || firmwareWriteProtected.length != 2) firmwareWriteProtected = new boolean[2];
+        return firmwareWriteProtected[chip];
+    }
+
+    public void setAutoUpdateRealOsObjects(int chip, boolean autoUpdateRealOsObjects) {
+        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
+        this.autoUpdateRealOsObjectWindow[chip] = autoUpdateRealOsObjects;
+    }
+
+    public boolean isAutoUpdateRealOsObjects(int chip) {
+        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
+        return autoUpdateRealOsObjectWindow[chip];
+    }
+
+    public boolean isCallStackHideJumps(int chip) {
+        if (callStackHideJumps == null) callStackHideJumps = new boolean[2];
+        return callStackHideJumps[chip];
+    }
+
+    public void setCallStackHideJumps(int chip, boolean value) {
+        if (callStackHideJumps == null) callStackHideJumps = new boolean[2];
+        this.callStackHideJumps[chip] = value;
     }
 
     public int getDividerLocation() {
@@ -251,6 +286,38 @@ public class Prefs {
 
     public void setDividerKeepHidden(boolean dividerKeepHidden) {
         this.dividerKeepHidden = dividerKeepHidden;
+    }
+
+    public boolean isUsePrettyIoComponents() {
+        return usePrettyIoComponents;
+    }
+
+    public void setUsePrettyIoComponents(boolean usePrettyIoComponents) {
+        this.usePrettyIoComponents = usePrettyIoComponents;
+    }
+
+    public byte getPortValue(int chip, int portNumber) {
+        if (ioPortMap == null) ioPortMap = new Map[2];
+        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
+        Byte value = ioPortMap[chip].get(portNumber);
+        if (value == null) return 0;
+        else return value;
+    }
+
+    public void setPortValue(int chip, int portNumber, byte value) {
+        if (ioPortMap == null) ioPortMap = new Map[2];
+        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
+        ioPortMap[chip].put(portNumber, value);
+    }
+
+    public boolean areTimersCycleSynchronous(int chip) {
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        return timersCycleSynchronous[chip];
+    }
+
+    public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
     }
 
     /**

@@ -28,7 +28,7 @@ public class MemoryActivityViewerFrame extends DocumentFrame {
 
     private Timer refreshTimer;
 
-    BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
+    private BufferedImage img = new BufferedImage(MAP_WIDTH, MAP_HEIGHT, BufferedImage.TYPE_INT_RGB);
     private double scaleX;
     private double scaleY;
 

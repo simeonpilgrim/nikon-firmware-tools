@@ -2,7 +2,6 @@ package com.nikonhacker.disassembly;
 
 import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
-import com.nikonhacker.disassembly.fr.CodeAnalyzer;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
 import org.apache.commons.io.FilenameUtils;
@@ -16,24 +15,24 @@ public abstract class Disassembler {
     private int chip;
 
     public Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
-    protected String inputFileName;
+
+    protected Memory memory = null;
+    protected Writer outWriter;
+
+    private String inputFileName;
     /**
      * If null, no output is created.
      * If empty, default name is used.
      * If specified, this name is used.
      */
-    String outputFileName = "";
-    boolean optLittleEndian = false;
-    boolean optSplitPerMemoryRange = false;
-    protected Memory memory = null;
-    protected Writer outWriter;
-    protected PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
-    protected MemoryMap fileMap = new MemoryMap('i', "File map");
-    protected MemoryMap memMap = new MemoryMap('m', "Memory map");
-    MemoryMap rangeMap = new MemoryMap('d', "Selected ranges");
-    protected String startTime = "";
-    protected Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
-    protected Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
+    private String outputFileName = "";
+
+    private PrintWriter debugPrintWriter = new PrintWriter(new OutputStreamWriter(System.err));
+    private SortedSet<Range> fileRanges = new TreeSet<Range>();
+    private SortedSet<Range> memRanges = new TreeSet<Range>();
+    private String startTime = "";
+    private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
+    private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
 
     /**
      *
@@ -58,16 +57,13 @@ public abstract class Disassembler {
     protected void usage()
     {
         String help =
-                "-d range          disassemble only specified range\n"
-                        + "-e address=name   (not implemented) define entry point symbol\n"
+                        "-e address=name   (not implemented) define entry point symbol\n"
                         + "-f range=address  (not implemented) map range of input file to memory address\n"
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
                         + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
-                        + "-l                (not implemented) little-endian input file\n"
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file\n"
-                        + "-r                separate output file for each memory range\n"
                         + "-s address=name   define symbol\n"
                         + "-t address        interrupt vector start, equivalent to -m address,0x400=DATA:V\n"
                         + "-v                verbose\n"
@@ -193,7 +189,7 @@ public abstract class Disassembler {
      */
     protected Range getMatchingFileRange(Range memRange) {
         Range matchingFileRange = null;
-        for (Range fileRange : fileMap.ranges) {
+        for (Range fileRange : fileRanges) {
             if (memRange.getStart() >= fileRange.getStart() && memRange.getStart() <= fileRange.getEnd()) {
                 matchingFileRange = fileRange;
                 break;
@@ -236,19 +232,6 @@ public abstract class Disassembler {
                     break;
 
 
-                case 'D':
-                case 'd':
-                    argument = optionHandler.getArgument();
-                    if (argument == null || argument.length() == 0) {
-                        log("option \"-" + option + "\" requires an argument");
-                        return false;
-                    }
-
-                    Range range1 = OptionHandler.parseOffsetRange(option, argument);
-                    range1.setFileOffset(1);
-                    rangeMap.add(range1);
-                    break;
-
                 case 'E':
                 case 'e':
                     argument = optionHandler.getArgument();
@@ -269,9 +252,6 @@ public abstract class Disassembler {
                     }
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
-                    //        if (parseOffsetRange(opt, arg, &r, &start, &end, &map))
-                    //            break;
-                    //        insmap(&filemap, map, map + end - start, start);
                     break;
 
                 case 'H':
@@ -292,7 +272,7 @@ public abstract class Disassembler {
                     if (range == null)
                         break;
 
-                    fileMap.add(range);
+                    fileRanges.add(range);
                     break;
 
                 case 'J':
@@ -309,13 +289,12 @@ public abstract class Disassembler {
                 case 'l':
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
                     System.exit(1);
-                    optLittleEndian = true;
                     break;
 
                 case 'M':
                 case 'm':
                     argument = optionHandler.getArgument();
-                    memMap.add(OptionHandler.parseTypeRange(option, argument));
+                    memRanges.add(OptionHandler.parseTypeRange(option, argument));
                     break;
 
                 case 'O':
@@ -325,11 +304,6 @@ public abstract class Disassembler {
                         log("option '-" + option + "' requires an argument");
                         return false;
                     }
-                    break;
-
-                case 'R':
-                case 'r':
-                    optSplitPerMemoryRange = true;
                     break;
 
                 case 'S':
@@ -349,7 +323,7 @@ public abstract class Disassembler {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    memMap.add(OptionHandler.parseTypeRange(option, argument + "," + CodeAnalyzer.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
+                    memRanges.add(OptionHandler.parseTypeRange(option, argument + "," + CodeAnalyzer.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
                     break;
 
                 case 'V':
@@ -430,12 +404,12 @@ public abstract class Disassembler {
 
 
     public CodeStructure disassembleMemRanges() throws IOException, DisassemblyException {
-        if (memMap.ranges.size() == 0) {
+        if (memRanges.size() == 0) {
             throw new DisassemblyException("No memory range defined in options");
         }
         if (!outputOptions.contains(OutputOption.STRUCTURE)) {
             // Original one pass disassembly
-            for (Range range : memMap.ranges) {
+            for (Range range : memRanges) {
                 // find file offset covering this memory location.
                 Range matchingFileRange = getMatchingFileRange(range);
 
@@ -454,16 +428,16 @@ public abstract class Disassembler {
         }
         else {
             // Advanced two pass disassembly, with intermediary structural analysis
-            CodeStructure codeStructure = getCodeStructure(memMap.ranges.first().getStart());
+            CodeStructure codeStructure = getCodeStructure(memRanges.first().getStart());
             debugPrintWriter.println("Disassembling the code ranges...");
-            for (Range range : memMap.ranges) {
+            for (Range range : memRanges) {
                 if (range.getRangeType().isCode()) {
                     disassembleCodeMemoryRange(range, getMatchingFileRange(range), codeStructure);
                 }
             }
 
             debugPrintWriter.println("Post processing...");
-            new CodeAnalyzer(codeStructure, memMap.ranges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
+            new CodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getStatements().size() + " statements");
@@ -474,7 +448,7 @@ public abstract class Disassembler {
 
             if (outWriter != null) {
                 debugPrintWriter.println("Writing output to disk...");
-                for (Range range : memMap.ranges) {
+                for (Range range : memRanges) {
                     // find file offset covering this memory location.
                     Range matchingFileRange = getMatchingFileRange(range);
                     printRangeHeader(range, matchingFileRange);
@@ -543,31 +517,15 @@ public abstract class Disassembler {
         }
 
 
-//        if (outOptions.fileMap || outOptions.memoryMap) {
-        openOutput(0, false, /*outOptions.optSplitPerMemoryRange ? "map" :*/ "asm");
+        openOutput(0, false, "asm");
         if (outWriter != null) {
             writeHeader(outWriter);
         }
-//        }
 
         if (memory == null) {
             memory = new FastMemory();
-            memory.loadFile(new File(inputFileName), fileMap.ranges);
+            memory.loadFile(new File(inputFileName), fileRanges, true);
         }
-
-        //    fixmap(&filemap, 0);
-//            if (outOptions.fileMap)
-//                dumpmap(&filemap);
-
-        //    fixmap(&memmap, MEMTYPE_UNKNOWN);
-        //    fillmap(&memmap, MEMTYPE_UNKNOWN);
-        //    delmap(&memmap, MEMTYPE_NONE);
-//        if (outOptions.memoryMap)
-//            dumpmap(&memmap);
-
-        //    fixmap(&rangemap, 1);
-//            if (outOptions.fileMap || outOptions.memoryMap)
-//                dumpmap(&rangemap);
 
     }
 

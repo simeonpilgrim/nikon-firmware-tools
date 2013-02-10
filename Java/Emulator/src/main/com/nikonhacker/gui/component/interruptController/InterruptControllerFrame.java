@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.interruptController;
 
 import com.nikonhacker.emu.interrupt.InterruptRequest;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -21,7 +21,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     protected InterruptController interruptController;
 
-    protected static final int UPDATE_INTERVAL_MS = 100; // 10fps
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private javax.swing.Timer refreshTimer;
     private final JList interruptQueueJList;
@@ -29,7 +29,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     Timer interruptTimer = null;
 
-    public InterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final DebuggableMemory memory) {
+    public InterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.interruptController = interruptController;
 
@@ -86,7 +86,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     }
 
-    protected abstract void addTabs(EmulatorUI ui, InterruptController interruptController, DebuggableMemory memory, Insets buttonInsets, JTabbedPane tabbedPane);
+    protected abstract void addTabs(EmulatorUI ui, InterruptController interruptController, Memory memory, Insets buttonInsets, JTabbedPane tabbedPane);
 
     protected abstract int getStatusTabIndex();
 

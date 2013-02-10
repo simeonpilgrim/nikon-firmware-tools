@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.ioPins;
 
 public class IoPins {
-    boolean values[];
+    protected boolean values[];
 
     boolean getValue(int pinNumber) {
         return values[pinNumber];

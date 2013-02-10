@@ -5,7 +5,7 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.Symbol;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.Syscall;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,7 +24,7 @@ public class SyscallBreakTriggerCreateDialog extends JDialog implements ActionLi
     private List<Syscall> syscallList = null;
 
 
-    public SyscallBreakTriggerCreateDialog(JDialog owner, BreakTrigger trigger, String title, DebuggableMemory memory) {
+    public SyscallBreakTriggerCreateDialog(JDialog owner, BreakTrigger trigger, String title, Memory memory) {
         super(owner, title, true);
         this.trigger = trigger;
 

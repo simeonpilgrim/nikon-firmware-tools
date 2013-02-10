@@ -21,9 +21,9 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
     private DebuggableMemory memory;
     private int yStart, uStart, vStart;
-    int screenHeight, screenWidth;
+    private int screenHeight, screenWidth;
 
-    BufferedImage img;
+    private BufferedImage img;
 
     private Timer refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField;
