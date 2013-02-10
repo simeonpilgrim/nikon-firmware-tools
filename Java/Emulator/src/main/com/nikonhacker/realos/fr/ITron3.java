@@ -1,4 +1,4 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.realos.fr;
 
 public interface ITron3 {
     int SYSCALL_NUMBER_REF_TSK = 0xEC;
