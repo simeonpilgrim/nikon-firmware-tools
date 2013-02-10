@@ -1,5 +1,6 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
@@ -13,7 +14,7 @@ import java.util.*;
 
 public abstract class Emulator {
     protected long totalCycles;
-    protected PrintWriter instructionPrintWriter;
+    protected IndentPrinter printer;
     protected PrintWriter breakLogPrintWriter;
     protected int sleepIntervalMs = 0;
     protected final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
@@ -31,11 +32,14 @@ public abstract class Emulator {
     protected CycleCounterListener cycleCounterListener;
 
     /**
-     * Provide a PrintWriter to send disassembled form of executed instructions to
-     * @param instructionPrintWriter
+     * Provide an output to send disassembled form of executed instructions to
+     * @param printer
      */
-    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
-        this.instructionPrintWriter = instructionPrintWriter;
+    public void setPrinter(PrintWriter printer) {
+        if (printer == null)
+            this.printer = null;
+        else
+            this.printer = new IndentPrinter(printer);
     }
 
     /**

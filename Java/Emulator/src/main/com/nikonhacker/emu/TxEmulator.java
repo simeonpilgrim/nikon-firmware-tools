@@ -1,6 +1,7 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.disassembly.tx.TxInstruction;
@@ -12,7 +13,6 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
-import java.io.PrintWriter;
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
@@ -62,13 +62,21 @@ public class TxEmulator extends Emulator {
                     statement.decode32BitOperands();
                 }
 
-                if (instructionPrintWriter != null) {
+                if (printer != null) {
                     // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
-                    PrintWriter printWriter = instructionPrintWriter;
-                    if (printWriter != null) {
+                    IndentPrinter printer2 = printer;
+                    if (printer2 != null) {
                         // OK. copy is still not null
                         statement.formatOperandsAndComment(context, false, outputOptions);
-                        printWriter.print("0x" + Format.asHex(txCpuState.pc, 8) + " " + statement.toString(outputOptions));
+                        printer2.print("0x" + Format.asHex(txCpuState.pc, 8) + " " + statement.toString(outputOptions));
+
+                        switch(statement.getInstruction().getFlowType()) {
+                            case CALL:
+                            case INT:
+                                printer2.indent(); break;
+                            case RET:
+                                printer2.outdent(); break;
+                        }
                     }
                 }
 
@@ -106,10 +114,11 @@ public class TxEmulator extends Emulator {
                         //Double test because lack of synchronization means the status could have changed in between
                         if (interruptRequest != null) {
                             if (txCpuState.accepts(interruptRequest)){
-                                if (instructionPrintWriter != null) {
-                                    PrintWriter printWriter = instructionPrintWriter;
-                                    if (printWriter != null) {
-                                        printWriter.println("------------------------- Accepting " + interruptRequest);
+                                if (printer != null) {
+                                    IndentPrinter printer2 = printer;
+                                    if (printer2 != null) {
+                                        printer2.printlnNonIndented("------------------------- Accepting " + interruptRequest);
+                                        printer2.indent();
                                     }
                                 }
                                 // TODO : We probably should not remove the request from queue automatically.
