@@ -1617,8 +1617,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // ------------------------ Emulation options
 
         JPanel emulationOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
-        final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
+        emulationOptionsPanel.add(new JLabel());
+        emulationOptionsPanel.add(new JLabel("IMPORTANT: these options only take effect after reloading the firmware or performing a 'Stop and reset')"));
+        emulationOptionsPanel.add(new JLabel());
 
+        final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
         writeProtectFirmwareCheckBox.setSelected(prefs.isFirmwareWriteProtected(chip));
         writeProtectFirmwareCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -1627,10 +1630,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         });
         emulationOptionsPanel.add(writeProtectFirmwareCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
-        emulationOptionsPanel.add(new JLabel("(only takes effect after reloading the firmware or performing a 'Stop and reset')"));
 
         final JCheckBox timerCycleSynchronousCheckBox = new JCheckBox("Make timers synchronous with CPU");
-
         timerCycleSynchronousCheckBox.setSelected(prefs.areTimersCycleSynchronous(chip));
         timerCycleSynchronousCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
