@@ -3,7 +3,6 @@ package com.nikonhacker.emu;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import junit.framework.TestCase;
@@ -40,7 +39,6 @@ public class FrEmulatorTest extends TestCase {
         emulator = new FrEmulator();
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new AlwaysBreakCondition());
-        emulator.setInterruptController(new DummyInterruptController());
 
         cpuState = new FrCPUState(BASE_ADDRESS);
         emulator.setCpuState(cpuState);
