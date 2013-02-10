@@ -1,0 +1,440 @@
+# The main part of this file describes the D5100 "A" firmware, ver 1.01
+
+############################### File map: D5100
+-i 0xBFC00000-0xBFCBFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0xBFC00000-0xBFC0000F=CODE:32
+
+-m 0xBFC00400-0xBFC004CB=CODE:32
+
+#-m 0xBFC004CC-0xBFC004FF=DATA:W
+
+-m 0xBFC00500-0xBFC0084B=CODE:32
+
+#-m 0xBFC0084C-0xBFC00863=DATA:W
+
+-m 0xBFC00864-0xBFC0095B=CODE:16
+
+#-m 0xBFC0095C-0xBFC009A3=DATA:W
+
+-m 0xBFC009A4-0xBFC02BE7=CODE:32
+
+-m 0xBFC02BE8-0xBFC03F8B=CODE:16
+
+# Indirection table for interrupts using 16-bit ISA
+-m 0xBFC03F90-0xBFC041CF=DATA:L
+
+# Interrupt table
+-m 0xBFC041D0-0xBFC043CF=DATA:L
+
+# Unknown data
+# -m 0xBFC043D0-0xBFC044BB=DATA:L
+
+# TCB Task table
+# Table defining REALOS Tasks (Table of 0xD records of 0x14 bytes)
+-m 0xBFC044BC-0xBFC0478B=DATA:L
+
+## 0xFF area
+
+# Copyright msg
+-m 0xBFC07FB0-0xBFC07FDF=DATA:L
+
+# 2 pointers
+-m 0xBFC0A000-0xBFC0A007=DATA:L
+
+# Code
+-m 0xBFC0A008-0xBFC0A12B=CODE:32
+
+-m 0xBFC0A12C-0xBFC0D66F=CODE:16
+
+-m 0xBFC0D9F8-0xBFC0ED43=CODE:32
+
+-m 0xBFC10000-0xBFC1417D=CODE:16
+
+-m 0xBFC14180-0xBFC15AB7=CODE:32
+
+-m 0xBFC15AB8-0xBFC8DD3B=CODE:16
+
+# Mostly pointers
+-m 0xBFC8DD3C-0xBFC96F9F=DATA:L
+
+-m 0xBFC971A0-0xBFC971A3=DATA:L
+
+-m 0xBFC97304-0xBFC9764B=DATA:L
+
+-m 0xBFC98E00-0xBFC9927B=DATA:L
+
+-m 0xBFC9A9F0-0xBFC9AAD7=DATA:L
+
+-m 0xBFC9AB8C-0xBFC9AC0B=DATA:L
+
+-m 0xBFC9C784-0xBFC9C803=DATA:L
+
+-m 0xBFC9CBD0-0xBFC9CBEF=DATA:L
+
+-m 0xBFC9D360-0xBFC9D36B=DATA:L
+
+-m 0xBFC9E45C-0xBFC9E57F=DATA:L
+
+## 0xFF area
+
+
+############################### Symbols
+
+-s 0xBFC00000=reset_or_nmi
+-s 0xBFC00400=interrupt_handler
+-s 0xBFC00818=float_division
+-s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
+-s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
+-s 0xBFC00BD8=clear@FFFF3EF0_3FF8
+-s 0xBFC00C10=mem_wordcopy($a0 [IN dest], $a1 [IN src], $a2 [IN counter])
+-s 0xBFC00D20=setINTCLR($a0 [IN mask])
+-s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
+-s 0xBFC00D60=getInterruptLEVel($v0 [OUT level])
+-s 0xBFC00D78=clearInterruptLEVel
+-s 0xBFC00D90=null_BFC00D90
+-s 0xBFC01184=sub_bfc01184_($s0 [IN index])
+-s 0xBFC018F8=Task_Dispatch
+-s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC026B4=useless_BFC026B4 /* disabled by a constant with value false */
+-s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
+-s 0xBFC02BE8=sys_clear_bit13_of_FFFFFFE8
+-s 0xBFC02C28=sys_unknown_BFC02C28
+-s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
+-s 0xBFC02D98=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
+-s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
+-s 0xBFC02E40=sys_act_tsk_sub_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
+-s 0xBFC0332C=sys_unknown_BFC0332C
+-s 0xBFC035D0=get_FFFFFFEB($v0 [OUT from_FFFFFFEB])
+-s 0xBFC035DC=sys_unknown_BFC035DC
+-s 0xBFC0369C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
+-s 0xBFC03818=sys_get_ilev($a0 [IN ptr_for_interrupt_level])
+-s 0xBFC03870=sys_unknown_BFC03870
+-s 0xBFC03948=sys_get_tid($v0 [OUT err_code], $a0 [IN ptr_to_task_id] /* get task id in the RUNNING state */)
+-s 0xBFC03984=sys_set_bit5_of_FFFFFFE8
+-s 0xBFC03A94=sys_unknown_BFC03A94
+-s 0xBFC03AFC=sys_unknown_BFC03AFC
+-s 0xBFC03BEC=sys_unknown_BFC03BEC
+-s 0xBFC03C8C=sys_clr_flg($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC03CD8=sys_unknown_BFC03CD8
+-s 0xBFC03D58=sys_unknown_BFC03D58
+-s 0xBFC03DEC=sys_unknown_BFC03DEC
+-s 0xBFC03EA0=sys_unknown_BFC03EA0
+-s 0xBFC0ED34=null_BFC0ED34
+-s 0xBFC0ED3C=null_BFC0ED3C
+-s 0xBFC11534=INT0_body
+-s 0xBFC11554=INT6_body
+-s 0xBFC11574=INT9_body
+-s 0xBFC11594=INTA_body
+-s 0xBFC115B4=INT12_body
+-s 0xBFC115D4=INT17_body
+-s 0xBFC1160C=INTRTC_body
+-s 0xBFC128F8=clear_WDcounter_0
+-s 0xBFC12994=clear_WDcounter
+-s 0xBFC12A3C=Stop_TBF
+-s 0xBFC12A5C=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code] /* Start task */)
+-s 0xBFC12A80=sys_act_tsk_TBC($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
+-s 0xBFC12A98=sys_ref_tsk($a1 [IN ptr_to_pk_rtsk], $a0 [IN tsk_id], $v0 [OUT err_code] /* Get Task Status */)
+-s 0xBFC12B0C=sys_set_flg_00($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
+-s 0xBFC12B18=sys_clr_flg_00($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B24=sys_clr_flg_01($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
+-s 0xBFC12B30=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
+-s 0xBFC12C40=setInterruptLEVel_etc($a0 [IN ptr_to_level])
+-s 0xBFC12C5C=setInterruptLEVel_03($a0 [IN ptr_to_level])
+-s 0xBFC12C68=setInterruptLEVel_01($a0 [IN level])
+-s 0xBFC12C74=setInterruptLEVel_02($a0 [IN level])
+-s 0xBFC12E58=sys_clear_bit13_of_FFFFFFE8_00
+-s 0xBFC12E64=sys_set_bit5_of_FFFFFFE8_00
+-s 0xBFC12E70=sys_get_tid_00($v0 [OUT err_code], $a0 [IN ptr_to_task_id])
+-s 0xBFC12E7C=check_FFFFFFE8_low11b_nonzero_00($v0 [OUT is_non_zero])
+-s 0xBFC13298=reset_imc_tmr_cnt_sio_ad
+-s 0xBFC14504=interrupt_handler_INT0
+-s 0xBFC145C8=interrupt_handler_INT6
+-s 0xBFC1469C=interrupt_handler_INT9
+-s 0xBFC14764=interrupt_handler_INTA
+-s 0xBFC1482C=interrupt_handler_KWUP
+-s 0xBFC1494C=interrupt_handler_INT12
+-s 0xBFC14A14=interrupt_handler_INT17
+-s 0xBFC14ADC=interrupt_handler_INTRTC
+-s 0xBFC14BB0=indirect_software_interrupt
+-s 0xBFC14F98=nmi
+-s 0xBFC15158=null_BFC15158
+-s 0xBFC15A2C=clear_INTreq($a0 [IN interrupt_number])
+-s 0xBFC15AB8=Tsk00
+-s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
+-s 0xBFC15D70=get_backup_data_from_eeprom /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
+-s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN src_buffer], $a2 [IN counter], $a3 [IN mode_read /* 0=writing, 1=reading */])
+-s 0xBFC15DE4=change_WDMOD
+-s 0xBFC15EB8=prepare_HSC0_setting
+-s 0xBFC16CE4=INTD_body
+-s 0xBFC174B4=INTSBI0_I2C_body
+-s 0xBFC17B00=maybe_get_I2C_slaveaddress($v0 [OUT slave_address])
+-s 0xBFC17B34=interrupt_handler_INTTBF /* very important */
+-s 0xBFC17F90=interrupt_handler_INT4
+-s 0xBFC17FA8=interrupt_handler_INT5
+-s 0xBFC17FC0=interrupt_handler_INT7
+-s 0xBFC17FD8=interrupt_handler_INTD
+-s 0xBFC17FF0=interrupt_handler_INTE
+-s 0xBFC18008=interrupt_handler_INTF
+-s 0xBFC18020=interrupt_handler_INT18
+-s 0xBFC18038=interrupt_handler_INT19
+-s 0xBFC18050=interrupt_handler_INT1A
+-s 0xBFC18068=interrupt_handler_INT1E
+-s 0xBFC18080=interrupt_handler_INTRX0
+-s 0xBFC18098=interrupt_handler_INTTX0
+-s 0xBFC180B0=interrupt_handler_INTRX1
+-s 0xBFC180C8=interrupt_handler_INTTX1
+-s 0xBFC180E0=interrupt_handler_HINTRX0
+-s 0xBFC180F8=interrupt_handler_HINTTX0
+-s 0xBFC18110=interrupt_handler_HINTRX1
+-s 0xBFC18128=interrupt_handler_HINTTX1
+-s 0xBFC18140=interrupt_handler_HINTRX2
+-s 0xBFC18158=interrupt_handler_HINTTX2
+-s 0xBFC18170=interrupt_handler_INTSBI0_I2C
+-s 0xBFC18188=interrupt_handler_INTADMB
+-s 0xBFC181A0=interrupt_handler_INTTB1
+-s 0xBFC18210=interrupt_handler_INTTB2
+-s 0xBFC18280=interrupt_handler_INTTB5
+-s 0xBFC182F0=interrupt_handler_INTTB6
+-s 0xBFC18360=interrupt_handler_INTTB9
+-s 0xBFC183D0=interrupt_handler_INTTBA
+-s 0xBFC18440=interrupt_handler_INTTBB
+-s 0xBFC18458=interrupt_handler_INTTBC
+-s 0xBFC184C8=interrupt_handler_INTTBD
+-s 0xBFC18538=interrupt_handler_INTTB10
+-s 0xBFC185A8=interrupt_handler_INTCAP0
+-s 0xBFC185C0=interrupt_handler_INTCAP2
+-s 0xBFC185D8=interrupt_handler_INTCMP0
+-s 0xBFC185F0=interrupt_handler_INTCMP1
+-s 0xBFC18608=interrupt_handler_INTCMP2
+-s 0xBFC18620=interrupt_handler_INTCMP3
+-s 0xBFC18638=interrupt_handler_INTCMP4
+-s 0xBFC18650=interrupt_handler_INTCMP5
+-s 0xBFC18668=interrupt_handler_INTCMP6
+-s 0xBFC18680=interrupt_handler_INTCMP7
+-s 0xBFC18698=interrupt_handler_INTDMA1
+-s 0xBFC186B0=interrupt_handler_INTDMA3
+-s 0xBFC186C8=interrupt_handler_INTDMA4
+-s 0xBFC186E0=interrupt_handler_INTDMA6
+-s 0xBFC186F8=interrupt_handler_INTDMA7
+-s 0xBFC18C6C=request_I2C_IO($a0 [IN command1] /* 0x50,0x52,0x5E => I2C_counter=1, 0x54 => I2C_counter=7 */, $a1 [IN command2]) /* OUT : Dcall 0xBFC18CC9. Send buffer 0xFFFF6DA8. Get response @0xFFFF6DA8 */
+-s 0xBFC190C4=get_system_time
+-s 0xBFC19DD8=get_ADB_conversion_0($v0 [OUT ADB_conversion_lowpass_filter])
+-s 0xBFC19E14=get_smoothed_ADB_ch3($v0 [OUT ADB_result_lowpass_filtering])
+-s 0xBFC19E74=prepare_ADB_setting($a0 [IN use_channel_3_or 1] /* 0=select analog channel 1, 1=select analog channel 3 */)
+-s 0xBFC19F00=get_ADB_conversion($a0 [IN use_channel_3_or 1] /* 0=ch1+read ADBREG1, 1=ch3+read ADBREG3 */, $v0 [OUT 10_bits_conversion])
+-s 0xBFC1A3B0=Tsk01
+-s 0xBFC1A74C=DynamicCall_table_BFC97314
+-s 0xBFC1AAE0=INTRX0_body02
+-s 0xBFC1AB8C=INTRX0_body00
+-s 0xBFC1AC98=INTTX0_body
+-s 0xBFC1AF10=prepare_SC0_TX_data /* copy source data to SC0_TX_buffer. Effetive SRC address = 0xFF(BF)000000 + three byte from SC0_RX data. Counter = @FFFF55CD. snd_multi_commands2lens. send 0xD3C3 to lens. send 0xC5 to lens. save 8 bytes response with lens_response_table4. send 0xE7 to lens. no response needed. */
+-s 0xBFC1C3C0=null_BFC1C3C0
+-s 0xBFC1CEF8=enable_SC0_RX
+-s 0xBFC1D0DC=INTRX0_body01
+-s 0xBFC1DF78=Tsk02
+-s 0xBFC1F7D0=req_eeprom_IO($a0 [IN eeprom_address], $a1 [IN buffer_address], $a2 [IN counter], $a3 [IN mode_read_or_write] /*0=write 1=read (or maybe 1=read, 0=write) */)
+-s 0xBFC1FD60=Tsk03
+-s 0xBFC2F04C=output_high_lev /* stop TB10. lots of ports output high */
+-s 0xBFC30C80=modify_TB8_setting($a0 [IN must_run_TB0 /* 0=stop, otherwise run*/])
+-s 0xBFC34658=fetch_from_tableBFC98978
+-s 0xBFC356F0=clear_HSC2TX_buffer
+-s 0xBFC35B68=memblock_cmp($a0 [IN address1], $a1 [IN address2], $a2 [IN counter], $v0 [OUT is_different] /*0 is same */)
+-s 0xBFC36740=INT1A_body
+-s 0xBFC36AF4=get_IR_status($v0 [OUT IR_shutter_request_src] /* 0=none, 1=front_remote, 2=rear_remote */)
+-s 0xBFC36B44=clear_rearIR_parameter
+-s 0xBFC36C60=INT4_body
+-s 0xBFC3B4E8=null_BFC3B4E8
+-s 0xBFC3B4EC=null_BFC3B4EC
+-s 0xBFC3BA30=null_BFC3BA30
+-s 0xBFC3FD1C=null_BFC3FD1C
+-s 0xBFC3FD20=null_BFC3FD20
+-s 0xBFC3FE40=Tsk04
+-s 0xBFC40084=eeprom_write /* IN @FFFF7022 = 16bit address for eeprom, IN @FFFF7024 = src_address, IN @FFFF7028 = counter */
+-s 0xBFC40300=HINTTX2_body02
+-s 0xBFC40354=HINTRX2_body01
+-s 0xBFC40538=HINTTX2_body01
+-s 0xBFC40594=HINTRX2_body02
+-s 0xBFC406C0=INTDMA6_body00
+-s 0xBFC40724=eeprom_RDSR /*enables HSC2 ,send 0x5 0x0 */
+-s 0xBFC407D0=HINTTX2_body00
+-s 0xBFC40850=HINTRX2_body00
+-s 0xBFC408D4=INTCMP5_body00
+-s 0xBFC408EC=Tsk05
+-s 0xBFC411EC=lens_command_0x26 /* send lens command 0x26, 0x8 bytes response expected */
+-s 0xBFC41454=lens_command_0xD6 /* send lens command 0xD6 + 5-byte parameter, no response expected */
+-s 0xBFC4166C=lens_command_0xD2 /* send lens command 0xD2 + 4-byte parameter, no response expected */
+-s 0xBFC418F0=clear_v0
+-s 0xBFC41A28=lens_command_0xC5 /* set SC1 header0 = 0xC5, 0x8 bytes response expected */
+-s 0xBFC41AC0=lens_command_0xE3 /* no parameter, no response */
+-s 0xBFC41EA4=lens_command_0xDC /* send lens command 0xDC, 0x2 bytes response expected */
+-s 0xBFC426D8=copy_lens_response
+-s 0xBFC4316C=lens_command_0xE7 /* send lens command 0xE7 + 1-byte parameter, no response expected */
+-s 0xBFC431DC=get_lens_response4command0xC5
+-s 0xBFC433A4=multi_commands2lens
+-s 0xBFC435A4=INTCMP6_body01
+-s 0xBFC43624=INTRX1_body
+-s 0xBFC43750=INT7_body01
+-s 0xBFC437B4=INTCMP6_body02
+-s 0xBFC437D0=INT7_body00_or_INTCMP6_body00
+-s 0xBFC43C7C=enables_compare6
+-s 0xBFC43D4C=sub_bfc43d4c_($a0 [IN param1], $a1 [IN param2], $a2 [IN param3])
+-s 0xBFC43DD4=change_PI3_output($a0 [IN PI3_output_level_high] /* 0=low, <>0=high */)
+-s 0xBFC43FCC=Tsk06
+-s 0xBFC443C0=get_HSC1_RX_data
+-s 0xBFC45678=save_HSC1_RX_data
+-s 0xBFC45D3C=HSC1_RX_checksum($a0 [IN counter] /* OUT : error set bit4 of @ FFFF59C8*/)
+-s 0xBFC45D80=Make_compare3_run
+-s 0xBFC45E24=null_BFC45E24
+-s 0xBFC45E94=HINTRX1_body00
+-s 0xBFC45FC8=HINTRX1_body01
+-s 0xBFC460DC=INTCMP3_body00
+-s 0xBFC461A0=INTCMP3_body07
+-s 0xBFC462B0=INTCMP3_body05
+-s 0xBFC4639C=INTCMP3_body01
+-s 0xBFC463F0=INTCMP3_body02
+-s 0xBFC4641C=prepare_HSC1communication
+-s 0xBFC46504=INTCMP3_body04
+-s 0xBFC46858=INTCMP3_body06
+-s 0xBFC46DB8=null_BFC46DB6
+-s 0xBFC46EAC=INTCMP3_body03
+-s 0xBFC46FF8=INTCMP4_body00
+-s 0xBFC470C0=INTF_body
+-s 0xBFC47148=Tsk07
+-s 0xBFC476DC=save_HSC0_RXdata /* SRC = payload in HSC1_RX_buffer, DEST = second address in tsk8_table */
+-s 0xBFC47D20=INTCMP4_body04
+-s 0xBFC47D7C=INTCMP4_body01
+-s 0xBFC47EBC=INTCMP4_body03
+-s 0xBFC47FA4=setup_PC3_outlevel($a0 [IN PC3_output_level /* 1=>PC3 output low level, 2=>PC3 output high level */])
+-s 0xBFC47FD8=read_Port53
+-s 0xBFC47FE8=setup_INT0xF($a0 [IN mode /* 1=enable */], $a1 [IN edge_falling /* 0=Raising edge, 1=Falling edge */], $a2 [IN ptr_INT0xF_body])
+-s 0xBFC480BC=set_HSC0_function_mode($a0 [IN enable /* 1=>enables RX, other=>reset HSC0 */])
+-s 0xBFC481D8=setup_INTcompare4_1
+-s 0xBFC482F8=null_INTCMP4_body02
+-s 0xBFC48330=Tsk08
+-s 0xBFC4A618=ADC_ch1ch3_status($a0 [IN get_or_set_status] /*1 = get_status, 0 = set_status_incomplete*/, $v0 [OUT is_incomplete])
+-s 0xBFC4E410=metering_data_convert /* IN: ADC_ch0_buffer, OUT: buffer 0xFFFF6A5C, OUT: buffer 0xFFFF8198, 0xFFFF82B0, 0xFFFF83C8 */
+-s 0xBFC528B0=copy_struFFFF9360
+-s 0xBFC52FEC=start_TBB
+-s 0xBFC53104=INT_TMRB_body00
+-s 0xBFC53604=INT_TMRB_body01
+-s 0xBFC537F8=reset_ADC_DMA3
+-s 0xBFC53894=INTDMA3_body00
+-s 0xBFC53B20=null_BFC53B20
+-s 0xBFC53B24=nonlinear_convert($a0 [IN value_to_convert], $v0 [OUT converted_value] /* uses table @0xBFC9AC0C*/)
+-s 0xBFC53BC4=nonlinear_convert_0($a0 [IN value_to_convert], $v0 [OUT converted_value] /* uses table @0xBFC9AE70*/)
+-s 0xBFC53C4C=metering_array_accumulation($a0 [IN src_buffer; OUT ptr_oper_number], $a1 [IN ptr_oper_counter], $a2 [IN outer_loop_start], $a3 [IN outer_loop_end], $t0 [IN inner_loop_start], $t1 [IN inner_loop_end], $t2 [IN offset], $v0 [OUT sum])
+-s 0xBFC56B80=clear@FFFF9134
+-s 0xBFC57984=Tsk09
+-s 0xBFC60DF8=get_ADA_conversions /* counter = @(IN a0 + 0xBFC9D6A8), buffer 0xFFFF44FC = ADA conversions array */
+-s 0xBFC63128=start_ADA_ch0
+-s 0xBFC64EA0=reset_ADA_dis_DMA4
+-s 0xBFC64F38=INT_DMA4_body00
+-s 0xBFC64FE0=INTCMP1_body01
+-s 0xBFC655FC=INT_capture2_body00
+-s 0xBFC657CC=make_TB0_run
+-s 0xBFC65830=change_multi_ports_output
+-s 0xBFC70154=get_value_from_FR_stru3D
+-s 0xBFC746B0=clear@FFFF52F0
+-s 0xBFC756C8=null_BFC756C8
+-s 0xBFC7A8C4=Tsk0A
+-s 0xBFC7ADA0=eeprom_write_0($a0 [IN src_address], $a1 [IN counter], $a2 [IN eeprom_DEST_address], $a3 [IN external pk_msg_or_default_pk_msg_if_0])
+-s 0xBFC7E9A0=INT_TMR9_body00
+-s 0xBFC7EC7C=INT5_body
+-s 0xBFC81DAC=INT_TMRD_body00
+-s 0xBFC82504=change_DMA1setting01
+-s 0xBFC82530=change_DMA1setting00
+-s 0xBFC8255C=INT_DMA1_body00
+-s 0xBFC825A8=INT_DMA1_body01
+-s 0xBFC82E80=INT_TMRA_body00
+-s 0xBFC865F8=HSC1_transmit_00
+-s 0xBFC86B14=INT_TMR1_body00
+-s 0xBFC86CDC=INT_TMR1_body01
+-s 0xBFC86F1C=get_minimum($a0 [IN], $a1 [IN], $a2 [IN], $v0 [OUT minimum_a0_a1_a2])
+-s 0xBFC87224=HSC1_transmit_1byte
+-s 0xBFC8737C=HSC1_transreceive_1byte($a0 [IN byte_to_send], $v0 [OUT 4_bits_response])
+-s 0xBFC8868C=change_DMA1setting02
+-s 0xBFC8875C=INT_TMR5_body01
+-s 0xBFC88790=INT0xE_handler00
+-s 0xBFC887C4=INT0xE_handler03
+-s 0xBFC88858=INT_TMR5_body02
+-s 0xBFC888EC=INT_TMR5_body03
+-s 0xBFC889E4=INT_TMR5_body00
+-s 0xBFC88AE8=INT0xE_handler01
+-s 0xBFC88B1C=INT0xE_handler02
+-s 0xBFC88BA8=INTCMP0_body00
+-s 0xBFC88C24=INT0xE_body1
+-s 0xBFC88D2C=INT0xE_body2
+-s 0xBFC88D7C=INT0xE_body3
+-s 0xBFC88DCC=INT0xE_body4
+-s 0xBFC88E88=INT0xE_body5
+-s 0xBFC88EDC=INT0xE_body6
+-s 0xBFC88F4C=INT0xE_body7
+-s 0xBFC88FC8=INT0xE_body8
+-s 0xBFC89040=INT0xE_body9
+-s 0xBFC89094=INT0xE_bodyA
+-s 0xBFC890D4=INT0xE_bodyB
+-s 0xBFC89130=INT0xE_bodyC
+-s 0xBFC89190=INT0xE_bodyD
+-s 0xBFC891E0=INT0xE_bodyE
+-s 0xBFC89228=INT0xE_bodyF
+-s 0xBFC89244=INT0xE_body10
+-s 0xBFC89294=INT0xE_body11
+-s 0xBFC892D4=INT0xE_body12
+-s 0xBFC89300=INT0xE_body13
+-s 0xBFC8937C=INT0xE_body14
+-s 0xBFC893E8=INT0xE_body15
+-s 0xBFC89448=INT0xE_body16
+-s 0xBFC89454=INT0xE_body17
+-s 0xBFC894B0=INT0xE_body18
+-s 0xBFC894BC=INT0xE_body19
+-s 0xBFC894C8=INT0xE_body1A
+-s 0xBFC8953C=INT0xE_body1B
+-s 0xBFC895C4=INT0xE_body1C
+-s 0xBFC896D4=INT0xE_body1D
+-s 0xBFC89728=INT0xE_body1E
+-s 0xBFC89780=INT0xE_body1F
+-s 0xBFC89844=INT0xE_body20
+-s 0xBFC898A4=INT0xE_body21
+-s 0xBFC89A34=INT0xE_body22
+-s 0xBFC89AB8=INT0xE_body23
+-s 0xBFC89B00=INT0xE_body24
+-s 0xBFC89BC4=INT0xE_body25
+-s 0xBFC89C98=INT0xE_body26
+-s 0xBFC89D64=INT0xE_body27
+-s 0xBFC89DC8=INT0xE_body28
+-s 0xBFC89E1C=INT0xE_body29
+-s 0xBFC89E5C=INT0xE_body2A
+-s 0xBFC89EC4=INT0xE_body2B
+-s 0xBFC89F48=INT0xE_body2C
+-s 0xBFC89F90=INT0xE_body2D
+-s 0xBFC8A000=INT0xE_body2E
+-s 0xBFC8A750=INT0xE_body0
+-s 0xBFC8AF6C=Tsk0B
+-s 0xBFC8B450=INT_TMRC_body00
+-s 0xBFC8B638=or@FFFF95F7($a0 [IN] /* @FFFF95F7 |= a0 */)
+-s 0xBFC8BFC0=INTCMP0_body01
+-s 0xBFC8CFC4=multiply_0xC($a0 [IN], $v0 [OUT a0_x_4_x_3])
+-s 0xBFC8D000=send_msg_00
+-s 0xBFC8D018=send_msg_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send]);
+-s 0xBFC8D030=Tsk0C
+-s 0xBFC8D4FC=mem_16bytes_xor
+-s 0xBFC8D964=array_exchange
+
+########## Global variables
+
+#-s 0xBFC04490=jump_table_from_0xBFC119C
+#-s 0xBFC044BC=RTOS TCB table (tasks)
+
+# Jump hints
+-j 0xBFC01E6C=0xBFC14BB0
+#-j 0xBFC01964=0x00000000 ; This call never happens because address to jump to is 0 in FW, which causes the code to avoid the call
+#-j 0xBFC01C24=0x00000000 ; This call never happens because address to jump to is 0 in FW, which causes the code to avoid the call
+-j 0xBFC144EC=0xBFC0D9F8
+-j 0xBFC0119C=0xBFC01FAC, 0xBFC0251C, 0xBFC01DB8, 0xBFC01E80, 0xBFC00D90
+-j 0xBFC01E6C=0xBFC14BB0
+# the following is *one* of the observed values:
+-j 0xBFC018F0=0xBFC017D0
