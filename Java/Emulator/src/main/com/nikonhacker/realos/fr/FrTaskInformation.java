@@ -1,10 +1,10 @@
 package com.nikonhacker.realos.fr;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.realos.BaseTaskInformation;
 import com.nikonhacker.realos.ErrorCode;
+import com.nikonhacker.realos.TaskInformation;
 
-public class FrTaskInformation extends BaseTaskInformation {
+public class FrTaskInformation extends TaskInformation {
 
     public FrTaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
         super(objectId, errorCode, extendedInformation, taskPriority, stateValue);

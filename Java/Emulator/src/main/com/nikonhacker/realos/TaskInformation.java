@@ -1,6 +1,6 @@
 package com.nikonhacker.realos;
 
-public class BaseTaskInformation extends RealOsObject {
+public class TaskInformation extends RealOsObject {
 
     public static enum TaskState {
         RUN(0x1),
@@ -29,7 +29,7 @@ public class BaseTaskInformation extends RealOsObject {
     protected int taskPriority;
     protected TaskState taskState;
 
-    public BaseTaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
+    public TaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
         super(objectId, errorCode, extendedInformation);
         this.taskPriority = taskPriority;
         this.taskState = TaskState.fromValue(stateValue);

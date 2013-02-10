@@ -28,7 +28,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
         emulator.setInterruptController(platform.getInterruptController());
     }
 
-    public BaseTaskInformation getTaskInformation(int chip, int objId) {
+    public TaskInformation getTaskInformation(int chip, int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
         ErrorCode errorCode = runSysCall(ITron3.SYSCALL_NUMBER_REF_TSK, pk_robj, objId);

@@ -13,7 +13,7 @@ public abstract class SysCallEnvironment {
         this.platform = platform;
     }
 
-    public abstract BaseTaskInformation getTaskInformation(int chip, int objId);
+    public abstract TaskInformation getTaskInformation(int chip, int objId);
 
     public abstract SemaphoreInformation getSemaphoreInformation(int chip, int objId);
 

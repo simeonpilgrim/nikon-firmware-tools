@@ -30,7 +30,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         this.emulator.setMemory(platform.getMemory());
     }
 
-    public BaseTaskInformation getTaskInformation(int chip, int objId) {
+    public TaskInformation getTaskInformation(int chip, int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
         ErrorCode errorCode = runSysCall("sys_ref_tsk", objId, pk_robj);
