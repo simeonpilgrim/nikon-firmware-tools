@@ -4,6 +4,7 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -26,7 +27,7 @@ public abstract class Emulator {
     protected Memory memory;
     protected CPUState cpuState;
 
-    protected InterruptController interruptController;
+    protected InterruptController interruptController = new DummyInterruptController();
     protected CycleCounterListener cycleCounterListener;
 
     /**
