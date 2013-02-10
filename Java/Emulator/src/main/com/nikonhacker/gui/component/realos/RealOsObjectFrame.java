@@ -16,6 +16,8 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.realos.*;
+import com.nikonhacker.realos.fr.FrSysCallEnvironment;
+import com.nikonhacker.realos.tx.TxSysCallEnvironment;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -46,7 +48,7 @@ public class RealOsObjectFrame extends DocumentFrame {
     public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Emulator emulator, Platform platform, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
-        sysCallEnvironment = new SysCallEnvironment(platform, emulator, codeStructure);
+        sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform, emulator, codeStructure):new TxSysCallEnvironment(platform, emulator, codeStructure);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
