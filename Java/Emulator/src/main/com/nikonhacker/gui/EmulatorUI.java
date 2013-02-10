@@ -1555,37 +1555,33 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         disassembler.processOptions(chip, new String[]{"-m", "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE"});
                     }
                     else {
-                        // TODO
-                        /*
-                        sampleMemory.store16(lastAddress, 0x1781); // PUSH    RP
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x8FFE); // PUSH    (FP,AC,R12,R11,R10,R9,R8)
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x83EF); // ANDCCR  #0xEF
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x9F80); // LDI:32  #0x68000000,R0
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x6800);
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x0000);
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x2031); // LD      @(FP,0x00C),R1
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0xB581); // LSL     #24,R1
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x1A40); // DMOVB   R13,@0x40
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x9310); // ORCCR   #0x10
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x8D7F); // POP     (R8,R9,R10,R11,R12,AC,FP)
-                        lastAddress += 2;
-                        sampleMemory.store16(lastAddress, 0x0781); // POP    RP
-                        lastAddress += 2;
-                         */
+                        sampleMemory.store32(lastAddress, 0x340B0001);   // li      $t3, 0x0001
+                        lastAddress += 4;
+                        sampleMemory.store32(lastAddress, 0x17600002);   // bnez    $k1, 0xBFC00460
+                        lastAddress += 4;
+                        sampleMemory.store32(lastAddress, 0x00000000);   //  nop
+                        lastAddress += 4;
+
+                        int baseAddress16 = lastAddress;
+                        int lastAddress16 = baseAddress16;
+                        sampleMemory.store32(lastAddress16, 0xF70064F6); // save    $ra,$s0,$s1,$s2-$s7,$fp, 0x30
+                        lastAddress16 += 4;
+                        sampleMemory.store16(lastAddress16, 0x6500);     // nop
+                        lastAddress16 += 2;
+                        sampleMemory.store32(lastAddress16, 0xF7006476); // restore $ra,$s0,$s1,$s2-$s7,$fp, 0x30
+                        lastAddress16 += 4;
+                        sampleMemory.store16(lastAddress16, 0xE8A0);     // ret
+                        lastAddress16 += 2;
+
                         disassembler = new Dtx();
                         disassembler.setDebugPrintWriter(new PrintWriter(new StringWriter())); // Ignore
                         disassembler.setOutputFileName(null);
-                        disassembler.processOptions(chip, new String[]{"-m", "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE"});
+                        disassembler.processOptions(chip, new String[]{
+                                "-m",
+                                "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE:32",
+                                "-m",
+                                "0x" + Format.asHex(baseAddress16, 8) + "-0x" + Format.asHex(lastAddress16, 8) + "=CODE:16"
+                        });
                     }
                     disassembler.setOutputOptions(sampleOptions);
                     disassembler.setMemory(sampleMemory);
