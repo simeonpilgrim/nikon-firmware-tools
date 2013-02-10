@@ -585,15 +585,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Interrupt controller", "Interrupt");
         bar.add(interruptControllerButton[chip]);
-        programmableTimersButton[chip] = makeButton("reload", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
+        programmableTimersButton[chip] = makeButton("reload", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
         bar.add(programmableTimersButton[chip]);
 
         if (chip == Constants.CHIP_TX) {
-            ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
+            ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
             bar.add(ioPortsButton[chip]);
         }
 
-        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], "Toggle " + Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
+        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
         bar.add(serialInterfacesButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
