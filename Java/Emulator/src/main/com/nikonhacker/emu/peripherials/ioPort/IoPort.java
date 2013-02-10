@@ -6,7 +6,7 @@ public class IoPort {
     /** This is the number of this timer */
     protected int portNumber;
     /** InterruptController is passed to constructor to be able to actually trigger requests */
-    protected InterruptController interruptController;
+    private InterruptController interruptController;
 
     public IoPort(int portNumber, InterruptController interruptController) {
         this.portNumber = portNumber;
@@ -15,7 +15,7 @@ public class IoPort {
 
     @Override
     public String toString() {
-        return "IoPort #" + portNumber;
+        return "IoPort " + ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)(55 + portNumber))); // 0-9 then A-Z
     }
 
 }

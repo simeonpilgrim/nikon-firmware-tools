@@ -4,8 +4,8 @@ import com.nikonhacker.Format;
 
 public abstract class RealOsObject {
     protected int objectId;
-    protected ErrorCode errorCode;
-    protected int extendedInformation;
+    private ErrorCode errorCode;
+    private int extendedInformation;
 
     protected RealOsObject() {
     }

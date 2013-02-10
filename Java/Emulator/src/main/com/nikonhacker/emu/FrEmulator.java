@@ -10,7 +10,7 @@ import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.AutoAllocatingMemory;
-import com.nikonhacker.emu.peripherials.interruptController.FrInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -34,15 +34,22 @@ public class FrEmulator extends Emulator {
             System.exit(-1);
         }
         int initialPc = Format.parseUnsigned(args[1]);
+
         AutoAllocatingMemory memory = new AutoAllocatingMemory();
-        memory.loadFile(new File(args[0]), initialPc); // TODO use ranges
+        memory.loadFile(new File(args[0]), initialPc, false); // TODO use ranges
         EmulatorOptions.debugMemory = false;
 
-        FrEmulator emulator = new FrEmulator();
-        emulator.setMemory(memory);
         FrCPUState cpuState = new FrCPUState(initialPc);
+
+        Platform platform = new Platform();
+        platform.setCpuState(cpuState);
+        platform.setMemory(memory);
+
+        FrEmulator emulator = new FrEmulator();
+
+        emulator.setMemory(memory);
         emulator.setCpuState(cpuState);
-        emulator.setInterruptController(new FrInterruptController(memory, cpuState));
+        emulator.setInterruptController(new FrInterruptController(platform));
         emulator.setInstructionPrintWriter(new PrintWriter(System.out));
 
         emulator.play();
@@ -1229,7 +1236,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9720: /* RET */
-                        context.popStatement();
+                        context.popItem();
                         frCpuState.pc = frCpuState.getReg(FrCPUState.RP);
     
                         /* No change to NZVC */
@@ -1239,7 +1246,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x1F00: /* INT #u8 */
                         context.pushStatement(statement);
-                        processInterrupt(statement.imm, frCpuState.pc + 2);
+                        ((FrInterruptController)interruptController).processInterrupt(statement.imm, frCpuState.pc + 2, context);
                         frCpuState.I = 0;
 
                         /* No change to NZVC */
@@ -1263,7 +1270,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9730: /* RETI */
-                        context.popStatement();
+                        context.popItem();
                         frCpuState.pc = memory.load32(frCpuState.getReg(15));
                         frCpuState.setReg(15, frCpuState.getReg(15) + 8);
                         /* note : this is the order given in the spec but loading PS below could switch the USP<>SSP,
@@ -1523,7 +1530,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F20: /* RET:D */
-                        context.popStatement();
+                        context.popItem();
                         setDelayedPc(frCpuState.getReg(FrCPUState.RP));
     
                         /* No change to NZVC */
@@ -2182,7 +2189,7 @@ public class FrEmulator extends Emulator {
                         }
                         context.pushStatement(statement);
 
-                        processInterrupt(0x0E, frCpuState.pc);
+                        ((FrInterruptController)interruptController).processInterrupt(0x0E, frCpuState.pc, context);
 
                         /* No change to NZVC */
 
@@ -2190,7 +2197,9 @@ public class FrEmulator extends Emulator {
                         break;
 
                 }
-
+                if (cycleCounterListener != null) {
+                    cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+                }
                 totalCycles += cycles;
 
                 /* Delay slot processing */
@@ -2221,7 +2230,8 @@ public class FrEmulator extends Emulator {
                                     }
                                 }
                                 interruptController.removeRequest(interruptRequest);
-                                processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc);
+                                ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), frCpuState.pc, context);
+
                                 frCpuState.setILM(interruptRequest.getICR(), false);
                             }
                         }
@@ -2288,7 +2298,7 @@ public class FrEmulator extends Emulator {
                 System.err.println("Offending instruction : " + statement);
             }
             catch(Exception e1) {
-                System.err.println("Cannot disassemble offending instruction :" + statement.formatAsHex());
+                System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
             System.err.println("(on or before PC=0x" + Format.asHex(frCpuState.pc, 8) + ")");
             throw new EmulationException(e);
@@ -2303,19 +2313,6 @@ public class FrEmulator extends Emulator {
             mask >>= 1;
         }
         return 32;
-    }
-
-    // Shouldn't this code be part of FrInterruptController ? Using context for CPU and memory
-    private void processInterrupt(int interruptNumber, int pcToStore) {
-        FrCPUState frCpuState = (FrCPUState) cpuState;
-        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
-        memory.store32(frCpuState.getReg(FrCPUState.SSP), frCpuState.getPS());
-        frCpuState.setReg(FrCPUState.SSP, frCpuState.getReg(FrCPUState.SSP) - 4);
-        memory.store32(frCpuState.getReg(FrCPUState.SSP), pcToStore);
-        frCpuState.setS(0);
-
-        // Branch to handler
-        frCpuState.pc = memory.load32(frCpuState.getReg(FrCPUState.TBR) + 0x3FC - interruptNumber * 4);
     }
 
     private void setDelayedPc(Integer nextPc) {

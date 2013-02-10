@@ -13,14 +13,14 @@ import java.util.Set;
  */
 public class FrStatement extends Statement {
     ///* output formatting */
-    public static String fmt_nxt;
-    public static String fmt_imm;
-    public static String fmt_and;
-    public static String fmt_inc;
-    public static String fmt_dec;
-    public static String fmt_mem;
-    public static String fmt_par;
-    public static String fmt_ens;
+    private static String fmt_nxt;
+    private static String fmt_imm;
+    private static String fmt_and;
+    private static String fmt_inc;
+    private static String fmt_dec;
+    private static String fmt_mem;
+    private static String fmt_par;
+    private static String fmt_ens;
 
     /** data read */
     public int[] data = new int[3];
@@ -34,17 +34,17 @@ public class FrStatement extends Statement {
 
     /** Rj operand */
     public int j; // as-is from binary code
-    public int decodedJ; // interpreted
+    private int decodedJ; // interpreted
 
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
-    public int c;
+    private int c;
 
 
     /** number of significant bits in decodedX (for display only) */
     public int immBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
-    public int memRangeStart = 0;
+    private int memRangeStart = 0;
 
     /**
      * Default decoding upon class loading
@@ -332,8 +332,7 @@ public class FrStatement extends Statement {
                     break;
                 case 'n':
                     /* negative constant */
-                    //opnd.append(hexPrefix + Format.asHexInBitsLength(dp.displayx, dp.w + 1));
-                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), ((1 << (immBitWidth + 1)) - 1) & BinaryArithmetics.neg(immBitWidth, (1 << (immBitWidth)) | decodedImm), immBitWidth + 1));
+                    currentBuffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), -BinaryArithmetics.negativeExtend(immBitWidth, decodedImm), immBitWidth + 1));
                     break;
                 case 'p':
                     /* pair */
@@ -493,7 +492,7 @@ public class FrStatement extends Statement {
     }
 
 
-    public String formatAsHex() {
+    public String getFormattedBinaryStatement() {
         String out = "";
         for (int i = 0; i < 3; ++i) {
             if (i < numData) {
@@ -519,5 +518,11 @@ public class FrStatement extends Statement {
         else {
             setInstruction(instruction);
         }
+    }
+
+    public boolean isPotentialStuffing() {
+        return numData == 1 && (
+                   data[0] == 0x9FA0 /* 0x9FA0 : NOP stuffing */
+                || data[0] == 0x0000 /* 0x0000 stuffing */ );
     }
 }

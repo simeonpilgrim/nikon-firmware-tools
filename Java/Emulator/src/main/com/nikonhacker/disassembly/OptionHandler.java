@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
 
 public class OptionHandler
 {
-    static String memtypehelp =
+    private static String memtypehelp =
             "Memtypes are:\n"
                     + "NONE              do not disassemble\n"
                     + "UNKNOWN           unknown contents\n"
@@ -26,9 +26,9 @@ public class OptionHandler
                     + "                    W or 16 -- word (16-bit) data\n"
             ;
 
-    int index;
-    String[] arguments;
-    String currentToken;
+    private int index;
+    private String[] arguments;
+    private String currentToken;
 
     public OptionHandler(String[] arguments)
     {
@@ -77,11 +77,11 @@ public class OptionHandler
         if (rangeTokenizer.countTokens() != 5) {
             throw new ParsingException("-" + option + " has an malformed range : " + rangeString);
         }
-        int start = Format.parseUnsigned(rangeTokenizer.nextToken());
+        int start = Format.parseUnsigned(rangeTokenizer.nextToken().trim());
 
         String sep = rangeTokenizer.nextToken();
 
-        int end = Format.parseUnsigned(rangeTokenizer.nextToken()) + ("-".equals(sep)?0:start);
+        int end = Format.parseUnsigned(rangeTokenizer.nextToken().trim()) + ("-".equals(sep)?0:start);
 
         String nextSep = rangeTokenizer.nextToken();
 
@@ -89,7 +89,7 @@ public class OptionHandler
             throw new ParsingException("-" + option + " has an malformed range : " + rangeString + " (expected '=' or ':' before last address)");
         }
 
-        int offset = Format.parseUnsigned(rangeTokenizer.nextToken());
+        int offset = Format.parseUnsigned(rangeTokenizer.nextToken().trim());
         return new Range(start, end, offset);
     }
 
@@ -108,18 +108,18 @@ public class OptionHandler
             throw new ParsingException("-" + option + " has a malformed range : " + rangeString);
         }
 
-        int start = Format.parseUnsigned(rangeTokenizer.nextToken());
+        int start = Format.parseUnsigned(rangeTokenizer.nextToken().trim());
 
         String sep = rangeTokenizer.nextToken();
 
-        int end = Format.parseUnsigned(rangeTokenizer.nextToken()) + ("-".equals(sep)?0:start);
+        int end = Format.parseUnsigned(rangeTokenizer.nextToken().trim()) + ("-".equals(sep)?0:start);
 
         String nextSep = rangeTokenizer.nextToken();
         if (!"=".equals(nextSep)) {
             throw new ParsingException("-" + option + " has a malformed range : " + rangeString + " (expected '=' before last address)");
         }
 
-        RangeType map = parseRangeType(rangeTokenizer.nextToken());
+        RangeType map = parseRangeType(rangeTokenizer.nextToken().trim());
 
         if (option == 't') {
             return new InterruptVectorRange(start, end, map);
@@ -129,7 +129,7 @@ public class OptionHandler
         }
     }
 
-    static RangeType parseRangeType(String arg) throws ParsingException {
+    private static RangeType parseRangeType(String arg) throws ParsingException {
         if (StringUtils.isBlank(arg))  {
             throw new ParsingException("no memtype given");
         }
@@ -137,14 +137,14 @@ public class OptionHandler
 
         String[] type_width = StringUtils.split(arg, ':');
 
-        String type = type_width[0].toUpperCase();
+        String type = type_width[0].toUpperCase().trim();
         if (type.startsWith("C")) {
             rangeType.memoryType = RangeType.MemoryType.CODE;
             if (type_width.length == 1) {
                 rangeType.widths.add(RangeType.Width.MD_WORD);
             }
             else {
-                String width = type_width[1].toUpperCase();
+                String width = type_width[1].toUpperCase().trim();
                 if (width.startsWith("L") || "32".equalsIgnoreCase(width)) {
                     rangeType.widths.add(RangeType.Width.MD_LONG);
                 }
@@ -165,7 +165,7 @@ public class OptionHandler
             else {
                 int i = 1;
                 while (type_width.length > i) {
-                    String width = type_width[i].toUpperCase();
+                    String width = type_width[i].toUpperCase().trim();
                     if (width.startsWith("L") || "32".equalsIgnoreCase(width)) {
                         rangeType.widths.add(RangeType.Width.MD_LONG);
                     }

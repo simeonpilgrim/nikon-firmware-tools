@@ -22,7 +22,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
 
     public CodeStructureMxGraphComponent(final int chip, final CodeStructureMxGraph graph, final CodeStructureFrame codeStructureFrame, final EmulatorUI ui) {
         super(graph);
-        this.codeStructure = codeStructureFrame.codeStructure;
+        this.codeStructure = codeStructureFrame.getCodeStructure();
 
         final JPopupMenu popupMenu = new JPopupMenu();
         JMenuItem findUsageMenuItem = new JMenuItem("Find usage");

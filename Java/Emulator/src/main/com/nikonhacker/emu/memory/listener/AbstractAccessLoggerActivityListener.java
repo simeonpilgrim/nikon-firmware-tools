@@ -6,7 +6,7 @@ import com.nikonhacker.disassembly.CPUState;
 import java.io.PrintWriter;
 
 public abstract class AbstractAccessLoggerActivityListener implements MemoryActivityListener {
-    PrintWriter printWriter;
+    private PrintWriter printWriter;
     private CPUState cpuState;
 
     public AbstractAccessLoggerActivityListener(PrintWriter printWriter, CPUState cpuState) {

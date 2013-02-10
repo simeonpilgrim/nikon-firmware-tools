@@ -2,8 +2,6 @@ package com.nikonhacker.disassembly.tx;
 
 import com.nikonhacker.emu.EmulationException;
 
-import java.io.FileNotFoundException;
-
 public class TxEmulationException extends EmulationException {
     private TxStatement statement = null;
     private int exceptionType = Exceptions.NONE;
@@ -33,5 +31,9 @@ public class TxEmulationException extends EmulationException {
     public TxEmulationException(TxStatement statement, Exception e) {
         super(e);
         this.statement = statement;
+    }
+
+    public int getExceptionType() {
+        return exceptionType;
     }
 }

@@ -202,7 +202,7 @@ public class SaveLoadMemoryDialog extends JDialog {
                 }
                 else {
                     int startAddress = Format.parseIntHexField(startAddressField);
-                    memory.loadFile(sourceFile, startAddress);
+                    memory.loadFile(sourceFile, startAddress, true);
                     JOptionPane.showMessageDialog(this, "Load complete", "Done", JOptionPane.INFORMATION_MESSAGE);
                     dispose();
                 }

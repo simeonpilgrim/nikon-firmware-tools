@@ -23,8 +23,8 @@ public class CodeStructureMxGraph extends mxGraph {
     private final mxHierarchicalLayout layout;
 
     // Map from Object (Function, or anonymous Object when calling unknown destination) to cell
-    Map<Object,Object> cellObjects = new HashMap<Object, Object>();
-    Set<Jump> renderedCalls = new HashSet<Jump>();
+    private Map<Object,Object> cellObjects = new HashMap<Object, Object>();
+    private Set<Jump> renderedCalls = new HashSet<Jump>();
 
     public CodeStructureMxGraph(int orientation) {
         super();

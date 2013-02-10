@@ -1,8 +1,8 @@
 package com.nikonhacker.disassembly;
 
 public class Instruction {
-    public boolean isConditional;
-    public DelaySlotType delaySlotType;
+    private boolean isConditional;
+    private DelaySlotType delaySlotType;
     private String name;
     private String displayFormat;
     private String action;

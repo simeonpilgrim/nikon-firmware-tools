@@ -4,6 +4,7 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -21,11 +22,13 @@ public abstract class Emulator {
 
     StatementContext context = new StatementContext();
 
-    // TODO : Shouldn't these 2 only be in the context object ?
+    // TODO : Shouldn't these 2 only be in the StatementContext object ?
+    // TODO : or better yet in a Platform object
     protected Memory memory;
     protected CPUState cpuState;
 
-    protected InterruptController interruptController;
+    protected InterruptController interruptController = new DummyInterruptController();
+    protected CycleCounterListener cycleCounterListener;
 
     /**
      * Provide a PrintWriter to send disassembled form of executed instructions to
@@ -106,4 +109,8 @@ public abstract class Emulator {
      * @throws EmulationException
      */
     public abstract BreakCondition play() throws EmulationException ;
+
+    public void setCycleCounterListener(CycleCounterListener cycleCounterListener) {
+        this.cycleCounterListener = cycleCounterListener;
+    }
 }

@@ -7,6 +7,10 @@ public class SemaphoreInformation extends RealOsObject {
     private int waitTaskInformation;
     private int semaphoreCount;
 
+    public SemaphoreInformation(int objectId, ErrorCode errorCode) {
+        super(objectId, errorCode, 0);
+    }
+
     public SemaphoreInformation(int objectId, ErrorCode errorCode, int extendedInformation, int waitTaskInformation, int semaphoreCount) {
         super(objectId, errorCode, extendedInformation);
         this.waitTaskInformation = waitTaskInformation;

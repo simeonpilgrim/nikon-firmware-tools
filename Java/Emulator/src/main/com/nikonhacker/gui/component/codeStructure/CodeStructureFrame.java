@@ -3,9 +3,7 @@ package com.nikonhacker.gui.component.codeStructure;
 import com.mxgraph.canvas.mxICanvas;
 import com.mxgraph.canvas.mxSvgCanvas;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxCellRenderer;
-import com.mxgraph.util.mxRectangle;
-import com.mxgraph.util.mxUtils;
+import com.mxgraph.util.*;
 import com.mxgraph.util.png.mxPngEncodeParam;
 import com.mxgraph.util.png.mxPngImageEncoder;
 import com.nikonhacker.Format;
@@ -31,8 +29,8 @@ public class CodeStructureFrame extends DocumentFrame
     private static final int FRAME_WIDTH = 800;
     private static final int FRAME_HEIGHT = 600;
 
-    CodeStructureMxGraph graph;
-    CodeStructure codeStructure;
+    private CodeStructureMxGraph graph;
+    private CodeStructure codeStructure;
     private mxGraphComponent graphComponent;
     private CPUState cpuState;
 
@@ -51,7 +49,7 @@ public class CodeStructureFrame extends DocumentFrame
         }
     }
 
-    public CodeStructureFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
+    public CodeStructureFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -70,7 +68,7 @@ public class CodeStructureFrame extends DocumentFrame
         orientationCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 Orientation selOrientation = (Orientation) orientationCombo.getSelectedItem();
-                ui.getPrefs().setCodeStructureGraphOrientation(selOrientation.name());
+                ui.getPrefs().setCodeStructureGraphOrientation(chip, selOrientation.name());
                 graph.setOrientation(selOrientation.getSwingValue());
             }
         });
@@ -81,7 +79,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         ActionListener exploreActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                Integer address = codeStructure.getAddressFromString(targetField.getText());
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }
@@ -182,10 +180,14 @@ public class CodeStructureFrame extends DocumentFrame
         pack();
     }
 
+    public CodeStructure getCodeStructure() {
+        return codeStructure;
+    }
+
     private Orientation getCurrentOrientation() {
         Orientation currentOrientation;
         try {
-            currentOrientation = Orientation.valueOf(ui.getPrefs().getCodeStructureGraphOrientation());
+            currentOrientation = Orientation.valueOf(ui.getPrefs().getCodeStructureGraphOrientation(chip));
         } catch (Exception e) {
             currentOrientation = Orientation.HORIZONTAL;
         }
@@ -242,12 +244,12 @@ public class CodeStructureFrame extends DocumentFrame
             mxSvgCanvas canvas = (mxSvgCanvas) mxCellRenderer.drawCells(graph, null, 1, null,
                     new mxCellRenderer.CanvasFactory() {
                         public mxICanvas createCanvas(int width, int height) {
-                            mxSvgCanvas canvas = new mxSvgCanvas(mxUtils.createSvgDocument(width, height));
+                            mxSvgCanvas canvas = new mxSvgCanvas(mxDomUtils.createSvgDocument(width, height));
                             canvas.setEmbedded(true);
                             return canvas;
                         }
                     });
-            mxUtils.writeFile(mxUtils.getXml(canvas.getDocument()), file.getAbsolutePath());
+            mxUtils.writeFile(mxXmlUtils.getXml(canvas.getDocument()), file.getAbsolutePath());
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

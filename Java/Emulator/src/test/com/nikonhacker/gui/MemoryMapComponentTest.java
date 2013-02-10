@@ -12,7 +12,7 @@ public class MemoryMapComponentTest {
         new MemoryMapComponentTest();
     }
 
-    MemoryMapComponentTest() throws IOException, EmulationException {
+    private MemoryMapComponentTest() throws IOException, EmulationException {
         DebuggableMemory memory = new DebuggableMemory();
         TrackingMemoryActivityListener activityListener = new TrackingMemoryActivityListener(memory.getNumPages(), memory.getPageSize());
 

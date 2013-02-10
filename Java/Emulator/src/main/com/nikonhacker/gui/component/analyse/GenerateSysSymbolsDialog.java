@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.analyse;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.fr.Syscall;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.SearchableTextAreaPanel;
@@ -18,12 +18,12 @@ public class GenerateSysSymbolsDialog extends JDialog {
     private static final int INTERRUPT_VECTOR_BASE_ADDRESS = 0xDFC00;
 
     private PrintWriterArea printWriterArea;
-    JButton closeButton;
-    final JDialog frame = this;
+    private JButton closeButton;
+    private final JDialog frame = this;
     private EmulatorUI emulatorUI;
-    private DebuggableMemory memory;
+    private Memory memory;
 
-    public GenerateSysSymbolsDialog(EmulatorUI emulatorUI, DebuggableMemory memory) {
+    public GenerateSysSymbolsDialog(EmulatorUI emulatorUI, Memory memory) {
         super(emulatorUI, "System call Symbols generation", true);
         this.emulatorUI = emulatorUI;
         this.memory = memory;

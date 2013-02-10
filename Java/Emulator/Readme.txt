@@ -4,8 +4,8 @@ IMPORTANT : modifying your firmware can result in potentially DESTROYING ("brick
 By using these tools, you agree that it is your entire fault and that we cannot be held responsible for anything.
 That is what is repeated in legal terms at the end of this document.
 
-Basically, all cameras using a Fujitsu FR-Family CPU could benefit from these tools, although some parts such as
-firmware decrypting are specific to certain Nikon cameras.
+Basically, all cameras using a Fujitsu FR or Toshiba TX family CPU could benefit from these tools,
+although some parts such as firmware decrypting are specific to certain Nikon cameras.
 Multiple tools can be accessed from the command-line (assuming that your Java environment -
 JAVA_HOME and PATH variables - is set up correctly).
 

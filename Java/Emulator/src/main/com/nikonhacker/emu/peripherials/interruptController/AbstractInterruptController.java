@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.interruptController;
 
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 
 import java.util.ArrayList;
@@ -7,6 +8,13 @@ import java.util.List;
 
 public abstract class AbstractInterruptController implements InterruptController {
     protected final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
+
+    protected Platform platform;
+
+
+    public AbstractInterruptController(Platform platform) {
+        this.platform = platform;
+    }
 
     public abstract boolean request(int interruptNumber);
 

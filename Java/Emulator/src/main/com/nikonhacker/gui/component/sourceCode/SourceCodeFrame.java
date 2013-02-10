@@ -39,7 +39,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 //    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
     
     private Gutter gutter;
-    Object pcHighlightTag = null;
+    private Object pcHighlightTag = null;
     private final JTextField searchField;
     private JCheckBox regexCB;
     private JCheckBox matchCaseCB;
@@ -47,13 +47,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private CPUState cpuState;
     private CodeStructure codeStructure;
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
-    List<Integer> lineAddresses = new ArrayList<Integer>();
+    private List<Integer> lineAddresses = new ArrayList<Integer>();
     private final JTextField targetField;
     private int lastClickedTextPosition;
     private final JCheckBox followPcCheckBox;
 
 
-    public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
+    public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         this.cpuState = cpuState;
@@ -74,13 +74,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         JButton goToPcButton = new JButton("Go to PC");
         topToolbar.add(goToPcButton);
         followPcCheckBox = new JCheckBox("Follow PC");
-        followPcCheckBox.setSelected(ui.getPrefs().isFollowPc());
+        followPcCheckBox.setSelected(ui.getPrefs().isSourceCodeFollowsPc(chip));
         topToolbar.add(followPcCheckBox);
 
         // Add listeners
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromText(targetField.getText());
+                Integer address = codeStructure.getAddressFromString(targetField.getText());
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }
@@ -105,7 +105,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addKeyListener(this);
         followPcCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.getPrefs().setFollowPc(followPcCheckBox.isSelected());
+                ui.getPrefs().setSourceCodeFollowsPc(chip, followPcCheckBox.isSelected());
                 if (followPcCheckBox.isSelected()) {
                     reachAndHighlightPc();
                 }

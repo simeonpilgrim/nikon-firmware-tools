@@ -16,7 +16,7 @@ public class MemoryPageMappedComponentFrame extends DocumentFrame {
     private static final int ROWS = 60;
     private static final int COLUMNS = 80;
 
-    DebuggableMemory memory;
+    private DebuggableMemory memory;
     private final MemoryActivityListener listener;
 
     public MemoryPageMappedComponentFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int page, CPUState cpuState) {

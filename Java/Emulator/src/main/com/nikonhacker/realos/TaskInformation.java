@@ -1,10 +1,9 @@
 package com.nikonhacker.realos;
 
-import com.nikonhacker.Format;
-
 public class TaskInformation extends RealOsObject {
 
     public static enum TaskState {
+        NONE(0x0), // pseudo state
         RUN(0x1),
         READY(0x2),
         WAIT(0x4),
@@ -28,16 +27,17 @@ public class TaskInformation extends RealOsObject {
         }
     }
 
-    private int taskPriority;
-    private TaskState taskState;
+    protected int taskPriority = 0;
+    protected TaskState taskState = TaskState.NONE;
 
-    public TaskInformation() {
+    public TaskInformation(int objectId, ErrorCode errorCode) {
+        super(objectId, errorCode, 0);
     }
 
-    public TaskInformation(int objectId, ErrorCode errorCode, int extendedInformation, int taskPriority, int stateValue) {
+    public TaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int extendedInformation) {
         super(objectId, errorCode, extendedInformation);
-        this.taskPriority = taskPriority;
         this.taskState = TaskState.fromValue(stateValue);
+        this.taskPriority = taskPriority;
     }
 
     public int getTaskPriority() {
@@ -48,11 +48,4 @@ public class TaskInformation extends RealOsObject {
         return taskState;
     }
 
-    @Override
-    public String toString() {
-        if (getErrorCode() != ErrorCode.E_OK) {
-            return getErrorCode().toString();
-        }
-        return "Task 0x" + Format.asHex(objectId, 2) + ": State " + taskState.name() + ", priority=" + taskPriority + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
-    }
 }

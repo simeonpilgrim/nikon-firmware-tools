@@ -14,7 +14,7 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Emulator;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
@@ -35,12 +35,12 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private static final int WINDOW_HEIGHT = 300;
 
     private List<BreakTrigger> breakTriggers;
-    private DebuggableMemory memory;
+    private Memory memory;
     private final EventList<BreakTrigger> triggerList;
     private final JTable triggerTable;
     private final Emulator emulator;
 
-    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, DebuggableMemory memory) {
+    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
@@ -173,6 +173,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
             cpuStateValues = new TxCPUState();
         }
         cpuStateFlags.clear();
+        cpuStateFlags.pc = 0;
         BreakTrigger trigger = new BreakTrigger(findNewName(), cpuStateValues, cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange(chip);

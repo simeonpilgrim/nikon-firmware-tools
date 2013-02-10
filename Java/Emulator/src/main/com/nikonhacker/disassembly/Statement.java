@@ -83,7 +83,7 @@ public abstract class Statement {
         String out = "";
 
         if (options.contains(OutputOption.HEXCODE)) {
-            out += formatAsHex();
+            out += getFormattedBinaryStatement();
         }
 
         if (options.contains(OutputOption.BLANKS)) {
@@ -134,9 +134,11 @@ public abstract class Statement {
     }
 
 
-    public abstract String formatAsHex();
+    public abstract String getFormattedBinaryStatement();
 
     public abstract int getNumBytes();
 
     public abstract void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException;
+
+    public abstract boolean isPotentialStuffing();
 }
