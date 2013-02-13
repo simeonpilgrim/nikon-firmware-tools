@@ -13,7 +13,10 @@ namespace Nikon_Decode
 {
     partial class Program
     {
+        public const int OUTPUT = 1; // 0 DFR, 1 IDA make, 2 IDA clean
+
         private static Dictionary<long, Struct6> menus;
+        static Dictionary<long, Struct14> elements;
 
         internal class FirmConsts
         {
@@ -275,6 +278,7 @@ namespace Nikon_Decode
                 Queue<long> q = new Queue<long>();
                 List<long> resolved = new List<long>();
                 menus = new Dictionary<long, Struct6>();
+                elements = new Dictionary<long, Struct14>();
 
                 resolved.Add(0);
 
@@ -339,7 +343,24 @@ namespace Nikon_Decode
             }
         }
 
+        static void AddElement(long addr, Struct14 element)
+        {
+            if (elements.ContainsKey(addr) == false)
+            {
+                elements.Add(addr, element);
+            }
+        }
 
+        public static string FindElementName(long memuAddr)
+        {
+            foreach (var el in elements)
+            {
+                if (el.Value.menu_ptr == memuAddr)
+                    return el.Value.ToString();
+            }
+
+            return "";
+        }
 
 
         class Struct6
@@ -413,7 +434,12 @@ namespace Nikon_Decode
 
             internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
-                tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, headingTxt);
+                string elemnt_name = Program.FindElementName(mem_loc);
+                if (elemnt_name == "")
+                    elemnt_name = headingTxt;
+
+                //tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, headingTxt);
+                tw.WriteLine("{0}Menu: 0x{1:X8} {2}", p, mem_loc, elemnt_name);
 
                 //tw.WriteLine("{0}  00 field_00: 0x{1:X4}", p, field_0);
                 //tw.WriteLine("{0}  02 field_02: 0x{1:X4}", p, field_2);
@@ -430,11 +456,15 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
-                var sym = NameToSymbol(mem_loc, headingTxt);
+                var sym = NameToSymbol(mem_loc, elemnt_name);
                 if (sym != "")
                 {
-                    tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym);
-                    //tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"MN_{1}\", 0);", mem_loc, sym);
+                    switch (Program.OUTPUT)
+                    {
+                        case 0: tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", mem_loc, sym); break;
+                        case 1: tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"MN_{1}\", 0);", mem_loc, sym); break;
+                        case 2: tw_sym.WriteLine("MakeNameEx(0x{0:X8}, \"\", 0 );", mem_loc); break;
+                    }
                 }
 
                 if (field_12_item != null)
@@ -533,6 +563,8 @@ namespace Nikon_Decode
 
                 //txt_0 = ResolveString(data, field_0, firmConsts.EngPlaybackTextAddr);
                 txt_2 = ResolveString(data, field_2, firmConsts.EngMenuTextAddr);
+
+                Program.AddElement(mem_loc, this);
             }
 
             public void Read(byte[] data, long startAddr, long addrOffset)
@@ -561,11 +593,12 @@ namespace Nikon_Decode
 
             public override string ToString()
             {
-                return string.Format("{0}", txt_2);
+                    return string.Format("{0}", txt_2);
             }
 
             internal void Dump(TextWriter tw, TextWriter tw_sym, string p)
             {
+                //tw.WriteLine("{0}Element: 0x{1:X8} {2} {3}", p, mem_loc, txt_2, txt_3);
                 tw.WriteLine("{0}Element: 0x{1:X8} {2}", p, mem_loc, txt_2);
                 //tw.WriteLine("{0}  field_0: 0x{1:X4}", p, field_0);
                 //tw.WriteLine("{0}  field_2: 0x{1:X4}", p, field_2);
@@ -578,8 +611,12 @@ namespace Nikon_Decode
                 var sym = NameToSymbol(mem_loc, txt_2);
                 if (sym != "")
                 {
-                    tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym);
-                    //tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"ME_{1}\", 1);", mem_loc, sym);
+                    switch (Program.OUTPUT)
+                    {
+                        case 0: tw_sym.WriteLine("-s 0x{0:X8}=ME_{1}", mem_loc, sym); break;
+                        case 1: tw_sym.WriteLine("MakeMenu(0x{0:X8}, \"ME_{1}\", 1);", mem_loc, sym); break;
+                        case 2: tw_sym.WriteLine("MakeNameEx(0x{0:X8}, \"\", 0 );", mem_loc); break;
+                    }
                 }
 
                 if (menu_ptr != 0)
@@ -639,7 +676,7 @@ namespace Nikon_Decode
             if (Symbols.ContainsKey(addr))
                 return Symbols[addr];
 
-            const int maxIn = 14;
+            const int maxIn = 20;
             StringBuilder sb = new StringBuilder();
 
             char[] skips = { ' ', '/', '-', '(', ')' };
