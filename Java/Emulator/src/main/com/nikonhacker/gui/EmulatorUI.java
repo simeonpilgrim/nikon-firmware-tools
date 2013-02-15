@@ -2032,6 +2032,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             serialInterfaceFrame[chip] = null;
             if (mustReOpen) toggleSerialInterfaces(chip);
         }
+        if (realOsObjectFrame[chip] != null) {
+            realOsObjectFrame[chip].dispose();
+            realOsObjectFrame[chip] = null;
+            if (mustReOpen) toggleRealOsObject(chip);
+        }
     }
 
     private void toggleBreakTriggerList(int chip) {
