@@ -96,6 +96,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             public void actionPerformed(ActionEvent e) {
                 displayedRegisterSet = registerSetCombo.getSelectedIndex();
                 boolean enabled = (displayedRegisterSet == cpuState.getSscrCSS());
+                // Changing combo selection causes an update of all general purpose register fields
+                // This changes just the values, not the background color, as it has no meaning
                 for (int i = 1; i < regTextFields.length; i++) {
                     regTextFields[i].setEnabled(enabled);
                     regTextFields[i].setText(Format.asHex(cpuState.getShadowReg(displayedRegisterSet, i), 8));
@@ -172,6 +174,8 @@ public class TxCPUStateComponent extends CPUStateComponent {
             add(cancelButton);
             add(new JLabel(), "wrap");
         }
+        // Force a refresh, so that the one that will be triggered by the timer will leave a white background
+        refresh();
     }
 
     /**
@@ -200,25 +204,26 @@ public class TxCPUStateComponent extends CPUStateComponent {
         }
         else {
             displayedRegisterSet = ((TxCPUState) cpuState).getSscrCSS();
-            powerModeLabel.setText(((TxCPUState) cpuState).getPowerMode().name());
-            registerSetCombo.setSelectedIndex(displayedRegisterSet);
-            pcTextField.setText(Format.asHex(cpuState.pc, 8));
-            pcIsaMode16bCheckBox.setSelected(((TxCPUState) cpuState).is16bitIsaMode);
-            hiTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
-            loTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
-            statusTextField.setText(Format.asBinary(cpuState.getReg(TxCPUState.Status), 32));
-            causeTextField.setText(Format.asBinary(cpuState.getReg(TxCPUState.Cause), 32));
-            epcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
-            errorEpcTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
-            badVAddrTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.BadVAddr), 8));
-            sscrTextField.setText(Format.asHex(cpuState.getReg(TxCPUState.SSCR), 8));
+            updateAndColorLabel(powerModeLabel, ((TxCPUState) cpuState).getPowerMode().name());
+            updateAndColorCombo(registerSetCombo, displayedRegisterSet);
+            updateAndColorTextField(pcTextField, Format.asHex(cpuState.pc, 8));
+            updateAndColorCheckBox(pcIsaMode16bCheckBox, ((TxCPUState) cpuState).is16bitIsaMode);
+            updateAndColorTextField(hiTextField, Format.asHex(cpuState.getReg(TxCPUState.HI), 8));
+            updateAndColorTextField(loTextField, Format.asHex(cpuState.getReg(TxCPUState.LO), 8));
+            updateAndColorTextField(statusTextField, Format.asBinary(cpuState.getReg(TxCPUState.Status), 32));
+            updateAndColorTextField(causeTextField, Format.asBinary(cpuState.getReg(TxCPUState.Cause), 32));
+            updateAndColorTextField(epcTextField, Format.asHex(cpuState.getReg(TxCPUState.EPC), 8));
+            updateAndColorTextField(errorEpcTextField, Format.asHex(cpuState.getReg(TxCPUState.ErrorEPC), 8));
+            updateAndColorTextField(badVAddrTextField, Format.asHex(cpuState.getReg(TxCPUState.BadVAddr), 8));
+            updateAndColorTextField(sscrTextField, Format.asHex(cpuState.getReg(TxCPUState.SSCR), 8));
 
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
-                regTextFields[i].setText(Format.asHex(((TxCPUState) cpuState).getShadowReg(displayedRegisterSet, i), 8));
+                updateAndColorTextField(regTextFields[i], Format.asHex(((TxCPUState) cpuState).getShadowReg(displayedRegisterSet, i), 8));
             }
         }
     }
+
 
     private void validateAndSaveValues(TxCPUState cpuState) {
         try {
@@ -316,43 +321,21 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
 
     public void setEditable(boolean editable) {
-
         pcTextField.setEditable(editable);
-        pcTextField.setBackground(Color.WHITE);
-
         pcIsaMode16bCheckBox.setEnabled(editable);
-
         hiTextField.setEditable(editable);
-        hiTextField.setBackground(Color.WHITE);
-
         loTextField.setEditable(editable);
-        loTextField.setBackground(Color.WHITE);
-
         statusTextField.setEditable(editable);
-        statusTextField.setBackground(Color.WHITE);
-
         causeTextField.setEditable(editable);
-        causeTextField.setBackground(Color.WHITE);
-
         epcTextField.setEditable(editable);
-        epcTextField.setBackground(Color.WHITE);
-
         errorEpcTextField.setEditable(editable);
-        errorEpcTextField.setBackground(Color.WHITE);
-
         for (JTextField regTextField : regTextFields) {
             regTextField.setEditable(editable);
-            regTextField.setBackground(Color.WHITE);
         }
-
         badVAddrTextField.setEditable(editable);
-        badVAddrTextField.setBackground(Color.WHITE);
-
         sscrTextField.setEditable(editable);
-        sscrTextField.setBackground(Color.WHITE);
 
         saveButton.setEnabled(editable);
         cancelButton.setEnabled(editable);
     }
-
 }
