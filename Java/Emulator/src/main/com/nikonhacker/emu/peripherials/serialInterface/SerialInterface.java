@@ -91,4 +91,9 @@ public abstract class SerialInterface {
             listener.onValueReady(this);
         }
     }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
