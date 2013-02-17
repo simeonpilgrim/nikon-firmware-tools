@@ -22,7 +22,17 @@ public class TxHSerialInterface extends TxSerialInterface {
     @Override
     public void setMod1(int mod1) {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
+        boolean previousTxEnabled = isMod1TxeSet();
         this.mod1 = mod1;
+        boolean currentTxEnabled = isMod1TxeSet();
+
+        // Check if TXE was just enabled.
+        if (currentTxEnabled && !previousTxEnabled) {
+            // Signal if there are values waiting
+            for (int i = 0; i < getNbTxValuesWaiting(); i++) {
+                super.valueReady();
+            }
+        }        this.mod1 = mod1;
     }
 
     /**
