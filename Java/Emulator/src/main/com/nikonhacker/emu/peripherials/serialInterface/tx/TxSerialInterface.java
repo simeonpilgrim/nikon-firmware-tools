@@ -102,7 +102,9 @@ public class TxSerialInterface extends SerialInterface {
                 txFifo.add(buf);
                 // TODO signal if full ?
             }
-            super.valueReady();
+            if (isMod1TxeSet()) {
+                super.valueReady();
+            }
         }
         else {
             // Used to reset buffer
@@ -147,10 +149,21 @@ public class TxSerialInterface extends SerialInterface {
 
     public void setMod1(int mod1) {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
+        boolean previousTxEnabled = isMod1TxeSet();
         this.mod1 = mod1;
+        boolean currentTxEnabled = isMod1TxeSet();
+
         // And in case duplex mode changes
         computeRxFillLevel();
         computeTxFillLevel();
+
+        // Check if TXE was just enabled.
+        if (currentTxEnabled && !previousTxEnabled) {
+            // Signal if there are values waiting
+            for (int i = 0; i < getNbTxValuesWaiting(); i++) {
+                super.valueReady();
+            }
+        }
     }
 
     public int getMod2() {
@@ -521,7 +534,7 @@ public class TxSerialInterface extends SerialInterface {
     private Integer getTxValue() {
         if (!isFcnfCnfgSet()) { // FIFO disabled
             if (isMod2TbempSet()) {
-                System.err.println(getName() + ": RX buffer underrun");
+                System.err.println(getName() + ": TX buffer underrun");
                 // There's no data in buffer => Underrun : new data to return. Return null
                 if (isCrIocSet()) { // Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
                     setCrPerr();
@@ -537,7 +550,7 @@ public class TxSerialInterface extends SerialInterface {
         }
         else {
             if (txFifo.size() == 0) {
-                System.err.println(getName() + ": RX fifo underrun");
+                System.err.println(getName() + ": TX fifo underrun");
 //                if (isCrIocSet()) {// Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
 //                    setCrPerr(); // TODO This is not explicitly specified in case of FIFO. Sounds logical but...
 //                }
@@ -557,6 +570,16 @@ public class TxSerialInterface extends SerialInterface {
             }
         }
     }
+
+    protected int getNbTxValuesWaiting() {
+        if (!isFcnfCnfgSet()) { // FIFO disabled
+            return isMod2TbempSet()?0:1;
+        }
+        else {
+            return txFifo.size();
+        }
+    }
+
 
     // RECEPTION LOGIC
 
