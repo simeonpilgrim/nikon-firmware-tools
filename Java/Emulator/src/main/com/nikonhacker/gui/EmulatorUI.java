@@ -1838,6 +1838,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             InterruptController interruptController;
             TimerCycleCounterListener cycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
+            // Stop timers if active from a previous session (reset)
+            if (platform[chip] != null && platform[chip].getProgrammableTimers()[0].isActive()) {
+                for (ProgrammableTimer timer : platform[chip].getProgrammableTimers()) {
+                    timer.setActive(false);
+                }
+                // Stop button animation
+                setProgrammableTimerAnimationEnabled(chip, false);
+            }
+
             // TODO We should not create a new platform, just reset it
             // TODO Otherwise, the cross-linkings risks memory leaks
             platform[chip] = new Platform();
