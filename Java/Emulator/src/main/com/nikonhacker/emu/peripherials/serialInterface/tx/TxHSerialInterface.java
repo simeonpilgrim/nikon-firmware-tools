@@ -32,7 +32,7 @@ public class TxHSerialInterface extends TxSerialInterface {
             for (int i = 0; i < getNbTxValuesWaiting(); i++) {
                 super.valueReady();
             }
-        }        this.mod1 = mod1;
+        }
     }
 
     /**
