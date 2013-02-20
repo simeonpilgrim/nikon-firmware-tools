@@ -1,8 +1,7 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
-import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import junit.framework.TestCase;
 
 public class FrSerialInterfaceTest extends TestCase {
