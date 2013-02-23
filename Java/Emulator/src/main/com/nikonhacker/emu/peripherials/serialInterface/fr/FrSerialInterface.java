@@ -4,8 +4,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
-import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Behaviour based on spec in http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
@@ -14,12 +14,12 @@ public class FrSerialInterface extends SerialInterface {
     /**
      * FIFO1. null if disabled
      */
-    private Deque<Integer> fifo1 = null;
+    private Queue<Integer> fifo1 = null;
 
     /**
      * FIFO2. null if disabled
      */
-    private Deque<Integer> fifo2 = null;
+    private Queue<Integer> fifo2 = null;
 
     private int baudRateGenerator;
 
@@ -128,7 +128,7 @@ public class FrSerialInterface extends SerialInterface {
      * @param tdr
      */
     public void setTdr(int tdr) {
-        Deque<Integer> txFifo;
+        Queue<Integer> txFifo;
         if ((fcr1 & 0x1) == 0) {
             txFifo = fifo1;
         }
@@ -163,7 +163,7 @@ public class FrSerialInterface extends SerialInterface {
      * @return 5 to 9 bits integer corresponding to a single value read by a device from this serial port
      */
     public Integer read() {
-        Deque<Integer> txFifo;
+        Queue<Integer> txFifo;
         if ((fcr1 & 0x1) == 0) {
             txFifo = fifo1;
         }
@@ -219,7 +219,7 @@ public class FrSerialInterface extends SerialInterface {
             System.out.println("FrSerialInterface.write(null)");
         }
         else {
-            Deque<Integer> rxFifo;
+            Queue<Integer> rxFifo;
             int fbyte;
             if ((fcr1 & 0x1) == 0) {
                 rxFifo = fifo2;
@@ -314,7 +314,7 @@ public class FrSerialInterface extends SerialInterface {
      * @return rdr
      */
     public int getRdr() {
-        Deque<Integer> rxFifo;
+        Queue<Integer> rxFifo;
         if ((fcr1 & 0x1) == 0) {
             rxFifo = fifo2;
         }
