@@ -12,7 +12,7 @@ public class TxHSerialInterface extends TxSerialInterface {
 
     @Override
     public String getName() {
-        return "HSerial #" + serialInterfaceNumber;
+        return "Tx HSerial #" + serialInterfaceNumber;
     }
 
     /**
@@ -29,7 +29,7 @@ public class TxHSerialInterface extends TxSerialInterface {
         // Check if TXE was just enabled.
         if (currentTxEnabled && !previousTxEnabled) {
             // Signal if there are values waiting
-            for (int i = 0; i < getNbTxValuesWaiting(); i++) {
+            while (getNbTxValuesWaiting() > 0) {
                 super.valueReady();
             }
         }

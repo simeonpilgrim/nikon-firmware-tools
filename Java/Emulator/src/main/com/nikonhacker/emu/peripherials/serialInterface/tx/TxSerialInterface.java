@@ -586,22 +586,27 @@ public class TxSerialInterface extends SerialInterface {
     /**
      * Sets the data received via Serial port
      * This can only be called by external software to simulate data writing by another device
-     * @param value 5 to 9 bits integer corresponding to a single value written by a device to this serial port
+     * @param value integer (5 to 9 bits) corresponding to a single value written by an external device to this serial port
      */
     @Override
-    public void write(int value) {
-        if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
-            queueRxValue(value);
+    public void write(Integer value) {
+        if (value == null) {
+            System.out.println("TxSerialInterface.write(null)");
         }
-        else {
-            if (!isEnSet()) {
-                System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
-            }
-            else if (!isMod0RxeSet()) {
-                System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+            else {
+            if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
+                queueRxValue(value);
             }
             else {
-                System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                if (!isEnSet()) {
+                    System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
+                else if (!isMod0RxeSet()) {
+                    System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
+                else {
+                    System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
             }
         }
     }
@@ -656,5 +661,9 @@ public class TxSerialInterface extends SerialInterface {
     @Override
     public int getNumBits() {
         return 8;  //TODO if UART
+    }
+
+    public String getName() {
+        return "Serial #" + serialInterfaceNumber;
     }
 }

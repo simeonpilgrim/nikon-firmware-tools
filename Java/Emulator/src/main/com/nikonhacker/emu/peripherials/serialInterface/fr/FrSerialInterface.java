@@ -154,7 +154,7 @@ public class FrSerialInterface extends SerialInterface {
                 fbyte2 = txFifo.size();
             }
         }
-        super.valueReady() ;
+        super.valueReady();
     }
 
     /**
@@ -212,92 +212,97 @@ public class FrSerialInterface extends SerialInterface {
     /**
      * Sets the data received via Serial port
      * This can only be called by external software to simulate data writing by another device
-     * @param value 5 to 9 bits integer corresponding to a single value written by a device to this serial port
+     * @param value integer (5 to 9 bits) corresponding to a single value written by an external device to this serial port
      */
-    public void write(int value) {
-        Deque<Integer> rxFifo;
-        int fbyte;
-        if ((fcr1 & 0x1) == 0) {
-            rxFifo = fifo2;
-            fbyte = fbyte2;
+    public void write(Integer value) {
+        if (value == null) {
+            System.out.println("FrSerialInterface.write(null)");
         }
         else {
-            rxFifo = fifo1;
-            fbyte = fbyte1;
-        }
-
-        if (rxFifo == null) {
-            // Not using FIFO for reception
-            if ((ssr & 0x4) != 0) {
-                // There was already a value pending : OverRun Error
-
-                // Set SSR:ORE
-                ssr = ssr | 0x8;
-
-                // Request RX interrupt, if enabled (SCR:RIE)
-                if ((scrIbcr & 0x10) != 0) {
-                    interruptController.request(rxInterruptNumber);
-                }
+            Deque<Integer> rxFifo;
+            int fbyte;
+            if ((fcr1 & 0x1) == 0) {
+                rxFifo = fifo2;
+                fbyte = fbyte2;
             }
             else {
-                rdr = mask(value);
-
-                // Set SSR:RDRF
-                ssr = ssr | 0x4;
-
-                // Request RX interrupt, if enabled (SCR:RIE)
-                if ((scrIbcr & 0x10) != 0) {
-                    interruptController.request(rxInterruptNumber);
-                }
+                rxFifo = fifo1;
+                fbyte = fbyte1;
             }
-        }
-        else {
-            // Using FIFO for reception
-            if (rxFifo.size() == 16) {
-                // FIFO is already full : OverRun Error
 
-                // Set SSR:ORE
-                ssr = ssr | 0x8;
+            if (rxFifo == null) {
+                // Not using FIFO for reception
+                if ((ssr & 0x4) != 0) {
+                    // There was already a value pending : OverRun Error
 
-                // "If this flag is set during the use of the reception FIFO, the reception
-                // FIFO enable bit will be cleared". So :
+                    // Set SSR:ORE
+                    ssr = ssr | 0x8;
 
-                // Determine which fifo is the reception one
-                if (rxFifo == fifo1) {
-                    fcr0 = fcr0 & 0xFE; // Reset FCR0:FE1
-                    fifo1 = null; // Disable fifo1
-                }
-                else {
-                    fcr0 = fcr0 & 0xFD; // Reset FCR0:FE2
-                    fifo2 = null; // Disable fifo2
-                }
-
-                // Request RX interrupt, if enabled (SCR:RIE)
-                if ((scrIbcr & 0x10) != 0) {
-                    interruptController.request(rxInterruptNumber);
-                }
-            }
-            else  {
-                // not full yet. Add the value
-                rxFifo.add(mask(value));
-
-                if (rxFifo.size() == fbyte) {
-                    // Check that it wasn't signalled as full yet
-                    // because the "== fbyte" condition could match multiple times when FIFO is read and written concurrently
-                    if ((ssr & 0x4) == 0) {
-
-                        // Signal RDR Full
-                        // Set SSR:RDRF
-                        ssr = ssr | 0x4;
-
-                        // Request RX interrupt, if enabled (SCR:RIE)
-                        if ((scrIbcr & 0x10) != 0) {
-                            interruptController.request(rxInterruptNumber);
-                        }
+                    // Request RX interrupt, if enabled (SCR:RIE)
+                    if ((scrIbcr & 0x10) != 0) {
+                        interruptController.request(rxInterruptNumber);
                     }
                 }
                 else {
-                    fifoIdleCounter = 0;
+                    rdr = mask(value);
+
+                    // Set SSR:RDRF
+                    ssr = ssr | 0x4;
+
+                    // Request RX interrupt, if enabled (SCR:RIE)
+                    if ((scrIbcr & 0x10) != 0) {
+                        interruptController.request(rxInterruptNumber);
+                    }
+                }
+            }
+            else {
+                // Using FIFO for reception
+                if (rxFifo.size() == 16) {
+                    // FIFO is already full : OverRun Error
+
+                    // Set SSR:ORE
+                    ssr = ssr | 0x8;
+
+                    // "If this flag is set during the use of the reception FIFO, the reception
+                    // FIFO enable bit will be cleared". So :
+
+                    // Determine which fifo is the reception one
+                    if (rxFifo == fifo1) {
+                        fcr0 = fcr0 & 0xFE; // Reset FCR0:FE1
+                        fifo1 = null; // Disable fifo1
+                    }
+                    else {
+                        fcr0 = fcr0 & 0xFD; // Reset FCR0:FE2
+                        fifo2 = null; // Disable fifo2
+                    }
+
+                    // Request RX interrupt, if enabled (SCR:RIE)
+                    if ((scrIbcr & 0x10) != 0) {
+                        interruptController.request(rxInterruptNumber);
+                    }
+                }
+                else  {
+                    // not full yet. Add the value
+                    rxFifo.add(mask(value));
+
+                    if (rxFifo.size() == fbyte) {
+                        // Check that it wasn't signalled as full yet
+                        // because the "== fbyte" condition could match multiple times when FIFO is read and written concurrently
+                        if ((ssr & 0x4) == 0) {
+
+                            // Signal RDR Full
+                            // Set SSR:RDRF
+                            ssr = ssr | 0x4;
+
+                            // Request RX interrupt, if enabled (SCR:RIE)
+                            if ((scrIbcr & 0x10) != 0) {
+                                interruptController.request(rxInterruptNumber);
+                            }
+                        }
+                    }
+                    else {
+                        fifoIdleCounter = 0;
+                    }
                 }
             }
         }
@@ -486,5 +491,9 @@ public class FrSerialInterface extends SerialInterface {
                 System.err.println("Error: Invalid ESCR value: " + (escrIbsr & 0x3));
                 return 8;
         }
+    }
+
+    public String getName() {
+        return "Serial #" + serialInterfaceNumber;
     }
 }
