@@ -15,8 +15,8 @@ public class BidirectionalConsoleLoggerSerialCable {
     }
 
     public void disconnect() {
-        device1.connectSerialDevice(null);
-        device2.connectSerialDevice(null);
+        device1.disconnectSerialDevice();
+        device2.disconnectSerialDevice();
     }
 
 }
