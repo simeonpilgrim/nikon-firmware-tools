@@ -5,8 +5,8 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
-import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Behaviour is Based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
@@ -22,7 +22,7 @@ public class TxSerialInterface extends SerialInterface {
     /**
      * Rx FIFO
      */
-    protected Deque<Integer> rxFifo = new LinkedList<Integer>();
+    protected Queue<Integer> rxFifo = new LinkedList<Integer>();
     protected int rxFifoSize = Integer.MAX_VALUE;
     protected int rxInterruptFillLevel;
 
@@ -34,7 +34,7 @@ public class TxSerialInterface extends SerialInterface {
     /**
      * Tx FIFO.
      */
-    protected Deque<Integer> txFifo = new LinkedList<Integer>();
+    protected Queue<Integer> txFifo = new LinkedList<Integer>();
     protected int txFifoSize = Integer.MAX_VALUE;
     protected int txInterruptFillLevel;
 
