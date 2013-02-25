@@ -3,72 +3,40 @@ package com.mxgraph.examples.swing;
 import com.mxgraph.model.mxCell;
 import com.mxgraph.model.mxGeometry;
 import com.mxgraph.swing.mxGraphComponent;
-import com.mxgraph.util.mxConstants;
 import com.mxgraph.util.mxPoint;
 import com.mxgraph.util.mxRectangle;
-import com.mxgraph.view.mxEdgeStyle;
 import com.mxgraph.view.mxGraph;
 import com.mxgraph.view.mxMultiplicity;
 
 import javax.swing.*;
 import java.util.Arrays;
-import java.util.Map;
 
-public class Port extends JFrame
-{
-    /**
-     *
-     */
-    private static final long serialVersionUID = -464235672367772404L;
+public class Port extends JFrame {
 
     final int PORT_DIAMETER = 20;
-
     final int PORT_RADIUS = PORT_DIAMETER / 2;
 
-    public Port()
-    {
+    public Port() {
         super("Hello, World!");
 
         mxGraph graph = new mxGraph() {
-
             // Ports are not used as terminals for edges, they are
             // only used to compute the graphical connection point
-            public boolean isPort(Object cell)
-            {
-                mxGeometry geo = getCellGeometry(cell);
-
-                return (geo != null) ? geo.isRelative() : false;
-            }
-
-            // Implements a tooltip that shows the actual
-            // source and target of an edge
-            public String getToolTipForCell(Object cell)
-            {
-                if (model.isEdge(cell))
-                {
-                    return convertValueToString(model.getTerminal(cell, true)) + " -> " +
-                            convertValueToString(model.getTerminal(cell, false));
-                }
-
-                return super.getToolTipForCell(cell);
+            public boolean isPort(Object cell) {
+                mxGeometry geometry = getCellGeometry(cell);
+                return (geometry != null) && geometry.isRelative();
             }
 
             // Removes the folding icon and disables any folding
-            public boolean isCellFoldable(Object cell, boolean collapse)
-            {
+            public boolean isCellFoldable(Object cell, boolean collapse) {
                 return false;
             }
         };
 
-        // Sets the default edge style
-        Map<String, Object> style = graph.getStylesheet().getDefaultEdgeStyle();
-        style.put(mxConstants.STYLE_EDGE, mxEdgeStyle.ElbowConnector);
-
         Object parent = graph.getDefaultParent();
 
         graph.getModel().beginUpdate();
-        try
-        {
+        try {
             mxCell v1 = (mxCell) graph.insertVertex(parent, null, "Serial", 20, 20, 100, 100, "");
             v1.setConnectable(false);
             mxGeometry geo = graph.getModel().getGeometry(v1);
@@ -111,10 +79,7 @@ public class Port extends JFrame
             multiplicities[2] = new mxMultiplicity(false, "HSerial", null, null, 1, "1", Arrays.asList(new String[]{"Source"}), "Target Must Have 1 Source", "Target Must Connect From Source", true);
 
             graph.setMultiplicities(multiplicities);
-
-        }
-        finally
-        {
+        } finally {
             graph.getModel().endUpdate();
         }
 
@@ -123,8 +88,7 @@ public class Port extends JFrame
         graphComponent.setToolTips(true);
     }
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         Port frame = new Port();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(400, 320);
