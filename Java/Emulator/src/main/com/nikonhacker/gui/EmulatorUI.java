@@ -1915,11 +1915,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController);
                     }
 
-                    // Connect serial interface HSC2 with an eeprom
-                    SerialDevice eeprom = new St950x0("");
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2].connectSerialDevice(eeprom);
-                    eeprom.connectSerialDevice(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]);
-
                     ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
                     break;
@@ -1947,6 +1942,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             cpuState.reset();
 
+            connectSerialPorts();
+
             if (prefs.isCloseAllWindowsOnStop()) {
                 closeAllFrames(chip, false);
             }
@@ -1958,6 +1955,28 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void connectSerialPorts() {
+        if (isImageLoaded[Constants.CHIP_FR] && isImageLoaded[Constants.CHIP_TX]) {
+            // Two CPUs are ready. Perform serial interconnection
+
+            // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
+            SerialInterface frSerialInterface5 = platform[Constants.CHIP_FR].getSerialInterfaces()[5];
+            SerialInterface txSerialInterfaceH0 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 0];
+            frSerialInterface5.disconnectSerialDevice();
+            txSerialInterfaceH0.disconnectSerialDevice();
+            frSerialInterface5.connectSerialDevice(txSerialInterfaceH0);
+            txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
+
+            // Reconnect Tx serial interface HSC2 with an eeprom
+            SerialDevice eeprom = new St950x0("Eeprom");
+            SerialInterface txSerialInterfaceH2 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 2];
+            eeprom.disconnectSerialDevice();
+            txSerialInterfaceH2.disconnectSerialDevice();
+            txSerialInterfaceH2.connectSerialDevice(eeprom);
+            eeprom.connectSerialDevice(txSerialInterfaceH2);
         }
     }
 
