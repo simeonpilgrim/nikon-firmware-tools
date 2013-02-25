@@ -664,6 +664,6 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public String getName() {
-        return "Serial #" + serialInterfaceNumber;
+        return "Tx Serial #" + serialInterfaceNumber;
     }
 }
