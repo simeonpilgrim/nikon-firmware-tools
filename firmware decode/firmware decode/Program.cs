@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Globalization;
 
 namespace Nikon_Decode
 {
@@ -26,7 +27,7 @@ namespace Nikon_Decode
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin"); 
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -42,7 +43,7 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");    
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
@@ -88,15 +89,71 @@ namespace Nikon_Decode
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
 
-            //SearchDumps(@"C:\Dev\examples\D5100");
+            //SearchDumps(@"C:\Dev\libgphoto2-2.5.0\examples\D3000_");
+            MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
+
         }
 
+        static void MergeDumps(string dir)
+        {         
+            Directory.CreateDirectory(Path.Combine(dir, "merged"));
+
+            var files = Directory.GetFiles(dir, "*.bin").ToArray();
+            //Nikon_func_0xfe31_0x2a00d000_0x00000800_0x00000000
+            //01234567890123456789012345678
+            var list = files.OrderBy(a => Int64.Parse(Path.GetFileName(a).Substring(20, 8), NumberStyles.HexNumber));
+
+            int step = 0x800;
+            Int64 last = -1;
+            BinaryWriter bw = null;
+            byte[] data;
+
+            foreach (var file in list)
+            {
+                Int64 num = Int64.Parse(Path.GetFileName(file).Substring(20, 8), NumberStyles.HexNumber);
+
+                if (num != (last + step))
+                {
+                    if (bw != null)
+                    {
+                        bw.Close();
+                        bw.Dispose();
+                    }
+                    var newfile = Path.Combine(dir, string.Format("Nikon_{0:X8}.bin", num));
+                    bw = new BinaryWriter(File.Open(newfile, FileMode.Append, FileAccess.Write));
+                }
+
+                using (var br = new BinaryReader(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                    bw.Write(data);
+                }
+
+                var toPath = Path.Combine(Path.Combine(dir, "merged"), Path.GetFileName(file));
+                File.Move(file, toPath);
+
+                last = num;
+            }
+
+            if (bw != null)
+            {
+                bw.Close();
+                bw.Dispose();
+            }
+
+        }
 
         static void SearchDumps(string dir)
         {
             //var bcode = new byte[] { 0x3C, 0x1A, 0xBF, 0xC0, 0x27, 0x5A, 0x05, 0x00, 0x03, 0x40, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00 };
-            var bcode = new byte[] { 0x17, 0x7A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x40, 0x1A};
+            //var bcode = new byte[] { 0x17, 0x7A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x40, 0x1A };
+            //var bcode = new byte[] { 0x67, 0x45, 0x23, 0x01 };
+            //var bcode = new byte[] { 0x00, 0x00, 0x00, 0xC0, 0x11 };
+            var bcode = new byte[] { 0x53, 0x6F, 0x66, 0x74, 0x75, 0x6E, 0x65, 0x20 }; // "Softune "
+            //var bcode = new byte[] { 0x8C, 0xFF, 0x8D, 0x7F, 0x83, 0xDF, 0x97, 0x30 };  
+
             var sw = new StreamWriter(File.Open(Path.Combine(dir, "status.txt"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+            var sw2 = new StreamWriter(File.Open(Path.Combine(dir, "rm.cmd"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
 
             foreach (var file in Directory.GetFiles(dir, "*.bin"))
             {
@@ -116,7 +173,8 @@ namespace Nikon_Decode
                 byte first = data[0];
                 for (int i = 0; i < data.Length; i++)
                 {
-                    if (allSame && first != data[i]) allSame = false;
+                    if (allSame && first != data[i]) { allSame = false; }
+                    //if (allSame && first != data[i]) { allSame = false; break; }
 
                     if (findB == false && (i + bcode.Length) < data.Length)
                     {
@@ -130,17 +188,26 @@ namespace Nikon_Decode
                         {
                             sw.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
                             Console.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
+                           
                         }
                     }
 
                 }
 
-                sw.WriteLine("{0} all same {1}", Path.GetFileName(file), allSame);
+                if (allSame)
+                {
+                    sw2.WriteLine("del {0}", file);
+                }
+                //sw.WriteLine("{0} all same {1}", Path.GetFileName(file), allSame);
             }
 
+            sw2.Close();
+            sw2.Dispose();
             sw.Close();
             sw.Dispose();
         }
+
+
         static UInt32 ReadUint32(BinaryReader br)
         {
             byte[] b = br.ReadBytes(4);
