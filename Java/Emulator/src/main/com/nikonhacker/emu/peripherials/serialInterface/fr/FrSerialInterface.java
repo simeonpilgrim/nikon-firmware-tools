@@ -494,6 +494,6 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     public String getName() {
-        return "Serial #" + serialInterfaceNumber;
+        return "Fr Serial #" + serialInterfaceNumber;
     }
 }
