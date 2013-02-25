@@ -33,7 +33,9 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
@@ -1912,6 +1914,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
                         serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController);
                     }
+
+                    // Connect serial interface HSC2 with an eeprom
+                    SerialDevice eeprom = new St950x0("");
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2].connectSerialDevice(eeprom);
+                    eeprom.connectSerialDevice(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]);
 
                     ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
