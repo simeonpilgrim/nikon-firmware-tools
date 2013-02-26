@@ -7,6 +7,10 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import java.util.LinkedList;
 import java.util.Queue;
 
+/**
+ * This implementation is based on the ST95040 datasheet at
+ * http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00001755.pdf
+ */
 public class St950x0 implements SerialDevice {
 
     private String name;
