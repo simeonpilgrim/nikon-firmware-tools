@@ -121,9 +121,9 @@
 -s 0xBFC03870=sys_snd_msg($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
 -s 0xBFC03948=sys_get_tid($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id] /* get task id in the RUNNING state */)
 -s 0xBFC03984=sys_ena_dsp
--s 0xBFC03A94=sys_unknown_BFC03A94
+-s 0xBFC03A94=sys_slp_tsk
 -s 0xBFC03AFC=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
--s 0xBFC03BEC=sys_unknown_BFC03BEC
+-s 0xBFC03BEC=sys_wuk_tsk
 -s 0xBFC03C8C=sys_clr_flg($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC03CD8=sys_unknown_BFC03CD8
 -s 0xBFC03D58=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
@@ -169,6 +169,7 @@
 -s 0xBFC12A8C=sys_chg_pri
 -s 0xBFC12A98=sys_ref_tsk_00($a1 [IN ptr_to_pk_rtsk], $a0 [IN tsk_id], $v0 [OUT err_code] /* Get Task Status */)
 -s 0xBFC12AB4=sys_ref_tsk_01
+-s 0xBFC12AD0=sys_slp_tsk_00
 -s 0xBFC12ADC=sys_wuk_tsk_00
 -s 0xBFC12AE8=sys_wuk_tsk_01
 -s 0xBFC12AF4=sys_unknown_BFC02C28_00($a0 [IN xxx_id_or_0_for_current], $v0 [OUT field_2_or_0xD6_if_field4_is_0x10])
