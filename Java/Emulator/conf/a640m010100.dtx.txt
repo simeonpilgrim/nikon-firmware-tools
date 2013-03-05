@@ -342,8 +342,8 @@
 -s 0xBFC1AF6C=Save_SC0RX_to_DESTbuf
 -s 0xBFC1AFBC=request_write_eeprom_format00
 -s 0xBFC1B024=request_write_eeprom_format01
--s 0xBFC1B088=request_writs_FFFF4000_2eeprom
--s 0xBFC1B104=request_read_eeprom_toFFFF4000
+-s 0xBFC1B088=request_write_FFFF4000_to_eeprom
+-s 0xBFC1B104=request_read_eeprom_to_FFFF4000
 -s 0xBFC1B184=get_ADconversion_result
 -s 0xBFC1B2A8=start_AD_conversion
 -s 0xBFC1B55C=set@FFFF6E03bit0
