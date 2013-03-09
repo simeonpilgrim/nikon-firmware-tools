@@ -3,6 +3,7 @@ package com.nikonhacker.emu;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.clock.ClockGenerator;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
@@ -21,6 +22,7 @@ public class Platform {
     private ProgrammableTimer[] programmableTimers;
     private IoPort[] ioPorts;
     private SerialInterface[] serialInterfaces;
+    private DmaController dmaController;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -76,5 +78,13 @@ public class Platform {
 
     public void setSerialInterfaces(SerialInterface[] serialInterfaces) {
         this.serialInterfaces = serialInterfaces;
+    }
+
+    public DmaController getDmaController() {
+        return dmaController;
+    }
+
+    public void setDmaController(DmaController dmaController) {
+        this.dmaController = dmaController;
     }
 }

@@ -23,7 +23,6 @@ public class TxSerialInterface extends SerialInterface {
      * Rx FIFO
      */
     protected Queue<Integer> rxFifo = new LinkedList<Integer>();
-    protected int rxFifoSize = Integer.MAX_VALUE;
     protected int rxInterruptFillLevel;
 
     /**
@@ -35,7 +34,6 @@ public class TxSerialInterface extends SerialInterface {
      * Tx FIFO.
      */
     protected Queue<Integer> txFifo = new LinkedList<Integer>();
-    protected int txFifoSize = Integer.MAX_VALUE;
     protected int txInterruptFillLevel;
 
     protected int en; // Enable register
@@ -254,16 +252,6 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public void setFcnf(int fcnf) {
-        // TODO what's the point if fifo size here ???
-        // I think this is obsolete
-        if ((fcnf & 0b00000001) == 0) {
-            txFifoSize = 2;
-            rxFifoSize = 2;
-        }
-        else {
-            txFifoSize = Integer.MAX_VALUE;
-            rxFifoSize = Integer.MAX_VALUE;
-        }
         this.fcnf = fcnf;
     }
 
@@ -593,7 +581,7 @@ public class TxSerialInterface extends SerialInterface {
         if (value == null) {
             System.out.println("TxSerialInterface.write(null)");
         }
-            else {
+        else {
             if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
                 queueRxValue(value);
             }

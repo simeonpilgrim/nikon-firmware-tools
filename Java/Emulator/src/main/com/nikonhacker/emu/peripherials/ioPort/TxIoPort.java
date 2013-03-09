@@ -6,7 +6,9 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TxIoPort extends IoPort {
 
@@ -31,7 +33,9 @@ public class TxIoPort extends IoPort {
     /** Port input enable control register */
     private byte inputEnableControlRegister = (byte) 0xFF;
 
-    private List<IoPortListener> ioPortListeners = new ArrayList<IoPortListener>();
+    private List<IoPortsListener> ioPortsListeners = new ArrayList<IoPortsListener>();
+
+    private Map<Integer, IoPortPinListener> ioOutputPortPinListeners = new HashMap<Integer, IoPortPinListener>();
 
     private Prefs prefs;
 
@@ -41,13 +45,32 @@ public class TxIoPort extends IoPort {
         externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
    }
 
-    public void addIoPortListener(IoPortListener ioPortListener) {
-        ioPortListeners.add(ioPortListener);
+
+    public void addIoPortsListener(IoPortsListener ioPortsListener) {
+        ioPortsListeners.add(ioPortsListener);
     }
 
-    public void removeIoPortListener(IoPortListener ioPortListener) {
-        ioPortListeners.remove(ioPortListener);
+    public void removeIoPortsListener(IoPortsListener ioPortsListener) {
+        ioPortsListeners.remove(ioPortsListener);
     }
+
+
+    /**
+     * IoOutputPortPinListener is to notify external device connected to this pin that its state
+     * has been changed by the code
+     */
+    public void addIoOutputPortPinListener(int pin, IoPortPinListener ioOutputPortPinListener) {
+        ioOutputPortPinListeners.put(pin, ioOutputPortPinListener);
+    }
+
+    public void removeIoOutputPortPinListener(int pin) {
+        ioOutputPortPinListeners.remove(pin);
+    }
+
+    public void clearIoOutputPortPinListener() {
+        ioOutputPortPinListeners.clear();
+    }
+
 
     public TxIoPort(int portNumber, TxInterruptController interruptController) {
         super(portNumber, interruptController);
@@ -66,9 +89,23 @@ public class TxIoPort extends IoPort {
      * @return
      */
     public void setInternalValue(byte value) {
+        int oldValue = this.internalValue;
         this.internalValue = value;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onOutputValueChange(portNumber, value);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onOutputValueChange(portNumber, value);
+        }
+
+        // Warn connected device, if any
+        int changedBits = oldValue ^ value;
+        for (Integer bitNr : ioOutputPortPinListeners.keySet()) {
+            // See if bit to which this listener is attached has changed
+            int mask = 1 << bitNr;
+            if (   ((controlRegister & mask) != 0) // pin is configured as output
+                && ((changedBits & mask) != 0)     // state has changed
+               ) {
+                // Call the listener
+                ioOutputPortPinListeners.get(bitNr).onPinValueChange((value & mask) != 0);
+            }
         }
     }
 
@@ -85,6 +122,7 @@ public class TxIoPort extends IoPort {
      */
     public void setExternalValue(byte value) {
         this.externalValue = value;
+        // TODO implement interrupts (if any) ?
         prefs.setPortValue(Constants.CHIP_TX, portNumber, value);
     }
 
@@ -102,8 +140,8 @@ public class TxIoPort extends IoPort {
      */
     public void setControlRegister(byte controlRegister) {
         this.controlRegister = controlRegister;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
     }
 
@@ -167,8 +205,8 @@ public class TxIoPort extends IoPort {
 
     public void setInputEnableControlRegister(byte inputEnableControlRegister) {
         this.inputEnableControlRegister = inputEnableControlRegister;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
     }
 }
