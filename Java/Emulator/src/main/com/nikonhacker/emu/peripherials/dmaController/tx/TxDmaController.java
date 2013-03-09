@@ -8,7 +8,6 @@ public class TxDmaController implements DmaController {
     private static final int RSR_REQS0_MASK = 0b00000000_00000000_00000000_00000001;
     private static final int RSR_REQS4_MASK = 0b00000000_00000000_00000000_00010000;
 
-    private int dcr;
     private int rsr;
     private int dhr;
 
