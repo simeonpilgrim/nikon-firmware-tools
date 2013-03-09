@@ -46,7 +46,7 @@ public class TxDmaChannel {
         this.ccr = ccr & 0x7FFFFFFF;
 
         if ((ccr & 0x80000000) != 0) {
-            // Perform transfer
+            // Str: Perform transfer
             if (getCcrDpsBytes() != getCcrTrSizBytes()) {
                 throw new RuntimeException("Error : Dps=" + getCcrDpsBytes() + "bytes while TrSiz=" + getCcrTrSizBytes() + "bytes");
             }
