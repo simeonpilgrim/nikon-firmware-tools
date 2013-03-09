@@ -37,7 +37,7 @@ import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
-import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
+import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
@@ -1969,7 +1969,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
 
             // Reconnect Tx serial interface HSC2 with an eeprom
-            SerialDevice eeprom = new St950x0("Eeprom");
+            SerialDevice eeprom = new St95040("Eeprom");
             SerialInterface txSerialInterfaceH2 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 2];
             eeprom.disconnectSerialDevice();
             txSerialInterfaceH2.disconnectSerialDevice();
