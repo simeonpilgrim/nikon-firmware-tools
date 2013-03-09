@@ -2198,14 +2198,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (ioPortsFrame == null) {
             ioPortsFrame = new IoPortsFrame("I/O ports", "io", false, true, false, true, Constants.CHIP_TX, this, platform[Constants.CHIP_TX].getIoPorts());
             for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).addIoPortListener(ioPortsFrame);
+                ((TxIoPort)ioPort).addIoPortsListener(ioPortsFrame);
             }
             addDocumentFrame(Constants.CHIP_TX, ioPortsFrame);
             ioPortsFrame.display(true);
         }
         else {
             for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).removeIoPortListener(ioPortsFrame);
+                ((TxIoPort)ioPort).removeIoPortsListener(ioPortsFrame);
             }
             ioPortsFrame.dispose();
             ioPortsFrame = null;
