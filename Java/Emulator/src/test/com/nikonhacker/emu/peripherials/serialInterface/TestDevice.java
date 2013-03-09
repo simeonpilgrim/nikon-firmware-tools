@@ -2,6 +2,9 @@ package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.Format;
 
+/**
+ * Generic serial test device
+ */
 public class TestDevice implements SerialDevice {
     private final String deviceName;
     private SerialDevice connectedDevice;
@@ -36,13 +39,13 @@ public class TestDevice implements SerialDevice {
     }
 
     public void sendBytes() {
-        System.err.println(deviceName + " writes 0x05");
-        connectedDevice.write(0x05);
-        System.err.println(deviceName + " writes 0x00");
-        connectedDevice.write(0x00);
+        System.err.println(deviceName + " writes 0x01");
+        connectedDevice.write(0x01);
+        System.err.println(deviceName + " writes 0x02");
+        connectedDevice.write(0x02);
         System.err.println(deviceName + " writes 0x03");
         connectedDevice.write(0x03);
-        System.err.println(deviceName + " writes 0x00");
-        connectedDevice.write(0x00);
+        System.err.println(deviceName + " writes 0x04");
+        connectedDevice.write(0x04);
     }
 }
