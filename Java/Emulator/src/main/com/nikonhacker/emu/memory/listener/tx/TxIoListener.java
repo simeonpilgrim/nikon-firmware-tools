@@ -4,6 +4,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
+import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaChannel;
+import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
@@ -50,10 +52,43 @@ public class TxIoListener implements IoActivityListener {
     public static final int REGISTER_IMC18   =    0xFF00_1060; // Interrupt mode control register 18
     public static final int REGISTER_IMC19   =    0xFF00_1064; // Interrupt mode control register 19
 
-    public static final int REGISTER_INTCLR  =    0xFF00_10C0; // Interrupt request clear register  
-    public static final int REGISTER_DREQFLG =    0xFF00_10C4; // DMA request clear flag register   
     public static final int REGISTER_IVR     =    0xFF00_1080; // Interrupt vector register
+    public static final int REGISTER_INTCLR  =    0xFF00_10C0; // Interrupt request clear register
+    public static final int REGISTER_DREQFLG =    0xFF00_10C4; // DMA request clear flag register
     public static final int REGISTER_ILEV    =    0xFF00_110C; // Interrupt level register
+
+    // DMA controller
+    public static final int NUM_DMA_CHANNEL = 8;
+    private static final int DMA_CHANNEL_OFFSET_SHIFT = 5; // 1 << 5 = 0x20 bytes per channel
+    private static final int REGISTER_CCR0   =    0xFF00_1200; // Channel control register
+    private static final int REGISTER_CSR0   =    0xFF00_1204; // Channel status register
+    private static final int REGISTER_SAR0   =    0xFF00_1208; // Source address register
+    private static final int REGISTER_DAR0   =    0xFF00_120C; // Destination address register
+    private static final int REGISTER_BCR0   =    0xFF00_1210; // Byte count register
+    private static final int REGISTER_DTCR0  =    0xFF00_1218; // DMA transfer control register
+
+    private static final int REGISTER_DCR    =    0xFF00_1300; // Destination address register
+    private static final int REGISTER_RSR    =    0xFF00_1304; // Byte count register
+    private static final int REGISTER_DHR    =    0xFF00_130C; // DMA transfer control register
+
+
+    // Hi speed Serial ports
+    public static final int NUM_HSERIAL_IF = 3;
+    private static final int HSERIAL_OFFSET_SHIFT = 4; // 1 << 4 = 0x10 bytes per interface
+    // Note: Big endian byte encoding
+    private static final int REGISTER_HSC0BUF   =    0xFF00_1803; // TX/RX buffer register
+    private static final int REGISTER_HSC0EN    =    0xFF00_1804; // Enable register
+    private static final int REGISTER_HSC0MOD2  =    0xFF00_1805; // Mode control register 2
+    private static final int REGISTER_HSC0MOD1  =    0xFF00_1806; // Mode control register 1
+    private static final int REGISTER_HBR0ADD   =    0xFF00_1807; // Baud rate generator control register 2
+    private static final int REGISTER_HSC0TST   =    0xFF00_1808; // Transmit FIFO status register
+    private static final int REGISTER_HSC0RST   =    0xFF00_1809; // Receive FIFO status register
+    private static final int REGISTER_HSC0TFC   =    0xFF00_180A; // Transmit FIFO control register
+    private static final int REGISTER_HSC0RFC   =    0xFF00_180B; // Receive FIFO control register
+    private static final int REGISTER_HBR0CR    =    0xFF00_180C; // Baud rate generator control register
+    private static final int REGISTER_HSC0MOD0  =    0xFF00_180D; // Mode control register 0
+    private static final int REGISTER_HSC0CR    =    0xFF00_180E; // Control register
+    private static final int REGISTER_HSC0FCNF  =    0xFF00_180F; // FIFO configuration register
 
 
     // Clock Generator.
@@ -119,7 +154,7 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_CAPCR0   =    0xFF00_4AA0; // Capture control register
     private static final int REGISTER_TCCAP0   =    0xFF00_4AA4; // Capture register
 
-    // Serial ports
+    // Normal serial ports
     public static final int NUM_SERIAL_IF = 3;
     private static final int SERIAL_OFFSET_SHIFT = 6; // 1 << 6 = 0x40 bytes per interface
     private static final int REGISTER_SC0EN    =    0xFF00_4C00; // Enable register
@@ -135,23 +170,6 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_SC0RST   =    0xFF00_4C28; // Receive FIFO status register
     private static final int REGISTER_SC0TST   =    0xFF00_4C2C; // Transmit FIFO status register
     private static final int REGISTER_SC0FCNF  =    0xFF00_4C30; // FIFO configuration register
-
-    public static final int NUM_HSERIAL_IF = 3;
-    private static final int HSERIAL_OFFSET_SHIFT = 4; // 1 << 4 = 0x10 bytes per interface
-    // Note: Big endian byte encoding
-    private static final int REGISTER_HSC0BUF   =    0xFF00_1803; // TX/RX buffer register
-    private static final int REGISTER_HSC0EN    =    0xFF00_1804; // Enable register
-    private static final int REGISTER_HSC0MOD2  =    0xFF00_1805; // Mode control register 2
-    private static final int REGISTER_HSC0MOD1  =    0xFF00_1806; // Mode control register 1
-    private static final int REGISTER_HBR0ADD   =    0xFF00_1807; // Baud rate generator control register 2
-    private static final int REGISTER_HSC0TST   =    0xFF00_1808; // Transmit FIFO status register
-    private static final int REGISTER_HSC0RST   =    0xFF00_1809; // Receive FIFO status register
-    private static final int REGISTER_HSC0TFC   =    0xFF00_180A; // Transmit FIFO control register
-    private static final int REGISTER_HSC0RFC   =    0xFF00_180B; // Receive FIFO control register
-    private static final int REGISTER_HBR0CR    =    0xFF00_180C; // Baud rate generator control register
-    private static final int REGISTER_HSC0MOD0  =    0xFF00_180D; // Mode control register 0
-    private static final int REGISTER_HSC0CR    =    0xFF00_180E; // Control register
-    private static final int REGISTER_HSC0FCNF  =    0xFF00_180F; // FIFO configuration register
 
 
     private final Platform platform;
@@ -173,7 +191,10 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
-
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return null;
+        }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
@@ -348,7 +369,16 @@ public class TxIoListener implements IoActivityListener {
                 return (byte)((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
             case REGISTER_RSTFLG + 3:
                 return (byte)((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
+            // DMA controller
+            case REGISTER_DCR + 3:
+                return (byte)((TxDmaController)platform.getDmaController()).getDcr();
+            case REGISTER_RSR + 3:
+                return (byte)((TxDmaController)platform.getDmaController()).getRsr();
+            case REGISTER_DHR + 3:
+                return (byte)((TxDmaController)platform.getDmaController()).getDhr();
         }
+
+        System.err.println("Load8 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
 
         return null;
     }
@@ -362,7 +392,10 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onIoLoad16(byte[] ioPage, int addr, int value) {
-
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return null;
+        }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
@@ -483,6 +516,9 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_RSTFLG + 2:
                 return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg() & 0xFFFF;
         }
+
+        System.err.println("Load16 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+
         return null;
     }
 
@@ -495,7 +531,11 @@ public class TxIoListener implements IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
-        if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return null;
+        }
+        else if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
             TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
@@ -623,6 +663,27 @@ public class TxIoListener implements IoActivityListener {
             // Hi-speed Serial Interface configuration registers
             throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
         }
+        else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
+            // DMA channel configuration registers
+            int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
+            TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
+            switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0:
+                    return channel.getCcr();
+                case REGISTER_CSR0:
+                    return channel.getCsr();
+                case REGISTER_SAR0:
+                    return channel.getSar();
+                case REGISTER_DAR0:
+                    return channel.getDar();
+                case REGISTER_BCR0:
+                    return channel.getBcr();
+                case REGISTER_DTCR0:
+                    return channel.getDtcr();
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
         switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -638,11 +699,24 @@ public class TxIoListener implements IoActivityListener {
                 return ((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
             case REGISTER_RSTFLG:
                 return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
-            }
+            // DMA controller
+            case REGISTER_DCR:
+                return ((TxDmaController)platform.getDmaController()).getDcr();
+            case REGISTER_RSR:
+                return ((TxDmaController)platform.getDmaController()).getRsr();
+            case REGISTER_DHR:
+                return ((TxDmaController)platform.getDmaController()).getDhr();
+        }
+        System.err.println("Load32 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+
         return null;
     }
 
     public void onIoStore8(byte[] ioPage, int addr, byte value) {
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return;
+        }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
@@ -826,12 +900,23 @@ public class TxIoListener implements IoActivityListener {
             // Interrupt Controller
             case REGISTER_INTCLR:
                 throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
+            // DMA controller
+            case REGISTER_DCR + 3:
+                ((TxDmaController)platform.getDmaController()).setDcr(value); break;
+            case REGISTER_RSR + 3:
+                ((TxDmaController)platform.getDmaController()).setRsr(value); break;
+            case REGISTER_DHR + 3:
+                ((TxDmaController)platform.getDmaController()).setDhr(value); break;
+            default:
+                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 2) + "is not supported yet");
         }
-
-        //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore16(byte[] ioPage, int addr, int value) {
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return;
+        }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
@@ -955,11 +1040,16 @@ public class TxIoListener implements IoActivityListener {
             // Interrupt Controller
             case REGISTER_INTCLR:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
+            default:
+                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 4) + " is not supported yet");
         }
-        //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onIoStore32(byte[] ioPage, int addr, int value) {
+        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
+            // IMC registers. Do nothing, just don't go further
+            return;
+        }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
             int portNr = (addr - REGISTER_PORT0) >> PORT_OFFSET_SHIFT;
@@ -1089,6 +1179,27 @@ public class TxIoListener implements IoActivityListener {
             // Hi-speed Serial Interface configuration registers
             throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
         }
+        else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
+            // DMA channel configuration registers
+            int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
+            TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
+            switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0:
+                    channel.setCcr(value); break;
+                case REGISTER_CSR0:
+                    channel.setCsr(value); break;
+                case REGISTER_SAR0:
+                    channel.setSar(value); break;
+                case REGISTER_DAR0:
+                    channel.setDar(value); break;
+                case REGISTER_BCR0:
+                    channel.setBcr(value); break;
+                case REGISTER_DTCR0:
+                    channel.setDtcr(value); break;
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
         else switch(addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -1104,10 +1215,17 @@ public class TxIoListener implements IoActivityListener {
                 ((TxInterruptController)platform.getInterruptController()).setIvr31_9(value); break;
             case REGISTER_INTCLR:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
+            // DMA controller
+            case REGISTER_DCR:
+                ((TxDmaController)platform.getDmaController()).setDcr(value); break;
+            case REGISTER_RSR:
+                ((TxDmaController)platform.getDmaController()).setRsr(value); break;
+            case REGISTER_DHR:
+                ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet
+                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
-        //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 }
