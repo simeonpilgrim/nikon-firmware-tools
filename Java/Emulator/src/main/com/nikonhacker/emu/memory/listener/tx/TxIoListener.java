@@ -908,7 +908,7 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_DHR + 3:
                 ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
-                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 2) + "is not supported yet");
+                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 2) + " is not supported yet");
         }
     }
 
