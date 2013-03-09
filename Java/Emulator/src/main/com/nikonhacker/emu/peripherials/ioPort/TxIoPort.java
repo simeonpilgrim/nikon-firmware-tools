@@ -31,7 +31,7 @@ public class TxIoPort extends IoPort {
     /** Port input enable control register */
     private byte inputEnableControlRegister = (byte) 0xFF;
 
-    private List<IoPortListener> ioPortListeners = new ArrayList<IoPortListener>();
+    private List<IoPortsListener> ioPortsListeners = new ArrayList<IoPortsListener>();
 
     private Prefs prefs;
 
@@ -41,12 +41,12 @@ public class TxIoPort extends IoPort {
         externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
    }
 
-    public void addIoPortListener(IoPortListener ioPortListener) {
-        ioPortListeners.add(ioPortListener);
+    public void addIoPortsListener(IoPortsListener ioPortsListener) {
+        ioPortsListeners.add(ioPortsListener);
     }
 
-    public void removeIoPortListener(IoPortListener ioPortListener) {
-        ioPortListeners.remove(ioPortListener);
+    public void removeIoPortsListener(IoPortsListener ioPortsListener) {
+        ioPortsListeners.remove(ioPortsListener);
     }
 
     public TxIoPort(int portNumber, TxInterruptController interruptController) {
@@ -67,8 +67,8 @@ public class TxIoPort extends IoPort {
      */
     public void setInternalValue(byte value) {
         this.internalValue = value;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onOutputValueChange(portNumber, value);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onOutputValueChange(portNumber, value);
         }
     }
 
@@ -102,8 +102,8 @@ public class TxIoPort extends IoPort {
      */
     public void setControlRegister(byte controlRegister) {
         this.controlRegister = controlRegister;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
     }
 
@@ -167,8 +167,8 @@ public class TxIoPort extends IoPort {
 
     public void setInputEnableControlRegister(byte inputEnableControlRegister) {
         this.inputEnableControlRegister = inputEnableControlRegister;
-        for (IoPortListener ioPortListener : ioPortListeners) {
-            ioPortListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
+        for (IoPortsListener ioPortsListener : ioPortsListeners) {
+            ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
     }
 }

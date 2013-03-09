@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.component.ioPort;
 
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
-import com.nikonhacker.emu.peripherials.ioPort.IoPortListener;
+import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
@@ -17,7 +17,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class IoPortsFrame extends DocumentFrame implements IoPortListener {
+public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
     private final IoPort[] ioPorts;
 
     private JPanel[][] cells;
