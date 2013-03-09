@@ -29,15 +29,16 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.ioPort.IoPortPinListener;
 import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
-import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
+import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
@@ -1969,12 +1970,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
 
             // Reconnect Tx serial interface HSC2 with an eeprom
-            SerialDevice eeprom = new St95040("Eeprom");
+            final St950x0 eeprom = new St95040("Eeprom");
             SerialInterface txSerialInterfaceH2 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 2];
             eeprom.disconnectSerialDevice();
             txSerialInterfaceH2.disconnectSerialDevice();
             txSerialInterfaceH2.connectSerialDevice(eeprom);
             eeprom.connectSerialDevice(txSerialInterfaceH2);
+            // Connect port 4 pin 6 (P46) as !SELECT of eeprom
+            ((TxIoPort)platform[Constants.CHIP_TX].getIoPorts()[4]).addIoOutputPortPinListener(6, new IoPortPinListener() {
+                @Override
+                public void onPinValueChange(boolean newValue) {
+                    eeprom.setSelected(!newValue);
+                }
+            });
         }
     }
 
