@@ -2560,11 +2560,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (endAddress != null) {
                 // TODO adapt this for Tx
                 // Set a temporary break condition at given endAddress
-                FrCPUState values = new FrCPUState(endAddress);
-                FrCPUState flags = new FrCPUState();
+                CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState(endAddress):new TxCPUState(endAddress);
+                CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
                 flags.pc = 1;
-                flags.setILM(0, false);
-                flags.setReg(FrCPUState.TBR, 0);
+                if (chip==Constants.CHIP_FR) {
+                    ((FrCPUState)flags).setILM(0, false);
+                    flags.setReg(FrCPUState.TBR, 0);
+                }
                 BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
                 emulator[chip].addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
