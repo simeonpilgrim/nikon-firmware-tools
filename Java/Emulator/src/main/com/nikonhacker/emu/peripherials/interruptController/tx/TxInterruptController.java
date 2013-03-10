@@ -9,6 +9,7 @@ import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
+import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptController;
 
 import java.util.Collections;
@@ -26,16 +27,18 @@ public class TxInterruptController extends AbstractInterruptController {
 
     // Register fields
     // Ilev
+    private int ilev;
+    private int ivr;
+    private int intClr = 0x0;
+    private int dreqflg = 0x000000FF;
+
     private final static int Ilev_Mlev_pos        = 31;
     private final static int Ilev_Cmask_mask      = 0b00000000_00000000_00000000_00000111;
+
 
     public final static InterruptDescription[] hardwareInterruptDescription = new InterruptDescription[128];
     private static final int NULL_SECTION = -1;
     private static final int NULL_REGISTER = -1;
-
-    private int ilev;
-    private int ivr;
-    private int intClr;
 
     private static final int NONE = 0;
     private static final int SW = 1;
@@ -286,12 +289,25 @@ public class TxInterruptController extends AbstractInterruptController {
      */
     @Override
     public boolean request(int interruptNumber) {
-        int level = getRequestLevel(interruptNumber);
-        //noinspection SimplifiableIfStatement
-        if (level > 0) {
-            return request(new TxInterruptRequest(Type.HARDWARE_INTERRUPT, interruptNumber, level));
+        int imcSection = getRequestImcSection(interruptNumber);
+        int il = getRequestLevel(interruptNumber);
+        if (isImcDmSet(imcSection)) {
+            // DMA: il = dma channel to start
+            dreqflg = Format.clearBit(dreqflg, il);
+            // TODO set DACK bit
+            ((TxDmaController)platform.getDmaController()).getChannel(il).requestStart(true, false);
+            return true;
         }
-        else return false;
+        else {
+            // No DMA: il = interrupt level
+            //noinspection SimplifiableIfStatement
+            if (il > 0) {
+                return request(new TxInterruptRequest(Type.HARDWARE_INTERRUPT, interruptNumber, il));
+            }
+            else {
+                return false;
+            }
+        }
     }
 
     /**
@@ -418,11 +434,29 @@ public class TxInterruptController extends AbstractInterruptController {
         removeRequest(this.intClr);
     }
 
+    public int getDreqflg() {
+        return dreqflg;
+    }
+
+    public void setDreqflg(int dreqflg) {
+        // Only writing 1 has the effect of clearing the request
+        this.dreqflg = this.dreqflg | dreqflg;
+    }
+
+    public void clearRequest(int channelNumber) {
+        dreqflg = Format.setBit(dreqflg, channelNumber);
+    }
+
+
     // IMC
     public int getRequestLevel(int interruptNumber) {
+        return getImcIl(getRequestImcSection(interruptNumber));
+    }
+
+    public int getRequestImcSection(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
         int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr);
-        return getImcIl(getSection(imc, description.intcImcCtrlRegSection));
+        return getSection(imc, description.intcImcCtrlRegSection);
     }
 
     /**

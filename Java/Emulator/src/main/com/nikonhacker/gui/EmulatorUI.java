@@ -1646,6 +1646,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulationOptionsPanel.add(timerCycleSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, timers will run based on the number of cycles executed by the CPU, so slowing down the CPU slows down timers"));
 
+        final JCheckBox dmaSynchronousCheckBox = new JCheckBox("Make DMA synchronous");
+        dmaSynchronousCheckBox.setSelected(prefs.isDmaSynchronous(chip));
+        dmaSynchronousCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
+            }
+        });
+        emulationOptionsPanel.add(dmaSynchronousCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, DMA operations will be performed immediately, pausing the CPU. Otherwise they are performed in a separate thread."));
+
         // ------------------------ Prepare tabbed pane
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -1842,7 +1852,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             ClockGenerator clockGenerator;
             InterruptController interruptController;
             DmaController dmaController = null;
-            TimerCycleCounterListener cycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
+            TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
             // Stop timers if active from a previous session (reset)
             if (platform[chip] != null && platform[chip].getProgrammableTimers()[0].isActive()) {
@@ -1869,7 +1879,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Programmable timers
                 for (int i = 0; i < programmableTimers.length; i++) {
-                    programmableTimers[i] = new FrReloadTimer(i, interruptController, cycleCounterListener);
+                    programmableTimers[i] = new FrReloadTimer(i, interruptController, timerCycleCounterListener);
                 }
 
                 // I/O ports
@@ -1895,10 +1905,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 // Programmable timers
                 // First put all 16-bit timers
                 for (int i = 0; i < TxIoListener.NUM_16B_TIMER; i++) {
-                    programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, cycleCounterListener);
+                    programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
                 }
                 // Then add the 32-bit input capture timer
-                programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, cycleCounterListener);
+                programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
                 for (int i = 0; i < ioPorts.length; i++) {
@@ -1917,7 +1927,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
-                dmaController = new TxDmaController(interruptController);
+                dmaController = new TxDmaController(platform[chip], prefs);
             }
 
             platform[chip].setCpuState(cpuState);
@@ -1932,7 +1942,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory);
             emulator[chip].setInterruptController(interruptController);
-            emulator[chip].setCycleCounterListener(cycleCounterListener);
+            emulator[chip].setCycleCounterListener(timerCycleCounterListener);
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
