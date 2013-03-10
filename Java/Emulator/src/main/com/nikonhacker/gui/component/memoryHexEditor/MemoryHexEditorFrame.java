@@ -1,8 +1,15 @@
 package com.nikonhacker.gui.component.memoryHexEditor;
 
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.gui.AdvancedTableFormat;
+import ca.odell.glazedlists.gui.WritableTableFormat;
+import ca.odell.glazedlists.swing.EventTableModel;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -21,6 +28,8 @@ import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
@@ -28,7 +37,6 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
     private DebuggableMemory memory;
     private CPUState cpuState;
-    private String baseTitle;
 
     private Timer refreshTimer;
     private JTextField addressField;
@@ -42,13 +50,67 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private JComboBox registerCombo;
     private JButton saveLoadButton;
 
+    private final JTable watchTable;
+    private final EventList<MemoryWatch> watchList;
+    private final JTabbedPane tabbedPane;
+    private boolean editable;
+
     public MemoryHexEditorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState, int baseAddress, boolean editable) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
-        this.baseTitle = title;
         this.memory = memory;
         this.cpuState = cpuState;
 
-        getContentPane().add(createEditor(baseAddress, editable));
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+
+        tabbedPane = new JTabbedPane();
+
+        tabbedPane.add("General", createGeneralEditorPanel(baseAddress, editable));
+        loadPage(baseAddress);
+
+        JPanel editPanel = new JPanel(new BorderLayout());
+
+        watchList = GlazedLists.threadSafeList(new BasicEventList<MemoryWatch>());
+        refreshMemoryWatches();
+
+        EventTableModel<MemoryWatch> etm = new EventTableModel<MemoryWatch>(watchList, new MemoryWatchTableFormat());
+        watchTable = new JTable(etm);
+        watchTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+        watchTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+        watchTable.getColumnModel().getColumn(2).setPreferredWidth(100);
+
+        JScrollPane listScroller = new JScrollPane(watchTable);
+        //listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
+        editPanel.add(listScroller, BorderLayout.CENTER);
+
+        JPanel rightPanel = new JPanel();
+        rightPanel.setLayout(new GridLayout(0, 1));
+
+        JButton addButton = new JButton("Add");
+        addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        addButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                addWatch();
+            }
+        });
+        rightPanel.add(addButton);
+
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        deleteButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                deleteWatch(watchTable.getSelectedRow());
+            }
+        });
+        rightPanel.add(deleteButton);
+
+        editPanel.add(rightPanel, BorderLayout.EAST);
+
+        tabbedPane.addTab("Watches", editPanel);
+
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+
+        setContentPane(mainPanel);
 
         // Start update timer
         refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
@@ -59,20 +121,86 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         refreshTimer.start();
     }
 
-    private void refreshData() {
-        if (ui.isEmulatorPlaying(chip)) {
-            if (currentPage != null) {
-                try {
-                    hexEditor.open(new ByteArrayInputStream(currentPage));
-                    hexEditor.setColorMap(createColorMap());
-                } catch (IOException e) {
-                    e.printStackTrace();
+    private void refreshMemoryWatcheValues() {
+        for (int i = 0; i < watchList.size(); i++) {
+            watchList.set(i, watchList.get(i));
+        }
+    }
+
+    private void refreshMemoryWatches() {
+        watchList.clear();
+        for (MemoryWatch memoryWatch : ui.getPrefs().getWatches(chip)) {
+            watchList.add(memoryWatch);
+        }
+    }
+
+    private void deleteWatch(int index) {
+        if (index != -1) {
+            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the watch '" + watchList.get(index).getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                List<MemoryWatch> watches = ui.getPrefs().getWatches(chip);
+                watches.remove(index);
+                refreshMemoryWatches();
+                if (!watches.isEmpty()) {
+                    setSelectedWatchIndex(Math.min(index, watches.size() - 1));
                 }
             }
         }
     }
 
-    private JPanel createEditor(int baseAddress, boolean editable) {
+    private void addWatch() {
+        MemoryWatch memoryWatch = new MemoryWatch(findNewName(), 0);
+        List<MemoryWatch> watches = ui.getPrefs().getWatches(chip);
+        watches.add(memoryWatch);
+        refreshMemoryWatches();
+        setSelectedWatchIndex(watches.size() - 1);
+    }
+
+    private void setSelectedWatchIndex(int index) {
+        watchTable.getSelectionModel().clearSelection();
+        watchTable.getSelectionModel().setSelectionInterval(index, index);
+    }
+
+    private String findNewName() {
+        int i = 1;
+        String name;
+        do {
+            name = "Watch_" + i;
+            i++;
+        }
+        while (isNameInUse(name));
+        return name;
+    }
+
+    private boolean isNameInUse(String name) {
+        for (MemoryWatch memoryWatch : watchList) {
+            if (memoryWatch.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
+    private void refreshData() {
+        if (ui.isEmulatorPlaying(chip)) {
+            refreshMemoryPage();
+            refreshMemoryWatcheValues();
+        }
+    }
+
+    private void refreshMemoryPage() {
+        if (currentPage != null) {
+            try {
+                hexEditor.open(new ByteArrayInputStream(currentPage));
+                hexEditor.setColorMap(createColorMap());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private JPanel createGeneralEditorPanel(int baseAddress, boolean editable) {
         JPanel editorPanel = new JPanel(new BorderLayout());
 
         JPanel selectionPanel = new JPanel();
@@ -147,8 +275,6 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
         hexEditor.addHexEditorListener(this);
 
-        loadPage(baseAddress);
-        
         editorPanel.add(hexEditor, BorderLayout.CENTER);
         
         return editorPanel;
@@ -158,7 +284,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         this.baseAddress = baseAddress;
         addressField.setBackground(Color.WHITE);
 
-        setTitle(baseTitle + " from 0x" + Format.asHex(baseAddress, 8) + " to 0x" + Format.asHex(baseAddress + memory.getPageSize() - 1, 8));
+        tabbedPane.setTitleAt(0, "Page 0x" + Format.asHex(baseAddress, 8) + " - 0x" + Format.asHex(baseAddress + memory.getPageSize() - 1, 8)) ;
 
         try {
             currentPage = memory.getPageForAddress(baseAddress);
@@ -207,6 +333,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     public void setEditable(boolean editable) {
+        refreshData();
+        this.editable = editable;
         hexEditor.setCellEditable(editable);
     }
 
@@ -297,6 +425,91 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
                 // Reload to show unedited values
                 jumpToAddress((int) ((baseAddress & 0xFFFFFFFFL) + (long)event.getOffset()), 1);
             }
+        }
+    }
+
+    private class MemoryWatchTableFormat implements AdvancedTableFormat<MemoryWatch>, WritableTableFormat<MemoryWatch> {
+        public boolean isEditable(MemoryWatch baseObject, int column) {
+            //noinspection SimplifiableIfStatement
+            if (column == 2) {
+                return editable;
+            }
+            else {
+                return true;
+            }
+        }
+
+        public int getColumnCount() {
+            return 3;
+        }
+
+
+        public MemoryWatch setColumnValue(MemoryWatch baseObject, Object editedValue, int column) {
+            switch (column) {
+                case 0:
+                    baseObject.setName((String) editedValue);
+                    break;
+                case 1:
+                    try {
+                        int address = Format.parseUnsigned((((String)editedValue).startsWith("0x")?"":"0x") + editedValue);
+                        baseObject.setAddress(address);
+                    } catch (ParsingException e) {
+                        // ignore the change
+                    }
+                    break;
+                case 2:
+                    if (editable) {
+                        try {
+                            int value = Format.parseUnsigned((((String)editedValue).startsWith("0x")?"":"0x") + editedValue);
+                            memory.store32(baseObject.getAddress(), value);
+                            refreshMemoryPage();
+                        } catch (ParsingException e) {
+                            // ignore the change
+                        }
+                    }
+                    break;
+            }
+            return baseObject;
+        }
+
+        public String getColumnName(int column) {
+            switch (column) {
+                case 0:
+                    return "Name";
+                case 1:
+                    return "Address";
+                case 2:
+                    return "Value";
+            }
+            return null;
+        }
+
+        public Object getColumnValue(MemoryWatch baseObject, int column) {
+            switch (column) {
+                case 0:
+                    return baseObject.getName();
+                case 1:
+                    return Format.asHex(baseObject.getAddress(), 8);
+                case 2:
+                    return Format.asHex(memory.load32(baseObject.getAddress()), 8);
+            }
+            return null;
+        }
+
+        public Class getColumnClass(int column) {
+            switch (column) {
+                case 0:
+                    return String.class;
+                case 1:
+                    return String.class;
+                case 2:
+                    return String.class;
+            }
+            return null;
+        }
+
+        public Comparator getColumnComparator(int column) {
+            return null;
         }
     }
 }

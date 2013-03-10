@@ -142,12 +142,12 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private void deleteTrigger(int index) {
         if (index != -1) {
-            breakTriggers.remove(index);
-            ui.onBreaktriggersChange(chip);
-            if (!breakTriggers.isEmpty()) {
-                int newIndex = Math.min(index, breakTriggers.size() - 1);
-                triggerTable.getSelectionModel().clearSelection();
-                triggerTable.getSelectionModel().addSelectionInterval(newIndex, newIndex);
+            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the trigger '" + triggerList.get(index).getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                breakTriggers.remove(index);
+                ui.onBreaktriggersChange(chip);
+                if (!breakTriggers.isEmpty()) {
+                    setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+                }
             }
         }
     }
@@ -155,9 +155,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private void editTrigger(int index) {
         if (index != -1) {
             editTrigger(breakTriggers.get(index));
-
-            triggerTable.getSelectionModel().clearSelection();
-            triggerTable.getSelectionModel().addSelectionInterval(index, index);
+            setSelectedIndex(index);
         }
     }
 
@@ -180,9 +178,12 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
         editTrigger(trigger);
 
-        int newIndex = breakTriggers.size() - 1;
+        setSelectedIndex(breakTriggers.size() - 1);
+    }
+
+    private void setSelectedIndex(int index) {
         triggerTable.getSelectionModel().clearSelection();
-        triggerTable.getSelectionModel().addSelectionInterval(newIndex, newIndex);
+        triggerTable.getSelectionModel().addSelectionInterval(index, index);
     }
 
     private void addSyscallTrigger() {
@@ -195,9 +196,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         new SyscallBreakTriggerCreateDialog(null, trigger, "Add syscall trigger", memory).setVisible(true);
         ui.onBreaktriggersChange(chip);
 
-        int newIndex = breakTriggers.size() - 1;
-        triggerTable.getSelectionModel().clearSelection();
-        triggerTable.getSelectionModel().addSelectionInterval(newIndex, newIndex);
+        setSelectedIndex(breakTriggers.size() - 1);
     }
 
     private void editTrigger(BreakTrigger trigger) {
