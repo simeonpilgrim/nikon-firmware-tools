@@ -45,10 +45,6 @@ public class TxDmaChannel {
         return channelNumber;
     }
 
-    public void setChannelNumber(int channelNumber) {
-        this.channelNumber = channelNumber;
-    }
-
 
     public int getCcr() {
         return ccr & 0x7FFFFFFF;
@@ -475,5 +471,10 @@ public class TxDmaChannel {
             // (bottom of page 10-27). I guess that is obsolete...
             txDmaController.getPlatform().getInterruptController().request(TxInterruptController.INTDMA0 + channelNumber);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "TxDmaChannel #" + channelNumber;
     }
 }
