@@ -38,6 +38,7 @@ public class Prefs {
     private String codeStructureGraphOrientation[];
     private boolean firmwareWriteProtected[];
     private boolean timersCycleSynchronous[];
+    private boolean dmaSynchronous[];
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -330,6 +331,16 @@ public class Prefs {
     public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
         if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
         this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
+    }
+
+    public boolean isDmaSynchronous(int chip) {
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[2];
+        return dmaSynchronous[chip];
+    }
+
+    public void setDmaSynchronous(int chip, boolean isDmaSynchronous) {
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[2];
+        this.dmaSynchronous[chip] = isDmaSynchronous;
     }
 
     /**

@@ -369,6 +369,8 @@ public class TxIoListener implements IoActivityListener {
                 return (byte)((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
             case REGISTER_RSTFLG + 3:
                 return (byte)((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
+            case REGISTER_DREQFLG + 3:
+                return (byte)((TxInterruptController)platform.getInterruptController()).getDreqflg();
             // DMA controller
             case REGISTER_DCR + 3:
                 return (byte)((TxDmaController)platform.getDmaController()).getDcr();
@@ -515,6 +517,8 @@ public class TxIoListener implements IoActivityListener {
                 return ((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag() & 0xFFFF;
             case REGISTER_RSTFLG + 2:
                 return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg() & 0xFFFF;
+            case REGISTER_DREQFLG + 2:
+                return ((TxInterruptController)platform.getInterruptController()).getDreqflg() & 0xFFFF;
         }
 
         System.err.println("Load16 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
@@ -699,6 +703,8 @@ public class TxIoListener implements IoActivityListener {
                 return ((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
             case REGISTER_RSTFLG:
                 return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
+            case REGISTER_DREQFLG:
+                return ((TxInterruptController)platform.getInterruptController()).getDreqflg();
             // DMA controller
             case REGISTER_DCR:
                 return ((TxDmaController)platform.getDmaController()).getDcr();
@@ -898,8 +904,10 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_RSTFLG + 3:
                 ((TxClockGenerator)platform.getClockGenerator()).setRstFlg(value); break;
             // Interrupt Controller
-            case REGISTER_INTCLR:
+            case REGISTER_INTCLR + 3:
                 throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
+            case REGISTER_DREQFLG + 3:
+                ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             // DMA controller
             case REGISTER_DCR + 3:
                 ((TxDmaController)platform.getDmaController()).setDcr(value); break;
@@ -908,7 +916,7 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_DHR + 3:
                 ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
-                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 2) + " is not supported yet");
+                System.err.println("Store8 0x" + Format.asHex(value, 2) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 
@@ -1038,10 +1046,12 @@ public class TxIoListener implements IoActivityListener {
             case REGISTER_RSTFLG + 2:
                 ((TxClockGenerator)platform.getClockGenerator()).setRstFlg(value); break;
             // Interrupt Controller
-            case REGISTER_INTCLR:
+            case REGISTER_INTCLR + 2:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
+            case REGISTER_DREQFLG + 2:
+                ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             default:
-                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 4) + " is not supported yet");
+                System.err.println("Store16 0x" + Format.asHex(value, 4) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 
@@ -1215,6 +1225,8 @@ public class TxIoListener implements IoActivityListener {
                 ((TxInterruptController)platform.getInterruptController()).setIvr31_9(value); break;
             case REGISTER_INTCLR:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
+            case REGISTER_DREQFLG:
+                ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             // DMA controller
             case REGISTER_DCR:
                 ((TxDmaController)platform.getDmaController()).setDcr(value); break;
@@ -1225,7 +1237,7 @@ public class TxIoListener implements IoActivityListener {
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet
-                System.err.println("Setting register 0x" + Format.asHex(addr, 4) + " to 0x" + Format.asHex(value, 8) + " is not supported yet");
+                System.err.println("Store32 0x" + Format.asHex(value, 8) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 }
