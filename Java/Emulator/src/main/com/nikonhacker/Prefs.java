@@ -4,6 +4,7 @@ package com.nikonhacker;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,6 +27,7 @@ public class Prefs {
 
     // Per chip
     private List<BreakTrigger>[] triggers;
+    private List<MemoryWatch>[] memoryWatches;
     private EnumSet<OutputOption>[] outputOptions;
     private Map<Integer,Byte>[] ioPortMap;
     private boolean[] autoUpdateRealOsObjectWindow;
@@ -144,6 +146,16 @@ public class Prefs {
 
     public void setTriggers(int chip, List<BreakTrigger> triggers) {
         this.triggers[chip] = triggers;
+    }
+
+    public List<MemoryWatch> getWatches(int chip) {
+        if (memoryWatches == null) memoryWatches = new List[2];
+        if (memoryWatches[chip] == null) memoryWatches[chip] = new ArrayList<MemoryWatch>();
+        return memoryWatches[chip];
+    }
+
+    public void setWatches(int chip, List<MemoryWatch> watches) {
+        this.memoryWatches[chip] = watches;
     }
 
 

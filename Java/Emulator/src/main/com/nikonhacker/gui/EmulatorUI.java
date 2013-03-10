@@ -2033,6 +2033,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerFrame[chip] = null;
             if (mustReOpen) toggleMemoryActivityViewer(chip);
         }
+        // TODO reopen on current tab ?
         if (memoryHexEditorFrame[chip] != null) {
             memoryHexEditorFrame[chip].dispose();
             memoryHexEditorFrame[chip] = null;
