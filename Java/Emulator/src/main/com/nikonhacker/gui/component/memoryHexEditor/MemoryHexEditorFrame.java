@@ -14,6 +14,8 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
@@ -22,15 +24,14 @@ import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
@@ -104,6 +105,15 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         });
         rightPanel.add(deleteButton);
 
+        JButton createTriggerButton = new JButton("Convert to trigger");
+        createTriggerButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        createTriggerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                convertWatchToTrigger(watchTable.getSelectedRow());
+            }
+        });
+        rightPanel.add(createTriggerButton);
+
         editPanel.add(rightPanel, BorderLayout.EAST);
 
         tabbedPane.addTab("Watches", editPanel);
@@ -134,6 +144,14 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         }
     }
 
+    private void addWatch() {
+        MemoryWatch memoryWatch = new MemoryWatch(findNewName(), 0);
+        List<MemoryWatch> watches = ui.getPrefs().getWatches(chip);
+        watches.add(memoryWatch);
+        refreshMemoryWatches();
+        setSelectedWatchIndex(watches.size() - 1);
+    }
+
     private void deleteWatch(int index) {
         if (index != -1) {
             if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the watch '" + watchList.get(index).getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -147,12 +165,34 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         }
     }
 
-    private void addWatch() {
-        MemoryWatch memoryWatch = new MemoryWatch(findNewName(), 0);
-        List<MemoryWatch> watches = ui.getPrefs().getWatches(chip);
-        watches.add(memoryWatch);
-        refreshMemoryWatches();
-        setSelectedWatchIndex(watches.size() - 1);
+    private void convertWatchToTrigger(int index) {
+        if (index != -1) {
+            MemoryWatch watch = ui.getPrefs().getWatches(chip).get(index);
+            List<MemoryValueBreakCondition> memoryValueBreakConditions = new ArrayList<MemoryValueBreakCondition>();
+            int currentValue = memory.load32(watch.getAddress());
+            String triggerName = watch.getName() + " = 0x" + Format.asHex(currentValue, 8);
+
+            CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
+            CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
+            flags.setPc(0);
+            if (chip==Constants.CHIP_FR) {
+                ((FrCPUState)flags).setILM(0, false);
+                flags.setReg(FrCPUState.TBR, 0);
+            }
+            else {
+                flags.setReg(TxCPUState.Status, 0);
+            }
+            BreakTrigger trigger = new BreakTrigger(triggerName, values, flags, memoryValueBreakConditions);
+
+            MemoryValueBreakCondition condition = new MemoryValueBreakCondition(trigger);
+            condition.setAddress(watch.getAddress());
+            condition.setMask(0xFFFFFFFF);
+            condition.setValue(currentValue);
+            memoryValueBreakConditions.add(condition);
+            ui.getPrefs().getTriggers(chip).add(trigger);
+            ui.onBreaktriggersChange(chip);
+            JOptionPane.showMessageDialog(this, "Added trigger '" + triggerName + "'", "Trigger created", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void setSelectedWatchIndex(int index) {
