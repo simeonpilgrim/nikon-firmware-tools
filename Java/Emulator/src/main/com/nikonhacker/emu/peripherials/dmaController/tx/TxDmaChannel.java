@@ -15,7 +15,7 @@ public class TxDmaChannel {
     private static final int CCR_BIG_MASK  = 0b00000000_00000010_00000000_00000000;
     private static final int CCR_ABLEN_MASK= 0b00000000_01000000_00000000_00000000;
     private static final int CCR_NIEN_MASK = 0b00000000_10000000_00000000_00000000;
-    private static final int CCR_STR_MASK  = 0b10000000_00000010_00000000_00000000;
+    private static final int CCR_STR_MASK  = 0b10000000_00000000_00000000_00000000;
 
     private static final int CSR_CONF_MASK = 0b00000000_00000100_00000000_00000000;
     private static final int CSR_BED_MASK  = 0b00000000_00001000_00000000_00000000;
@@ -48,7 +48,6 @@ public class TxDmaChannel {
     public void setChannelNumber(int channelNumber) {
         this.channelNumber = channelNumber;
     }
-
 
 
     public int getCcr() {
@@ -368,10 +367,6 @@ public class TxDmaChannel {
                     }
                 }
             }
-            if (!isCcrStart()) {
-                System.out.println("DMA channel " + getChannelNumber() + " received external request but CCR:Str is false");
-                mustStart = false;
-            }
         }
         else {
             // This request comes from software
@@ -382,6 +377,11 @@ public class TxDmaChannel {
             else {
                 mustStart = true;
             }
+        }
+
+        if (!isCcrStart()) {
+            System.out.println("DMA channel " + getChannelNumber() + " received external request but CCR:Str is false");
+            mustStart = false;
         }
 
         if (mustStart) {
