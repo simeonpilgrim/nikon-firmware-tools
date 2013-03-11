@@ -15,7 +15,7 @@ public class IoPort {
 
     @Override
     public String toString() {
-        return "IoPort " + ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)(55 + portNumber))); // 0-9 then A-Z
+        return "IoPort " + ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)('A' - 10 + portNumber))); // 0-9 then A-Z
     }
 
 }
