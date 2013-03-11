@@ -218,6 +218,11 @@ public class TxSerialInterface extends SerialInterface {
         computeRxFillLevel();
     }
 
+    private boolean isRfcRfisSet() {
+        return (rfc & 0b01000000) != 0;
+    }
+
+
     public int getTfc() {
         return tfc & 0b01111111;
     }
@@ -230,6 +235,11 @@ public class TxSerialInterface extends SerialInterface {
         // TODO TFIS
         computeTxFillLevel();
     }
+
+    private boolean isTfcTfisSet() {
+        return (tfc & 0b01000000) != 0;
+    }
+
 
     public int getRst() {
         return rst;
@@ -546,7 +556,7 @@ public class TxSerialInterface extends SerialInterface {
             }
             else {
                 Integer value = txFifo.poll();
-                if (txFifo.size() == txInterruptFillLevel) {
+                if (isTfcTfisSet()?(txFifo.size() <= txInterruptFillLevel):(txFifo.size() == txInterruptFillLevel)) {
                     if (isMod1FdpxTxSet()) {
                         interruptController.request(getTxInterruptNumber());
                     }
@@ -625,7 +635,7 @@ public class TxSerialInterface extends SerialInterface {
             else {
                 rxFifo.add(value);
 
-                if (rxFifo.size() == rxInterruptFillLevel) {
+                if (isRfcRfisSet()?(rxFifo.size() >= rxInterruptFillLevel):(rxFifo.size() == rxInterruptFillLevel)) {
                     if (isFcnfRfieSet()) {
                         interruptController.request(getRxInterruptNumber());
                     }
@@ -653,5 +663,9 @@ public class TxSerialInterface extends SerialInterface {
 
     public String getName() {
         return "Tx Serial #" + serialInterfaceNumber;
+    }
+
+    public String toString() {
+        return getName();
     }
 }
