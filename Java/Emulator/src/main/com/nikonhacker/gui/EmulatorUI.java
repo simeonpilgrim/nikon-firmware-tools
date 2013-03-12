@@ -2553,6 +2553,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             if (debugMode) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
                     if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged() || breakTrigger.getInterruptToRequest() != null || breakTrigger.getPcToSet() != null) {
+                        // Arm memory change detection triggers
+                        for (MemoryValueBreakCondition memoryValueBreakCondition : breakTrigger.getMemoryValueBreakConditions()) {
+                            if (memoryValueBreakCondition.isChangeDetection()) {
+                                memoryValueBreakCondition.setValue(platform[chip].getMemory().load32(memoryValueBreakCondition.getAddress()));
+                                memoryValueBreakCondition.setNegate(true);
+                            }
+                        }
                         emulator[chip].addBreakCondition(new AndCondition(breakTrigger.getBreakConditions(codeStructure[chip], platform[chip].getMemory()), breakTrigger));
                     }
                 }
