@@ -6,10 +6,7 @@ import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.*;
 
 public class Prefs {
@@ -54,19 +51,39 @@ public class Prefs {
 
     public static Prefs load() {
         File preferenceFile = getPreferenceFile();
+        File lastKnownGoodFile = new File(preferenceFile.getAbsolutePath() + ".lastKnownGood");
+        File corruptFile = new File(preferenceFile.getAbsolutePath() + ".corrupt");
         try {
-            if (preferenceFile.exists()) {
-                FileInputStream inputStream = new FileInputStream(preferenceFile);
-                Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
-                inputStream.close();
-                return prefs;
-            }
+            return loadGivenFile(preferenceFile, lastKnownGoodFile);
         } catch (Exception e) {
-            System.out.println("Could not load preferences file. Attempting a rename to " + preferenceFile.getAbsolutePath() + ".corrupt and creating new file.");
-            preferenceFile.renameTo(new File(preferenceFile.getAbsolutePath() + ".corrupt"));
+            System.out.println("Could not load preferences file. Attempting a rename to " + corruptFile.getName() + " and trying to revert to " + lastKnownGoodFile.getName() + " instead...");
             e.printStackTrace();
+            preferenceFile.renameTo(corruptFile);
+            try {
+                return loadGivenFile(lastKnownGoodFile, preferenceFile);
+            } catch (IOException e1) {
+                System.out.println("Could not load " + lastKnownGoodFile.getName() + ". Starting with a blank preference file...");
+            }
         }
         return new Prefs();
+    }
+
+    private static Prefs loadGivenFile(File file, File backupTargetFile) throws IOException {
+        if (file.exists()) {
+            FileInputStream inputStream = new FileInputStream(file);
+            Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
+            inputStream.close();
+            if (backupTargetFile != null) {
+                // Parsing was OK. Back-up config
+                FileOutputStream outputStream = new FileOutputStream(backupTargetFile);
+                XStreamUtils.save(prefs, outputStream);
+                outputStream.close();
+            }
+            return prefs;
+        }
+        else {
+            return new Prefs();
+        }
     }
 
     public String getButtonSize() {
@@ -96,12 +113,12 @@ public class Prefs {
     }
 
     public boolean isSourceCodeFollowsPc(int chip) {
-        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[]{true, true};
         return sourceCodeFollowsPc[chip];
     }
 
     public void setSourceCodeFollowsPc(int chip, boolean value) {
-        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[]{true, true};
         this.sourceCodeFollowsPc[chip] = value;
     }
 
@@ -324,22 +341,22 @@ public class Prefs {
     }
 
     public boolean areTimersCycleSynchronous(int chip) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         return timersCycleSynchronous[chip];
     }
 
     public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
     }
 
     public boolean isDmaSynchronous(int chip) {
-        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[2];
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
         return dmaSynchronous[chip];
     }
 
     public void setDmaSynchronous(int chip, boolean isDmaSynchronous) {
-        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[2];
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
         this.dmaSynchronous[chip] = isDmaSynchronous;
     }
 
