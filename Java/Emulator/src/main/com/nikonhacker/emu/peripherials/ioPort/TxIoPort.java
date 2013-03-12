@@ -11,6 +11,26 @@ import java.util.List;
 import java.util.Map;
 
 public class TxIoPort extends IoPort {
+    public static final int PORT_0 = 0;
+    public static final int PORT_1 = 1;
+    public static final int PORT_2 = 2;
+    public static final int PORT_3 = 3;
+    public static final int PORT_4 = 4;
+    public static final int PORT_5 = 5;
+    public static final int PORT_6 = 6;
+    public static final int PORT_7 = 7;
+    public static final int PORT_8 = 8;
+    public static final int PORT_9 = 9;
+    public static final int PORT_A = 10;
+    public static final int PORT_B = 11;
+    public static final int PORT_C = 12;
+    public static final int PORT_D = 13;
+    public static final int PORT_E = 14;
+    public static final int PORT_F = 15;
+    public static final int PORT_G = 16;
+    public static final int PORT_H = 17;
+    public static final int PORT_I = 18;
+    public static final int PORT_J = 19;
 
     /** Port register value as set by external devices. This value will be remembered in Prefs */
     private byte externalValue;
