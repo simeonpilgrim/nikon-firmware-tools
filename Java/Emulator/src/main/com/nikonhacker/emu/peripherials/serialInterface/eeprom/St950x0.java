@@ -44,6 +44,13 @@ public abstract class St950x0 implements SerialDevice {
     public St950x0(String name, int size) {
         this.name = name;
         memory = new byte[size];
+
+        // Dummy fill to test
+        // TODO persist to file
+        for (int i = 0; i < size; i++) {
+            memory[i] = (byte)(0xFF - i);
+        }
+
         if (size > 0xFF) {
             write1offset = 0x100;
         }
