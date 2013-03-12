@@ -13,7 +13,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  */
 public abstract class St950x0 implements SerialDevice {
 
-    public static final int DUMMY_BYTE = 0x0;
+    public static final byte DUMMY_BYTE = 0x0;
 
     public static final int WREN   = 0b0000_0110; // WREN Set Write Enable Latch
     public static final int WRDI   = 0b0000_0100; // WRDI Reset Write Enable Latch
@@ -101,33 +101,33 @@ public abstract class St950x0 implements SerialDevice {
     public Integer read() {
         if (currentCommand == null) {
             // This clock is due to the command being received. Return a dummy byte
-            return DUMMY_BYTE;
+            return Integer.valueOf(DUMMY_BYTE);
         }
         switch (currentCommand) {
             case RDSR:
                 // This clock phase is here to reply. Let's reply with the status register (over and over)
-                return statusRegister;
+                return statusRegister & 0xFF;
             case READ0:
             case READ1:
                 if (currentAddress == null) {
                     // This clock is due to the address being received. Return a dummy byte
-                    return DUMMY_BYTE;
+                    return Integer.valueOf(DUMMY_BYTE);
                 }
                 else {
                     // This clock phase is here to reply. Let's reply with the memory value
                     int value = memory[currentAddress];
                     // Prepare next read by incrementing address, wrapping at 16
                     currentAddress = (currentAddress & 0xFFFFFFF0) | ((currentAddress + 1) & 0xF);
-                    return value;
+                    return value & 0xFF;
                 }
             case WRITE0:
             case WRITE1:
             case WRSR:
                 // This clock is due to the address or values being received. Return a dummy byte
-                return DUMMY_BYTE;
+                return Integer.valueOf(DUMMY_BYTE);
             default:
                 System.err.println("Unhandled command '" + currentCommand + "', returning 0x00");
-                return DUMMY_BYTE;
+                return Integer.valueOf(DUMMY_BYTE);
         }
     }
 
