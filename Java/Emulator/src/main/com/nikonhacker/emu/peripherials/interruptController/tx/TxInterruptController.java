@@ -293,9 +293,11 @@ public class TxInterruptController extends AbstractInterruptController {
         int il = getRequestLevel(interruptNumber);
         if (isImcDmSet(imcSection)) {
             // DMA: il = dma channel to start
+            // Request transfer
             dreqflg = Format.clearBit(dreqflg, il);
-            // TODO set DACK bit
-            ((TxDmaController)platform.getDmaController()).getChannel(il).requestStart(true, false);
+            // See if it can be started now
+            ((TxDmaController) platform.getDmaController()).getChannel(il).startTransferIfConditionsOk();
+
             return true;
         }
         else {

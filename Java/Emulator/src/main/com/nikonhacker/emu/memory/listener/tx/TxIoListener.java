@@ -355,6 +355,31 @@ public class TxIoListener implements IoActivityListener {
                     return (byte) txSerialInterface.getBrcr();
             }
         }
+        else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
+            // DMA channel configuration registers
+            int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
+            TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
+            switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0 + 3:
+                    return (byte)channel.getCcr();
+                case REGISTER_CSR0 + 3:
+                    return (byte)channel.getCsr();
+                case REGISTER_SAR0 + 3:
+                    return (byte)channel.getSar();
+                case REGISTER_DAR0 + 3:
+                    return (byte)channel.getDar();
+                case REGISTER_BCR0 + 3:
+                    return (byte)channel.getBcr();
+                case REGISTER_DTCR0 + 3:
+                    return (byte)channel.getDtcr();
+
+                case REGISTER_CCR0:
+                    return (byte)(channel.getCcr()>>24);
+
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -887,6 +912,31 @@ public class TxIoListener implements IoActivityListener {
                     txSerialInterface.setMod0(value); break;
                 case REGISTER_HBR0CR:
                     txSerialInterface.setBrcr(value); break;
+            }
+        }
+        else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
+            // DMA channel configuration registers
+            int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
+            TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
+            switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0 + 3:
+                    channel.setCcr(value); break;
+                case REGISTER_CSR0 + 3:
+                    channel.setCsr(value); break;
+                case REGISTER_SAR0 + 3:
+                    channel.setSar(value); break;
+                case REGISTER_DAR0 + 3:
+                    channel.setDar(value); break;
+                case REGISTER_BCR0 + 3:
+                    channel.setBcr(value); break;
+                case REGISTER_DTCR0 + 3:
+                    channel.setDtcr(value); break;
+
+                case REGISTER_CCR0:
+                    channel.setCcrMSByte(value); break;
+
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else switch (addr) {
