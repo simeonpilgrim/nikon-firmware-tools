@@ -4,6 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
 
 public class TxDmaChannel {
     private static final int CCR_SIO_MASK  = 0b00000000_00000000_00000010_00000000;
@@ -23,12 +24,15 @@ public class TxDmaChannel {
     private static final int CSR_ABC_MASK  = 0b00000000_01000000_00000000_00000000;
     private static final int CSR_NC_MASK   = 0b00000000_10000000_00000000_00000000;
     private static final int CSR_ACT_MASK  = 0b10000000_00000000_00000000_00000000;
+    // Writing 1 to NC and AbC has no effect
+    private static final int CSR_NOT_SETTABLE_TO_ONE = CSR_NC_MASK | CSR_ABC_MASK;
 
     private int channelNumber;
     private TxDmaController txDmaController;
+    private boolean isInStandBy = false;
 
     // registers
-    private int ccr;
+    private int ccr = 0b00000000_11100010_00000000_00000000;
     private int csr;
     private int sar;
     private int dar;
@@ -47,32 +51,38 @@ public class TxDmaChannel {
 
 
     public int getCcr() {
-        return ccr & 0x7FFFFFFF;
+        return ccr;
     }
 
     public void setCcr(int ccr) {
-        this.ccr = ccr;
-
-        if (isCcrStart()) {
-            // Str: Start transfer
+        this.ccr = ccr & 0x7FFFFFFF;
+        if ((ccr & CCR_BIG_MASK) == 0) {
+            throw new RuntimeException(toString() + ": Little endian is not supported for now");
+        }
+        if ((ccr & CCR_STR_MASK) != 0) {
             // First check if a termination bit is set
-            if (isCsrAbnormalCompletion() || isCsrNormalCompletion()) {
-                System.err.println("DMA channel " + getChannelNumber() + " error: setting CCR:Str to 1 while CSR still indicates a Completion state: 0x" + Format.asHex(csr, 8) + ". Setting abnormal completion");
+            if (isCsrNormalCompletion()) {
+                System.err.println(toString() + ": Attempt to put the channel in standby while CSR:NC bit is still set. Switching to Abnormal Completion");
                 clearCsrNormalCompletion();
                 setCsrAbnormalCompletion();
             }
+            else if (isCsrAbnormalCompletion()) {
+                System.err.println(toString() + ": Attempt to put the channel in standby while CSR:AbC bit is still set. Ignoring");
+            }
             else {
-                requestStart(false, false);
+                isInStandBy = true;
             }
         }
+        startTransferIfConditionsOk();
     }
 
     public int getCsr() {
-        return csr;
+        return ((isInStandBy)?CSR_ACT_MASK:0) | (csr & ~CSR_ACT_MASK);
     }
 
     public void setCsr(int csr) {
-        this.csr = csr;
+        // Set CSR, except for NC and AbC which can only be reset, not set
+        this.csr = ((csr & ~CSR_NOT_SETTABLE_TO_ONE) | (csr & this.csr & CSR_NOT_SETTABLE_TO_ONE));
     }
 
     public int getSar() {
@@ -152,7 +162,6 @@ public class TxDmaChannel {
         }
     }
 
-    // TODO single/continuous is not implemented
     public boolean isCcrSioSingle() {
         return (ccr & CCR_SIO_MASK) != 0;
     }
@@ -197,8 +206,8 @@ public class TxDmaChannel {
         return (ccr & CCR_NIEN_MASK) != 0;
     }
 
-    public boolean isCcrStart() {
-        return (ccr & CCR_STR_MASK) != 0;
+    public void setCcrMSByte(byte ccrMSByte) {
+        setCcr((ccr & 0x80FFFFFF) | (ccrMSByte << 24));
     }
 
 
@@ -252,16 +261,6 @@ public class TxDmaChannel {
         csr &= ~CSR_NC_MASK;
     }
 
-    public boolean isCsrActive() {
-        return (csr & CSR_ACT_MASK) != 0;
-    }
-    public void setCsrActive() {
-        csr |= CSR_ACT_MASK;
-    }
-    public void clearCsrActive() {
-        csr &= ~CSR_ACT_MASK;
-    }
-
     public int getDtcrDacmStartBit() {
         switch ((dtcr >> 3) & 0b111) {
             case 0b000:
@@ -275,7 +274,7 @@ public class TxDmaChannel {
             case 0b100:
                 return 16;
             default:
-                throw new RuntimeException("Invalid DTCR:DACM DTCR=0x" + Format.asHex(dtcr, 8));
+                throw new RuntimeException(toString() + ": Invalid DTCR:DACM DTCR=0x" + Format.asHex(dtcr, 8));
         }
     }
 
@@ -292,165 +291,153 @@ public class TxDmaChannel {
             case 0b100:
                 return 16;
             default:
-                throw new RuntimeException("Invalid DTCR:SACM DTCR=0x" + Format.asHex(dtcr, 8));
+                throw new RuntimeException(toString() + ": Invalid DTCR:SACM DTCR=0x" + Format.asHex(dtcr, 8));
         }
     }
 
 
-    public void requestStart(boolean externalRequest, boolean externalRequestByPin) {
-        // Check consistence of call wrt configuration
+    public void startTransferIfConditionsOk() {
         boolean mustStart = false;
-        if (externalRequest) {
-            // This request comes from interrupt or pin
-            if (!isCcrExternalRequest()) {
-                // But channel configured for request by software
-                System.out.println("DMA channel " + getChannelNumber() + " error: received external request while configured for software requests") ;
-            }
-            else {
-                // OK, request coming from interrupt or pin on channel configured as such
-                if (externalRequestByPin){
-                    // This request comes from a pin
-                    if(channelNumber == 0) {
-                        // Possible pin channel
-                        if (!txDmaController.isRsrReqS0()) {
-                            // But external configured for request by interrupts
-                            System.out.println("DMA channel " + getChannelNumber() + " error: received external request by pin while configured for external by interrupt") ;
-                        }
-                        else {
+        // 1st condition: channel must be in stand-by
+        if (isInStandBy) {
+            if (isCcrExternalRequest()) {
+                // Channel configured for external requests
+                if (channelNumber == 0 && txDmaController.isRsrReqS0()) {
+                    // Channel 0 configured for external by pin. See if pin is set
+                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[TxIoPort.PORT_F];
+                    // TODO Port 5 ? Port A ? (p 10.23). WTF ?
+                    int maskPin0 = 0b00000001;
+                    if ((portF.getFunctionRegister2() & maskPin0) != 0) {
+                        // pin PF0 is indeed configured as DREQ0
+                        if ((portF.getValue() & maskPin0) != 0) {
+                            // pin PF0 is set
+                            // TODO pin DACK0
                             mustStart = true;
                         }
                     }
-                    else if(channelNumber == 4) {
-                        // Possible pin channel
-                        if (!txDmaController.isRsrReqS4()) {
-                            // But external configured for request by interrupts
-                            System.out.println("DMA channel " + getChannelNumber() + " error: received external request by pin while configured for external by interrupt") ;
-                        }
-                        else {
+                }
+                else if (channelNumber == 4 && txDmaController.isRsrReqS4()) {
+                    // Channel 4 configured for external by pin. See if pin is set
+                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[TxIoPort.PORT_F];
+                    int maskPin2 = 0b00000100;
+                    if ((portF.getFunctionRegister2() & maskPin2) != 0) {
+                        // pin PF2 is indeed configured as DREQ4
+                        if ((portF.getValue() & maskPin2) != 0) {
+                            // pin PF2 is set
+                            // TODO pin DACK4
                             mustStart = true;
                         }
-                    }
-                    else {
-                        // Impossible pin channel
-                        System.out.println("DMA channel " + getChannelNumber() + " error: received external request by pin on channel other than 0 or 4" ) ;
                     }
                 }
                 else {
-                    // This request comes from an interrupt
-                    if(channelNumber == 0) {
-                        // Possible pin channel
-                        if (txDmaController.isRsrReqS0()) {
-                            // But external configured for request by pin
-                            System.out.println("DMA channel " + getChannelNumber() + " error: received external request by interrupt while configured for external by pin") ;
-                        }
-                        else {
-                            mustStart = true;
-                        }
-                    }
-                    else if(channelNumber == 4) {
-                        // Possible pin channel
-                        if (!txDmaController.isRsrReqS4()) {
-                            // But external configured for request by pin
-                            System.out.println("DMA channel " + getChannelNumber() + " error: received external request by interrupt while configured for external by pin") ;
-                        }
-                        else {
-                            mustStart = true;
-                        }
-                    }
-                    else {
-                        // No other test required for other channels
+                    // External configured for external by interrupt. See if DREQFLG.DREQn is requested
+                    int dreqflg = ((TxInterruptController) (txDmaController.getPlatform().getInterruptController())).getDreqflg();
+                    int mask = 1 << channelNumber;
+                    if ((dreqflg & mask) == 0) {
+                        // Transfer is requested
+                        // TODO set DACK bit
                         mustStart = true;
                     }
                 }
             }
-        }
-        else {
-            // This request comes from software
-            if (isCcrExternalRequest()) {
-                // But channel configured for request by interrupt or pin
-                System.out.println("DMA channel " + getChannelNumber() + " error: received software request while configured for external requests") ;
-            }
             else {
+                // request by software: no other conditions, start now
                 mustStart = true;
             }
         }
-
-        if (!isCcrStart()) {
-            System.out.println("DMA channel " + getChannelNumber() + " received external request but CCR:Str is false");
-            mustStart = false;
-        }
-
         if (mustStart) {
-            if (txDmaController.getPrefs().isDmaSynchronous(Constants.CHIP_TX)) {
-                // SYNC
-                performTransfer();
-            }
-            else {
-                // ASYNC
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        performTransfer();
-                    }
-                }).start();
-            }
+            start();
+        }
+    }
+
+    public void start() {
+        if (txDmaController.getPrefs().isDmaSynchronous(Constants.CHIP_TX)) {
+            // SYNC
+            performTransfer();
+        }
+        else {
+            // ASYNC
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    performTransfer();
+                }
+            }).start();
         }
     }
 
     private void performTransfer() {
         int dpsBytes = getCcrDpsBytes();
         if (dpsBytes != getCcrTrSizBytes()) {
-            System.out.println("Error: Dps=" + dpsBytes + "bytes while TrSiz=" + getCcrTrSizBytes() + "bytes");
+            System.out.println(toString() + " Error: Dps=" + dpsBytes + "bytes while TrSiz=" + getCcrTrSizBytes() + "bytes");
             // abnormal termination
             signalAbnormalCompletion();
         }
-        if (sar % dpsBytes != 0) {
-            System.out.println("Error: SAR=0x" + Format.asHex(sar, 8) + " is not a multiple of " + dpsBytes + "bytes");
+        else if (sar % dpsBytes != 0) {
+            System.out.println(toString() + " Error: SAR=0x" + Format.asHex(sar, 8) + " is not a multiple of " + dpsBytes + "bytes");
             // abnormal termination
             signalAbnormalCompletion();
         }
-        if (dar % dpsBytes != 0) {
-            System.out.println("Error: DAR=0x" + Format.asHex(dar, 8) + " is not a multiple of " + dpsBytes + "bytes");
+        else if (dar % dpsBytes != 0) {
+            System.out.println(toString() + " Error: DAR=0x" + Format.asHex(dar, 8) + " is not a multiple of " + dpsBytes + "bytes");
             // abnormal termination
             signalAbnormalCompletion();
         }
-        if (bcr % dpsBytes != 0) {
-            System.out.println("Error: BCR=0x" + Format.asHex(bcr, 8) + " is not a multiple of " + dpsBytes + "bytes");
+        else if (bcr % dpsBytes != 0) {
+            System.out.println(toString() + " Error: BCR=0x" + Format.asHex(bcr, 8) + " is not a multiple of " + dpsBytes + "bytes");
             // abnormal termination
             signalAbnormalCompletion();
         }
-        Memory memory = txDmaController.getPlatform().getMemory();
-        // Perform transfer
-        int srcIncrement = getCcrSacIncrement() * ((getDtcrSacmStartBit()==0)?dpsBytes:(1 << getDtcrSacmStartBit()));
-        int dstIncrement = getCcrDacIncrement() * ((getDtcrDacmStartBit()==0)?dpsBytes:(1 << getDtcrDacmStartBit()));
-        int value;
-        while (bcr != 0) {
-            switch (dpsBytes) {
-                case 1:
-                    value = memory.loadUnsigned8(sar);
-                    txDmaController.setDhr(value);
-                    memory.store8(dar, value);
-                    break;
-                case 2:
-                    value = memory.loadUnsigned16(sar);
-                    txDmaController.setDhr(value);
-                    memory.store16(dar, value);
-                    break;
-                case 4:
-                    value = memory.load32(sar);
-                    txDmaController.setDhr(value);
-                    memory.store32(dar, value);
-                    break;
+        else {
+            Memory memory = txDmaController.getPlatform().getMemory();
+            // Perform transfer
+            int srcIncrement = getCcrSacIncrement() * ((getDtcrSacmStartBit()==0)?dpsBytes:(1 << getDtcrSacmStartBit()));
+            int dstIncrement = getCcrDacIncrement() * ((getDtcrDacmStartBit()==0)?dpsBytes:(1 << getDtcrDacmStartBit()));
+            int value;
+            // transfer is continuous for internal requests, or if it is specified as continuous
+            boolean isContinuous = !isCcrExternalRequest() || !isCcrSioSingle();
+            boolean doLoop = true;
+            while (bcr != 0 && doLoop) {
+                switch (dpsBytes) {
+                    case 1:
+                        value = memory.loadUnsigned8(sar);
+                        txDmaController.setDhr(value);
+                        memory.store8(dar, value);
+                        break;
+                    case 2:
+                        value = memory.loadUnsigned16(sar);
+                        txDmaController.setDhr(value);
+                        memory.store16(dar, value);
+                        break;
+                    case 4:
+                        value = memory.load32(sar);
+                        txDmaController.setDhr(value);
+                        memory.store32(dar, value);
+                        break;
+                }
+                sar += srcIncrement;
+                dar += dstIncrement;
+                bcr--;
+
+                if (isCcrExternalRequest()) {
+                    // "a request made to the DMAC is cleared after completion of each data transfer (transfer of the amount of data specified by TrSiz)" (p 10-19)
+                    ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).clearRequest(channelNumber);
+                    // TODO this contradicts p 10.23, pt 1 : "INTDREQn is not cleared until the number of bytes transferred (value set in the BCRn register) becomes 0."
+                }
+
+                doLoop = isContinuous;
             }
-            sar += srcIncrement;
-            dar += dstIncrement;
-            bcr--;
+            if (bcr == 0) {
+                if (isCcrExternalRequest()) {
+                    // "On the other hand, during a continuous transfer, the DACKn signal is asserted only when the number of bytes transferred (value set in the BCRn register) becomes 0" (p 10-19)
+                    // TODO DACK ?
+                }
+                // "transfer operation is always put in a standby mode for the next transfer request if the number of bytes transferred (value set in the BCRn register) does not become 0" (p 10-19)
+                isInStandBy = false;
+
+                signalNormalCompletion();
+            }
         }
-        // Clear the request
-        if (isCcrExternalRequest()) {
-            ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).clearRequest(channelNumber);
-        }
-        signalNormalCompletion();
     }
 
     private void signalNormalCompletion() {
