@@ -683,7 +683,8 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
      * The goal of this is to delay the actual write to the other device of CYCLES_PER_BYTE cycles
      * The TX empty interrupt occurs at half way
      */
-    public void onCycleCountChange(long oldCount, int increment) {
+    public boolean onCycleCountChange(long oldCount, int increment) {
+        boolean remainRegistered = true;
         if (cycleCounter > CYCLES_PER_BYTE/2 && delayedValue == null) {
             delayedValue = read();
         }
@@ -694,10 +695,11 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
             }
             else {
                 // End of transmission - unregister
-                emulator.removeCycleCounterListener(this);
+                remainRegistered = false;
             }
             delayedValue = null;
             cycleCounter = 0;
         }
+        return remainRegistered;
     }
 }

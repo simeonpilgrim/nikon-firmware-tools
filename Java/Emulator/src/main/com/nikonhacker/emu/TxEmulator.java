@@ -43,21 +43,23 @@ public class TxEmulator extends Emulator {
 
         txCpuState.setAllRegistersDefined();
 
-        try {
-            for (;;) {
 
+        try {
+            int cycleListenerNumber;
+            int binaryStatement;
+            for (;;) {
                 statement.reset();
                 if (((TxCPUState) cpuState).is16bitIsaMode) {
-                    int binaryStatement16 = memory.loadInstruction16(cpuState.pc);
+                    binaryStatement = memory.loadInstruction16(cpuState.pc);
 
-                    statement.fill16bInstruction(binaryStatement16, cpuState.pc, memory);
+                    statement.fill16bInstruction(binaryStatement, cpuState.pc, memory);
 
                     statement.decode16BitOperands(cpuState.pc);
                 }
                 else {
-                    int binaryStatement32 = memory.loadInstruction32(cpuState.pc);
+                    binaryStatement = memory.loadInstruction32(cpuState.pc);
 
-                    statement.fill32bInstruction(binaryStatement32);
+                    statement.fill32bInstruction(binaryStatement);
 
                     statement.decode32BitOperands();
                 }
@@ -83,9 +85,18 @@ public class TxEmulator extends Emulator {
                 // ACTUAL INSTRUCTION EXECUTION
                 ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, context);
 
-                for (CycleCounterListener cycleCounterListener : cycleCounterListeners) {
-                    cycleCounterListener.onCycleCountChange(totalCycles, 1);
+                // Notify CPU cycle listeners
+                cycleListenerNumber = 0;
+                while (cycleListenerNumber < cycleCounterListeners.size()) {
+                    CycleCounterListener cycleCounterListener = cycleCounterListeners.get(cycleListenerNumber);
+                    if (cycleCounterListener.onCycleCountChange(totalCycles, 1)) {
+                        cycleListenerNumber++;
+                    }
+                    else {
+                        cycleCounterListeners.remove(cycleCounterListener);
+                    }
                 }
+
                 totalCycles ++; // approximation
 
                 /* Delay slot processing */
