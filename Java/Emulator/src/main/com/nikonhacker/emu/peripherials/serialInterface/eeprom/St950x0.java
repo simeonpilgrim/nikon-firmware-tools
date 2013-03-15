@@ -116,8 +116,8 @@ public abstract class St950x0 implements SerialDevice {
                 else {
                     // This clock phase is here to reply. Let's reply with the memory value
                     int value = memory[currentAddress];
-                    // Prepare next read by incrementing address, wrapping at 16
-                    currentAddress = (currentAddress & 0xFFFFFFF0) | ((currentAddress + 1) & 0xF);
+                    // Prepare next read by incrementing address, wrapping at memory the boundary
+                    currentAddress = (currentAddress + 1) % memory.length;
                     return value & 0xFF;
                 }
             case WRITE0:
