@@ -76,7 +76,6 @@ public class TxDmaController implements DmaController {
 
     public void setDhr(int dhr) {
         this.dhr = dhr;
-        System.err.println("DHR register of DMA controller has no effect for now (set to 0x" + Format.asHex(dhr, 8) + ")");
     }
 
 
