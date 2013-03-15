@@ -2206,8 +2206,10 @@ public class FrEmulator extends Emulator {
                         break;
 
                 }
-                if (cycleCounterListener != null) {
-                    cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+                synchronized (cycleCounterListeners) {
+                    for (CycleCounterListener cycleCounterListener : cycleCounterListeners) {
+                        cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+                    }
                 }
                 totalCycles += cycles;
 

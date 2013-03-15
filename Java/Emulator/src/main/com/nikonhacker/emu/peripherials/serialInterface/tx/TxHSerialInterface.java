@@ -1,38 +1,19 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 public class TxHSerialInterface extends TxSerialInterface {
     private static final int HSERIAL_RX_FIFO_SIZE = 32;
 
-    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
-        super(serialInterfaceNumber, interruptController);
+    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
+        super(serialInterfaceNumber, interruptController, emulator);
     }
 
     @Override
     public String getName() {
         return "Tx HSerial #" + serialInterfaceNumber;
-    }
-
-    /**
-     * Overridden because in TxHSerial, fill levels are independent of duplex mode, so no need to recompute them
-     * @param mod1
-     */
-    @Override
-    public void setMod1(int mod1) {
-//        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
-        boolean previousTxEnabled = isMod1TxeSet();
-        this.mod1 = mod1;
-        boolean currentTxEnabled = isMod1TxeSet();
-
-        // Check if TXE was just enabled.
-        if (currentTxEnabled && !previousTxEnabled) {
-            // Signal if there are values waiting
-            while (getNbTxValuesWaiting() > 0) {
-                super.valueReady();
-            }
-        }
     }
 
     /**
