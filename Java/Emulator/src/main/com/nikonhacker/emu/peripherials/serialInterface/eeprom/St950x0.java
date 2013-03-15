@@ -101,7 +101,7 @@ public abstract class St950x0 implements SerialDevice {
     public Integer read() {
         if (currentCommand == null) {
             // This clock is due to the command being received. Return a dummy byte
-            return Integer.valueOf(DUMMY_BYTE);
+            return (int) DUMMY_BYTE;
         }
         switch (currentCommand) {
             case RDSR:
@@ -111,7 +111,7 @@ public abstract class St950x0 implements SerialDevice {
             case READ1:
                 if (currentAddress == null) {
                     // This clock is due to the address being received. Return a dummy byte
-                    return Integer.valueOf(DUMMY_BYTE);
+                    return (int) DUMMY_BYTE;
                 }
                 else {
                     // This clock phase is here to reply. Let's reply with the memory value
@@ -124,10 +124,10 @@ public abstract class St950x0 implements SerialDevice {
             case WRITE1:
             case WRSR:
                 // This clock is due to the address or values being received. Return a dummy byte
-                return Integer.valueOf(DUMMY_BYTE);
+                return (int) DUMMY_BYTE;
             default:
                 System.err.println("Unhandled command '" + currentCommand + "', returning 0x00");
-                return Integer.valueOf(DUMMY_BYTE);
+                return (int) DUMMY_BYTE;
         }
     }
 
