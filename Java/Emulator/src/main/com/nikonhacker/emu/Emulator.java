@@ -29,7 +29,7 @@ public abstract class Emulator {
     protected CPUState cpuState;
 
     protected InterruptController interruptController = new DummyInterruptController();
-    protected final Set<CycleCounterListener> cycleCounterListeners = new HashSet<CycleCounterListener>();
+    protected final List<CycleCounterListener> cycleCounterListeners = new ArrayList<CycleCounterListener>();
 
     /**
      * Provide an output to send disassembled form of executed instructions to
@@ -116,7 +116,9 @@ public abstract class Emulator {
 
     public void addCycleCounterListener(CycleCounterListener cycleCounterListener) {
         synchronized (cycleCounterListeners) {
-            cycleCounterListeners.add(cycleCounterListener);
+            if (!cycleCounterListeners.contains(cycleCounterListener)) {
+                cycleCounterListeners.add(cycleCounterListener);
+            }
         }
     }
 

@@ -94,6 +94,8 @@ public class FrEmulator extends Emulator {
                     Rs, @-R15 command just after DIV1 command, an interlock is always brought, increasing
                     the number of execution cycles from 1 cycle to 2 cycles. */
 
+        int cycleListenerNumber;
+
         FrStatement statement = new FrStatement();
 
         FrCPUState frCpuState = (FrCPUState)cpuState;
@@ -2206,11 +2208,19 @@ public class FrEmulator extends Emulator {
                         break;
 
                 }
-                synchronized (cycleCounterListeners) {
-                    for (CycleCounterListener cycleCounterListener : cycleCounterListeners) {
-                        cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+
+                // Notify CPU cycle listeners
+                cycleListenerNumber = 0;
+                while (cycleListenerNumber < cycleCounterListeners.size()) {
+                    CycleCounterListener cycleCounterListener = cycleCounterListeners.get(cycleListenerNumber);
+                    if (cycleCounterListener.onCycleCountChange(totalCycles, 1)) {
+                        cycleListenerNumber++;
+                    }
+                    else {
+                        cycleCounterListeners.remove(cycleCounterListener);
                     }
                 }
+
                 totalCycles += cycles;
 
                 /* Delay slot processing */

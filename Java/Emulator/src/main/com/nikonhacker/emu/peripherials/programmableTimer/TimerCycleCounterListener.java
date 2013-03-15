@@ -11,15 +11,16 @@ public class TimerCycleCounterListener implements CycleCounterListener {
     public static final int NS_PER_CPU_CYCLE = 100; // Assume 10 MHz CPU clock => 100 ns/cycle
 
     Map<ProgrammableTimer, Long> timerMap = new HashMap<ProgrammableTimer, Long>();
-    public void onCycleCountChange(long oldCount, int increment) {
+    public boolean onCycleCountChange(long oldCount, int increment) {
         for (ProgrammableTimer programmableTimer : timerMap.keySet()) {
             Long cycleInterval = timerMap.get(programmableTimer);
             for (int i = 1; i <= increment; i++) {
                 if ((oldCount + i) % cycleInterval == 0) {
-                        programmableTimer.getTimerTask().run();
+                    programmableTimer.getTimerTask().run();
                 }
             }
         }
+        return true;
     }
 
     public void registerTimer(ProgrammableTimer timer, long intervalNs) {
