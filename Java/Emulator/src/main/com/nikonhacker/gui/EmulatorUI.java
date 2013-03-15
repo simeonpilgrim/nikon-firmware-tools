@@ -1844,6 +1844,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void loadImage(int chip) {
         try {
+            emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
+
             CPUState cpuState;
             DebuggableMemory memory = new DebuggableMemory();
             ProgrammableTimer[] programmableTimers;
@@ -1889,7 +1891,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
-                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B);
+                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B, emulator[Constants.CHIP_FR]);
                 }
             }
             else {
@@ -1918,11 +1920,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                    serialInterfaces[i] = new TxSerialInterface(i, interruptController);
+                    serialInterfaces[i] = new TxSerialInterface(i, interruptController, emulator[chip]);
                 }
                 // Hi-speed
                 for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController);
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, emulator[chip]);
                 }
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
@@ -1939,10 +1941,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             platform[chip].setSerialInterfaces(serialInterfaces);
             platform[chip].setDmaController(dmaController);
 
-            emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
             emulator[chip].setMemory(memory);
             emulator[chip].setInterruptController(interruptController);
-            emulator[chip].setCycleCounterListener(timerCycleCounterListener);
+            emulator[chip].clearCycleCounterListeners();
+            if (timerCycleCounterListener != null) {
+                emulator[chip].addCycleCounterListener(timerCycleCounterListener);
+            }
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 

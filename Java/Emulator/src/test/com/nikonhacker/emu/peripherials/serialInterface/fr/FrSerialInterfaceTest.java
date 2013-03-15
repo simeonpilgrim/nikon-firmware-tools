@@ -8,7 +8,7 @@ public class FrSerialInterfaceTest extends TestCase {
     public void testInterface() {
 
         InterruptController interruptController = new DummyInterruptController();
-        FrSerialInterface serialInterface = new FrSerialInterface(5, interruptController, 0x1B);
+        FrSerialInterface serialInterface = new FrSerialInterface(5, interruptController, 0x1B, null);
         serialInterface.setScrIbcr(0);
         serialInterface.setScrIbcr(0xB0);
         serialInterface.setSmr(0x45);

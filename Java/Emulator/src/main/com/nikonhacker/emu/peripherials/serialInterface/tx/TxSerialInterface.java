@@ -1,6 +1,8 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.CycleCounterListener;
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
@@ -11,8 +13,9 @@ import java.util.Queue;
 /**
  * Behaviour is Based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
  */
-public class TxSerialInterface extends SerialInterface {
+public class TxSerialInterface extends SerialInterface implements CycleCounterListener {
     private static final int SERIAL_RX_FIFO_SIZE = 4;
+    private static final int CYCLES_PER_BYTE = 10;
 
     /**
      * Rx buffer
@@ -49,8 +52,11 @@ public class TxSerialInterface extends SerialInterface {
     protected int tst = 0b10000000; // Transmit FIFO status register
     protected int fcnf; // FIFO configuration register
 
-    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
-        super(serialInterfaceNumber, interruptController);
+    private Integer cycleCounter = 0;
+    private Integer delayedValue;
+
+    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
+        super(serialInterfaceNumber, interruptController, emulator);
     }
 
     public int getEn() {
@@ -101,7 +107,8 @@ public class TxSerialInterface extends SerialInterface {
                 // TODO signal if full ?
             }
             if (isMod1TxeSet()) {
-                super.valueReady();
+                // Insert delay of a few CPU cycles.
+                emulator.addCycleCounterListener(this);
             }
         }
         else {
@@ -145,6 +152,7 @@ public class TxSerialInterface extends SerialInterface {
         return mod1;
     }
 
+    // Note: could be overridden in TxHSerial, because in that case, fill levels are independent of duplex mode, so no need to recompute them
     public void setMod1(int mod1) {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
         boolean previousTxEnabled = isMod1TxeSet();
@@ -158,8 +166,9 @@ public class TxSerialInterface extends SerialInterface {
         // Check if TXE was just enabled.
         if (currentTxEnabled && !previousTxEnabled) {
             // Signal if there are values waiting
-            for (int i = 0; i < getNbTxValuesWaiting(); i++) {
-                super.valueReady();
+            if (getNbTxValuesWaiting() > 0) {
+                // Insert delay of a few CPU cycles.
+                emulator.addCycleCounterListener(this);
             }
         }
     }
@@ -541,7 +550,7 @@ public class TxSerialInterface extends SerialInterface {
             }
             setMod2Tbemp();
             if (isMod1FdpxTxSet()) {
-                interruptController.request(getRxInterruptNumber());
+                interruptController.request(getTxInterruptNumber());
             }
             // TODO if UART mode 9 bits, also include bit in MOD0:TB8
             return txBuf;
@@ -667,5 +676,28 @@ public class TxSerialInterface extends SerialInterface {
 
     public String toString() {
         return getName();
+    }
+
+    @Override
+    /**
+     * The goal of this is to delay the actual write to the other device of CYCLES_PER_BYTE cycles
+     * The TX empty interrupt occurs at half way
+     */
+    public void onCycleCountChange(long oldCount, int increment) {
+        if (cycleCounter > CYCLES_PER_BYTE/2 && delayedValue == null) {
+            delayedValue = read();
+        }
+        cycleCounter += increment;
+        if (cycleCounter >= CYCLES_PER_BYTE) {
+            if (delayedValue != null) {
+                super.valueReady(delayedValue);
+            }
+            else {
+                // End of transmission - unregister
+                emulator.removeCycleCounterListener(this);
+            }
+            delayedValue = null;
+            cycleCounter = 0;
+        }
     }
 }

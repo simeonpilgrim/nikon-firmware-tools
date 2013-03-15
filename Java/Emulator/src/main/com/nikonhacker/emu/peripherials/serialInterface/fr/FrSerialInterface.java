@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -43,8 +44,8 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber) {
-        super(serialInterfaceNumber, interruptController);
+    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber, Emulator emulator) {
+        super(serialInterfaceNumber, interruptController, emulator);
 //        First, interrupt numbers were automatic but they are now custom
 //        rxInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + this.serialInterfaceNumber * 3;
 //        txInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + 1 + this.serialInterfaceNumber * 3;
@@ -154,7 +155,7 @@ public class FrSerialInterface extends SerialInterface {
                 fbyte2 = txFifo.size();
             }
         }
-        super.valueReady();
+        super.valueReady(read());
     }
 
     /**

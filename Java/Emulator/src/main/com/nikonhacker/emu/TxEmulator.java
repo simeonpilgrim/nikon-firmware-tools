@@ -83,7 +83,7 @@ public class TxEmulator extends Emulator {
                 // ACTUAL INSTRUCTION EXECUTION
                 ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, context);
 
-                if (cycleCounterListener != null) {
+                for (CycleCounterListener cycleCounterListener : cycleCounterListeners) {
                     cycleCounterListener.onCycleCountChange(totalCycles, 1);
                 }
                 totalCycles ++; // approximation

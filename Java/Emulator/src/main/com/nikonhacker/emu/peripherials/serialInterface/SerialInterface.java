@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 /**
@@ -10,14 +11,12 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
  * - SerialInterface is one java "Class" implementing the SerialDevice interface
  *
  * Serial interfaces are emulated at the value level (byte or group of 5-9 bits), not at the electric (bit) level.
- * Consequently, all information regarding clocks and edges can be ignored.
+ * Consequently, all information regarding clocks and edges is ignored.
  *
  * The logic is as follows:
  * To transmit data, a microcontroller writes to its serial interface's registers, and as soon as one value is "ready
  * for reading" (equivalent of the physical transmission of the last bit), the SerialInterface calls the valueReady()
  * method implemented here.
- * In the current implementation, valueReady() calls the "read" mathod of this device and passes it to the "write" method of
- * the connected device, in other words, the write FIFO is unused as each value written is transmitted synchronously.
  *
  * In the other direction, a "device" (either an actual serial interface, a GUI input or any source)
  * calls the write() method of a SerialInterface to transmit a value to it. The implementation of write() must set
@@ -28,11 +27,13 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 public abstract class SerialInterface implements SerialDevice {
     protected final int serialInterfaceNumber;
     protected final InterruptController interruptController;
+    protected final Emulator emulator;
     protected SerialDevice connectedDevice;
 
-    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
+    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
+        this.emulator = emulator;
         // By default, a Serial Interface uses a dummy device
         connectedDevice = new DummySerialDevice();
     }
@@ -79,8 +80,8 @@ public abstract class SerialInterface implements SerialDevice {
         connectedDevice.onBitNumberChange(this, nbBits);
     }
 
-    public void valueReady() {
-        connectedDevice.write(read());
+    public void valueReady(Integer value) {
+        connectedDevice.write(value);
     }
 
 
