@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
+import com.nikonhacker.Format;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,10 +17,10 @@ public class TimerDevice implements SerialDevice {
             @Override
             public void run() {
                 if (connectedDevice == null) {
-                    System.out.println(deviceName + " cannot send value " + i);
+                    System.out.println(deviceName + " cannot send value 0x" + Format.asHex(i, 2));
                 }
                 else {
-                    System.out.println(deviceName + " sends " + i);
+                    System.out.println(deviceName + " sends 0x" + Format.asHex(i, 2));
                     connectedDevice.write(i);
                 }
                 i++;
@@ -28,7 +30,7 @@ public class TimerDevice implements SerialDevice {
 
     @Override
     public void write(Integer value) {
-        System.out.println("        " + deviceName + " received " + value);
+        System.out.println("        " + deviceName + " received " + ((value == null)?"null":(" 0x" + Format.asHex(value, 2))));
     }
 
     @Override
