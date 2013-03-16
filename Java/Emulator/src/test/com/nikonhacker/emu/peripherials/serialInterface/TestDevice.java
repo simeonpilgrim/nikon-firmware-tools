@@ -46,7 +46,7 @@ public class TestDevice implements SerialDevice {
     }
 
     private void write(int value) {
-        System.err.println(deviceName + " writes 0x" + Format.asHex(value, 2));
+        System.out.println(deviceName + " writes 0x" + Format.asHex(value, 2));
         connectedDevice.write(value);
     }
 

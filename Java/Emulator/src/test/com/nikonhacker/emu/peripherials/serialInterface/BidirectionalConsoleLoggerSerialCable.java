@@ -10,8 +10,8 @@ public class BidirectionalConsoleLoggerSerialCable {
     }
 
     public void connect() {
-        device1.connectSerialDevice(new SerialWire("From 1 to 2", device2));
-        device2.connectSerialDevice(new SerialWire("From 2 to 1", device1));
+        device1.connectSerialDevice(new ConsoleLoggerSerialWire("From 1 to 2", device2));
+        device2.connectSerialDevice(new ConsoleLoggerSerialWire("From 2 to 1", device1));
     }
 
     public void disconnect() {
