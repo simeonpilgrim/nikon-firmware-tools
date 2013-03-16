@@ -52,4 +52,9 @@ public class TimerDevice implements SerialDevice {
     public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
 
     }
+
+    @Override
+    public String toString() {
+        return deviceName;
+    }
 }
