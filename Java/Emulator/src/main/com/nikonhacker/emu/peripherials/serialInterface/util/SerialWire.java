@@ -1,4 +1,7 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.util;
+
+import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 /**
  * This class is just a "useless" wire between a serial source and a destination

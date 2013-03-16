@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
+import com.nikonhacker.emu.peripherials.serialInterface.util.SerialTee;
+
 public class SerialTeeTest {
     public static void main(String[] args) {
         System.out.println("Starting...");

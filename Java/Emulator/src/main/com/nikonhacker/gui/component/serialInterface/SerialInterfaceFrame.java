@@ -1,9 +1,9 @@
 package com.nikonhacker.gui.component.serialInterface;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.PrintWriterLoggerSerialWire;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSerialWire;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintWriterArea;

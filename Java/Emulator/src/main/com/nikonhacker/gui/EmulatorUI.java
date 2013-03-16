@@ -37,11 +37,13 @@ import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.bga56pin.Bga56PinSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.util.SpiTee;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -1984,17 +1986,32 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
 
             // Reconnect Tx serial interface HSC2 with an eeprom
-            final St950x0 eeprom = new St95040("Eeprom");
-            SerialInterface txSerialInterfaceH2 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 2];
+            SerialInterface txSerialInterfaceH2 = platform[Constants.CHIP_TX].getSerialInterfaces()[TxIoListener.NUM_SERIAL_IF + 2]; // A
+            final St950x0 eeprom = new St95040("Eeprom"); // B
+            final Bga56PinSerialDevice bga56PinSerialDevice = new Bga56PinSerialDevice(); // B
+
             eeprom.disconnectSerialDevice();
             txSerialInterfaceH2.disconnectSerialDevice();
-            txSerialInterfaceH2.connectSerialDevice(eeprom);
-            eeprom.connectSerialDevice(txSerialInterfaceH2);
+            bga56PinSerialDevice.disconnectSerialDevice();
+
+            SpiTee tee = new SpiTee("tee", txSerialInterfaceH2) ;
+            tee.addBDevice(eeprom);
+            tee.addBDevice(bga56PinSerialDevice);
+            tee.connect();
+
             // Connect port 4 pin 6 (P46) as !SELECT of eeprom
-            ((TxIoPort)platform[Constants.CHIP_TX].getIoPorts()[4]).addIoOutputPortPinListener(6, new IoPortPinListener() {
+            ((TxIoPort)platform[Constants.CHIP_TX].getIoPorts()[TxIoPort.PORT_4]).addIoOutputPortPinListener(6, new IoPortPinListener() {
                 @Override
                 public void onPinValueChange(boolean newValue) {
                     eeprom.setSelected(!newValue);
+                }
+            });
+
+            // Connect port E pin 6 (PE6) as !SELECT of Bga56Pin
+            ((TxIoPort)platform[Constants.CHIP_TX].getIoPorts()[TxIoPort.PORT_E]).addIoOutputPortPinListener(6, new IoPortPinListener() {
+                @Override
+                public void onPinValueChange(boolean newValue) {
+                    bga56PinSerialDevice.setSelected(!newValue);
                 }
             });
         }

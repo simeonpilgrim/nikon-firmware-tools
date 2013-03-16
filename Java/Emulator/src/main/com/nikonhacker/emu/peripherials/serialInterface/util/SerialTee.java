@@ -1,4 +1,7 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.util;
+
+import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,8 +37,8 @@ import java.util.Set;
  * testDevice.disconnectSerialDevice();
  *
  * SerialTee tee = new SerialTee("tee", txSerialInterfaceH2);
- * tee.addTargetDevice(eeprom)
- * tee.addTargetDevice(testDevice);
+ * tee.addBDevice(eeprom)
+ * tee.addBDevice(testDevice);
  * tee.connect();
  */
 public class SerialTee {
@@ -43,7 +46,7 @@ public class SerialTee {
     private SerialDevice aDevice;
     private Set<SerialDevice> bDevices;
     private InternalAPartner internalAPartner;
-    private Set<InternalBPartner> internalBPartners;
+    protected Set<InternalBPartner> internalBPartners;
 
     public SerialTee(String teeName, SerialDevice aDevice) {
         this.teeName = teeName;
@@ -60,7 +63,7 @@ public class SerialTee {
 
 
     public void connect() {
-        internalAPartner = new InternalAPartner();
+        internalAPartner = getInternalAPartner();
         internalAPartner.connectSerialDevice(aDevice);
         aDevice.connectSerialDevice(internalAPartner);
 
@@ -73,11 +76,15 @@ public class SerialTee {
         }
     }
 
+    protected InternalAPartner getInternalAPartner() {
+        return new InternalAPartner();
+    }
+
     public String getTeeName() {
         return teeName;
     }
 
-    private class InternalAPartner implements SerialDevice {
+    protected class InternalAPartner implements SerialDevice {
         private SerialDevice aDevice;
 
         public InternalAPartner() {
@@ -115,7 +122,7 @@ public class SerialTee {
         }
     }
 
-    private class InternalBPartner implements SerialDevice {
+    protected class InternalBPartner implements SerialDevice {
 
         private SerialDevice bDevice;
 
