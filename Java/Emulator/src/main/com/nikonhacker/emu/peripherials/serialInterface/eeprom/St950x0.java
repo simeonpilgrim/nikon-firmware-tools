@@ -107,7 +107,7 @@ public abstract class St950x0 extends AbstractSpiDevice {
         switch (currentCommand) {
             case RDSR:
                 // This clock phase is here to reply. Let's reply with the status register (over and over)
-                return statusRegister & 0xFF;
+                return statusRegister;
             case READ0:
             case READ1:
                 if (currentAddress == null) {
@@ -119,7 +119,7 @@ public abstract class St950x0 extends AbstractSpiDevice {
                     int value = memory[currentAddress];
                     // Prepare next read by incrementing address, wrapping at memory the boundary
                     currentAddress = (currentAddress + 1) % memory.length;
-                    return value & 0xFF;
+                    return value;
                 }
             case WRITE0:
             case WRITE1:

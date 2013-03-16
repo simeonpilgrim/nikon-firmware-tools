@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 
 public class PrintWriterLoggerSerialWire extends SerialWire implements SerialDevice {
     private PrintWriter printWriter;
+    private int mask = 0xFF; // 8 bits by default
 
     public PrintWriterLoggerSerialWire(String wireName, SerialDevice realTargetDevice, PrintWriter printWriter) {
         super(wireName, realTargetDevice);
@@ -15,7 +16,14 @@ public class PrintWriterLoggerSerialWire extends SerialWire implements SerialDev
 
     @Override
     public void write(Integer value) {
-        printWriter.write(((value == null)?"x":Format.asHex(value, 2)) + " ");
+        printWriter.write(((value == null)?"x":Format.asHex(value & mask, 2)) + " ");
         super.write(value);
     }
+
+    @Override
+    public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
+        mask = (1 << nbBits) - 1;
+        super.onBitNumberChange(serialDevice, nbBits);
+    }
+
 }
