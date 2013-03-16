@@ -15,10 +15,10 @@ public class TimerDevice implements SerialDevice {
             @Override
             public void run() {
                 if (connectedDevice == null) {
-                    System.err.println(deviceName + " cannot send value " + i);
+                    System.out.println(deviceName + " cannot send value " + i);
                 }
                 else {
-                    System.err.println(deviceName + " sends " + i);
+                    System.out.println(deviceName + " sends " + i);
                     connectedDevice.write(i);
                 }
                 i++;
@@ -28,7 +28,7 @@ public class TimerDevice implements SerialDevice {
 
     @Override
     public void write(Integer value) {
-        System.err.println("        " + deviceName + " received " + value);
+        System.out.println("        " + deviceName + " received " + value);
     }
 
     @Override

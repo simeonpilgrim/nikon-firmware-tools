@@ -1,5 +1,9 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
+/**
+ * This class is just a "useless" one-way wire between a serial source and a destination
+ * To be used as a base class or template for more creative uses
+ */
 public class SerialWire implements SerialDevice {
     private String wireName;
     private SerialDevice realDevice;
