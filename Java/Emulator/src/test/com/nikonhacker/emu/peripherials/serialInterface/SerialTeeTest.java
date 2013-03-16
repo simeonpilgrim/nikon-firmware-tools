@@ -5,7 +5,7 @@ public class SerialTeeTest {
         System.out.println("Starting...");
         TimerDevice d1 = new TimerDevice("CPU", 2000);
         TimerDevice d2 = new TimerDevice("EEPROM", 2200);
-        TestDevice d3 = new TestDevice("Receiver");
+        TestDevice d3 = new TestDevice("56pin");
 
         SerialTee tee = new SerialTee("tee", d1);
         tee.addBDevice(d2);

@@ -9,6 +9,10 @@ import java.util.Set;
  * Bytes sent by "A" are forwarded to all "B"
  * Bytes sent by any "B" are forwarded to "A"
  *
+ * Note: this implementation may seem overly complex, but the contract is that it should be possible to temporarily
+ * replace devices at one or the other end (e.g. a ConsoleLoggerSerialWire for logging purpose) and remove them
+ * without disturbing the normal behaviour
+ *
  * Use case:
  * - before (no tee):
  * St950x0 eeprom = new St95040("Eeprom");
@@ -38,8 +42,8 @@ public class SerialTee {
     private String teeName;
     private SerialDevice aDevice;
     private Set<SerialDevice> bDevices;
-    private SerialDevice internalAPartner;
-    private Set<SerialDevice> internalBPartners;
+    private InternalAPartner internalAPartner;
+    private Set<InternalBPartner> internalBPartners;
 
     public SerialTee(String teeName, SerialDevice aDevice) {
         this.teeName = teeName;
@@ -59,7 +63,8 @@ public class SerialTee {
         internalAPartner = new InternalAPartner();
         internalAPartner.connectSerialDevice(aDevice);
         aDevice.connectSerialDevice(internalAPartner);
-        this.internalBPartners = new HashSet<SerialDevice>(bDevices.size());
+
+        this.internalBPartners = new HashSet<InternalBPartner>(bDevices.size());
         for (SerialDevice bDevice : bDevices) {
             InternalBPartner bPartner = new InternalBPartner();
             bPartner.connectSerialDevice(bDevice);
@@ -80,8 +85,8 @@ public class SerialTee {
 
         @Override
         public void write(Integer value) {
-            for (SerialDevice targetDevice : bDevices) {
-                targetDevice.write(value);
+            for (InternalBPartner internalBPartner : internalBPartners) {
+                internalBPartner.reverseWrite(value);
             }
         }
 
@@ -104,6 +109,10 @@ public class SerialTee {
         public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
             System.out.println("SerialTee$InternalAPartner.onBitNumberChange");
         }
+
+        public void reverseWrite(Integer value) {
+            aDevice.write(value);
+        }
     }
 
     private class InternalBPartner implements SerialDevice {
@@ -115,7 +124,7 @@ public class SerialTee {
 
         @Override
         public void write(Integer value) {
-            aDevice.write(value);
+            internalAPartner.reverseWrite(value);
         }
 
         @Override
@@ -136,6 +145,10 @@ public class SerialTee {
         @Override
         public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
             System.out.println("SerialTee$InternalBPartner.onBitNumberChange");
+        }
+
+        public void reverseWrite(Integer value) {
+            bDevice.write(value);
         }
     }
 }
