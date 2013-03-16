@@ -9,7 +9,7 @@ public class ConsoleLoggerSerialWire extends SerialWire implements SerialDevice 
 
     @Override
     public void write(Integer value) {
-        System.out.println("    " + getWireName() + ":" + ((value == null)?"null":(" 0x" + Format.asHex(value, 2))));
+        System.out.println("    " + getWireName() + ": " + ((value == null)?"null":("0x" + Format.asHex(value, 2))));
         super.write(value);
     }
 }

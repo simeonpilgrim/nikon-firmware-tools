@@ -30,7 +30,7 @@ public class TimerDevice implements SerialDevice {
 
     @Override
     public void write(Integer value) {
-        System.out.println("        " + deviceName + " receives " + ((value == null)?"null":(" 0x" + Format.asHex(value, 2))));
+        System.out.println("        " + deviceName + " receives " + ((value == null)?"null":("0x" + Format.asHex(value, 2))));
     }
 
     @Override
