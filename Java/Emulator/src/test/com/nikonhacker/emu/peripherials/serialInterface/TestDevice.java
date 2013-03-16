@@ -50,4 +50,8 @@ public class TestDevice implements SerialDevice {
         connectedDevice.write(value);
     }
 
+    @Override
+    public String toString() {
+        return deviceName;
+    }
 }
