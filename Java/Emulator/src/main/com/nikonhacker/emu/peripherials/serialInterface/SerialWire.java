@@ -2,7 +2,7 @@ package com.nikonhacker.emu.peripherials.serialInterface;
 
 /**
  * This class is just a "useless" wire between a serial source and a destination
- * This creates a two-way connection, but only one way can be "sniffed", from "source to target"
+ * This "inserts" in the chain for two-way connection, but only one way can be "sniffed", from "source to target"
  *
  * This class should be used as a base class or template for more creative uses
  */
