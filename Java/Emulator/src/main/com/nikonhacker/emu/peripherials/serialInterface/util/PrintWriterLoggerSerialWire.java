@@ -1,6 +1,7 @@
-package com.nikonhacker.emu.peripherials.serialInterface;
+package com.nikonhacker.emu.peripherials.serialInterface.util;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 import java.io.PrintWriter;
 

@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.serialInterface.util.SerialWire;
 
 public class ConsoleLoggerSerialWire extends SerialWire implements SerialDevice {
     public ConsoleLoggerSerialWire(String wireName, SerialDevice realTargetDevice) {

@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface.eeprom;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.serialInterface.AbstractSpiDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
@@ -11,7 +12,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  *
  * Note: RDSR/WRSR commands during READ/WRITE is not implemented
  */
-public abstract class St950x0 implements SerialDevice {
+public abstract class St950x0 extends AbstractSpiDevice {
 
     public static final byte DUMMY_BYTE = 0x0;
 
@@ -29,7 +30,6 @@ public abstract class St950x0 implements SerialDevice {
 
     int statusRegister = 0b1111_0000;
     private byte[] memory;
-    private boolean selected = false;
     private boolean writeProtected = false;
     private int write1offset = 0;
 
@@ -66,17 +66,18 @@ public abstract class St950x0 implements SerialDevice {
         statusRegister = statusRegister & 0b11111101;
     }
 
+    @Override
     public void setSelected(boolean selected) {
         if (!this.selected && selected) {
             // transition to selected state : reset state
-            if(currentCommand == Command.WRITE0 || currentCommand == Command.WRITE1) {
+            if(currentCommand == St950x0.Command.WRITE0 || currentCommand == St950x0.Command.WRITE1) {
                 // Ending a write command, disable the write latch
                 clearWriteLatchEnabled();
             }
             currentCommand = null;
             currentAddress = null;
         }
-        this.selected = selected;
+        super.setSelected(selected);
     }
 
     /**
