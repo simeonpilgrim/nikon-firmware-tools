@@ -1,36 +1,38 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
 /**
- * This class is just a "useless" one-way wire between a serial source and a destination
- * To be used as a base class or template for more creative uses
+ * This class is just a "useless" wire between a serial source and a destination
+ * This creates a two-way connection, but only one way can be "sniffed", from "source to target"
+ *
+ * This class should be used as a base class or template for more creative uses
  */
 public class SerialWire implements SerialDevice {
     private String wireName;
-    private SerialDevice realDevice;
+    private SerialDevice realTargetDevice;
 
-    public SerialWire(String wireName, SerialDevice realDevice) {
+    public SerialWire(String wireName, SerialDevice realTargetDevice) {
         this.wireName = wireName;
-        this.realDevice = realDevice;
+        this.realTargetDevice = realTargetDevice;
     }
 
     @Override
     public void write(Integer value) {
-        realDevice.write(value);
+        realTargetDevice.write(value);
     }
 
     @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        realDevice.connectSerialDevice(connectedDevice);
+    public void connectSerialDevice(SerialDevice sourceDevice) {
+        realTargetDevice.connectSerialDevice(sourceDevice);
     }
 
     @Override
     public void disconnectSerialDevice() {
-        realDevice.connectSerialDevice(new DummySerialDevice());
+        realTargetDevice.connectSerialDevice(new DummySerialDevice());
     }
 
     @Override
     public SerialDevice getConnectedSerialDevice() {
-        return realDevice;
+        return realTargetDevice;
     }
 
     @Override

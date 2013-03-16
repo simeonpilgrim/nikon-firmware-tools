@@ -7,8 +7,8 @@ import java.io.PrintWriter;
 public class PrintWriterLoggerSerialWire extends SerialWire implements SerialDevice {
     private PrintWriter printWriter;
 
-    public PrintWriterLoggerSerialWire(String wireName, SerialDevice realDevice, PrintWriter printWriter) {
-        super(wireName, realDevice);
+    public PrintWriterLoggerSerialWire(String wireName, SerialDevice realTargetDevice, PrintWriter printWriter) {
+        super(wireName, realTargetDevice);
         this.printWriter = printWriter;
     }
 
