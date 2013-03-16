@@ -5,11 +5,13 @@ import com.nikonhacker.emu.peripherials.serialInterface.AbstractSpiDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 public class Bga56PinSerialDevice extends AbstractSpiDevice {
+    private int mask = 0xFF; // 8 bits by default
+
     private SerialDevice connectedDevice;
 
     @Override
     public void write(Integer value) {
-        System.out.println("Unknown component received 0x" + Format.asHex(value, 2));
+        System.out.println("Unknown component received 0x" + Format.asHex(value & mask, 2));
     }
 
     @Override
@@ -29,6 +31,6 @@ public class Bga56PinSerialDevice extends AbstractSpiDevice {
 
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
-        // ignore
+        mask = (1 << nbBits) - 1;
     }
 }
