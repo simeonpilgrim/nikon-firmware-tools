@@ -39,13 +39,13 @@ public class TestDevice implements SerialDevice {
     }
 
     public void sendBytes() {
-        write(0x01);
-        write(0x02);
-        write(0x03);
-        write(0x04);
+        send(0x01);
+        send(0x02);
+        send(0x03);
+        send(0x04);
     }
 
-    private void write(int value) {
+    private void send(int value) {
         System.out.println(deviceName + " writes 0x" + Format.asHex(value, 2));
         connectedDevice.write(value);
     }
