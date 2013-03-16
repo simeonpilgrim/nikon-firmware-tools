@@ -15,7 +15,7 @@ public class TestDevice implements SerialDevice {
 
     @Override
     public void write(Integer value) {
-        System.out.println("        " + deviceName + " received " + ((value == null)?"null":(" 0x" + Format.asHex(value, 2))));
+        System.out.println("        " + deviceName + " receives " + ((value == null)?"null":(" 0x" + Format.asHex(value, 2))));
     }
 
     @Override
