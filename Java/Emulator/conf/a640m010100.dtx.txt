@@ -229,8 +229,7 @@
 -s 0xBFC15BD8=Task01_init_bfc15bd8
 -s 0xBFC15CD4=clr_flags
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
--s 0xBFC15D6E=get_backup_data_from_eeprom
--s 0xBFC15D70=get_backup_data_from_eeprom /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
+-s 0xBFC15D70=load_eeprom_to_FFFF4000 /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
 -s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN src_buffer], $a2 [IN counter], $a3 [IN mode_read /* 0=writing, 1=reading */])
 -s 0xBFC15DE4=change_WDMOD
 -s 0xBFC15E54=check_sum_compare
@@ -342,8 +341,8 @@
 -s 0xBFC1AF6C=Save_SC0RX_to_DESTbuf
 -s 0xBFC1AFBC=request_write_eeprom_format00
 -s 0xBFC1B024=request_write_eeprom_format01
--s 0xBFC1B088=request_write_FFFF4000_to_eeprom
--s 0xBFC1B104=request_read_eeprom_to_FFFF4000
+-s 0xBFC1B088=request_save_FFFF4000_to_eeprom
+-s 0xBFC1B104=request_load_eeprom_to_FFFF4000
 -s 0xBFC1B184=get_ADconversion_result
 -s 0xBFC1B2A8=start_AD_conversion
 -s 0xBFC1B55C=set@FFFF6E03bit0
@@ -358,7 +357,7 @@
 -s 0xBFC1BFC8=SC0_send_port_level
 -s 0xBFC1C060=dynamic_statsk
 -s 0xBFC1C084=sta_tsk0x9
--s 0xBFC1C20A=req_write_eeprom
+-s 0xBFC1C20C=req_write_eeprom
 -s 0xBFC1C298=get_checksum
 -s 0xBFC1C3C0=null_BFC1C3C0
 -s 0xBFC1C3C4=Dynamic_call_sub
@@ -417,10 +416,10 @@
 -s 0xBFC34698=ADC_AIN1_3
 -s 0xBFC34854=get_struFFFF6F0C_field5_bit0
 -s 0xBFC35050=setup_struFFFF4060
--s 0xBFC35598=send_reading_command2eeprom
+-s 0xBFC35598=send_reading_command_to_lcd
 -s 0xBFC356B4=add_element_stru0xFFFF6E6C
 -s 0xBFC356F0=clear_HSC2TX_buffer
--s 0xBFC35724=send_command2eeprom
+-s 0xBFC35724=send_command_to_lcd
 -s 0xBFC35818=enable_HSC2_TX
 -s 0xBFC3589C=HSC2_Transmit
 -s 0xBFC358E0=HINTTX2_body03
