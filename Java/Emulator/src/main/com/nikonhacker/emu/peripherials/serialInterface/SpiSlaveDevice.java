@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
-public abstract class AbstractSpiDevice implements SerialDevice {
+public abstract class SpiSlaveDevice implements SerialDevice {
 
     protected boolean selected = false;
 

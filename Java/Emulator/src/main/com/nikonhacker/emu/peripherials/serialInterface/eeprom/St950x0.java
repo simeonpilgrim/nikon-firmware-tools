@@ -1,9 +1,9 @@
 package com.nikonhacker.emu.peripherials.serialInterface.eeprom;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.AbstractSpiDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 /**
  * This implementation is based on the ST950x0 datasheet at
@@ -12,7 +12,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  *
  * Note: RDSR/WRSR commands during READ/WRITE is not implemented
  */
-public abstract class St950x0 extends AbstractSpiDevice {
+public abstract class St950x0 extends SpiSlaveDevice {
 
     public static final byte DUMMY_BYTE = 0x0;
 
@@ -134,7 +134,7 @@ public abstract class St950x0 extends AbstractSpiDevice {
 
     public void write(Integer value) {
         if (!selected) {
-            throw new RuntimeException("St950x0.write() received while eeprom is not SELECTed !");
+            throw new RuntimeException("St950x0.write(0x" + Format.asHex(value & 0xFF, 2) + ") called while eeprom is not SELECTed !");
         }
         // Writing a value to serial eeprom means clock is ticking, so a value has to be transmitted back synchronously
         connectedDevice.write(read());

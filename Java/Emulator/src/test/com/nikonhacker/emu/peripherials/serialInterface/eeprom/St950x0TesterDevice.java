@@ -33,8 +33,8 @@ public class St950x0TesterDevice implements SerialDevice {
     }
 
     @Override
-    public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
-        System.out.println("TestDevice.onBitNumberChange(" + serialDevice + ", " + nbBits + ");");
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        System.out.println("TestDevice.onBitNumberChange(" + serialDevice + ", " + numBits + ");");
     }
 
     public void doSendRdsr() {

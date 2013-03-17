@@ -91,9 +91,9 @@ public abstract class SerialInterface implements SerialDevice {
     }
 
     @Override
-    public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
-        if (getNumBits() != nbBits) {
-            System.err.println(toString() + ": Connected device (" + serialDevice + ") tries to switch to " + nbBits + " while this device is in " + getNumBits() + " bits...");
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        if (getNumBits() != numBits) {
+            System.err.println(toString() + ": Connected device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
         }
     }
 

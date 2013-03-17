@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.serialInterface.util;
 
 import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 /**
  * This class is just a "useless" wire between a serial source and a destination
@@ -9,11 +10,11 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  *
  * This class should be used as a base class or template for more creative uses
  */
-public class SerialWire implements SerialDevice {
+public class SpiSlaveWire extends SpiSlaveDevice {
     private String wireName;
-    private SerialDevice realTargetDevice;
+    private SpiSlaveDevice realTargetDevice;
 
-    public SerialWire(String wireName, SerialDevice realTargetDevice) {
+    public SpiSlaveWire(String wireName, SpiSlaveDevice realTargetDevice) {
         this.wireName = wireName;
         this.realTargetDevice = realTargetDevice;
     }
@@ -44,5 +45,10 @@ public class SerialWire implements SerialDevice {
 
     public String getWireName() {
         return wireName;
+    }
+
+    @Override
+    public boolean isSelected() {
+        return realTargetDevice.isSelected();
     }
 }

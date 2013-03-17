@@ -2,14 +2,15 @@ package com.nikonhacker.emu.peripherials.serialInterface.util;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 import java.io.PrintWriter;
 
-public class PrintWriterLoggerSerialWire extends SerialWire implements SerialDevice {
+public class PrintWriterLoggerSpiSlaveWire extends SpiSlaveWire implements SerialDevice {
     private PrintWriter printWriter;
     private int mask = 0xFF; // 8 bits by default
 
-    public PrintWriterLoggerSerialWire(String wireName, SerialDevice realTargetDevice, PrintWriter printWriter) {
+    public PrintWriterLoggerSpiSlaveWire(String wireName, SpiSlaveDevice realTargetDevice, PrintWriter printWriter) {
         super(wireName, realTargetDevice);
         this.printWriter = printWriter;
     }

@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.serialInterface.util;
 
 import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -84,7 +85,7 @@ public class SerialTee {
         return teeName;
     }
 
-    protected class InternalAPartner implements SerialDevice {
+    protected class InternalAPartner extends SpiSlaveDevice {
         private SerialDevice aDevice;
 
         public InternalAPartner() {
@@ -113,7 +114,7 @@ public class SerialTee {
         }
 
         @Override
-        public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
+        public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
             System.out.println("SerialTee$InternalAPartner.onBitNumberChange");
         }
 
@@ -122,7 +123,7 @@ public class SerialTee {
         }
     }
 
-    protected class InternalBPartner implements SerialDevice {
+    protected class InternalBPartner extends SpiSlaveDevice {
 
         private SerialDevice bDevice;
 
@@ -150,7 +151,7 @@ public class SerialTee {
         }
 
         @Override
-        public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
+        public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
             System.out.println("SerialTee$InternalBPartner.onBitNumberChange");
         }
 

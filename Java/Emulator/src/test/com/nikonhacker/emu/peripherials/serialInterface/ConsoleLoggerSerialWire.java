@@ -17,8 +17,8 @@ public class ConsoleLoggerSerialWire extends SerialWire implements SerialDevice 
     }
 
     @Override
-    public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
-        mask = (1 << nbBits) - 1;
-        super.onBitNumberChange(serialDevice, nbBits);
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        mask = (1 << numBits) - 1;
+        super.onBitNumberChange(serialDevice, numBits);
     }
 }

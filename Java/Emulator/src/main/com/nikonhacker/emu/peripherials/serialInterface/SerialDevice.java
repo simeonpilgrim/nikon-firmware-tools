@@ -43,5 +43,5 @@ public interface SerialDevice {
      * Method to be called when reconfiguring data size (UART only)
      * @return
      */
-    public void onBitNumberChange(SerialDevice serialDevice, int nbBits);
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits);
 }
