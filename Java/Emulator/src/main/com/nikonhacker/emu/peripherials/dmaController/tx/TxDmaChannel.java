@@ -305,7 +305,7 @@ public class TxDmaChannel {
                 if (channelNumber == 0 && txDmaController.isRsrReqS0()) {
                     // Channel 0 configured for external by pin. See if pin is set
                     TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[TxIoPort.PORT_F];
-                    // TODO Port 5 ? Port A ? (p 10.23). WTF ?
+                    // TODO spec page 10.23 speaks about Port 5 and Port A. This is plain wrong. Port is F
                     int maskPin0 = 0b00000001;
                     if ((portF.getFunctionRegister2() & maskPin0) != 0) {
                         // pin PF0 is indeed configured as DREQ0
