@@ -22,7 +22,7 @@ public class DummySerialDevice implements SerialDevice {
     }
 
     @Override
-    public void onBitNumberChange(SerialDevice serialDevice, int nbBits) {
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         // ignore
     }
 }

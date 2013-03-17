@@ -1,8 +1,8 @@
 package com.nikonhacker.emu.peripherials.serialInterface.util;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.AbstractSpiDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,20 +17,20 @@ public class SpiTee extends SerialTee {
     }
 
     protected InternalAPartner getInternalAPartner() {
-        return new InternalASpiPartner();
+        return new InternalASpiSlavePartner();
     }
 
     /**
      * This is a special version of InternalASpiPartner
      * The change it checks that exactly one "B" device is selected
      */
-    private class InternalASpiPartner extends InternalAPartner {
+    private class InternalASpiSlavePartner extends InternalAPartner {
         @Override
         public void write(Integer value) {
             // List selected devices
             List<InternalBPartner> partnersOfSelectedBDevices = new ArrayList<>();
             for (InternalBPartner internalBPartner : internalBPartners) {
-                if (((AbstractSpiDevice) internalBPartner.getConnectedSerialDevice()).isSelected()) {
+                if (((SpiSlaveDevice) internalBPartner.getConnectedSerialDevice()).isSelected()) {
                     partnersOfSelectedBDevices.add(internalBPartner);
                 }
             }
