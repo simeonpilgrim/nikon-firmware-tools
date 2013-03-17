@@ -1,14 +1,16 @@
-package com.nikonhacker.emu.peripherials.ioPort;
+package com.nikonhacker.emu.peripherials.ioPort.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.ioPort.IoPortPinListener;
+import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
+import com.nikonhacker.emu.peripherials.ioPort.tx.handler.TxIoPinHandler;
+import com.nikonhacker.emu.peripherials.ioPort.tx.handler.TxIoPinPortHandler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TxIoPort extends IoPort {
     public static final int PORT_0 = 0;
@@ -53,6 +55,12 @@ public class TxIoPort extends IoPort {
     /** Port input enable control register */
     private byte inputEnableControlRegister = (byte) 0xFF;
 
+    /** These masks indicate Port Function register bits that can be used to indicate
+     * they are configured as a something else than a plain port */
+    private TxIoPinHandler[] fn1Handlers;
+    private TxIoPinHandler[] fn2Handlers;
+    private TxIoPinHandler[] fn3Handlers;
+
     private List<IoPortsListener> ioPortsListeners = new ArrayList<IoPortsListener>();
 
     private Map<Integer, IoPortPinListener> ioOutputPortPinListeners = new HashMap<Integer, IoPortPinListener>();
@@ -65,6 +73,26 @@ public class TxIoPort extends IoPort {
         externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
    }
 
+    public void setFn1Handlers(TxIoPinHandler[] fn1Handlers) {
+        if (fn1Handlers.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 1 Role array of length " + fn1Handlers.length + ": " + Arrays.toString(fn1Handlers));
+        }
+        this.fn1Handlers = fn1Handlers;
+    }
+
+    public void setFn2Handlers(TxIoPinHandler[] fn2Handlers) {
+        if (fn2Handlers.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 2 Role array of length " + fn2Handlers.length + ": " + Arrays.toString(fn2Handlers));
+        }
+        this.fn2Handlers = fn2Handlers;
+    }
+
+    public void setFn3Handlers(TxIoPinHandler[] fn3Handlers) {
+        if (fn3Handlers.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 3 Role array of length " + fn3Handlers.length + ": " + Arrays.toString(fn3Handlers));
+        }
+        this.fn3Handlers = fn3Handlers;
+    }
 
     public void addIoPortsListener(IoPortsListener ioPortsListener) {
         ioPortsListeners.add(ioPortsListener);
@@ -228,5 +256,25 @@ public class TxIoPort extends IoPort {
         for (IoPortsListener ioPortsListener : ioPortsListeners) {
             ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
+    }
+
+    @Override
+    public String getPinHandlerName(int pinNumber) {
+        TxIoPinHandler pinRole = getPinHandler(pinNumber);
+        return pinRole!=null?pinRole.toString():"-";
+    }
+
+    public TxIoPinHandler getPinHandler(int pinNumber) {
+        int pinMask = 1 << pinNumber;
+        if (fn1Handlers != null && (functionRegister1 & pinMask & 0xFF) != 0) {
+            return fn1Handlers[pinNumber];
+        }
+        if (fn2Handlers != null && (functionRegister2 & pinMask & 0xFF) != 0) {
+            return fn2Handlers[pinNumber];
+        }
+        if (fn3Handlers != null && (functionRegister3 & pinMask & 0xFF) != 0) {
+            return fn3Handlers[pinNumber];
+        }
+        return new TxIoPinPortHandler();
     }
 }

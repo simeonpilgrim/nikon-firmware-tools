@@ -7,7 +7,7 @@ import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaChannel;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
-import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
