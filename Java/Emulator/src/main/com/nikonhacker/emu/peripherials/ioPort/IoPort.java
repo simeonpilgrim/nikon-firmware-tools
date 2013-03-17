@@ -18,4 +18,7 @@ public class IoPort {
         return "IoPort " + ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)('A' - 10 + portNumber))); // 0-9 then A-Z
     }
 
+    public String getPinHandlerName(int pinNumber) {
+        return "?";
+    }
 }

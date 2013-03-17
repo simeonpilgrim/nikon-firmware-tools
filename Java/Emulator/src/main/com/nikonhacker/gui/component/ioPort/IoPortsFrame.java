@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.ioPort;
 
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
-import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import eu.hansolo.custom.SteelCheckBox;
@@ -121,6 +121,12 @@ public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
             cells[portNumber][7 - bitNumber].removeAll();
             if (comp != null) {
                 cells[portNumber][7 - bitNumber].add(comp);
+                // Put a tooltip on the component
+                comp.setToolTipText(ioPorts[portNumber].getPinHandlerName(bitNumber));
+            }
+            else {
+                // Put the tooltip on the blank panel
+                cells[portNumber][7 - bitNumber].setToolTipText(ioPorts[portNumber].getPinHandlerName(bitNumber));
             }
             refreshOutputValues(portNumber);
         }

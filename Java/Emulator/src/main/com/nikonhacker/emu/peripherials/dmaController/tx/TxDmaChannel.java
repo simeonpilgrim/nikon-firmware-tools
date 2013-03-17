@@ -4,7 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
-import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 
 public class TxDmaChannel {
     private static final int CCR_SIO_MASK  = 0b00000000_00000000_00000010_00000000;
