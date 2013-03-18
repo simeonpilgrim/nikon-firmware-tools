@@ -14,6 +14,6 @@ public class TxIoPinKeyHandler implements TxIoPinHandler {
 
     @Override
     public String getPinName() {
-        return "Key " + ((keyNumber<10)?"0":"") + keyNumber;
+        return "KEY" + ((keyNumber<10)?"0":"") + keyNumber;
     }
 }

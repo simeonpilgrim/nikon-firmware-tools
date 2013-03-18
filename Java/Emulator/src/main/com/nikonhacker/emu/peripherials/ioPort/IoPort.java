@@ -2,7 +2,7 @@ package com.nikonhacker.emu.peripherials.ioPort;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
-public class IoPort {
+public abstract class IoPort {
     /** This is the number of this timer */
     protected int portNumber;
     /** InterruptController is passed to constructor to be able to actually trigger requests */
@@ -18,7 +18,7 @@ public class IoPort {
         return "IoPort " + ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)('A' - 10 + portNumber))); // 0-9 then A-Z
     }
 
-    public String getPinHandlerName(int pinNumber) {
-        return "?";
-    }
+    public abstract String getPinName(int pinNumber);
+
+    public abstract String getPinDescription(int pinNumber);
 }
