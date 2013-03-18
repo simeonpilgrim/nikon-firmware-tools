@@ -259,9 +259,15 @@ public class TxIoPort extends IoPort {
     }
 
     @Override
-    public String getPinHandlerName(int pinNumber) {
-        TxIoPinHandler pinRole = getPinHandler(pinNumber);
-        return pinRole!=null?pinRole.toString():"-";
+    public String getPinName(int pinNumber) {
+        TxIoPinHandler pinHandler = getPinHandler(pinNumber);
+        return pinHandler!=null?pinHandler.getPinName():"-";
+    }
+
+    @Override
+    public String getPinDescription(int pinNumber) {
+        TxIoPinHandler pinHandler = getPinHandler(pinNumber);
+        return pinHandler!=null?pinHandler.toString():"-";
     }
 
     public TxIoPinHandler getPinHandler(int pinNumber) {

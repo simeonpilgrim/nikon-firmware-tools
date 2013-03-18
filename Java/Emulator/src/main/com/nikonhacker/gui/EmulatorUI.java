@@ -2077,6 +2077,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     }
 
+    @SuppressWarnings("PointlessArithmeticExpression")
     private void connectSerialPorts(SerialInterface[] frSerialInterfaces, SerialInterface[] txSerialInterfaces, IoPort[] txIoPorts, List<SerialDevice> txSerialDevices) {
         // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
         SerialInterface frSerialInterface5 = frSerialInterfaces[5];
