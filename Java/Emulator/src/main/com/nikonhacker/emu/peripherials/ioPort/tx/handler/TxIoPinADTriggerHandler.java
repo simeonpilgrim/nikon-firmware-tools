@@ -1,14 +1,18 @@
 package com.nikonhacker.emu.peripherials.ioPort.tx.handler;
 
 public class TxIoPinADTriggerHandler implements TxIoPinHandler {
-    private int unit;
+    private char unit;
 
-    public TxIoPinADTriggerHandler(int unit) {
+    public TxIoPinADTriggerHandler(char unit) {
         this.unit = unit;
     }
 
     @Override
     public String toString() {
-        return "A/D Trigger (unit " + (char)('A' - 1 + unit) + ")";
+        return "A/D Trigger (unit " + unit + ")";
+    }
+
+    public String getPinName() {
+        return "ADTRG" + unit;
     }
 }

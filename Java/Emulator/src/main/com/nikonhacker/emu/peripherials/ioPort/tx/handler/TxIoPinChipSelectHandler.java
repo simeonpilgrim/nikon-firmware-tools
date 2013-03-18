@@ -11,4 +11,9 @@ public class TxIoPinChipSelectHandler implements TxIoPinHandler {
     public String toString() {
         return "Chip Select (block space " + blockNumber + ")";
     }
+
+    @Override
+    public String getPinName() {
+        return "CS" + blockNumber;
+    }
 }

@@ -5,4 +5,9 @@ public class TxIoPinPortHandler implements TxIoPinHandler {
     public String toString() {
         return "Port";
     }
+
+    @Override
+    public String getPinName() {
+        return "PORT";
+    }
 }

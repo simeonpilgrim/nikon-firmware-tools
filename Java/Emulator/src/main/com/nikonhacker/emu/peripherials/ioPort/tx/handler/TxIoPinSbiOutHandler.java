@@ -5,4 +5,9 @@ public class TxIoPinSbiOutHandler implements TxIoPinHandler {
     public String toString() {
         return "SBI Out";
     }
+
+    @Override
+    public String getPinName() {
+        return "SO/SDA";
+    }
 }

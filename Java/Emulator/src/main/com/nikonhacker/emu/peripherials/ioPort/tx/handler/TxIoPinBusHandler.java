@@ -5,4 +5,8 @@ public class TxIoPinBusHandler implements TxIoPinHandler {
     public String toString() {
         return "Bus";
     }
+
+    public String getPinName() {
+        return "BUS";
+    }
 }

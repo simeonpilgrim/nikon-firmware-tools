@@ -5,4 +5,9 @@ public class TxIoPinSbiInHandler implements TxIoPinHandler {
     public String toString() {
         return "SBI In";
     }
+
+    @Override
+    public String getPinName() {
+        return "SI/SCL";
+    }
 }

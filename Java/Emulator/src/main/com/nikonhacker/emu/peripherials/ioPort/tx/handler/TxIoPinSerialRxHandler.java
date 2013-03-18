@@ -18,4 +18,14 @@ public class TxIoPinSerialRxHandler implements TxIoPinHandler {
             return "Serial Rx " + serialInterfaceNumber;
         }
     }
+
+    @Override
+    public String getPinName() {
+        if (serialInterfaceNumber >= TxIoListener.NUM_SERIAL_IF) {
+            return "HRXD" + (serialInterfaceNumber - TxIoListener.NUM_SERIAL_IF);
+        }
+        else {
+            return "RXD" + serialInterfaceNumber;
+        }
+    }
 }

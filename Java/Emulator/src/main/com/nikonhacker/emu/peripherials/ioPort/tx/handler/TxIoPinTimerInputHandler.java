@@ -17,4 +17,9 @@ public class TxIoPinTimerInputHandler implements TxIoPinHandler {
     public String toString() {
         return "Timer " + timerNumber + " input " + inputNumber;
     }
+
+    @Override
+    public String getPinName() {
+        return "TB" + timerNumber + "IN" + (inputNumber == -1?"":(""+inputNumber));
+    }
 }
