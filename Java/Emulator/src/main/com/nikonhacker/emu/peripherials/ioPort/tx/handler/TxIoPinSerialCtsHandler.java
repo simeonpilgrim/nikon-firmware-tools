@@ -18,4 +18,15 @@ public class TxIoPinSerialCtsHandler implements TxIoPinHandler {
             return "Serial CTS " + serialInterfaceNumber;
         }
     }
+
+    @Override
+    public String getPinName() {
+        if (serialInterfaceNumber >= TxIoListener.NUM_SERIAL_IF) {
+            return "HCTS" + (serialInterfaceNumber - TxIoListener.NUM_SERIAL_IF);
+        }
+        else {
+            return "CTS" + serialInterfaceNumber;
+        }
+    }
+
 }

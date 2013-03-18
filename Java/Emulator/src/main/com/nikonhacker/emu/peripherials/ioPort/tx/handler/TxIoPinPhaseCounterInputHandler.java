@@ -13,4 +13,9 @@ public class TxIoPinPhaseCounterInputHandler implements TxIoPinHandler {
     public String toString() {
         return "Phase Counter " + phaseCounterNumber + " input " + inputNumber;
     }
+
+    @Override
+    public String getPinName() {
+        return "PHC" + phaseCounterNumber + "IN" + inputNumber;
+    }
 }

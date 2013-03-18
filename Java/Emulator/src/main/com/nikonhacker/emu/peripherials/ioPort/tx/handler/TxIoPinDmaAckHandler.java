@@ -11,4 +11,9 @@ public class TxIoPinDmaAckHandler implements TxIoPinHandler {
     public String toString() {
         return "DMA Ack (channel " + channelNumber + ")";
     }
+
+    @Override
+    public String getPinName() {
+        return "DACK" + channelNumber;
+    }
 }

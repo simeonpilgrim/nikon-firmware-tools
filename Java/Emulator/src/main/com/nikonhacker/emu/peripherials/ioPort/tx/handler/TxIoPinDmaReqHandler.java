@@ -11,4 +11,9 @@ public class TxIoPinDmaReqHandler implements TxIoPinHandler {
     public String toString() {
         return "DMA Req (channel " + channelNumber + ")";
     }
+
+    @Override
+    public String getPinName() {
+        return "DREQ" + channelNumber;
+    }
 }

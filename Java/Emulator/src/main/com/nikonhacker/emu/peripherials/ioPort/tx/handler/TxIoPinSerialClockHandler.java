@@ -18,4 +18,14 @@ public class TxIoPinSerialClockHandler implements TxIoPinHandler {
             return "Serial Clock " + serialInterfaceNumber;
         }
     }
+
+    @Override
+    public String getPinName() {
+        if (serialInterfaceNumber >= TxIoListener.NUM_SERIAL_IF) {
+            return "HSCLK" + (serialInterfaceNumber - TxIoListener.NUM_SERIAL_IF);
+        }
+        else {
+            return "SCLK" + serialInterfaceNumber;
+        }
+    }
 }

@@ -5,4 +5,9 @@ public class TxIoPinSbiClockHandler implements TxIoPinHandler {
     public String toString() {
         return "SBI Clock";
     }
+
+    @Override
+    public String getPinName() {
+        return "SCK";
+    }
 }

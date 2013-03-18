@@ -13,4 +13,9 @@ public class TxIoPinInterruptHandler implements TxIoPinHandler {
     public String toString() {
         return "Interrupt 0x" + Format.asHex(interruptNumber, 1);
     }
+
+    @Override
+    public String getPinName() {
+        return "INT" + Format.asHex(interruptNumber, 1);
+    }
 }

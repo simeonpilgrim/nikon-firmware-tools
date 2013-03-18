@@ -5,4 +5,9 @@ public class TxIoPinClockHandler implements TxIoPinHandler {
     public String toString() {
         return "Clock";
     }
+
+    @Override
+    public String getPinName() {
+        return "SCOUT";
+    }
 }

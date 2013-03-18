@@ -5,4 +5,8 @@ public class TxIoPinADTriggerSyncHandler implements TxIoPinHandler {
     public String toString() {
         return "A/D Trigger Sync";
     }
+
+    public String getPinName() {
+        return "ADTRGSNC";
+    }
 }

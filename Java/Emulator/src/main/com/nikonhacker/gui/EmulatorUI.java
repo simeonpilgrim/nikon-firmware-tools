@@ -2012,8 +2012,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         ioPorts[TxIoPort.PORT_2].setFn3Handlers(new TxIoPinHandler[]{new TxIoPinTimerInputHandler(0x5, 1), new TxIoPinTimerInputHandler(0x5, 0), new TxIoPinTimerInputHandler(0x3, 1), new TxIoPinTimerInputHandler(0x3, 0), new TxIoPinTimerInputHandler(0x2, 1), new TxIoPinTimerInputHandler(0x2, 0), new TxIoPinTimerInputHandler(0x1, 1), new TxIoPinTimerInputHandler(0x1, 0)});
 
         // Port 3
-        ioPorts[TxIoPort.PORT_3].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler(), new TxIoPinCpuSignalHandler()});
-        ioPorts[TxIoPort.PORT_3].setFn2Handlers(new TxIoPinHandler[]{new TxIoPinTimerInputHandler(0x3), new TxIoPinTimerInputHandler(0x2), new TxIoPinTimerInputHandler(0x1), new TxIoPinTimerOutputHandler(0xE), null, new TxIoPinTimerInputHandler(0x0), null, null});
+        ioPorts[TxIoPort.PORT_3].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinCpuSignalHandler(7), new TxIoPinCpuSignalHandler(6), new TxIoPinCpuSignalHandler(5), new TxIoPinCpuSignalHandler(4), new TxIoPinCpuSignalHandler(3), new TxIoPinCpuSignalHandler(2), new TxIoPinCpuSignalHandler(1), new TxIoPinCpuSignalHandler(0)});
+        ioPorts[TxIoPort.PORT_3].setFn2Handlers(new TxIoPinHandler[]{new TxIoPinCaptureInputHandler(0x3), new TxIoPinCaptureInputHandler(0x2), new TxIoPinCaptureInputHandler(0x1), new TxIoPinTimerOutputHandler(0xE), null, new TxIoPinCaptureInputHandler(0x0), null, null});
 
         // Port 4
         ioPorts[TxIoPort.PORT_4].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinTimerOutputHandler(0xF), null, null, new TxIoPinClockHandler(), new TxIoPinChipSelectHandler(3), new TxIoPinChipSelectHandler(2), new TxIoPinChipSelectHandler(1), new TxIoPinChipSelectHandler(0)});
@@ -2040,7 +2040,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         ioPorts[TxIoPort.PORT_9].setFn2Handlers(new TxIoPinHandler[]{null, new TxIoPinSerialCtsHandler(2), null, null, null, new TxIoPinSerialCtsHandler(TxIoListener.NUM_SERIAL_IF + 0), null, null});
 
         // Port A
-        ioPorts[TxIoPort.PORT_A].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinPhaseCounterInputHandler(2, /*spec says 0, which is a duplicate of the next 1. Assuming 1*/ 1), new TxIoPinPhaseCounterInputHandler(2, 0), new TxIoPinInterruptHandler(5), new TxIoPinInterruptHandler(4), new TxIoPinInterruptHandler(3), new TxIoPinInterruptHandler(2), new TxIoPinInterruptHandler(1), new TxIoPinInterruptHandler(0)});
+        ioPorts[TxIoPort.PORT_A].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinPhaseCounterInputHandler(2, /*spec says 0, which is a duplicate of the next 1. Assuming 1*/ 1), new TxIoPinPhaseCounterInputHandler(2, 0), new TxIoPinInterruptHandler(0x5), new TxIoPinInterruptHandler(0x4), new TxIoPinInterruptHandler(0x3), new TxIoPinInterruptHandler(0x2), new TxIoPinInterruptHandler(0x1), new TxIoPinInterruptHandler(0x0)});
         ioPorts[TxIoPort.PORT_A].setFn2Handlers(new TxIoPinHandler[]{null, null, new TxIoPinTimerInputHandler(0x6, 1), new TxIoPinTimerInputHandler(0x6, 0), new TxIoPinPhaseCounterInputHandler(1, 1), new TxIoPinPhaseCounterInputHandler(1, 0), new TxIoPinPhaseCounterInputHandler(0, 1), new TxIoPinPhaseCounterInputHandler(0, 0)});
 
         // Port B
@@ -2048,19 +2048,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         ioPorts[TxIoPort.PORT_B].setFn2Handlers(new TxIoPinHandler[]{null, new TxIoPinSerialCtsHandler(TxIoListener.NUM_SERIAL_IF + 0), null, null, null, null, null, null});
 
         // Port C
-        ioPorts[TxIoPort.PORT_C].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinTimerOutputHandler(0xC, 3), new TxIoPinSbiClockHandler(), new TxIoPinSbiInHandler(), new TxIoPinSbiOutHandler(), new TxIoPinTimerOutputHandler(0xC, 2), new TxIoPinTimerOutputHandler(0xC, 1), new TxIoPinTimerOutputHandler(0xC, 0), new TxIoPinTimerInputHandler(0xC)});
+        ioPorts[TxIoPort.PORT_C].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinCaptureOutputHandler(3), new TxIoPinSbiClockHandler(), new TxIoPinSbiInHandler(), new TxIoPinSbiOutHandler(), new TxIoPinCaptureOutputHandler(2), new TxIoPinCaptureOutputHandler(1), new TxIoPinCaptureOutputHandler(0), new TxIoPinTimerInputHandler(0xC)});
         ioPorts[TxIoPort.PORT_C].setFn2Handlers(new TxIoPinHandler[]{null, null, null, null, null, null, null, new TxIoPinKeyHandler(30)});
 
         // Port D
-        ioPorts[TxIoPort.PORT_D].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinADTriggerHandler(2), new TxIoPinKeyHandler(31), new TxIoPinTimerOutputHandler(0xD), new TxIoPinTimerOutputHandler(0xC), new TxIoPinTimerOutputHandler(0xB), new TxIoPinSerialClockHandler(TxIoListener.NUM_SERIAL_IF + 2), new TxIoPinSerialRxHandler(TxIoListener.NUM_SERIAL_IF + 2), new TxIoPinSerialTxHandler(TxIoListener.NUM_SERIAL_IF + 2)});
-        ioPorts[TxIoPort.PORT_D].setFn2Handlers(new TxIoPinHandler[]{null, new TxIoPinADTriggerHandler(1), null, null, null, new TxIoPinSerialCtsHandler(TxIoListener.NUM_SERIAL_IF + 2), null, null});
+        ioPorts[TxIoPort.PORT_D].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinADTriggerHandler('B'), new TxIoPinKeyHandler(31), new TxIoPinTimerOutputHandler(0xD), new TxIoPinTimerOutputHandler(0xC), new TxIoPinTimerOutputHandler(0xB), new TxIoPinSerialClockHandler(TxIoListener.NUM_SERIAL_IF + 2), new TxIoPinSerialRxHandler(TxIoListener.NUM_SERIAL_IF + 2), new TxIoPinSerialTxHandler(TxIoListener.NUM_SERIAL_IF + 2)});
+        ioPorts[TxIoPort.PORT_D].setFn2Handlers(new TxIoPinHandler[]{null, new TxIoPinADTriggerHandler('A'), null, null, null, new TxIoPinSerialCtsHandler(TxIoListener.NUM_SERIAL_IF + 2), null, null});
 
         // Port E
         ioPorts[TxIoPort.PORT_E].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinKeyHandler(15), new TxIoPinKeyHandler(14), new TxIoPinKeyHandler(13), new TxIoPinKeyHandler(12), new TxIoPinKeyHandler(11), new TxIoPinKeyHandler(10), new TxIoPinKeyHandler(9), new TxIoPinKeyHandler(8)});
 
         // Port F
         ioPorts[TxIoPort.PORT_F].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinKeyHandler(23), new TxIoPinKeyHandler(22), new TxIoPinKeyHandler(21), new TxIoPinKeyHandler(20), new TxIoPinKeyHandler(19), new TxIoPinKeyHandler(18), new TxIoPinKeyHandler(17), new TxIoPinKeyHandler(16)});
-        ioPorts[TxIoPort.PORT_F].setFn2Handlers(new TxIoPinHandler[]{new TxIoPinTimerOutputHandler(0xC, 7), new TxIoPinTimerOutputHandler(0x6), new TxIoPinTimerOutputHandler(0x5), new TxIoPinTimerOutputHandler(0x4), new TxIoPinDmaAckHandler(4), new TxIoPinDmaReqHandler(4), new TxIoPinDmaAckHandler(0), new TxIoPinDmaReqHandler(0)});
+        ioPorts[TxIoPort.PORT_F].setFn2Handlers(new TxIoPinHandler[]{new TxIoPinCaptureOutputHandler(7), new TxIoPinCaptureOutputHandler(6), new TxIoPinCaptureOutputHandler(5), new TxIoPinCaptureOutputHandler(4), new TxIoPinDmaAckHandler(4), new TxIoPinDmaReqHandler(4), new TxIoPinDmaAckHandler(0), new TxIoPinDmaReqHandler(0)});
 
         // Port G
         ioPorts[TxIoPort.PORT_G].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinKeyHandler(7), new TxIoPinKeyHandler(6), new TxIoPinKeyHandler(5), new TxIoPinKeyHandler(4), new TxIoPinKeyHandler(3), new TxIoPinKeyHandler(2), new TxIoPinKeyHandler(1), new TxIoPinKeyHandler(0)});
@@ -2070,7 +2070,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         ioPorts[TxIoPort.PORT_H].setFn2Handlers(new TxIoPinHandler[]{new TxIoPinTimerInputHandler(0xD, 1), new TxIoPinTimerInputHandler(0xD, 0), new TxIoPinTimerInputHandler(0xB, 1), new TxIoPinTimerInputHandler(0xB, 0), new TxIoPinTimerInputHandler(0xA, 1), new TxIoPinTimerInputHandler(0xA, 0), new TxIoPinTimerInputHandler(0x9, 1), new TxIoPinTimerInputHandler(0x9, 0)});
 
         // Port I
-        ioPorts[TxIoPort.PORT_I].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinADTriggerSyncHandler(), new TxIoPinTimerOutputHandler(0x11), new TxIoPinTimerOutputHandler(10), new TxIoPinADTriggerHandler(3), new TxIoPinPhaseCounterInputHandler(5, 1), new TxIoPinPhaseCounterInputHandler(5, 0), new TxIoPinPhaseCounterInputHandler(4, 1), new TxIoPinPhaseCounterInputHandler(4, 0)});
+        ioPorts[TxIoPort.PORT_I].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinADTriggerSyncHandler(), new TxIoPinTimerOutputHandler(0x11), new TxIoPinTimerOutputHandler(10), new TxIoPinADTriggerHandler('C'), new TxIoPinPhaseCounterInputHandler(5, 1), new TxIoPinPhaseCounterInputHandler(5, 0), new TxIoPinPhaseCounterInputHandler(4, 1), new TxIoPinPhaseCounterInputHandler(4, 0)});
 
         // Port J
         ioPorts[TxIoPort.PORT_J].setFn1Handlers(new TxIoPinHandler[]{new TxIoPinInterruptHandler(0x7), new TxIoPinInterruptHandler(0x6), new TxIoPinInterruptHandler(0x17), new TxIoPinInterruptHandler(0x16), new TxIoPinInterruptHandler(0x15), new TxIoPinInterruptHandler(0x14), new TxIoPinTimerInputHandler(0x11, 1), new TxIoPinTimerInputHandler(0x11, 0)});
