@@ -195,9 +195,9 @@
 -s 0xBFC12C80=sys_get_ixx_00
 -s 0xBFC12C8C=sys_get_ixx_01
 -s 0xBFC12C98=setup_IMC_clear_INTreq
--s 0xBFC12D14=setup_ILEV_DMA($r4 [IN interrupt_number])
+-s 0xBFC12D14=setup_ILEV_DMA($a0 [IN interrupt_number])
 -s 0xBFC12D90=dis_INT_clearINTreq_01
--s 0xBFC12DC8=dis_INT_clearINTreq_00($r4 [IN interrupt_number])
+-s 0xBFC12DC8=dis_INT_clearINTreq_00($a0 [IN interrupt_number])
 -s 0xBFC12E58=sys_clear_bit13_of_FFFFFFE8_00
 -s 0xBFC12E64=sys_set_bit5_of_FFFFFFE8_00
 -s 0xBFC12E70=sys_get_tid_00($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id])
