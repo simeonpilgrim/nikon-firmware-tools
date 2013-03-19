@@ -13,6 +13,7 @@ import java.util.Set;
  * Statement : an instance of a specific Instruction with specific operands
  */
 public class TxStatement extends Statement {
+    public static final EnumSet<Instruction.FlowType> BREAK_FLOW_TYPES = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET);
     ///* output formatting */
     private static String fmt_nxt;
     private static String fmt_imm;
@@ -753,11 +754,11 @@ public class TxStatement extends Statement {
 
         /* ACTION processing */
 
-        int r = TxCPUState.NOREG;
+        int currentlySelectedRegisterNumber = TxCPUState.NOREG;
 
-        for (char s : instruction.getAction().toCharArray())
+        for (char actionChar : instruction.getAction().toCharArray())
         {
-            switch (s)
+            switch (actionChar)
             {
 //                case 'A':
 //                    r = TxCPUState.AC;
@@ -775,46 +776,56 @@ public class TxStatement extends Statement {
 //                    r = TxCPUState.SP;
 //                    break;
                 case 'i':
-                    r = decodedRsFs;
+                    // Select Rs
+                    currentlySelectedRegisterNumber = decodedRsFs;
                     break;
                 case 'j':
-                    r = decodedRtFt;
+                    // Select Ry
+                    currentlySelectedRegisterNumber = decodedRtFt;
                     break;
                 case 'k':
-                    r = decodedRdFd;
+                    // Select Rd
+                    currentlySelectedRegisterNumber = decodedRdFd;
                     break;
                 case 'w':
+                    // Declare the selected register as "undefined"
                     if (updateRegisters) {
-                        context.cpuState.setRegisterUndefined(r);
+                        context.cpuState.setRegisterUndefined(currentlySelectedRegisterNumber);
                     }
                     break;
                 case 'v':
-                    if (updateRegisters && context.cpuState.registerExists(r)) {
-                        context.cpuState.setRegisterDefined(r);
-                        context.cpuState.setReg(r, decodedImm);
+                    // Set the selected register to the immediate operand value
+                    if (updateRegisters && context.cpuState.registerExists(currentlySelectedRegisterNumber)) {
+                        context.cpuState.setRegisterDefined(currentlySelectedRegisterNumber);
+                        context.cpuState.setReg(currentlySelectedRegisterNumber, decodedImm);
                     }
                     break;
                 case 'V':
-                    if (updateRegisters && context.cpuState.registerExists(r)) {
-                        context.cpuState.setRegisterDefined(r);
-                        context.cpuState.setReg(r, decodedImm << 16);
+                    // Set the selected register to the immediate operand value shifted left by 16
+                    if (updateRegisters && context.cpuState.registerExists(currentlySelectedRegisterNumber)) {
+                        context.cpuState.setRegisterDefined(currentlySelectedRegisterNumber);
+                        context.cpuState.setReg(currentlySelectedRegisterNumber, decodedImm << 16);
                     }
                     break;
                 case '+':
-                    if (updateRegisters && context.cpuState.registerExists(r)) {
-                        context.cpuState.setReg(r, context.cpuState.getReg(r) + (decodedImm << 16 >> 16));
+                    // Add the immediate operand to the selected register
+                    if (updateRegisters && context.cpuState.registerExists(currentlySelectedRegisterNumber)) {
+                        // TODO : this doesn't handle "addiu $a0, $a1, 2" : would execute $a0 += 2
+                        context.cpuState.setReg(currentlySelectedRegisterNumber, context.cpuState.getReg(currentlySelectedRegisterNumber) + (decodedImm << 16 >> 16));
                     }
                     break;
                 case '|':
-                    if (updateRegisters && context.cpuState.registerExists(r)) {
-                        context.cpuState.setReg(r, context.cpuState.getReg(r) | decodedImm);
+                    // Or the immediate operand with the selected register
+                    if (updateRegisters && context.cpuState.registerExists(currentlySelectedRegisterNumber)) {
+                        context.cpuState.setReg(currentlySelectedRegisterNumber, context.cpuState.getReg(currentlySelectedRegisterNumber) | decodedImm);
                     }
                     break;
                 case 'x':
-                    r = TxCPUState.NOREG;
+                    // Unselect register
+                    currentlySelectedRegisterNumber = TxCPUState.NOREG;
                     break;
                 default:
-                    System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(context.cpuState.pc, 8));
+                    System.err.println("bad action '" + actionChar + "' in " + instruction + " at " + Format.asHex(context.cpuState.pc, 8));
                     break;
             }
         }
@@ -828,7 +839,7 @@ public class TxStatement extends Statement {
         context.setStoredDelaySlotType(instruction.getDelaySlotType());
 
 
-        boolean newIsBreak = EnumSet.of(Instruction.FlowType.JMP, Instruction.FlowType.RET).contains(instruction.getFlowType());
+        boolean newIsBreak = BREAK_FLOW_TYPES.contains(instruction.getFlowType());
 
         if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
             // Current instruction has no delay slot
