@@ -80,7 +80,7 @@ c : outputs coprocessor operation (c)<br/>
      */
     public FrInstruction(int encoding, int mask, FrInstructionSet.InstructionFormat instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
     {
-        super(name, displayFormat, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
+        super(name, displayFormat, null, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
         this.encoding = encoding;
         this.mask = mask;
         this.instructionFormat = instructionFormat;

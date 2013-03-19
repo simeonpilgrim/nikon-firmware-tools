@@ -187,7 +187,7 @@ public class FrStatement extends Statement {
 
         StringBuilder currentBuffer = operandBuffer;
 
-        for (char formatChar : getInstruction().getDisplayFormat().toCharArray())
+        for (char formatChar : getInstruction().getOperandFormat().toCharArray())
         {
             switch (formatChar)
             {
