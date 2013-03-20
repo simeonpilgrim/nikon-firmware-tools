@@ -5,6 +5,7 @@ public class Instruction {
     private DelaySlotType delaySlotType;
     private String name;
     private String operandFormat;
+    private String formula;
     private String commentFormat;
     private String action;
 
@@ -43,9 +44,10 @@ public class Instruction {
 
     public FlowType flowType;
 
-    public Instruction(String name, String operandFormat, String commentFormat, String action, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
+    public Instruction(String name, String operandFormat, String formula, String commentFormat, String action, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
         this.name = name;
         this.operandFormat = operandFormat;
+        this.formula = formula;
         this.commentFormat = commentFormat;
         this.action = action;
         this.flowType = flowType;
@@ -59,6 +61,10 @@ public class Instruction {
 
     public String getOperandFormat() {
         return operandFormat;
+    }
+
+    public String getFormula() {
+        return formula;
     }
 
     public String getCommentFormat() {

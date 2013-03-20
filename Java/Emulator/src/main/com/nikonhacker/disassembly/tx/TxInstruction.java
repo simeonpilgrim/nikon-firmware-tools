@@ -13,6 +13,13 @@ public class TxInstruction extends Instruction {
      * Creates a new TxInstruction
      * @param name the symbolic name
      * @param operandFormat
+     * @param formula indicates the source and target of the operation. E.g. "x>z" means x is required to compute y
+    'i': register Rs<br/>
+    'j': register Rt<br/>
+    'k': register Rd<br/>
+    'h': register HI<br/>
+    'l': register LO<br/>
+    'u' or 's': immediate operand<br/>
      * @param commentFormat
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
 * <pre>
@@ -33,11 +40,11 @@ public class TxInstruction extends Instruction {
      * @param isConditional
      * @param delaySlotType
      */
-    public TxInstruction(String name, String operandFormat, String commentFormat, String action, String sampleUse, String description,
+    public TxInstruction(String name, String operandFormat, String formula, String commentFormat, String action, String sampleUse, String description,
                          TxInstructionSet.InstructionFormat32 instructionFormat32,
                          TxInstructionSet.InstructionFormat16 instructionFormat16,
                          FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
-        super(name, operandFormat, commentFormat, action, flowType, isConditional, delaySlotType);
+        super(name, operandFormat, formula, commentFormat, action, flowType, isConditional, delaySlotType);
         this.instructionFormat32 = instructionFormat32;
         this.instructionFormat16 = instructionFormat16;
         this.simulationCode = simulationCode;
