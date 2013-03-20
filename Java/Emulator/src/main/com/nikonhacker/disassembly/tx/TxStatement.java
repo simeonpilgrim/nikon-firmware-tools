@@ -420,37 +420,58 @@ public class TxStatement extends Statement {
         decodedImmBitWidth = immBitWidth;
 
         setOperandString(format(context, outputOptions, instruction.getOperandFormat()));
+
+//        if (mustSimulate(context, instruction.getFormula())) {
+//            try {
+//                ((TxInstruction) instruction).getSimulationCode().simulate(this, context);
+//            } catch (EmulationException e) {
+//                throw new DisassemblyException(e);
+//            }
+//        }
+
         setCommentString(format(context, outputOptions, instruction.getCommentFormat()));
 
         /* ACTION processing */
+        executeAction(context, updateRegisters);
 
+        /* LINE BREAKS and INDENT (delay slot) processing */
+
+        // Retrieve stored delay slot type to print this instruction
+        setDelaySlotType(context.getStoredDelaySlotType());
+        // Store the one of this instruction for printing next one
+        context.setStoredDelaySlotType(instruction.getDelaySlotType());
+
+
+        boolean newIsBreak = BREAK_FLOW_TYPES.contains(instruction.getFlowType());
+
+        if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
+            // Current instruction has no delay slot
+            // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
+            setMustInsertLineBreak(context.isLineBreakRequested() || newIsBreak);
+            // Clear break request for next one
+            context.setLineBreakRequest(false);
+        }
+        else {
+            // Current instruction has a delay slot
+            // Don't break now
+            setMustInsertLineBreak(false);
+            // Request a break after the next instruction if needed (current instruction is a JMP or RET)
+            context.setLineBreakRequest(newIsBreak);
+        }
+
+    }
+
+    private void executeAction(StatementContext context, boolean updateRegisters) {
         int currentlySelectedRegisterNumber = TxCPUState.NOREG;
 
-        for (char actionChar : instruction.getAction().toCharArray())
-        {
-            switch (actionChar)
-            {
-//                case 'A':
-//                    r = TxCPUState.AC;
-//                    break;
-//                case 'C':
-//                    r = TxCPUState.CCR;
-//                    break;
-//                case 'F':
-//                    r = TxCPUState.FP;
-//                    break;
-//                case 'P':
-//                    r = TxCPUState.PS;
-//                    break;
-//                case 'S':
-//                    r = TxCPUState.SP;
-//                    break;
+        for (char actionChar : instruction.getAction().toCharArray()) {
+            switch (actionChar) {
                 case 'i':
                     // Select Rs
                     currentlySelectedRegisterNumber = decodedRsFs;
                     break;
                 case 'j':
-                    // Select Ry
+                    // Select Rt
                     currentlySelectedRegisterNumber = decodedRtFt;
                     break;
                 case 'k':
@@ -499,33 +520,6 @@ public class TxStatement extends Statement {
                     break;
             }
         }
-
-
-        /* LINE BREAKS and INDENT (delay slot) processing */
-
-        // Retrieve stored delay slot type to print this instruction
-        setDelaySlotType(context.getStoredDelaySlotType());
-        // Store the one of this instruction for printing next one
-        context.setStoredDelaySlotType(instruction.getDelaySlotType());
-
-
-        boolean newIsBreak = BREAK_FLOW_TYPES.contains(instruction.getFlowType());
-
-        if (instruction.getDelaySlotType() == Instruction.DelaySlotType.NONE) {
-            // Current instruction has no delay slot
-            // Break if requested by current instruction (JMP, RET) or if we're in the delay slot of the previous one
-            setMustInsertLineBreak(context.isLineBreakRequested() || newIsBreak);
-            // Clear break request for next one
-            context.setLineBreakRequest(false);
-        }
-        else {
-            // Current instruction has a delay slot
-            // Don't break now
-            setMustInsertLineBreak(false);
-            // Request a break after the next instruction if needed (current instruction is a JMP or RET)
-            context.setLineBreakRequest(newIsBreak);
-        }
-
     }
 
     private String format(StatementContext context, Set<OutputOption> outputOptions, String formatString) throws DisassemblyException {
