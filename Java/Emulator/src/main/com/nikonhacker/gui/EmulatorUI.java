@@ -1943,9 +1943,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Devices to be linked to the Tx chip
                 St95040 eeprom = new St95040("Eeprom");
-                LcdDriver lcdDriver = new LcdDriver();
+                LcdDriver lcdDriver = new LcdDriver("ViewFinder LCD");
                 serialDevices.add(eeprom);
                 serialDevices.add(lcdDriver);
+
+                connectTxSerialDevices(serialInterfaces, ioPorts, serialDevices);
             }
 
             platform[chip].setCpuState(cpuState);
@@ -1974,7 +1976,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             if (isImageLoaded[Constants.CHIP_FR] && isImageLoaded[Constants.CHIP_TX]) {
                 // Two CPUs are ready. Perform serial interconnection
-                connectSerialPorts(platform[Constants.CHIP_FR].getSerialInterfaces(), platform[Constants.CHIP_TX].getSerialInterfaces(), platform[Constants.CHIP_TX].getIoPorts(), platform[Constants.CHIP_TX].getSerialDevices());
+                interConnectCpuSerialPorts(platform[Constants.CHIP_FR].getSerialInterfaces(), platform[Constants.CHIP_TX].getSerialInterfaces());
             }
 
             if (prefs.isCloseAllWindowsOnStop()) {
@@ -2078,19 +2080,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     @SuppressWarnings("PointlessArithmeticExpression")
-    private void connectSerialPorts(SerialInterface[] frSerialInterfaces, SerialInterface[] txSerialInterfaces, IoPort[] txIoPorts, List<SerialDevice> txSerialDevices) {
-        // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
-        SerialInterface frSerialInterface5 = frSerialInterfaces[5];
-        SerialInterface txSerialInterfaceH0 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 0];
-        frSerialInterface5.disconnectSerialDevice();
-        txSerialInterfaceH0.disconnectSerialDevice();
-        frSerialInterface5.connectSerialDevice(txSerialInterfaceH0);
-        txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
-
-        // Reconnect Tx serial interface HSC2 with an eeprom
-        SerialInterface txSerialInterfaceH2 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]; // A
-        final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // B1
-        final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // B2
+    private void connectTxSerialDevices(SerialInterface[] txSerialInterfaces, IoPort[] txIoPorts, List<SerialDevice> txSerialDevices) {
+        // Connect Tx serial interface HSC2 with an eeprom
+        SerialInterface txSerialInterfaceH2 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]; // Master
+        final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // Slave 1
+        final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // Slave 2
 
         txSerialInterfaceH2.disconnectSerialDevice();
         eeprom.disconnectSerialDevice();
@@ -2116,6 +2110,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 lcdDriver.setSelected(!newValue);
             }
         });
+    }
+
+    @SuppressWarnings("PointlessArithmeticExpression")
+    private void interConnectCpuSerialPorts(SerialInterface[] frSerialInterfaces, SerialInterface[] txSerialInterfaces) {
+        // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
+        SerialInterface frSerialInterface5 = frSerialInterfaces[5];
+        SerialInterface txSerialInterfaceH0 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 0];
+        frSerialInterface5.disconnectSerialDevice();
+        txSerialInterfaceH0.disconnectSerialDevice();
+        frSerialInterface5.connectSerialDevice(txSerialInterfaceH0);
+        txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
     }
 
     private void closeAllFrames() {
@@ -2535,49 +2540,49 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             toggleIoPortsWindow(); return;
         }
         else for (int chip = 0; chip < 2; chip++) {
-            if (frame == cpuStateEditorFrame[chip]) {
-                toggleCPUState(chip); return;
+                if (frame == cpuStateEditorFrame[chip]) {
+                    toggleCPUState(chip); return;
+                }
+                else if (frame == disassemblyLogFrame[chip]) {
+                    toggleDisassemblyLog(chip); return;
+                }
+                else if (frame == breakTriggerListFrame[chip]) {
+                    toggleBreakTriggerList(chip); return;
+                }
+                else if (frame == memoryActivityViewerFrame[chip]) {
+                    toggleMemoryActivityViewer(chip); return;
+                }
+                else if (frame == memoryHexEditorFrame[chip]) {
+                    toggleMemoryHexEditor(chip); return;
+                }
+                else if (frame == customMemoryRangeLoggerFrame[chip]) {
+                    toggleCustomMemoryRangeLoggerComponentFrame(chip); return;
+                }
+                else if (frame == codeStructureFrame[chip]) {
+                    toggleCodeStructureWindow(chip); return;
+                }
+                else if (frame == sourceCodeFrame[chip]) {
+                    toggleSourceCodeWindow(chip); return;
+                }
+                else if (frame == callStackFrame[chip]) {
+                    toggleCallStack(chip); return;
+                }
+                else if (frame == programmableTimersFrame[chip]) {
+                    toggleProgrammableTimersWindow(chip) ; return;
+                }
+                else if (frame == interruptControllerFrame[chip]) {
+                    toggleInterruptController(chip); return;
+                }
+                else if (frame == serialInterfaceFrame[chip]) {
+                    toggleSerialInterfaces(chip); return;
+                }
+                else if (frame == genericSerialFrame[chip]) {
+                    toggleGenericSerialFrame(chip); return;
+                }
+                else if (frame == realOsObjectFrame[chip]) {
+                    toggleRealOsObject(chip); return;
+                }
             }
-            else if (frame == disassemblyLogFrame[chip]) {
-                toggleDisassemblyLog(chip); return;
-            }
-            else if (frame == breakTriggerListFrame[chip]) {
-                toggleBreakTriggerList(chip); return;
-            }
-            else if (frame == memoryActivityViewerFrame[chip]) {
-                toggleMemoryActivityViewer(chip); return;
-            }
-            else if (frame == memoryHexEditorFrame[chip]) {
-                toggleMemoryHexEditor(chip); return;
-            }
-            else if (frame == customMemoryRangeLoggerFrame[chip]) {
-                toggleCustomMemoryRangeLoggerComponentFrame(chip); return;
-            }
-            else if (frame == codeStructureFrame[chip]) {
-                toggleCodeStructureWindow(chip); return;
-            }
-            else if (frame == sourceCodeFrame[chip]) {
-                toggleSourceCodeWindow(chip); return;
-            }
-            else if (frame == callStackFrame[chip]) {
-                toggleCallStack(chip); return;
-            }
-            else if (frame == programmableTimersFrame[chip]) {
-                toggleProgrammableTimersWindow(chip) ; return;
-            }
-            else if (frame == interruptControllerFrame[chip]) {
-                toggleInterruptController(chip); return;
-            }
-            else if (frame == serialInterfaceFrame[chip]) {
-                toggleSerialInterfaces(chip); return;
-            }
-            else if (frame == genericSerialFrame[chip]) {
-                toggleGenericSerialFrame(chip); return;
-            }
-            else if (frame == realOsObjectFrame[chip]) {
-                toggleRealOsObject(chip); return;
-            }
-        }
         System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
     }
 
