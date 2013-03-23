@@ -45,7 +45,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
-import com.nikonhacker.emu.peripherials.serialInterface.util.SpiTee;
+import com.nikonhacker.emu.peripherials.serialInterface.util.SpiBus;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -2096,10 +2096,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         eeprom.disconnectSerialDevice();
         lcdDriver.disconnectSerialDevice();
 
-        SpiTee tee = new SpiTee("tee", txSerialInterfaceH2) ;
-        tee.addBDevice(eeprom);
-        tee.addBDevice(lcdDriver);
-        tee.connect();
+        SpiBus bus = new SpiBus("bus", txSerialInterfaceH2) ;
+        bus.addSlaveDevice(eeprom);
+        bus.addSlaveDevice(lcdDriver);
+        bus.connect();
 
         // Connect port 4 pin 6 (P46) as !SELECT of eeprom
         ((TxIoPort) txIoPorts[TxIoPort.PORT_4]).addIoOutputPortPinListener(6, new IoPortPinListener() {

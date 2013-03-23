@@ -1,18 +1,18 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
-import com.nikonhacker.emu.peripherials.serialInterface.util.SerialTee;
+import com.nikonhacker.emu.peripherials.serialInterface.util.SerialBus;
 
-public class SerialTeeTest {
+public class SerialBusTest {
     public static void main(String[] args) {
         System.out.println("Starting...");
         TimerDevice d1 = new TimerDevice("CPU", 2000);
         TimerDevice d2 = new TimerDevice("EEPROM", 2200);
         TestDevice d3 = new TestDevice("56pin");
 
-        SerialTee tee = new SerialTee("tee", d1);
-        tee.addBDevice(d2);
-        tee.addBDevice(d3);
-        tee.connect();
+        SerialBus bus = new SerialBus("bus", d1);
+        bus.addSlaveDevice(d2);
+        bus.addSlaveDevice(d3);
+        bus.connect();
 
         // Connection is OK. Now let's insert spies
         insertConsoleWire("Spy1", d1);
