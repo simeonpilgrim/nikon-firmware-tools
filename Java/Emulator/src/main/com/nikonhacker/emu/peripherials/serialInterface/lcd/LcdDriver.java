@@ -12,6 +12,11 @@ public class LcdDriver extends SpiSlaveDevice {
     private int mask = 0xFF; // 8 bits by default
 
     private SerialDevice connectedDevice;
+    private String name;
+
+    public LcdDriver(String name) {
+        this.name = name;
+    }
 
     @Override
     public void write(Integer value) {
@@ -43,6 +48,6 @@ public class LcdDriver extends SpiSlaveDevice {
 
     @Override
     public String toString() {
-        return "Viewfinder Lcd Driver";
+        return name;
     }
 }
