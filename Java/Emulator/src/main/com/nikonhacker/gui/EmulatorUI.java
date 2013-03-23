@@ -23,6 +23,8 @@ import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
+import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
@@ -1863,6 +1865,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             ClockGenerator clockGenerator;
             InterruptController interruptController;
             DmaController dmaController = null;
+            AdConverter adConverter = null;
             TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
             // Stop timers if active from a previous session (reset)
@@ -1948,6 +1951,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 serialDevices.add(lcdDriver);
 
                 connectTxSerialDevices(serialInterfaces, ioPorts, serialDevices);
+
+                adConverter = new TxAdConverter();
             }
 
             platform[chip].setCpuState(cpuState);
@@ -1958,6 +1963,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             platform[chip].setIoPorts(ioPorts);
             platform[chip].setSerialInterfaces(serialInterfaces);
             platform[chip].setDmaController(dmaController);
+            platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
             emulator[chip].setMemory(memory);
