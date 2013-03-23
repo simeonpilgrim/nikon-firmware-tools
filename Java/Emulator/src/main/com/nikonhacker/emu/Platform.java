@@ -3,6 +3,7 @@ package com.nikonhacker.emu;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.clock.ClockGenerator;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
@@ -27,6 +28,7 @@ public class Platform {
     private SerialInterface[] serialInterfaces;
     private List<SerialDevice> serialDevices;
     private DmaController dmaController;
+    private AdConverter adConverter;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -98,5 +100,13 @@ public class Platform {
 
     public void setDmaController(DmaController dmaController) {
         this.dmaController = dmaController;
+    }
+
+    public AdConverter getAdConverter() {
+        return adConverter;
+    }
+
+    public void setAdConverter(AdConverter adConverter) {
+        this.adConverter = adConverter;
     }
 }
