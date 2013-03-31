@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.adConverter.tx;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 
 public class TxAdConverter implements AdConverter {
-    TxAdUnit[] units;
+    public TxAdUnit[] units;
 
     public TxAdConverter() {
         units = new TxAdUnit[3];

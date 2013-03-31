@@ -4,6 +4,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
+import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
+import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdUnit;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaChannel;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -170,6 +172,21 @@ public class TxIoListener implements IoActivityListener {
     private static final int REGISTER_SC0RST   =    0xFF00_4C28; // Receive FIFO status register
     private static final int REGISTER_SC0TST   =    0xFF00_4C2C; // Transmit FIFO status register
     private static final int REGISTER_SC0FCNF  =    0xFF00_4C30; // FIFO configuration register
+
+    // A/D converter
+    public static final int NUM_AD_UNIT = 3;
+    private static final int AD_UNIT_OFFSET_SHIFT = 7; // 1 << 7 = 0x80 bytes per interface
+    private static final int REGISTER_ADACLK     =    0xFF00_4D00; // register
+    private static final int REGISTER_ADAMOD0    =    0xFF00_4D04; // register
+    private static final int REGISTER_ADAMOD1    =    0xFF00_4D08; // register
+    private static final int REGISTER_ADAMOD2    =    0xFF00_4D0C; // register
+    private static final int REGISTER_ADAMOD3    =    0xFF00_4D10; // register
+    private static final int REGISTER_ADAMOD4    =    0xFF00_4D14; // register
+    private static final int REGISTER_ADAMOD5    =    0xFF00_4D18; // register
+    private static final int REGISTER_ADAREG0    =    0xFF00_4D30; // register
+    private static final int REGISTER_ADAREGSP   =    0xFF00_4D50; // register
+    private static final int REGISTER_ADACOMREG0 =    0xFF00_4D54; // register
+    private static final int REGISTER_ADACOMREG1 =    0xFF00_4D58; // register
 
 
     private final Platform platform;
@@ -380,6 +397,47 @@ public class TxIoListener implements IoActivityListener {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
+        else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
+            // AD unit configuration registers
+            int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
+            TxAdUnit unit = ((TxAdConverter)platform.getAdConverter()).units[adUnitNumber];
+            int shiftedAddress = addr - (adUnitNumber << AD_UNIT_OFFSET_SHIFT);
+            if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
+                int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
+                if (channelNumber < unit.getNumChannels()) {
+                    return (byte)unit.getReg(channelNumber);
+                }
+                else {
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                }
+            }
+            else {
+                switch (shiftedAddress) {
+                    case REGISTER_ADACLK + 3:
+                        return (byte)unit.getClk();
+                    case REGISTER_ADAMOD0 + 3:
+                        return (byte)unit.getMod0();
+                    case REGISTER_ADAMOD1 + 3:
+                        return (byte)unit.getMod1();
+                    case REGISTER_ADAMOD2 + 3:
+                        return (byte)unit.getMod2();
+                    case REGISTER_ADAMOD3 + 3:
+                        return (byte)unit.getMod3();
+                    case REGISTER_ADAMOD4 + 3:
+                        return (byte)unit.getMod4();
+                    case REGISTER_ADAMOD5 + 3:
+                        return (byte)unit.getMod5();
+                    case REGISTER_ADAREGSP + 3:
+                        return (byte)(unit.getRegSp());
+                    case REGISTER_ADACOMREG0 + 3:
+                        return (byte)(unit.getComReg0());
+                    case REGISTER_ADACOMREG1 + 3:
+                        return (byte)(unit.getComReg1());
+                    default:
+                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                }
+            }
+        }
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
@@ -531,6 +589,47 @@ public class TxIoListener implements IoActivityListener {
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
             throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
+        }
+        else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
+            // AD unit configuration registers
+            int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
+            TxAdUnit unit = ((TxAdConverter)platform.getAdConverter()).units[adUnitNumber];
+            int shiftedAddress = addr - (adUnitNumber << AD_UNIT_OFFSET_SHIFT);
+            if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
+                int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
+                if (channelNumber < unit.getNumChannels()) {
+                    return unit.getReg(channelNumber);
+                }
+                else {
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                }
+            }
+            else {
+                switch (shiftedAddress) {
+                    case REGISTER_ADACLK + 2:
+                        return unit.getClk();
+                    case REGISTER_ADAMOD0 + 2:
+                        return unit.getMod0();
+                    case REGISTER_ADAMOD1 + 2:
+                        return unit.getMod1();
+                    case REGISTER_ADAMOD2 + 2:
+                        return unit.getMod2();
+                    case REGISTER_ADAMOD3 + 2:
+                        return unit.getMod3();
+                    case REGISTER_ADAMOD4 + 2:
+                        return unit.getMod4();
+                    case REGISTER_ADAMOD5 + 2:
+                        return unit.getMod5();
+                    case REGISTER_ADAREGSP + 2:
+                        return (unit.getRegSp());
+                    case REGISTER_ADACOMREG0 + 2:
+                        return (unit.getComReg0());
+                    case REGISTER_ADACOMREG1 + 2:
+                        return (unit.getComReg1());
+                    default:
+                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                }
+            }
         }
         else switch (addr){
             // Clock generator
@@ -711,6 +810,47 @@ public class TxIoListener implements IoActivityListener {
                     return channel.getDtcr();
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
+        else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
+            // AD unit configuration registers
+            int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
+            TxAdUnit unit = ((TxAdConverter)platform.getAdConverter()).units[adUnitNumber];
+            int shiftedAddress = addr - (adUnitNumber << AD_UNIT_OFFSET_SHIFT);
+            if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
+                int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
+                if (channelNumber < unit.getNumChannels()) {
+                    return unit.getReg(channelNumber);
+                }
+                else {
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                }
+            }
+            else {
+                switch (shiftedAddress) {
+                    case REGISTER_ADACLK:
+                        return unit.getClk();
+                    case REGISTER_ADAMOD0:
+                        return unit.getMod0();
+                    case REGISTER_ADAMOD1:
+                        return unit.getMod1();
+                    case REGISTER_ADAMOD2:
+                        return unit.getMod2();
+                    case REGISTER_ADAMOD3:
+                        return unit.getMod3();
+                    case REGISTER_ADAMOD4:
+                        return unit.getMod4();
+                    case REGISTER_ADAMOD5:
+                        return unit.getMod5();
+                    case REGISTER_ADAREGSP:
+                        return (unit.getRegSp());
+                    case REGISTER_ADACOMREG0:
+                        return (unit.getComReg0());
+                    case REGISTER_ADACOMREG1:
+                        return (unit.getComReg1());
+                    default:
+                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                }
             }
         }
         switch (addr) {
@@ -1258,6 +1398,47 @@ public class TxIoListener implements IoActivityListener {
                     channel.setDtcr(value); break;
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
+        else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
+            // AD unit configuration registers
+            int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
+            TxAdUnit unit = ((TxAdConverter)platform.getAdConverter()).units[adUnitNumber];
+            int shiftedAddress = addr - (adUnitNumber << AD_UNIT_OFFSET_SHIFT);
+            if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
+                int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
+                if (channelNumber < unit.getNumChannels()) {
+                    unit.setReg(channelNumber, value);
+                }
+                else {
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                }
+            }
+            else {
+                switch (shiftedAddress) {
+                    case REGISTER_ADACLK:
+                        unit.setClk(value); break;
+                    case REGISTER_ADAMOD0:
+                        unit.setMod0(value); break;
+                    case REGISTER_ADAMOD1:
+                        unit.setMod1(value); break;
+                    case REGISTER_ADAMOD2:
+                        unit.setMod2(value); break;
+                    case REGISTER_ADAMOD3:
+                        unit.setMod3(value); break;
+                    case REGISTER_ADAMOD4:
+                        unit.setMod4(value); break;
+                    case REGISTER_ADAMOD5:
+                        unit.setMod5(value); break;
+                    case REGISTER_ADAREGSP:
+                        unit.setRegSp(value); break;
+                    case REGISTER_ADACOMREG0:
+                        unit.setComReg0(value); break;
+                    case REGISTER_ADACOMREG1:
+                        unit.setComReg1(value); break;
+                    default:
+                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                }
             }
         }
         else switch(addr) {
