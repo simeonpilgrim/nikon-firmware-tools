@@ -364,12 +364,12 @@ public class Prefs {
     }
 
     public boolean isAdValueFromList(int chip) {
-        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{false, false};
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
         return adValueFromList[chip];
     }
 
     public void setAdValueFromList(int chip, boolean isAdValueFromList) {
-        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{false, false};
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
         this.adValueFromList[chip] = isAdValueFromList;
     }
 

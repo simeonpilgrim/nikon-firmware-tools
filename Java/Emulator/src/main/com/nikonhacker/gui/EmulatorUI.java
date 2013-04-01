@@ -59,6 +59,7 @@ import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.FileSelectionPanel;
 import com.nikonhacker.gui.component.ModifiedFlowLayout;
 import com.nikonhacker.gui.component.VerticalLayout;
+import com.nikonhacker.gui.component.ad.AdConverterFrame;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerListFrame;
@@ -129,6 +130,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = {"FR_TOGGLE_INTERRUPT_CONTROLLER_WINDOW", "TX_TOGGLE_INTERRUPT_CONTROLLER_WINDOW"};
     private static final String[] COMMAND_TOGGLE_SERIAL_INTERFACES = {"FR_COMMAND_TOGGLE_SERIAL_INTERFACES", "TX_COMMAND_TOGGLE_SERIAL_INTERFACES"};
     private static final String[] COMMAND_TOGGLE_SERIAL_DEVICES = {"FR_COMMAND_TOGGLE_SERIAL_DEVICES", "TX_COMMAND_TOGGLE_SERIAL_DEVICES"};
+    private static final String[] COMMAND_TOGGLE_AD_CONVERTER = {"FR_COMMAND_TOGGLE_AD_CONVERTER", "TX_COMMAND_TOGGLE_AD_CONVERTER"};
 
     private static final String[] COMMAND_LOAD_STATE = {"FR_LOAD_STATE", "TX_LOAD_STATE"};
     private static final String[] COMMAND_SAVE_STATE = {"FR_SAVE_STATE", "TX_SAVE_STATE"};
@@ -196,6 +198,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem[] programmableTimersMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] serialInterfacesMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] serialDevicesMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] adConverterMenuItem = new JCheckBoxMenuItem[2];
 
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
@@ -236,6 +239,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton[] programmableTimersButton = new JButton[2];
     private JButton[] serialInterfacesButton = new JButton[2];
     private JButton[] serialDevicesButton = new JButton[2];
+    private JButton[] adConverterButton = new JButton[2];
     private JButton[] callStackButton = new JButton[2];
     private JButton[] realosObjectButton = new JButton[2];
 
@@ -260,6 +264,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private InterruptControllerFrame[] interruptControllerFrame = new InterruptControllerFrame[2];
     private SerialInterfaceFrame[] serialInterfaceFrame = new SerialInterfaceFrame[2];
     private GenericSerialFrame[] genericSerialFrame = new GenericSerialFrame[2];
+    private AdConverterFrame[] adConverterFrame = new AdConverterFrame[2];
     private CallStackFrame[] callStackFrame = new CallStackFrame[2];
 
     private Component4006Frame component4006Frame;
@@ -616,6 +621,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             bar.add(ioPortsButton);
             serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial devices", "Serial devices");
             bar.add(serialDevicesButton[Constants.CHIP_TX]);
+            adConverterButton[Constants.CHIP_TX] = makeButton("ad_converter", COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter", "A/D converter");
+            bar.add(adConverterButton[Constants.CHIP_TX]);
         }
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -913,6 +920,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         serialDevicesMenuItem[Constants.CHIP_TX].addActionListener(this);
         componentsMenu.add(serialDevicesMenuItem[Constants.CHIP_TX]);
 
+        //A/D converter : TX only for now
+        adConverterMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter (TX only)");
+        adConverterMenuItem[Constants.CHIP_TX].setActionCommand(COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX]);
+        adConverterMenuItem[Constants.CHIP_TX].addActionListener(this);
+        componentsMenu.add(adConverterMenuItem[Constants.CHIP_TX]);
+
         //Set up the trace menu.
         JMenu traceMenu = new JMenu("Trace");
         traceMenu.setMnemonic(KeyEvent.VK_C);
@@ -1149,6 +1162,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_SERIAL_DEVICES)) != Constants.CHIP_NONE) {
             toggleGenericSerialFrame(chip);
+        }
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_AD_CONVERTER)) != Constants.CHIP_NONE) {
+            toggleAdConverterFrame(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_CHIP_OPTIONS)) != Constants.CHIP_NONE) {
             openChipOptionsDialog(chip);
@@ -2416,6 +2432,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
+    private void toggleAdConverterFrame(int chip) {
+        if (adConverterFrame[chip] == null) {
+            adConverterFrame[chip] = new AdConverterFrame("A/D converter", "ad_converter", true, true, false, true, chip, this, platform[chip].getAdConverter());
+            addDocumentFrame(chip, adConverterFrame[chip]);
+            adConverterFrame[chip].display(true);
+        }
+        else {
+            adConverterFrame[chip].dispose();
+            adConverterFrame[chip] = null;
+        }
+        updateStates();
+    }
+
 
     static {
         initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
@@ -2588,6 +2617,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 else if (frame == genericSerialFrame[chip]) {
                     toggleGenericSerialFrame(chip); return;
                 }
+                else if (frame == adConverterFrame[chip]) {
+                    toggleAdConverterFrame(chip); return;
+                }
                 else if (frame == realOsObjectFrame[chip]) {
                     toggleRealOsObject(chip); return;
                 }
@@ -2622,7 +2654,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             programmableTimersMenuItem[chip].setSelected(programmableTimersFrame[chip] != null);
             interruptControllerMenuItem[chip].setSelected(interruptControllerFrame[chip] != null);
             serialInterfacesMenuItem[chip].setSelected(serialInterfaceFrame[chip] != null);
-            if (chip == Constants.CHIP_TX) serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
+            if (chip == Constants.CHIP_TX) {
+                serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
+                adConverterMenuItem[chip].setSelected(adConverterFrame[chip] != null);
+            }
 
             analyseMenuItem[chip].setEnabled(isImageLoaded[chip]); analyseButton[chip].setEnabled(isImageLoaded[chip]);
 
@@ -2636,6 +2671,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             serialInterfacesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialInterfacesButton[chip].setEnabled(isImageLoaded[chip]);
             if (chip == Constants.CHIP_TX) {
                 serialDevicesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialDevicesButton[chip].setEnabled(isImageLoaded[chip]);
+                adConverterMenuItem[chip].setEnabled(isImageLoaded[chip]); adConverterButton[chip].setEnabled(isImageLoaded[chip]);
             }
             callStackMenuItem[chip].setEnabled(isImageLoaded[chip]); callStackButton[chip].setEnabled(isImageLoaded[chip]);
             realosObjectMenuItem[chip].setEnabled(isImageLoaded[chip]); realosObjectButton[chip].setEnabled(isImageLoaded[chip]);

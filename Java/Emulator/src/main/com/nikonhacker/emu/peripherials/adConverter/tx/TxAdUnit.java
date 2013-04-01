@@ -3,10 +3,11 @@ package com.nikonhacker.emu.peripherials.adConverter.tx;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.CycleCounterListener;
 import com.nikonhacker.emu.Emulator;
+import com.nikonhacker.emu.peripherials.adConverter.AdUnit;
 import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
-public class TxAdUnit implements CycleCounterListener {
+public class TxAdUnit implements AdUnit, CycleCounterListener {
     private static final int CLK_ADCLK_MASK     = 0b00000111;
     private static final int CLK_TSH_MASK       = 0b11110000;
 
