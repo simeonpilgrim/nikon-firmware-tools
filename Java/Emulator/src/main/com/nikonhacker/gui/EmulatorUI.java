@@ -24,7 +24,9 @@ import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
+import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdPrefsValueProvider;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
@@ -1952,7 +1954,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 connectTxSerialDevices(serialInterfaces, ioPorts, serialDevices);
 
-                adConverter = new TxAdConverter();
+                AdValueProvider provider = new TxAdPrefsValueProvider(prefs, Constants.CHIP_TX);
+                adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
             }
 
             platform[chip].setCpuState(cpuState);
