@@ -1079,6 +1079,47 @@ public class TxIoListener implements IoActivityListener {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
+        else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
+            // AD unit configuration registers
+            int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
+            TxAdUnit unit = ((TxAdConverter)platform.getAdConverter()).units[adUnitNumber];
+            int shiftedAddress = addr - (adUnitNumber << AD_UNIT_OFFSET_SHIFT);
+            if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
+                int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
+                if (channelNumber < unit.getNumChannels()) {
+                    unit.setReg(channelNumber, value);
+                }
+                else {
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                }
+            }
+            else {
+                switch (shiftedAddress) {
+                    case REGISTER_ADACLK + 3:
+                        unit.setClk(value); break;
+                    case REGISTER_ADAMOD0 + 3:
+                        unit.setMod0(value); break;
+                    case REGISTER_ADAMOD1 + 3:
+                        unit.setMod1(value); break;
+                    case REGISTER_ADAMOD2 + 3:
+                        unit.setMod2(value); break;
+                    case REGISTER_ADAMOD3 + 3:
+                        unit.setMod3(value); break;
+                    case REGISTER_ADAMOD4 + 3:
+                        unit.setMod4(value); break;
+                    case REGISTER_ADAMOD5 + 3:
+                        unit.setMod5(value); break;
+                    case REGISTER_ADAREGSP + 3:
+                        unit.setRegSp(value); break;
+                    case REGISTER_ADACOMREG0 + 3:
+                        unit.setComReg0(value); break;
+                    case REGISTER_ADACOMREG1 + 3:
+                        unit.setComReg1(value); break;
+                    default:
+                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                }
+            }
+        }
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:

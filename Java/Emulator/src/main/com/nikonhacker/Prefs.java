@@ -36,6 +36,9 @@ public class Prefs {
     private boolean firmwareWriteProtected[];
     private boolean timersCycleSynchronous[];
     private boolean dmaSynchronous[];
+    private boolean adValueFromList[];
+    private Map<String,List<Integer>> adValueListMap[];
+    private Map<String,Integer> adValueMap[];
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -358,6 +361,36 @@ public class Prefs {
     public void setDmaSynchronous(int chip, boolean isDmaSynchronous) {
         if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
         this.dmaSynchronous[chip] = isDmaSynchronous;
+    }
+
+    public boolean isAdValueFromList(int chip) {
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{false, false};
+        return adValueFromList[chip];
+    }
+
+    public void setAdValueFromList(int chip, boolean isAdValueFromList) {
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{false, false};
+        this.adValueFromList[chip] = isAdValueFromList;
+    }
+
+    public List<Integer> getAdValueList(int chip, String channelKey) {
+        if (adValueListMap == null || adValueListMap.length != 2) adValueListMap = new Map[]{new HashMap<String, ArrayList<Integer>>(), new HashMap<String, ArrayList<Integer>>()};
+        return adValueListMap[chip].get(channelKey);
+    }
+
+    public List<Integer> setAdValueList(int chip, String channelKey, List<Integer> values) {
+        if (adValueListMap == null || adValueListMap.length != 2) adValueListMap = new Map[]{new HashMap<String, ArrayList<Integer>>(), new HashMap<String, ArrayList<Integer>>()};
+        return adValueListMap[chip].put(channelKey, values);
+    }
+
+    public int getAdValue(int chip, String channelKey) {
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        return adValueMap[chip].get(channelKey);
+    }
+
+    public void setAdValue(int chip, String channelKey, int value) {
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        adValueMap[chip].put(channelKey, value);
     }
 
     /**
