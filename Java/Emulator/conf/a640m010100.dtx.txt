@@ -721,7 +721,7 @@
 -s 0xBFC61098=start_ADA_DMA4
 -s 0xBFC6117C=get_ADA_array
 -s 0xBFC619C4=get_AF_value
--s 0xBFC63104=get_normliaed_ADA_result
+-s 0xBFC63104=get_normalized_ADA_result
 -s 0xBFC63128=start_ADA_ch0
 -s 0xBFC6338C=init_lotsof_table
 -s 0xBFC633C8=setup_strus
