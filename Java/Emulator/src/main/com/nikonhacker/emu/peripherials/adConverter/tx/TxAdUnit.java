@@ -379,7 +379,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                 setConvertedValue(REGSP, provider.getAnalogValue(unitName, getMod2Hpadch()) & 0x3FF);
                 isEoc[TOP_PRIORITY] = true;
                 isBusy[TOP_PRIORITY] = false;
-                interruptController.request(TxInterruptController.INTADHPA + unitName - 'A');
+                requestAdTopPriorityCompleteInterrupt();
                 if (!isBusy[NORMAL_PRIORITY]) {
                     continueNotifying = false;
                 }
@@ -405,7 +405,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                             setConvertedValue(conversionNumber, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                             conversionNumber++;
                             if (conversionNumber == conversionInterruptInterval) {
-                                interruptController.request(TxInterruptController.INTADA + unitName - 'A');
+                                requestAdCompleteInterrupt();
                                 // <EOCF> is set with the same timing as this interrupt INTAD is generated
                                 // ADnMOD <EOCF> is set to "1."
                                 isEoc[NORMAL_PRIORITY] = true;
@@ -418,7 +418,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                             // Repeat scan mode, scan complete.
                             // target register is according to scanned channel
                             setConvertedValue(currentScanChannel, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
-                            interruptController.request(TxInterruptController.INTADA + unitName - 'A');
+                            requestAdCompleteInterrupt();
                             // ADnMOD <EOCF> is set to "1."
                             isEoc[NORMAL_PRIORITY] = true;
                             // ADnMOD0 <ADBF> is not cleared to "0." It remains at "1."
@@ -432,7 +432,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                         setConvertedValue(currentScanChannel, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                         isEoc[NORMAL_PRIORITY] = true;
                         isBusy[NORMAL_PRIORITY] = false;
-                        interruptController.request(TxInterruptController.INTADA + unitName - 'A');
+                        requestAdCompleteInterrupt();
                         if (!isBusy[TOP_PRIORITY]) {
                             continueNotifying = false;
                         }
@@ -461,14 +461,26 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
     private void compareAndInterrupt(int value, int comparisonValue, boolean isAdobic) {
         if (isAdobic) {
             if (value > comparisonValue) {
-                interruptController.request(TxInterruptController.INTADA + unitName - 'A');
+                requestAdMonitoringInterrupt();
             }
         }
         else {
             if (value < comparisonValue) {
-                interruptController.request(TxInterruptController.INTADA + unitName - 'A');
+                requestAdMonitoringInterrupt();
             }
         }
+    }
+
+    private boolean requestAdCompleteInterrupt() {
+        return interruptController.request(TxInterruptController.INTADA + (unitName - 'A'));
+    }
+
+    private boolean requestAdTopPriorityCompleteInterrupt() {
+        return interruptController.request(TxInterruptController.INTADHPA + 2 * (unitName - 'A'));
+    }
+
+    private boolean requestAdMonitoringInterrupt() {
+        return interruptController.request(TxInterruptController.INTADMA + 2 * (unitName - 'A'));
     }
 
     @Override
