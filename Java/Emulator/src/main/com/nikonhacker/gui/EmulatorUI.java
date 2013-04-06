@@ -1449,12 +1449,18 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         fc.setFileFilter(new FileFilter() {
             @Override
             public boolean accept(File f) {
-                return f.getName().startsWith((chip == Constants.CHIP_FR)?"b":"a") && f.getName().endsWith(".bin");
+                if (f != null) {
+                    if (f.isDirectory()) {
+                        return true;
+                    }
+                    return f.getName().startsWith((chip == Constants.CHIP_FR)?"b":"a") && f.getName().endsWith(".bin");
+                }
+                return false;
             }
 
             @Override
             public String getDescription() {
-                return Constants.CHIP_LABEL[chip] + " firmware file";
+                return Constants.CHIP_LABEL[chip] + " firmware file (" + ((chip == Constants.CHIP_FR)?"b":"a") + "*.bin)";
             }
         });
         fc.setCurrentDirectory(new File("."));
