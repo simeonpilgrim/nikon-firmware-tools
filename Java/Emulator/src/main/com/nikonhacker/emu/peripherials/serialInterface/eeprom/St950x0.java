@@ -45,10 +45,12 @@ public abstract class St950x0 extends SpiSlaveDevice {
         this.name = name;
         memory = new byte[size];
 
-        // Dummy fill to test
         // TODO persist to file
         for (int i = 0; i < size; i++) {
-            memory[i] = (byte)(0xFF - i);
+            // Default fill = 0xFF
+            memory[i] = (byte)0xFF;
+            // Dummy fill to test
+//            memory[i] = (byte)(0xFF - i);
         }
 
         if (size > 0xFF) {
