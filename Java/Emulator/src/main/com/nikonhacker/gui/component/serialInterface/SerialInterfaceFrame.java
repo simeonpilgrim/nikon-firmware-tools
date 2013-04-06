@@ -16,6 +16,7 @@ import java.awt.event.ActionListener;
 
 /**
  * This component gives access to emulated Serial Interfaces
+ * This should share code (subclass ?) GenericSerialFrame or reuse its factory logic
  * @see SerialInterface
  */
 public class SerialInterfaceFrame extends DocumentFrame {
