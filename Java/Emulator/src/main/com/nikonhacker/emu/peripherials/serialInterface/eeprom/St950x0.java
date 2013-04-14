@@ -5,6 +5,11 @@ import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 /**
  * This implementation is based on the ST950x0 datasheet at
  * http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00001755.pdf
@@ -39,13 +44,16 @@ public abstract class St950x0 extends SpiSlaveDevice {
 
     private int numBits = 8;
 
+    public byte[] getMemory() {
+        return memory;
+    }
+
     public enum Command {WREN, WRDI, RDSR, WRSR, READ0, READ1, WRITE0, WRITE1}
 
     public St950x0(String name, int size) {
         this.name = name;
         memory = new byte[size];
 
-        // TODO persist to file
         for (int i = 0; i < size; i++) {
             // Default fill = 0xFF
             memory[i] = (byte)0xFF;
@@ -66,6 +74,27 @@ public abstract class St950x0 extends SpiSlaveDevice {
     }
     public void clearWriteLatchEnabled() {
         statusRegister = statusRegister & 0b11111101;
+    }
+
+    public void loadBinary(File file) throws IOException {
+        if (file == null) {
+            throw new IOException("Error: file is null !");
+        }
+        if (file.length() != memory.length) {
+            throw new IOException("Error: File '" + file.getAbsolutePath() + "' is not " + memory.length + " bytes long !");
+        }
+        FileInputStream fis = new FileInputStream(file);
+        fis.read(memory);
+        fis.close();
+    }
+
+    public void saveBinary(File file) throws IOException {
+        if (file == null) {
+            throw new IOException("Error: file is null !");
+        }
+        FileOutputStream fos = new FileOutputStream(file);
+        fos.write(memory);
+        fos.close();
     }
 
     @Override
