@@ -10,6 +10,10 @@ import java.io.*;
 import java.util.*;
 
 public class Prefs {
+    public enum EepromInitMode {
+        BLANK, PERSISTENT, LAST_LOADED
+    }
+
     private static final String KEY_WINDOW_MAIN = "MAIN";
 
     // Common
@@ -39,6 +43,10 @@ public class Prefs {
     private boolean adValueFromList[];
     private Map<String,List<Integer>> adValueListMap[];
     private Map<String,Integer> adValueMap[];
+    private EepromInitMode eepromInitMode;
+    private byte[] lastEepromContents;
+    private String lastEepromFileName;
+
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -392,6 +400,36 @@ public class Prefs {
         if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
         adValueMap[chip].put(channelKey, value);
     }
+
+    public EepromInitMode getEepromInitMode() {
+        if (eepromInitMode == null) {
+            return EepromInitMode.BLANK;
+        }
+        else {
+            return eepromInitMode;
+        }
+    }
+
+    public void setEepromInitMode(EepromInitMode eepromInitMode) {
+        this.eepromInitMode = eepromInitMode;
+    }
+
+    public byte[] getLastEepromContents() {
+        return lastEepromContents;
+    }
+
+    public void setLastEepromContents(byte[] lastEepromContents) {
+        this.lastEepromContents = lastEepromContents;
+    }
+
+    public String getLastEepromFileName() {
+        return lastEepromFileName;
+    }
+
+    public void setLastEepromFileName(String lastEepromFileName) {
+        this.lastEepromFileName = lastEepromFileName;
+    }
+
 
     /**
      * This is basically just a structure with an X Y value.

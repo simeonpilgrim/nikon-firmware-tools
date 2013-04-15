@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * This implementation is based on the ST950x0 datasheet at
@@ -48,22 +49,30 @@ public abstract class St950x0 extends SpiSlaveDevice {
         return memory;
     }
 
+    public void loadArray(byte[] contents) {
+        System.arraycopy(contents, 0, memory, 0, memory.length);
+    }
+
     public enum Command {WREN, WRDI, RDSR, WRSR, READ0, READ1, WRITE0, WRITE1}
 
     public St950x0(String name, int size) {
         this.name = name;
         memory = new byte[size];
 
-        for (int i = 0; i < size; i++) {
-            // Default fill = 0xFF
-            memory[i] = (byte)0xFF;
-            // Dummy fill to test
-//            memory[i] = (byte)(0xFF - i);
-        }
-
         if (size > 0xFF) {
             write1offset = 0x100;
         }
+
+        clear();
+    }
+
+    public void clear() {
+        // Default fill = 0xFF
+        Arrays.fill(memory, (byte) 0xFF);
+        // Dummy fill to test
+//        for (int i = 0; i < memory.length; i++) {
+//            memory[i] = (byte)(0xFF - i);
+//        }
     }
 
     public boolean isWriteLatchEnabled() {
@@ -81,7 +90,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
             throw new IOException("Error: file is null !");
         }
         if (file.length() != memory.length) {
-            throw new IOException("Error: File '" + file.getAbsolutePath() + "' is not " + memory.length + " bytes long !");
+            throw new IOException("Error: File '" + file.getAbsolutePath() + "' is not " + memory.length + " bytes long!");
         }
         FileInputStream fis = new FileInputStream(file);
         fis.read(memory);

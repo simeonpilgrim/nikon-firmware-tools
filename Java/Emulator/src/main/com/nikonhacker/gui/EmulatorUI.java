@@ -300,6 +300,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private Prefs prefs = new Prefs();
     private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
     private final JSplitPane splitPane;
+    private St95040 eeprom;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -1696,7 +1697,43 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Emulation Options", null, emulationOptionsPanel);
 
-        // ------------------------ Show it
+        if (chip == Constants.CHIP_TX) {
+            JPanel eepromOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+            eepromOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
+
+            ActionListener eepromInitializationRadioActionListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    prefs.setEepromInitMode(Prefs.EepromInitMode.valueOf(e.getActionCommand()));
+                }
+            };
+            JRadioButton blank = new JRadioButton("Blank");
+            blank.setActionCommand(Prefs.EepromInitMode.BLANK.name());
+            blank.addActionListener(eepromInitializationRadioActionListener);
+            if (Prefs.EepromInitMode.BLANK.equals(prefs.getEepromInitMode())) blank.setSelected(true);
+            JRadioButton persistent = new JRadioButton("Persistent across sessions");
+            persistent.setActionCommand(Prefs.EepromInitMode.PERSISTENT.name());
+            persistent.addActionListener(eepromInitializationRadioActionListener);
+            if (Prefs.EepromInitMode.PERSISTENT.equals(prefs.getEepromInitMode())) persistent.setSelected(true);
+            JRadioButton lastLoaded = new JRadioButton("Last Loaded");
+            lastLoaded.setActionCommand(Prefs.EepromInitMode.LAST_LOADED.name());
+            lastLoaded.addActionListener(eepromInitializationRadioActionListener);
+            if (Prefs.EepromInitMode.LAST_LOADED.equals(prefs.getEepromInitMode())) lastLoaded.setSelected(true);
+
+            ButtonGroup group = new ButtonGroup();
+            group.add(blank);
+            group.add(persistent);
+            group.add(lastLoaded);
+
+            eepromOptionsPanel.add(blank);
+            eepromOptionsPanel.add(persistent);
+            eepromOptionsPanel.add(lastLoaded);
+
+            tabbedPane.addTab("Eeprom Options", null, eepromOptionsPanel);
+        }
+
+
+            // ------------------------ Show it
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 tabbedPane,
@@ -1969,7 +2006,40 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 dmaController = new TxDmaController(platform[chip], prefs);
 
                 // Devices to be linked to the Tx chip
-                St95040 eeprom = new St95040("Eeprom");
+
+                // Eeprom
+                eeprom = new St95040("Eeprom");
+                switch(prefs.getEepromInitMode()) {
+                    case BLANK:
+                        eeprom.clear();
+                        break;
+                    case PERSISTENT:
+                        byte[] lastEepromContents = prefs.getLastEepromContents();
+                        if (lastEepromContents != null) {
+                            eeprom.loadArray(lastEepromContents);
+                        }
+                        else {
+                            System.err.println("Attempt at loading previous eeprom values failed. No stored values...");
+                            eeprom.clear();
+                        }
+                        break;
+                    case LAST_LOADED:
+                        String lastEepromFileName = prefs.getLastEepromFileName();
+                        if (StringUtils.isNotBlank(lastEepromFileName)) {
+                            try {
+                                eeprom.loadBinary(new File(lastEepromFileName));
+                            } catch (IOException e) {
+                                System.err.println("Error reloading last eeprom contents from file '" + lastEepromFileName + "': " + e.getMessage());
+                                eeprom.clear();
+                            }
+                        }
+                        else {
+                            System.err.println("Attempt at reloading last eeprom contents from file failed. Seems no eeprom was ever loaded...");
+                            eeprom.clear();
+                        }
+                        break;
+                }
+
                 LcdDriver lcdDriver = new LcdDriver("ViewFinder LCD");
                 serialDevices.add(eeprom);
                 serialDevices.add(lcdDriver);
@@ -2907,6 +2977,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         super.dispose();
         closeAllFrames();
         saveMainWindowSettings();
+        if (eeprom != null) {
+            prefs.setLastEepromContents(eeprom.getMemory());
+        }
         Prefs.save(prefs);
         System.exit(0);
     }
