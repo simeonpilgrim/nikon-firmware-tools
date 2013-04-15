@@ -1,6 +1,8 @@
 package com.nikonhacker.gui.component.serialInterface.eeprom;
 
+import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
+import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.serialInterface.RxTxSerialPanel;
 import com.nikonhacker.gui.component.serialInterface.SerialDevicePanel;
 import org.fife.ui.hex.event.HexEditorEvent;
@@ -22,11 +24,13 @@ import java.io.IOException;
 public class EepromSerialPanel extends SerialDevicePanel implements HexEditorListener {
 
     private final RxTxSerialPanel rxTxSerialPanel;
+    private final Prefs prefs;
     private St950x0 eeprom;
     private final HexEditor eepromHexEditor;
 
-    public EepromSerialPanel(St950x0 eeprom) {
+    public EepromSerialPanel(St950x0 eeprom, EmulatorUI ui) {
         super();
+        this.prefs = ui.getPrefs();
         this.eeprom = eeprom;
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -82,7 +86,9 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
-                eeprom.loadBinary(fc.getSelectedFile());
+                File selectedFile = fc.getSelectedFile();
+                prefs.setLastEepromFileName(selectedFile.getAbsolutePath());
+                eeprom.loadBinary(selectedFile);
                 refreshContents();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error loading eeprom contents from file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);

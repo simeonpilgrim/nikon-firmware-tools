@@ -22,7 +22,7 @@ public class GenericSerialFrame extends DocumentFrame {
         JTabbedPane tabbedPane = new JTabbedPane();
 
         for (final SerialDevice serialDevice : serialDevices) {
-            SerialDevicePanel serialDevicePanel = SerialPanelFactory.getSerialDevicePanel(serialDevice);
+            SerialDevicePanel serialDevicePanel = SerialPanelFactory.getSerialDevicePanel(serialDevice, ui);
             serialDevicePanels.add(serialDevicePanel);
             tabbedPane.addTab(serialDevice.toString(), null, serialDevicePanel);
         }
