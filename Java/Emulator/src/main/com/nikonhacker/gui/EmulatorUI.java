@@ -2947,6 +2947,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void stopEmulator(int chip) {
+        prefs.setLastEepromContents(eeprom.getMemory());
         emulator[chip].addBreakCondition(new AlwaysBreakCondition());
         emulator[chip].exitSleepLoop();
         try {
