@@ -130,7 +130,17 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
     }
 
     @Override
-    public void hexBytesChanged(HexEditorEvent e) {
-        // todo
+    public void hexBytesChanged(HexEditorEvent event) {
+        if (event.isModification()) {
+            try {
+                eeprom.getMemory()[event.getOffset()] = eepromHexEditor.getByte(event.getOffset());
+            }
+            catch (ArrayIndexOutOfBoundsException exception) {
+                JOptionPane.showMessageDialog(this, "Error writing to memory: " + exception.getMessage(), "Write error", JOptionPane.ERROR_MESSAGE);
+                // Reload to show unedited values
+                refreshContents();
+            }
+        }
+
     }
 }
