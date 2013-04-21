@@ -466,6 +466,9 @@ public class TxStatement extends Statement {
 
         for (char actionChar : instruction.getAction().toCharArray()) {
             switch (actionChar) {
+                case 'A':
+                    currentlySelectedRegisterNumber = TxCPUState.RA;
+                    break;
                 case 'i':
                     // Select Rs
                     currentlySelectedRegisterNumber = decodedRsFs;
