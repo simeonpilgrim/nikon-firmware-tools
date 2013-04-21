@@ -13,6 +13,11 @@ import java.util.TimerTask;
 import java.util.concurrent.Executors;
 
 public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
+    public static final int CMPCTL_CMPEN_MASK   = 0b00000001;
+    public static final int CMPCTL_RDEN_MASK    = 0b00000010;
+    public static final int CMPCTL_TCFFC_MASK   = 0b00110000;
+    public static final int CMPCTL_TCFFEN_MASK  = 0b01000000;
+
     private TxCPUState cpuState;
     private TxClockGenerator clockGenerator;
 
@@ -129,17 +134,30 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
         return cmpCtl[compareChannel];
     }
 
-    private boolean isCmpCtlCmpRdEn(int compareChannel) {
-        return (cmpCtl[compareChannel] & 0b10) != 0;
+
+    private boolean isCmpCtlCmpEn(int compareChannel) {
+        return (cmpCtl[compareChannel] & CMPCTL_CMPEN_MASK) != 0;
     }
 
-    private int getCmpCtlFfc(int compareChannel) {
-        return (cmpCtl[compareChannel] & 0b00110000) >> 4;
+    private boolean isCmpCtlCmpRdEn(int compareChannel) {
+        return (cmpCtl[compareChannel] & CMPCTL_RDEN_MASK) != 0;
+    }
+
+    private int getCmpCtlTcffc(int compareChannel) {
+        return (cmpCtl[compareChannel] & CMPCTL_TCFFC_MASK) >> 4;
+    }
+
+    private boolean isCmpCtlTcffEn(int compareChannel) {
+        return (cmpCtl[compareChannel] & CMPCTL_TCFFEN_MASK) != 0;
     }
 
     public void setCmpCtl(int compareChannel, int cmpCtl) {
         this.cmpCtl[compareChannel] = cmpCtl;
-        switch (getCmpCtlFfc(compareChannel)) {
+
+        // The role of the timer flip-flop is not well described in the Input Capture spec (chap 12).
+        // Explanations are more complete in the Timer Counters spec (e.g. section 11.3.7)
+        // Hoping that behaviour is the same
+        switch (getCmpCtlTcffc(compareChannel)) {
             case 0b00:
                 toggleFf(compareChannel);
                 break;
@@ -207,17 +225,19 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
 
                         // Comparator 1
                         for (int compareChannel = 0; compareChannel < TxIoListener.NUM_COMPARE_CHANNEL; compareChannel++) {
-                            if (((cmpCtl[compareChannel] & 0b1) != 0) && (currentValue / scale == tcCmp[compareChannel] / scale)) {
-                                // match
-                                interruptController.request(TxInterruptController.INTCMP0 + compareChannel);
-                                // Spec Block diagram also indicates INTCAP0 in this block. Typo I guess...
-                                if ((cmpCtl[compareChannel] & 0b01000000) != 0) {
-                                    toggleFf(compareChannel);
-                                }
-                                // TODO set output pin TCCOUT0 + comparechannel = 1;
-                                if (isCmpCtlCmpRdEn(compareChannel)) {
-                                    // Double buffering
-                                    tcCmp[compareChannel] = tcCmpBuf[compareChannel];
+                            if (isCmpCtlCmpEn(compareChannel)) {
+                                if (currentValue / scale == tcCmp[compareChannel] / scale) {
+                                    // match
+                                    interruptController.request(TxInterruptController.INTCMP0 + compareChannel);
+                                    // Spec Block diagram also indicates INTCAP0 in this block. Typo I guess...
+                                    if (isCmpCtlTcffEn(compareChannel)) {
+                                        toggleFf(compareChannel);
+                                    }
+                                    // TODO set output pin TCCOUT0 + comparechannel = 1;
+                                    if (isCmpCtlCmpRdEn(compareChannel)) {
+                                        // Double buffering
+                                        tcCmp[compareChannel] = tcCmpBuf[compareChannel];
+                                    }
                                 }
                             }
                         }
@@ -282,20 +302,6 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     private int getTbtClk() {
         return cr & 0b00001111;
     }
-
-//    public int getFfcr() {
-//        return ffcr | 0b11000011;
-//    }
-//
-//    public void setFfcr(int ffcr) {
-//        switch (ffcr & 0b11) {
-//            case 0b00: toggleFf0(); break;
-//            case 0b01: ff0 = true; break;
-//            case 0b10: ff0 = false; break;
-//            // case 0b11 : no change
-//        }
-//        this.ffcr = ffcr;
-//    }
 
     private void toggleFf(int compareChannel) {
         ff[compareChannel] = !ff[compareChannel];
