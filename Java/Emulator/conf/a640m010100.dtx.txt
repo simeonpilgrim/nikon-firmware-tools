@@ -230,7 +230,7 @@
 -s 0xBFC15CD4=clr_flags
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
 -s 0xBFC15D70=load_eeprom_to_FFFF4000 /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
--s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN src_buffer], $a2 [IN counter], $a3 [IN mode_read /* 0=writing, 1=reading */])
+-s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN buffer], $a2 [IN counter], $a3 [IN is_mode_read /* 0=writing, 1=reading */])
 -s 0xBFC15DE4=change_WDMOD
 -s 0xBFC15E54=check_sum_compare
 -s 0xBFC15EB8=prepare_HSC0_setting
@@ -690,7 +690,7 @@
 -s 0xBFC53320=dis_TBB
 -s 0xBFC53578=Disable_TBB
 -s 0xBFC53604=INT_TMRB_body01
--s 0xBFC53714=start_adc_dma3
+-s 0xBFC53714=start_ADC_DMA3
 -s 0xBFC537F8=reset_ADC_DMA3
 -s 0xBFC53894=INTDMA3_body00
 -s 0xBFC53B20=null_BFC53B20
@@ -917,7 +917,7 @@
 -s 0xBFC8CFC4=multiply_0xC($a0 [IN], $v0 [OUT a0_x_4_x_3])
 -s 0xBFC8CFF4=sys_set_flg_03
 -s 0xBFC8D000=send_msg_00
--s 0xBFC8D018=send_msg_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send]);
+-s 0xBFC8D018=send_msg_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send])
 -s 0xBFC8D030=Task0xD
 -s 0xBFC8D0E0=get_battery_command
 -s 0xBFC8D11C=decipher_battery_response
@@ -927,7 +927,7 @@
 -s 0xBFC8D4FC=mem_16bytes_xor
 -s 0xBFC8D560=encryption
 -s 0xBFC8D964=array_exchange
--s 0xBFC8D9DC=mem_copy_18bytes
+-s 0xBFC8D9DC=mem_copy_18bytes($a0 [IN dest_addr], $a1 [IN src_addr])
 
 ########## Global variables
 
