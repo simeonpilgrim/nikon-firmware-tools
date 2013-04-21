@@ -4,35 +4,32 @@ IMPORTANT : modifying your firmware can result in potentially DESTROYING ("brick
 By using these tools, you agree that it is your entire fault and that we cannot be held responsible for anything.
 That is what is repeated in legal terms at the end of this document.
 
+Quick start:
+1. Make sure Java 1.7 is installed (JAVA_HOME and PATH variables should be set up correctly)
+2. Launch startEmulator.bat (Windows) or startEmulator.sh (Linux)
+3. Go to http://nikonhacker.com/wiki/NikonEmulator and follow the instructions
+
+Details:
 Basically, all cameras using a Fujitsu FR or Toshiba TX family CPU could benefit from these tools,
 although some parts such as firmware decrypting are specific to certain Nikon cameras.
-Multiple tools can be accessed from the command-line (assuming that your Java environment -
-JAVA_HOME and PATH variables - is set up correctly).
+Multiple tools can be accessed from the command-line. They are pre-wrapped as batch files for convenience.
+You should be able to simply drop a file on a batch to process it
+(take care, for Dfr/Dtx, a "Dfr.txt"/"Dtx.txt" file is expected to sit next to the binary file you drop unless you
+specify options in the batch file. Sample ".txt" files for D5100 are provided for your convenience)
 
-They are pre-wrapped as batch files for convenience. You should be able to simply drop a file on a batch to
-process it (take care, for Dfr, a "Dfr.txt" file is expected to be next to the binary file you drop unless you
-specify options in the batch file. a sample dfr.txt file is provided for your convenience)
-
-They are all of the form :
-java -cp NikonEmulator.jar;<additional_libs> <command> <params>
-
-Where <command> can be :
-    com.nikonhacker.gui.EmulatorUI :    Starts the main emulator user interface. From there, many other tools can be
-                                        accessed via the menus.
-                                        <params> is an optional (decoded) firmware binary file to load on startup. If
-                                        you don't have one, either start it with no param and decode one using the
-                                        Tools menu or use the FirmwareDecoder command line tool (see below)
-    com.nikonhacker.disassembly.fr.Dfr: Starts the Dfr tool, a Fujitsu FR disassembler ported from Kevin Schoedel's
-                                        original Dfr.
-                                        <params> are exactly the same as the original Dfr except for filemap and
-                                        memorymap output options. Start it with no <params> for help
-    com.nikonhacker.disassembly.fr.Dfr: Starts the Dtx tool, a Toshiba TMP19A disassembler.
-                                        <params> are similar to Dfr above. Start it with no <params> for help
-    com.nikonhacker.encoding.FirmwareDecoder :  Decodes a encrypted firmware to its different files. By default, the
-                                                intermediary 'res' file staged is skipped so you immediately get
-                                                files that can be loaded in other tools
-
-Other command line tools such as firmware encoder and console-based emulator are available for debugging purpose.
+The batch files are :
+    startEmulator : Starts the main emulator user interface. From there, many other tools can be
+                    accessed via the menus.
+                    <params> is an optional (decoded) firmware binary file to load on startup. If
+                    you don't have one, either start with no param and decode one using the
+                    Tools menu, or use first the FirmwareDecoder command line tool (see below)
+    startDfr:   Starts the Dfr tool, a Fujitsu FR disassembler ported from Kevin Schoedel's original Dfr.
+                Parameters are expected, and are the same as the ones of the original Dfr except for filemap and
+                memorymap output options. Start it with no parameter for help
+    startDtx:   Starts the Dtx tool, a Toshiba TMP19A disassembler.
+                Parameters are mostly similar to Dfr above. Start it with no parameter for help
+    startFirmwareDecoder :  Decodes an encrypted firmware into its different files.
+                            By default, you immediately get fully decoded files that can be loaded in other tools
 
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
 "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
