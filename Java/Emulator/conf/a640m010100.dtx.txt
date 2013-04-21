@@ -871,7 +871,7 @@
 -s 0xBFC8BB00=bad_battery
 -s 0xBFC8BB58=power_adapter_seeting
 -s 0xBFC8BB9C=update_battery_level
--s 0xBFC8BC5C=battery_authention
+-s 0xBFC8BC5C=battery_authenticaton
 -s 0xBFC8BE58=authentication
 -s 0xBFC8BE9C=update_battery_auc_counter
 -s 0xBFC8BEF8=battery_comm
