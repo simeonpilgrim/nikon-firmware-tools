@@ -100,8 +100,17 @@ public abstract class CPUStateComponent extends JComponent {
     }
 
     protected void updateAndColorTextField(JTextField textField, String newValue) {
-        textField.setBackground(textField.getText().equals(newValue)? COLOR_UNCHANGED : COLOR_CHANGED);
-        textField.setText(newValue);
+        String previousValue = textField.getText();
+        if (previousValue.equals(newValue)) {
+            textField.setBackground(COLOR_UNCHANGED);
+            textField.setToolTipText(null);
+        }
+        else {
+            textField.setBackground(COLOR_CHANGED);
+            // Place old value in tooltip
+            textField.setToolTipText("Was: " + previousValue);
+            textField.setText(newValue);
+        }
     }
 
     protected void updateAndColorLabel(JLabel label, String newValue) {
