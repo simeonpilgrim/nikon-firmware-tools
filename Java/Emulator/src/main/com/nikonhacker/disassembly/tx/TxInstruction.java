@@ -23,6 +23,7 @@ public class TxInstruction extends Instruction {
      * @param commentFormat
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
 * <pre>
+'A': current register is RA<br/>
 'F': current register is FP<br/>
 'S': current register is SP<br/>
 'i': current register is Rs<br/>
