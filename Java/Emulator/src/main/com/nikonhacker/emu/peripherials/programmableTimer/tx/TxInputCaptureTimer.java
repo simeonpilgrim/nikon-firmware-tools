@@ -37,6 +37,9 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     /** Compare values */
     private int[] tcCmp = new int[TxIoListener.NUM_COMPARE_CHANNEL];
 
+    /** Compare values double buffer */
+    private int[] tcCmpBuf = new int[TxIoListener.NUM_COMPARE_CHANNEL];
+
     /** Compare control register */
     private int[] cmpCtl = new int[TxIoListener.NUM_COMPARE_CHANNEL];
 
@@ -126,20 +129,28 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
         return cmpCtl[compareChannel];
     }
 
+    private boolean isCmpCtlCmpRdEn(int compareChannel) {
+        return (cmpCtl[compareChannel] & 0b10) != 0;
+    }
+
+    private int getCmpCtlFfc(int compareChannel) {
+        return (cmpCtl[compareChannel] & 0b00110000) >> 4;
+    }
+
     public void setCmpCtl(int compareChannel, int cmpCtl) {
         this.cmpCtl[compareChannel] = cmpCtl;
-        // Note : double buffering is ignored
-        switch (cmpCtl & 0b00110000) {
-            case 0b000000:
+        switch (getCmpCtlFfc(compareChannel)) {
+            case 0b00:
                 toggleFf(compareChannel);
                 break;
-            case 0b010000:
+            case 0b01:
                 ff[compareChannel] = true;
                 break;
-            case 0b100000:
+            case 0b10:
                 ff[compareChannel] = false;
                 break;
-            // default : ignore
+            default :
+                // don't care
         }
     }
 
@@ -148,16 +159,16 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     }
 
     public void setTcCmp(int compareChannel, int tcCmp) {
-        this.tcCmp[compareChannel] = tcCmp;
+        if (isCmpCtlCmpRdEn(compareChannel)) {
+            // Double buffering
+            this.tcCmpBuf[compareChannel] = tcCmp;
+        }
+        else {
+            // No double buffering
+            this.tcCmp[compareChannel] = tcCmp;
+        }
     }
 
-    public int[] getTcCmp() {
-        return tcCmp;
-    }
-
-    public void setTcCmp(int[] tcCmp) {
-        this.tcCmp = tcCmp;
-    }
     public int getRun() {
         return run;
     }
@@ -204,6 +215,10 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                                     toggleFf(compareChannel);
                                 }
                                 // TODO set output pin TCCOUT0 + comparechannel = 1;
+                                if (isCmpCtlCmpRdEn(compareChannel)) {
+                                    // Double buffering
+                                    tcCmp[compareChannel] = tcCmpBuf[compareChannel];
+                                }
                             }
                         }
 
