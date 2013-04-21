@@ -3337,9 +3337,9 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of swraspInstruction: does not sign-extend offset but multiplies it by 4
      */
-    private static final TxInstruction swrasp16Instruction = new TxInstruction("sw", "A, 4u(S)", "uS>A", "", "", "sw $ra,100($sp)",
+    private static final TxInstruction swrasp16Instruction = new TxInstruction("sw", "A, 4u(S)", "uS>A", "", "Aw", "sw $ra,100($sp)",
             "Store Word: Store contents of $ra into effective memory word address",
-            null, InstructionFormat16.RRI,
+            null, InstructionFormat16.RI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(TxStatement statement, StatementContext context) throws EmulationException {
