@@ -265,4 +265,16 @@ public class Format {
     public static int getByte(int value, int position) {
         return value << ((3-position)<<3) >>> 24;
     }
+
+    public static int swap2bytes(int value) {
+        return ((value>>8)&0x000000FF) | // move byte 1 to byte 0
+               ((value<<8)&0x0000FF00) ; // move byte 0 to byte 1
+    }
+
+    public static int swap4bytes(int value) {
+        return ((value>>24)&0x000000ff) | // move byte 3 to byte 0
+               ((value>> 8)&0x0000ff00) | // move byte 2 to byte 1
+               ((value<< 8)&0x00ff0000) | // move byte 1 to byte 2
+               ((value<<24)&0xff000000) ; // move byte 0 to byte 3
+    }
 }

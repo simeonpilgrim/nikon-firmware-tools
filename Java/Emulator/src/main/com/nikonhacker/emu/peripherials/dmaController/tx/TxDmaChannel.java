@@ -54,12 +54,17 @@ public class TxDmaChannel {
         return ccr;
     }
 
+    private boolean isCcrBig() {
+        return (ccr & CCR_BIG_MASK) != 0;
+    }
+
+    private boolean isStartRequested(int newCcr) {
+        return (newCcr & CCR_STR_MASK) != 0;
+    }
+
     public void setCcr(int ccr) {
         this.ccr = ccr & 0x7FFFFFFF;
-        if ((ccr & CCR_BIG_MASK) == 0) {
-            throw new RuntimeException(toString() + ": Little endian is not supported for now");
-        }
-        if ((ccr & CCR_STR_MASK) != 0) {
+        if (isStartRequested(ccr)) {
             // First check if a termination bit is set
             if (isCsrNormalCompletion()) {
                 System.err.println(toString() + ": Attempt to put the channel in standby while CSR:NC bit is still set. Switching to Abnormal Completion");
@@ -406,11 +411,19 @@ public class TxDmaChannel {
                         break;
                     case 2:
                         value = memory.loadUnsigned16(sar);
+                        if (!isCcrBig()) {
+                            // Endian switchover function
+                            value = Format.swap2bytes(value);
+                        }
                         txDmaController.setDhr(value);
                         memory.store16(dar, value);
                         break;
                     case 4:
                         value = memory.load32(sar);
+                        if (!isCcrBig()) {
+                            // Endian switchover function
+                            value = Format.swap4bytes(value);
+                        }
                         txDmaController.setDhr(value);
                         memory.store32(dar, value);
                         break;
