@@ -110,7 +110,7 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
                     eeprom.saveBinary(file);
                 }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error saving eeprom contents from file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error saving eeprom contents to file: " + e.getMessage(), "Save error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         }
