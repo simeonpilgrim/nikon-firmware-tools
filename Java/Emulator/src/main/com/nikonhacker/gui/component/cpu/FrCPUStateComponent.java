@@ -209,6 +209,8 @@ public class FrCPUStateComponent extends CPUStateComponent {
             add(new JLabel());
         }
 
+        // Force a refresh, so that the one that will be triggered by the timer will leave a white background
+        refresh();
     }
 
     /**
@@ -238,52 +240,25 @@ public class FrCPUStateComponent extends CPUStateComponent {
             r15Label1.setText("");
         }
         else {
-            pcTextField.setText(Format.asHex(cpuState.pc, 8));
-            ilmTextField.setText(Format.asBinary((((FrCPUState)cpuState).getILM()), 5));
-            scrTextField.setText(Format.asBinary((((FrCPUState)cpuState).getSCR()), 3));
-            ccrTextField.setText(Format.asBinary((((FrCPUState)cpuState).getCCR()), 6));
-            tbrTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.TBR), 8));
-            rpTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.RP), 8));
-            sspTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.SSP), 8));
-            uspTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.USP), 8));
-            mdhTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDH), 8));
-            mdlTextField.setText(Format.asHex(cpuState.getReg(FrCPUState.MDL), 8));
+            updateAndColorTextField(pcTextField, Format.asHex(cpuState.pc, 8));
+            updateAndColorTextField(ilmTextField, Format.asBinary((((FrCPUState)cpuState).getILM()), 5));
+            updateAndColorTextField(scrTextField, Format.asBinary((((FrCPUState)cpuState).getSCR()), 3));
+            updateAndColorTextField(ccrTextField, Format.asBinary((((FrCPUState)cpuState).getCCR()), 6));
+            updateAndColorTextField(tbrTextField, Format.asHex(cpuState.getReg(FrCPUState.TBR), 8));
+            updateAndColorTextField(rpTextField, Format.asHex(cpuState.getReg(FrCPUState.RP), 8));
+            updateAndColorTextField(sspTextField, Format.asHex(cpuState.getReg(FrCPUState.SSP), 8));
+            updateAndColorTextField(uspTextField, Format.asHex(cpuState.getReg(FrCPUState.USP), 8));
+            updateAndColorTextField(mdhTextField, Format.asHex(cpuState.getReg(FrCPUState.MDH), 8));
+            updateAndColorTextField(mdlTextField, Format.asHex(cpuState.getReg(FrCPUState.MDL), 8));
 
             // General purpose registers
             for (int i = 0; i < regTextFields.length; i++) {
-                regTextFields[i].setText(Format.asHex(cpuState.getReg(i), 8));
+                updateAndColorTextField(regTextFields[i], Format.asHex(cpuState.getReg(i), 8));
             }
-            r15Label0.setText((((FrCPUState)cpuState).getS() == 0)?"=R15":"");
-            r15Label1.setText((((FrCPUState)cpuState).getS() == 1)?"=R15":"");
+            updateAndColorLabel(r15Label0, (((FrCPUState)cpuState).getS() == 0)?"=R15":"");
+            updateAndColorLabel(r15Label1, (((FrCPUState)cpuState).getS() == 1)?"=R15":"");
         }
     }
-
-
-//    /**
-//     * Clears all fields of the component
-//     */
-//    public void clear() {
-//        setAllCpuStateFlags(cpuStateValidityFlags, false);
-//        refresh();
-////        pcTextField.setText("");
-////        ilmTextField.setText("");
-////        scrTextField.setText("");
-////        ccrTextField.setText("");
-////        tbrTextField.setText("");
-////        rpTextField.setText("");
-////        sspTextField.setText("");
-////        uspTextField.setText("");
-////        mdhTextField.setText("");
-////        mdlTextField.setText("");
-////
-////        // General purpose registers
-////        for (JTextField regTextField : regTextFields) {
-////            regTextField.setText("");
-////        }
-////
-////        r15Label0.setText("");
-////        r15Label1.setText("");
-//    }
 
 
     private void validateAndSaveValues(FrCPUState cpuState) {
@@ -405,40 +380,18 @@ public class FrCPUStateComponent extends CPUStateComponent {
 
 
     public void setEditable(boolean editable) {
-
         pcTextField.setEditable(editable);
-        pcTextField.setBackground(Color.WHITE);
-
         ilmTextField.setEditable(editable);
-        ilmTextField.setBackground(Color.WHITE);
-
         scrTextField.setEditable(editable);
-        scrTextField.setBackground(Color.WHITE);
-
         ccrTextField.setEditable(editable);
-        ccrTextField.setBackground(Color.WHITE);
-
         tbrTextField.setEditable(editable);
-        tbrTextField.setBackground(Color.WHITE);
-
         rpTextField.setEditable(editable);
-        rpTextField.setBackground(Color.WHITE);
-
         sspTextField.setEditable(editable);
-        sspTextField.setBackground(Color.WHITE);
-
         uspTextField.setEditable(editable);
-        uspTextField.setBackground(Color.WHITE);
-
         mdhTextField.setEditable(editable);
-        mdhTextField.setBackground(Color.WHITE);
-
         mdlTextField.setEditable(editable);
-        mdlTextField.setBackground(Color.WHITE);
-
         for (JTextField regTextField : regTextFields) {
             regTextField.setEditable(editable);
-            regTextField.setBackground(Color.WHITE);
         }
 
         saveButton.setEnabled(editable);

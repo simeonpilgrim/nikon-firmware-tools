@@ -4,14 +4,16 @@ package com.nikonhacker;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.*;
 import java.util.*;
 
 public class Prefs {
+    public enum EepromInitMode {
+        BLANK, PERSISTENT, LAST_LOADED
+    }
+
     private static final String KEY_WINDOW_MAIN = "MAIN";
 
     // Common
@@ -26,6 +28,7 @@ public class Prefs {
 
     // Per chip
     private List<BreakTrigger>[] triggers;
+    private List<MemoryWatch>[] memoryWatches;
     private EnumSet<OutputOption>[] outputOptions;
     private Map<Integer,Byte>[] ioPortMap;
     private boolean[] autoUpdateRealOsObjectWindow;
@@ -36,6 +39,14 @@ public class Prefs {
     private String codeStructureGraphOrientation[];
     private boolean firmwareWriteProtected[];
     private boolean timersCycleSynchronous[];
+    private boolean dmaSynchronous[];
+    private boolean adValueFromList[];
+    private Map<String,List<Integer>> adValueListMap[];
+    private Map<String,Integer> adValueMap[];
+    private EepromInitMode eepromInitMode;
+    private byte[] lastEepromContents;
+    private String lastEepromFileName;
+
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -51,19 +62,39 @@ public class Prefs {
 
     public static Prefs load() {
         File preferenceFile = getPreferenceFile();
+        File lastKnownGoodFile = new File(preferenceFile.getAbsolutePath() + ".lastKnownGood");
+        File corruptFile = new File(preferenceFile.getAbsolutePath() + ".corrupt");
         try {
-            if (preferenceFile.exists()) {
-                FileInputStream inputStream = new FileInputStream(preferenceFile);
-                Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
-                inputStream.close();
-                return prefs;
-            }
+            return loadGivenFile(preferenceFile, lastKnownGoodFile);
         } catch (Exception e) {
-            System.out.println("Could not load preferences file. Attempting a rename to " + preferenceFile.getAbsolutePath() + ".corrupt and creating new file.");
-            preferenceFile.renameTo(new File(preferenceFile.getAbsolutePath() + ".corrupt"));
+            System.out.println("Could not load preferences file. Attempting a rename to " + corruptFile.getName() + " and trying to revert to " + lastKnownGoodFile.getName() + " instead...");
             e.printStackTrace();
+            preferenceFile.renameTo(corruptFile);
+            try {
+                return loadGivenFile(lastKnownGoodFile, preferenceFile);
+            } catch (IOException e1) {
+                System.out.println("Could not load " + lastKnownGoodFile.getName() + ". Starting with a blank preference file...");
+            }
         }
         return new Prefs();
+    }
+
+    private static Prefs loadGivenFile(File file, File backupTargetFile) throws IOException {
+        if (file.exists()) {
+            FileInputStream inputStream = new FileInputStream(file);
+            Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
+            inputStream.close();
+            if (backupTargetFile != null) {
+                // Parsing was OK. Back-up config
+                FileOutputStream outputStream = new FileOutputStream(backupTargetFile);
+                XStreamUtils.save(prefs, outputStream);
+                outputStream.close();
+            }
+            return prefs;
+        }
+        else {
+            return new Prefs();
+        }
     }
 
     public String getButtonSize() {
@@ -93,12 +124,12 @@ public class Prefs {
     }
 
     public boolean isSourceCodeFollowsPc(int chip) {
-        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[]{true, true};
         return sourceCodeFollowsPc[chip];
     }
 
     public void setSourceCodeFollowsPc(int chip, boolean value) {
-        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[2];
+        if (sourceCodeFollowsPc == null || sourceCodeFollowsPc.length != 2) sourceCodeFollowsPc = new boolean[]{true, true};
         this.sourceCodeFollowsPc[chip] = value;
     }
 
@@ -144,6 +175,16 @@ public class Prefs {
 
     public void setTriggers(int chip, List<BreakTrigger> triggers) {
         this.triggers[chip] = triggers;
+    }
+
+    public List<MemoryWatch> getWatches(int chip) {
+        if (memoryWatches == null) memoryWatches = new List[2];
+        if (memoryWatches[chip] == null) memoryWatches[chip] = new ArrayList<MemoryWatch>();
+        return memoryWatches[chip];
+    }
+
+    public void setWatches(int chip, List<MemoryWatch> watches) {
+        this.memoryWatches[chip] = watches;
     }
 
 
@@ -311,14 +352,84 @@ public class Prefs {
     }
 
     public boolean areTimersCycleSynchronous(int chip) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         return timersCycleSynchronous[chip];
     }
 
     public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[2];
+        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
     }
+
+    public boolean isDmaSynchronous(int chip) {
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
+        return dmaSynchronous[chip];
+    }
+
+    public void setDmaSynchronous(int chip, boolean isDmaSynchronous) {
+        if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
+        this.dmaSynchronous[chip] = isDmaSynchronous;
+    }
+
+    public boolean isAdValueFromList(int chip) {
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
+        return adValueFromList[chip];
+    }
+
+    public void setAdValueFromList(int chip, boolean isAdValueFromList) {
+        if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
+        this.adValueFromList[chip] = isAdValueFromList;
+    }
+
+    public List<Integer> getAdValueList(int chip, String channelKey) {
+        if (adValueListMap == null || adValueListMap.length != 2) adValueListMap = new Map[]{new HashMap<String, ArrayList<Integer>>(), new HashMap<String, ArrayList<Integer>>()};
+        return adValueListMap[chip].get(channelKey);
+    }
+
+    public List<Integer> setAdValueList(int chip, String channelKey, List<Integer> values) {
+        if (adValueListMap == null || adValueListMap.length != 2) adValueListMap = new Map[]{new HashMap<String, ArrayList<Integer>>(), new HashMap<String, ArrayList<Integer>>()};
+        return adValueListMap[chip].put(channelKey, values);
+    }
+
+    public int getAdValue(int chip, String channelKey) {
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        return adValueMap[chip].get(channelKey);
+    }
+
+    public void setAdValue(int chip, String channelKey, int value) {
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        adValueMap[chip].put(channelKey, value);
+    }
+
+    public EepromInitMode getEepromInitMode() {
+        if (eepromInitMode == null) {
+            return EepromInitMode.BLANK;
+        }
+        else {
+            return eepromInitMode;
+        }
+    }
+
+    public void setEepromInitMode(EepromInitMode eepromInitMode) {
+        this.eepromInitMode = eepromInitMode;
+    }
+
+    public byte[] getLastEepromContents() {
+        return lastEepromContents;
+    }
+
+    public void setLastEepromContents(byte[] lastEepromContents) {
+        this.lastEepromContents = lastEepromContents;
+    }
+
+    public String getLastEepromFileName() {
+        return lastEepromFileName;
+    }
+
+    public void setLastEepromFileName(String lastEepromFileName) {
+        this.lastEepromFileName = lastEepromFileName;
+    }
+
 
     /**
      * This is basically just a structure with an X Y value.

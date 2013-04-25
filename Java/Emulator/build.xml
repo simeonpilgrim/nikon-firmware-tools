@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="NikonEmulator"/>
-    <property name="app-version"      value="2.17" />
+    <property name="app-version"      value="2.26" />
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
     <property name="class-dir"        location="ant-classes"/>
@@ -17,6 +17,7 @@
     <property name="lib-dir"          location="lib"/>
     <property name="batch-dir"        location="batch"/>
     <property name="conf-dir"         location="conf"/>
+    <property name="data-dir"         location="data"/>
     <property name="tools-dir"        location="tools"/>
 	<property name="debug"            value="true"/>
 	<property name="debuglevel"       value="lines,vars,source"/>
@@ -102,6 +103,11 @@
         <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
              update="true"
              basedir="${conf-dir}"
+             includes="*.*"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${data-dir}"
              includes="*.*"
                 />
 

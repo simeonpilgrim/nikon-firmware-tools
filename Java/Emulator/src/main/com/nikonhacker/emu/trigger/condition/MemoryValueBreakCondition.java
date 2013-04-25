@@ -7,9 +7,10 @@ import com.nikonhacker.emu.trigger.BreakTrigger;
 
 public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition implements BreakCondition {
     private int address = 0;
-    private int value = 0;
     private int mask = 0xFFFFFFFF;
+    private boolean isChangeDetection = true;
     private boolean negate = false;
+    private int value = 0;
 
     public MemoryValueBreakCondition(BreakTrigger breakTrigger) {
         super(breakTrigger);
@@ -23,20 +24,20 @@ public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition imp
         this.address = address;
     }
 
-    public int getValue() {
-        return value;
-    }
-
-    public void setValue(int value) {
-        this.value = value;
-    }
-
     public int getMask() {
         return mask;
     }
 
     public void setMask(int mask) {
         this.mask = mask;
+    }
+
+    public boolean isChangeDetection() {
+        return isChangeDetection;
+    }
+
+    public void setChangeDetection(boolean changeDetection) {
+        isChangeDetection = changeDetection;
     }
 
     public boolean isNegate() {
@@ -47,12 +48,27 @@ public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition imp
         this.negate = negate;
     }
 
+    public int getValue() {
+        return value;
+    }
+
+    public void setValue(int value) {
+        this.value = value;
+    }
+
     public boolean matches(CPUState cpuState, Memory memory) {
-        return negate ^ ((memory.load32(address) & mask) == value);
+        int currentValue = memory.load32(address);
+        boolean matches = negate ^ ((currentValue & mask) == value);
+        if (matches && isChangeDetection) {
+            // Re-arm trigger so that if will fire when value changes from the current one
+            negate = true;
+            value = currentValue;
+        }
+        return matches;
     }
 
     @Override
     public String toString() {
-        return "@(0x" + Format.asHex(address, 8) + ") & 0x" + Format.asHex(mask, 8) + (negate?" != ":" == ") + "0x" + Format.asHex(value, 8);
+        return "@(0x" + Format.asHex(address, 8) + ") & 0x" + Format.asHex(mask, 8) + (isChangeDetection ? " changes" : ((negate?" != ":" == ") + "0x" + Format.asHex(value, 8)));
     }
 }

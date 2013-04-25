@@ -26,7 +26,7 @@ public class DisassemblyFrame extends DocumentFrame {
 
         instructionPrintWriter = textArea.getPrintWriter();
 
-        emulator.setInstructionPrintWriter(instructionPrintWriter);
+        emulator.setPrinter(instructionPrintWriter);
 
         getContentPane().add(new SearchableTextAreaPanel(textArea));
     }
@@ -36,7 +36,7 @@ public class DisassemblyFrame extends DocumentFrame {
     }
 
     public void dispose() {
-        emulator.setInstructionPrintWriter(null);
+        emulator.setPrinter(null);
         super.dispose();
     }
 

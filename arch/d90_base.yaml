@@ -1,8 +1,8 @@
 -   name: cm
     label: CM
     blocks:
-        - Main (B) MCU
-        - Sub  (A) MCU
+        - Main MCU (A?)
+        - Sub  MCU
     ports:
         - Viewfinder
         - Flash
@@ -21,7 +21,7 @@
 -   name: dg
     label: DG
     blocks:
-        - RISC MCU
+        - RISC MCU (B?)
         - Expeed ASIC
         - DDR
         - Flash EEPROM

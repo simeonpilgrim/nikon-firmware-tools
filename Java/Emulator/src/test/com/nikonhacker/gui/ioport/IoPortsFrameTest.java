@@ -1,7 +1,7 @@
 package com.nikonhacker.gui.ioport;
 
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
-import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.ioPort.IoPortsFrame;
 

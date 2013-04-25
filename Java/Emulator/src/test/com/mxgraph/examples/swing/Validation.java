@@ -21,11 +21,6 @@ import java.util.Arrays;
 
 public class Validation extends JFrame {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = -8928982366041695471L;
-
     public Validation() {
         super("Hello, World!");
 
