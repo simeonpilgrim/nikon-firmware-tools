@@ -45,10 +45,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CRC.cs" />
+    <Compile Include="Decrypt.cs" />
     <Compile Include="Firmware.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Firmware1.cs" />
+    <Compile Include="fr-v.cs" />
     <Compile Include="Menu.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
