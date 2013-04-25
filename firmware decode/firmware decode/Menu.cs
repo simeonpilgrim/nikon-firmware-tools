@@ -204,6 +204,8 @@ namespace Nikon_Decode
 
         private static void InteractiveTextD5100(string fileName)
         {
+            firmConsts = new D5100_0101_Const();
+
             if (File.Exists(fileName))
             {
                 byte[] data;
