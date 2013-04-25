@@ -1,8 +1,8 @@
 package com.nikonhacker.gui.component.ioPort;
 
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
-import com.nikonhacker.emu.peripherials.ioPort.IoPortListener;
-import com.nikonhacker.emu.peripherials.ioPort.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
+import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import eu.hansolo.custom.SteelCheckBox;
@@ -17,9 +17,10 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class IoPortsFrame extends DocumentFrame implements IoPortListener {
+public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
     private final IoPort[] ioPorts;
 
+    private JLabel[][] labels;
     private JPanel[][] cells;
     private JCheckBox[][] inputs;
     private JComponent[][] outputs;
@@ -28,16 +29,23 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.ioPorts = ioPorts;
 
+        JTabbedPane tabbedPane = new JTabbedPane();
+
+        // Labels from left to right (from bit 7 to 0)
+        labels = new JLabel[ioPorts.length][8];
         // Components from left to right (from bit 7 to 0)
         cells = new JPanel[ioPorts.length][8];
         inputs = new JCheckBox[ioPorts.length][8];
         outputs = new JComponent[ioPorts.length][8];
 
-        JPanel panel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
-        panel.add(new JLabel("bit #"), "right");
+        JPanel configPanel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
+        JPanel statePanel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
+        configPanel.add(new JLabel("bit #"), "right");
+        statePanel.add(new JLabel("bit #"), "right");
         // Header line - bit numbers
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
-            panel.add(new JLabel(String.valueOf(bitNumber)), (bitNumber == 0 ? "wrap" : ""));
+            configPanel.add(new JLabel(String.valueOf(bitNumber)), (bitNumber == 0 ? "wrap" : ""));
+            statePanel.add(new JLabel(String.valueOf(bitNumber)), (bitNumber == 0 ? "wrap" : ""));
         }
 
         FlowLayout noMarginLayout = new FlowLayout();
@@ -47,12 +55,19 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
         // Port lines - label and bits
         for (int portNumber = 0; portNumber < ioPorts.length; portNumber++) {
             // Label
-            panel.add(new JLabel(ioPorts[portNumber].toString()));
+            configPanel.add(new JLabel(ioPorts[portNumber].toString()));
+            statePanel.add(new JLabel(ioPorts[portNumber].toString()));
             // Bits
             // Loop from left to right (from bit 7 to 0)
             for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
                 final int finalPortNumber = portNumber;
-                // Prepare inputs
+                // Prepare config labels
+                JLabel label = new JLabel();
+                label.setPreferredSize(new Dimension(30, 30));
+                labels[portNumber][7 - bitNumber] = label;
+                configPanel.add(label, (bitNumber > 0 ? "" : "wrap"));
+
+                // Prepare state inputs
                 JCheckBox checkBox;
                 if (ui.getPrefs().isUsePrettyIoComponents()) {
                     // Steel switch for input
@@ -73,15 +88,17 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
                 //checkBox.setVisible(false);
                 inputs[portNumber][7 - bitNumber] = checkBox;
 
-                // Prepare led for output
+                // Prepare state ouputs
                 JComponent outputComponent;
                 if (ui.getPrefs().isUsePrettyIoComponents()) {
+                    // Led for output
                     outputComponent = new Led();
                     ((Led)outputComponent).setLedColor(LedColor.YELLOW_LED);
                     ((Led)outputComponent).setLedType(LedType.ROUND);
                     outputComponent.setPreferredSize(new Dimension(30, 30));
                 }
                 else {
+                    // Plain radio for output
                     outputComponent = new JRadioButton();
                     outputComponent.setEnabled(false);
                 }
@@ -91,11 +108,14 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
                 JPanel cell = new JPanel(noMarginLayout);
                 cell.setPreferredSize(new Dimension(30, 30));
                 cells[portNumber][7 - bitNumber] = cell;
-                panel.add(cell, (bitNumber > 0 ? "" : "wrap"));
+                statePanel.add(cell, (bitNumber > 0 ? "" : "wrap"));
             }
             refreshComponents(portNumber);
         }
-        getContentPane().add(panel);
+        tabbedPane.addTab("Configuration", configPanel);
+        tabbedPane.addTab("State", statePanel);
+
+        getContentPane().add(tabbedPane);
     }
 
     private void refreshComponents(int portNumber) {
@@ -103,6 +123,13 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
         int ie = ((TxIoPort)ioPorts[portNumber]).getInputEnableControlRegister();
         // Loop from left to right (from bit 7 to 0)
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
+            String pinDescription = ioPorts[portNumber].getPinDescription(bitNumber);
+
+            // Set symbol as text
+            labels[portNumber][7 - bitNumber].setText(ioPorts[portNumber].getPinName(bitNumber));
+            // Set description as tooltip
+            labels[portNumber][7 - bitNumber].setToolTipText(pinDescription);
+
             JComponent comp;
             if ((config & (1<< bitNumber)) == 0) {
                 // pin is configured as input
@@ -121,6 +148,12 @@ public class IoPortsFrame extends DocumentFrame implements IoPortListener {
             cells[portNumber][7 - bitNumber].removeAll();
             if (comp != null) {
                 cells[portNumber][7 - bitNumber].add(comp);
+                // Put the tooltip on the component
+                comp.setToolTipText(pinDescription);
+            }
+            else {
+                // Put the tooltip on the blank panel
+                cells[portNumber][7 - bitNumber].setToolTipText(pinDescription);
             }
             refreshOutputValues(portNumber);
         }

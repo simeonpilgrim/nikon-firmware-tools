@@ -2,6 +2,7 @@ package com.nikonhacker.emu.interrupt.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 public class TxInterruptRequest extends InterruptRequest {
 
@@ -90,7 +91,12 @@ public class TxInterruptRequest extends InterruptRequest {
 
     @Override
     public String toString() {
-        return type + (type==Type.HARDWARE_INTERRUPT?(" #" + interruptNumber + " (0x" + Format.asHex(interruptNumber, 2) + ")"):"");
+        if (type==Type.HARDWARE_INTERRUPT) {
+            return "HW interrupt " + TxInterruptController.hardwareInterruptDescription[interruptNumber].symbolicName + " (#" + interruptNumber + "d = 0x" + Format.asHex(interruptNumber, 2) + ")";
+        }
+        else {
+            return type.name();
+        }
     }
 
 

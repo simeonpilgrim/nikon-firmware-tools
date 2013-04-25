@@ -1,18 +1,21 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.CycleCounterListener;
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
-import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Behaviour is Based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
  */
-public class TxSerialInterface extends SerialInterface {
+public class TxSerialInterface extends SerialInterface implements CycleCounterListener {
     private static final int SERIAL_RX_FIFO_SIZE = 4;
+    private static final int CYCLES_PER_BYTE = 10;
 
     /**
      * Rx buffer
@@ -22,8 +25,7 @@ public class TxSerialInterface extends SerialInterface {
     /**
      * Rx FIFO
      */
-    protected Deque<Integer> rxFifo = new LinkedList<Integer>();
-    protected int rxFifoSize = Integer.MAX_VALUE;
+    protected Queue<Integer> rxFifo = new LinkedList<Integer>();
     protected int rxInterruptFillLevel;
 
     /**
@@ -34,8 +36,7 @@ public class TxSerialInterface extends SerialInterface {
     /**
      * Tx FIFO.
      */
-    protected Deque<Integer> txFifo = new LinkedList<Integer>();
-    protected int txFifoSize = Integer.MAX_VALUE;
+    protected Queue<Integer> txFifo = new LinkedList<Integer>();
     protected int txInterruptFillLevel;
 
     protected int en; // Enable register
@@ -51,8 +52,11 @@ public class TxSerialInterface extends SerialInterface {
     protected int tst = 0b10000000; // Transmit FIFO status register
     protected int fcnf; // FIFO configuration register
 
-    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
-        super(serialInterfaceNumber, interruptController);
+    private Integer cycleCounter = 0;
+    private Integer delayedValue;
+
+    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
+        super(serialInterfaceNumber, interruptController, emulator);
     }
 
     public int getEn() {
@@ -102,7 +106,10 @@ public class TxSerialInterface extends SerialInterface {
                 txFifo.add(buf);
                 // TODO signal if full ?
             }
-            super.valueReady();
+            if (isMod1TxeSet()) {
+                // Insert delay of a few CPU cycles.
+                emulator.addCycleCounterListener(this);
+            }
         }
         else {
             // Used to reset buffer
@@ -145,12 +152,25 @@ public class TxSerialInterface extends SerialInterface {
         return mod1;
     }
 
+    // Note: could be overridden in TxHSerial, because in that case, fill levels are independent of duplex mode, so no need to recompute them
     public void setMod1(int mod1) {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
+        boolean previousTxEnabled = isMod1TxeSet();
         this.mod1 = mod1;
+        boolean currentTxEnabled = isMod1TxeSet();
+
         // And in case duplex mode changes
         computeRxFillLevel();
         computeTxFillLevel();
+
+        // Check if TXE was just enabled.
+        if (currentTxEnabled && !previousTxEnabled) {
+            // Signal if there are values waiting
+            if (getNbTxValuesWaiting() > 0) {
+                // Insert delay of a few CPU cycles.
+                emulator.addCycleCounterListener(this);
+            }
+        }
     }
 
     public int getMod2() {
@@ -207,6 +227,11 @@ public class TxSerialInterface extends SerialInterface {
         computeRxFillLevel();
     }
 
+    private boolean isRfcRfisSet() {
+        return (rfc & 0b01000000) != 0;
+    }
+
+
     public int getTfc() {
         return tfc & 0b01111111;
     }
@@ -219,6 +244,11 @@ public class TxSerialInterface extends SerialInterface {
         // TODO TFIS
         computeTxFillLevel();
     }
+
+    private boolean isTfcTfisSet() {
+        return (tfc & 0b01000000) != 0;
+    }
+
 
     public int getRst() {
         return rst;
@@ -241,16 +271,6 @@ public class TxSerialInterface extends SerialInterface {
     }
 
     public void setFcnf(int fcnf) {
-        // TODO what's the point if fifo size here ???
-        // I think this is obsolete
-        if ((fcnf & 0b00000001) == 0) {
-            txFifoSize = 2;
-            rxFifoSize = 2;
-        }
-        else {
-            txFifoSize = Integer.MAX_VALUE;
-            rxFifoSize = Integer.MAX_VALUE;
-        }
         this.fcnf = fcnf;
     }
 
@@ -521,7 +541,7 @@ public class TxSerialInterface extends SerialInterface {
     private Integer getTxValue() {
         if (!isFcnfCnfgSet()) { // FIFO disabled
             if (isMod2TbempSet()) {
-                System.err.println(getName() + ": RX buffer underrun");
+                System.err.println(getName() + ": TX buffer underrun");
                 // There's no data in buffer => Underrun : new data to return. Return null
                 if (isCrIocSet()) { // Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
                     setCrPerr();
@@ -530,14 +550,14 @@ public class TxSerialInterface extends SerialInterface {
             }
             setMod2Tbemp();
             if (isMod1FdpxTxSet()) {
-                interruptController.request(getRxInterruptNumber());
+                interruptController.request(getTxInterruptNumber());
             }
             // TODO if UART mode 9 bits, also include bit in MOD0:TB8
             return txBuf;
         }
         else {
             if (txFifo.size() == 0) {
-                System.err.println(getName() + ": RX fifo underrun");
+                System.err.println(getName() + ": TX fifo underrun");
 //                if (isCrIocSet()) {// Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
 //                    setCrPerr(); // TODO This is not explicitly specified in case of FIFO. Sounds logical but...
 //                }
@@ -545,7 +565,7 @@ public class TxSerialInterface extends SerialInterface {
             }
             else {
                 Integer value = txFifo.poll();
-                if (txFifo.size() == txInterruptFillLevel) {
+                if (isTfcTfisSet()?(txFifo.size() <= txInterruptFillLevel):(txFifo.size() == txInterruptFillLevel)) {
                     if (isMod1FdpxTxSet()) {
                         interruptController.request(getTxInterruptNumber());
                     }
@@ -558,27 +578,42 @@ public class TxSerialInterface extends SerialInterface {
         }
     }
 
+    protected int getNbTxValuesWaiting() {
+        if (!isFcnfCnfgSet()) { // FIFO disabled
+            return isMod2TbempSet()?0:1;
+        }
+        else {
+            return txFifo.size();
+        }
+    }
+
+
     // RECEPTION LOGIC
 
     /**
      * Sets the data received via Serial port
      * This can only be called by external software to simulate data writing by another device
-     * @param value 5 to 9 bits integer corresponding to a single value written by a device to this serial port
+     * @param value integer (5 to 9 bits) corresponding to a single value written by an external device to this serial port
      */
     @Override
-    public void write(int value) {
-        if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
-            queueRxValue(value);
+    public void write(Integer value) {
+        if (value == null) {
+            System.out.println("TxSerialInterface.write(null)");
         }
         else {
-            if (!isEnSet()) {
-                System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
-            }
-            else if (!isMod0RxeSet()) {
-                System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+            if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
+                queueRxValue(value);
             }
             else {
-                System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                if (!isEnSet()) {
+                    System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
+                else if (!isMod0RxeSet()) {
+                    System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
+                else {
+                    System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                }
             }
         }
     }
@@ -609,7 +644,7 @@ public class TxSerialInterface extends SerialInterface {
             else {
                 rxFifo.add(value);
 
-                if (rxFifo.size() == rxInterruptFillLevel) {
+                if (isRfcRfisSet()?(rxFifo.size() >= rxInterruptFillLevel):(rxFifo.size() == rxInterruptFillLevel)) {
                     if (isFcnfRfieSet()) {
                         interruptController.request(getRxInterruptNumber());
                     }
@@ -633,5 +668,38 @@ public class TxSerialInterface extends SerialInterface {
     @Override
     public int getNumBits() {
         return 8;  //TODO if UART
+    }
+
+    public String getName() {
+        return "Tx Serial #" + serialInterfaceNumber;
+    }
+
+    public String toString() {
+        return getName();
+    }
+
+    @Override
+    /**
+     * The goal of this is to delay the actual write to the other device of CYCLES_PER_BYTE cycles
+     * The TX empty interrupt occurs at half way
+     */
+    public boolean onCycleCountChange(long oldCount, int increment) {
+        boolean remainRegistered = true;
+        if (cycleCounter > CYCLES_PER_BYTE/2 && delayedValue == null) {
+            delayedValue = read();
+        }
+        cycleCounter += increment;
+        if (cycleCounter >= CYCLES_PER_BYTE) {
+            if (delayedValue != null) {
+                super.valueReady(delayedValue);
+            }
+            else {
+                // End of transmission - unregister
+                remainRegistered = false;
+            }
+            delayedValue = null;
+            cycleCounter = 0;
+        }
+        return remainRegistered;
     }
 }

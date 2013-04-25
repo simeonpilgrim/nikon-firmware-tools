@@ -2,6 +2,7 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
+import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -50,7 +51,7 @@ public class FrEmulator extends Emulator {
         emulator.setMemory(memory);
         emulator.setCpuState(cpuState);
         emulator.setInterruptController(new FrInterruptController(platform));
-        emulator.setInstructionPrintWriter(new PrintWriter(System.out));
+        emulator.setPrinter(new PrintWriter(System.out));
 
         emulator.play();
     }
@@ -93,6 +94,8 @@ public class FrEmulator extends Emulator {
                     Rs, @-R15 command just after DIV1 command, an interlock is always brought, increasing
                     the number of execution cycles from 1 cycle to 2 cycles. */
 
+        int cycleListenerNumber;
+
         FrStatement statement = new FrStatement();
 
         FrCPUState frCpuState = (FrCPUState)cpuState;
@@ -110,13 +113,21 @@ public class FrEmulator extends Emulator {
     
                 statement.decodeOperands(frCpuState.pc, memory);
 
-                if (instructionPrintWriter != null) {
+                if (printer != null) {
                     // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
-                    PrintWriter printWriter = instructionPrintWriter;
-                    if (printWriter != null) {
+                    IndentPrinter printer2 = printer;
+                    if (printer2 != null) {
                         // OK. copy is still not null
                         statement.formatOperandsAndComment(context, false, outputOptions);
-                        printWriter.print("0x" + Format.asHex(frCpuState.pc, 8) + " " + statement.toString(outputOptions));
+                        printer2.print("0x" + Format.asHex(frCpuState.pc, 8) + " " + statement.toString(outputOptions));
+
+                        switch(statement.getInstruction().getFlowType()) {
+                            case CALL:
+                            case INT:
+                                printer2.indent(); break;
+                            case RET:
+                                printer2.outdent(); break;
+                        }
                     }
                 }
                 
@@ -2184,8 +2195,8 @@ public class FrEmulator extends Emulator {
                     default:
                         String msg = "; Unknown instruction : " + Format.asHex(frCpuState.pc, 8) + " " + Format.asHex(statement.imm,4) + ". Triggering unknown instruction exception...";
                         System.out.println(msg);
-                        if (instructionPrintWriter != null) {
-                            instructionPrintWriter.println(msg);
+                        if (printer != null) {
+                            printer.println(msg);
                         }
                         context.pushStatement(statement);
 
@@ -2197,9 +2208,19 @@ public class FrEmulator extends Emulator {
                         break;
 
                 }
-                if (cycleCounterListener != null) {
-                    cycleCounterListener.onCycleCountChange(totalCycles, cycles);
+
+                // Notify CPU cycle listeners
+                cycleListenerNumber = 0;
+                while (cycleListenerNumber < cycleCounterListeners.size()) {
+                    CycleCounterListener cycleCounterListener = cycleCounterListeners.get(cycleListenerNumber);
+                    if (cycleCounterListener.onCycleCountChange(totalCycles, 1)) {
+                        cycleListenerNumber++;
+                    }
+                    else {
+                        cycleCounterListeners.remove(cycleCounterListener);
+                    }
                 }
+
                 totalCycles += cycles;
 
                 /* Delay slot processing */
@@ -2223,10 +2244,11 @@ public class FrEmulator extends Emulator {
                         //Double test because lack of synchronization means the status could have changed in between
                         if (interruptRequest != null) {
                             if (frCpuState.accepts(interruptRequest)){
-                                if (instructionPrintWriter != null) {
-                                    PrintWriter printWriter = instructionPrintWriter;
-                                    if (printWriter != null) {
-                                        printWriter.println("------------------------- Accepting " + interruptRequest);
+                                if (printer != null) {
+                                    IndentPrinter printer2 = printer;
+                                    if (printer2 != null) {
+                                        printer2.printlnNonIndented("------------------------- Accepting " + interruptRequest);
+                                        printer2.indent();
                                     }
                                 }
                                 interruptController.removeRequest(interruptRequest);

@@ -3,10 +3,15 @@ package com.nikonhacker.emu;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.clock.ClockGenerator;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+
+import java.util.List;
 
 /**
  * A platform represents a microcontroller hardware in a given state: CPU, memory, clock generator,
@@ -21,6 +26,9 @@ public class Platform {
     private ProgrammableTimer[] programmableTimers;
     private IoPort[] ioPorts;
     private SerialInterface[] serialInterfaces;
+    private List<SerialDevice> serialDevices;
+    private DmaController dmaController;
+    private AdConverter adConverter;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -76,5 +84,29 @@ public class Platform {
 
     public void setSerialInterfaces(SerialInterface[] serialInterfaces) {
         this.serialInterfaces = serialInterfaces;
+    }
+
+    public List<SerialDevice> getSerialDevices() {
+        return serialDevices;
+    }
+
+    public void setSerialDevices(List<SerialDevice> serialDevices) {
+        this.serialDevices = serialDevices;
+    }
+
+    public DmaController getDmaController() {
+        return dmaController;
+    }
+
+    public void setDmaController(DmaController dmaController) {
+        this.dmaController = dmaController;
+    }
+
+    public AdConverter getAdConverter() {
+        return adConverter;
+    }
+
+    public void setAdConverter(AdConverter adConverter) {
+        this.adConverter = adConverter;
     }
 }

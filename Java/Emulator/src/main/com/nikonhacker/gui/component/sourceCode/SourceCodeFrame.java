@@ -156,6 +156,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         getContentPane().add(contentPanel);
 
+        if (ui.getPrefs().isSourceCodeFollowsPc(chip)) {
+            reachAndHighlightPc();
+        }
+
         pack();
     }
 

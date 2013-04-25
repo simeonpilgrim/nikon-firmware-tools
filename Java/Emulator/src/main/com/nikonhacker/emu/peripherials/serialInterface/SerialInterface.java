@@ -1,43 +1,41 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
+import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
- * This class is the base class for emulation of a Serial Interface.
+ * This class is the base class for emulation of the serial interface of a microcontroller.
+ *
+ * Note: the names are misleading compared to Java Object model terminology, but here it is:
+ * - SerialDevice is a java "Interface"
+ * - SerialInterface is one java "Class" implementing the SerialDevice interface
  *
  * Serial interfaces are emulated at the value level (byte or group of 5-9 bits), not at the electric (bit) level.
- * Consequently, all information regarding clocks and edges can be ignored.
+ * Consequently, all information regarding clocks and edges is ignored.
  *
  * The logic is as follows:
  * To transmit data, a microcontroller writes to its serial interface's registers, and as soon as one value is "ready
- * for reading" (equivalent of the physical transmission of the last bit), the sending corresponding SerialInterface
- * calls the valueReady() method implemented here, which informs all registered listeners that a value can be read.
- * The configuration MUST be such that exactly one of those listeners then calls the read() method of that serial
- * interface, getting the actual value but also informing the sender that the next value can be sent.
- * This listener can be a dummy value reader, a logger, or a connection to another Serial Interface's RX pin
+ * for reading" (equivalent of the physical transmission of the last bit), the SerialInterface calls the valueReady()
+ * method implemented here.
  *
- * In the other direction, a "device" (either a listener to another serial interface as described above, or a GUI input)
+ * In the other direction, a "device" (either an actual serial interface, a GUI input or any source)
  * calls the write() method of a SerialInterface to transmit a value to it. The implementation of write() must set
  * registers of the receiving serial interface to the corresponding value, and can inform the
  * microcontroller (via interrupt) that new data is available. That microcontroller will then read the
  * serial interface registers and act accordingly.
- *
- * TODO ? Note: onValueReady() could include the actual value as a param to help debugging by adding several listeners (loggers for example)
- * TODO ? But maybe having several listeners is a bad idea in the end, and logging should be performed by chaining listeners and piping values
  */
-public abstract class SerialInterface {
+public abstract class SerialInterface implements SerialDevice {
     protected final int serialInterfaceNumber;
     protected final InterruptController interruptController;
-    protected List<SerialInterfaceListener> listeners = new ArrayList<SerialInterfaceListener>();
+    protected final Emulator emulator;
+    protected SerialDevice connectedDevice;
 
-    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController) {
+    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
-        // By default, a Serial Interface uses a dummy
-        addSerialValueReadyListener(new ByteEaterSerialInterfaceListener());
+        this.emulator = emulator;
+        // By default, a Serial Interface uses a dummy device
+        connectedDevice = new DummySerialDevice();
     }
 
     public int getSerialInterfaceNumber() {
@@ -57,38 +55,46 @@ public abstract class SerialInterface {
     /**
      * Sets the data received via Serial port
      * This can only be called by external software to simulate data writing by another device
-     * @param value 5 to 9 bits integer corresponding to a single value written by a device to this serial port
+     * @param value integer (5 to 9 bits) corresponding to a single value written by an external device to this serial port
      */
-    public abstract void write(int value);
+    public abstract void write(Integer value);
 
     public abstract int getNumBits();
 
+    public abstract String getName();
 
-    public String getName() {
-        return "Serial #" + serialInterfaceNumber;
+    public void connectSerialDevice(SerialDevice serialDevice) {
+        this.connectedDevice = serialDevice;
     }
 
-    public void addSerialValueReadyListener(SerialInterfaceListener listener) {
-        listeners.add(listener);
+    public SerialDevice getConnectedSerialDevice() {
+        return connectedDevice;
     }
 
-    public void removeSerialValueReadyListener(SerialInterfaceListener listener) {
-        listeners.remove(listener);
-    }
-
-    public void clearSerialValueReadyListeners() {
-        listeners.clear();
+    @Override
+    public void disconnectSerialDevice() {
+        this.connectedDevice = new DummySerialDevice();
     }
 
     public void bitNumberChanged(int nbBits) {
-        for (SerialInterfaceListener listener : listeners) {
-            listener.onBitNumberChange(this, nbBits);
+        connectedDevice.onBitNumberChange(this, nbBits);
+    }
+
+    public void valueReady(Integer value) {
+        connectedDevice.write(value);
+    }
+
+
+    @Override
+    public String toString() {
+        return this.getClass().getName() + " " + serialInterfaceNumber;
+    }
+
+    @Override
+    public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        if (getNumBits() != numBits) {
+            System.err.println(toString() + ": Connected device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
         }
     }
 
-    public void valueReady() {
-        for (SerialInterfaceListener listener : listeners) {
-            listener.onValueReady(this);
-        }
-    }
 }

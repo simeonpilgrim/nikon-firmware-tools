@@ -1,13 +1,13 @@
 -   name: cm
     label: CM Base Plate Unit\n(1001)
     blocks:
-        - Main MCU
-        - Sub MCU
-        - IC ?
+        - Main MCU (A?)
+        - Sub MCU (?)
+        - IC (?)
 -   name: dg
     label: DG PCB\n(1031)
     blocks:
-        - RISC\nMCU
+        - RISC\nMCU (B?)
         - ASIC\nExpeed
         - Elphida DDR\n x2
         - IC\nSpansion Flash?
