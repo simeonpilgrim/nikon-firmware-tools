@@ -31,6 +31,20 @@ namespace Nikon_Decode
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
+            //DecryptNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01002.BIN");
+            //DecodeNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01002.BIN.bin");
+            //DecryptNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01006.BIN");
+            //DecodeNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01006.BIN.bin");
+            //DecodeNKLDFile(@"C:\Dev\libgphoto2-2.5.1.1\examples\Nikon_func_0xfe63_0x00000000_0x00020000_0x00000000.bin");
+
+
+            // FR_V.DecodeFile(@"C:\Dev\examples\d5100\0x0008A2BC.BIN");
+
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
+
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
 
@@ -89,11 +103,131 @@ namespace Nikon_Decode
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
 
-            //SearchDumps(@"C:\Dev\libgphoto2-2.5.0\examples\D3000_");
-            MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
+            //SearchDumpsFor(@"C:\Dev\examples\D3000", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
+            //SearchDumpsFor(@"C:\Dev\examples\D5100", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
+            //MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
+            //FindEmptyBlocks(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x40000);
 
         }
 
+        private static void DecodeNKLDFile(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                BinaryReader br = null;
+                StreamWriter tw = null;
+
+                try
+                {
+                    br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+                    tw = new StreamWriter(File.Open(fileName + ".txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+                    if (br.BaseStream.Length > 0x20000) return;
+
+                    var data = br.ReadBytes((int)br.BaseStream.Length);
+                    int off = 0;
+                    var dataOffset = (data[off++] << 8) + data[off++];
+                    var fileLen = (data[off++] << 8) + data[off++];
+                    var majorVer = data[off++];
+                    var minorVer = data[off++];
+                    var entryCount = (data[off++] << 8) + data[off++];
+                    var magicId = (data[off++] << 24) + (data[off++] << 16) + (data[off++] << 8) + (data[off++] << 0);
+                    var dataLen = (data[off++] << 8) + data[off++];
+                    var unknown = (data[off++] << 8) + data[off++];
+
+                    if ((UInt32)magicId == 0x87C7CAAC &&
+                        majorVer == 1)
+                    {
+                        off = dataOffset;
+                        for (int i = 0; i < entryCount; i++)
+                        {
+                            var block_len = (data[off + 0] << 8) + data[off + 1];
+
+                            var b02 = data[off + 2];
+                            var b03 = data[off + 3];
+
+                            var b04 = data[off + 4];
+                            var b05 = data[off + 5];
+                            var b06 = data[off + 6];
+                            var b07 = data[off + 7];
+
+                            var w1E = (data[off + 0x1E] << 8) + data[off + 0x1F];
+
+
+                            //var s = string.Format("{0}/{1} {2:X5} {3:X4}: {4:X2} {5:X2} {6:X4}", i, entryCount, off, block_len, b02, b03, w1E);
+                            var s = string.Format("{0:X2} {1:X2} {2:X2} {3:X2} {4:X2} {5:X2} [{6}] [{7}] [{8}]",
+                                b02, b03, b04, b05, b06, b07, DataToStr(data, off + 0xe, 8), DataToStr(data, off + 0x16, 8), DataToStr(data, off + 0x16+w1E, 0xDB));
+
+                            Debug.WriteLine(s);
+                            tw.WriteLine(s);
+                            off += block_len;
+                        }
+                    }
+                }
+                finally
+                {
+                    if (br != null)
+                        br.Close();
+                    if (tw != null)
+                        tw.Close();
+                }
+            }
+
+        }
+
+        static string DataToStr(byte[] data, int offset, int len)
+        {
+            var sb = new StringBuilder(len);
+            for (int i = 0; i < len; i++)
+            {
+                sb.AppendFormat("{0:X2} ", data[offset + i]);
+            }
+            return sb.ToString();
+        }
+
+        private static void DecryptNKLDFile(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                BinaryReader br = null;
+                BinaryWriter bw = null;
+
+                try
+                {
+                    br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+                    bw = new BinaryWriter(File.Open(fileName + ".bin", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+                    if (br.BaseStream.Length > 0x20000) return;
+
+                    var data = br.ReadBytes((int)br.BaseStream.Length);
+                    int off = 0;
+                    var dataOffset = (data[off++] << 8) + data[off++];
+                    var fileLen = (data[off++] << 8) + data[off++];
+                    var majorVer = data[off++];
+                    var minorVer = data[off++];
+                    var entryCount = (data[off++] << 8) + data[off++];
+                    var magicId = (data[off++] << 24) + (data[off++] << 16) + (data[off++] << 8) + (data[off++] << 0);
+                    var dataLen = (data[off++] << 8) + data[off++];
+                    var unknown = (data[off++] << 8) + data[off++];
+
+                    if ((UInt32)magicId == 0x87C7CAAC &&
+                        majorVer == 1)
+                    {
+                        Decrypt.Encrypt(0xB401C81B, "NCDSLR", data, dataOffset, dataLen);
+
+                        bw.Write(data);
+                    }
+                }
+                finally
+                {
+                    if (br != null)
+                        br.Close();
+                    if (bw != null)
+                        bw.Close();
+                }
+            }
+
+        }
         static void MergeDumps(string dir)
         {         
             Directory.CreateDirectory(Path.Combine(dir, "merged"));
@@ -143,14 +277,104 @@ namespace Nikon_Decode
 
         }
 
+        static void SearchDumpsFor(string dir, params byte[] bcode)
+        {
+            var sw = new StreamWriter(File.Open(Path.Combine(dir, "status.txt"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            foreach (var file in Directory.GetFiles(dir, "*.bin"))
+            {
+                BinaryReader br = null;
+
+                byte[] data;
+
+                using (br = new BinaryReader(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
+
+                if (data.Length == 0) continue;
+
+                bool findB = false;
+                byte first = data[0];
+                for (int i = 0; i < data.Length; i++)
+                {
+                    if (findB == false && (i + bcode.Length) < data.Length)
+                    {
+                        bool bsame = true;
+                        for (int j = 0; j < bcode.Length && bsame; j++)
+                        {
+                            bsame = data[i + j] == bcode[j];
+                        }
+
+                        if (bsame)
+                        {
+                            var savFile = Path.Combine(dir, String.Format("pic_0x{0:X8}.jpg", i));
+                            using (var bw = new BinaryWriter(File.Open(savFile, FileMode.Create, FileAccess.Write)))
+                            {
+                                bw.Write(data, i-6, data.Length - (i-6));
+                                bw.Close();
+                            }
+
+                            sw.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
+                            Console.WriteLine("{0} Bcode {1:X8}", Path.GetFileName(file), i);
+                           
+                        }
+                    }
+
+                }
+            }
+            sw.Close();
+            sw.Dispose();
+        }
+
+        static void FindEmptyBlocks(string file, int offset)
+        {
+            BinaryReader br = null;
+            var sw = new StreamWriter(File.Open( file+ "_blocks.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            byte[] data;
+
+            using (br = new BinaryReader(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+            {
+                data = br.ReadBytes((int)br.BaseStream.Length);
+            }
+
+            if (data.Length == 0) return;
+
+            int count = 0;
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                if (data[i] == 0xFF)
+                {
+                    count++;
+                }
+                else if (count > 0x100)
+                {
+                    sw.WriteLine("Block {0:X8} Length {1:X8}", (i - count) + offset, count);
+                    Console.WriteLine("{0} Bcode {1:X8}", (i - count) + offset, count);
+                    count = 0;
+                }
+                else
+                {
+                    count = 0;
+                }
+            }
+
+            sw.Close();
+            sw.Dispose();
+        }
+
         static void SearchDumps(string dir)
         {
             //var bcode = new byte[] { 0x3C, 0x1A, 0xBF, 0xC0, 0x27, 0x5A, 0x05, 0x00, 0x03, 0x40, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00 };
             //var bcode = new byte[] { 0x17, 0x7A, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x40, 0x1A };
             //var bcode = new byte[] { 0x67, 0x45, 0x23, 0x01 };
             //var bcode = new byte[] { 0x00, 0x00, 0x00, 0xC0, 0x11 };
-            var bcode = new byte[] { 0x53, 0x6F, 0x66, 0x74, 0x75, 0x6E, 0x65, 0x20 }; // "Softune "
+            //var bcode = new byte[] { 0x53, 0x6F, 0x66, 0x74, 0x75, 0x6E, 0x65, 0x20 }; // "Softune "
             //var bcode = new byte[] { 0x8C, 0xFF, 0x8D, 0x7F, 0x83, 0xDF, 0x97, 0x30 };  
+
+            var bcode = new byte[] { 0x4A, 0x46, 0x49, 0x46 }; // JFIF - Jpeg/Tiff header
 
             var sw = new StreamWriter(File.Open(Path.Combine(dir, "status.txt"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
             var sw2 = new StreamWriter(File.Open(Path.Combine(dir, "rm.cmd"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
