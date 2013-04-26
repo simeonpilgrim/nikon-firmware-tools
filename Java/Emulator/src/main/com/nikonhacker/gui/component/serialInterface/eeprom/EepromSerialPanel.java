@@ -34,9 +34,8 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         this.eeprom = eeprom;
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        rxTxSerialPanel = new RxTxSerialPanel(eeprom);
-        tabbedPane.add("Rx/Tx interface", rxTxSerialPanel);
 
+        // Hex editor
         JPanel editorPanel = new JPanel(new BorderLayout());
         JPanel selectionPanel = new JPanel();
 
@@ -75,7 +74,12 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
 
         tabbedPane.addTab("Contents", editorPanel);
 
-        add(tabbedPane);
+        // Standard serial spy panel
+        rxTxSerialPanel = new RxTxSerialPanel(eeprom);
+        tabbedPane.add("Rx/Tx interface", rxTxSerialPanel);
+
+        setLayout(new BorderLayout());
+        add(tabbedPane, BorderLayout.CENTER);
     }
 
     private void load() {
