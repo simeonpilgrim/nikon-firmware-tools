@@ -41,7 +41,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         else {
             Memory memory = platform.getMemory();
             int stateValue = memory.load32(pk_robj);
-            /* Strangely, the TX implementation always returns 0 (OK) as error code, even task_id does not exist (optimization ?).
+            /* Strangely, the TX implementation always returns 0 (OK) as error code, even when task_id does not exist (optimization ?).
                Let's return "non existent object" if state is 0.
             */
             if (stateValue == 0) {
@@ -80,7 +80,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     public EventFlagInformation getEventFlagInformation(int chip, int objId) {
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall("sys_ref_flg", pk_robj, objId);  // TODO check order
+        ErrorCode errorCode = runSysCall("sys_ref_flg", objId, pk_robj);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -146,7 +146,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 // Prepare code
                 Memory memory = platform.getMemory();
                 memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40);                      // EA40  jalr    $v0
-                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500);                  // 6500   nop
+                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500);                  // 6500    nop
                 memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500);                  // 6500  nop
 
                 // Put a breakpoint on the instruction after the call
@@ -158,7 +158,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                     emulator.play();
 
                     // Read error code
-                    return ErrorCode.fromValue(tmpCpuState.getReg(TxCPUState.V0));
+                    return ErrorCode.fromTxValue(tmpCpuState.getReg(TxCPUState.V0));
                 }
                 catch (Throwable t) {
                     t.printStackTrace();

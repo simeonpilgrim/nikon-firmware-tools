@@ -131,7 +131,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             emulator.play();
 
             // Read error code
-            return ErrorCode.fromValue(tmpCpuState.getReg(12));
+            return ErrorCode.fromFrValue(tmpCpuState.getReg(12));
         }
         catch (Throwable t) {
             t.printStackTrace();
