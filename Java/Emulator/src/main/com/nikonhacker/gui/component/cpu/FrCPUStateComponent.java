@@ -86,109 +86,113 @@ public class FrCPUStateComponent extends CPUStateComponent {
         mdhTextField.setHorizontalAlignment(JTextField.RIGHT); mdhTextField.setFont(fixedFont);
         mdlTextField.setHorizontalAlignment(JTextField.RIGHT); mdlTextField.setFont(fixedFont);
 
-        //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        setLayout(new GridLayout(0, 4));
+        JPanel registerPanel = new JPanel(new GridLayout(0, 4));
 
-        add(new JLabel("PC = 0x", JLabel.RIGHT));
-        add(pcTextField);
-        add(new JLabel(FrCPUState.registerLabels[0]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[0]);
+        registerPanel.add(new JLabel("PC = 0x", JLabel.RIGHT));
+        registerPanel.add(pcTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[0] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[0]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[1]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[1]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[1] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[1]);
 
-        add(new JLabel());
+        registerPanel.add(new JLabel());
         JLabel label1 = new JLabel("43210", JLabel.RIGHT); label1.setFont(fixedFont);
-        add(label1);
-        add(new JLabel(FrCPUState.registerLabels[2]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[2]);
+        registerPanel.add(label1);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[2] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[2]);
 
-        add(new JLabel("ILM = 0b", JLabel.RIGHT));
-        add(ilmTextField);
-        add(new JLabel(FrCPUState.registerLabels[3]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[3]);
+        registerPanel.add(new JLabel("ILM = 0b", JLabel.RIGHT));
+        registerPanel.add(ilmTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[3] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[3]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[4]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[4]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[4] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[4]);
 
-        add(new JLabel());
+        registerPanel.add(new JLabel());
         JLabel label2 = new JLabel("D01T", JLabel.RIGHT); label2.setFont(fixedFont);
-        add(label2);
-        add(new JLabel(FrCPUState.registerLabels[5]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[5]);
+        registerPanel.add(label2);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[5] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[5]);
 
-        add(new JLabel("SCR = 0b", JLabel.RIGHT));
-        add(scrTextField);
-        add(new JLabel(FrCPUState.registerLabels[6]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[6]);
+        registerPanel.add(new JLabel("SCR = 0b", JLabel.RIGHT));
+        registerPanel.add(scrTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[6] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[6]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[7]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[7]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[7] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[7]);
 
-        add(new JLabel());
+        registerPanel.add(new JLabel());
         JLabel label3 = new JLabel("SINZVC", JLabel.RIGHT); label3.setFont(fixedFont);
-        add(label3);
-        add(new JLabel(FrCPUState.registerLabels[8]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[8]);
+        registerPanel.add(label3);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[8] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[8]);
 
-        add(new JLabel("CCR = 0b", JLabel.RIGHT));
-        add(ccrTextField);
-        add(new JLabel(FrCPUState.registerLabels[9]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[9]);
+        registerPanel.add(new JLabel("CCR = 0b", JLabel.RIGHT));
+        registerPanel.add(ccrTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[9] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[9]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[10]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[10]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[10] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[10]);
 
-        add(new JLabel("TBR = 0x", JLabel.RIGHT));
-        add(tbrTextField);
-        add(new JLabel(FrCPUState.registerLabels[11]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[11]);
+        registerPanel.add(new JLabel("TBR = 0x", JLabel.RIGHT));
+        registerPanel.add(tbrTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[11] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[11]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[12]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[12]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[12] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[12]);
 
-        add(new JLabel("RP = 0x", JLabel.RIGHT));
-        add(rpTextField);
-        add(new JLabel(FrCPUState.registerLabels[13]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[13]);
+        registerPanel.add(new JLabel("RP = 0x", JLabel.RIGHT));
+        registerPanel.add(rpTextField);
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[13] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[13]);
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel(FrCPUState.registerLabels[14]+" = 0x", JLabel.RIGHT));
-        add(regTextFields[14]);
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel(FrCPUState.registerLabels[14] + " = 0x", JLabel.RIGHT));
+        registerPanel.add(regTextFields[14]);
 
-        add(new JLabel("SSP = 0x", JLabel.RIGHT));
-        add(sspTextField);
-        add(r15Label0);
-        add(new JLabel());
+        registerPanel.add(new JLabel("SSP = 0x", JLabel.RIGHT));
+        registerPanel.add(sspTextField);
+        registerPanel.add(r15Label0);
+        registerPanel.add(new JLabel());
 
-        add(new JLabel("USP = 0x", JLabel.RIGHT));
-        add(uspTextField);
-        add(r15Label1);
-        add(new JLabel());
+        registerPanel.add(new JLabel("USP = 0x", JLabel.RIGHT));
+        registerPanel.add(uspTextField);
+        registerPanel.add(r15Label1);
+        registerPanel.add(new JLabel());
 
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
-        add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
+        registerPanel.add(new JLabel());
 
-        add(new JLabel("MDH/MDL = 0x", JLabel.RIGHT));
-        add(mdhTextField);
-        add(mdlTextField);
-        add(new JLabel());
+        registerPanel.add(new JLabel("MDH/MDL = 0x", JLabel.RIGHT));
+        registerPanel.add(mdhTextField);
+        registerPanel.add(mdlTextField);
+        registerPanel.add(new JLabel());
+
+        setLayout(new BorderLayout());
+        add(new JScrollPane(registerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 
         if (!filterMode) {
-            add(new JLabel());
+            JPanel buttonPanel = new JPanel();
+
+            buttonPanel.add(new JLabel());
             saveButton = new JButton("Save");
             Font font = saveButton.getFont();
             font = new Font(font.getName(), font.getStyle(), 10);
@@ -204,9 +208,11 @@ public class FrCPUStateComponent extends CPUStateComponent {
                     refresh();
                 }
             });
-            add(saveButton);
-            add(cancelButton);
-            add(new JLabel());
+            buttonPanel.add(saveButton);
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(new JLabel());
+
+            add(buttonPanel, BorderLayout.SOUTH);
         }
 
         // Force a refresh, so that the one that will be triggered by the timer will leave a white background
