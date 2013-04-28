@@ -187,9 +187,7 @@ public class RealOsObjectFrame extends DocumentFrame {
 
         taskPanel.removeAll();
         if (taskInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>" + ((chip == Constants.CHIP_FR)?"(syscall interrupt not initialized ?)":"(syscall not declared in dtx.txt file ?)") + "<br/>See console for more info</center></html>");
-            comp.setHorizontalAlignment(SwingConstants.CENTER);
-            taskPanel.add(comp, BorderLayout.CENTER);
+            taskPanel.add(getSyscallNotFountErrorLabel(chip), BorderLayout.CENTER);
         }
         else {
             taskPanel.add(taskScroller, BorderLayout.CENTER);
@@ -209,9 +207,7 @@ public class RealOsObjectFrame extends DocumentFrame {
 
         semaphorePanel.removeAll();
         if (semaphoreInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
-            comp.setHorizontalAlignment(SwingConstants.CENTER);
-            semaphorePanel.add(comp, BorderLayout.CENTER);
+            semaphorePanel.add(getSyscallNotFountErrorLabel(chip), BorderLayout.CENTER);
         }
         else {
             semaphorePanel.add(semaphoreScroller, BorderLayout.CENTER);
@@ -224,7 +220,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         eventFlagInformationList.clear();
         int eventFlagNumber = 1;
         EventFlagInformation eventFlagInformation = sysCallEnvironment.getEventFlagInformation(chip, eventFlagNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(eventFlagInformation.getErrorCode())) {
+        while (eventFlagInformation.getErrorCode() == ErrorCode.E_OK) {
             eventFlagInformationList.add(eventFlagInformation);
             eventFlagNumber++;
             eventFlagInformation = sysCallEnvironment.getEventFlagInformation(chip, eventFlagNumber);
@@ -232,9 +228,7 @@ public class RealOsObjectFrame extends DocumentFrame {
 
         eventFlagPanel.removeAll();
         if (eventFlagInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
-            comp.setHorizontalAlignment(SwingConstants.CENTER);
-            eventFlagPanel.add(comp, BorderLayout.CENTER);
+            eventFlagPanel.add(getSyscallNotFountErrorLabel(chip), BorderLayout.CENTER);
         }
         else {
             eventFlagPanel.add(eventFlagScroller, BorderLayout.CENTER);
@@ -255,14 +249,18 @@ public class RealOsObjectFrame extends DocumentFrame {
 
         mailboxPanel.removeAll();
         if (mailboxInformation.getErrorCode() == ErrorCode.E_EMULATOR) {
-            JLabel comp = new JLabel("<html><center>Emulator Error<br/>(syscall interrupt not initialized ?)<br/>See console for more info</center></html>");
-            comp.setHorizontalAlignment(SwingConstants.CENTER);
-            mailboxPanel.add(comp, BorderLayout.CENTER);
+            mailboxPanel.add(getSyscallNotFountErrorLabel(chip), BorderLayout.CENTER);
         }
         else {
             mailboxPanel.add(mailboxScroller, BorderLayout.CENTER);
         }
         mailboxPanel.revalidate();
+    }
+
+    private JLabel getSyscallNotFountErrorLabel(int chip) {
+        JLabel comp = new JLabel("<html><center>Emulator Error<br/>" + ((chip == Constants.CHIP_FR)?"(syscall interrupt not initialized ?)":"(syscall not declared in dtx.txt file ?)") + "<br/>See console for more info</center></html>");
+        comp.setHorizontalAlignment(SwingConstants.CENTER);
+        return comp;
     }
 
     public void updateAllLists(int chip) {

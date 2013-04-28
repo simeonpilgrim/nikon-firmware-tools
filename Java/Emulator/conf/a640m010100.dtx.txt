@@ -115,7 +115,7 @@
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
 -s 0xBFC0332C=change_task_priority
 -s 0xBFC035D0=get_FFFFFFEB($v0 [OUT from_FFFFFFEB])
--s 0xBFC035DC=sys_unknown_BFC035DC
+-s 0xBFC035DC=sys_pol_flg
 -s 0xBFC0369C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
 -s 0xBFC03818=sys_get_ilev($a0 [IN ptr_for_interrupt_level])
 -s 0xBFC03870=sys_snd_msg($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
@@ -125,7 +125,7 @@
 -s 0xBFC03AFC=sys_wai_flg($a0 [IN flag_id], $a1 [IN wai_pattern], $a2 [IN wait_flag_mode_or_if_set], $v0 [OUT err_code], $a3 [IN p_return_flag_pattern] /* Wait for Eventflag */)
 -s 0xBFC03BEC=sys_wuk_tsk
 -s 0xBFC03C8C=sys_clr_flg($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
--s 0xBFC03CD8=sys_unknown_BFC03CD8
+-s 0xBFC03CD8=sys_ref_flg($a0 [IN flg_id], $a1 [IN ptr_to_pk_rflg], $v0 [OUT err_code] /* Get EventFlag Status */)
 -s 0xBFC03D58=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
 -s 0xBFC03DEC=sys_unknown_BFC03DEC
 -s 0xBFC03EA0=sys_rcv_msg($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
@@ -183,6 +183,8 @@
 -s 0xBFC12B54=sys_pol_flg01
 -s 0xBFC12B60=sys_pol_flg02
 -s 0xBFC12B6C=sys_pol_flg03
+-s 0xBFC12B78=sys_ref_flg00
+-s 0xBFC12B94=sys_ref_flg01
 -s 0xBFC12BB0=sys_snd_msg_00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
 -s 0xBFC12BC0=sys_snd_msg01
 -s 0xBFC12BD0=sys_rcv_msg00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)

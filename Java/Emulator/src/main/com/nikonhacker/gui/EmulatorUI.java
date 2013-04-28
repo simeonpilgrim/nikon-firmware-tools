@@ -2354,7 +2354,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private void toggleCPUState(int chip) {
         if (cpuStateEditorFrame[chip] == null) {
-            cpuStateEditorFrame[chip] = new CPUStateEditorFrame("CPU State", "cpu", false, true, false, true, chip, this, platform[chip].getCpuState());
+            cpuStateEditorFrame[chip] = new CPUStateEditorFrame("CPU State", "cpu", true, true, false, true, chip, this, platform[chip].getCpuState());
             cpuStateEditorFrame[chip].setEnabled(!isEmulatorPlaying[chip]);
             if (disassemblyLogFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(disassemblyLogFrame[chip].getInstructionPrintWriter());
             addDocumentFrame(chip, cpuStateEditorFrame[chip]);
