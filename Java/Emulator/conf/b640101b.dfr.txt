@@ -1220,9 +1220,9 @@
 -s 0x40000=__start
 -s 0x4065E=time(R4 [OUT time_in_ms])
 -s 0x4068A=soft_reset
--s 0x406EC=NOP_406EC
+-s 0x406EC=NOP_trap_syscall_enter
 -s 0x406EE=NOP_406EE
--s 0x406F0=NOP_406F0
+-s 0x406F0=NOP_trap_syscall_leave
 -s 0x406F2=NOP_406F2
 -s 0x406F4=NOP_406F4
 -s 0x406F6=NOP_406F6

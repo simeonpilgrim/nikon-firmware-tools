@@ -22,11 +22,14 @@ import java.io.IOException;
  * This file is part of NikonEmulator, a NikonHacker.com project.
  */
 public class EepromSerialPanel extends SerialDevicePanel implements HexEditorListener {
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private final RxTxSerialPanel rxTxSerialPanel;
     private final Prefs prefs;
     private St950x0 eeprom;
     private final HexEditor eepromHexEditor;
+
+    private Timer refreshTimer;
 
     public EepromSerialPanel(St950x0 eeprom, EmulatorUI ui) {
         super();
@@ -34,9 +37,8 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         this.eeprom = eeprom;
 
         JTabbedPane tabbedPane = new JTabbedPane();
-        rxTxSerialPanel = new RxTxSerialPanel(eeprom);
-        tabbedPane.add("Rx/Tx interface", rxTxSerialPanel);
 
+        // Hex editor
         JPanel editorPanel = new JPanel(new BorderLayout());
         JPanel selectionPanel = new JPanel();
 
@@ -67,7 +69,6 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         eepromHexEditor.setRowHeaderMinDigits(4);
         eepromHexEditor.setCellEditable(true);
         eepromHexEditor.setAlternateRowBG(true);
-        refreshContents();
 
         eepromHexEditor.addHexEditorListener(this);
 
@@ -75,7 +76,22 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
 
         tabbedPane.addTab("Contents", editorPanel);
 
-        add(tabbedPane);
+        // Standard serial spy panel
+        rxTxSerialPanel = new RxTxSerialPanel(eeprom);
+        tabbedPane.add("Rx/Tx interface", rxTxSerialPanel);
+
+        setLayout(new BorderLayout());
+        add(tabbedPane, BorderLayout.CENTER);
+
+        // Start update timer
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (eepromHexEditor.isShowing()) {
+                    refreshData();
+                }
+            }
+        });
+        refreshTimer.start();
     }
 
     private void load() {
@@ -89,7 +105,7 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
                 File selectedFile = fc.getSelectedFile();
                 prefs.setLastEepromFileName(selectedFile.getAbsolutePath());
                 eeprom.loadBinary(selectedFile);
-                refreshContents();
+                refreshData();
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error loading eeprom contents from file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
@@ -110,13 +126,13 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
                     eeprom.saveBinary(file);
                 }
             } catch (IOException e) {
-                JOptionPane.showMessageDialog(this, "Error saving eeprom contents from file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Error saving eeprom contents to file: " + e.getMessage(), "Save error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
             }
         }
     }
 
-    private void refreshContents() {
+    private void refreshData() {
         try {
             eepromHexEditor.open(new ByteArrayInputStream(eeprom.getMemory()));
         } catch (IOException e) {
@@ -126,6 +142,8 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
     }
 
     public void dispose() {
+        refreshTimer.stop();
+        refreshTimer = null;
         rxTxSerialPanel.dispose();
     }
 
@@ -138,9 +156,8 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
             catch (ArrayIndexOutOfBoundsException exception) {
                 JOptionPane.showMessageDialog(this, "Error writing to memory: " + exception.getMessage(), "Write error", JOptionPane.ERROR_MESSAGE);
                 // Reload to show unedited values
-                refreshContents();
+                refreshData();
             }
         }
-
     }
 }

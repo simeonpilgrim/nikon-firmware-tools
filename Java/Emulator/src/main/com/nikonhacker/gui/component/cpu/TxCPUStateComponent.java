@@ -105,56 +105,60 @@ public class TxCPUStateComponent extends CPUStateComponent {
             }
         });
 
-        //setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
-        setLayout(new MigLayout());
+        JPanel registerPanel = new JPanel(new MigLayout());
 
-        add(new JLabel("Power mode:"), "align left");
-        //add(powerModeList, "wrap 15");
-        add(powerModeLabel);
-        add(new JLabel("Register set:"), "align left");
-        add(registerSetCombo, "wrap 15");
+        registerPanel.add(new JLabel("Power mode:"), "align left");
+        //registerPanel.add(powerModeList, "wrap 15");
+        registerPanel.add(powerModeLabel);
+        registerPanel.add(new JLabel("Register set:"), "align left");
+        registerPanel.add(registerSetCombo, "wrap 15");
 
-        add(new JLabel("pc (addr)=0x"), "align right");
-        add(pcTextField);
-        add(pcIsaMode16bCheckBox, "align right");
-        add(new JLabel("pc (ISA 16b)"), "wrap 15");
+        registerPanel.add(new JLabel("pc (addr)=0x"), "align right");
+        registerPanel.add(pcTextField);
+        registerPanel.add(pcIsaMode16bCheckBox, "align right");
+        registerPanel.add(new JLabel("pc (ISA 16b)"), "wrap 15");
 
         for (int i = 0; i < 16; i++) {
-            add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x"), "align right");
-            add(regTextFields[i*2]);
-            add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x"), "align right");
-            add(regTextFields[i*2+1], "wrap" + (i==15?" 15":""));
+            registerPanel.add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x"), "align right");
+            registerPanel.add(regTextFields[i*2]);
+            registerPanel.add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x"), "align right");
+            registerPanel.add(regTextFields[i*2+1], "wrap" + (i==15?" 15":""));
         }
 
         regTextFields[0].setEnabled(false);
 
-        add(new JLabel("hi / lo = 0x"), "align right");
-        add(hiTextField);
-        add(loTextField);
-        add(new JLabel(), "wrap 15");
+        registerPanel.add(new JLabel("hi / lo = 0x"), "align right");
+        registerPanel.add(hiTextField);
+        registerPanel.add(loTextField);
+        registerPanel.add(new JLabel(), "wrap 15");
 
         // Status
         JLabel label1 = new JLabel("_CU_RFRMPB00N0Im___IM___KSUUREEI"); label1.setFont(fixedFont);
         JLabel label2 = new JLabel("3210PREXXV  M pl76543210XXXM0RXE"); label2.setFont(fixedFont);
-        add(new JLabel()); add(label1, "span, wrap 0");
-        add(new JLabel()); add(label2, "span, wrap 0");
+        registerPanel.add(new JLabel()); registerPanel.add(label1, "span, wrap 0");
+        registerPanel.add(new JLabel()); registerPanel.add(label2, "span, wrap 0");
         statusTextField.setFont(fixedFont);
-        add(new JLabel("Status = 0b"), "align right"); add(statusTextField, "span, wrap");
+        registerPanel.add(new JLabel("Status = 0b"), "align right"); registerPanel.add(statusTextField, "span, wrap");
 
         // Cause
         JLabel label3 = new JLabel("B0CE0000IW000000___IP___0_Exc_00"); label3.setFont(fixedFont);
         JLabel label4 = new JLabel("D       VP      76543210 Code_  "); label4.setFont(fixedFont);
-        add(new JLabel()); add(label3, "span, wrap 0");
-        add(new JLabel()); add(label4, "span, wrap 0");
-        add(new JLabel("Cause = 0b"), "align right"); add(causeTextField, "span 3, wrap");
+        registerPanel.add(new JLabel()); registerPanel.add(label3, "span, wrap 0");
+        registerPanel.add(new JLabel()); registerPanel.add(label4, "span, wrap 0");
+        registerPanel.add(new JLabel("Cause = 0b"), "align right"); registerPanel.add(causeTextField, "span 3, wrap");
 
-        add(new JLabel("EPC = 0x"), "align right"); add(epcTextField);
-        add(new JLabel("ErrEPC=0x"), "align right"); add(errorEpcTextField, "wrap");
-        add(new JLabel("BadVAddr=0x"), "align right"); add(badVAddrTextField);
-        add(new JLabel("SSCR=0x"), "align right"); add(sscrTextField, "wrap");
+        registerPanel.add(new JLabel("EPC = 0x"), "align right"); registerPanel.add(epcTextField);
+        registerPanel.add(new JLabel("ErrEPC=0x"), "align right"); registerPanel.add(errorEpcTextField, "wrap");
+        registerPanel.add(new JLabel("BadVAddr=0x"), "align right"); registerPanel.add(badVAddrTextField);
+        registerPanel.add(new JLabel("SSCR=0x"), "align right"); registerPanel.add(sscrTextField, "wrap");
+
+        setLayout(new BorderLayout());
+        add(new JScrollPane(registerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER), BorderLayout.CENTER);
 
         if (!filterMode) {
-            add(new JLabel());
+            JPanel buttonPanel = new JPanel();
+
+            buttonPanel.add(new JLabel());
             saveButton = new JButton("Save");
             Font font = saveButton.getFont();
             font = new Font(font.getName(), font.getStyle(), 10);
@@ -170,10 +174,13 @@ public class TxCPUStateComponent extends CPUStateComponent {
                     refresh();
                 }
             });
-            add(saveButton);
-            add(cancelButton);
-            add(new JLabel(), "wrap");
+            buttonPanel.add(saveButton);
+            buttonPanel.add(cancelButton);
+            buttonPanel.add(new JLabel(), "wrap");
+
+            add(buttonPanel, BorderLayout.SOUTH);
         }
+
         // Force a refresh, so that the one that will be triggered by the timer will leave a white background
         refresh();
     }
