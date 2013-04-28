@@ -173,19 +173,20 @@ public abstract class St950x0 extends SpiSlaveDevice {
     }
 
     public void write(Integer value) {
-        if (!selected) {
-            throw new RuntimeException("St950x0.write(0x" + Format.asHex(value & 0xFF, 2) + ") called while eeprom is not SELECTed !");
-        }
-        // Writing a value to serial eeprom means clock is ticking, so a value has to be transmitted back synchronously
-        connectedDevice.write(read());
-
         if (value == null) {
             throw new RuntimeException("St950x0.write(null)");
         }
         else {
+            int byteValue = value & 0xFF;
+            if (!selected) {
+                throw new RuntimeException("St950x0.write(0x" + Format.asHex(byteValue & 0xFF, 2) + ") called while eeprom is not SELECTed !");
+            }
+            // Writing a value to serial eeprom means clock is ticking, so a value has to be transmitted back synchronously
+            connectedDevice.write(read());
+
             if (currentCommand == null) {
                 // first byte is a new command
-                switch (value) {
+                switch (byteValue) {
                     case WREN:
                         setWriteLatchEnabled();
                         break;
@@ -211,7 +212,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
                         currentCommand = Command.WRITE1;
                         break;
                     default:
-                        throw new RuntimeException("Unknown command : 0b" + Format.asBinary(value, 8));
+                        throw new RuntimeException("Unknown command : 0b" + Format.asBinary(byteValue, 8));
                 }
             }
             else if (currentCommand == Command.READ0 || currentCommand == Command.READ1 || currentCommand == Command.WRITE0 || currentCommand == Command.WRITE1) {
@@ -220,11 +221,11 @@ public abstract class St950x0 extends SpiSlaveDevice {
                     // "decode" 2nd byte as an address
                     if (currentCommand == Command.READ0 || currentCommand == Command.WRITE0) {
                         // Page 0
-                        currentAddress = value;
+                        currentAddress = byteValue;
                     }
                     else {
                         // Page 1
-                        currentAddress = write1offset & value;
+                        currentAddress = write1offset | byteValue;
                     }
                 }
                 else {
@@ -244,7 +245,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
                             break;
                         case WRITE1:
                             // Write to page 1
-                            performWrite(write1offset & currentAddress, value);
+                            performWrite(write1offset | currentAddress, value);
                             // Prepare next read by incrementing address, wrapping at 16
                             currentAddress = (currentAddress & 0xFFFFFFF0) | ((currentAddress + 1) & 0xF);
                             break;
@@ -256,7 +257,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
             }
             else if (currentCommand == Command.WRSR) {
                 // This is the "data phase". Store the received value (only protection bytes are writeable)
-                statusRegister = (statusRegister & 0b11110011) | (value & 0b00001100);
+                statusRegister = (statusRegister & 0b11110011) | (byteValue & 0b00001100);
             }
             else {
                 System.err.println("Unimplemented command : " + currentCommand);
