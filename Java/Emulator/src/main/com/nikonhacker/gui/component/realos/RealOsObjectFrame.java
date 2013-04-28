@@ -199,7 +199,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         semaphoreInformationList.clear();
         int semaphoreNumber = 1;
         SemaphoreInformation semaphoreInformation = sysCallEnvironment.getSemaphoreInformation(chip, semaphoreNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(semaphoreInformation.getErrorCode())) {
+        while (semaphoreInformation.getErrorCode() == ErrorCode.E_OK) {
             semaphoreInformationList.add(semaphoreInformation);
             semaphoreNumber++;
             semaphoreInformation = sysCallEnvironment.getSemaphoreInformation(chip, semaphoreNumber);
@@ -241,7 +241,7 @@ public class RealOsObjectFrame extends DocumentFrame {
         mailboxInformationList.clear();
         int mailboxNumber = 1;
         MailboxInformation mailboxInformation = sysCallEnvironment.getMailboxInformation(chip, mailboxNumber);
-        while (!EnumSet.of(ErrorCode.E_ID, ErrorCode.E_EMULATOR).contains(mailboxInformation.getErrorCode())) {
+        while (mailboxInformation.getErrorCode() == ErrorCode.E_OK) {
             mailboxInformationList.add(mailboxInformation);
             mailboxNumber++;
             mailboxInformation = sysCallEnvironment.getMailboxInformation(chip, mailboxNumber);

@@ -17,7 +17,10 @@ import com.nikonhacker.realos.*;
  */
 public class TxSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0x10000000;
-    private static final int MAX_FLAG_ID = 0xF;
+
+    private static final int MAX_FLAG_ID    = 0xF;
+    private static final int MAX_MAILBOX_ID = 0x3;
+    private static final int MAX_SEM_ID     = 0xF;
 
     private final TxEmulator emulator;
     private final CodeStructure codeStructure;
@@ -64,9 +67,15 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public SemaphoreInformation getSemaphoreInformation(int chip, int objId) {
+        // In TX implementation, there's no way to determine the range of valid objects by looping until error.
+        // So stop at hardcoded limit.
+        if (objId > MAX_SEM_ID) {
+            return new SemaphoreInformation(objId, ErrorCode.E_NOID, 0, 0, 0);
+        }
+
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall("sys_ref_sem", pk_robj, objId);  // TODO check order
+        ErrorCode errorCode = runSysCall("sys_ref_sem", objId, pk_robj);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
@@ -74,7 +83,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         }
         else {
             Memory memory = platform.getMemory();
-            return new SemaphoreInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            // Note: structure is different from RealOS 3
+            return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
@@ -101,16 +111,23 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public MailboxInformation getMailboxInformation(int chip, int objId) {
+        // In TX implementation, there's no way to determine the range of valid objects by looping until error.
+        // So stop at hardcoded limit.
+        if (objId > MAX_MAILBOX_ID) {
+            return new MailboxInformation(objId, ErrorCode.E_NOID, 0, 0, 0);
+        }
+
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
-        ErrorCode errorCode = runSysCall("sys_ref_mbx", pk_robj, objId);  // TODO check order
+        ErrorCode errorCode = runSysCall("sys_ref_mbx", objId, pk_robj);
 
         // Interpret result
         if (errorCode != ErrorCode.E_OK) {
             return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new MailboxInformation(objId, errorCode, platform.getMemory().load32(pk_robj), platform.getMemory().load32(pk_robj + 4), platform.getMemory().load32(pk_robj + 8));
+            Memory memory = platform.getMemory();
+            return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
