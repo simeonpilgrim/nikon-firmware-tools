@@ -1221,17 +1221,17 @@
 -s 0x4065E=time(R4 [OUT time_in_ms])
 -s 0x4068A=soft_reset
 -s 0x406EC=NOP_trap_syscall_enter
--s 0x406EE=NOP_406EE
+-s 0x406EE=NOP_trap_task_context_switched
 -s 0x406F0=NOP_trap_syscall_leave
--s 0x406F2=NOP_406F2
--s 0x406F4=NOP_406F4
+-s 0x406F2=NOP_trap_before_task_switch
+-s 0x406F4=NOP_trap_task_context_saved
 -s 0x406F6=NOP_406F6
 -s 0x406F8=NOP_406F8
 -s 0x406FA=int40_xF5
 -s 0x40702=int_01
 -s 0x4086A=sys_unspport_func(/*_int or _tmr Return from Interrupt or Timer Handler */)
 -s 0x4086E=sys_reserved_func
--s 0x40872=int_40
+-s 0x40872=int_40_syscall
 -s 0x408F0=int_07
 -s 0x408FC=_kernel_start
 -s 0x409E6=infinite_loop
@@ -1254,7 +1254,7 @@
 -s 0x40E98=sys__sub_40E98
 -s 0x40EC8=sys__sub_40EC8
 -s 0x40F06=sys__sub_40F06
--s 0x40F3C=int_3f
+-s 0x40F3C=int_3f_task_switch
 -s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
 -s 0x41106=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
 -s 0x41124=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
@@ -5599,6 +5599,7 @@
 
 ########## Global variables
 
+-s 0x68000800=pCurrentTCB
 -s 0x68000910=Real_Time_Clock
 
 ########## Menu Data Symbols
