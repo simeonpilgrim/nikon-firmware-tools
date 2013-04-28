@@ -13,10 +13,11 @@ import com.nikonhacker.realos.*;
  * Here, calls are standard functions, so they are found by name in the dtx.txt file
  * and require an "Analyse/Disassemble" phase
  *
- * This implementations adheres to the µITRON4.0 specification
+ * This implementations adheres to the µITRON4.0 specification, but has some workarounds due to limitations of the implementation
  */
 public class TxSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0x10000000;
+    private static final int MAX_FLAG_ID = 0xF;
 
     private final TxEmulator emulator;
     private final CodeStructure codeStructure;
@@ -78,6 +79,12 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public EventFlagInformation getEventFlagInformation(int chip, int objId) {
+        // In TX implementation, there's no way to determine the range of valid objects by looping until error.
+        // So stop at hardcoded limit.
+        if (objId > MAX_FLAG_ID) {
+            return new EventFlagInformation(objId, ErrorCode.E_NOID, 0, 0, 0);
+        }
+
         int pk_robj = BASE_ADDRESS_SYSCALL + 0x20; // pointer to result structure
 
         ErrorCode errorCode = runSysCall("sys_ref_flg", objId, pk_robj);
@@ -88,7 +95,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         }
         else {
             Memory memory = platform.getMemory();
-            return new EventFlagInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
+            // Note: structure is different from RealOS 3
+            return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
