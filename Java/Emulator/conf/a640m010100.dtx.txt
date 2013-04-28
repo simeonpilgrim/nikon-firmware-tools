@@ -118,7 +118,7 @@
 -s 0xBFC035DC=sys_pol_flg
 -s 0xBFC0369C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
 -s 0xBFC03818=sys_get_ilev($a0 [IN ptr_for_interrupt_level])
--s 0xBFC03870=sys_snd_msg($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
+-s 0xBFC03870=sys_snd_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
 -s 0xBFC03948=sys_get_tid($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id] /* get task id in the RUNNING state */)
 -s 0xBFC03984=sys_ena_dsp
 -s 0xBFC03A94=sys_slp_tsk
@@ -127,8 +127,8 @@
 -s 0xBFC03C8C=sys_clr_flg($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC03CD8=sys_ref_flg($a0 [IN flg_id], $a1 [IN ptr_to_pk_rflg], $v0 [OUT err_code] /* Get EventFlag Status */)
 -s 0xBFC03D58=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
--s 0xBFC03DEC=sys_unknown_BFC03DEC
--s 0xBFC03EA0=sys_rcv_msg($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
+-s 0xBFC03DEC=sys_ref_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_rmbx], $v0 [OUT err_code] /* Get Mailbox Status */)
+-s 0xBFC03EA0=sys_rcv_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
 -s 0xBFC0DB00=init_SC0
 -s 0xBFC0DD78=init_timer0xB
 -s 0xBFC0DFC8=SC0_receive_0
@@ -185,9 +185,11 @@
 -s 0xBFC12B6C=sys_pol_flg03
 -s 0xBFC12B78=sys_ref_flg00
 -s 0xBFC12B94=sys_ref_flg01
--s 0xBFC12BB0=sys_snd_msg_00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
--s 0xBFC12BC0=sys_snd_msg01
--s 0xBFC12BD0=sys_rcv_msg00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
+-s 0xBFC12BB0=sys_snd_mbx00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
+-s 0xBFC12BC0=sys_snd_mbx01
+-s 0xBFC12BD0=sys_rcv_mbx00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
+-s 0xBFC12BDC=sys_ref_mbx00
+-s 0xBFC12BF8=sys_ref_mbx01
 -s 0xBFC12C14=sys_lock_cpu
 -s 0xBFC12C2C=sys_dis_int
 -s 0xBFC12C40=setInterruptLEVel_etc_unlock_cpu_TBC($a0 [IN ptr_to_level])
@@ -918,8 +920,8 @@
 -s 0xBFC8CF28=get_ADa_Difference_array
 -s 0xBFC8CFC4=multiply_0xC($a0 [IN], $v0 [OUT a0_x_4_x_3])
 -s 0xBFC8CFF4=sys_set_flg_03
--s 0xBFC8D000=send_msg_00
--s 0xBFC8D018=send_msg_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send])
+-s 0xBFC8D000=send_mbx_00
+-s 0xBFC8D018=send_mbx_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send])
 -s 0xBFC8D030=Task0xD
 -s 0xBFC8D0E0=get_battery_command
 -s 0xBFC8D11C=decipher_battery_response
