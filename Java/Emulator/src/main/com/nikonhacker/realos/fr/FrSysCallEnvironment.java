@@ -150,4 +150,9 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
     public String[] getTaskColumnLabels() {
         return new String[]{"Task Id", "State", "Priority", "Extended Information"};
     }
+
+    @Override
+    public int getTaskStateColumnNumber() {
+        return 1;
+    }
 }

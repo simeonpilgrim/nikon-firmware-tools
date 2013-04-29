@@ -29,4 +29,6 @@ public abstract class SysCallEnvironment {
 
     public abstract String[] getTaskColumnLabels();
 
+    public abstract int getTaskStateColumnNumber();
+
 }
