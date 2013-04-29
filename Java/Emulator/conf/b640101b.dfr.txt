@@ -1229,7 +1229,7 @@
 -s 0x406F8=NOP_406F8
 -s 0x406FA=int40_xF5
 -s 0x40702=int_01
--s 0x4086A=sys_unspport_func(/*_int or _tmr Return from Interrupt or Timer Handler */)
+-s 0x4086A=sys_unsupport_func(/*_int or _tmr Return from Interrupt or Timer Handler */)
 -s 0x4086E=sys_reserved_func
 -s 0x40872=int_40_syscall
 -s 0x408F0=int_07
