@@ -2213,7 +2213,7 @@ public class FrEmulator extends Emulator {
                 cycleListenerNumber = 0;
                 while (cycleListenerNumber < cycleCounterListeners.size()) {
                     CycleCounterListener cycleCounterListener = cycleCounterListeners.get(cycleListenerNumber);
-                    if (cycleCounterListener.onCycleCountChange(totalCycles, 1)) {
+                    if (cycleCounterListener.onCycleCountChange(totalCycles, cycles)) {
                         cycleListenerNumber++;
                     }
                     else {
