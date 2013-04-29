@@ -20,6 +20,7 @@ import com.nikonhacker.realos.tx.TxSysCallEnvironment;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -83,7 +84,36 @@ public class RealOsObjectFrame extends DocumentFrame {
         SortedList<TaskInformation> sortedTaskInformationList = new SortedList<TaskInformation>(taskInformationList, null);
         JTable taskTable = new JTable(new EventTableModel<TaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(sysCallEnvironment.getTaskInformationClass(),
                 sysCallEnvironment.getTaskPropertyNames(),
-                sysCallEnvironment.getTaskColumnLabels())));
+                sysCallEnvironment.getTaskColumnLabels()))){
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+                Component c = super.prepareRenderer(renderer, row, column);
+                //  add coloring based on task status here
+
+                if (!isRowSelected(row))
+                {
+                    int modelRow = convertRowIndexToModel(row);
+                    TaskInformation.TaskState state = (TaskInformation.TaskState)getModel().getValueAt(modelRow, sysCallEnvironment.getTaskStateColumnNumber());
+                    switch (state) {
+                        case RUN:
+                            c.setBackground(Color.YELLOW);
+                            break;
+                        case WAIT:
+                        case WAIT_SUSPEND:
+                            c.setBackground(Color.CYAN);
+                            break;
+                        case DORMANT:
+                            c.setBackground(Color.LIGHT_GRAY);
+                            break;
+                        default:
+                            c.setBackground(super.getBackground());
+                            break;
+                    }
+                }
+
+                return c;
+            }
+        };
         TableComparatorChooser.install(taskTable, sortedTaskInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
         taskScroller = new JScrollPane(taskTable);
