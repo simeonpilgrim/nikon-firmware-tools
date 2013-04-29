@@ -205,4 +205,9 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     public String[] getTaskColumnLabels() {
         return new String[]{"Task Id", "State", "Priority", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount"};
     }
+
+    @Override
+    public int getTaskStateColumnNumber() {
+        return 1;
+    }
 }
