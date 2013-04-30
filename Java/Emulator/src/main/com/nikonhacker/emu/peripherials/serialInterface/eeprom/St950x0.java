@@ -45,14 +45,6 @@ public abstract class St950x0 extends SpiSlaveDevice {
 
     private int numBits = 8;
 
-    public byte[] getMemory() {
-        return memory;
-    }
-
-    public void loadArray(byte[] contents) {
-        System.arraycopy(contents, 0, memory, 0, memory.length);
-    }
-
     public enum Command {WREN, WRDI, RDSR, WRSR, READ0, READ1, WRITE0, WRITE1}
 
     public St950x0(String name, int size) {
@@ -64,6 +56,14 @@ public abstract class St950x0 extends SpiSlaveDevice {
         }
 
         clear();
+    }
+
+    public byte[] getMemory() {
+        return memory;
+    }
+
+    public void loadArray(byte[] contents) {
+        System.arraycopy(contents, 0, memory, 0, memory.length);
     }
 
     public void clear() {
