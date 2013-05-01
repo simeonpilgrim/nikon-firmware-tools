@@ -19,19 +19,27 @@ import java.awt.event.ComponentListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * This file is part of NikonEmulator, a NikonHacker.com project.
  */
 public class LcdSerialPanel extends SerialDevicePanel {
+    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     public static final String VIEWFINDER_LCD_IMG_BASE_PATH = "images/viewfinder_lcd";
 
     private final RxTxSerialPanel rxTxSerialPanel;
     private LcdDriver lcdDriver;
     private final ImagePanel imagePanel = new ImagePanel();
-    private final JTextField valuesTextField;
+    private final JTextField lcdValuesTextField;
+    private final JTextField manualValuesTextField;
     private final JPanel lcdPanel;
+
+    private byte[] lcdValues;
+    private byte[] manualValues;
+
+    private Timer refreshTimer;
 
     /**
      * This array contains the black background [0][0]
@@ -39,36 +47,63 @@ public class LcdSerialPanel extends SerialDevicePanel {
      */
     private final BufferedImage segmentImages[][] = new BufferedImage[15][8];
 
-    public LcdSerialPanel(LcdDriver lcdDriver, EmulatorUI ui) {
+    public LcdSerialPanel(final LcdDriver lcdDriver, EmulatorUI ui) {
         super();
         this.lcdDriver = lcdDriver;
+        this.lcdValues = Arrays.copyOf(lcdDriver.getValues(), lcdDriver.getValues().length);
+        this.manualValues = Arrays.copyOf(lcdDriver.getValues(), lcdDriver.getValues().length);
 
         final JTabbedPane tabbedPane = new JTabbedPane();
 
+        final JCheckBox autoRefreshCheckBox = new JCheckBox("Auto-refresh");
+
         // LCD viewer
         lcdPanel = new JPanel(new BorderLayout());
-        JPanel selectionPanel = new JPanel(new MigLayout("nogrid, fillx"));
+        JPanel topPanel = new JPanel(new MigLayout("fillx", "[][grow][]"));
 
         ActionListener refreshAction = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                refresh();
+                autoRefreshCheckBox.setSelected(false);
+                updateManualArrayFromTextField();
+                renderImage();
             }
         };
 
-        selectionPanel.add(new JLabel("Values (15 bytes)"));
+        topPanel.add(new JLabel("Values received:"));
 
-        valuesTextField = new JTextField("");
-        selectionPanel.add(valuesTextField, "grow");
-        valuesTextField.addActionListener(refreshAction);
+        lcdValuesTextField = new JTextField("");
+        topPanel.add(lcdValuesTextField, "grow");
+        lcdValuesTextField.setEnabled(false);
+        updateTextFieldFromArray(lcdValuesTextField, lcdValues);
+
+        autoRefreshCheckBox.setSelected(true);
+        autoRefreshCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (autoRefreshCheckBox.isSelected()) {
+                    manualValues = Arrays.copyOf(lcdValues, lcdValues.length);
+                    updateTextFieldFromArray(manualValuesTextField, manualValues);
+                    renderImage();
+                }
+            }
+        });
+        topPanel.add(autoRefreshCheckBox, "wrap");
+
+        topPanel.add(new JLabel("Values rendered:"));
+        manualValuesTextField = new JTextField("");
+        topPanel.add(manualValuesTextField, "grow");
+        manualValuesTextField.addActionListener(refreshAction);
+        updateTextFieldFromArray(manualValuesTextField, manualValues);
 
         JButton refreshButton = new JButton("Render");
-        selectionPanel.add(refreshButton);
+        topPanel.add(refreshButton, "wrap");
         refreshButton.addActionListener(refreshAction);
 
+        JPanel bottomPanel = new JPanel();
         JButton saveButton = new JButton("Save image...");
         saveButton.setToolTipText("Save rendered image to file");
-        selectionPanel.add(saveButton);
+        bottomPanel.add(saveButton);
         saveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -76,9 +111,11 @@ public class LcdSerialPanel extends SerialDevicePanel {
             }
         });
 
-        lcdPanel.add(selectionPanel, BorderLayout.NORTH);
+        lcdPanel.add(topPanel, BorderLayout.NORTH);
 
         lcdPanel.add(imagePanel, BorderLayout.CENTER);
+
+        lcdPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         tabbedPane.addTab("Contents", lcdPanel);
 
@@ -87,7 +124,7 @@ public class LcdSerialPanel extends SerialDevicePanel {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         prepareSegments(imagePanel.getWidth(), imagePanel.getHeight());
-                        refresh();
+                        renderImage();
                     }
             });
 
@@ -120,9 +157,58 @@ public class LcdSerialPanel extends SerialDevicePanel {
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+
+        // Start update timer
+        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (!Arrays.equals(lcdValues, lcdDriver.getValues())) {
+                    // Values of the actual LCD driver are copied to local cache
+                    lcdValues = Arrays.copyOf(lcdDriver.getValues(), lcdDriver.getValues().length);
+                    // LCD Values are reflected in first TextField
+                    updateTextFieldFromArray(lcdValuesTextField, lcdValues);
+                    if (autoRefreshCheckBox.isSelected()) {
+                        // Values of the actual LCD driver are also copied to manually editable cache
+                        manualValues = Arrays.copyOf(lcdDriver.getValues(), lcdDriver.getValues().length);
+                        // Manual Values are reflected in second TextField
+                        updateTextFieldFromArray(manualValuesTextField, manualValues);
+                        // LCD image is recomputed
+                        renderImage();
+                    }
+                }
+            }
+        });
+        refreshTimer.start();
     }
 
-    private void refresh() {
+    private void updateTextFieldFromArray(JTextField textField, byte[] values) {
+        String s ="";
+        for (byte value : values) {
+            s += "0x" + Format.asHex(value, 2) + " ";
+        }
+        textField.setText(s.trim());
+    }
+
+    private void updateManualArrayFromTextField() {
+        String[] values = manualValuesTextField.getText().trim().split("[\\s,]+");
+        int byteNumber = 0;
+        for (String value : values) {
+            try {
+                manualValues[byteNumber] = (byte) (Format.parseUnsigned(value) & 0xFF);
+            } catch (ParsingException e) {
+                System.err.println("Cannot parse value: " + value);
+            }
+            byteNumber++;
+            if (byteNumber > manualValues.length) {
+                System.err.println("Too many values. Ignoring the " + manualValues.length + "th onwards");
+                return;
+            }
+        }
+    }
+
+    /**
+     * Render manualValues array to image
+     */
+    private void renderImage() {
         BufferedImage bgImage = segmentImages[0][0];
 
         // create the new image
@@ -134,23 +220,17 @@ public class LcdSerialPanel extends SerialDevicePanel {
         Graphics g = result.getGraphics();
         g.drawImage(bgImage, 0, 0, null);
 
-        String[] values = valuesTextField.getText().trim().split("[\\s,]+");
         int byteNumber = 0;
-        for (String value : values) {
+        for (byte bValue : manualValues) {
             if (byteNumber > 0 && byteNumber < 14) { // Ignore bytes 0 and 14
-                try {
-                    int bValue = Format.parseUnsigned(value);
-                    for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
-                        if (Format.isBitSet(bValue, bitNumber)) {
-                            // overlay image of corresponding segment, preserving the alpha channel
-                            BufferedImage img = segmentImages[byteNumber][bitNumber];
-                            if (img != null) {
-                                g.drawImage(img, 0, 0, null);
-                            }
+                for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+                    if (Format.isBitSet(bValue, bitNumber)) {
+                        // overlay image of corresponding segment, preserving the alpha channel
+                        BufferedImage img = segmentImages[byteNumber][bitNumber];
+                        if (img != null) {
+                            g.drawImage(img, 0, 0, null);
                         }
                     }
-                } catch (ParsingException e) {
-                    System.err.println("Cannot parse value: " + value);
                 }
             }
             byteNumber += 1;
