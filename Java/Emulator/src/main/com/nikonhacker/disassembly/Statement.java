@@ -10,8 +10,9 @@ public abstract class Statement {
     /** cached context including CPUState, for CALLs and INTs */
     public StatementContext context = null;
 
-    /** The delay slot this instruction is *in*
-     * In other words, that the delay slot type of the previous statement's instruction
+    /**
+     * The type of delay slot type this instruction is *in*
+     * In other words, the delay slot type of the previous statement's instruction
      */
     private Instruction.DelaySlotType delaySlotType;
 
