@@ -29,8 +29,8 @@
 # Interrupt table
 -m 0xBFC041D0-0xBFC043CF=DATA:L
 
-# Unknown data
-# -m 0xBFC043D0-0xBFC044BB=DATA:L
+# Unknown data with some indirection tables
+-m 0xBFC043D0-0xBFC044BB=DATA:L
 
 # TCB Task table
 # Table defining REALOS Tasks (Table of 0xD records of 0x14 bytes)
