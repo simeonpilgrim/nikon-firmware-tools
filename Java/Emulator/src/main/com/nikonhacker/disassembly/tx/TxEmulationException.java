@@ -1,9 +1,10 @@
 package com.nikonhacker.disassembly.tx;
 
+import com.nikonhacker.disassembly.Statement;
 import com.nikonhacker.emu.EmulationException;
 
 public class TxEmulationException extends EmulationException {
-    private TxStatement statement = null;
+    private Statement statement = null;
     private int exceptionType = Exceptions.NONE;
 
     public TxEmulationException(String message) {
@@ -22,13 +23,13 @@ public class TxEmulationException extends EmulationException {
         super(cause);    
     }
 
-    public TxEmulationException(TxStatement statement, String message, int exceptionType) {
+    public TxEmulationException(Statement statement, String message, int exceptionType) {
         super(message);
         this.statement = statement;
         this.exceptionType = exceptionType;
     }
 
-    public TxEmulationException(TxStatement statement, Exception e) {
+    public TxEmulationException(Statement statement, Exception e) {
         super(e);
         this.statement = statement;
     }

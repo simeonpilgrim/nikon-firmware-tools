@@ -1,6 +1,5 @@
-package com.nikonhacker.disassembly.tx;
+package com.nikonhacker.disassembly;
 
-import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.EmulationException;
 
 /*
@@ -50,5 +49,5 @@ public interface SimulationCode {
      * @param context The context the emulation runs in (CPU, memory and delay slot status)
      * @throws EmulationException This is a run-time exception generated during simulation.
      **/
-    public void simulate(TxStatement statement, StatementContext context) throws EmulationException;
+    public void simulate(Statement statement, StatementContext context) throws EmulationException;
 }
