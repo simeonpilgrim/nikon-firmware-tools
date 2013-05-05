@@ -2,6 +2,7 @@ package com.nikonhacker.disassembly.tx;
 
 
 import com.nikonhacker.disassembly.Instruction;
+import com.nikonhacker.disassembly.SimulationCode;
 
 public class TxInstruction extends Instruction {
 

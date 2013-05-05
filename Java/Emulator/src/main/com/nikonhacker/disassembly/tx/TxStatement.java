@@ -24,33 +24,8 @@ public class TxStatement extends Statement {
     private static String fmt_par;
     private static String fmt_ens;
 
-    /** rs or fs operand */
-    public int rs_fs; // as-is from binary code
-    private int decodedRsFs; // interpreted
-
-    /** rt or ft operand */
-    public int rt_ft; // as-is from binary code
-    private int decodedRtFt; // interpreted
-
-    /** rd of fd operand */
-    public int rd_fd; // as-is from binary code
-    private int decodedRdFd; // interpreted
-
-    /** sa (shift amount) of cc (CP1 condition code) operand */
-    // TODO use imm instead ??
-    // TODO what does decodedSa mean ??
-    public int sa_cc; // as-is from binary code
-    private int decodedSaCc; // interpreted
-
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     private int c;
-
-
-    /** number of significant bits in imm */
-    public int immBitWidth;
-
-    /** number of significant bits in decodedImm */
-    private int decodedImmBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
     private int memRangeStart = 0;
@@ -110,15 +85,15 @@ public class TxStatement extends Statement {
         switch (((TxInstruction)instruction).getInstructionFormat32())
         {
             case R:
-                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                ri_rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 rd_fd = (binaryStatement >>> 11) & 0b11111; // rd
                 sa_cc = (binaryStatement >>>  6) & 0b11111; // sa
                 break;
             case I:
             case I_BRANCH:
-                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs or base
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                ri_rs_fs = (binaryStatement >>> 21) & 0b11111; // rs or base
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 imm   =  binaryStatement         & 0xFFFF;
                 immBitWidth = 16;
                 break;
@@ -131,29 +106,29 @@ public class TxStatement extends Statement {
                 immBitWidth = 20;
                 break;
             case TRAP:
-                rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                ri_rs_fs = (binaryStatement >>> 21) & 0b11111; // rs
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 imm   = (binaryStatement >>>  6) & 0x3FF;
                 immBitWidth = 10;
                 break;
             // IN CPxx formats, rs, rt and rd are mapped or shifted to target the registers belonging to the correct CP
             case CP0:
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
                 rd_fd = TxCPUState.CP0_REGISTER_MAP[binaryStatement & 0b111][(binaryStatement >>> 11) & 0b11111];
                 break;
             case CP1_R1: // Coprocessor 1 with registers, version 1 (rt)
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
-                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                ri_rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
                 break;
             case CP1_R2: // Coprocessor 1 with registers, version 2 (ft)
                 //fmt   = (binaryStatement >>> 21) & 0b11111;
-                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
-                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); // fs
+                rj_rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
+                ri_rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); // fs
                 rd_fd = TxCPUState.CP1_F0 + ((binaryStatement >>>  6) & 0b11111); // fd
                 break;
             case CP1_CR1: // Coprocessor 1 with Condition Register
-                rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
-                rs_fs = TxCPUState.CP1_REGISTER_NUMBER_MAP[(binaryStatement >>> 11) & 0b11111];
+                rj_rt_ft = (binaryStatement >>> 16) & 0b11111; // rt
+                ri_rs_fs = TxCPUState.CP1_REGISTER_NUMBER_MAP[(binaryStatement >>> 11) & 0b11111];
                 break;
             case CP1_CC_BRANCH:
                 sa_cc = (binaryStatement >>> 18) & 0b111; // cc
@@ -161,15 +136,15 @@ public class TxStatement extends Statement {
                 immBitWidth = 16;
                 break;
             case CP1_I:
-                rs_fs = (binaryStatement >>> 21) & 0b11111;
-                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
+                ri_rs_fs = (binaryStatement >>> 21) & 0b11111;
+                rj_rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); // ft
                 imm   =  binaryStatement         & 0xFFFF;
                 immBitWidth = 16;
                 break;
             case CP1_R_CC: // Coprocessor 1 with Register and Condition Code
                 //fmt   = (binaryStatement >>> 21) & 0b11111;
-                rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); //ft
-                rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
+                rj_rt_ft = TxCPUState.CP1_F0 + ((binaryStatement >>> 16) & 0b11111); //ft
+                ri_rs_fs = TxCPUState.CP1_F0 + ((binaryStatement >>> 11) & 0b11111); //fs
                 sa_cc = (binaryStatement >>>  8) & 0b111; //cc
                 break;
 
@@ -186,67 +161,67 @@ public class TxStatement extends Statement {
                     immBitWidth = 11;
                     break;
                 case RI:
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rs_fs = rt_ft;
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    ri_rs_fs = rj_rt_ft;
                     imm   =  binaryStatement  & 0b11111111;
                     immBitWidth = 8;
                     break;
                 case RR:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
-                    rd_fd = rs_fs;
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    rd_fd = ri_rs_fs;
                     break;
                 case RRI:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b11111;
-                    rd_fd = rt_ft; // trick to use RRI for MULT, SLLV, etc. to avoid a specific encoding
+                    rd_fd = rj_rt_ft; // trick to use RRI for MULT, SLLV, etc. to avoid a specific encoding
                     immBitWidth = 5;
                     break;
                 case RRR1:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b111]; // rz
                     break;
                 case RRR2:
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
                     imm = (binaryStatement >>> 2) & 0b11111; // imm or sa
                     immBitWidth = 5;
                     break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
-                    rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    rj_rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
                 case RRIA:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =  binaryStatement  & 0b1111;
                     immBitWidth = 4;
                     break;
                 case SHIFT1:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     sa_cc = (binaryStatement >>> 2) & 0b111; // sa
                     if (sa_cc == 0) sa_cc = 8; // special convention as a value of 0 is meaningless
-                    rd_fd = rs_fs;
+                    rd_fd = ri_rs_fs;
                     break;
                 case SHIFT2:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
                     rd_fd = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 3) & 0b11111]; // cp0rt32
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111];
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111];
                     break;
                 case I8MOVFP:
                     rd_fd = TxCPUState.FP;
-                    rs_fs = (binaryStatement >>> 5) & 0b11111;
+                    ri_rs_fs = (binaryStatement >>> 5) & 0b11111;
                     break;
                 case I8MOVR32:
-                    rs_fs = binaryStatement & 0b11111;
+                    ri_rs_fs = binaryStatement & 0b11111;
                     rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111];
                     break;
                 case I8MOV32R:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[binaryStatement & 0b111];
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[binaryStatement & 0b111];
                     // r32 bit encoding is --------21043--- . 43 must not move and 210 is shifted right to reorder 43210
                     rd_fd = binaryStatement & 0b11000 | (binaryStatement >> 5) & 0b00111;
                     break;
@@ -256,22 +231,22 @@ public class TxStatement extends Statement {
                     sa_cc = (binaryStatement >>> 4) & 0b111; // ra|s0|s1
                     break;
                 case FPB_SPB:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = rs_fs; // TODO useful ?
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = ri_rs_fs; // TODO useful ?
                     imm   =  binaryStatement & 0b1111111;
                     immBitWidth = 7;
-                    rd_fd = rt_ft;
+                    rd_fd = rj_rt_ft;
                     break;
                 case FPH_SPH:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = rs_fs; // TODO useful ?
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = ri_rs_fs; // TODO useful ?
                     imm   =  (binaryStatement >>> 1) & 0b111111;
                     immBitWidth = 6;
-                    rd_fd = rt_ft;
+                    rd_fd = rj_rt_ft;
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
-                    rs_fs = 0b11; // base = fp
+                    ri_rs_fs = 0b11; // base = fp
                     imm   =  binaryStatement  & 0b11111;
                     immBitWidth = 5;
                     break;
@@ -296,46 +271,46 @@ public class TxStatement extends Statement {
                     immBitWidth = 16;
                     break;
                 case RI:
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rs_fs = rt_ft;
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    ri_rs_fs = rj_rt_ft;
                     imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
                             | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
                             | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case RRI:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
                             | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
                             | ((binaryStatement           ) & 0b00000000_00011111);
                     immBitWidth = 16;
                     break;
                 case RRR1:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b111]; // rz
                     throw new RuntimeException("RRR1 EXTEND not implemented");
                     //break;
                 case RRR3:
                     // TODO Check cp0rt32 -> cp0 reg number mapping
-                    rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
+                    rj_rt_ft = TxCPUState.CP0_REGISTER_MAP_16B[(binaryStatement >>> 2) & 0b11111]; // cp0rt32
                     imm   = TxCPUState.XIMM3_MAP[(binaryStatement >>> 8) & 0b111];
                     immBitWidth = 4;
                     break;
                 case RRIA:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     imm   =   ((binaryStatement >> (16-11)) & 0b01111000_00000000)
                             | ((binaryStatement >> (20- 4)) & 0b00000111_11110000)
                             | ((binaryStatement           ) & 0b00000000_00001111);
                     immBitWidth = 15;
                     break;
                 case SHIFT1:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // ry
                     sa_cc = (binaryStatement >>> 22) & 0b11111; // sa
-                    rd_fd = rs_fs;
+                    rd_fd = ri_rs_fs;
                     break;
                 case I8SVRS:
                     imm   =   ((binaryStatement >> (20- 4)) & 0b11110000)
@@ -348,8 +323,8 @@ public class TxStatement extends Statement {
                 case FPB_SPB:
                 case FPH_SPH:
                     // same as RI in 32bit
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
-                    rt_ft = rs_fs; // TODO useful ?
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = ri_rs_fs; // TODO useful ?
                     imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
                             | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
                             | ((binaryStatement           ) & 0b00000000_00011111);
@@ -357,7 +332,7 @@ public class TxStatement extends Statement {
                     break;
                 case SPC_BIT:
                     sa_cc = (binaryStatement >>> 5) & 0b111; // pos3
-                    rs_fs = (binaryStatement >>> 19) & 0b11; // base
+                    ri_rs_fs = (binaryStatement >>> 19) & 0b11; // base
                     imm   =   ((binaryStatement >> (16-11)) & 0b00111000_00000000)
                             | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
                             | ((binaryStatement           ) & 0b00000000_00011111);
@@ -370,15 +345,15 @@ public class TxStatement extends Statement {
                     immBitWidth = 26;
                     break;
                 case RR_BS1F_BFINS:
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
                     sa_cc = (binaryStatement >>> 16) & 0b11111; // bit1
                     imm = (binaryStatement >>> 21) & 0b11111; // bit2
                     immBitWidth = 5;
                     break;
                 case RR_MIN_MAX:
-                    rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
-                    rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>>16) & 0b111]; // ry
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 5) & 0b111]; // rx
+                    rj_rt_ft = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>>16) & 0b111]; // ry
                     rd_fd = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rz
                     break;
                 case W:
@@ -392,8 +367,8 @@ public class TxStatement extends Statement {
     public void reset() {
         immBitWidth = 0;
         c = 0;
-        rs_fs = CPUState.NOREG;
-        rt_ft = CPUState.NOREG;
+        ri_rs_fs = CPUState.NOREG;
+        rj_rt_ft = CPUState.NOREG;
         rd_fd = CPUState.NOREG;
         sa_cc = CPUState.NOREG;
         imm = CPUState.NOREG;
@@ -412,8 +387,8 @@ public class TxStatement extends Statement {
     public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException {
 
         /* DISPLAY FORMAT processing */
-        decodedRsFs = rs_fs;
-        decodedRtFt = rt_ft;
+        decodedRiRsFs = ri_rs_fs;
+        decodedRjRtFt = rj_rt_ft;
         decodedRdFd = rd_fd;
         decodedSaCc = sa_cc;
         decodedImm = imm;
@@ -471,11 +446,11 @@ public class TxStatement extends Statement {
                     break;
                 case 'i':
                     // Select Rs
-                    currentlySelectedRegisterNumber = decodedRsFs;
+                    currentlySelectedRegisterNumber = decodedRiRsFs;
                     break;
                 case 'j':
                     // Select Rt
-                    currentlySelectedRegisterNumber = decodedRtFt;
+                    currentlySelectedRegisterNumber = decodedRjRtFt;
                     break;
                 case 'k':
                     // Select Rd
@@ -609,7 +584,7 @@ public class TxStatement extends Statement {
 
                 case 'B': // Bit operations such as bext, bins, etc (using SPECIAL_BIT encoding), have an offset on a varying base register.
                           // 'B' prints this full expression, such as "0x12(SP)"
-                    switch (rs_fs) {
+                    switch (ri_rs_fs) {
                         case 0b00:
                             if (BinaryArithmetics.isNegative(decodedImmBitWidth, decodedImm)) {
                                 buffer.append(Format.asHexInBitsLength("-" + (outputOptions.contains(OutputOption.DOLLAR) ? "$" : "0x"), BinaryArithmetics.neg(decodedImmBitWidth, decodedImm), decodedImmBitWidth));
@@ -632,15 +607,15 @@ public class TxStatement extends Statement {
                             buffer.append("(" + TxCPUState.registerLabels[TxCPUState.FP] + ")");
                             break;
                         default:
-                            throw new DisassemblyException("Unrecognized base for Bit operation : " + rs_fs);
+                            throw new DisassemblyException("Unrecognized base for Bit operation : " + ri_rs_fs);
 
                     }
                     break;
 
                 case 'I':
-                    if (context.cpuState.isRegisterDefined(decodedRsFs))
+                    if (context.cpuState.isRegisterDefined(decodedRiRsFs))
                     {
-                        decodedImm = context.cpuState.getReg(decodedRsFs);
+                        decodedImm = context.cpuState.getReg(decodedRiRsFs);
                         decodedImmBitWidth = 32;
                     }
                     else
@@ -650,9 +625,9 @@ public class TxStatement extends Statement {
                     }
                     break;
                 case 'J':
-                    if (context.cpuState.isRegisterDefined(decodedRtFt))
+                    if (context.cpuState.isRegisterDefined(decodedRjRtFt))
                     {
-                        decodedImm = context.cpuState.getReg(decodedRtFt);
+                        decodedImm = context.cpuState.getReg(decodedRjRtFt);
                         decodedImmBitWidth = 32;
                     }
                     else
@@ -707,10 +682,10 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'i':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRsFs == 0)) buffer.append(TxCPUState.registerLabels[decodedRsFs]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRiRsFs == 0)) buffer.append(TxCPUState.registerLabels[decodedRiRsFs]);
                     break;
                 case 'j':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRtFt == 0)) buffer.append(TxCPUState.registerLabels[decodedRtFt]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRjRtFt == 0)) buffer.append(TxCPUState.registerLabels[decodedRjRtFt]);
                     break;
                 case 'k':
                     try {

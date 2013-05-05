@@ -133,10 +133,10 @@ public class FrEmulator extends Emulator {
                 
                 switch (((FrInstruction)(statement.getInstruction())).encoding) {
                     case 0xA600: /* ADD Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.j) & 0xFFFFFFFFL);
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL);
                         result32 = (int) result64;
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.j) & 0x80000000) >>> 31;
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.rj_rt_ft) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         frCpuState.N = Sr;
@@ -144,7 +144,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -152,9 +152,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA400: /* ADD #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + statement.imm;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) + statement.imm;
                         result32 = (int) result64;
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
                         S2 = 0; /* unsigned extension of x means positive */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -163,7 +163,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -171,9 +171,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA500: /* ADD2 #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) + (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
                         result32 = (int) result64;
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -182,7 +182,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -190,10 +190,10 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA700: /* ADDC Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.j) & 0xFFFFFFFFL) + frCpuState.C;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL) + frCpuState.C;
                         result32 = (int) result64;
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.rj_rt_ft) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         frCpuState.N = Sr;
@@ -201,7 +201,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (~(S1 ^ S2)) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>>32);
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -209,7 +209,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA200: /* ADDN Rj, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) + frCpuState.getReg(statement.j));
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) + frCpuState.getReg(statement.rj_rt_ft));
     
                         /* No change to NZVC */
 
@@ -219,7 +219,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA000: /* ADDN #i4, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) + statement.imm);
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) + statement.imm);
     
                         /* No change to NZVC */
 
@@ -229,7 +229,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA100: /* ADDN2 #i4, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) + BinaryArithmetics.negativeExtend(4, statement.imm));
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) + BinaryArithmetics.negativeExtend(4, statement.imm));
     
                         /* No change to NZVC */
 
@@ -239,9 +239,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAC00: /* SUB Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.j) & 0xFFFFFFFFL);
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.j) & 0x80000000) >>> 31;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL);
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.rj_rt_ft) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         frCpuState.N = Sr;
@@ -249,7 +249,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (S1 ^ S2) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
     
-                        frCpuState.setReg(statement.i, (int) result64);
+                        frCpuState.setReg(statement.ri_rs_fs, (int) result64);
 
                         frCpuState.pc += 2;
 
@@ -257,9 +257,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAD00: /* SUBC Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.j) & 0xFFFFFFFFL) - frCpuState.C;
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.j) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL) - frCpuState.C;
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.rj_rt_ft) & 0x80000000) >>> 31; // TODO : Shouldn't it take C into account ?
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         frCpuState.N = Sr;
@@ -267,7 +267,7 @@ public class FrEmulator extends Emulator {
                         frCpuState.V = (S1 ^ S2) & (S1 ^ Sr);
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
     
-                        frCpuState.setReg(statement.i, (int) result64);
+                        frCpuState.setReg(statement.ri_rs_fs, (int) result64);
 
                         frCpuState.pc += 2;
 
@@ -275,7 +275,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAE00: /* SUBN Rj, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) - frCpuState.getReg(statement.j));
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) - frCpuState.getReg(statement.rj_rt_ft));
     
                         /* No change to NZVC */
 
@@ -285,9 +285,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAA00: /* CMP Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.j) & 0xFFFFFFFFL);
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.j) & 0x80000000) >>> 31;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL);
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.rj_rt_ft) & 0x80000000) >>> 31;
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
                         frCpuState.N = Sr;
@@ -301,9 +301,9 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA800: /* CMP #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - statement.imm;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) - statement.imm;
                         /* optimize : 0 extension of x means S2 is 0, right ?  */
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
                         S2 = 0; /* unsigned extension of x means positive */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -318,8 +318,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xA900: /* CMP2 #i4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) - (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
-                        S1 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) - (BinaryArithmetics.negativeExtend(4, statement.imm) & 0xFFFFFFFFL);
+                        S1 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
                         S2 = 1; /* negative extension of x means negative */
                         Sr = (int) ((result64 & 0x80000000L) >>> 31);
     
@@ -334,8 +334,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x8200: /* AND Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i) & frCpuState.getReg(statement.j);
-                        frCpuState.setReg(statement.i, result32);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) & frCpuState.getReg(statement.rj_rt_ft);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -346,8 +346,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x8400: /* AND Rj, @Ri */
-                        result32 = memory.load32(frCpuState.getReg(statement.i)) & frCpuState.getReg(statement.j);
-                        memory.store32(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.load32(frCpuState.getReg(statement.ri_rs_fs)) & frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store32(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -358,8 +358,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x8500: /* ANDH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.i)) & frCpuState.getReg(statement.j);
-                        memory.store16(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.ri_rs_fs)) & frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store16(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x8000) >>> 15;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -370,8 +370,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x8600: /* ANDB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.i)) & frCpuState.getReg(statement.j);
-                        memory.store8(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) & frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80) >>> 7;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -382,8 +382,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9200: /* OR Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i) | frCpuState.getReg(statement.j);
-                        frCpuState.setReg(statement.i, result32);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) | frCpuState.getReg(statement.rj_rt_ft);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -394,8 +394,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9400: /* OR Rj, @Ri */
-                        result32 = memory.load32(frCpuState.getReg(statement.i)) | frCpuState.getReg(statement.j);
-                        memory.store32(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.load32(frCpuState.getReg(statement.ri_rs_fs)) | frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store32(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -406,8 +406,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9500: /* ORH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.i)) | frCpuState.getReg(statement.j);
-                        memory.store16(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.ri_rs_fs)) | frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store16(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x8000) >>> 15;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -418,8 +418,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9600: /* ORB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.i)) | frCpuState.getReg(statement.j);
-                        memory.store8(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) | frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80) >>> 7;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -430,8 +430,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9A00: /* EOR Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i) ^ frCpuState.getReg(statement.j);
-                        frCpuState.setReg(statement.i, result32);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) ^ frCpuState.getReg(statement.rj_rt_ft);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -442,8 +442,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9C00: /* EOR Rj, @Ri */
-                        result32 = memory.load32(frCpuState.getReg(statement.i)) ^ frCpuState.getReg(statement.j);
-                        memory.store32(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.load32(frCpuState.getReg(statement.ri_rs_fs)) ^ frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store32(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -454,8 +454,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9D00: /* EORH Rj, @Ri */
-                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.i)) ^ frCpuState.getReg(statement.j);
-                        memory.store16(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned16(frCpuState.getReg(statement.ri_rs_fs)) ^ frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store16(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x8000) >>> 15;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -466,8 +466,8 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9E00: /* EORB Rj, @Ri */
-                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.i)) ^ frCpuState.getReg(statement.j);
-                        memory.store8(frCpuState.getReg(statement.i), result32);
+                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) ^ frCpuState.getReg(statement.rj_rt_ft);
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), result32);
     
                         frCpuState.N = (result32 & 0x80) >>> 7;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -479,7 +479,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x8000: /* BANDL #u4, @Ri (u4: 0 to 0FH) */
                         // Note : AND'ing only the lowest 4 bits with xxxx is like AND'ing the byte with 1111xxxx (1 is neutral for AND)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) & (0xF0 + statement.imm));
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) & (0xF0 + statement.imm));
     
                         /* No change to NZVC */
 
@@ -490,7 +490,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x8100: /* BANDH #u4, @Ri (u4: 0 to 0FH) */
                         // Note : AND'ing only the highest 4 bits with xxxx is like AND'ing the byte with xxxx1111 (1 is neutral for AND)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) & ((statement.imm << 4) + 0x0F));
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) & ((statement.imm << 4) + 0x0F));
     
                         /* No change to NZVC */
 
@@ -501,7 +501,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9000: /* BORL #u4, @Ri (u4: 0 to 0FH) */
                         // Note : OR'ing only the lowest 4 bits with xxxx is like OR'ing the byte with 0000xxxx (0 is neutral for OR)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) | statement.imm);
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) | statement.imm);
     
                         /* No change to NZVC */
 
@@ -512,7 +512,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9100: /* BORH #u4, @Ri (u4: 0 to 0FH) */
                         // Note : OR'ing only the highest 4 bits with xxxx is like OR'ing the byte with xxxx0000 (0 is neutral for OR)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) | (statement.imm << 4));
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) | (statement.imm << 4));
     
                         /* No change to NZVC */
 
@@ -523,7 +523,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9800: /* BEORL #u4, @Ri (u4: 0 to 0FH) */
                         // Note : EOR'ing with 0000xxxx is like EOR'ing only the lowest 4 bits with xxxx (0 is neutral for EOR)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) ^ statement.imm);
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) ^ statement.imm);
     
                         /* No change to NZVC */
 
@@ -534,7 +534,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9900: /* BEORH #u4, @Ri (u4: 0 to 0FH) */
                         // Note : EOR'ing with xxxx0000 is like EORing only the highest 4 bits with xxxx (0 is neutral for EOR)
-                        memory.store8(frCpuState.getReg(statement.i), memory.loadUnsigned8(frCpuState.getReg(statement.i)) ^ (statement.imm << 4));
+                        memory.store8(frCpuState.getReg(statement.ri_rs_fs), memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) ^ (statement.imm << 4));
     
                         /* No change to NZVC */
 
@@ -545,7 +545,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x8800: /* BTSTL #u4, @Ri (u4: 0 to 0FH) */
                         // Note : testing 8 bits AND 0000xxxx is like testing only the lowest 4 bits AND xxxx (0 is absorbing for AND)
-                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.i)) & statement.imm;
+                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) & statement.imm;
     
                         frCpuState.N = 0;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -557,7 +557,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x8900: /* BTSTH #u4, @Ri (u4: 0 to 0FH) */
                         // Note : testing 8 bits AND xxxx0000 is like testing only the highest 4 bits AND xxxx (0 is absorbing for AND)
-                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.i)) & (statement.imm << 4);
+                        result32 = memory.loadUnsigned8(frCpuState.getReg(statement.ri_rs_fs)) & (statement.imm << 4);
     
                         frCpuState.N = (result32 & 0x80) >>> 7;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
@@ -568,7 +568,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAF00: /* MUL Rj,Ri */
-                        result64 = ((long) frCpuState.getReg(statement.j)) * ((long) frCpuState.getReg(statement.i));
+                        result64 = ((long) frCpuState.getReg(statement.rj_rt_ft)) * ((long) frCpuState.getReg(statement.ri_rs_fs));
                         frCpuState.setReg(FrCPUState.MDH, (int) (result64 >> 32));
                         frCpuState.setReg(FrCPUState.MDL, (int) (result64 & 0xFFFFFFFFL));
     
@@ -582,7 +582,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xAB00: /* MULU Rj,Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) * (frCpuState.getReg(statement.j) & 0xFFFFFFFFL);
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) * (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFFFFFFL);
                         frCpuState.setReg(FrCPUState.MDH, (int) (result64 >> 32));
                         frCpuState.setReg(FrCPUState.MDL, (int) (result64 & 0xFFFFFFFFL));
     
@@ -596,7 +596,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xBF00: /* MULH Rj,Ri */
-                        result32 = ((short) frCpuState.getReg(statement.j)) * ((short) frCpuState.getReg(statement.i));
+                        result32 = ((short) frCpuState.getReg(statement.rj_rt_ft)) * ((short) frCpuState.getReg(statement.ri_rs_fs));
                         frCpuState.setReg(FrCPUState.MDL, result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
@@ -608,7 +608,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xBB00: /* MULUH Rj,Ri */
-                        result32 = (frCpuState.getReg(statement.j) & 0xFFFF) * (frCpuState.getReg(statement.i) & 0xFFFF);
+                        result32 = (frCpuState.getReg(statement.rj_rt_ft) & 0xFFFF) * (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFF);
                         frCpuState.setReg(FrCPUState.MDL, result32);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
@@ -621,7 +621,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9740: /* DIV0S Ri */
                         S1 = (frCpuState.getReg(FrCPUState.MDL) & 0x80000000) >>> 31;
-                        S2 = (frCpuState.getReg(statement.i) & 0x80000000) >>> 31;
+                        S2 = (frCpuState.getReg(statement.ri_rs_fs) & 0x80000000) >>> 31;
                         frCpuState.D0= S1;
                         frCpuState.D1= S1 ^ S2;
                         result64 = (long) frCpuState.getReg(FrCPUState.MDL);
@@ -652,14 +652,14 @@ public class FrEmulator extends Emulator {
                         frCpuState.setReg(FrCPUState.MDL, frCpuState.getReg(FrCPUState.MDL) << 1);
                         if (frCpuState.D1 == 1) {
                             // Dividend and divisor have opposite signs
-                            result64 = (frCpuState.getReg(FrCPUState.MDH) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.i) & 0xFFFFFFFFL);
+                            result64 = (frCpuState.getReg(FrCPUState.MDH) & 0xFFFFFFFFL) + (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL);
                             result32 = (int) result64;
                             frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
                             frCpuState.Z = (result32 == 0)?1:0;
                         }
                         else {
                             // Dividend and divisor have same signs
-                            result64 = (frCpuState.getReg(FrCPUState.MDH) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.i) & 0xFFFFFFFFL);
+                            result64 = (frCpuState.getReg(FrCPUState.MDH) & 0xFFFFFFFFL) - (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL);
                             result32 = (int) result64;
                             frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32); /* TODO is this really the definition of borrow ? */
                             frCpuState.Z = (result32 == 0)?1:0;
@@ -676,13 +676,13 @@ public class FrEmulator extends Emulator {
     
                     case 0x9770: /* DIV2 Ri */
                         if (frCpuState.D1 == 1) {
-                            result64 = frCpuState.getReg(FrCPUState.MDH) + frCpuState.getReg(statement.i);
+                            result64 = frCpuState.getReg(FrCPUState.MDH) + frCpuState.getReg(statement.ri_rs_fs);
                             result32 = (int) result64;
                             frCpuState.C = (result32 == result64) ? 0 : 1;
                             frCpuState.Z = (result32 == 0)?1:0;
                         }
                         else {
-                            result64 = frCpuState.getReg(FrCPUState.MDH) - frCpuState.getReg(statement.i);
+                            result64 = frCpuState.getReg(FrCPUState.MDH) - frCpuState.getReg(statement.ri_rs_fs);
                             result32 = (int) result64;
                             frCpuState.C = (result32 == result64) ? 0 : 1;
                             frCpuState.Z = (result32 == 0)?1:0;
@@ -721,13 +721,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB600: /* LSL Rj, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) << (frCpuState.getReg(statement.j) & 0x1F);
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) << (frCpuState.getReg(statement.rj_rt_ft) & 0x1F);
     
                         frCpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         frCpuState.Z = (result64 == 0) ? 1 : 0;
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
     
-                        frCpuState.setReg(statement.i, (int) result64);
+                        frCpuState.setReg(statement.ri_rs_fs, (int) result64);
 
                         frCpuState.pc += 2;
 
@@ -735,13 +735,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB400: /* LSL #u4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) << statement.imm;
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) << statement.imm;
     
                         frCpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         frCpuState.Z = (result64 == 0) ? 1 : 0;
                         frCpuState.C = (statement.imm == 0) ? 0 : (int) ((result64 & 0x100000000L) >>> 32);
     
-                        frCpuState.setReg(statement.i, (int) result64);
+                        frCpuState.setReg(statement.ri_rs_fs, (int) result64);
 
                         frCpuState.pc += 2;
 
@@ -749,13 +749,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB500: /* LSL2 #u4, Ri */
-                        result64 = (frCpuState.getReg(statement.i) & 0xFFFFFFFFL) << (statement.imm + 16);
+                        result64 = (frCpuState.getReg(statement.ri_rs_fs) & 0xFFFFFFFFL) << (statement.imm + 16);
     
                         frCpuState.N = (int) ((result64 & 0x80000000L) >>> 31);
                         frCpuState.Z = (result64 == 0) ? 1 : 0;
                         frCpuState.C = (int) ((result64 & 0x100000000L) >>> 32);
     
-                        frCpuState.setReg(statement.i, (int) result64);
+                        frCpuState.setReg(statement.ri_rs_fs, (int) result64);
 
                         frCpuState.pc += 2;
 
@@ -763,13 +763,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB200: /* LSR Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i) >>> (frCpuState.getReg(statement.j) & 0x1F);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >>> (frCpuState.getReg(statement.rj_rt_ft) & 0x1F);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = ((frCpuState.getReg(statement.j) & 0x1F) == 0) ? 0 : (frCpuState.getReg(statement.i) >> ((frCpuState.getReg(statement.j) & 0x1F) - 1)) & 1;
+                        frCpuState.C = ((frCpuState.getReg(statement.rj_rt_ft) & 0x1F) == 0) ? 0 : (frCpuState.getReg(statement.ri_rs_fs) >> ((frCpuState.getReg(statement.rj_rt_ft) & 0x1F) - 1)) & 1;
 
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -777,13 +777,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB000: /* LSR #u4, Ri */
-                        result32 = frCpuState.getReg(statement.i) >>> statement.imm;
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >>> statement.imm;
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = (statement.imm == 0) ? 0 : (frCpuState.getReg(statement.i) >> (statement.imm - 1)) & 1;
+                        frCpuState.C = (statement.imm == 0) ? 0 : (frCpuState.getReg(statement.ri_rs_fs) >> (statement.imm - 1)) & 1;
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -791,13 +791,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB100: /* LSR2 #u4, Ri */
-                        result32 = frCpuState.getReg(statement.i) >>> (statement.imm + 16);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >>> (statement.imm + 16);
     
                         frCpuState.N = 0;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = (frCpuState.getReg(statement.i) >> (statement.imm + 15)) & 1;
+                        frCpuState.C = (frCpuState.getReg(statement.ri_rs_fs) >> (statement.imm + 15)) & 1;
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -805,13 +805,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xBA00: /* ASR Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i) >> (frCpuState.getReg(statement.j) & 0x1F);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >> (frCpuState.getReg(statement.rj_rt_ft) & 0x1F);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = ((frCpuState.getReg(statement.j) & 0x1F) == 0) ? 0 : (frCpuState.getReg(statement.i) >> ((frCpuState.getReg(statement.j) & 0x1F) - 1)) & 1;
+                        frCpuState.C = ((frCpuState.getReg(statement.rj_rt_ft) & 0x1F) == 0) ? 0 : (frCpuState.getReg(statement.ri_rs_fs) >> ((frCpuState.getReg(statement.rj_rt_ft) & 0x1F) - 1)) & 1;
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -819,13 +819,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB800: /* ASR #u4, Ri */
-                        result32 = frCpuState.getReg(statement.i) >> statement.imm;
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >> statement.imm;
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = (statement.imm == 0) ? 0 : (frCpuState.getReg(statement.i) >> (statement.imm - 1)) & 1;
+                        frCpuState.C = (statement.imm == 0) ? 0 : (frCpuState.getReg(statement.ri_rs_fs) >> (statement.imm - 1)) & 1;
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -833,13 +833,13 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xB900: /* ASR2 #u4, Ri */
-                        result32 = frCpuState.getReg(statement.i) >> (statement.imm + 16);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs) >> (statement.imm + 16);
     
                         frCpuState.N = (result32 & 0x80000000) >>> 31;
                         frCpuState.Z = (result32 == 0) ? 1 : 0;
-                        frCpuState.C = (frCpuState.getReg(statement.i) >> (statement.imm + 15)) & 1;
+                        frCpuState.C = (frCpuState.getReg(statement.ri_rs_fs) >> (statement.imm + 15)) & 1;
     
-                        frCpuState.setReg(statement.i, result32);
+                        frCpuState.setReg(statement.ri_rs_fs, result32);
 
                         frCpuState.pc += 2;
 
@@ -847,7 +847,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F80: /* LDI:32 #i32, Ri */
-                        frCpuState.setReg(statement.i, statement.imm);
+                        frCpuState.setReg(statement.ri_rs_fs, statement.imm);
     
                         /* No change to NZVC */
 
@@ -857,7 +857,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9B00: /* LDI:20 #i20, Ri */
-                        frCpuState.setReg(statement.i, statement.imm);
+                        frCpuState.setReg(statement.ri_rs_fs, statement.imm);
     
                         /* No change to NZVC */
 
@@ -867,7 +867,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0xC000: /* LDI:8 #i8, Ri */
-                        frCpuState.setReg(statement.i, statement.imm);
+                        frCpuState.setReg(statement.ri_rs_fs, statement.imm);
     
                         /* No change to NZVC */
 
@@ -877,7 +877,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0400: /* LD @Rj, Ri */
-                        frCpuState.setReg(statement.i, memory.load32(frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.load32(frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -887,7 +887,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0000: /* LD @(R13,Rj), Ri */
-                        frCpuState.setReg(statement.i, memory.load32(frCpuState.getReg(13) + frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.load32(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -897,7 +897,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x2000: /* LD @(R14,disp10), Ri */
-                        frCpuState.setReg(statement.i, memory.load32(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 4));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.load32(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 4));
     
                         /* No change to NZVC */
 
@@ -907,7 +907,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0300: /* LD @(R15,udisp6), Ri */
-                        frCpuState.setReg(statement.i, memory.load32(frCpuState.getReg(15) + statement.imm * 4));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.load32(frCpuState.getReg(15) + statement.imm * 4));
     
                         /* No change to NZVC */
 
@@ -917,7 +917,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0700: /* LD @R15+, Ri */
-                        frCpuState.setReg(statement.i, memory.load32(frCpuState.getReg(15)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.load32(frCpuState.getReg(15)));
                         frCpuState.setReg(15, frCpuState.getReg(15) + 4);
     
                         /* No change to NZVC */
@@ -933,7 +933,7 @@ public class FrEmulator extends Emulator {
                     case 0x0783:
                     case 0x0784:
                     case 0x0785:
-                        frCpuState.setReg(FrCPUState.DEDICATED_REG_OFFSET + statement.i, memory.load32(frCpuState.getReg(15)));
+                        frCpuState.setReg(FrCPUState.DEDICATED_REG_OFFSET + statement.ri_rs_fs, memory.load32(frCpuState.getReg(15)));
                         frCpuState.setReg(15, frCpuState.getReg(15) + 4);
     
                         /* No change to NZVC */
@@ -955,7 +955,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0500: /* LDUH @Rj, Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned16(frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned16(frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -965,7 +965,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0100: /* LDUH @(R13,Rj), Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned16(frCpuState.getReg(13) + frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned16(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -975,7 +975,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x4000: /* LDUH @(R14,disp9), Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned16(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 2));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned16(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 2));
     
                         /* No change to NZVC */
 
@@ -985,7 +985,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0600: /* LDUB @Rj, Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned8(frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned8(frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -995,7 +995,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0200: /* LDUB @(R13,Rj), Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned8(frCpuState.getReg(13) + frCpuState.getReg(statement.j)));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned8(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft)));
     
                         /* No change to NZVC */
 
@@ -1005,7 +1005,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x6000: /* LDUB @(R14,disp8), Ri */
-                        frCpuState.setReg(statement.i, memory.loadUnsigned8(frCpuState.getReg(14) + statement.imm));
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned8(frCpuState.getReg(14) + statement.imm));
     
                         /* No change to NZVC */
 
@@ -1015,7 +1015,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1400: /* ST Ri, @Rj */
-                        memory.store32(frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store32(frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1025,7 +1025,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1000: /* ST Ri, @(R13,Rj) */
-                        memory.store32(frCpuState.getReg(13) + frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store32(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1035,7 +1035,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x3000: /* ST Ri, @(R14,disp10) */
-                        memory.store32(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 4, frCpuState.getReg(statement.i));
+                        memory.store32(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 4, frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1045,7 +1045,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1300: /* ST Ri, @(R15,udisp6) */
-                        memory.store32(frCpuState.getReg(15) + statement.imm * 4, frCpuState.getReg(statement.i));
+                        memory.store32(frCpuState.getReg(15) + statement.imm * 4, frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1056,12 +1056,12 @@ public class FrEmulator extends Emulator {
     
                     case 0x1700: /* ST Ri, @-R15 */
                         frCpuState.setReg(15, frCpuState.getReg(15) - 4);
-                        if (statement.i == 15) {
+                        if (statement.ri_rs_fs == 15) {
                             /*special case for R15: value stored is R15 before it was decremented */
                             memory.store32(frCpuState.getReg(15), frCpuState.getReg(15) + 4);
                         }
                         else {
-                            memory.store32(frCpuState.getReg(15), frCpuState.getReg(statement.i));
+                            memory.store32(frCpuState.getReg(15), frCpuState.getReg(statement.ri_rs_fs));
                         }
     
                         /* No change to NZVC */
@@ -1078,7 +1078,7 @@ public class FrEmulator extends Emulator {
                     case 0x1784:
                     case 0x1785:
                         frCpuState.setReg(15, frCpuState.getReg(15) - 4);
-                        memory.store32(frCpuState.getReg(15), frCpuState.getReg(FrCPUState.DEDICATED_REG_OFFSET + statement.i));
+                        memory.store32(frCpuState.getReg(15), frCpuState.getReg(FrCPUState.DEDICATED_REG_OFFSET + statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1099,7 +1099,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1500: /* STH Ri, @Rj */
-                        memory.store16(frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store16(frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1109,7 +1109,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1100: /* STH Ri, @(R13,Rj) */
-                        memory.store16(frCpuState.getReg(13) + frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store16(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1119,7 +1119,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x5000: /* STH Ri, @(R14,disp9) */
-                        memory.store16(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 2, frCpuState.getReg(statement.i));
+                        memory.store16(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm) * 2, frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1129,7 +1129,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1600: /* STB Ri, @Rj */
-                        memory.store8(frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store8(frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1139,7 +1139,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1200: /* STB Ri, @(R13,Rj) */
-                        memory.store8(frCpuState.getReg(13) + frCpuState.getReg(statement.j), frCpuState.getReg(statement.i));
+                        memory.store8(frCpuState.getReg(13) + frCpuState.getReg(statement.rj_rt_ft), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1149,7 +1149,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x7000: /* STB Ri, @(R14,disp8) */
-                        memory.store8(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm), frCpuState.getReg(statement.i));
+                        memory.store8(frCpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm), frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1159,7 +1159,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x8B00: /* MOV Rj, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.j));
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.rj_rt_ft));
     
                         /* No change to NZVC */
 
@@ -1174,7 +1174,7 @@ public class FrEmulator extends Emulator {
                     case 0xB730:
                     case 0xB740:
                     case 0xB750:
-                        frCpuState.setReg(statement.i, frCpuState.getReg(FrCPUState.DEDICATED_REG_OFFSET + statement.j));
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(FrCPUState.DEDICATED_REG_OFFSET + statement.rj_rt_ft));
     
                         /* No change to NZVC */
 
@@ -1189,7 +1189,7 @@ public class FrEmulator extends Emulator {
                     case 0xB330:
                     case 0xB340:
                     case 0xB350:
-                        frCpuState.setReg(FrCPUState.DEDICATED_REG_OFFSET + statement.j, frCpuState.getReg(statement.i));
+                        frCpuState.setReg(FrCPUState.DEDICATED_REG_OFFSET + statement.rj_rt_ft, frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1199,7 +1199,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x1710: /* MOV PS, Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getPS());
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getPS());
     
                         /* No change to NZVC */
 
@@ -1209,7 +1209,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x0710: /* MOV Ri, PS */
-                        frCpuState.setPS(frCpuState.getReg(statement.i), true);
+                        frCpuState.setPS(frCpuState.getReg(statement.ri_rs_fs), true);
     
                         /* NZVC is part of the PS !*/
 
@@ -1219,7 +1219,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9700: /* JMP @Ri */
-                        frCpuState.pc = frCpuState.getReg(statement.i);
+                        frCpuState.pc = frCpuState.getReg(statement.ri_rs_fs);
     
                         /* No change to NZVC */
 
@@ -1239,7 +1239,7 @@ public class FrEmulator extends Emulator {
                     case 0x9710: /* CALL @Ri */
                         context.pushStatement(statement);
                         frCpuState.setReg(FrCPUState.RP, frCpuState.pc + 2);
-                        frCpuState.pc = frCpuState.getReg(statement.i);
+                        frCpuState.pc = frCpuState.getReg(statement.ri_rs_fs);
     
                         /* No change to NZVC */
     
@@ -1509,7 +1509,7 @@ public class FrEmulator extends Emulator {
                         break;
     
                     case 0x9F00: /* JMP:D @Ri */
-                        setDelayedPc(frCpuState.getReg(statement.i));
+                        setDelayedPc(frCpuState.getReg(statement.ri_rs_fs));
     
                         /* No change to NZVC */
 
@@ -1531,7 +1531,7 @@ public class FrEmulator extends Emulator {
     
                     case 0x9F10: /* CALL:D @Ri */
                         context.pushStatement(statement);
-                        setDelayedPcAndRa(frCpuState.getReg(statement.i), frCpuState.pc + 4);
+                        setDelayedPcAndRa(frCpuState.getReg(statement.ri_rs_fs), frCpuState.pc + 4);
     
                         /* No change to NZVC */
 
@@ -2010,7 +2010,7 @@ public class FrEmulator extends Emulator {
                         break;
                     
                     case 0x9780: /* EXTSB Ri */
-                        frCpuState.setReg(statement.i, BinaryArithmetics.signExtend(8, frCpuState.getReg(statement.i)));
+                        frCpuState.setReg(statement.ri_rs_fs, BinaryArithmetics.signExtend(8, frCpuState.getReg(statement.ri_rs_fs)));
                         
                         /* No change to NZVC */
 
@@ -2020,7 +2020,7 @@ public class FrEmulator extends Emulator {
                         break;
                     
                     case 0x9790: /* EXTUB Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) & 0xFF);
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) & 0xFF);
                         
                         /* No change to NZVC */
 
@@ -2030,7 +2030,7 @@ public class FrEmulator extends Emulator {
                         break;
                     
                     case 0x97A0: /* EXTSH Ri */
-                        frCpuState.setReg(statement.i, BinaryArithmetics.signExtend(16, frCpuState.getReg(statement.i)));
+                        frCpuState.setReg(statement.ri_rs_fs, BinaryArithmetics.signExtend(16, frCpuState.getReg(statement.ri_rs_fs)));
                         
                         /* No change to NZVC */
 
@@ -2040,7 +2040,7 @@ public class FrEmulator extends Emulator {
                         break;
                     
                     case 0x97B0: /* EXTUH Ri */
-                        frCpuState.setReg(statement.i, frCpuState.getReg(statement.i) & 0xFFFF);
+                        frCpuState.setReg(statement.ri_rs_fs, frCpuState.getReg(statement.ri_rs_fs) & 0xFFFF);
                         
                         /* No change to NZVC */
 
@@ -2051,7 +2051,7 @@ public class FrEmulator extends Emulator {
 
                     case 0x97C0: /* SRCH0 Ri */
                         // Search for the first 0
-                        frCpuState.setReg(statement.i, bitSearch(frCpuState.getReg(statement.i), 0));
+                        frCpuState.setReg(statement.ri_rs_fs, bitSearch(frCpuState.getReg(statement.ri_rs_fs), 0));
 
                         /* No change to NZVC */
 
@@ -2062,7 +2062,7 @@ public class FrEmulator extends Emulator {
 
                     case 0x97D0: /* SRCH1 Ri */
                         // Search for the first 1
-                        frCpuState.setReg(statement.i, bitSearch(frCpuState.getReg(statement.i), 1));
+                        frCpuState.setReg(statement.ri_rs_fs, bitSearch(frCpuState.getReg(statement.ri_rs_fs), 1));
 
                         /* No change to NZVC */
 
@@ -2073,8 +2073,8 @@ public class FrEmulator extends Emulator {
 
                     case 0x97E0: /* SRCHC Ri */
                         // Search for the first bit different from the MSB
-                        result32 = frCpuState.getReg(statement.i);
-                        frCpuState.setReg(statement.i, bitSearch(result32, (result32 & 0x80000000)==0?1:0));
+                        result32 = frCpuState.getReg(statement.ri_rs_fs);
+                        frCpuState.setReg(statement.ri_rs_fs, bitSearch(result32, (result32 & 0x80000000)==0?1:0));
 
                         /* No change to NZVC */
 
@@ -2181,9 +2181,9 @@ public class FrEmulator extends Emulator {
                         break;
                     
                     case 0x8A00: /* XCHB @Rj, Ri */
-                        result32 = frCpuState.getReg(statement.i);
-                        frCpuState.setReg(statement.i, memory.loadUnsigned8(frCpuState.getReg(statement.j)));
-                        memory.store8(frCpuState.getReg(statement.j), result32);
+                        result32 = frCpuState.getReg(statement.ri_rs_fs);
+                        frCpuState.setReg(statement.ri_rs_fs, memory.loadUnsigned8(frCpuState.getReg(statement.rj_rt_ft)));
+                        memory.store8(frCpuState.getReg(statement.rj_rt_ft), result32);
                         
                         /* No change to NZVC */
 

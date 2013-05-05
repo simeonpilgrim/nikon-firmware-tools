@@ -28,20 +28,8 @@ public class FrStatement extends Statement {
     /** number of used elements in data[]*/
     public int numData;
 
-    /** Ri/Rs operand */
-    public int i; // as-is from binary code
-    public int decodedI; // interpreted
-
-    /** Rj operand */
-    public int j; // as-is from binary code
-    private int decodedJ; // interpreted
-
     /** coprocessor operation (not implemented yet in operand parsing, only for display) */
     private int c;
-
-
-    /** number of significant bits in decodedX (for display only) */
-    public int immBitWidth;
 
     /** start of decoded memory block (used only for display in "v"ector format */
     private int memRangeStart = 0;
@@ -87,16 +75,16 @@ public class FrStatement extends Statement {
         switch (((FrInstruction) getInstruction()).instructionFormat)
         {
             case A:
-                i = 0xF & data[0];
-                j = 0xF & (data[0] >> 4);
+                ri_rs_fs = 0xF & data[0];
+                rj_rt_ft = 0xF & (data[0] >> 4);
                 break;
             case B:
-                i = 0xF & data[0];
+                ri_rs_fs = 0xF & data[0];
                 imm = 0xFF & (data[0] >> 4);
                 immBitWidth = 8;
                 break;
             case C:
-                i = 0xF & data[0];
+                ri_rs_fs = 0xF & data[0];
                 imm = 0xF & (data[0] >> 4);
                 immBitWidth = 4;
                 break;
@@ -105,14 +93,14 @@ public class FrStatement extends Statement {
                 immBitWidth = 8;
                 break;
             case E:
-                i = 0xF & data[0];
+                ri_rs_fs = 0xF & data[0];
                 break;
             case F:
                 imm = 0x7FF & data[0];
                 immBitWidth = 11;
                 break;
             case Z:
-                j = 0xF & (data[0] >> 4);
+                rj_rt_ft = 0xF & (data[0] >> 4);
                 break;
             case W:
                 imm = data[0];
@@ -130,11 +118,11 @@ public class FrStatement extends Statement {
             /* coprocessor extension word */
             getNextStatement(memory, pc);
             int tmp = data[numData - 1];
-            imm = i;
+            imm = ri_rs_fs;
             immBitWidth = 4;
             c = 0xFF & (tmp >> 8);
-            j = 0x0F & (tmp >> 4);
-            i = 0x0F & (tmp);
+            rj_rt_ft = 0x0F & (tmp >> 4);
+            ri_rs_fs = 0x0F & (tmp);
         }
     }
 
@@ -143,8 +131,8 @@ public class FrStatement extends Statement {
         numData = 0;
         immBitWidth = 0;
         c = 0;
-        i = CPUState.NOREG;
-        j = CPUState.NOREG;
+        ri_rs_fs = CPUState.NOREG;
+        rj_rt_ft = CPUState.NOREG;
         imm = 0;
         setOperandString(null);
         setCommentString(null);
@@ -179,8 +167,8 @@ public class FrStatement extends Statement {
         int pos;
 
         decodedImm = imm;
-        decodedI = i;
-        decodedJ = j;
+        decodedRiRsFs = ri_rs_fs;
+        decodedRjRtFt = rj_rt_ft;
 
         StringBuilder operandBuffer = new StringBuilder();
         StringBuilder commentBuffer = new StringBuilder();
@@ -247,9 +235,9 @@ public class FrStatement extends Statement {
                     break;
 
                 case 'I':
-                    if (context.cpuState.isRegisterDefined(decodedI))
+                    if (context.cpuState.isRegisterDefined(decodedRiRsFs))
                     {
-                        decodedImm = context.cpuState.getReg(decodedI);
+                        decodedImm = context.cpuState.getReg(decodedRiRsFs);
                         immBitWidth = 32;
                     }
                     else
@@ -259,9 +247,9 @@ public class FrStatement extends Statement {
                     }
                     break;
                 case 'J':
-                    if (context.cpuState.isRegisterDefined(decodedJ))
+                    if (context.cpuState.isRegisterDefined(decodedRjRtFt))
                     {
-                        decodedImm = context.cpuState.getReg(decodedJ);
+                        decodedImm = context.cpuState.getReg(decodedRjRtFt);
                         immBitWidth = 32;
                     }
                     else
@@ -309,26 +297,26 @@ public class FrStatement extends Statement {
 
                     break;
                 case 'g':
-                    decodedI += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.registerLabels[decodedI]);
+                    decodedRiRsFs += FrCPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(FrCPUState.registerLabels[decodedRiRsFs]);
                     break;
                 case 'h':
-                    decodedJ += FrCPUState.DEDICATED_REG_OFFSET;
-                    currentBuffer.append(FrCPUState.registerLabels[decodedJ]);
+                    decodedRjRtFt += FrCPUState.DEDICATED_REG_OFFSET;
+                    currentBuffer.append(FrCPUState.registerLabels[decodedRjRtFt]);
                     break;
                 case 'i':
-                    currentBuffer.append(FrCPUState.registerLabels[decodedI]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedRiRsFs]);
                     break;
                 case 'j':
-                    currentBuffer.append(FrCPUState.registerLabels[decodedJ]);
+                    currentBuffer.append(FrCPUState.registerLabels[decodedRjRtFt]);
                     break;
                 case 'k':
-                    decodedI += FrCPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(decodedI);
+                    decodedRiRsFs += FrCPUState.COPROCESSOR_REG_OFFSET;
+                    currentBuffer.append(decodedRiRsFs);
                     break;
                 case 'l':
-                    decodedJ += FrCPUState.COPROCESSOR_REG_OFFSET;
-                    currentBuffer.append(decodedJ);
+                    decodedRjRtFt += FrCPUState.COPROCESSOR_REG_OFFSET;
+                    currentBuffer.append(decodedRjRtFt);
                     break;
                 case 'n':
                     /* negative constant */
@@ -438,10 +426,10 @@ public class FrStatement extends Statement {
                     r = FrCPUState.SP;
                     break;
                 case 'i':
-                    r = decodedI;
+                    r = decodedRiRsFs;
                     break;
                 case 'j':
-                    r = decodedJ;
+                    r = decodedRjRtFt;
                     break;
                 case 'w':
                     if (updateRegisters) {
@@ -491,6 +479,14 @@ public class FrStatement extends Statement {
         }
     }
 
+
+    public long getBinaryStatement() {
+        long out = 0;
+        for (int i = 0; i < numData; ++i) {
+            out |= (data[i] << (i * 16));
+        }
+        return out;
+    }
 
     public String getFormattedBinaryStatement() {
         String out = "";
