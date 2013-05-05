@@ -24,28 +24,19 @@ public abstract class Statement {
 
     /** First register operand: Ri (Fr), or rs or fs (Tx) */
     public int ri_rs_fs; // as-is from binary code, uninterpreted
-    /** Interpreted first register operand: Ri (Fr), or rs or fs (Tx) */
-    public int decodedRiRsFs;
 
     /** Second register operand: Rj (Fr), or rt or ft (Tx) operand */
     public int rj_rt_ft; // as-is from binary code, uninterpreted
-    /** Interpreted second register operand: Rj (Fr), or rt or ft (Tx) operand */
-    public int decodedRjRtFt;
 
     /** (Tx only) Third register operand: rd of fd */
-    public int rd_fd; // as-is from binary code, uninterpreted
-    /** (Tx only) Interpreted third register operand: rd of fd */
-    public int decodedRdFd;
+    public int rd_fd;
 
     /** (Tx only) sa (shift amount) of cc (CP1 condition code) operand */
-    // TODO use imm instead ??
-    public int sa_cc; // as-is from binary code
-    public int decodedSaCc; // interpreted - TODO what does decodedSaCc mean ??
-
+    public int sa_cc;
 
     /** immediate operand */
-    public int imm; // as-is from binary code
-    public int decodedImm; // interpreted
+    public int imm; // as-is from binary code, uninterpreted
+    public int decodedImm; // interpreted, sometimes shifted
 
     /** number of significant bits in imm */
     public int immBitWidth;

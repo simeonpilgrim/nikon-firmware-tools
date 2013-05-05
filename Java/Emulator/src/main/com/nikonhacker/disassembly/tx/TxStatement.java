@@ -387,10 +387,7 @@ public class TxStatement extends Statement {
     public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException {
 
         /* DISPLAY FORMAT processing */
-        decodedRiRsFs = ri_rs_fs;
-        decodedRjRtFt = rj_rt_ft;
-        decodedRdFd = rd_fd;
-        decodedSaCc = sa_cc;
+        rj_rt_ft = rj_rt_ft;
         decodedImm = imm;
         decodedImmBitWidth = immBitWidth;
 
@@ -446,15 +443,15 @@ public class TxStatement extends Statement {
                     break;
                 case 'i':
                     // Select Rs
-                    currentlySelectedRegisterNumber = decodedRiRsFs;
+                    currentlySelectedRegisterNumber = ri_rs_fs;
                     break;
                 case 'j':
                     // Select Rt
-                    currentlySelectedRegisterNumber = decodedRjRtFt;
+                    currentlySelectedRegisterNumber = rj_rt_ft;
                     break;
                 case 'k':
                     // Select Rd
-                    currentlySelectedRegisterNumber = decodedRdFd;
+                    currentlySelectedRegisterNumber = rd_fd;
                     break;
                 case 'w':
                     // Declare the selected register as "undefined"
@@ -613,9 +610,9 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'I':
-                    if (context.cpuState.isRegisterDefined(decodedRiRsFs))
+                    if (context.cpuState.isRegisterDefined(ri_rs_fs))
                     {
-                        decodedImm = context.cpuState.getReg(decodedRiRsFs);
+                        decodedImm = context.cpuState.getReg(ri_rs_fs);
                         decodedImmBitWidth = 32;
                     }
                     else
@@ -625,9 +622,9 @@ public class TxStatement extends Statement {
                     }
                     break;
                 case 'J':
-                    if (context.cpuState.isRegisterDefined(decodedRjRtFt))
+                    if (context.cpuState.isRegisterDefined(rj_rt_ft))
                     {
-                        decodedImm = context.cpuState.getReg(decodedRjRtFt);
+                        decodedImm = context.cpuState.getReg(rj_rt_ft);
                         decodedImmBitWidth = 32;
                     }
                     else
@@ -637,9 +634,9 @@ public class TxStatement extends Statement {
                     }
                     break;
                 case 'K':
-                    if (context.cpuState.isRegisterDefined(decodedRdFd))
+                    if (context.cpuState.isRegisterDefined(rd_fd))
                     {
-                        decodedImm = context.cpuState.getReg(decodedRdFd);
+                        decodedImm = context.cpuState.getReg(rd_fd);
                         decodedImmBitWidth = 32;
                     }
                     else
@@ -682,21 +679,21 @@ public class TxStatement extends Statement {
                     break;
 
                 case 'i':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRiRsFs == 0)) buffer.append(TxCPUState.registerLabels[decodedRiRsFs]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && ri_rs_fs == 0)) buffer.append(TxCPUState.registerLabels[ri_rs_fs]);
                     break;
                 case 'j':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRjRtFt == 0)) buffer.append(TxCPUState.registerLabels[decodedRjRtFt]);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && rj_rt_ft == 0)) buffer.append(TxCPUState.registerLabels[rj_rt_ft]);
                     break;
                 case 'k':
                     try {
-                        if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedRdFd == 0)) buffer.append(TxCPUState.registerLabels[decodedRdFd]);
+                        if (!(isOptionalExpression && tmpBuffer.length() == 0 && rd_fd == 0)) buffer.append(TxCPUState.registerLabels[rd_fd]);
                     }
                     catch (Exception e) {
                         e.printStackTrace();
                     }
                     break;
                 case 'l':
-                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && decodedSaCc == 0)) buffer.append(decodedSaCc);
+                    if (!(isOptionalExpression && tmpBuffer.length() == 0 && sa_cc == 0)) buffer.append(sa_cc);
                     break;
 
                 case 'n':
