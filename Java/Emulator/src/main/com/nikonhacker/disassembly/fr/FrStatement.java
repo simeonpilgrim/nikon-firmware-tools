@@ -34,6 +34,11 @@ public class FrStatement extends Statement {
     /** start of decoded memory block (used only for display in "v"ector format */
     private int memRangeStart = 0;
 
+    /** Interpreted first register operand: Ri (Fr), or rs or fs (Tx) */
+    public int decodedRiRsFs;
+    /** Interpreted second register operand: Rj (Fr), or rt or ft (Tx) operand */
+    public int decodedRjRtFt;
+
     /**
      * Default decoding upon class loading
      */
