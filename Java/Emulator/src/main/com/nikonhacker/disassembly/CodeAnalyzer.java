@@ -319,7 +319,7 @@ public class CodeAnalyzer {
                 case BRA:
                     if (statement.decodedImm != 0) {
                         codeStructure.getLabels().put(statement.decodedImm, new Symbol(statement.decodedImm, "", ""));
-                        Jump jump = new Jump(address, statement.decodedImm, statement.getInstruction(), false);
+                        Jump jump = new Jump(address, statement.decodedImm & 0xFFFFFFFE, statement.getInstruction(), false);
                         jumps.add(jump);
                         currentFunction.getJumps().add(jump);
                     }
@@ -349,7 +349,7 @@ public class CodeAnalyzer {
                         }
                     }
                     else {
-                        addCall(currentFunction, statement, address, targetAddress, "", false);
+                        addCall(currentFunction, statement, address, targetAddress & 0xFFFFFFFE, "", false);
                     }
                     break;
                 case INT:
