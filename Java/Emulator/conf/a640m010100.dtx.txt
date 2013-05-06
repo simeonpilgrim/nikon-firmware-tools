@@ -1,7 +1,10 @@
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
+# A special part is also included  but commented out :
+# - the copy of code to 0xFFFF4000 performed by code @BFC1C742 is described in -i and -m
 
 ############################### File map: D5100
 -i 0xBFC00000-0xBFCBFFFF=0x00000000
+#-i 0xFFFF4000-0xFFFFFFFF=0x10000000
 
 ############################### Memory map:
 
@@ -79,6 +82,16 @@
 -m 0xBFC9E45C-0xBFC9E57F=DATA:L
 
 ## 0xFF area
+
+#####################################################
+## Copy of code Area to RAM performed by code @BFC1C742
+#
+#-m 0xFFFF4000-0xFFFF4007=DATA
+#-m 0xFFFF4008-0xFFFF412B=CODE:32
+#-m 0xFFFF412D-0xFFFF766F=CODE:16
+#-m 0xFFFF7670-0xFFFF8D69=DATA
+#
+#####################################################
 
 
 ############################### Symbols
