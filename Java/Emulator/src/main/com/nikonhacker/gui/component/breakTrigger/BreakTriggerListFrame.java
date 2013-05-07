@@ -39,6 +39,11 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final EventList<BreakTrigger> triggerList;
     private final JTable triggerTable;
     private final Emulator emulator;
+    private boolean editable;
+    private final JButton addButton;
+    private final JButton editButton;
+    private final JButton deleteButton;
+    private final JButton addSyscallButton;
 
     public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -70,7 +75,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         JPanel rightPanel = new JPanel();
         rightPanel.setLayout(new GridLayout(0, 1));
 
-        JButton addButton = new JButton("Add");
+        addButton = new JButton("Add");
         addButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         addButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -80,7 +85,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         rightPanel.add(addButton);
 
         if (chip == Constants.CHIP_FR) {
-            JButton addSyscallButton = new JButton("Add syscall");
+            addSyscallButton = new JButton("Add syscall");
             addSyscallButton.setAlignmentX(Component.CENTER_ALIGNMENT);
             addSyscallButton.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -89,8 +94,11 @@ public class BreakTriggerListFrame extends DocumentFrame {
             });
             rightPanel.add(addSyscallButton);
         }
+        else {
+            addSyscallButton = null;
+        }
 
-        JButton editButton = new JButton("Edit");
+        editButton = new JButton("Edit");
         editButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         editButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -99,7 +107,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         });
         rightPanel.add(editButton);
 
-        JButton deleteButton = new JButton("Delete");
+        deleteButton = new JButton("Delete");
         deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -125,6 +133,14 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
         setContentPane(mainPanel);
         pack();
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
+        addButton.setEnabled(editable);
+        editButton.setEnabled(editable);
+        deleteButton.setEnabled(editable);
+        if (addSyscallButton != null) addSyscallButton.setEnabled(editable);
     }
 
     @Override
@@ -227,7 +243,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private class BreakTriggerTableFormat implements AdvancedTableFormat<BreakTrigger>, WritableTableFormat<BreakTrigger> {
 
         public boolean isEditable(BreakTrigger baseObject, int column) {
-            return true;
+            return editable;
         }
 
         public int getColumnCount() {
