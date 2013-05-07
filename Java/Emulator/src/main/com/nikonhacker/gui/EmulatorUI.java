@@ -2772,12 +2772,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 debugMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); debugButton[chip].setEnabled(!isEmulatorPlaying[chip]);
                 pauseMenuItem[chip].setEnabled(isEmulatorPlaying[chip]); pauseButton[chip].setEnabled(isEmulatorPlaying[chip]);
                 stepMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); stepButton[chip].setEnabled(!isEmulatorPlaying[chip]);
-                breakpointMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); breakpointButton[chip].setEnabled(!isEmulatorPlaying[chip]);
                 // Editable components
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
                 if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
+                if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+                if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!isEmulatorPlaying[chip]);
             }
             else {
                 loadMenuItem[chip].setEnabled(true); loadButton[chip].setEnabled(true);
@@ -2785,15 +2786,15 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 debugMenuItem[chip].setEnabled(false); debugButton[chip].setEnabled(false);
                 pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
                 stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
-                breakpointMenuItem[chip].setEnabled(false); breakpointButton[chip].setEnabled(false);
                 // Editable components  TODO does it make sense ? And why true ?
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
                 if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(true);
+                if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
+                if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
             }
         }
-
     }
 
     private boolean isAtLeastOneEmulatorPlaying() {

@@ -51,6 +51,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JTextField targetField;
     private int lastClickedTextPosition;
     private final JCheckBox followPcCheckBox;
+    private JMenuItem runToHereMenuItem;
+    private JMenuItem toggleBreakPointMenuItem;
+    private JMenuItem debugToHereMenuItem;
+    private boolean enabled;
 
 
     public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
@@ -286,11 +290,14 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         newPopupMenu.addSeparator();
         newPopupMenu.add(new JMenuItem(new FindTextAction()));
         newPopupMenu.addSeparator();
-        newPopupMenu.add(new JMenuItem(new ToggleBreakpointAction()));
+        toggleBreakPointMenuItem = new JMenuItem(new ToggleBreakpointAction());
+        newPopupMenu.add(toggleBreakPointMenuItem);
         newPopupMenu.addSeparator();
-        newPopupMenu.add(new JMenuItem(new RunToHereAction(true)));
+        runToHereMenuItem = new JMenuItem(new RunToHereAction(true));
+        newPopupMenu.add(runToHereMenuItem);
         newPopupMenu.addSeparator();
-        newPopupMenu.add(new JMenuItem(new RunToHereAction(false)));
+        debugToHereMenuItem = new JMenuItem(new RunToHereAction(false));
+        newPopupMenu.add(debugToHereMenuItem);
         listingArea.setPopupMenu(newPopupMenu);
 
         RTextScrollPane scrollPane = new RTextScrollPane(listingArea);
@@ -328,6 +335,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             pcHighlightTag = null;
             e.printStackTrace();
         }
+    }
+
+    public void setEditable(boolean enabled) {
+        this.enabled = enabled;
+        toggleBreakPointMenuItem.setEnabled(enabled);
+        runToHereMenuItem.setEnabled(enabled);
+        debugToHereMenuItem.setEnabled(enabled);
     }
 
     public void highlightPc() {
