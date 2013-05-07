@@ -4,7 +4,6 @@ import com.nikonhacker.Format;
 import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
-import com.nikonhacker.disassembly.tx.TxInstruction;
 import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
@@ -83,7 +82,7 @@ public class TxEmulator extends Emulator {
                 }
 
                 // ACTUAL INSTRUCTION EXECUTION
-                ((TxInstruction) statement.getInstruction()).getSimulationCode().simulate(statement, context);
+                statement.getInstruction().getSimulationCode().simulate(statement, context);
 
                 // Notify CPU cycle listeners
                 cycleListenerNumber = 0;

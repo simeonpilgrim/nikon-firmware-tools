@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly;
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.fr.FrInstruction;
+import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.disassembly.fr.InterruptVectorRange;
 import com.nikonhacker.emu.memory.Memory;
@@ -633,12 +634,12 @@ public class CodeAnalyzer {
         for (int offset = 1; offset < 100; offset++) {
             FrStatement candidateStatement = (FrStatement) codeStructure.getStatements().get(address - 2 * offset);
             if (candidateStatement != null) {
-                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0x9F80 && candidateStatement.decodedRiRsFs == 12) {
+                if (candidateStatement.getInstruction() instanceof FrInstructionSet.Ldi32FrInstruction && candidateStatement.decodedRiRsFs == 12) {
                     /* LDI:32 #i32, R12 */
                     r12 = candidateStatement.decodedImm;
                     break;
                 }
-                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0xC000 && candidateStatement.decodedRiRsFs == 12) {
+                if (candidateStatement.getInstruction() instanceof FrInstructionSet.Ldi8FrInstruction && candidateStatement.decodedRiRsFs == 12) {
                     /* LDI:8 #i8, R12 */
                     if (r12SignExtend) {
                         r12 = BinaryArithmetics.signExtend(8, candidateStatement.decodedImm);
@@ -648,7 +649,7 @@ public class CodeAnalyzer {
                     }
                     break;
                 }
-                if (((FrInstruction)(candidateStatement.getInstruction())).encoding == 0x9780 && candidateStatement.decodedRiRsFs == 12) {
+                if (candidateStatement.getInstruction() instanceof FrInstructionSet.ExtsbFrInstruction && candidateStatement.decodedRiRsFs == 12) {
                     /* EXTSB R12 */
                     r12SignExtend = true;
                 }

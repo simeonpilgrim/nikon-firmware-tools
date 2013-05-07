@@ -1,21 +1,16 @@
 package com.nikonhacker.disassembly.fr;
 
-
 import com.nikonhacker.disassembly.Instruction;
+import com.nikonhacker.disassembly.SimulationCode;
 
 public class FrInstruction extends Instruction {
 
-
-    public int encoding;
-    public int mask;
     public FrInstructionSet.InstructionFormat instructionFormat;
     public int numberExtraXWords;
     public int numberExtraYWords;
 
     /**
      * Creates a new FrInstruction
-     * @param encoding the value of the word instruction that matches this opcode if all parameters being 0
-     * @param mask the part of the "encoding" that contains the actual instruction, the zeroes being used by operands
      * @param instructionFormat pattern that specifies how the instruction word should be split in parts
      * @param numberExtraXWords number of extra 16-bit words to be interpreted as x operand
      * @param numberExtraYWords number of extra 16-bit words to be interpreted as y operand (for coprocessor operations)
@@ -77,12 +72,10 @@ c : outputs coprocessor operation (c)<br/>
      * @param flowType
      * @param isConditional
      * @param hasDelaySlot
+     * @param simulationCode
      */
-    public FrInstruction(int encoding, int mask, FrInstructionSet.InstructionFormat instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot)
-    {
-        super(name, displayFormat, null, null, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE);
-        this.encoding = encoding;
-        this.mask = mask;
+    public FrInstruction(FrInstructionSet.InstructionFormat instructionFormat, int numberExtraXWords, int numberExtraYWords, String name, String displayFormat, String action, FlowType flowType, boolean isConditional, boolean hasDelaySlot, SimulationCode simulationCode) {
+        super(name, displayFormat, null, null, action, flowType, isConditional, hasDelaySlot?DelaySlotType.NORMAL:DelaySlotType.NONE, simulationCode);
         this.instructionFormat = instructionFormat;
         this.numberExtraXWords = numberExtraXWords;
         this.numberExtraYWords = numberExtraYWords;
@@ -90,6 +83,6 @@ c : outputs coprocessor operation (c)<br/>
 
     @Override
     public String toString() {
-        return getName() + "(0x" + Integer.toHexString(encoding) + ")";
+        return getName();
     }
 }

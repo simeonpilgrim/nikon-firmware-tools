@@ -25,7 +25,9 @@ public abstract class Emulator {
 
     // TODO : Shouldn't these 2 only be in the StatementContext object ?
     // TODO : or better yet in a Platform object
+    // TODO @Deprecated
     protected Memory memory;
+    // TODO @Deprecated
     protected CPUState cpuState;
 
     protected InterruptController interruptController = new DummyInterruptController();
@@ -100,6 +102,7 @@ public abstract class Emulator {
 
     public void setInterruptController(InterruptController interruptController) {
         this.interruptController = interruptController;
+        context.interruptController = interruptController;
     }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {

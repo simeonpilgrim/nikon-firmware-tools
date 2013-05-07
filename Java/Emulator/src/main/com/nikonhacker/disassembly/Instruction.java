@@ -1,13 +1,6 @@
 package com.nikonhacker.disassembly;
 
 public class Instruction {
-    private boolean isConditional;
-    private DelaySlotType delaySlotType;
-    private String name;
-    private String operandFormat;
-    private String formula;
-    private String commentFormat;
-    private String action;
 
     /** Type of flow control assigned to each instruction (if suitable) */
     public static enum FlowType {
@@ -42,9 +35,17 @@ public class Instruction {
         LIKELY
     }
 
+    private String name;
+    private String operandFormat;
+    private String formula;
+    private String commentFormat;
+    private String action;
     public FlowType flowType;
+    private boolean isConditional;
+    private DelaySlotType delaySlotType;
+    private SimulationCode simulationCode;
 
-    public Instruction(String name, String operandFormat, String formula, String commentFormat, String action, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType) {
+    public Instruction(String name, String operandFormat, String formula, String commentFormat, String action, FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
         this.name = name;
         this.operandFormat = operandFormat;
         this.formula = formula;
@@ -53,6 +54,7 @@ public class Instruction {
         this.flowType = flowType;
         this.isConditional = isConditional;
         this.delaySlotType = delaySlotType;
+        this.simulationCode = simulationCode;
     }
 
     public String getName() {
@@ -89,5 +91,9 @@ public class Instruction {
 
     public DelaySlotType getDelaySlotType() {
         return delaySlotType;
+    }
+
+    public SimulationCode getSimulationCode() {
+        return simulationCode;
     }
 }

@@ -277,4 +277,14 @@ public class Format {
                ((value<< 8)&0x00ff0000) | // move byte 1 to byte 2
                ((value<<24)&0xff000000) ; // move byte 0 to byte 3
     }
+
+    public static int bitSearch(int value, int testBit) {
+        if (testBit == 0) value = ~value;
+        int mask = 0x80000000;
+        for (int i = 0; i < 31; i++) {
+            if ((value & mask) != 0) return i;
+            mask >>= 1;
+        }
+        return 32;
+    }
 }
