@@ -170,8 +170,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] CPUSTATE_ENTRY_NAME = {"FrCPUState", "TxCPUState"};
     private static final String[] MEMORY_ENTRY_NAME = {"FrMemory", "TxMemory"};
 
-    private static final String DEFAULT_STATUS_TEXT = "Ready";
+    private static final String STATUS_DEFAULT_TEXT = "Ready";
     private static final String BUTTON_PROPERTY_KEY_ICON = "icon";
+
+    public static final Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
+    public static final Color STATUS_BGCOLOR_RUN = Color.GREEN;
+    public static final Color STATUS_BGCOLOR_DEBUG = Color.ORANGE;
+    public static final Color STATUS_BGCOLOR_BREAK = new Color(255, 127, 127);
 
 
     // UI
@@ -273,7 +278,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private RealOsObjectFrame[] realOsObjectFrame = new RealOsObjectFrame[2];
 
-    private String[] statusText = {DEFAULT_STATUS_TEXT, DEFAULT_STATUS_TEXT};
+    private String[] statusText = {STATUS_DEFAULT_TEXT, STATUS_DEFAULT_TEXT};
     private JLabel[] statusBar = new JLabel[2];
     private JSlider[] intervalSlider = new JSlider[2];
 
@@ -374,6 +379,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         for(int chip=0; chip < 2; chip++) {
             mdiPane[chip] = new JDesktopPane();
             statusBar[chip] = new JLabel(statusText[chip]);
+            statusBar[chip].setOpaque(true);
+            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
             toolBar[chip] = createToolBar(chip);
 
             contentPane[chip] = new JPanel(new BorderLayout());
@@ -2852,6 +2859,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 emulator[chip].addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
         }
+        setStatusText(chip, (debugMode?"Debug":"Run") + " session in progress...");
+        statusBar[chip].setBackground(debugMode? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
         startEmulator(chip);
     }
 
@@ -2867,7 +2876,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             public void run() {
                 emulator[chip].setCpuState(platform[chip].getCpuState());
                 emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
-                setStatusText(chip, "Emulator is running...");
                 BreakCondition stopCause = null;
                 try {
                     stopCause = emulator[chip].play();
@@ -2885,9 +2893,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     signalEmulatorStopped(chip);
                     if (stopCause != null && stopCause.getBreakTrigger() != null) {
                         setStatusText(chip, "Break trigger matched : " + stopCause.getBreakTrigger().getName());
+                        statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
                     }
                     else {
                         setStatusText(chip, "Emulation complete");
+                        statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
                     }
                 }
                 catch (Throwable t) {
