@@ -886,7 +886,7 @@
 -s 0xBFC8B92C=get_AF_flag
 -s 0xBFC8BAB4=switch_@FFFF407E
 -s 0xBFC8BB00=bad_battery
--s 0xBFC8BB58=power_adapter_seeting
+-s 0xBFC8BB58=power_adapter_setting
 -s 0xBFC8BB9C=update_battery_level
 -s 0xBFC8BC5C=battery_authentication
 -s 0xBFC8BE58=authentication
@@ -901,7 +901,7 @@
 -s 0xBFC8C1E4=request_powe_deviceID_00
 -s 0xBFC8C1FC=multi_command2battery
 -s 0xBFC8C268=send_commandarray2battery
--s 0xBFC8C2C0=request_powe_deviceID_01
+-s 0xBFC8C2C0=request_power_deviceID_01
 -s 0xBFC8C2D8=get_battery_response
 -s 0xBFC8C304=TRX_battery
 -s 0xBFC8C34C=receive_battery_data
