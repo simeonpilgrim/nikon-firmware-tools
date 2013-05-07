@@ -165,7 +165,6 @@ public class BreakTrigger {
                     conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
                 }
             }
-            // TODO other TX registers
         }
 
         conditions.addAll(memoryValueBreakConditions);
