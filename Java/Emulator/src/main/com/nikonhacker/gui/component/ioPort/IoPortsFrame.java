@@ -38,8 +38,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
         inputs = new JCheckBox[ioPorts.length][8];
         outputs = new JComponent[ioPorts.length][8];
 
-        JPanel configPanel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
-        JPanel statePanel = new JPanel(new MigLayout("insets 0", "[left][center][center][center][center][center][center][center][center]"));
+        JPanel configPanel = new JPanel(new MigLayout("insets 0", "[left][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow]"));
+        JPanel statePanel = new JPanel(new MigLayout("insets 0", "[left][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow][center, grow]"));
         configPanel.add(new JLabel("bit #"), "right");
         statePanel.add(new JLabel("bit #"), "right");
         // Header line - bit numbers
