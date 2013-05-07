@@ -2846,11 +2846,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
             if (endAddress != null) {
-                // TODO adapt this for Tx
                 // Set a temporary break condition at given endAddress
                 CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState(endAddress):new TxCPUState(endAddress);
                 CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
                 flags.pc = 1;
+                // TODO adapt this for Tx
                 if (chip==Constants.CHIP_FR) {
                     ((FrCPUState)flags).setILM(0, false);
                     flags.setReg(FrCPUState.TBR, 0);
