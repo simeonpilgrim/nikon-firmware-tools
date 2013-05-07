@@ -884,7 +884,7 @@
 -s 0xBFC8B6B8=battery_level_check
 -s 0xBFC8B86C=update_ADBch1_result
 -s 0xBFC8B92C=get_AF_flag
--s 0xBFC8BAB4=swicth_@FFFF407E
+-s 0xBFC8BAB4=switch_@FFFF407E
 -s 0xBFC8BB00=bad_battery
 -s 0xBFC8BB58=power_adapter_seeting
 -s 0xBFC8BB9C=update_battery_level
