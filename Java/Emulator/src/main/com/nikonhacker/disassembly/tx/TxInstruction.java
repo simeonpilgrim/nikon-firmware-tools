@@ -8,7 +8,6 @@ public class TxInstruction extends Instruction {
 
     private TxInstructionSet.InstructionFormat32 instructionFormat32;
     private TxInstructionSet.InstructionFormat16 instructionFormat16;
-    private SimulationCode simulationCode;
 
     /**
      * Creates a new TxInstruction
@@ -46,10 +45,9 @@ public class TxInstruction extends Instruction {
                          TxInstructionSet.InstructionFormat32 instructionFormat32,
                          TxInstructionSet.InstructionFormat16 instructionFormat16,
                          FlowType flowType, boolean isConditional, DelaySlotType delaySlotType, SimulationCode simulationCode) {
-        super(name, operandFormat, formula, commentFormat, action, flowType, isConditional, delaySlotType);
+        super(name, operandFormat, formula, commentFormat, action, flowType, isConditional, delaySlotType, simulationCode);
         this.instructionFormat32 = instructionFormat32;
         this.instructionFormat16 = instructionFormat16;
-        this.simulationCode = simulationCode;
     }
 
     public TxInstructionSet.InstructionFormat32 getInstructionFormat32() {
@@ -58,10 +56,6 @@ public class TxInstruction extends Instruction {
 
     public TxInstructionSet.InstructionFormat16 getInstructionFormat16() {
         return instructionFormat16;
-    }
-
-    public SimulationCode getSimulationCode() {
-        return simulationCode;
     }
 
     @Override

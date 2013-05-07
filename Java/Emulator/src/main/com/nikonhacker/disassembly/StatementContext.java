@@ -3,6 +3,7 @@ package com.nikonhacker.disassembly;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Deque;
@@ -17,6 +18,9 @@ public class StatementContext {
 
     /** This is the memory used in this context */
     public Memory memory;
+
+    /** This is the interrupt controller used in this context */
+    public InterruptController interruptController;
 
     /** This is the requested PC to jump to after having executed the statement in the delay slot */
     public Integer nextPc;
@@ -42,6 +46,7 @@ public class StatementContext {
     /** Temp storage */
     private boolean isLineBreakRequested;
 
+    public int cycleIncrement;
 
     public void setDelayedPc(Integer nextPc) {
         this.nextPc = nextPc;
