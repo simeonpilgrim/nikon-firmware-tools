@@ -2107,7 +2107,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      *
      * IMPORTANT! To facilitate transposition from the registers in the spec to this method, the pins are described
      * in both from bit 7 (on the left) to bit 0 (on the right).
-     * But as these arrays have to be indexed by the bit number (0 first, 7 last), we insert a "reverse" function in between
+     * But as these arrays have to be indexed by the bit number (0 first, 7 last), we insert a "reverse" function in between.
+     *
      * That way, ioPorts[2].getFn3Handlers()[7] will correctly return the TxIoPinTimerInputHandler(0x5, 1) , presented here on the left
      * @param ioPorts
      */
