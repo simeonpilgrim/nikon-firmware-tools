@@ -34,8 +34,37 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
         textField.setEnabled(enabled);
     }
 
+    /**
+     * Sets the filename to use.
+     * @param fileFilter if null, all files are shown.
+     */
     public void setFileFilter(FileFilter fileFilter) {
         this.fileFilter = fileFilter;
+    }
+
+    /**
+     * Simpler way to declare a simple case-insensitive file filter for one file type
+     * @param suffix the filename suffix to use as a filter, e.g. "*.bin"
+     * @param description the text to be shown in the drop down, e.g. "Binary file (*.bin)"
+     */
+    public void setFileFilter(final String suffix, final String description) {
+        this.fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f != null) {
+                    if (f.isDirectory()) {
+                        return true;
+                    }
+                    return f.getName().toLowerCase().endsWith(suffix);
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+        };
     }
 
     /**
