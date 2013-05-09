@@ -118,9 +118,9 @@ public class BreakTrigger {
     public List<BreakCondition> getBreakConditions(CodeStructure codeStructure, Memory memory) {
         List<BreakCondition> conditions = new ArrayList<BreakCondition>();
         if (cpuStateFlags.pc != 0) {
-            if (codeStructure != null && codeStructure.getFunctions().containsKey(cpuStateValues.pc)) {
+            if (codeStructure != null && codeStructure.isFunction(cpuStateValues.pc)) {
                 // this is a break on a function. Store it for later
-                function = codeStructure.getFunctions().get(cpuStateValues.pc);
+                function = codeStructure.getFunction(cpuStateValues.pc);
 
                 // In case this is a syscall, we can replace it by the actual syscall name and params
                 if (cpuStateFlags.getReg(12) != 0) {
@@ -131,7 +131,7 @@ public class BreakTrigger {
                             // We're on a syscall. Use the given syscall
                             Syscall syscall = syscallMap.get(cpuStateValues.getReg(12));
                             if (syscall != null) {
-                                function = codeStructure.getFunctions().get(syscall.getAddress());
+                                function = codeStructure.getFunction(syscall.getAddress());
                             }
                         }
                     }

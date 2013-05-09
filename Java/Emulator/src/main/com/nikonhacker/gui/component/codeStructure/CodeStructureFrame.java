@@ -85,7 +85,7 @@ public class CodeStructureFrame extends DocumentFrame
                 }
                 else {
                     targetField.setBackground(Color.WHITE);
-                    Function function = codeStructure.getFunctions().get(address);
+                    Function function = codeStructure.getFunction(address);
                     if (function == null) {
                         function = codeStructure.findFunctionIncluding(address);
                     }
@@ -198,16 +198,16 @@ public class CodeStructureFrame extends DocumentFrame
     private void createFakeStructure() {
         codeStructure = new FrCodeStructure(0);
         Function sourceFunction = new Function(0, "main", "comment", Function.Type.MAIN);
-        codeStructure.getFunctions().put(0, sourceFunction);
+        codeStructure.putFunction(0, sourceFunction);
         for (int i = 1; i <= 10; i++) {
             int address = i * 10;
             Function function = new Function(address, "Function" + i, "", Function.Type.STANDARD);
-            codeStructure.getFunctions().put(address, function);
+            codeStructure.putFunction(address, function);
             sourceFunction.getCalls().add(new Jump(0, address, null, false));
             for (int j = 1; i <= 10; i++) {
                 int address2 = i * 10 + j;
                 Function function2 = new Function(address2, "SubFunction" + j, "", Function.Type.STANDARD);
-                codeStructure.getFunctions().put(address2, function2);
+                codeStructure.putFunction(address2, function2);
                 function.getCalls().add(new Jump(address, address2, null, false));
             }
         }

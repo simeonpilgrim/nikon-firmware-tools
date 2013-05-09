@@ -440,10 +440,10 @@ public abstract class Disassembler {
             new CodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             // print and output
             debugPrintWriter.println("Structure analysis results :");
-            debugPrintWriter.println("  " + codeStructure.getStatements().size() + " statements");
-            debugPrintWriter.println("  " + codeStructure.getLabels().size() + " labels");
-            debugPrintWriter.println("  " + codeStructure.getFunctions().size() + " functions");
-            debugPrintWriter.println("  " + codeStructure.getReturns().size() + " returns");
+            debugPrintWriter.println("  " + codeStructure.getNumStatements() + " statements");
+            debugPrintWriter.println("  " + codeStructure.getNumLabels() + " labels");
+            debugPrintWriter.println("  " + codeStructure.getNumFunctions() + " functions");
+            debugPrintWriter.println("  " + codeStructure.getNumReturns() + " returns");
             debugPrintWriter.println();
 
             if (outWriter != null) {

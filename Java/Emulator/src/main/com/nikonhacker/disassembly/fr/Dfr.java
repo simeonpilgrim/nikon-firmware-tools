@@ -75,7 +75,7 @@ public class Dfr extends Disassembler
                 statement.context.cpuState = ((FrCPUState) context.cpuState).createCopy();
             }
 
-            codeStructure.getStatements().put(context.cpuState.pc, statement);
+            codeStructure.putStatement(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now

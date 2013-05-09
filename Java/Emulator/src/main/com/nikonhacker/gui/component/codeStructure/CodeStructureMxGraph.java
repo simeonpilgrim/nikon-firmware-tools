@@ -67,7 +67,7 @@ public class CodeStructureMxGraph extends mxGraph {
                     if (!renderedCalls.contains(call)) {
                         Object targetCell = cellObjects.get(call.getTarget());
                         if (targetCell == null) {
-                            Function targetFunction = codeStructure.getFunctions().get(call.getTarget());
+                            Function targetFunction = codeStructure.getFunction(call.getTarget());
                             if (targetFunction == null) {
                                 targetCell = addFakeFunction(call.getTarget());
                             }
