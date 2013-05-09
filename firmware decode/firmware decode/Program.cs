@@ -103,6 +103,9 @@ namespace Nikon_Decode
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
 
+            //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x74e884, 0x74e891, 0x74e896, 0x74e8a5, 0x74e8b2, 0x74e8c0, 0x74e8d1);
+            SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b720101_.bin", 0xB426d0, 0xB426dd, 0xB426e3, 0xB426f2, 0xB426fd, 0xB42707, 0xB42717);
+
             //SearchDumpsFor(@"C:\Dev\examples\D3000", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
             //SearchDumpsFor(@"C:\Dev\examples\D5100", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
             //MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
@@ -275,6 +278,43 @@ namespace Nikon_Decode
                 bw.Dispose();
             }
 
+        }
+
+        static void SearchDumpsForIntDiff(string filename, params int[] dcode)
+        {
+            var sw = new StreamWriter(File.Open(filename + "status.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            byte[] data = File.ReadAllBytes(filename);
+
+            if (data.Length == 0) return;
+
+            int dl = dcode.Length;
+            for(int loc = 0; loc < (data.Length - (dcode.Length*4)); loc++)     
+            {
+                for(int off = 0; off < (dcode.Length-1); off++)
+                {
+                    int t1 = dcode[off];
+                    int t2 = dcode[off + 1];
+                    int d1 = t2 - t1;
+                    int v1 = (int)ReadUint32(data, loc + ((off + 0) * 4));
+                    int v2 = (int)ReadUint32(data, loc + ((off + 1) * 4));
+
+                    int d2 = v2 - v1; 
+
+                    if( d1 != d2 )
+                        break;
+
+                    if( off == (dcode.Length-2))
+                    {                            
+                        sw.WriteLine("Match at {0:X8}",  loc);
+                        Console.WriteLine("Match at {0:X8}",  loc);
+                    }
+                }
+
+            }
+
+            sw.Close();
+            sw.Dispose();
         }
 
         static void SearchDumpsFor(string dir, params byte[] bcode)
