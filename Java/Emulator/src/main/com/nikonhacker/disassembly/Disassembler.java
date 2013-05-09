@@ -504,6 +504,8 @@ public abstract class Disassembler {
             }
         } catch (DisassemblyException e) {
             throw new DisassemblyException(e.getMessage() + " at 0x" + Format.asHex(context.cpuState.pc, 8), e);
+        } catch (NullPointerException e) {
+            throw new DisassemblyException("Null pointer (uninitialized area ?) at 0x" + Format.asHex(context.cpuState.pc, 8), e);
         }
     }
 
