@@ -85,7 +85,7 @@ public class CodeAnalyzer {
                         debugPrintWriter.println("INT 0x40 does not have the expected structure. INT40 following will be disabled");
                     }
                     else {
-                        FrStatement statement = (FrStatement) codeStructure.getStatements().get(int40address + 0x3E);
+                        FrStatement statement = (FrStatement) codeStructure.getStatement(int40address + 0x3E);
                         int baseAddress = statement.decodedImm;
                         int40mapping = new TreeMap<Integer, Integer>();
                         /* The range is 0x0004070A-0x00040869, or 0x160 bytes long, or 0x160/2 = 0xB0 (negative) offsets */
@@ -105,7 +105,7 @@ public class CodeAnalyzer {
 
         debugPrintWriter.println("Following flow starting at entry point...");
         Function main = new Function(codeStructure.getEntryPoint(), "main", "", Function.Type.MAIN);
-        codeStructure.getFunctions().put(codeStructure.getEntryPoint(), main);
+        codeStructure.putFunction(codeStructure.getEntryPoint(), main);
         try {
             followFunction(main, codeStructure.getEntryPoint(), false);
         }
@@ -118,10 +118,10 @@ public class CodeAnalyzer {
         for (Integer interruptNumber : interruptTable.keySet()) {
             Integer address = interruptTable.get(interruptNumber);
             String name = "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_";
-            Function function = codeStructure.getFunctions().get(address);
+            Function function = codeStructure.getFunction(address);
             if (function == null) {
                 function = new Function(address, name, "", Function.Type.INTERRUPT);
-                codeStructure.getFunctions().put(address, function);
+                codeStructure.putFunction(address, function);
                 try {
                     followFunction(function, address, false);
                 }
@@ -136,15 +136,15 @@ public class CodeAnalyzer {
 
 
         debugPrintWriter.println("Processing remaining statements as 'unknown' functions...");
-        Map.Entry<Integer, Statement> entry = codeStructure.getStatements().firstEntry();
+        Map.Entry<Integer, Statement> entry = codeStructure.getFirstStatementEntry();
         while (entry != null) {
             Integer address = entry.getKey();
             if (       !processedStatements.contains(address) // Not processed yet
-                    && !codeStructure.getStatements().get(address).isPotentialStuffing() // Not stuffing
+                    && !codeStructure.getStatement(address).isPotentialStuffing() // Not stuffing
                     ) {
                 // OK, let's process it
                 Function function = new Function(address, "", "", Function.Type.UNKNOWN);
-                codeStructure.getFunctions().put(address, function);
+                codeStructure.putFunction(address, function);
                 try {
                     followFunction(function, address, false);
                 }
@@ -152,14 +152,14 @@ public class CodeAnalyzer {
                     debugPrintWriter.println("SHOULD NOT HAPPEN. Please report this case on the forums ! : Error disassembling unknown function at 0x" + Format.asHex(address , 2) + ": " + e.getMessage());
                 }
             }
-            entry = codeStructure.getStatements().higherEntry(address);
+            entry = codeStructure.getStatementEntryAfter(address);
         }
 
 
         debugPrintWriter.println("Generating names for functions...");
         int functionNumber = 1;
-        for (Integer address : codeStructure.getFunctions().keySet()) {
-            Function function = codeStructure.getFunctions().get(address);
+        for (Integer address : codeStructure.getAllFunctionAddresses()) {
+            Function function = codeStructure.getFunction(address);
             if (StringUtils.isBlank(function.getName())) {
                 String functionId = outputOptions.contains(OutputOption.ORDINAL)?("" + functionNumber):Integer.toHexString(address);
                 if (function.getType() == Function.Type.UNKNOWN) {
@@ -179,7 +179,7 @@ public class CodeAnalyzer {
             for (Integer address : symbols.keySet()) {
                 if (codeStructure.isFunction(address)) {
                     // TODO This is ugly. A function is a symbol...
-                    Function function = codeStructure.getFunctions().get(address);
+                    Function function = codeStructure.getFunction(address);
                     Symbol symbol = symbols.get(address);
                     function.setName(symbol.getName());
                     function.setComment(symbol.getComment());
@@ -194,27 +194,27 @@ public class CodeAnalyzer {
         int labelNumber = 1;
         // First give names to labels linked to function start/segments (if they were spotted as targets already)
 
-        for (Integer address : codeStructure.getFunctions().keySet()) {
-            Function function = codeStructure.getFunctions().get(address);
-            if (codeStructure.getLabels().containsKey(address)) {
-                codeStructure.getLabels().put(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address)));
+        for (Integer address : codeStructure.getAllFunctionAddresses()) {
+            Function function = codeStructure.getFunction(address);
+            if (codeStructure.isLabel(address)) {
+                codeStructure.putLabel(address, new Symbol(address, "start_of_" + codeStructure.getFunctionName(address)));
             }
             for (int i = 0; i < function.getCodeSegments().size(); i++) {
                 CodeSegment codeSegment = function.getCodeSegments().get(i);
                 int startAddress = codeSegment.getStart();
-                if (codeStructure.getLabels().containsKey(startAddress)) {
-                    codeStructure.getLabels().put(startAddress, new Symbol(startAddress, "part_" + (i + 1) + "_of_" + function.getName()));
+                if (codeStructure.isLabel(startAddress)) {
+                    codeStructure.putLabel(startAddress, new Symbol(startAddress, "part_" + (i + 1) + "_of_" + function.getName()));
                 }
             }
         }
 
         // Temporary storage for names given to returns to make sure they are unique
         Set<String> usedReturnLabels = new HashSet<String>();
-        for (Integer address : codeStructure.getLabels().keySet()) {
-            if (codeStructure.getLabels().get(address).getName().length() == 0) {
+        for (Integer address : codeStructure.getAllLabelAddresses()) {
+            if (codeStructure.getLabelName(address).length() == 0) {
                 String label;
                 if (codeStructure.isReturn(address)) {
-                    Integer matchingFunctionStart = codeStructure.getReturns().get(address);
+                    Integer matchingFunctionStart = codeStructure.getReturn(address);
                     if (matchingFunctionStart != null) {
                         String functionName = codeStructure.getFunctionName(matchingFunctionStart);
                         if (functionName==null) {
@@ -238,12 +238,12 @@ public class CodeAnalyzer {
                 }
                 else {
                     // Only overwrite if none was present
-                    label = codeStructure.getLabels().get(address).getName();
+                    label = codeStructure.getLabelName(address);
                     if (StringUtils.isBlank(label)) {
                         label = "loc_" + (outputOptions.contains(OutputOption.ORDINAL)?("" + labelNumber):Integer.toHexString(address)) + "_";
                     }
                 }
-                codeStructure.getLabels().put(address, new Symbol(address, label));
+                codeStructure.putLabel(address, new Symbol(address, label));
             }
             // increment even if unused, to make output stable no matter what future replacements will occur
             labelNumber++;
@@ -251,9 +251,9 @@ public class CodeAnalyzer {
 
         // Override label names by symbols in dfr.txt or dtx.txt file
         for (Integer labelAddress : symbols.keySet()) {
-            if (!codeStructure.getFunctions().containsKey(labelAddress)) {
+            if (!codeStructure.isFunction(labelAddress)) {
                 // This is not a function symbol, it's a code label or a variable
-                Symbol label = codeStructure.getLabels().get(labelAddress);
+                Symbol label = codeStructure.getLabel(labelAddress);
                 if (label != null) {
                     // It matches an existing code label. Rename it if it is a generic "label", or add the name otherwise
                     String newLabelName = (label.getName().startsWith("loc_") ? "" : (label.getName() + "_/_")) + symbols.get(labelAddress).getName();
@@ -276,7 +276,7 @@ public class CodeAnalyzer {
     }
 
     private void testIfFunctionCallsTarget(Integer address, int target, String path) {
-        Function function = codeStructure.getFunctions().get(address);
+        Function function = codeStructure.getFunction(address);
         if (function == null) {
             debugPrintWriter.println("Error following " + path + " : no function at 0x" + Format.asHex(address, 8));
         }
@@ -293,7 +293,7 @@ public class CodeAnalyzer {
     }
 
     void followFunction(Function currentFunction, Integer address, boolean stopAtFirstProcessedStatement) throws IOException, DisassemblyException {
-        if (codeStructure.getStatements().get(address) == null) {
+        if (!codeStructure.isStatement(address)) {
             throw new DisassemblyException("No decoded statement at 0x" + Format.asHex(address, 8) + " (not a CODE range)");
         }
         CodeSegment currentSegment = new CodeSegment();
@@ -302,24 +302,24 @@ public class CodeAnalyzer {
         currentSegment.setStart(address);
         while(address != null) {
             if (stopAtFirstProcessedStatement && processedStatements.contains(address)) {
-                Integer previousAddress = codeStructure.getStatements().lowerKey(address);
+                Integer previousAddress = codeStructure.getAddressOfStatementBefore(address);
                 // Check we're not in delay slot. We shouldn't stop on delay slot
-                if (previousAddress == null || !codeStructure.getStatements().get(previousAddress).getInstruction().hasDelaySlot()) {
+                if (previousAddress == null || !codeStructure.getStatement(previousAddress).getInstruction().hasDelaySlot()) {
                     break;
                 }
             }
-            Statement statement = codeStructure.getStatements().get(address);
+            Statement statement = codeStructure.getStatement(address);
             processedStatements.add(address);
             currentSegment.setEnd(address);
             switch (statement.getInstruction().getFlowType()) {
                 case RET:
-                    codeStructure.getReturns().put(address, currentFunction.getAddress());
-                    codeStructure.getEnds().put(address + (statement.getInstruction().hasDelaySlot() ? statement.getNumBytes() : 0), currentFunction.getAddress());
+                    codeStructure.putReturn(address, currentFunction.getAddress());
+                    codeStructure.putEnd(address + (statement.getInstruction().hasDelaySlot() ? statement.getNumBytes() : 0), currentFunction.getAddress());
                     break;
                 case JMP:
                 case BRA:
                     if (statement.decodedImm != 0) {
-                        codeStructure.getLabels().put(statement.decodedImm, new Symbol(statement.decodedImm, "", ""));
+                        codeStructure.putLabel(statement.decodedImm, new Symbol(statement.decodedImm, "", ""));
                         Jump jump = new Jump(address, statement.decodedImm & 0xFFFFFFFE, statement.getInstruction(), false);
                         jumps.add(jump);
                         currentFunction.getJumps().add(jump);
@@ -363,7 +363,7 @@ public class CodeAnalyzer {
                         else {
                             Jump interruptCall = new Jump(address, interruptAddress, statement.getInstruction(), false);
                             currentFunction.getCalls().add(interruptCall);
-                            Function interrupt = codeStructure.getFunctions().get(interruptAddress);
+                            Function interrupt = codeStructure.getFunction(interruptAddress);
                             if (interrupt != null) {
                                 interrupt.getCalledBy().put(interruptCall, currentFunction);
                             }
@@ -383,7 +383,7 @@ public class CodeAnalyzer {
                 // End of segment
                 break;
             }
-            address = codeStructure.getStatements().higherKey(address);
+            address = codeStructure.getAddressOfStatementAfter(address);
         }
 
         // Process jumps
@@ -397,7 +397,7 @@ public class CodeAnalyzer {
                     // However, it happens (eg 001B77A4) that a jump ends on the delay slot of an unconditional JMP
                     // So we should consider we're really in a processed segment if
                     // - either it's a jump/call/return
-                    Statement statement = codeStructure.getStatements().get(jump.getTarget());
+                    Statement statement = codeStructure.getStatement(jump.getTarget());
                     if (statement != null && (statement.getInstruction().flowType == Instruction.FlowType.CALL
                             || statement.getInstruction().flowType == Instruction.FlowType.JMP
                             || statement.getInstruction().flowType == Instruction.FlowType.BRA
@@ -406,7 +406,7 @@ public class CodeAnalyzer {
                         break;
                     }
                     // - or the next statement is also in the range
-                    Integer addressFollowingTarget = codeStructure.getStatements().higherKey(jump.getTarget());
+                    Integer addressFollowingTarget = codeStructure.getAddressOfStatementAfter(jump.getTarget());
                     if (addressFollowingTarget != null && addressFollowingTarget >= segment.getStart() && addressFollowingTarget <= segment.getEnd()) {
                         inProcessedSegment = true;
                         break;
@@ -428,7 +428,7 @@ public class CodeAnalyzer {
         for (int i = 0; i < currentFunction.getCodeSegments().size(); i++) {
             // take a segment
             CodeSegment segmentA = currentFunction.getCodeSegments().get(i);
-            Statement lastStatementSegmentA = codeStructure.getStatements().get(segmentA.getEnd());
+            Statement lastStatementSegmentA = codeStructure.getStatement(segmentA.getEnd());
             if (lastStatementSegmentA == null) {
                 debugPrintWriter.println("Error : no disassembled statement found at 0x" + Format.asHex(segmentA.getEnd(), 8));
             }
@@ -437,11 +437,11 @@ public class CodeAnalyzer {
                 // and try to merge it with all following ones
                 for (int j = i + 1; j < currentFunction.getCodeSegments().size(); j++) {
                     CodeSegment segmentB = currentFunction.getCodeSegments().get(j);
-                    if (codeStructure.getStatements().get(segmentB.getEnd()) == null) {
+                    if (codeStructure.getStatement(segmentB.getEnd()) == null) {
                         debugPrintWriter.println("Error : no disassembled statement found at 0x" + Format.asHex(segmentB.getEnd(), 8));
                     }
                     else {
-                        int numBytesEndSegmentB = codeStructure.getStatements().get(segmentB.getEnd()).getNumBytes();
+                        int numBytesEndSegmentB = codeStructure.getStatement(segmentB.getEnd()).getNumBytes();
                         // Why isn't "BFC00640 03E00008 ret" (and others) considered a RET ? => because they are in unprocessed statements (?)
                         // Why isn't "BFC00898 E8A0 jrc $ra" considered a RET ?
                         if ((segmentA.getStart() >= segmentB.getStart() - numBytesEndSegmentB && segmentA.getStart() <= segmentB.getEnd() + numBytesEndSegmentB)
@@ -466,7 +466,7 @@ public class CodeAnalyzer {
                 Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                 jumps.add(jump);
                 currentFunction.getJumps().add(jump);
-                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
+                codeStructure.putLabel(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
                 i++;
             }
         }
@@ -516,7 +516,7 @@ public class CodeAnalyzer {
                             Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                             jumps.add(jump);
                             currentFunction.getJumps().add(jump);
-                            codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                            codeStructure.putLabel(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
                         }
                         //debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
                     }
@@ -581,7 +581,7 @@ public class CodeAnalyzer {
                                 Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
                                 jumps.add(jump);
                                 currentFunction.getJumps().add(jump);
-                                codeStructure.getLabels().put(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
+                                codeStructure.putLabel(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i, null));
                             }
 //                                          debugPrintWriter.println(Format.asHex(baseAddress, 8) + " -- # Table for jump at " + Format.asHex(address, 8) + "#-m 0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(baseAddress + size * 4 - 1, 8) + "=DATA:L");
                         }
@@ -603,11 +603,11 @@ public class CodeAnalyzer {
     private void addCall(Function currentFunction, Statement statement, Integer sourceAddress, int targetAddress, String defaultName, boolean isDynamic) throws IOException {
         Jump call = new Jump(sourceAddress, targetAddress, statement.getInstruction(), isDynamic);
         currentFunction.getCalls().add(call);
-        Function function = codeStructure.getFunctions().get(targetAddress);
+        Function function = codeStructure.getFunction(targetAddress);
         if (function == null) {
             // new Function
             function = new Function(targetAddress, defaultName, "", Function.Type.STANDARD);
-            codeStructure.getFunctions().put(targetAddress, function);
+            codeStructure.putFunction(targetAddress, function);
             try {
                 followFunction(function, targetAddress, false);
             }
@@ -632,7 +632,7 @@ public class CodeAnalyzer {
         Integer r12 = null;
         boolean r12SignExtend = false;
         for (int offset = 1; offset < 100; offset++) {
-            FrStatement candidateStatement = (FrStatement) codeStructure.getStatements().get(address - 2 * offset);
+            FrStatement candidateStatement = (FrStatement) codeStructure.getStatement(address - 2 * offset);
             if (candidateStatement != null) {
                 if (candidateStatement.getInstruction() instanceof FrInstructionSet.Ldi32FrInstruction && candidateStatement.decodedRiRsFs == 12) {
                     /* LDI:32 #i32, R12 */
@@ -666,11 +666,11 @@ public class CodeAnalyzer {
             else {
                 Jump interrupt40Call = new Jump(address, int40targetAddress, statement.getInstruction() /* TODO should characterize that it is a INT40 call */, false);
                 currentFunction.getCalls().add(interrupt40Call);
-                Function target = codeStructure.getFunctions().get(int40targetAddress);
+                Function target = codeStructure.getFunction(int40targetAddress);
                 if (target == null) {
                     // new Function
                     target = new Function(int40targetAddress, "", "", Function.Type.STANDARD);
-                    codeStructure.getFunctions().put(int40targetAddress, target);
+                    codeStructure.putFunction(int40targetAddress, target);
                     try {
                         followFunction(target, int40targetAddress, false);
                     }

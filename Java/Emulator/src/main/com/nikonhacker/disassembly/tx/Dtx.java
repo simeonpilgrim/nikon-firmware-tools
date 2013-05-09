@@ -33,7 +33,7 @@ public class Dtx extends Disassembler
                 statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
-            codeStructure.getStatements().put(context.cpuState.pc, statement);
+            codeStructure.putStatement(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now
@@ -62,7 +62,7 @@ public class Dtx extends Disassembler
                 statement.context.cpuState = ((TxCPUState) context.cpuState).createCopy();
             }
 
-            codeStructure.getStatements().put(context.cpuState.pc, statement);
+            codeStructure.putStatement(context.cpuState.pc, statement);
         }
         else {
             // No structure analysis, output right now

@@ -20,7 +20,7 @@ public class Symbol {
     }
 
     public Symbol(int address, String name, String comment) {
-        this.address = address;
+        this.address = address & CodeStructure.IGNORE_ISA_BIT;
         this.name = name;
         this.comment = comment;
     }

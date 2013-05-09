@@ -175,7 +175,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     public boolean exploreAddress(int address) {
         address = address & 0xFFFFFFFE; // ignore LSB (error in FR, ISA mode in TX)
         targetField.setText(Format.asHex(address, 8));
-        Function function = codeStructure.getFunctions().get(address);
+        Function function = codeStructure.getFunction(address);
         if (function == null) {
             function = codeStructure.findFunctionIncluding(address);
         }
@@ -514,8 +514,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     listingArea.append("; Segment " + (i + 1) + "/" + segments.size() + "\n");
                     lineAddresses.add(null);
                 }
-                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getStatements().higherKey(address)) {
-                    Statement statement = codeStructure.getStatements().get(address);
+                for (int address = codeSegment.getStart(); address <= codeSegment.getEnd(); address = codeStructure.getAddressOfStatementAfter(address)) {
+                    Statement statement = codeStructure.getStatement(address);
                     try {
                         StringWriter writer = new StringWriter();
                         codeStructure.writeStatement(writer, address, statement, 0, ui.getPrefs().getOutputOptions(chip));
@@ -611,8 +611,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             flags.pc = 1;
 
             String triggerName;
-            if (codeStructure.getFunctions().containsKey(addressFromLine)) {
-                triggerName = codeStructure.getFunctions().get(addressFromLine).getName() + "()";
+            if (codeStructure.isFunction(addressFromLine)) {
+                triggerName = codeStructure.getFunctionName(addressFromLine) + "()";
             }
             else {
                 triggerName = "Breakpoint at 0x" + Format.asHex(addressFromLine, 8);
