@@ -387,7 +387,6 @@ public class TxStatement extends Statement {
     public void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException {
 
         /* DISPLAY FORMAT processing */
-        rj_rt_ft = rj_rt_ft;
         decodedImm = imm;
         decodedImmBitWidth = immBitWidth;
 
