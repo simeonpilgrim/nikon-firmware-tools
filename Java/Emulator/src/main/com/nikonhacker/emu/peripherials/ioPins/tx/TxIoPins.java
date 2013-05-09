@@ -9,12 +9,12 @@ public class TxIoPins extends IoPins {
 
     /* page 6.32
     Preconfiguration 1 (Interrupt from external pin)
-        Set the port of the corresponding pin. Setting PnFCx [m] of the corresponding port function register to “1”
-        allows the pin to be used as the function pin. Clearing PnCR [m] to “0” allows the pin to be used as the input
+        Set the port of the corresponding pin. Setting PnFCx [m] of the corresponding port function register to "1"
+        allows the pin to be used as the function pin. Clearing PnCR [m] to "0" allows the pin to be used as the input
         port.
     Port register
-        PnFCx<PnmFx> ← “1”
-        PnCR<PnmC> ← “0”
+        PnFCx<PnmFx> <- "1"
+        PnCR<PnmC> <- "0"
     (Note)
         n: port number
         m: corresponding bit
