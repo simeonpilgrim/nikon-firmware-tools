@@ -1121,7 +1121,7 @@ public class TxCPUState extends CPUState {
                 && !isStatusERLSet()
                 && !isStatusEXLSet()
                 // Cfr last paragraph of section 6.5.1.6 :
-                // ”7” is the highest priority level.
+                // "7" is the highest priority level.
                 // 000 means all interrupts enabled.
                 && ((TxInterruptRequest)interruptRequest).getLevel() > interruptController.getIlevCmask();
     }
