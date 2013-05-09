@@ -1,8 +1,7 @@
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
 # A special part is also included  but commented out :
-# - the copy of code to 0xFFFF4000 performed by code @BFC1C742 is described in -i and -m
-
-############################### File map: D5100
+# - the copy of code @0xBFC0A000-0xBFC0ED69 to RAM 0xFFFF4000-0xFFFF8D69 performed by code 0xBFC1C742-0xBFC1C76A is described in -i and -m
+ ############################## File map: D5100
 -i 0xBFC00000-0xBFCBFFFF=0x00000000
 #-i 0xFFFF4000-0xFFFFFFFF=0x10000000
 
@@ -47,12 +46,9 @@
 # 2 pointers
 -m 0xBFC0A000-0xBFC0A007=DATA:L
 
-# Code
 # Code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
 -m 0xBFC0A008-0xBFC0A12B=CODE:32
-
 -m 0xBFC0A12C-0xBFC0D66F=CODE:16
-
 -m 0xBFC0D9F8-0xBFC0ED43=CODE:32
 
 -m 0xBFC10000-0xBFC1417D=CODE:16
@@ -85,12 +81,16 @@
 ## 0xFF area
 
 #####################################################
-## Copy of code Area to RAM performed by code @BFC1C742
-#
-#-m 0xFFFF4000-0xFFFF4007=DATA
+## Code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
+##
+#-m 0xFFFF4000-0xFFFF4007=DATA:L
 #-m 0xFFFF4008-0xFFFF412B=CODE:32
-#-m 0xFFFF412D-0xFFFF766F=CODE:16
-#-m 0xFFFF7670-0xFFFF8D69=DATA
+#-m 0xFFFF412C-0xFFFF766F=CODE:16
+##0xFF
+##-m 0xFFFF7670-0xFFFF7977=DATA:L
+## CODE32 for sure, but probably badly located:
+#-m 0xFFFF79F8-0xFFFF8D43=CODE:32
+#-m 0xFFFF8D44-0xFFFF8D69=DATA:L
 #
 #####################################################
 
