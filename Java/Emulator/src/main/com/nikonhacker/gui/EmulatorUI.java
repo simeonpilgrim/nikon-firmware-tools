@@ -1461,7 +1461,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     if (f.isDirectory()) {
                         return true;
                     }
-                    return f.getName().startsWith((chip == Constants.CHIP_FR)?"b":"a") && f.getName().endsWith(".bin");
+                    return f.getName().toLowerCase().startsWith((chip == Constants.CHIP_FR)?"b":"a") && f.getName().toLowerCase().endsWith(".bin");
                 }
                 return false;
             }
