@@ -43,6 +43,7 @@ public class SaveLoadMemoryDialog extends JDialog {
         final JLabel lengthLabel = new JLabel("0x");
         final JTextField lengthField = new JTextField(10);
         final FileSelectionPanel fileSelectionPanel = new FileSelectionPanel(null, filenameField, false);
+        fileSelectionPanel.setFileFilter("*.dump", "Memory dump file (*.dump)");
 
         ButtonGroup endOrLengthGroup = new ButtonGroup();
         endOrLengthGroup.add(withEndButton);

@@ -1230,8 +1230,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private void openDecodeDialog() {
         JTextField sourceFile = new JTextField();
         JTextField destinationDir = new JTextField();
+        FileSelectionPanel sourceFileSelectionPanel = new FileSelectionPanel("Source file", sourceFile, false);
+        sourceFileSelectionPanel.setFileFilter("*.bin", "Firmware file (*.bin)");
         final JComponent[] inputs = new JComponent[]{
-                new FileSelectionPanel("Source file", sourceFile, false),
+                sourceFileSelectionPanel,
                 new FileSelectionPanel("Destination dir", destinationDir, true)
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
@@ -1255,10 +1257,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         JTextField destinationFile = new JTextField();
         JTextField sourceFile1 = new JTextField();
         JTextField sourceFile2 = new JTextField();
+        FileSelectionPanel destinationFileSelectionPanel = new FileSelectionPanel("Destination file", destinationFile, false);
+        destinationFileSelectionPanel.setFileFilter("*.bin", "Encoded firmware file (*.bin)");
+        FileSelectionPanel sourceFile1SelectionPanel = new FileSelectionPanel("Source file 1", sourceFile1, false);
+        destinationFileSelectionPanel.setFileFilter("a*.bin", "Decoded A firmware file (a*.bin)");
+        FileSelectionPanel sourceFile2SelectionPanel = new FileSelectionPanel("Source file 2", sourceFile2, false);
+        destinationFileSelectionPanel.setFileFilter("b*.bin", "Decoded B firmware file (b*.bin)");
         final JComponent[] inputs = new JComponent[]{
-                new FileSelectionPanel("Destination file", destinationFile, false),
-                new FileSelectionPanel("Source file 1", sourceFile1, false),
-                new FileSelectionPanel("Source file 2", sourceFile2, false)
+                destinationFileSelectionPanel,
+                sourceFile1SelectionPanel,
+                sourceFile2SelectionPanel
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
@@ -1403,6 +1411,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final JCheckBox writeOutputCheckbox = new JCheckBox("Write disassembly to file");
 
         final FileSelectionPanel destinationFileSelectionPanel = new FileSelectionPanel("Destination file", destinationField, false);
+        destinationFileSelectionPanel.setFileFilter(".asm", "Assembly language file (*.asm)");
         writeOutputCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean writeToFile = writeOutputCheckbox.isSelected();
@@ -1414,9 +1423,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         writeOutputCheckbox.setSelected(prefs.isWriteDisassemblyToFile(chip));
         destinationFileSelectionPanel.setEnabled(prefs.isWriteDisassemblyToFile(chip));
 
+        FileSelectionPanel fileSelectionPanel = new FileSelectionPanel((chip == Constants.CHIP_FR) ? "Dfr options file" : "Dtx options file", optionsField, false);
+        fileSelectionPanel.setFileFilter((chip == Constants.CHIP_FR)?".dfr.txt":".dtx.txt", (chip == Constants.CHIP_FR)?"Dfr options file (*.dfr.txt)":"Dtx options file (*.dtx.txt)");
         final JComponent[] inputs = new JComponent[]{
                 //new FileSelectionPanel("Source file", sourceFile, false, dependencies),
-                new FileSelectionPanel((chip == Constants.CHIP_FR)?"Dfr options file":"Dtx options file", optionsField, false),
+                fileSelectionPanel,
                 writeOutputCheckbox,
                 destinationFileSelectionPanel,
                 makeOutputOptionCheckBox(chip, OutputOption.STRUCTURE, prefs.getOutputOptions(chip), true),
@@ -1461,7 +1472,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     if (f.isDirectory()) {
                         return true;
                     }
-                    return f.getName().toLowerCase().startsWith((chip == Constants.CHIP_FR)?"b":"a") && f.getName().toLowerCase().endsWith(".bin");
+                    return f.getName().toLowerCase().startsWith((chip == Constants.CHIP_FR) ? "b" : "a") && f.getName().toLowerCase().endsWith(".bin");
                 }
                 return false;
             }
