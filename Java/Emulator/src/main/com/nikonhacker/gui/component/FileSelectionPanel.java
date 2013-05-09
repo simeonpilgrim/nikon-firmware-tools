@@ -3,6 +3,7 @@ package com.nikonhacker.gui.component;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,6 +19,7 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
     private boolean directoryMode;
     private List<DependentField> dependentFields;
     private String dialogTitle;
+    private FileFilter fileFilter;
 
     public FileSelectionPanel(String label, JTextField textField, boolean directoryMode) {
         super();
@@ -30,6 +32,10 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
         jlabel.setEnabled(enabled);
         button.setEnabled(enabled);
         textField.setEnabled(enabled);
+    }
+
+    public void setFileFilter(FileFilter fileFilter) {
+        this.fileFilter = fileFilter;
     }
 
     /**
@@ -93,7 +99,12 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
         }
         else {
             fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            fc.setAcceptAllFileFilterUsed(true);
+            if (fileFilter == null) {
+                fc.setAcceptAllFileFilterUsed(true);
+            }
+            else {
+                fc.setFileFilter(fileFilter);
+            }
         }
 
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
