@@ -47,7 +47,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
                     ui.setStatusText(Constants.CHIP_TX, interruptName + " was requested.");
                 }
                 else {
-                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was rejected (already requested) !");
+                    ui.setStatusText(Constants.CHIP_TX, interruptName + " was rejected (already requested or insufficient level) !");
                 }
             }
         };
