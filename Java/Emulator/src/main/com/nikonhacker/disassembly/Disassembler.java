@@ -35,7 +35,6 @@ public abstract class Disassembler {
     private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
 
     /**
-     *
      * @param writer
      * @param statement
      * @param address
@@ -54,10 +53,9 @@ public abstract class Disassembler {
         writer.write(statement.toString(options));
     }
 
-    protected void usage()
-    {
+    protected void usage() {
         String help =
-                        "-e address=name   (not implemented) define entry point symbol\n"
+                "-e address=name   (not implemented) define entry point symbol\n"
                         + "-f range=address  (not implemented) map range of input file to memory address\n"
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
@@ -102,8 +100,7 @@ public abstract class Disassembler {
     }
 
     ///* Logging */
-    protected void log(String s)
-    {
+    protected void log(String s) {
         try {
             debugPrintWriter.write(s);
         } catch (Exception e) {
@@ -147,13 +144,11 @@ public abstract class Disassembler {
     }
 
     protected void fixRangeBoundaries(Range memRange) {
-        if ((memRange.getStart() & 1) != 0)
-        {
+        if ((memRange.getStart() & 1) != 0) {
             log("ERROR : Odd start address 0x" + Format.asHex(memRange.getStart(), 8));
             memRange.setStart(memRange.getStart() - 1);
         }
-        if ((memRange.getEnd() & 1) != 0)
-        {
+        if ((memRange.getEnd() & 1) != 0) {
             memRange.setEnd(memRange.getEnd() + 1);
         }
     }
@@ -184,6 +179,7 @@ public abstract class Disassembler {
 
     /**
      * Find file offset covering this memory location.
+     *
      * @param memRange
      * @return
      */
@@ -210,20 +206,18 @@ public abstract class Disassembler {
      * @param args
      * @return
      * @throws com.nikonhacker.disassembly.ParsingException
+     *
      */
     public boolean processOptions(int chip, String[] args) throws ParsingException {
         Character option;
         String argument;
         OptionHandler optionHandler = new OptionHandler(args);
 
-        while ((option = optionHandler.getNextOption()) != null)
-        {
-            switch (option)
-            {
+        while ((option = optionHandler.getNextOption()) != null) {
+            switch (option) {
                 case 0:
                     // Not an option => Input file. Check we don't have one already
-                    if (inputFileName != null)
-                    {
+                    if (inputFileName != null) {
                         log("too many input files");
                         usage();
                         return false;
@@ -377,20 +371,15 @@ public abstract class Disassembler {
         BufferedReader fp = new BufferedReader(new FileReader(filename));
 
         String buf;
-        while ((buf = fp.readLine()) != null)
-        {
+        while ((buf = fp.readLine()) != null) {
             buf = buf.trim();
-            if (buf.length() > 0 && buf.charAt(0) != '#')
-            {
-                if ((buf.charAt(0) == '-') && buf.length() > 2)
-                {
+            if (buf.length() > 0 && buf.charAt(0) != '#') {
+                if ((buf.charAt(0) == '-') && buf.length() > 2) {
                     // This is an option line
-                    if (Character.isWhitespace(buf.charAt(2)))
-                    {
+                    if (Character.isWhitespace(buf.charAt(2))) {
                         String option = buf.substring(0, 2);
                         String params = buf.substring(2).trim();
-                        if (StringUtils.isNotBlank(params))
-                        {
+                        if (StringUtils.isNotBlank(params)) {
                             processOptions(chip, new String[]{option, params});
                             continue;
                         }
@@ -470,13 +459,12 @@ public abstract class Disassembler {
 
         fixRangeBoundaries(memRange);
 
-        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET) ? (fileRange.getStart() - fileRange.getFileOffset()) : 0;
 
         // TODO : get rid of this (! take care, used for interrupt vector counter)
         StatementContext dummyContext = new StatementContext();
         dummyContext.cpuState = getCPUState(memRange);
-        while (dummyContext.cpuState.pc < memRange.getEnd())
-        {
+        while (dummyContext.cpuState.pc < memRange.getEnd()) {
             dummyContext.cpuState.pc += disassembleOneDataRecord(dummyContext, memRange, memoryFileOffset, outputOptions);
         }
     }
@@ -484,21 +472,19 @@ public abstract class Disassembler {
     protected void disassembleCodeMemoryRange(Range memRange, Range fileRange, CodeStructure codeStructure) throws IOException, DisassemblyException {
         fixRangeBoundaries(memRange);
 
-        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET)?(fileRange.getStart() - fileRange.getFileOffset()):0;
+        int memoryFileOffset = outputOptions.contains(OutputOption.OFFSET) ? (fileRange.getStart() - fileRange.getFileOffset()) : 0;
 
         StatementContext context = new StatementContext();
         context.cpuState = getCPUState(memRange);
 
         try {
             if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
-                while (context.cpuState.pc < memRange.getEnd())
-                {
+                while (context.cpuState.pc < memRange.getEnd()) {
                     context.cpuState.pc += disassembleOne32BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
                 }
             }
             else {
-                while (context.cpuState.pc < memRange.getEnd())
-                {
+                while (context.cpuState.pc < memRange.getEnd()) {
                     context.cpuState.pc += disassembleOne16BitStatement(context, memRange, memoryFileOffset, codeStructure, outputOptions);
                 }
             }
@@ -518,7 +504,6 @@ public abstract class Disassembler {
             System.exit(-1);
         }
 
-
         openOutput(0, false, "asm");
         if (outWriter != null) {
             writeHeader(outWriter);
@@ -528,7 +513,6 @@ public abstract class Disassembler {
             memory = new FastMemory();
             memory.loadFile(new File(inputFileName), fileRanges, true);
         }
-
     }
 
     public void cleanup() throws IOException {
