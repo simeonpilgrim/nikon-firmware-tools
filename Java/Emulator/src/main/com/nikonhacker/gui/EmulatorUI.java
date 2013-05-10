@@ -1610,7 +1610,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         disassembler = new Dfr();
                         disassembler.setDebugPrintWriter(new PrintWriter(new StringWriter())); // Ignore
                         disassembler.setOutputFileName(null);
-                        disassembler.processOptions(chip, new String[]{"-m", "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE"});
+                        disassembler.processOptions(chip, new String[]{
+                                "-m",
+                                "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE"
+                        });
                     }
                     else {
                         sampleMemory.store32(lastAddress, 0x340B0001);   // li      $t3, 0x0001
