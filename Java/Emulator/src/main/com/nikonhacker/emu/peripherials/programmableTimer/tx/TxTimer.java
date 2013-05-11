@@ -108,7 +108,24 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                         boolean interruptCondition = false;
 
                         currentValue += scale;
-
+                        // TODO: Simplest implementation for now: If capture is requested upon TBnINx,
+                        // then cp0 and cp1 registers will always reflect the counter value, no matter the input values
+						switch (getModCpm()) {
+							case 0b01:
+								// on TBnIN1 up
+								cp0 = currentValue;
+								// on TBnIN0 up
+								cp1 = currentValue;
+								break;
+							case 0b10:
+								// on TBnIN0 down
+								cp0 = currentValue;
+								// on TBnIN0 up
+								cp1 = currentValue;
+								break;
+							case 0b11:
+								// TODO
+						}
                         // Comparator 0
                         if (rg0 > 0 && (currentValue / scale == rg0 / scale)) {
                             // CP0 matches
@@ -220,8 +237,13 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     public void setMod(int mod) {
         if ((mod & 0b11000) != 0) {
-            // TODO latching according to TBnMOD<TBnCPM1:0>. See section 11.3.5
-            throw new RuntimeException("Latching not implemented");
+            if ((mod & 0b11000) == 0b11000) {
+                // TODO latching according to TBnMOD<TBnCPM1:0>. See section 11.3.5
+                throw new RuntimeException("Latching on TBnOUT (cascading) not implemented");
+            }
+            else {
+                System.err.println("Latching is only partly implemented");
+            }
         }
         this.mod = mod;
     }
