@@ -184,7 +184,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             Integer line = getLineFromAddress(address);
             if (line != null) {
                 try {
-                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line) + 30); // adding 30 to set the caret in the blanks, avoiding automatic highlight of all occurrences
+                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
                 } catch (BadLocationException e1) {
                     e1.printStackTrace();
                 }
