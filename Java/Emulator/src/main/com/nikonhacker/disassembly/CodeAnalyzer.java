@@ -625,7 +625,7 @@ public class CodeAnalyzer {
     }
 
     private void processInt40Call(Function currentFunction, Integer address, FrStatement statement) throws IOException {
-        // REALOS System calls
+        // µITRON REALOS System calls
         // Determine R12 before the call by reading the statements up to 200 bytes backwards (168 needed for call at 0x001824D0)
         // TODO : ideally, should follow program flow by climbing back function coderanges and not addresses in a straight line.
         // TODO : Here, we run the risk of not catching the good R12 value (not the case in practice)...

@@ -72,11 +72,11 @@ import com.nikonhacker.gui.component.interruptController.FrInterruptControllerFr
 import com.nikonhacker.gui.component.interruptController.InterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.TxInterruptControllerFrame;
 import com.nikonhacker.gui.component.ioPort.IoPortsFrame;
+import com.nikonhacker.gui.component.itron.ITronObjectFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
 import com.nikonhacker.gui.component.memoryMapped.CustomMemoryRangeLoggerFrame;
-import com.nikonhacker.gui.component.realos.RealOsObjectFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
 import com.nikonhacker.gui.component.screenEmulator.ScreenEmulatorFrame;
 import com.nikonhacker.gui.component.serialInterface.GenericSerialFrame;
@@ -139,7 +139,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_TOGGLE_SOURCE_CODE_WINDOW = {"FR_TOGGLE_SOURCE_CODE_WINDOW", "TX_TOGGLE_SOURCE_CODE_WINDOW"};
     private static final String[] COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW = {"FR_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW", "TX_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_REALOS_OBJECT_WINDOW = {"FR_TOGGLE_REALOS_OBJECT_WINDOW", "TX_TOGGLE_REALOS_OBJECT_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_ITRON_OBJECT_WINDOW = {"FR_TOGGLE_ITRON_OBJECT_WINDOW", "TX_TOGGLE_ITRON_OBJECT_WINDOW"};
     private static final String[] COMMAND_CHIP_OPTIONS = {"FR_OPTIONS", "TX_OPTIONS"};
 
     private static final String COMMAND_GENERATE_SYS_SYMBOLS = "GENERATE_SYS_SYMBOLS";
@@ -213,7 +213,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem[] memoryActivityViewerMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] customMemoryRangeLoggerMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] callStackMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] realosObjectMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] iTronObjectMenuItem = new JCheckBoxMenuItem[2];
 
     private JMenuItem[] analyseMenuItem = new JMenuItem[2];
     private JCheckBoxMenuItem[] codeStructureMenuItem = new JCheckBoxMenuItem[2];
@@ -246,7 +246,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton[] serialDevicesButton = new JButton[2];
     private JButton[] adConverterButton = new JButton[2];
     private JButton[] callStackButton = new JButton[2];
-    private JButton[] realosObjectButton = new JButton[2];
+    private JButton[] iTronObjectButton = new JButton[2];
 
     private JButton ioPortsButton;
     private JButton component4006Button;
@@ -276,7 +276,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private DocumentFrame screenEmulatorFrame;
     private IoPortsFrame ioPortsFrame;
 
-    private RealOsObjectFrame[] realOsObjectFrame = new RealOsObjectFrame[2];
+    private ITronObjectFrame[] ITronObjectFrame = new ITronObjectFrame[2];
 
     private String[] statusText = {STATUS_DEFAULT_TEXT, STATUS_DEFAULT_TEXT};
     private JLabel[] statusBar = new JLabel[2];
@@ -643,8 +643,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(customMemoryRangeLoggerButton[chip]);
         callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Call Stack window", "CallStack");
         bar.add(callStackButton[chip]);
-        realosObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_REALOS_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " RealOS Object window", "RealOS Object");
-        bar.add(realosObjectButton[chip]);
+        iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON Object window", "µITRON Object");
+        bar.add(iTronObjectButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -972,13 +972,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             callStackMenuItem[chip].addActionListener(this);
             traceMenu.add(callStackMenuItem[chip]);
 
-            //RealOS Object
-            realosObjectMenuItem[chip] = new JCheckBoxMenuItem("RealOS " + Constants.CHIP_LABEL[chip] + " Objects");
-//        if (chip == CHIP_FR) realosObjectMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-//        realosObjectMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
-            realosObjectMenuItem[chip].setActionCommand(COMMAND_TOGGLE_REALOS_OBJECT_WINDOW[chip]);
-            realosObjectMenuItem[chip].addActionListener(this);
-            traceMenu.add(realosObjectMenuItem[chip]);
+            //µITRON Object
+            iTronObjectMenuItem[chip] = new JCheckBoxMenuItem("µITRON " + Constants.CHIP_LABEL[chip] + " Objects");
+//        if (chip == CHIP_FR) iTronObjectMenuItem[chip].setMnemonic(KeyEvent.VK_C);
+//        iTronObjectMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            iTronObjectMenuItem[chip].setActionCommand(COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip]);
+            iTronObjectMenuItem[chip].addActionListener(this);
+            traceMenu.add(iTronObjectMenuItem[chip]);
 
             traceMenu.add(new JSeparator());
         }
@@ -1144,8 +1144,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_CALL_STACK_WINDOW)) != Constants.CHIP_NONE) {
             toggleCallStack(chip);
         }
-        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_REALOS_OBJECT_WINDOW)) != Constants.CHIP_NONE) {
-            toggleRealOsObject(chip);
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_ITRON_OBJECT_WINDOW)) != Constants.CHIP_NONE) {
+            toggleITronObject(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_LOAD_STATE)) != Constants.CHIP_NONE) {
             loadState(chip);
@@ -2355,10 +2355,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             genericSerialFrame[chip] = null;
             if (mustReOpen) toggleGenericSerialFrame(chip);
         }
-        if (realOsObjectFrame[chip] != null) {
-            realOsObjectFrame[chip].dispose();
-            realOsObjectFrame[chip] = null;
-            if (mustReOpen) toggleRealOsObject(chip);
+        if (ITronObjectFrame[chip] != null) {
+            ITronObjectFrame[chip].dispose();
+            ITronObjectFrame[chip] = null;
+            if (mustReOpen) toggleITronObject(chip);
         }
     }
 
@@ -2623,19 +2623,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
-    private void toggleRealOsObject(int chip) {
-        if (realOsObjectFrame[chip] == null) {
-            realOsObjectFrame[chip] = new RealOsObjectFrame("µITRON Object Status", "os", true, true, false, true, chip, this, platform[chip], codeStructure[chip]);
-            realOsObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
+    private void toggleITronObject(int chip) {
+        if (ITronObjectFrame[chip] == null) {
+            ITronObjectFrame[chip] = new ITronObjectFrame("µITRON Object Status", "os", true, true, false, true, chip, this, platform[chip], codeStructure[chip]);
+            ITronObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
             if (!isEmulatorPlaying[chip]) {
-                realOsObjectFrame[chip].updateAllLists(chip);
+                ITronObjectFrame[chip].updateAllLists(chip);
             }
-            addDocumentFrame(chip, realOsObjectFrame[chip]);
-            realOsObjectFrame[chip].display(true);
+            addDocumentFrame(chip, ITronObjectFrame[chip]);
+            ITronObjectFrame[chip].display(true);
         }
         else {
-            realOsObjectFrame[chip].dispose();
-            realOsObjectFrame[chip] = null;
+            ITronObjectFrame[chip].dispose();
+            ITronObjectFrame[chip] = null;
         }
         updateStates();
     }
@@ -2734,8 +2734,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 else if (frame == adConverterFrame[chip]) {
                     toggleAdConverterFrame(chip); return;
                 }
-                else if (frame == realOsObjectFrame[chip]) {
-                    toggleRealOsObject(chip); return;
+                else if (frame == ITronObjectFrame[chip]) {
+                    toggleITronObject(chip); return;
                 }
             }
         System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
@@ -2788,7 +2788,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 adConverterMenuItem[chip].setEnabled(isImageLoaded[chip]); adConverterButton[chip].setEnabled(isImageLoaded[chip]);
             }
             callStackMenuItem[chip].setEnabled(isImageLoaded[chip]); callStackButton[chip].setEnabled(isImageLoaded[chip]);
-            realosObjectMenuItem[chip].setEnabled(isImageLoaded[chip]); realosObjectButton[chip].setEnabled(isImageLoaded[chip]);
+            iTronObjectMenuItem[chip].setEnabled(isImageLoaded[chip]); iTronObjectButton[chip].setEnabled(isImageLoaded[chip]);
 
             saveLoadMemoryMenuItem[chip].setEnabled(isImageLoaded[chip]); saveLoadMemoryButton[chip].setEnabled(isImageLoaded[chip]);
 
@@ -2807,7 +2807,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
-                if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
+                if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
                 if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!isEmulatorPlaying[chip]);
                 if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!isEmulatorPlaying[chip]);
             }
@@ -2821,7 +2821,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
                 if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
                 if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
-                if (realOsObjectFrame[chip] != null) realOsObjectFrame[chip].enableUpdate(true);
+                if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(true);
                 if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
                 if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
             }
@@ -2946,8 +2946,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (sourceCodeFrame[chip] != null) {
             sourceCodeFrame[chip].onEmulatorStop();
         }
-        if (realOsObjectFrame[chip] != null) {
-            realOsObjectFrame[chip].onEmulatorStop(chip);
+        if (ITronObjectFrame[chip] != null) {
+            ITronObjectFrame[chip].onEmulatorStop(chip);
         }
     }
 

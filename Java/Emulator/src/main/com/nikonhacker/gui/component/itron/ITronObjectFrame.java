@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component.realos;
+package com.nikonhacker.gui.component.itron;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
@@ -14,9 +14,9 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.realos.*;
-import com.nikonhacker.realos.fr.FrSysCallEnvironment;
-import com.nikonhacker.realos.tx.TxSysCallEnvironment;
+import com.nikonhacker.itron.*;
+import com.nikonhacker.itron.fr.FrSysCallEnvironment;
+import com.nikonhacker.itron.tx.TxSysCallEnvironment;
 
 import javax.swing.*;
 import javax.swing.event.MouseInputAdapter;
@@ -27,7 +27,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 
-public class RealOsObjectFrame extends DocumentFrame {
+public class ITronObjectFrame extends DocumentFrame {
 
     private static final int WINDOW_WIDTH = 250;
     private static final int WINDOW_HEIGHT = 300;
@@ -44,7 +44,7 @@ public class RealOsObjectFrame extends DocumentFrame {
 
     private final SysCallEnvironment sysCallEnvironment;
 
-    public RealOsObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Platform platform, CodeStructure codeStructure) {
+    public ITronObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Platform platform, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform):new TxSysCallEnvironment(platform, codeStructure);
@@ -61,10 +61,10 @@ public class RealOsObjectFrame extends DocumentFrame {
         topPanel.add(updateAllButton);
 
         autoUpdateCheckbox = new JCheckBox("Auto-update all");
-        autoUpdateCheckbox.setSelected(ui.getPrefs().isAutoUpdateRealOsObjects(chip));
+        autoUpdateCheckbox.setSelected(ui.getPrefs().isAutoUpdateITronObjects(chip));
         autoUpdateCheckbox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.getPrefs().setAutoUpdateRealOsObjects(chip, autoUpdateCheckbox.isSelected());
+                ui.getPrefs().setAutoUpdateITronObjects(chip, autoUpdateCheckbox.isSelected());
                 if (autoUpdateCheckbox.isSelected()) {
                     if (updateAllButton.isEnabled()) {
                         updateAllLists(chip);
@@ -156,19 +156,19 @@ public class RealOsObjectFrame extends DocumentFrame {
                     String strFlagId = (String) eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 0);
                     try {
                         int flagId = Format.parseUnsigned(strFlagId);
-                        String newValue = JOptionPane.showInputDialog(RealOsObjectFrame.this, "New value for Pattern",  eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 2));
+                        String newValue = JOptionPane.showInputDialog(ITronObjectFrame.this, "New value for Pattern",  eventFlagTable.getModel().getValueAt(eventFlagTable.rowAtPoint(e.getPoint()), 2));
                         try {
                             int value = Format.parseUnsigned(newValue);
                             ErrorCode errorCode = sysCallEnvironment.setFlagIdPattern(chip, flagId, value);
                             if (errorCode != ErrorCode.E_OK) {
-                                JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Setting flag returned " + errorCode);
+                                JOptionPane.showMessageDialog(ITronObjectFrame.this, "Error: Setting flag returned " + errorCode);
                             }
                             updateAllLists(chip);
                         } catch (ParsingException e1) {
-                            JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Cannot parse new value " + newValue);
+                            JOptionPane.showMessageDialog(ITronObjectFrame.this, "Error: Cannot parse new value " + newValue);
                         }
                     } catch (ParsingException e1) {
-                        JOptionPane.showMessageDialog(RealOsObjectFrame.this, "Error: Cannot parse flag ID " + strFlagId);
+                        JOptionPane.showMessageDialog(ITronObjectFrame.this, "Error: Cannot parse flag ID " + strFlagId);
                     }
                 }
             }

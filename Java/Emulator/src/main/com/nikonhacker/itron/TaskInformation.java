@@ -1,6 +1,6 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.itron;
 
-public class TaskInformation extends RealOsObject {
+public class TaskInformation extends ITronObject {
 
     public static enum TaskState {
         NONE(0x0), // pseudo state

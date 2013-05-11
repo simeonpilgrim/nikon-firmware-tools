@@ -1,16 +1,16 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.itron;
 
 import com.nikonhacker.Format;
 
-public abstract class RealOsObject {
+public abstract class ITronObject {
     protected int objectId;
     private ErrorCode errorCode;
     private int extendedInformation;
 
-    protected RealOsObject() {
+    protected ITronObject() {
     }
 
-    public RealOsObject(int objectId, ErrorCode errorCode, int extendedInformation) {
+    public ITronObject(int objectId, ErrorCode errorCode, int extendedInformation) {
         this.objectId = objectId;
         this.extendedInformation = extendedInformation;
         this.errorCode = errorCode;

@@ -1,8 +1,8 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.itron;
 
 import com.nikonhacker.Format;
 
-public class SemaphoreInformation extends RealOsObject {
+public class SemaphoreInformation extends ITronObject {
 
     private int waitTaskInformation;
     private int semaphoreCount;

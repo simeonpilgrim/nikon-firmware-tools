@@ -1,8 +1,8 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.itron;
 
 import com.nikonhacker.Format;
 
-public class EventFlagInformation extends RealOsObject {
+public class EventFlagInformation extends ITronObject {
 
     private int waitTaskInformation;
     private int flagPattern;

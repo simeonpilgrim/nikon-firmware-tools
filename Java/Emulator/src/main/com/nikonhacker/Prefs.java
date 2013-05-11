@@ -31,7 +31,7 @@ public class Prefs {
     private List<MemoryWatch>[] memoryWatches;
     private EnumSet<OutputOption>[] outputOptions;
     private Map<Integer,Byte>[] ioPortMap;
-    private boolean[] autoUpdateRealOsObjectWindow;
+    private boolean[] autoUpdateITronObjectWindow;
     private boolean[] callStackHideJumps;
     private int sleepTick[];
     private boolean writeDisassemblyToFile[];
@@ -285,14 +285,14 @@ public class Prefs {
         return firmwareWriteProtected[chip];
     }
 
-    public void setAutoUpdateRealOsObjects(int chip, boolean autoUpdateRealOsObjects) {
-        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
-        this.autoUpdateRealOsObjectWindow[chip] = autoUpdateRealOsObjects;
+    public void setAutoUpdateITronObjects(int chip, boolean autoUpdateITronObjects) {
+        if (autoUpdateITronObjectWindow == null) autoUpdateITronObjectWindow = new boolean[2];
+        this.autoUpdateITronObjectWindow[chip] = autoUpdateITronObjects;
     }
 
-    public boolean isAutoUpdateRealOsObjects(int chip) {
-        if (autoUpdateRealOsObjectWindow == null) autoUpdateRealOsObjectWindow = new boolean[2];
-        return autoUpdateRealOsObjectWindow[chip];
+    public boolean isAutoUpdateITronObjects(int chip) {
+        if (autoUpdateITronObjectWindow == null) autoUpdateITronObjectWindow = new boolean[2];
+        return autoUpdateITronObjectWindow[chip];
     }
 
     public boolean isCallStackHideJumps(int chip) {
