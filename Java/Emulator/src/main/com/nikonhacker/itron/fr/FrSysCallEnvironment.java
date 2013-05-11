@@ -1,4 +1,4 @@
-package com.nikonhacker.realos.fr;
+package com.nikonhacker.itron.fr;
 
 import com.nikonhacker.BinaryArithmetics;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -6,7 +6,7 @@ import com.nikonhacker.emu.FrEmulator;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
-import com.nikonhacker.realos.*;
+import com.nikonhacker.itron.*;
 
 /**
  * This environment is the implementation for the FR CPU

@@ -1,8 +1,8 @@
-package com.nikonhacker.realos.tx;
+package com.nikonhacker.itron.tx;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.realos.ErrorCode;
-import com.nikonhacker.realos.TaskInformation;
+import com.nikonhacker.itron.ErrorCode;
+import com.nikonhacker.itron.TaskInformation;
 
 public class TxTaskInformation extends TaskInformation {
 

@@ -1,8 +1,8 @@
-package com.nikonhacker.realos;
+package com.nikonhacker.itron;
 
 import com.nikonhacker.Format;
 
-public class MailboxInformation extends RealOsObject {
+public class MailboxInformation extends ITronObject {
 
     private int waitTaskInformation;
     private int pkMsg;

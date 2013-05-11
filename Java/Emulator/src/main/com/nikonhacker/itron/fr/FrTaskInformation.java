@@ -1,8 +1,8 @@
-package com.nikonhacker.realos.fr;
+package com.nikonhacker.itron.fr;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.realos.ErrorCode;
-import com.nikonhacker.realos.TaskInformation;
+import com.nikonhacker.itron.ErrorCode;
+import com.nikonhacker.itron.TaskInformation;
 
 public class FrTaskInformation extends TaskInformation {
 

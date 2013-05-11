@@ -1,4 +1,4 @@
-package com.nikonhacker.realos.tx;
+package com.nikonhacker.itron.tx;
 
 import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.tx.TxCPUState;
@@ -6,7 +6,7 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.TxEmulator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
-import com.nikonhacker.realos.*;
+import com.nikonhacker.itron.*;
 
 /**
  * This environment is the implementation for the TX CPU
@@ -83,7 +83,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         }
         else {
             Memory memory = platform.getMemory();
-            // Note: structure is different from RealOS 3
+            // Note: structure is different from µITRON 3
             return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
@@ -105,7 +105,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         }
         else {
             Memory memory = platform.getMemory();
-            // Note: structure is different from RealOS 3
+            // Note: structure is different from µITRON 3
             return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }

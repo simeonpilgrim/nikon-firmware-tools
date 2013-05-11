@@ -35,7 +35,7 @@
 -m 0xBFC043D0-0xBFC044BB=DATA:L
 
 # TCB Task table
-# Table defining REALOS Tasks (Table of 0xD records of 0x14 bytes)
+# Table defining ITRON Tasks (Table of 0xD records of 0x14 bytes)
 -m 0xBFC044BC-0xBFC0478B=DATA:L
 
 ## 0xFF area
