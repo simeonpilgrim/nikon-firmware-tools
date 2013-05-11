@@ -2091,6 +2091,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
+            // TODO: let user choose whether he wants to load at reset address or refer to a dfr/dtx file's "-i" option
+            // That would allow to load "reloactable" areas at their right place.
+            // e.g. TX code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by code 0xBFC1C742-0xBFC1C76A
             memory.loadFile(imageFile[chip], cpuState.getResetAddress(), prefs.isFirmwareWriteProtected(chip));
             isImageLoaded[chip] = true;
 
