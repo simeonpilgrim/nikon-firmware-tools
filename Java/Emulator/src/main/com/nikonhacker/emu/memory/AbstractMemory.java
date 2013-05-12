@@ -238,7 +238,7 @@ public abstract class AbstractMemory implements Memory {
      * Returns the page currently mapped at the given page table entry.
      *
      * @param pte The page table entry, for which a page is to be retrieved.
-     * @return The page mapped at the given page table entry or null, if no page is currently mapped
+     * @return The page (R,W,X) mapped at the given page table entry or null, if no page is currently mapped
      *         to that entry.
      */
     byte[] getPage(int pte) {
@@ -253,6 +253,18 @@ public abstract class AbstractMemory implements Memory {
             return executableMemory[pte];
 
         return null;
+    }
+
+    /**
+     * Returns the page containing the given address.
+     *
+     * @param addr The address for which a page is to be retrieved.
+     * @return The page (R,W,X) mapped at the given page table entry or null, if no page is currently mapped
+     *         to that entry.
+     */
+    public byte[] getPageForAddress(int addr) {
+        int pte = getPTE(addr);
+        return getPage(pte);
     }
 
     /**

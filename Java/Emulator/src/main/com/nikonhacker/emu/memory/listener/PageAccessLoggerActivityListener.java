@@ -13,7 +13,12 @@ public class PageAccessLoggerActivityListener extends AbstractAccessLoggerActivi
     }
 
     @Override
-    protected boolean matches(int address) {
+    public boolean matches(int address) {
         return address >>> 16 == targetPage;
+    }
+
+    @Override
+    public boolean isLoggerOnly() {
+        return true;
     }
 }

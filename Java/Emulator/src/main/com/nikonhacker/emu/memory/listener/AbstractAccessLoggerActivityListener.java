@@ -14,59 +14,45 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
         this.cpuState = cpuState;
     }
 
-    public void onLoadData8(int address, byte value) {
-        if (matches(address)) {
-            printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2) + "        (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+
+    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+        printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2) + "        (@0x" + Format.asHex(cpuState.pc, 8) + ")");
+        return null;
     }
 
-    public void onLoadData16(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4) + "      (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public Integer onLoadData16(byte[] pageData, int address, int value) {
+        printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4) + "      (@0x" + Format.asHex(cpuState.pc, 8) + ")");
+        return null;
     }
 
-    public void onLoadData32(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8) + "  (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public Integer onLoadData32(byte[] pageData, int address, int value) {
+        printWriter.println("            read from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8) + "  (@0x" + Format.asHex(cpuState.pc, 8) + ")");
+        return null;
     }
 
-    public void onLoadInstruction8(int address, byte value) {
-        if (matches(address)) {
-            printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2) + "        (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+
+    public void onLoadInstruction8(byte[] pageData, int address, byte value) {
+        printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFF, 2) + "        (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
 
-    public void onLoadInstruction16(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4) + "      (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public void onLoadInstruction16(byte[] pageData, int address, int value) {
+        printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value & 0xFFFF, 4) + "      (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
 
-    public void onLoadInstruction32(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8) + "  (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public void onLoadInstruction32(byte[] pageData, int address, int value) {
+        printWriter.println("   CODE EXECUTED from 0x" + Format.asHex(address, 8) + " : 0x" + Format.asHex(value, 8) + "  (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
 
-    public void onStore8(int address, byte value) {
-        if (matches(address)) {
-            printWriter.println("0x" + Format.asHex(value & 0xFF, 2) + "       written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+
+    public void onStore8(byte[] pageData, int address, byte value) {
+        printWriter.println("0x" + Format.asHex(value & 0xFF, 2) + "       written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
 
-    public void onStore16(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("0x" + Format.asHex(value & 0xFFFF, 4) + "     written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public void onStore16(byte[] pageData, int address, int value) {
+        printWriter.println("0x" + Format.asHex(value & 0xFFFF, 4) + "     written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
 
-    public void onStore32(int address, int value) {
-        if (matches(address)) {
-            printWriter.println("0x" + Format.asHex(value, 8) + " written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
-        }
+    public void onStore32(byte[] pageData, int address, int value) {
+        printWriter.println("0x" + Format.asHex(value, 8) + " written to 0x" + Format.asHex(address, 8) + "               (@0x" + Format.asHex(cpuState.pc, 8) + ")");
     }
-
-    protected abstract boolean matches(int address);
 }

@@ -1971,7 +1971,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 clockGenerator = new FrClockGenerator();
                 interruptController = new FrInterruptController(platform[chip]);
 
-                memory.setIoActivityListener(new ExpeedIoListener(platform[chip]));
+                memory.addActivityListener(new ExpeedIoListener(platform[chip]));
 
                 // Programmable timers
                 for (int i = 0; i < programmableTimers.length; i++) {
@@ -1996,7 +1996,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 clockGenerator = new TxClockGenerator();
                 interruptController = new TxInterruptController(platform[chip]);
 
-                memory.setIoActivityListener(new TxIoListener(platform[chip]));
+                memory.addActivityListener(new TxIoListener(platform[chip]));
 
                 // Programmable timers
                 // First put all 16-bit timers

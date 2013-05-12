@@ -17,8 +17,13 @@ public class RangeAccessLoggerActivityListener extends AbstractAccessLoggerActiv
     }
 
     @Override
-    protected boolean matches(int address) {
+    public boolean matches(int address) {
         return !BinaryArithmetics.isLessThanUnsigned(address, minAddress)
             && !BinaryArithmetics.isGreaterThanUnsigned(address, maxAddress);
+    }
+
+    @Override
+    public boolean isLoggerOnly() {
+        return true;
     }
 }

@@ -19,10 +19,8 @@ import org.apache.commons.lang3.StringUtils;
  * This is based on the Toshiba hardware specification for TMP19A44FDA/FE/F10XBG
  * Available at http://www.semicon.toshiba.co.jp/info/docget.jsp?type=datasheet&lang=en&pid=TMP19A44FEXBG
  */
-public class TxIoListener implements IoActivityListener {
+public class TxIoListener extends IoActivityListener {
     private static final boolean DEBUG_SERIAL = false;
-
-    private static final int IO_PAGE = 0xFF00;
 
     // See section 22 for addresses
 
@@ -196,8 +194,8 @@ public class TxIoListener implements IoActivityListener {
     }
 
     @Override
-    public int getIoPage() {
-        return IO_PAGE;
+    public boolean matches(int address) {
+        return address >>> 16 == 0xFF00;
     }
 
     /**
@@ -207,7 +205,7 @@ public class TxIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
+    public Byte onLoadData8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -476,7 +474,7 @@ public class TxIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onIoLoad16(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData16(byte[] ioPage, int addr, int value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -658,7 +656,7 @@ public class TxIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData32(byte[] ioPage, int addr, int value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -883,7 +881,7 @@ public class TxIoListener implements IoActivityListener {
         return null;
     }
 
-    public void onIoStore8(byte[] ioPage, int addr, byte value) {
+    public void onStore8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;
@@ -1151,7 +1149,7 @@ public class TxIoListener implements IoActivityListener {
         }
     }
 
-    public void onIoStore16(byte[] ioPage, int addr, int value) {
+    public void onStore16(byte[] ioPage, int addr, int value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;
@@ -1286,7 +1284,7 @@ public class TxIoListener implements IoActivityListener {
         }
     }
 
-    public void onIoStore32(byte[] ioPage, int addr, int value) {
+    public void onStore32(byte[] ioPage, int addr, int value) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;

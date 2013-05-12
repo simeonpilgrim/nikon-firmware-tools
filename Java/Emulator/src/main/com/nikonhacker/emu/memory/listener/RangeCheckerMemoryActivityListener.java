@@ -3,17 +3,28 @@ package com.nikonhacker.emu.memory.listener;
 public class RangeCheckerMemoryActivityListener extends Abstract8BitMemoryActivityListener implements MemoryActivityListener{
 
     @Override
-    public void onLoadData8(int address, byte value) {
+    public boolean matches(int address) {
+        return true;
+    }
+
+    @Override
+    public boolean isLoggerOnly() {
+        return true;
+    }
+
+    @Override
+    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+        //TODO
+        return null;
+    }
+
+    @Override
+    public void onLoadInstruction8(byte[] pageData, int address, byte value) {
         //TODO
     }
 
     @Override
-    public void onLoadInstruction8(int address, byte value) {
-        //TODO
-    }
-
-    @Override
-    public void onStore8(int address, byte value) {
+    public void onStore8(byte[] pageData, int address, byte value) {
         //TODO
     }
 }

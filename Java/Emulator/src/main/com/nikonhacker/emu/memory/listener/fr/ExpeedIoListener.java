@@ -6,9 +6,7 @@ import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptContro
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
-public class ExpeedIoListener implements IoActivityListener {
-
-    private static final int IO_PAGE = 0x0000;
+public class ExpeedIoListener extends IoActivityListener {
 
     private static final int REGISTER_DICR    = 0x44;
 
@@ -62,8 +60,8 @@ public class ExpeedIoListener implements IoActivityListener {
     }
 
     @Override
-    public int getIoPage() {
-        return IO_PAGE;
+    public boolean matches(int address) {
+        return address >>> 16 == 0x0000;
     }
 
     /**
@@ -73,7 +71,7 @@ public class ExpeedIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Byte onIoLoad8(byte[] ioPage, int addr, byte value) {
+    public Byte onLoadData8(byte[] ioPage, int addr, byte value) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -118,7 +116,7 @@ public class ExpeedIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onIoLoad16(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData16(byte[] ioPage, int addr, int value) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -174,11 +172,11 @@ public class ExpeedIoListener implements IoActivityListener {
      * @param value
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onIoLoad32(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData32(byte[] ioPage, int addr, int value) {
         return null;
     }
 
-    public void onIoStore8(byte[] ioPage, int addr, byte value) {
+    public void onStore8(byte[] ioPage, int addr, byte value) {
         if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
             // Interrupt request level registers
             ((FrInterruptController)platform.getInterruptController()).updateRequestICR(addr - REGISTER_ICR00, value);
@@ -245,7 +243,7 @@ public class ExpeedIoListener implements IoActivityListener {
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
-    public void onIoStore16(byte[] ioPage, int addr, int value) {
+    public void onStore16(byte[] ioPage, int addr, int value) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -313,7 +311,7 @@ public class ExpeedIoListener implements IoActivityListener {
         }
     }
 
-    public void onIoStore32(byte[] ioPage, int addr, int value) {
+    public void onStore32(byte[] ioPage, int addr, int value) {
         // noop
     }
 }
