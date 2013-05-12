@@ -11,13 +11,16 @@ public abstract class IoActivityListener implements MemoryActivityListener {
 
     @Override
     public void onLoadInstruction8(byte[] pageData, int address, byte value) {
+        // Do nothing. Loading instruction from register has no sense
     }
 
     @Override
     public void onLoadInstruction16(byte[] pageData, int address, int value) {
+        // Do nothing. Loading instruction from register has no sense
     }
 
     @Override
     public void onLoadInstruction32(byte[] pageData, int address, int value) {
+        // Do nothing. Loading instruction from register has no sense
     }
 }
