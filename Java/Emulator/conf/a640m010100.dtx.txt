@@ -32,7 +32,12 @@
 -m 0xBFC041D0-0xBFC043CF=DATA:L
 
 # Unknown data with some indirection tables
--m 0xBFC043D0-0xBFC044BB=DATA:L
+-m 0xBFC043D0-0xBFC0444F=DATA:L
+
+# exception table
+-m 0xBFC04450-0xBFC0448F=DATA:L
+
+-m 0xBFC04490-0xBFC044BB=DATA:L
 
 # TCB Task table
 # Table defining ITRON Tasks (Table of 0xD records of 0x14 bytes)
@@ -43,10 +48,13 @@
 # Copyright msg
 -m 0xBFC07FB0-0xBFC07FDF=DATA:L
 
-# 2 pointers
--m 0xBFC0A000-0xBFC0A007=DATA:L
+# Area @0xBFC08000-0xBFC08FFF is copied to RAM 0xFFFF0000-0xFFFF0FFF
+#-m 0xBFC08000-0xBFC08FFF
+# Area @0xBFC09000-0xBFC09FFF is copied to RAM 0xFFFF1000-0xFFFF1FFF
+#-m 0xBFC09000-0xBFC09FFF
 
-# Code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
+# Area @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
+-m 0xBFC0A000-0xBFC0A007=DATA:L
 -m 0xBFC0A008-0xBFC0A12B=CODE:32
 -m 0xBFC0A12C-0xBFC0D66F=CODE:16
 -m 0xBFC0D9F8-0xBFC0ED43=CODE:32
@@ -80,6 +88,9 @@
 
 ## 0xFF area
 
+#exception handler area
+# -m 0xFFFF3E8C-0xFFFF3EAC=DATA
+
 #####################################################
 ## Code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
 ##
@@ -98,6 +109,7 @@
 ############################### Symbols
 
 -s 0xBFC00000=reset_or_nmi
+-s 0xBFC00380=exception_handler
 -s 0xBFC00400=interrupt_handler
 -s 0xBFC00490=maybe_null
 -s 0xBFC00658=get_float_value
@@ -108,6 +120,7 @@
 -s 0xBFC00BA0=clear_FFFF0080:3EF0
 -s 0xBFC00BD8=clear@FFFF3EF0_3FF8
 -s 0xBFC00C10=mem_wordcopy($a0 [IN dest], $a1 [IN src], $a2 [IN counter])
+-s 0xBFC00C68=copy_intr_excep_handlers_to_0x80000000
 -s 0xBFC00D20=setINTCLR($a0 [IN mask])
 -s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
 -s 0xBFC00D60=getInterruptLEVel($v0 [OUT level])
@@ -140,9 +153,14 @@
 -s 0xBFC03BEC=sys_wuk_tsk
 -s 0xBFC03C8C=sys_clr_flg($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
 -s 0xBFC03CD8=sys_ref_flg($a0 [IN flg_id], $a1 [IN ptr_to_pk_rflg], $v0 [OUT err_code] /* Get EventFlag Status */)
+-s 0xBFC03D40=is_val_andA7FF_not2000 ($a0 [IN word], $v0 [OUT result_1_0])
 -s 0xBFC03D58=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
+-s 0xBFC03DC4=is_low11bit_zero ($a0 [IN word], $v0 [OUT result_1_0])
+-s 0xBFC03DD8=is_bit13_zero ($a0 [IN word], $v0 [OUT result_1_0])
 -s 0xBFC03DEC=sys_ref_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_rmbx], $v0 [OUT err_code] /* Get Mailbox Status */)
 -s 0xBFC03EA0=sys_rcv_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
+-s 0xBFC03F38=is_bit15_zero ($a0 [IN word], $v0 [OUT result_1_0])
+-s 0xBFC0A008=TO_BE_RELOCATED_Flash_Programming_interface
 -s 0xBFC0DB00=init_SC0
 -s 0xBFC0DD78=init_timer0xB
 -s 0xBFC0DFC8=SC0_receive_0
@@ -233,8 +251,21 @@
 -s 0xBFC14A14=interrupt_handler_INT17
 -s 0xBFC14ADC=interrupt_handler_INTRTC
 -s 0xBFC14BB0=indirect_software_interrupt
+-s 0xBFC14DF0=exception_int
+-s 0xBFC14E00=exception_addr_err_load
+-s 0xBFC14E10=exception_addr_err_store
+-s 0xBFC14E20=exception_bus_err_load
+-s 0xBFC14E30=exception_bus_err_store
+-s 0xBFC14E40=exception_syscall
+-s 0xBFC14E50=exception_breakpoint
+-s 0xBFC14E60=exception_reserved_instruction
+-s 0xBFC14E70=exception_coproc_unusable
+-s 0xBFC14E80=exception_int_overflow
+-s 0xBFC14E90=exception_trap
+-s 0xBFC14EA0=exception_0xF
+-s 0xBFC14EB0=process_exception($a0 [IN exception_code], $a1 [IN old_r4], $a2 [IN old_r5])
 -s 0xBFC14F98=nmi
--s 0xBFC15158=null_BFC15158
+-s 0xBFC15158=trap_exception
 -s 0xBFC15160=SC0_interface0
 -s 0xBFC15244=SC0_init
 -s 0xBFC152F8=prepare_for_SC0
@@ -379,6 +410,7 @@
 -s 0xBFC1C298=get_checksum
 -s 0xBFC1C3C0=null_BFC1C3C0
 -s 0xBFC1C3C4=Dynamic_call_sub
+-s 0xBFC1C634=User_Boot_mode
 -s 0xBFC1C934=tsk8_dcal0x12
 -s 0xBFC1CBF4=delay_send@FFFF56E0
 -s 0xBFC1CC44=copy_@FFFF56E0
@@ -946,6 +978,8 @@
 -s 0xBFC8D560=encryption
 -s 0xBFC8D964=array_exchange
 -s 0xBFC8D9DC=mem_copy_18bytes($a0 [IN dest_addr], $a1 [IN src_addr])
+-s 0xFFFF4008=Flash_Programming_interface
+
 
 ########## Global variables
 
