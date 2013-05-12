@@ -46,8 +46,19 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
 //        }
     }
 
-    public void onLoadData8(int address, byte value) {
-        int page = address >>> 16;
+
+    @Override
+    public boolean matches(int address) {
+        return true;
+    }
+
+    @Override
+    public boolean isLoggerOnly() {
+        return true;
+    }
+
+    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+        int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 
 //        if ((pageActivityMap[page] & 0xFF00)!=0xFF00) pageActivityMap[page]+= 0x0100;
@@ -59,15 +70,17 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
 //        if ((cellActivityMaps[page][offset] & 0xFF00)!=0xFF00) cellActivityMaps[page][offset]+= 0x0100;
 //        if (mustRotateValues) cellActivityMaps[page][offset] ^= 0x7F000000;
 
-        if (mustRotateValues || ((pageActivityMap[page] & 0xFF00)!=0xFF00)) pageActivityMap[page]+= 0x0100;
-        if (cellActivityMaps[page] == null) {
-            cellActivityMaps[page] = new int[pageSize];
+        if (mustRotateValues || ((pageActivityMap[pageNumber] & 0xFF00)!=0xFF00)) pageActivityMap[pageNumber]+= 0x0100;
+        if (cellActivityMaps[pageNumber] == null) {
+            cellActivityMaps[pageNumber] = new int[pageSize];
         }
-        if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF00)!=0xFF00)) cellActivityMaps[page][offset]+= 0x0100;
+        if (mustRotateValues || ((cellActivityMaps[pageNumber][offset] & 0xFF00)!=0xFF00)) cellActivityMaps[pageNumber][offset]+= 0x0100;
+
+        return null;
     }
 
-    public void onLoadInstruction8(int address, byte value) {
-        int page = address >>> 16;
+    public void onLoadInstruction8(byte[] pageData, int address, byte value) {
+        int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 
 //        if ((pageActivityMap[page] & 0xFF)!=0xFF) pageActivityMap[page]+= 0x01;
@@ -79,15 +92,15 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
 //        if ((cellActivityMaps[page][offset] & 0xFF)!=0xFF) cellActivityMaps[page][offset]+= 0x01;
 //        if (mustRotateValues) cellActivityMaps[page][offset] ^= 0x7F000000;
 
-        if (mustRotateValues || ((pageActivityMap[page] & 0xFF)!=0xFF)) pageActivityMap[page]+= 0x01;
-        if (cellActivityMaps[page] == null) {
-            cellActivityMaps[page] = new int[pageSize];
+        if (mustRotateValues || ((pageActivityMap[pageNumber] & 0xFF)!=0xFF)) pageActivityMap[pageNumber]+= 0x01;
+        if (cellActivityMaps[pageNumber] == null) {
+            cellActivityMaps[pageNumber] = new int[pageSize];
         }
-        if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF)!=0xFF)) cellActivityMaps[page][offset]+= 0x01;
+        if (mustRotateValues || ((cellActivityMaps[pageNumber][offset] & 0xFF)!=0xFF)) cellActivityMaps[pageNumber][offset]+= 0x01;
     }
 
-    public void onStore8(int address, byte value) {
-        int page = address >>> 16;
+    public void onStore8(byte[] pageData, int address, byte value) {
+        int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 
 //        if ((pageActivityMap[page] & 0xFF0000)!=0xFF0000) pageActivityMap[page]+= 0x010000;
@@ -99,12 +112,11 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
 //        if ((cellActivityMaps[page][offset] & 0xFF0000)!=0xFF0000) cellActivityMaps[page][offset]+= 0x010000;
 //        if (mustRotateValues) cellActivityMaps[page][offset] ^= 0x7F000000;
 
-        if (mustRotateValues || ((pageActivityMap[page] & 0xFF0000)!=0xFF0000)) pageActivityMap[page]+= 0x010000;
-        if (cellActivityMaps[page] == null) {
-            cellActivityMaps[page] = new int[pageSize];
+        if (mustRotateValues || ((pageActivityMap[pageNumber] & 0xFF0000)!=0xFF0000)) pageActivityMap[pageNumber]+= 0x010000;
+        if (cellActivityMaps[pageNumber] == null) {
+            cellActivityMaps[pageNumber] = new int[pageSize];
         }
-        if (mustRotateValues || ((cellActivityMaps[page][offset] & 0xFF0000)!=0xFF0000)) cellActivityMaps[page][offset]+= 0x010000;
+        if (mustRotateValues || ((cellActivityMaps[pageNumber][offset] & 0xFF0000)!=0xFF0000)) cellActivityMaps[pageNumber][offset]+= 0x010000;
     }
-
 
 }
