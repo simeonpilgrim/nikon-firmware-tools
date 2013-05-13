@@ -463,10 +463,10 @@ public class CodeAnalyzer {
         if (potentialTargets != null) {
             int i = 0;
             for (Integer potentialTarget : potentialTargets) {
-                Jump jump = new Jump(address, potentialTarget, statement.getInstruction(), true);
+                Jump jump = new Jump(address, potentialTarget & CodeStructure.IGNORE_ISA_BIT, statement.getInstruction(), true);
                 jumps.add(jump);
                 currentFunction.getJumps().add(jump);
-                codeStructure.putLabel(potentialTarget, new Symbol(potentialTarget, "jmp_target_" + Integer.toHexString(address) + "_" + i));
+                codeStructure.putLabel(potentialTarget, new Symbol(potentialTarget & CodeStructure.IGNORE_ISA_BIT, "jmp_target_" + Integer.toHexString(address) + "_" + i));
                 i++;
             }
         }

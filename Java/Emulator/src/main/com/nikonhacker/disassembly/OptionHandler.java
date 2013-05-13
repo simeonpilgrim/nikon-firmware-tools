@@ -211,15 +211,33 @@ public class OptionHandler
         symbols.put(address, new Symbol(address, text, registerLabels));
     }
 
-    public static void parseJumpHint(Map<Integer, List<Integer>> jumpHints, String argument) throws ParsingException {
+    public static void parseJumpHint(Map<Integer, List<Integer>> jumpHints, Map<Integer, List<Integer>> jumpHintAddresses, String argument) throws ParsingException {
         Integer source = Format.parseUnsigned(StringUtils.substringBefore(argument, "="));
         String targets = StringUtils.substringAfter(argument, "=").trim();
-        List<Integer> targetList = new ArrayList<Integer>();
-        StringTokenizer t = new StringTokenizer(targets, ",");
-        while (t.hasMoreTokens()) {
-            targetList.add(Format.parseUnsigned(t.nextToken().trim()));
+        if (targets.startsWith("@")) {
+            List<Integer> offsetList = new ArrayList<Integer>();
+            try {
+                targets = StringUtils.substringBetween(targets, "(", ")");
+                int address = Format.parseUnsigned(StringUtils.substringBefore(targets, "+").trim());
+                int numAddresses = Integer.parseInt(StringUtils.substringBetween(targets, "+", "*").trim());
+                int recordSize = Integer.parseInt(StringUtils.substringAfter(targets, "*").trim());
+                for (int i = 0; i < numAddresses; i++) {
+                    offsetList.add(address + i * recordSize);
+                }
+            }
+            catch (Exception e) {
+                throw new ParsingException("Cannot parse jump hint '" + StringUtils.substringAfter(argument, "=").trim() + "'");
+            }
+            jumpHintAddresses.put(source, offsetList);
         }
-        jumpHints.put(source, targetList);
+        else {
+            List<Integer> targetList = new ArrayList<Integer>();
+            StringTokenizer t = new StringTokenizer(targets, ",");
+            while (t.hasMoreTokens()) {
+                targetList.add(Format.parseUnsigned(t.nextToken().trim()));
+            }
+            jumpHints.put(source, targetList);
+        }
     }
 }
 
