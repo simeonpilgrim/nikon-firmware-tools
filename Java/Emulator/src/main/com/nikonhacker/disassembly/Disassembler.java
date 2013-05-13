@@ -33,6 +33,7 @@ public abstract class Disassembler {
     private String startTime = "";
     private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
     private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
+    private Map<Integer, List<Integer>> jumpHintOffsets = new HashMap<Integer, List<Integer>>();
 
     /**
      * @param writer
@@ -276,7 +277,7 @@ public abstract class Disassembler {
                         log("option \"-" + option + "\" requires an argument");
                         return false;
                     }
-                    OptionHandler.parseJumpHint(jumpHints, argument);
+                    OptionHandler.parseJumpHint(jumpHints, jumpHintOffsets, argument);
                     break;
 
                 case 'L':
@@ -426,6 +427,7 @@ public abstract class Disassembler {
             }
 
             debugPrintWriter.println("Post processing...");
+            combineJumpHints();
             new CodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             // print and output
             debugPrintWriter.println("Structure analysis results :");
@@ -451,6 +453,16 @@ public abstract class Disassembler {
                 }
             }
             return codeStructure;
+        }
+    }
+
+    private void combineJumpHints() {
+        for (Integer source : jumpHintOffsets.keySet()) {
+            List<Integer> targetAddresses = new ArrayList<>();
+            for (Integer offset : jumpHintOffsets.get(source)) {
+                targetAddresses.add(memory.load32(offset));
+            }
+            jumpHints.put(source, targetAddresses);
         }
     }
 
