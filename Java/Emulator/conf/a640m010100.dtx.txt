@@ -112,9 +112,18 @@
 -s 0xBFC00380=exception_handler
 -s 0xBFC00400=interrupt_handler
 -s 0xBFC00490=maybe_null
+-s 0xBFC00634=float_sub ($a0 [IN a], $a1 [IN b], $v0 [OUT a_minus_b])
+-s 0xBFC00648=int2float ($a0 [IN int], $v0 [OUT float])
 -s 0xBFC00658=get_float_value
+-s 0xBFC00680=float2int($a0 [IN float], $v0 [OUT int])
+-s 0xBFC00690=float_compare_zero ($a0 [IN a], $a1 [IN b], $a2 [IN how], $v0 [OUT result])
+-s 0xBFC00744=float_add ($a0 [IN a], $a1 [IN b], $v0 [OUT a_plus_b])
+-s 0xBFC00758=double2float ($a0 [IN double], $v0 [OUT float])
+-s 0xBFC007C0=float_mul ($a0 [IN a], $a1 [IN b], $v0 [OUT a_mul_b])
+-s 0xBFC007D4=float_compare ($a0 [IN float_a], $a1 [IN float_b], $a2 [IN how], $v0 [OUT result])
 -s 0xBFC00818=float_division
 -s 0xBFC00890=setup@FFFFFFFC
+-s 0xBFC0089C=memcmp ($a0 [IN ptr1], $a1 [IN ptr2], $a2 [IN num], $v0 [OUT result])
 -s 0xBFC00908=memcpy($a0 [IN dest], $a1 [IN source], $a2 [IN count])
 -s 0xBFC00938=memset($a0 [IN dest], $a1 [IN val], $a2 [IN count])
 -s 0xBFC00BA0=clear_FFFF0080:3EF0
@@ -981,10 +990,12 @@
 -s 0xFFFF4008=Flash_Programming_interface
 
 
-########## Global variables
+########## Constants and variables
 
+#-s 0xBFC0084C=float_compare_how_table
 #-s 0xBFC04490=jump_table_from_0xBFC119C
 #-s 0xBFC044BC=RTOS TCB table (tasks)
+#-s 0xFFFF547C=float_errno ; 0x22 underflow
 
 # Jump hints
 -j 0xBFC01E6C=0xBFC14BB0
@@ -995,3 +1006,4 @@
 -j 0xBFC01E6C=0xBFC14BB0
 # the following is *one* of the observed values:
 -j 0xBFC018F0=0xBFC017D0
+-j 0xBFC3402E=@(0xBFC92984+13*4)
