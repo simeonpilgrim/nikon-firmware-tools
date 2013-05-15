@@ -125,7 +125,12 @@ public abstract class Statement {
                         out += "  " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
                         break;
                     case LIKELY:
-                        out += "  ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
+                        if (options.contains(OutputOption.QUESTION)) {
+                            out += "  " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
+                        }
+                        else {
+                            out += "  ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
+                        }
                         break;
                     default:
                         throw new RuntimeException("Unknown delay slot type : " + delaySlotType);

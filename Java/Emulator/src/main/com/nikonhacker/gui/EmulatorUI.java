@@ -85,6 +85,7 @@ import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.gui.component.timer.ProgrammableTimersFrame;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -110,6 +111,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+//import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
@@ -1563,10 +1566,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         // ------------------------ Disassembly options
 
-        JPanel disassemblyOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+        JPanel disassemblyOptionsPanel = new JPanel(new MigLayout("", "[left,grow][left,grow]"));
 
         // Prepare sample code area
-        final RSyntaxTextArea listingArea = new RSyntaxTextArea(15, 90);
+        final RSyntaxTextArea listingArea = new RSyntaxTextArea(20, 90);
         SourceCodeFrame.prepareAreaFormat(chip, listingArea);
 
         final List<JCheckBox> outputOptionsCheckBoxes = new ArrayList<JCheckBox>();
@@ -1618,9 +1621,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     else {
                         sampleMemory.store32(lastAddress, 0x340B0001);   // li      $t3, 0x0001
                         lastAddress += 4;
-                        sampleMemory.store32(lastAddress, 0x17600002);   // bnez    $k1, 0xBFC00460
+                        sampleMemory.store32(lastAddress, 0x17600006);   // bnez    $k1, 0xBFC00020
                         lastAddress += 4;
                         sampleMemory.store32(lastAddress, 0x00000000);   //  nop
+                        lastAddress += 4;
+                        sampleMemory.store32(lastAddress, 0x54400006);   // bnezl   $t4, 0xBFC00028
+                        lastAddress += 4;
+                        sampleMemory.store32(lastAddress, 0x3C0C0000);   //  ?lui   $t4, 0x0000
                         lastAddress += 4;
 
                         int baseAddress16 = lastAddress;
@@ -1659,21 +1666,30 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
         };
+
+        int i = 1;
         for (OutputOption outputOption : OutputOption.allFormatOptions) {
             JCheckBox checkBox = makeOutputOptionCheckBox(chip, outputOption, prefs.getOutputOptions(chip), false);
             if (checkBox != null) {
                 outputOptionsCheckBoxes.add(checkBox);
-                disassemblyOptionsPanel.add(checkBox);
+                disassemblyOptionsPanel.add(checkBox, (i % 2 == 0)?"wrap":"");
                 checkBox.addActionListener(areaRefresherListener);
+                i++;
             }
+        }
+        if (i % 2 == 0) {
+            disassemblyOptionsPanel.add(new JLabel(), "wrap");
         }
 
         // Force a refresh
         areaRefresherListener.actionPerformed(new ActionEvent(outputOptionsCheckBoxes.get(0), 0, ""));
 
-        disassemblyOptionsPanel.add(new JLabel("Sample output:"));
-        disassemblyOptionsPanel.add(new JScrollPane(listingArea));
-        disassemblyOptionsPanel.add(new JLabel("Tip: hover over the option checkboxes for help"));
+//        disassemblyOptionsPanel.add(new JLabel("Sample output:", SwingConstants.LEADING), "gapbottom 1, span, split 2, aligny center");
+//        disassemblyOptionsPanel.add(new JSeparator(), "span 2,wrap");
+        disassemblyOptionsPanel.add(new JSeparator(), "span 2, gapleft rel, growx, wrap");
+        disassemblyOptionsPanel.add(new JLabel("Sample output:"), "span 2,wrap");
+        disassemblyOptionsPanel.add(new JScrollPane(listingArea), "span 2,wrap");
+        disassemblyOptionsPanel.add(new JLabel("Tip: hover over the option checkboxes for help"), "span 2, center, wrap");
 
         // ------------------------ Emulation options
 
@@ -1971,7 +1987,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 clockGenerator = new FrClockGenerator();
                 interruptController = new FrInterruptController(platform[chip]);
 
+                // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip]));
+                // Specific Pin I/O register
+                //memory.addActivityListener(new ExpeedPinIoListener(platform[chip]));
 
                 // Programmable timers
                 for (int i = 0; i < programmableTimers.length; i++) {

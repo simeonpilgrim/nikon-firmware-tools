@@ -15,6 +15,7 @@ public enum OutputOption {
     BZ          ("bz",              new String[]{null, "use 'beqz', 'bnez', 'beqzl', 'bnezl' instead of 'beq', 'bne', 'beql', 'bnel' when $rt=$zero"}, false),
     LI          ("li",              new String[]{null, "use 'li' instead of 'addiu' and 'ori' when $rs=$zero"}, false),
     RET         ("ret",             new String[]{null, "use 'ret' instead of 'jr $ra'"}, false),
+    QUESTION    ("question",        new String[]{null, "put a question mark '?' in front of 'likely' delay slots"}, true),
 
     CSTYLE      ("cstyle",          new String[]{"use C style operand syntax", null}, false),
     DOLLAR      ("dollar",          new String[]{"use $0 syntax for hexadecimal numbers", null}, false),
@@ -41,11 +42,11 @@ public enum OutputOption {
     ;
 
     private String key;
-    private String[] help;
+    private String[] helps;
     private boolean defaultValue;
 
-    public static EnumSet<OutputOption> allFormatOptions =     EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, OFFSET, HEXCODE, BLANKS);
-    public static EnumSet<OutputOption> defaultFormatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, HEXCODE);
+    public static EnumSet<OutputOption> allFormatOptions =     EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, OFFSET, HEXCODE, BLANKS, QUESTION);
+    public static EnumSet<OutputOption> defaultFormatOptions = EnumSet.of(REGISTER, DMOV, SHIFT, STACK, SPECIALS, BZ, LI, RET, CSTYLE, DOLLAR, ADDRESS, HEXCODE, QUESTION);
 
     /**
      * @param key the option's key
@@ -54,17 +55,17 @@ public enum OutputOption {
      */
     OutputOption(String key, String help, boolean defaultValue) {
         this.key = key;
-        this.help = new String[]{help, help};
+        this.helps = new String[]{help, help};
         this.defaultValue = defaultValue;
     }
     /**
      * @param key the option's key
-     * @param help Help strings for FR & TX CPUs. If null, this option does not apply to the corresponding CPU
+     * @param helps Help strings for FR & TX CPUs. If null, this option does not apply to the corresponding CPU
      * @param defaultValue
      */
-    OutputOption(String key, String[]help, boolean defaultValue) {
+    OutputOption(String key, String[] helps, boolean defaultValue) {
         this.key = key;
-        this.help = help;
+        this.helps = helps;
         this.defaultValue = defaultValue;
     }
 
@@ -73,11 +74,11 @@ public enum OutputOption {
     }
 
     public String getFrHelp() {
-        return help[Constants.CHIP_FR];
+        return helps[Constants.CHIP_FR];
     }
 
     public String getTxHelp() {
-        return help[Constants.CHIP_TX];
+        return helps[Constants.CHIP_TX];
     }
 
     public boolean isDefaultValue() {
@@ -87,8 +88,8 @@ public enum OutputOption {
     private static String getFullHelp(int chip, Character option) {
         String s = "Here are the allowed output options" + (option==null?"":" (-" + option + ") :\n");
         for (OutputOption outputOption : EnumSet.allOf(OutputOption.class)) {
-            if (outputOption.help[chip] != null) {
-                s += (option==null?"  ":("  -" + option)) + outputOption.key + " : " + outputOption.help[chip] + "\n";
+            if (outputOption.helps[chip] != null) {
+                s += (option==null?"  ":("  -" + option)) + outputOption.key + " : " + outputOption.helps[chip] + "\n";
             }
         }
         return s;
