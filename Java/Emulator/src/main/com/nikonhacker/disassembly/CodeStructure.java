@@ -245,11 +245,13 @@ public abstract class CodeStructure {
             try {
                 int targetAddress;
                 // get address in comment (if any) or in operand
+                String firstOperands = "";
                 if (statement.getCommentString().length() > 0) {
                     targetAddress = Format.parseUnsigned(statement.getCommentString());
                 }
                 else {
-                    targetAddress = Format.parseUnsigned(statement.getOperandString());
+                    firstOperands = statement.getOperandString().substring(0, statement.getOperandString().lastIndexOf(' ') + 1);
+                    targetAddress = Format.parseUnsigned(statement.getOperandString().substring(statement.getOperandString().lastIndexOf(' ') + 1)); // also works if no blanks in String
                 }
 
                 // fetch corresponding symbol
@@ -274,7 +276,7 @@ public abstract class CodeStructure {
                         statement.setCommentString((text + " " + skipOrLoop(address, targetAddress)).trim());
                     }
                     else {
-                        statement.setOperandString(text);
+                        statement.setOperandString(firstOperands + text);
                         statement.setCommentString(skipOrLoop(address, targetAddress));
                     }
                 }
