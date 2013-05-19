@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.ioPort;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 public abstract class IoPort {
-    /** This is the number of this timer */
+    /** This is the number of this port */
     protected int portNumber;
     /** InterruptController is passed to constructor to be able to actually trigger requests */
     private InterruptController interruptController;
