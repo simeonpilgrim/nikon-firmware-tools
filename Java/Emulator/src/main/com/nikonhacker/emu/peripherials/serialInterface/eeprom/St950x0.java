@@ -48,6 +48,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
     public enum Command {WREN, WRDI, RDSR, WRSR, READ0, READ1, WRITE0, WRITE1}
 
     public St950x0(String name, int size) {
+        super();
         this.name = name;
         memory = new byte[size];
 

@@ -123,10 +123,10 @@ public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
         int ie = ((TxIoPort)ioPorts[portNumber]).getInputEnableControlRegister();
         // Loop from left to right (from bit 7 to 0)
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
-            String pinDescription = ioPorts[portNumber].getPinDescription(bitNumber);
+            String pinDescription = ioPorts[portNumber].getPin(bitNumber).getFunctionFullName();
 
             // Set symbol as text
-            labels[portNumber][7 - bitNumber].setText(ioPorts[portNumber].getPinName(bitNumber));
+            labels[portNumber][7 - bitNumber].setText(ioPorts[portNumber].getPin(bitNumber).getFunctionShortName());
             // Set description as tooltip
             labels[portNumber][7 - bitNumber].setToolTipText(pinDescription);
 
