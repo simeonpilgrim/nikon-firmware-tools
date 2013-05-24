@@ -114,8 +114,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-//import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
-
 public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
 
     // Constants
@@ -2245,52 +2243,35 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         return bit0to7;
     }
 
+    /**
+     * Connect Tx serial interface HSC2 with the flash eeprom and the lcd driver via a SPI bus
+     *
+     * @param txSerialInterfaces
+     * @param txIoPorts
+     * @param txSerialDevices
+     */
     @SuppressWarnings("PointlessArithmeticExpression")
     private void connectTxSerialDevices(SerialInterface[] txSerialInterfaces, IoPort[] txIoPorts, List<SerialDevice> txSerialDevices) {
-        // Connect Tx serial interface HSC2 with an eeprom
+        // get components
         SerialInterface txSerialInterfaceH2 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]; // Master
         final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // Slave 1
         final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // Slave 2
 
+        // disconnect them from dummy partners
         txSerialInterfaceH2.disconnectSerialDevice();
         eeprom.disconnectSerialDevice();
         lcdDriver.disconnectSerialDevice();
 
+        // Create a bus with the CPU as master
         SpiBus bus = new SpiBus("bus", txSerialInterfaceH2) ;
+
+        // Connect slaves
         bus.addSlaveDevice(eeprom);
         bus.addSlaveDevice(lcdDriver);
         bus.connect();
 
-        // Connect port 4 pin 6 (P46) as !SELECT of eeprom
-//        ((TxIoPort) txIoPorts[TxIoPort.PORT_4]).addIoOutputPortPinListener(6, new IoPortPinListener() {
-//            @Override
-//            public void onValueChange(boolean newValue) {
-//                eeprom.setSelected(!newValue);
-//            }
-//        });
-//        txIoPorts[TxIoPort.PORT_4].getPin(6).connectIoDevice(new IoTargetDevice() {
-//            @Override
-//            public void setValue(boolean value) {
-//                eeprom.setSelected(!value);
-//            }
-//        });
-//        interconnectPins(txIoPorts[TxIoPort.PORT_4].getPin(6), eeprom.getSelectPin());
+        // Connect CPU pins with eeprom and lcd driver ~SELECT pins
         Pin.interconnect(txIoPorts[TxIoPort.PORT_4].getPin(6), eeprom.getSelectPin());
-
-        // Connect port E pin 6 (PE6) as !SELECT of Bga56Pin
-//        ((TxIoPort) txIoPorts[TxIoPort.PORT_E]).addIoOutputPortPinListener(6, new IoPortPinListener() {
-//            @Override
-//            public void onValueChange(boolean newValue) {
-//                lcdDriver.setSelected(!newValue);
-//            }
-//        });
-//        txIoPorts[TxIoPort.PORT_E].getPin(6).connectIoDevice(new IoTargetDevice() {
-//            @Override
-//            public void setValue(boolean value) {
-//                lcdDriver.setSelected(!value);
-//            }
-//        });
-//        interconnectPins(txIoPorts[TxIoPort.PORT_E].getPin(6), lcdDriver.getSelectPin());
         Pin.interconnect(txIoPorts[TxIoPort.PORT_E].getPin(6), lcdDriver.getSelectPin());
     }
 
@@ -2306,7 +2287,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void interConnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {
-        //TODO interconnectPins(frIoPorts[0].getPin(0), txIoPorts[0].getPin(0));
+        // TODO Pin.interconnect(frIoPorts[0].getPin(0), txIoPorts[0].getPin(0));
     }
 
 
