@@ -3,14 +3,15 @@ package com.nikonhacker.emu.peripherials.ioPort.tx;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
-import com.nikonhacker.emu.peripherials.ioPort.IoPortPinListener;
 import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
-import com.nikonhacker.emu.peripherials.ioPort.tx.handler.TxIoPinHandler;
-import com.nikonhacker.emu.peripherials.ioPort.tx.handler.TxIoPinPortHandler;
+import com.nikonhacker.emu.peripherials.ioPort.function.InputPinFunction;
+import com.nikonhacker.emu.peripherials.ioPort.function.OutputPinFunction;
+import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class TxIoPort extends IoPort {
     public static final int PORT_0 = 0;
@@ -55,15 +56,22 @@ public class TxIoPort extends IoPort {
     /** Port input enable control register */
     private byte inputEnableControlRegister = (byte) 0xFF;
 
-    /** These masks indicate Port Function register bits that can be used to indicate
-     * they are configured as a something else than a plain port */
-    private TxIoPinHandler[] fn1Handlers;
-    private TxIoPinHandler[] fn2Handlers;
-    private TxIoPinHandler[] fn3Handlers;
+    /** The 3 following arrays declare the functions that can be performed by each Port Pin
+     * when the corresponding bit of the corresponding register is 1.
+     * e.g. if fn1Handlers[2] is a TxIoPinSerialRxHandler, it means that
+     * when bit 2 of functionRegister1 is set, then this port's pin 2 behaves as a Rx pin of a serial port.
+     * Each array is 8 elements long and element [n] of port X corresponds to pin PXn.
+     */
+    private PinFunction[] functions1;
+    private PinFunction[] functions2;
+    private PinFunction[] functions3;
+    private PinFunction[] inputFunctions  = {new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction()};
+    private PinFunction[] outputFunctions = {new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction()};
 
+    /** List of listeners to warn when the value of a port changes
+     * TODO: distinguish internal/external listeners ?
+     */
     private List<IoPortsListener> ioPortsListeners = new ArrayList<IoPortsListener>();
-
-    private Map<Integer, IoPortPinListener> ioOutputPortPinListeners = new HashMap<Integer, IoPortPinListener>();
 
     private Prefs prefs;
 
@@ -71,27 +79,27 @@ public class TxIoPort extends IoPort {
         super(portNumber, interruptController);
         this.prefs = prefs;
         externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
-   }
-
-    public void setFn1Handlers(TxIoPinHandler[] fn1Handlers) {
-        if (fn1Handlers.length != 8) {
-            throw new RuntimeException("Trying to assign a Function 1 Role array of length " + fn1Handlers.length + ": " + Arrays.toString(fn1Handlers));
-        }
-        this.fn1Handlers = fn1Handlers;
     }
 
-    public void setFn2Handlers(TxIoPinHandler[] fn2Handlers) {
-        if (fn2Handlers.length != 8) {
-            throw new RuntimeException("Trying to assign a Function 2 Role array of length " + fn2Handlers.length + ": " + Arrays.toString(fn2Handlers));
+    public void setFunctions1(PinFunction[] functions1) {
+        if (functions1.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 1 Role array of length " + functions1.length + ": " + Arrays.toString(functions1));
         }
-        this.fn2Handlers = fn2Handlers;
+        this.functions1 = functions1;
     }
 
-    public void setFn3Handlers(TxIoPinHandler[] fn3Handlers) {
-        if (fn3Handlers.length != 8) {
-            throw new RuntimeException("Trying to assign a Function 3 Role array of length " + fn3Handlers.length + ": " + Arrays.toString(fn3Handlers));
+    public void setFunctions2(PinFunction[] functions2) {
+        if (functions2.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 2 Role array of length " + functions2.length + ": " + Arrays.toString(functions2));
         }
-        this.fn3Handlers = fn3Handlers;
+        this.functions2 = functions2;
+    }
+
+    public void setFunctions3(PinFunction[] functions3) {
+        if (functions3.length != 8) {
+            throw new RuntimeException("Trying to assign a Function 3 Role array of length " + functions3.length + ": " + Arrays.toString(functions3));
+        }
+        this.functions3 = functions3;
     }
 
     public void addIoPortsListener(IoPortsListener ioPortsListener) {
@@ -100,28 +108,6 @@ public class TxIoPort extends IoPort {
 
     public void removeIoPortsListener(IoPortsListener ioPortsListener) {
         ioPortsListeners.remove(ioPortsListener);
-    }
-
-
-    /**
-     * IoOutputPortPinListener is to notify external device connected to this pin that its state
-     * has been changed by the code
-     */
-    public void addIoOutputPortPinListener(int pin, IoPortPinListener ioOutputPortPinListener) {
-        ioOutputPortPinListeners.put(pin, ioOutputPortPinListener);
-    }
-
-    public void removeIoOutputPortPinListener(int pin) {
-        ioOutputPortPinListeners.remove(pin);
-    }
-
-    public void clearIoOutputPortPinListener() {
-        ioOutputPortPinListeners.clear();
-    }
-
-
-    public TxIoPort(int portNumber, TxInterruptController interruptController) {
-        super(portNumber, interruptController);
     }
 
     /**
@@ -145,20 +131,19 @@ public class TxIoPort extends IoPort {
 
         // Warn connected device, if any
         int changedBits = oldValue ^ value;
-        for (Integer bitNr : ioOutputPortPinListeners.keySet()) {
-            // See if bit to which this listener is attached has changed
-            int mask = 1 << bitNr;
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            int mask = 1 << bitNumber;
             if (   ((controlRegister & mask) != 0) // pin is configured as output
                 && ((changedBits & mask) != 0)     // state has changed
                ) {
-                // Call the listener
-                ioOutputPortPinListeners.get(bitNr).onPinValueChange((value & mask) != 0);
+                // Set the value of the output port
+                pins[bitNumber].setOutputValue(((value & mask) != 0)?1:0);
             }
         }
     }
 
     /**
-     * Method called to get the external value, e.g.  to be remembered to Prefs
+     * Method called to get the external value, e.g. to be remembered to Prefs
      */
     public byte getExternalValue() {
         return externalValue;
@@ -198,11 +183,8 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister1(byte functionRegister1) {
-//        System.out.println("Port #" + portNumber + " : setFunctionRegister1(0x" + Format.asHex( functionRegister1 & 0xFF, 2) + ")");
-//        if (functionRegister1 != 0) {
-//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister1(0x" + Format.asHex( functionRegister1 & 0xFF, 2) + ") is not supported for the moment");
-//        }
         this.functionRegister1 = functionRegister1;
+        updatePinHandlers();
     }
 
     public byte getFunctionRegister2() {
@@ -210,11 +192,8 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister2(byte functionRegister2) {
-//        System.out.println("Port #" + portNumber + " : setFunctionRegister2(0x" + Format.asHex( functionRegister2 & 0xFF, 2) + ")");
-//        if (functionRegister1 != 0) {
-//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister2(0x" + Format.asHex( functionRegister2 & 0xFF, 2) + ") is not supported for the moment");
-//        }
         this.functionRegister2 = functionRegister2;
+        updatePinHandlers();
     }
 
     public byte getFunctionRegister3() {
@@ -222,11 +201,34 @@ public class TxIoPort extends IoPort {
     }
 
     public void setFunctionRegister3(byte functionRegister3) {
-//        System.out.println("Port #" + portNumber + " : setFunctionRegister3(0x" + Format.asHex( functionRegister3 & 0xFF, 2) + ")");
-//        if (functionRegister1 != 0) {
-//            throw new RuntimeException("Port #" + portNumber + " : setFunctionRegister3(0x" + Format.asHex( functionRegister3 & 0xFF, 2) + ") is not supported for the moment");
-//        }
         this.functionRegister3 = functionRegister3;
+        updatePinHandlers();
+    }
+
+    private void updatePinHandlers() {
+        for (int pinNumber = 0; pinNumber < 8; pinNumber++) {
+            int pinMask = 1 << pinNumber;
+            if (functions1 != null && (functionRegister1 & pinMask & 0xFF) != 0) {
+                // fn1 defines the behaviour of this pin
+                pins[pinNumber].setFunction(functions1[pinNumber]);
+            }
+            else if (functions2 != null && (functionRegister2 & pinMask & 0xFF) != 0) {
+                // fn2 defines the behaviour of this pin
+                pins[pinNumber].setFunction(functions2[pinNumber]);
+            }
+            else if (functions3 != null && (functionRegister3 & pinMask & 0xFF) != 0) {
+                // fn3 defines the behaviour of this pin
+                pins[pinNumber].setFunction(functions3[pinNumber]);
+            }
+            else if ((controlRegister & pinMask) != 0) {
+                // pin is configured as plain output
+                pins[pinNumber].setFunction(outputFunctions[pinNumber]);
+            }
+            else {
+                // pin is configured as plain input
+                pins[pinNumber].setFunction(inputFunctions[pinNumber]);
+            }
+        }
     }
 
     public byte getOpenDrainControlRegister() {
@@ -256,31 +258,5 @@ public class TxIoPort extends IoPort {
         for (IoPortsListener ioPortsListener : ioPortsListeners) {
             ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
         }
-    }
-
-    @Override
-    public String getPinName(int pinNumber) {
-        TxIoPinHandler pinHandler = getPinHandler(pinNumber);
-        return pinHandler!=null?pinHandler.getPinName():"-";
-    }
-
-    @Override
-    public String getPinDescription(int pinNumber) {
-        TxIoPinHandler pinHandler = getPinHandler(pinNumber);
-        return pinHandler!=null?pinHandler.toString():"-";
-    }
-
-    public TxIoPinHandler getPinHandler(int pinNumber) {
-        int pinMask = 1 << pinNumber;
-        if (fn1Handlers != null && (functionRegister1 & pinMask & 0xFF) != 0) {
-            return fn1Handlers[pinNumber];
-        }
-        if (fn2Handlers != null && (functionRegister2 & pinMask & 0xFF) != 0) {
-            return fn2Handlers[pinNumber];
-        }
-        if (fn3Handlers != null && (functionRegister3 & pinMask & 0xFF) != 0) {
-            return fn3Handlers[pinNumber];
-        }
-        return new TxIoPinPortHandler();
     }
 }

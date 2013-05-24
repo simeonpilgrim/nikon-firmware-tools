@@ -49,6 +49,7 @@ public class LcdDriver extends SpiSlaveDevice {
     public byte values[];
 
     public LcdDriver(String name) {
+        super();
         this.name = name;
         reset();
     }
