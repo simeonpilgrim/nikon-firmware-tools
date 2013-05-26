@@ -77,7 +77,7 @@ public abstract class IoPort {
         }
 
         // Warn connected device, if any
-        int changedBits = internalValue ^ newValue;
+        int changedBits = internalValue ^ newValue; // todo : if changebits != 0
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             int mask = 1 << bitNumber;
             if (   ((direction & mask) != 0) // pin is configured as output
@@ -104,6 +104,13 @@ public abstract class IoPort {
         this.externalValue = externalValue;
     }
 
+    public byte getDirection() {
+        return direction;
+    }
+
+    public void setDirection(byte direction) {
+        this.direction = direction;
+    }
 
     private String getPortCharacter() {
         return ((portNumber < 10)?String.valueOf(portNumber):String.valueOf((char)('A' - 10 + portNumber)));  // 0-9 then A-Z

@@ -4,6 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
 import com.nikonhacker.emu.peripherials.ioPort.function.InputPinFunction;
@@ -97,6 +98,7 @@ public class TxIoPort extends IoPort {
 
     /**
      * Set configuration register mask - called by CPU
+     * Synonym for the generic setDirection() method;
      * @param controlRegister mask: 0=Input 1=Output
      */
     public void setControlRegister(byte controlRegister) {
@@ -227,26 +229,26 @@ public class TxIoPort extends IoPort {
 
         // Port 5
         ioPorts[IoPort.PORT_5].setFunctions1(reverse(new PinFunction[]{new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction()}));
-        ioPorts[IoPort.PORT_5].setFunctions2(reverse(new PinFunction[]{new TxIoPinTimerOutputFunction(0x3), new TxIoPinTimerOutputFunction(0x2), new TxIoPinTimerOutputFunction(0x1), new TxIoPinTimerOutputFunction(0x0), new TxIoPinInterruptFunction(0xF), new TxIoPinInterruptFunction(0xE), new TxIoPinInterruptFunction(0xD), new TxIoPinInterruptFunction(0xC)}));
+        ioPorts[IoPort.PORT_5].setFunctions2(reverse(new PinFunction[]{new TxIoPinTimerOutputFunction(0x3), new TxIoPinTimerOutputFunction(0x2), new TxIoPinTimerOutputFunction(0x1), new TxIoPinTimerOutputFunction(0x0), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTF), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTE), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTD), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTC)}));
         ioPorts[IoPort.PORT_5].setFunctions3(reverse(new PinFunction[]{new TxIoPinKeyFunction(29), new TxIoPinKeyFunction(28), null, null, null, null, null, null}));
 
         // Port 6
         ioPorts[IoPort.PORT_6].setFunctions1(reverse(new PinFunction[]{new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction(), new TxIoPinBusFunction()}));
         ioPorts[IoPort.PORT_6].setFunctions2(reverse(new PinFunction[]{new TxIoPinTimerOutputFunction(0x5), new TxIoPinSerialClockFunction(1), new TxIoPinSerialRxFunction(1), new TxIoPinSerialTxFunction(1), new TxIoPinTimerOutputFunction(4), new TxIoPinSerialClockFunction(0), new TxIoPinSerialRxFunction(0), new TxIoPinSerialTxFunction(0)}));
-        ioPorts[IoPort.PORT_6].setFunctions3(reverse(new PinFunction[]{null, null, new TxIoPinInterruptFunction(0xB), null, null, new TxIoPinSerialCtsFunction(0), new TxIoPinInterruptFunction(0xA), null}));
+        ioPorts[IoPort.PORT_6].setFunctions3(reverse(new PinFunction[]{null, null, new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTB), null, null, new TxIoPinSerialCtsFunction(0), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INTA), null}));
 
         // Port 7
-        ioPorts[IoPort.PORT_7].setFunctions2(reverse(new PinFunction[]{new TxIoPinInterruptFunction(0x13), new TxIoPinInterruptFunction(0x12), null, null, new TxIoPinInterruptFunction(0x11), new TxIoPinInterruptFunction(0x10), null, null}));
+        ioPorts[IoPort.PORT_7].setFunctions2(reverse(new PinFunction[]{new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT13), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT12), null, null, new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT11), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT10), null, null}));
 
         // Port 8
-        ioPorts[IoPort.PORT_8].setFunctions2(reverse(new PinFunction[]{new TxIoPinInterruptFunction(0x9), new TxIoPinInterruptFunction(0x8), null, null, null, null, null, null}));
+        ioPorts[IoPort.PORT_8].setFunctions2(reverse(new PinFunction[]{new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT9), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT8), null, null, null, null, null, null}));
 
         // Port 9
         ioPorts[IoPort.PORT_9].setFunctions1(reverse(new PinFunction[]{new TxIoPinTimerOutputFunction(0xA), new TxIoPinSerialClockFunction(2), new TxIoPinSerialRxFunction(2), new TxIoPinSerialTxFunction(2), new TxIoPinTimerOutputFunction(0x9), new TxIoPinSerialClockFunction(TxIoListener.NUM_SERIAL_IF + 0), new TxIoPinSerialRxFunction(TxIoListener.NUM_SERIAL_IF + 0), new TxIoPinSerialTxFunction(TxIoListener.NUM_SERIAL_IF + 0)}));
         ioPorts[IoPort.PORT_9].setFunctions2(reverse(new PinFunction[]{null, new TxIoPinSerialCtsFunction(2), null, null, null, new TxIoPinSerialCtsFunction(TxIoListener.NUM_SERIAL_IF + 0), null, null}));
 
         // Port A
-        ioPorts[IoPort.PORT_A].setFunctions1(reverse(new PinFunction[]{new TxIoPinPhaseCounterInputFunction(2, /*spec says 0, which is a duplicate of the next 1. Assuming 1*/ 1), new TxIoPinPhaseCounterInputFunction(2, 0), new TxIoPinInterruptFunction(0x5), new TxIoPinInterruptFunction(0x4), new TxIoPinInterruptFunction(0x3), new TxIoPinInterruptFunction(0x2), new TxIoPinInterruptFunction(0x1), new TxIoPinInterruptFunction(0x0)}));
+        ioPorts[IoPort.PORT_A].setFunctions1(reverse(new PinFunction[]{new TxIoPinPhaseCounterInputFunction(2, /*spec says 0, which is a duplicate of the next 1. Assuming 1*/ 1), new TxIoPinPhaseCounterInputFunction(2, 0), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT5), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT4), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT3), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT2), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT0)}));
         ioPorts[IoPort.PORT_A].setFunctions2(reverse(new PinFunction[]{null, null, new TxIoPinTimerInputFunction(0x6, 1), new TxIoPinTimerInputFunction(0x6, 0), new TxIoPinPhaseCounterInputFunction(1, 1), new TxIoPinPhaseCounterInputFunction(1, 0), new TxIoPinPhaseCounterInputFunction(0, 1), new TxIoPinPhaseCounterInputFunction(0, 0)}));
 
         // Port B
@@ -272,14 +274,14 @@ public class TxIoPort extends IoPort {
         ioPorts[IoPort.PORT_G].setFunctions1(reverse(new PinFunction[]{new TxIoPinKeyFunction(7), new TxIoPinKeyFunction(6), new TxIoPinKeyFunction(5), new TxIoPinKeyFunction(4), new TxIoPinKeyFunction(3), new TxIoPinKeyFunction(2), new TxIoPinKeyFunction(1), new TxIoPinKeyFunction(0)}));
 
         // Port H
-        ioPorts[IoPort.PORT_H].setFunctions1(reverse(new PinFunction[]{new TxIoPinInterruptFunction(0x1F), new TxIoPinInterruptFunction(0x1E), new TxIoPinInterruptFunction(0x1D), new TxIoPinInterruptFunction(0x1C), new TxIoPinInterruptFunction(0x1B), new TxIoPinInterruptFunction(0x1A), new TxIoPinInterruptFunction(0x19), new TxIoPinInterruptFunction(0x18)}));
+        ioPorts[IoPort.PORT_H].setFunctions1(reverse(new PinFunction[]{new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1F), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1E), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1D), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1C), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1B), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT1A), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT19), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT18)}));
         ioPorts[IoPort.PORT_H].setFunctions2(reverse(new PinFunction[]{new TxIoPinTimerInputFunction(0xD, 1), new TxIoPinTimerInputFunction(0xD, 0), new TxIoPinTimerInputFunction(0xB, 1), new TxIoPinTimerInputFunction(0xB, 0), new TxIoPinTimerInputFunction(0xA, 1), new TxIoPinTimerInputFunction(0xA, 0), new TxIoPinTimerInputFunction(0x9, 1), new TxIoPinTimerInputFunction(0x9, 0)}));
 
         // Port I
         ioPorts[IoPort.PORT_I].setFunctions1(reverse(new PinFunction[]{new TxIoPinADTriggerSyncFunction(), new TxIoPinTimerOutputFunction(0x11), new TxIoPinTimerOutputFunction(10), new TxIoPinADTriggerFunction('C'), new TxIoPinPhaseCounterInputFunction(5, 1), new TxIoPinPhaseCounterInputFunction(5, 0), new TxIoPinPhaseCounterInputFunction(4, 1), new TxIoPinPhaseCounterInputFunction(4, 0)}));
 
         // Port J
-        ioPorts[IoPort.PORT_J].setFunctions1(reverse(new PinFunction[]{new TxIoPinInterruptFunction(0x7), new TxIoPinInterruptFunction(0x6), new TxIoPinInterruptFunction(0x17), new TxIoPinInterruptFunction(0x16), new TxIoPinInterruptFunction(0x15), new TxIoPinInterruptFunction(0x14), new TxIoPinTimerInputFunction(0x11, 1), new TxIoPinTimerInputFunction(0x11, 0)}));
+        ioPorts[IoPort.PORT_J].setFunctions1(reverse(new PinFunction[]{new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT7), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT6), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT17), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT16), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT15), new TxIoPinInterruptFunction(interruptController, TxInterruptController.INT14), new TxIoPinTimerInputFunction(0x11, 1), new TxIoPinTimerInputFunction(0x11, 0)}));
 
         return ioPorts;
     }

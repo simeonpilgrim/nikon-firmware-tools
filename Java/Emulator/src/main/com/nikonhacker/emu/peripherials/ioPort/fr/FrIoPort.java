@@ -18,6 +18,8 @@ public class FrIoPort extends IoPort {
         for (int i = 0; i < ioPorts.length; i++) {
             ioPorts[i] = new FrIoPort(i, interruptController, prefs);
         }
+        // Statically configure port 0 for output (we know for sure bit 5 is output for serial. No idea for the rest)
+        ioPorts[0].setDirection((byte) 0xFF);
 
         return ioPorts;
     }
