@@ -704,7 +704,7 @@
 -s 0xBFC47E54=INTCMP4_setup
 -s 0xBFC47EBC=INTCMP4_body03
 -s 0xBFC47FA4=setup_PC3_outlevel($a0 [IN PC3_output_level /* 1=>PC3 output low level, 2=>PC3 output high level */])
--s 0xBFC47FD8=read_Port53
+-s 0xBFC47FD8=read_Port53($v0 [OUT level_of_pin_P53])
 -s 0xBFC47FE8=setup_INT0xF($a0 [IN mode /* 1=enable */], $a1 [IN edge_falling /* 0=Raising edge, 1=Falling edge */], $a2 [IN ptr_INT0xF_body])
 -s 0xBFC480BC=set_HSC0_function_mode($a0 [IN enable /* 1=>enables RX, other=>reset HSC0 */])
 -s 0xBFC48140=HSC0_TX_operate
