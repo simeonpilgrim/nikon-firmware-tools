@@ -144,7 +144,9 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         JPanel timerParamPanel = new JPanel(new GridLayout(0, 3));
 
-        timerParamPanel.add(new JLabel("Request INT"));
+        JLabel tmpLabel = new JLabel("Request INT");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         Vector<String> timerInterruptNumber = new Vector<String>();
         for (int i = 0; i < 255; i++) {
             timerInterruptNumber.add("0x" + Format.asHex(i, 2));
@@ -153,7 +155,9 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         timerParamPanel.add(timerInterruptComboBox);
         timerParamPanel.add(new JLabel(""));
 
-        timerParamPanel.add(new JLabel("with ICR : "));
+        tmpLabel = new JLabel("with ICR : ");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         Vector<String> timerIcrLabels = new Vector<String>();
         for (int i = 0; i < 32; i++) {
             timerIcrLabels.add(Format.asBinary(i, 5));
@@ -162,12 +166,16 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         timerParamPanel.add(timerIcrComboBox);
         timerParamPanel.add(new JLabel(""));
 
-        timerParamPanel.add(new JLabel("NMI"));
+        tmpLabel = new JLabel("NMI");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         final JCheckBox timerNmiCheckBox = new JCheckBox();
         timerParamPanel.add(timerNmiCheckBox);
         timerParamPanel.add(new JLabel(""));
 
-        timerParamPanel.add(new JLabel("every "));
+        tmpLabel = new JLabel("every ");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         Vector<String> intervals = new Vector<String>();
         intervals.add("1000");
         intervals.add("100");

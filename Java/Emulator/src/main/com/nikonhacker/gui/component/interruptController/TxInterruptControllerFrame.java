@@ -73,7 +73,9 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
 
         JPanel timerParamPanel = new JPanel(new GridLayout(0, 3));
 
-        timerParamPanel.add(new JLabel("Request INT"));
+        JLabel tmpLabel = new JLabel("Request INT ");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         Vector<ListEntry> timerInterruptNumber = new Vector<ListEntry>();
         for (int i = 0; i < 128; i++) {
             String description = TxInterruptController.hardwareInterruptDescription[i].description;
@@ -85,7 +87,9 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         timerParamPanel.add(timerInterruptComboBox);
         timerParamPanel.add(new JLabel(""));
 
-        timerParamPanel.add(new JLabel("every "));
+        tmpLabel = new JLabel("every ");
+        tmpLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        timerParamPanel.add(tmpLabel);
         Vector<String> intervals = new Vector<String>();
         intervals.add("1000");
         intervals.add("100");
