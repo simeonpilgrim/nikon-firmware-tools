@@ -4,6 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 
 public class TxDmaChannel {
@@ -309,7 +310,7 @@ public class TxDmaChannel {
                 // Channel configured for external requests
                 if (channelNumber == 0 && txDmaController.isRsrReqS0()) {
                     // Channel 0 configured for external by pin. See if pin is set
-                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[TxIoPort.PORT_F];
+                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[IoPort.PORT_F];
                     // TODO spec page 10.23 speaks about Port 5 and Port A. This is plain wrong. Port is F
                     int maskPin0 = 0b00000001;
                     if ((portF.getFunctionRegister2() & maskPin0) != 0) {
@@ -323,7 +324,7 @@ public class TxDmaChannel {
                 }
                 else if (channelNumber == 4 && txDmaController.isRsrReqS4()) {
                     // Channel 4 configured for external by pin. See if pin is set
-                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[TxIoPort.PORT_F];
+                    TxIoPort portF = (TxIoPort) txDmaController.getPlatform().getIoPorts()[IoPort.PORT_F];
                     int maskPin2 = 0b00000100;
                     if ((portF.getFunctionRegister2() & maskPin2) != 0) {
                         // pin PF2 is indeed configured as DREQ4

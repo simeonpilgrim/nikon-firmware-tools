@@ -10,9 +10,6 @@ public class ExpeedIoListener extends IoActivityListener {
 
     private static final int REGISTER_DICR    = 0x44;
 
-    // I/O Port
-    public static final int NUM_PORT = 0;
-
     // Timer
     public static final int NUM_TIMER = 3;
     private static final int REGISTER_TMRLRA0 = 0x48;
