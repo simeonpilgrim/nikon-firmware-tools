@@ -166,7 +166,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
         for (int bitNumber = 7; bitNumber >= 0; bitNumber--) {
             value |= inputs[portNumber][7 - bitNumber].isSelected()?(1<< bitNumber):0;
         }
-        ((TxIoPort)ioPorts[portNumber]).setExternalValue(value);
+        ioPorts[portNumber].setExternalValue(value);
     }
 
     private void refreshOutputValues(int portNumber) {
@@ -184,7 +184,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortsListener {
     }
 
     @Override
-    public void onConfigChange(int portNumber, byte config, byte inputEnable) {
+    public void onConfigChange(int portNumber, byte direction, byte inputEnable) {
         refreshComponents(portNumber);
     }
 
