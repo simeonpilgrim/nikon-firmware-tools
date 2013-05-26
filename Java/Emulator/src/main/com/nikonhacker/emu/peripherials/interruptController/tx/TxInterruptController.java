@@ -477,7 +477,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private int getImcIl(int imcSection) {
-        return imcSection & 0b111;
+        return imcSection & 0b0000_0111;
     }
 
     /**
@@ -486,7 +486,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private boolean isImcDmSet(int imcSection) {
-        return (imcSection & 0b10000) != 0;
+        return (imcSection & 0b0001_0000) != 0;
     }
 
     /**
@@ -495,7 +495,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private int getImcEim(int imcSection) {
-        return (imcSection & 0b1100000) >> 5;
+        return (imcSection & 0b0110_0000) >> 5;
     }
 
 
