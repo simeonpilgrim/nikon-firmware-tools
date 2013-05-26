@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.memoryMapped;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
@@ -65,7 +66,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
         }
         listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState);
         memory.addActivityListener(listener);
-        textArea.getPrintWriter().println("Starting listener for range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
+        textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
     }
 
     public void dispose() {
