@@ -25,126 +25,132 @@ public class TxInterruptController extends AbstractInterruptController {
     private static final int ADDRESS_INTERRUPT_BEV1_IV0 = 0xBFC0_0380;
     private static final int ADDRESS_INTERRUPT_BEV1_IV1 = 0xBFC0_0400;
 
+    private static final int NULL_SECTION  = -1;
+    private static final int NULL_REGISTER = -1;
+
+    public static final  int ACTIVE_LOW     = 0b00;
+    public static final  int ACTIVE_HIGH    = 0b01;
+    public static final  int ACTIVE_FALLING = 0b10;
+    public static final  int ACTIVE_RISING  = 0b00;
+
     // Register fields
     // Ilev
     private int ilev;
     private int ivr;
-    private int intClr = 0x0;
+    private int intClr  = 0x0;
     private int dreqflg = 0x000000FF;
 
-    private final static int Ilev_Mlev_pos        = 31;
-    private final static int Ilev_Cmask_mask      = 0b00000000_00000000_00000000_00000111;
+    private final static int Ilev_Mlev_pos   = 31;
+    private final static int Ilev_Cmask_mask = 0b00000000_00000000_00000000_00000111;
 
 
-    public final static InterruptDescription[] hardwareInterruptDescription = new InterruptDescription[128];
-    private static final int NULL_SECTION = -1;
-    private static final int NULL_REGISTER = -1;
+    public final static  InterruptDescription[] hardwareInterruptDescription = new InterruptDescription[128];
 
     private static final int NONE = 0;
-    private static final int SW = 1;
+    private static final int SW   = 1;
 
-    public static final int INT0 = 2;
-    public static final int INT1 = 3;
-    public static final int INT2 = 4;
-    public static final int INT3 = 5;
-    public static final int INT4 = 6;
-    public static final int INT5 = 7;
-    public static final int INT6 = 8;
-    public static final int INT7 = 9;
-    public static final int INT8 = 10;
-    public static final int INT9 = 11;
-    public static final int INTA = 12;
-    public static final int INTB = 13;
-    public static final int INTC = 14;
-    public static final int INTD = 15;
-    public static final int INTE = 16;
-    public static final int INTF = 17;
-    public static final int KWUP = 18;
-    public static final int INT10 = 19;
-    public static final int INT11 = 20;
-    public static final int INT12 = 21;
-    public static final int INT13 = 22;
-    public static final int INT14 = 23;
-    public static final int INT15 = 24;
-    public static final int INT16 = 25;
-    public static final int INT17 = 26;
-    public static final int INT18 = 27;
-    public static final int INT19 = 28;
-    public static final int INT1A = 29;
-    public static final int INT1B = 30;
-    public static final int INT1C = 31;
-    public static final int INT1D = 32;
-    public static final int INT1E = 33;
-    public static final int INT1F = 34;
-    public static final int INTRX0 = 35;
-    public static final int INTTX0 = 36;
-    public static final int INTRX1 = 37;
-    public static final int INTTX1 = 38;
-    public static final int INTRX2 = 39;
-    public static final int INTTX2 = 40;
-    public static final int HINTRX0 = 41;
-    public static final int HINTTX0 = 42;
-    public static final int HINTRX1 = 43;
-    public static final int HINTTX1 = 44;
-    public static final int HINTRX2 = 45;
-    public static final int HINTTX2 = 46;
-    public static final int INTSBI0 = 47;
+    public static final int INT0     = 2;
+    public static final int INT1     = 3;
+    public static final int INT2     = 4;
+    public static final int INT3     = 5;
+    public static final int INT4     = 6;
+    public static final int INT5     = 7;
+    public static final int INT6     = 8;
+    public static final int INT7     = 9;
+    public static final int INT8     = 10;
+    public static final int INT9     = 11;
+    public static final int INTA     = 12;
+    public static final int INTB     = 13;
+    public static final int INTC     = 14;
+    public static final int INTD     = 15;
+    public static final int INTE     = 16;
+    public static final int INTF     = 17;
+    public static final int KWUP     = 18;
+    public static final int INT10    = 19;
+    public static final int INT11    = 20;
+    public static final int INT12    = 21;
+    public static final int INT13    = 22;
+    public static final int INT14    = 23;
+    public static final int INT15    = 24;
+    public static final int INT16    = 25;
+    public static final int INT17    = 26;
+    public static final int INT18    = 27;
+    public static final int INT19    = 28;
+    public static final int INT1A    = 29;
+    public static final int INT1B    = 30;
+    public static final int INT1C    = 31;
+    public static final int INT1D    = 32;
+    public static final int INT1E    = 33;
+    public static final int INT1F    = 34;
+    public static final int INTRX0   = 35;
+    public static final int INTTX0   = 36;
+    public static final int INTRX1   = 37;
+    public static final int INTTX1   = 38;
+    public static final int INTRX2   = 39;
+    public static final int INTTX2   = 40;
+    public static final int HINTRX0  = 41;
+    public static final int HINTTX0  = 42;
+    public static final int HINTRX1  = 43;
+    public static final int HINTTX1  = 44;
+    public static final int HINTRX2  = 45;
+    public static final int HINTTX2  = 46;
+    public static final int INTSBI0  = 47;
     public static final int INTADHPA = 48;
-    public static final int INTADMA = 49;
+    public static final int INTADMA  = 49;
     public static final int INTADHPB = 50;
-    public static final int INTADMB = 51;
+    public static final int INTADMB  = 51;
     public static final int INTADHPC = 52;
-    public static final int INTADMC = 53;
-    public static final int INTTB0 = 54;
-    public static final int INTTB1 = 55;
-    public static final int INTTB2 = 56;
-    public static final int INTTB3 = 57;
-    public static final int INTTB4 = 58;
-    public static final int INTTB5 = 59;
-    public static final int INTTB6 = 60;
-    public static final int INTTB7 = 61;
-    public static final int INTTB8 = 62;
-    public static final int INTTB9 = 63;
-    public static final int INTTBA = 64;
-    public static final int INTTBB = 65;
-    public static final int INTTBC = 66;
-    public static final int INTTBD = 67;
-    public static final int INTTBE = 68;
-    public static final int INTTBF = 69;
-    public static final int INTADA = 70;
-    public static final int INTADB = 71;
-    public static final int INTADC = 72;
-    public static final int INTTB10 = 73;
-    public static final int INTTB11 = 74;
-    public static final int PHCNT0 = 75;
-    public static final int PHCNT1 = 76;
-    public static final int PHCNT2 = 77;
-    public static final int PHCNT3 = 78;
-    public static final int PHCNT4 = 79;
-    public static final int PHCNT5 = 80;
-    public static final int INTCAP0 = 81;
-    public static final int INTCAP1 = 82;
-    public static final int INTCAP2 = 83;
-    public static final int INTCAP3 = 84;
-    public static final int INTCMP0 = 85;
-    public static final int INTCMP1 = 86;
-    public static final int INTCMP2 = 87;
-    public static final int INTCMP3 = 88;
-    public static final int INTCMP4 = 89;
-    public static final int INTCMP5 = 90;
-    public static final int INTCMP6 = 91;
-    public static final int INTCMP7 = 92;
-    public static final int INTTBT = 93;
-    public static final int INTRTC = 94;
-    public static final int INTDMA0 = 95;
-    public static final int INTDMA1 = 96;
-    public static final int INTDMA2 = 97;
-    public static final int INTDMA3 = 98;
-    public static final int INTDMA4 = 99;
-    public static final int INTDMA5 = 100;
-    public static final int INTDMA6 = 101;
-    public static final int INTDMA7 = 102;
-    public static final int SOFT = 103;
+    public static final int INTADMC  = 53;
+    public static final int INTTB0   = 54;
+    public static final int INTTB1   = 55;
+    public static final int INTTB2   = 56;
+    public static final int INTTB3   = 57;
+    public static final int INTTB4   = 58;
+    public static final int INTTB5   = 59;
+    public static final int INTTB6   = 60;
+    public static final int INTTB7   = 61;
+    public static final int INTTB8   = 62;
+    public static final int INTTB9   = 63;
+    public static final int INTTBA   = 64;
+    public static final int INTTBB   = 65;
+    public static final int INTTBC   = 66;
+    public static final int INTTBD   = 67;
+    public static final int INTTBE   = 68;
+    public static final int INTTBF   = 69;
+    public static final int INTADA   = 70;
+    public static final int INTADB   = 71;
+    public static final int INTADC   = 72;
+    public static final int INTTB10  = 73;
+    public static final int INTTB11  = 74;
+    public static final int PHCNT0   = 75;
+    public static final int PHCNT1   = 76;
+    public static final int PHCNT2   = 77;
+    public static final int PHCNT3   = 78;
+    public static final int PHCNT4   = 79;
+    public static final int PHCNT5   = 80;
+    public static final int INTCAP0  = 81;
+    public static final int INTCAP1  = 82;
+    public static final int INTCAP2  = 83;
+    public static final int INTCAP3  = 84;
+    public static final int INTCMP0  = 85;
+    public static final int INTCMP1  = 86;
+    public static final int INTCMP2  = 87;
+    public static final int INTCMP3  = 88;
+    public static final int INTCMP4  = 89;
+    public static final int INTCMP5  = 90;
+    public static final int INTCMP6  = 91;
+    public static final int INTCMP7  = 92;
+    public static final int INTTBT   = 93;
+    public static final int INTRTC   = 94;
+    public static final int INTDMA0  = 95;
+    public static final int INTDMA1  = 96;
+    public static final int INTDMA2  = 97;
+    public static final int INTDMA3  = 98;
+    public static final int INTDMA4  = 99;
+    public static final int INTDMA5  = 100;
+    public static final int INTDMA6  = 101;
+    public static final int INTDMA7  = 102;
+    public static final int SOFT     = 103;
 
     // This is a transcript of table 6.5, section 6.5.1.5 of the Toshiba hardware specification
     static {
@@ -455,6 +461,10 @@ public class TxInterruptController extends AbstractInterruptController {
         return getImcIl(getRequestImcSection(interruptNumber));
     }
 
+    public int getRequestActiveState(int interruptNumber) {
+        return getImcEim(getRequestImcSection(interruptNumber));
+    }
+
     public int getRequestImcSection(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
         int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr);
@@ -467,7 +477,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private int getImcIl(int imcSection) {
-        return imcSection & 0b111;
+        return imcSection & 0b0000_0111;
     }
 
     /**
@@ -476,7 +486,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private boolean isImcDmSet(int imcSection) {
-        return (imcSection & 0b10000) != 0;
+        return (imcSection & 0b0001_0000) != 0;
     }
 
     /**
@@ -485,7 +495,7 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return
      */
     private int getImcEim(int imcSection) {
-        return (imcSection & 0b1100000) >> 5;
+        return (imcSection & 0b0110_0000) >> 5;
     }
 
 
