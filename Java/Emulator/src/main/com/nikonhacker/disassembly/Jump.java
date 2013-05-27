@@ -1,8 +1,5 @@
 package com.nikonhacker.disassembly;
 
-
-import com.nikonhacker.disassembly.Instruction;
-
 public class Jump {
     private int source;
     private int target;
@@ -51,5 +48,25 @@ public class Jump {
 
     public void setDynamic(boolean dynamic) {
         isDynamic = dynamic;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Jump jump = (Jump) o;
+
+        if (source != jump.source) return false;
+        if (target != jump.target) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = source;
+        result = 31 * result + target;
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.ioport;
 
+import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.gui.EmulatorUI;
@@ -19,7 +20,7 @@ public class IoPortsFrameTest {
         JDesktopPane mdiPane = new JDesktopPane();
         IoPort[] ioPorts = new IoPort[3];
         for (int i = 0; i < ioPorts.length; i++) {
-            ioPorts[i] = new TxIoPort(i, null);
+            ioPorts[i] = new TxIoPort(i, null, new Prefs());
         }
         frame.add(mdiPane);
         mdiPane.add(new IoPortsFrame("test", "io", false, true, false, false, 0, new EmulatorUI(), ioPorts));
