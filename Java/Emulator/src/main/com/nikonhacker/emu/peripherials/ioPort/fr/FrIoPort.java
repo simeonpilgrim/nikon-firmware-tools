@@ -4,6 +4,7 @@ import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.ioPort.function.fr.FrIoPinInterruptFunction;
 
 public class FrIoPort extends IoPort {
     private Prefs prefs;
@@ -20,6 +21,11 @@ public class FrIoPort extends IoPort {
         }
         // Statically configure port 0 for output (we know for sure bit 5 is output for serial. No idea for the rest)
         ioPorts[0].setDirection((byte) 0xFF);
+        // Statically configure port 1 for input (we know for sure bit 6 is input for serial. No idea for the rest)
+        ioPorts[0].setDirection((byte) 0x00);
+
+        // Link interrupt 0x16 to Port7.pin6 (aka 0x50000107.bit6)
+        ioPorts[7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 0x16));
 
         return ioPorts;
     }
