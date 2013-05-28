@@ -11,6 +11,8 @@ import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptCon
 import com.nikonhacker.emu.peripherials.interruptController.InterruptControllerException;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Behaviour is Based on Fujitsu documentation hm91660-cm71-10146-3e.pdf
@@ -21,7 +23,33 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
 
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
-    public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
+    public static final int RELOAD_TIMER1_INTERRUPT_REQUEST_NR = 0x19;
+    public static final int RELOAD_TIMER2_INTERRUPT_REQUEST_NR = 0x1A;
+
+    public static final int DELAY_INTERRUPT_REQUEST_NR         = 0x3F;
+
+    public final static Map<Integer, String> interruptDescriptions = new HashMap<>();
+
+    static {
+        interruptDescriptions.put(0x10, "EXTERNAL0");
+
+        interruptDescriptions.put(0x18, "TIMER0");
+        interruptDescriptions.put(0x19, "TIMER1");
+        interruptDescriptions.put(0x1A, "TIMER2");
+
+        interruptDescriptions.put(0x3F, "DELAY");
+        interruptDescriptions.put(0x40, "RESERVED_REALOS_SYSCALL");
+        interruptDescriptions.put(0x41, "RESERVED_REALOS");
+        interruptDescriptions.put(0x42, "SW_INT0");
+    }
+
+    public static String getInterruptShortName(int interruptNumber) {
+        String s = interruptDescriptions.get(interruptNumber);
+        if (s == null) {
+            s = "INT #0x" + Format.asHex(interruptNumber, 1);
+        }
+        return s;
+    }
 
     public FrInterruptController(Platform platform) {
         super(platform);

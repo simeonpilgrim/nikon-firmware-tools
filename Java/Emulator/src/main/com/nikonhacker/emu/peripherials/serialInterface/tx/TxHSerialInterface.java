@@ -12,6 +12,19 @@ public class TxHSerialInterface extends TxSerialInterface {
     }
 
     @Override
+    public int getRst() {
+        int rlvl;
+        if (rxFifo.size() < 32) {
+            rlvl = rxFifo.size() & 0b0011_1111;// RLVL is on 6 bytes
+        }
+        else {
+            // but 32 is coded as 0b000000 (!). See 15.3.1.11
+            rlvl = 0;
+        }
+        return rst | rlvl;
+    }
+
+    @Override
     public String getName() {
         return "Tx HSerial #" + serialInterfaceNumber;
     }
