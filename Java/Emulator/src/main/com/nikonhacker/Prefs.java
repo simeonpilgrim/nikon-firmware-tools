@@ -40,6 +40,7 @@ public class Prefs {
     private boolean firmwareWriteProtected[];
     private boolean timersCycleSynchronous[];
     private boolean dmaSynchronous[];
+    private boolean autoEnableTimers[];
     private boolean adValueFromList[];
     private Map<String,List<Integer>> adValueListMap[];
     private Map<String,Integer> adValueMap[];
@@ -369,6 +370,16 @@ public class Prefs {
     public void setDmaSynchronous(int chip, boolean isDmaSynchronous) {
         if (dmaSynchronous == null || dmaSynchronous.length != 2) dmaSynchronous = new boolean[]{true, true};
         this.dmaSynchronous[chip] = isDmaSynchronous;
+    }
+
+    public boolean isAutoEnableTimers(int chip) {
+        if (autoEnableTimers == null || autoEnableTimers.length != 2) autoEnableTimers = new boolean[]{true, true};
+        return autoEnableTimers[chip];
+    }
+
+    public void setAutoEnableTimers(int chip, boolean isAutoEnableTimers) {
+        if (autoEnableTimers == null || autoEnableTimers.length != 2) autoEnableTimers = new boolean[]{true, true};
+        this.autoEnableTimers[chip] = isAutoEnableTimers;
     }
 
     public boolean isAdValueFromList(int chip) {
