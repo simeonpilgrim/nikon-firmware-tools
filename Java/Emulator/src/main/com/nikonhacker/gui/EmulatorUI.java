@@ -21,6 +21,7 @@ import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
@@ -1997,6 +1998,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip]));
+                // Unknown component 4006
+                memory.addActivityListener(new Expeed4006IoListener());
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip]));
 
