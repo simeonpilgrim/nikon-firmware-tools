@@ -26,6 +26,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -111,7 +112,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                deleteTrigger(triggerTable.getSelectedRow());
+                deleteTriggers(triggerTable.getSelectedRows());
             }
         });
         rightPanel.add(deleteButton);
@@ -156,13 +157,31 @@ public class BreakTriggerListFrame extends DocumentFrame {
         }
     }
 
-    private void deleteTrigger(int index) {
-        if (index != -1) {
-            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the trigger '" + triggerList.get(index).getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                breakTriggers.remove(index);
+    private void deleteTriggers(int[] indices) {
+        if (indices.length > 0) {
+            String message;
+            if (indices.length ==1) {
+                message = "Are you sure you want to delete the trigger '" + triggerList.get(indices[0]).getName() + "' ?";
+            }
+            else {
+                message = "Are you sure you want to delete " + indices.length + " triggers ?";
+            }
+            if (JOptionPane.showConfirmDialog(this, message, "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                List<Integer> indexList = new ArrayList<>();
+                for (int index : indices) {
+                    indexList.add(index);
+                }
+                // Make sure indices are sorted (the getSelectedRows() does not guarantee that)
+                Collections.sort(indexList);
+                // Reverse order because items at the end of the list will be shifted when we remove items
+                Collections.reverse(indexList);
+                // Remove, starting at the maximum index
+                for (Integer index : indexList) {
+                    breakTriggers.remove(index.intValue());
+                }
                 ui.onBreaktriggersChange(chip);
                 if (!breakTriggers.isEmpty()) {
-                    setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+                    setSelectedIndex(Math.min(indices[0], breakTriggers.size() - 1));
                 }
             }
         }

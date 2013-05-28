@@ -1,23 +1,13 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
-import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
-import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
+import com.nikonhacker.emu.peripherials.ioPort.function.IoPinInterruptFunction;
 
-public class TxIoPinInterruptFunction extends AbstractInputPinFunction implements PinFunction {
-    private InterruptController interruptController;
-    private int interruptNumber;
+public class TxIoPinInterruptFunction extends IoPinInterruptFunction {
 
     public TxIoPinInterruptFunction(InterruptController interruptController, int interruptNumber) {
-        this.interruptController = interruptController;
-        this.interruptNumber = interruptNumber;
-    }
-
-    @Override
-    public String getFullName() {
-        return "Interrupt 0x" + Format.asHex(interruptNumber, 1) + " (" + getShortName() + ")";
+        super(interruptController, interruptNumber);
     }
 
     @Override
@@ -44,5 +34,4 @@ public class TxIoPinInterruptFunction extends AbstractInputPinFunction implement
             }
         }
     }
-
 }

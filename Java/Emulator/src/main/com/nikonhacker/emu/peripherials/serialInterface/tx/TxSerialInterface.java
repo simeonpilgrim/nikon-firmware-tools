@@ -68,6 +68,9 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         this.en = en & 0x1;
     }
 
+    /**
+     * This is the method called by assembly code to read data received via serial port
+     */
     public int getBuf() {
 //        if (en == 0) {
 //            throw new RuntimeException("Attempt to receive data from disabled " + getName());
@@ -80,6 +83,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         }
         else {
             poll = rxFifo.poll();
+            clearRstRor();
             // TODO signal if empty ?
         }
 
@@ -90,6 +94,10 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         return poll;
     }
 
+    /**
+     * This is the method called by assembly code to send data via serial port
+     * @param buf the value to send
+     */
     public void setBuf(int buf) {
 //        System.out.println(getName() + ".setBuf(0x" + Format.asHex(buf, 8) + ")");
 //        if (en == 0) {
@@ -251,8 +259,24 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
 
 
     public int getRst() {
-        return rst;
+        return rst | (rxFifo.size() & 0b0000_0111);
     }
+
+    /**
+     * Clear RST Reception OverRun flag
+     */
+    protected void clearRstRor() {
+        rst = rst & 0b0111_1111;
+    }
+
+    /**
+     * Set RST Reception OverRun flag
+     */
+    protected void setRstRor() {
+        rst = rst | 0b1000_0000;
+    }
+
+
 
     public void setRst(int rst) {
         throw new RuntimeException(getName() + " RST register should not be written");
@@ -624,7 +648,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
             if (isMod2RbfllSet()) {
                 System.err.println(getName() + ": RX buffer overrun");
                 // There's already an unread data in buffer => Overrun : new data is lost. No change to current buffer
-                setCrOerr(); // TODO This is not explicitly specified in case of buffer. Sounds logical but...
+                setCrOerr(); // See 14.2.14 1st section
             }
             else {
                 rxBuf = value;
@@ -639,7 +663,8 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
             if (rxFifo.size() >= getUsableRxFifoSize()) {
                 System.err.println(getName() + ": RX fifo overrun");
                 // Fifo is already full => Overrun : new data is lost. No change to current fifo
-                setCrOerr(); // Signal error
+                setCrOerr(); // See 14.2.14 1st section - CR:OERR seems to apply also to FIFO
+                setRstRor(); // This is FIFO specific. I guess it has to be set here...
             }
             else {
                 rxFifo.add(value);
@@ -654,7 +679,6 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
                 }
             }
         }
-
     }
 
     protected int getRxInterruptNumber() {

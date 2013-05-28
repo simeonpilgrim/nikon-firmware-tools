@@ -21,6 +21,7 @@ import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
@@ -1727,6 +1728,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         emulationOptionsPanel.add(dmaSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, DMA operations will be performed immediately, pausing the CPU. Otherwise they are performed in a separate thread."));
 
+        final JCheckBox autoEnableTimersCheckBox = new JCheckBox("Auto enable timers");
+        autoEnableTimersCheckBox.setSelected(prefs.isAutoEnableTimers(chip));
+        autoEnableTimersCheckBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
+            }
+        });
+        emulationOptionsPanel.add(autoEnableTimersCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, timers will be automatically enabled upon reset or firmware load."));
+
         // ------------------------ Prepare tabbed pane
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -1987,6 +1998,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip]));
+                // Unknown component 4006
+                memory.addActivityListener(new Expeed4006IoListener());
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip]));
 
@@ -2118,6 +2131,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
             }
 
+            if (prefs.isAutoEnableTimers(chip)) {
+                toggleProgrammableTimers(chip);
+            }
+
             if (prefs.isCloseAllWindowsOnStop()) {
                 closeAllFrames(chip, false);
             }
@@ -2177,8 +2194,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {
+        // FR 0x50000100.bit5 => TX P53 (INTF)
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(5), txIoPorts[IoPort.PORT_5].getPin(3));
-        // Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), ???); // used on input by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
+
+        // TX PC3 => FR 0x50000107.bit7 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
+        Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), txIoPorts[IoPort.PORT_C].getPin(3));
+
         // Pin.interconnect(main power button, txIoPorts[IoPort.PORT_A].getPin(0));
     }
 
@@ -2981,6 +3002,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         if (breakTriggerListFrame[chip] != null) {
             breakTriggerListFrame[chip].updateBreaktriggers();
+        }
+    }
+
+    public void toggleProgrammableTimers(int chip) {
+        enableProgrammableTimers(chip, !platform[chip].getProgrammableTimers()[0].isActive());
+    }
+
+    private void enableProgrammableTimers(int chip, boolean active) {
+        ProgrammableTimer[] timers = platform[chip].getProgrammableTimers();
+        for (ProgrammableTimer timer : timers) {
+            timer.setActive(active);
+        }
+        // Start/stop button animation
+        setProgrammableTimerAnimationEnabled(chip, active);
+        // Update window status, if open
+        if (programmableTimersFrame[chip] != null) {
+            programmableTimersFrame[chip].updateState(active);
         }
     }
 }

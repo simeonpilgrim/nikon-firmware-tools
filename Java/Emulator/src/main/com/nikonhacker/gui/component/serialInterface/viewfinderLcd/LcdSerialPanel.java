@@ -198,8 +198,8 @@ public class LcdSerialPanel extends SerialDevicePanel {
                 System.err.println("Cannot parse value: " + value);
             }
             byteNumber++;
-            if (byteNumber > manualValues.length) {
-                System.err.println("Too many values. Ignoring the " + manualValues.length + "th onwards");
+            if (byteNumber == manualValues.length) {
+                System.err.println("Too many values to render in LCD. Ignoring the " + manualValues.length + "th byte onwards");
                 return;
             }
         }
