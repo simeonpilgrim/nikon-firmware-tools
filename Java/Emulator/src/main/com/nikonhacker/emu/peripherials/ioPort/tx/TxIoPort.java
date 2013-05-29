@@ -84,7 +84,6 @@ public class TxIoPort extends IoPort {
     @Override
     public void setExternalValue(byte value) {
         this.externalValue = value;
-        // TODO implement interrupts (if any) ?
         prefs.setPortValue(Constants.CHIP_TX, portNumber, value);
     }
 
@@ -288,7 +287,7 @@ public class TxIoPort extends IoPort {
 
     private static PinFunction[] reverse(PinFunction[] bit7to0) {
         if (bit7to0.length != 8) {
-            throw new RuntimeException("Configuration error: there should be 8 values in " + bit7to0);
+            throw new RuntimeException("Configuration error: there should be 8 values in " + Arrays.toString(bit7to0));
         }
         PinFunction[] bit0to7 = new PinFunction[8];
         for (int i = 0; i < 8; i++) {
