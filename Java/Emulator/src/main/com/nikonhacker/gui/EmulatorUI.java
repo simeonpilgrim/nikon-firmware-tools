@@ -2197,7 +2197,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // FR 0x50000100.bit5 => TX P53 (INTF)
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(5), txIoPorts[IoPort.PORT_5].getPin(3));
 
-        // TX PC3 => FR 0x50000107.bit7 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
+        // TX PC3 => FR 0x50000107.bit6 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
         Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), txIoPorts[IoPort.PORT_C].getPin(3));
 
         // Pin.interconnect(main power button, txIoPorts[IoPort.PORT_A].getPin(0));
