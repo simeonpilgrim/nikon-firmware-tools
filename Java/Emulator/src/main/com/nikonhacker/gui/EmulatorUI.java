@@ -2194,7 +2194,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {
-        // FR 0x50000100.bit5 => TX P53 (INTF)
+        // FR 0x50000100.bit5 => TX P53 (INTF), triggered (low) by FR at 001A8CBE and 001A8E24 and set back hi at 001A8E58
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(5), txIoPorts[IoPort.PORT_5].getPin(3));
 
         // TX PC3 => FR 0x50000107.bit6 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
