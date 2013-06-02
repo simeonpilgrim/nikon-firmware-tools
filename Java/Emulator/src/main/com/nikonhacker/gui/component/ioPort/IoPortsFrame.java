@@ -104,8 +104,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         }
 
         // Footer line - legend (avoid "key" as there are pin KEYs)
-        addLegend(configPanel);
-        addLegend(valuePanel);
+        addLegend(configPanel, "hover to see details");
+        addLegend(valuePanel, "hover to see connection");
 
         tabbedPane.addTab("Configuration", configPanel);
         tabbedPane.addTab("Values", valuePanel);
@@ -113,13 +113,13 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         getContentPane().add(tabbedPane);
     }
 
-    private void addLegend(JPanel panel) {
+    private void addLegend(JPanel panel, String detail) {
         JSeparator separator = new JSeparator();
         panel.add(separator, "span 9, gapleft rel, growx, wrap");
         panel.add(new JLabel("legend"), "right");
         JLabel label;
         label = new JLabel("", SwingConstants.CENTER);
-        panel.add(label, "span 2");
+        panel.add(label);
         label = new JLabel(Constants.LABEL_HI, SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HI));
@@ -135,7 +135,10 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         label = new JLabel("Disabled", SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_DISABLED));
-        panel.add(label, "wrap");
+        panel.add(label);
+        label = new JLabel(detail, SwingConstants.CENTER);
+        panel.add(label);
+        panel.add(label, "span 3, wrap");
     }
 
     private JLabel createNameLabel(DynamicMatteBorder pinBorder) {
