@@ -40,9 +40,8 @@ public abstract class IoPort {
     protected VariableFunctionPin[] pins;
 
 
-    /** List of listeners to warn when the value of a full port changes
-     * TODO: does this have sense ? Shouldn't we only work at the pin level ?
-     * TODO: distinguish internal/external listeners ?
+    /**
+     * List of listeners to warn when the configuration of a port changes
      */
     protected List<IoPortConfigListener> ioPortConfigListeners = new ArrayList<IoPortConfigListener>();
 
