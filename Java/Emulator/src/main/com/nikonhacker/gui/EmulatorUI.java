@@ -2152,6 +2152,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
             updateStates();
 
+            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+            setStatusText(chip, "Image load complete...");
+
         } catch (IOException e) {
             e.printStackTrace();
         }
