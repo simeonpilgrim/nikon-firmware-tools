@@ -892,7 +892,7 @@ public class TxIoListener extends IoActivityListener {
             TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0 + 3:
-                    txIoPort.setInternalValue(value); break;
+                    txIoPort.setValue(value); break;
                 case REGISTER_PORT0CR + 3:
                     txIoPort.setControlRegister(value); break;
                 case REGISTER_PORT0FC1 + 3:
@@ -1295,7 +1295,7 @@ public class TxIoListener extends IoActivityListener {
             TxIoPort txIoPort = (TxIoPort) platform.getIoPorts()[portNr];
             switch (addr - (portNr << PORT_OFFSET_SHIFT)) {
                 case REGISTER_PORT0:
-                    txIoPort.setInternalValue((byte) value); break;
+                    txIoPort.setValue((byte) value); break;
                 case REGISTER_PORT0CR:
                     txIoPort.setControlRegister((byte) value); break;
                 case REGISTER_PORT0FC1:

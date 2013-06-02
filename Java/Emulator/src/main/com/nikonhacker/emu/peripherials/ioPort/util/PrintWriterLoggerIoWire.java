@@ -1,41 +1,32 @@
 package com.nikonhacker.emu.peripherials.ioPort.util;
 
-import com.nikonhacker.emu.peripherials.ioPort.Pin;
-
 import java.io.PrintWriter;
 
 /**
- * This class implements a bidirectional logging component.
+ * This class implements a bidirectional logging component (to a printWriter).
  */
 public class PrintWriterLoggerIoWire extends Abstract2PinComponent {
-    private final PrintWriter printWriter;
-
     public PrintWriterLoggerIoWire(final String name, PrintWriter printWriter) {
         super(name);
-        this.printWriter = printWriter;
         // Replace Pins 1 & 2 to forward values to each other
-        pin1 = new ForwardingPin(name + " " + pin1.getConnectedPin() + "=>" + pin2.getConnectedPin());
-        pin2 = new ForwardingPin(name + " " + pin2.getConnectedPin() + "=>" + pin1.getConnectedPin());
-        ((ForwardingPin) pin1).setTargetPin(pin2);
-        ((ForwardingPin) pin2).setTargetPin(pin1);
+        pin1 = new PrintWriterLoggerForwardingPin(name + " " + pin1.getConnectedPin() + "=>" + pin2.getConnectedPin(), printWriter);
+        pin2 = new PrintWriterLoggerForwardingPin(name + " " + pin2.getConnectedPin() + "=>" + pin1.getConnectedPin(), printWriter);
+        ((PrintWriterLoggerForwardingPin) pin1).setTargetPin(pin2);
+        ((PrintWriterLoggerForwardingPin) pin2).setTargetPin(pin1);
     }
 
-    private class ForwardingPin extends Pin {
-        private Pin targetPin;
+    private class PrintWriterLoggerForwardingPin extends ForwardingPin {
+        private final PrintWriter printWriter;
 
-        public ForwardingPin(String name) {
+        public PrintWriterLoggerForwardingPin(String name, PrintWriter printWriter) {
             super(name);
+            this.printWriter = printWriter;
         }
 
         @Override
         public void setInputValue(int value) {
             printWriter.write(this.getConnectedPin() + " sends " + value + " to " + targetPin.getConnectedPin());
             super.setInputValue(value);
-            targetPin.getConnectedPin().setInputValue(value);
-        }
-
-        public void setTargetPin(Pin targetPin) {
-            this.targetPin = targetPin;
         }
     }
 

@@ -27,7 +27,7 @@ public class ExpeedPinIoListener extends IoActivityListener {
     @Override
     public Byte onLoadData8(byte[] pageData, int address, byte value) {
         int portNumber = address - PORT_BASE_ADDRESS;
-        return platform.getIoPorts()[portNumber].getInternalValue();
+        return platform.getIoPorts()[portNumber].getValue();
     }
 
     @Override
@@ -46,7 +46,7 @@ public class ExpeedPinIoListener extends IoActivityListener {
     @Override
     public void onStore8(byte[] pageData, int address, byte value) {
         int portNumber = address - PORT_BASE_ADDRESS;
-        platform.getIoPorts()[portNumber].setInternalValue(value);
+        platform.getIoPorts()[portNumber].setValue(value);
     }
 
     @Override

@@ -7,7 +7,8 @@ public abstract class IoPinInterruptFunction extends AbstractInputPinFunction im
     protected InterruptController interruptController;
     protected int                 interruptNumber;
 
-    public IoPinInterruptFunction(InterruptController interruptController, int interruptNumber) {
+    public IoPinInterruptFunction(String componentName, InterruptController interruptController, int interruptNumber) {
+        super(componentName);
         this.interruptController = interruptController;
         this.interruptNumber = interruptNumber;
     }

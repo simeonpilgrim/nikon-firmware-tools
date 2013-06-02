@@ -16,7 +16,7 @@ public class TwoPinComponent {
     public TwoPinComponent(String name) {
         inputPin = new VariableFunctionPin(name + ".IN");
         outputPin = new Pin(name + ".OUT");
-        ((VariableFunctionPin)inputPin).setFunction(new AbstractInputPinFunction() {
+        ((VariableFunctionPin)inputPin).setFunction(new AbstractInputPinFunction("TWO-PIN") {
             public void setValue(int value) {
                 setRx(value);
             }

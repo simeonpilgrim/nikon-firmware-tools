@@ -1,8 +1,11 @@
 package com.nikonhacker.emu.peripherials.ioPort.util;
 
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 
-/** This basic implementation is a 2-pin component with no connection in between */
+/**
+ * This basic implementation is a 2-pin component with no connection in between
+ */
 public abstract class Abstract2PinComponent {
     protected final String name;
     protected       Pin    pin1;
@@ -20,14 +23,18 @@ public abstract class Abstract2PinComponent {
 
     /**
      * Inserts this wire between the given pin and the pin originally connected to it
+     * The given pin gets connected to the the pin1 of this component
+     * The pin formerly connected to the given pin gets connected to the pin2 of this component
      * @param pin
      */
     public void insertAtPin(Pin pin) {
         Pin otherPin = pin.getConnectedPin();
-        System.out.println("Connecting " + pin + " to " + pin1);
         Pin.interconnect(pin, pin1);
-        System.out.println("Connecting " + pin2 + " to " + otherPin);
         Pin.interconnect(pin2, otherPin);
+        if (IoPort.DEBUG) {
+            System.out.println("Connecting " + pin + " to " + pin1);
+            System.out.println("Connecting " + pin2 + " to " + otherPin);
+        }
     }
 
     /**
@@ -37,4 +44,11 @@ public abstract class Abstract2PinComponent {
         Pin.interconnect(pin1.getConnectedPin(), pin2.getConnectedPin());
     }
 
+    public Pin getPin1() {
+        return pin1;
+    }
+
+    public Pin getPin2() {
+        return pin2;
+    }
 }
