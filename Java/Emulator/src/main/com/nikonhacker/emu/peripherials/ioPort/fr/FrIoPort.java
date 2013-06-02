@@ -1,31 +1,44 @@
 package com.nikonhacker.emu.peripherials.ioPort.fr;
 
-import com.nikonhacker.Prefs;
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.ioPort.function.fr.FrIoPinInputFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.fr.FrIoPinInterruptFunction;
+import com.nikonhacker.emu.peripherials.ioPort.function.fr.FrIoPinOutputFunction;
 
 public class FrIoPort extends IoPort {
-    private Prefs prefs;
 
-    public FrIoPort(int portNumber, InterruptController interruptController, Prefs prefs) {
-        super(portNumber, interruptController);
-        this.prefs = prefs;
+    public FrIoPort(int portNumber, InterruptController interruptController) {
+        super(Constants.CHIP_FR, portNumber, interruptController);
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            inputFunctions[bitNumber] = new FrIoPinInputFunction(getShortName() + bitNumber);
+            outputFunctions[bitNumber] = new FrIoPinOutputFunction(getShortName() + bitNumber);
+        }
     }
 
-    public static IoPort[] setupPorts(InterruptController interruptController, Prefs prefs) {
+    public static IoPort[] setupPorts(InterruptController interruptController) {
         FrIoPort[] ioPorts = new FrIoPort[ExpeedPinIoListener.NUM_PORT];
-        for (int i = 0; i < ioPorts.length; i++) {
-            ioPorts[i] = new FrIoPort(i, interruptController, prefs);
+        for (int portNumber = 0; portNumber < ioPorts.length; portNumber++) {
+            ioPorts[portNumber] = new FrIoPort(portNumber, interruptController);
+            ioPorts[portNumber].setInputEnabled((byte) 0x00);
         }
-        // Statically configure port 0 for output (we know for sure bit 5 is output for serial. No idea for the rest)
-        ioPorts[0].setDirection((byte) 0xFF);
-        // Statically configure port 7 for input (we know for sure bit 6 is input for serial. No idea for the rest)
-        ioPorts[7].setDirection((byte) 0x00);
 
-        // Link interrupt 0x16 to Port7.pin6 (aka 0x50000107.bit6)
-        ioPorts[7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 0x16));
+        // Configure port 0 for output (we know for sure P05 aka 0x50000100.bit5 is output for serial. No idea for the rest)
+        ioPorts[IoPort.PORT_0].setDirection((byte) 0xFF);
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            ioPorts[IoPort.PORT_0].getPin(bitNumber).setFunction(ioPorts[IoPort.PORT_0].outputFunctions[bitNumber]);
+        }
+
+        // Configure port 7 for input (we know for sure P76 aka 0x50000107.bit6 is input for serial. No idea for the rest)
+        ioPorts[IoPort.PORT_7].setDirection((byte) 0x00);
+        ioPorts[IoPort.PORT_7].setInputEnabled((byte) 0xFF);
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            ioPorts[IoPort.PORT_7].getPin(bitNumber).setFunction(ioPorts[IoPort.PORT_7].inputFunctions[bitNumber]);
+        }
+        // Override Port7.pin6 as interrupt 0x16 trigger
+        ioPorts[IoPort.PORT_7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 0x16));
 
         return ioPorts;
     }

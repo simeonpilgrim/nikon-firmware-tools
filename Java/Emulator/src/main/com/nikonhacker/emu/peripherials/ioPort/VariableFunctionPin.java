@@ -18,23 +18,21 @@ public class VariableFunctionPin extends Pin {
         this.function = function;
     }
 
-    public PinFunction getFunction() {
-        return function;
-    }
-
     /**
      * To be called by CPU code
      */
     @Override
     public Integer getInputValue() {
         // Just check that this input pin is configured as input
-        if (IoPort.DEBUG && !(function instanceof AbstractInputPinFunction)) {
-            System.err.println("Code is trying to read pin " + getName() + " although it is " +
-                    (function==null
-                            ?"not configured as input"
-                            :("configured as " + function.getClass().getSimpleName())
-                    )
-                    + ". Forwarding request anyway...");
+        if (!(function instanceof AbstractInputPinFunction)) {
+            if (IoPort.DEBUG) {
+                System.err.println("Code is trying to read pin " + getName() + " although it is " +
+                        (function==null
+                                ?"not configured as input"
+                                :("configured as " + function.getClass().getSimpleName())
+                        )
+                        + ". Forwarding request anyway...");
+            }
         }
 
         // Normal behaviour
@@ -90,12 +88,14 @@ public class VariableFunctionPin extends Pin {
     public void setOutputValue(int value) {
         // Just check that this input pin is configured as output
         if (!(function instanceof AbstractOutputPinFunction)) {
-            System.err.println("Code is trying to set pin " + getName() + " to " + value + " although it is " +
-                    (function==null
-                     ?"not configured as output"
-                     :("configured as " + function.getClass().getSimpleName())
-                    )
-                    + ". Outputting anyway...");
+            if (IoPort.DEBUG) {
+                System.err.println("Code is trying to set pin " + getName() + " to " + value + " although it is " +
+                        (function==null
+                         ?"not configured as output"
+                         :("configured as " + function.getClass().getSimpleName())
+                        )
+                        + ". Outputting anyway...");
+            }
         }
 
         // Normal behaviour

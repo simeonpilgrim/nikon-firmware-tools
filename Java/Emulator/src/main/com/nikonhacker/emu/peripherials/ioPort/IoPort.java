@@ -1,13 +1,15 @@
 package com.nikonhacker.emu.peripherials.ioPort;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public abstract class IoPort {
 
-    public static final boolean DEBUG  = false;
+    public static final boolean DEBUG = false;
 
     public static final int PORT_0 = 0;
     public static final int PORT_1 = 1;
@@ -37,20 +39,20 @@ public abstract class IoPort {
     /** InterruptController is passed to constructor to be able to actually trigger requests */
     protected InterruptController interruptController;
 
-    protected VariableFunctionPin[] pins;
-
+    protected VariableFunctionPin[] pins = new VariableFunctionPin[8];
+    protected PinFunction[] inputFunctions = new PinFunction[8];
+    protected PinFunction[] outputFunctions = new PinFunction[8];
 
     /**
      * List of listeners to warn when the configuration of a port changes
      */
     protected List<IoPortConfigListener> ioPortConfigListeners = new ArrayList<IoPortConfigListener>();
 
-    public IoPort(int portNumber, InterruptController interruptController) {
+    public IoPort(int chip, int portNumber, InterruptController interruptController) {
         this.portNumber = portNumber;
         this.interruptController = interruptController;
-        pins = new VariableFunctionPin[8];
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
-            pins[bitNumber] = new VariableFunctionPin(getShortName() + bitNumber);
+            pins[bitNumber] = new VariableFunctionPin(Constants.CHIP_LABEL[chip] + " " + getShortName() + bitNumber);
         }
     }
 
@@ -142,7 +144,7 @@ public abstract class IoPort {
      */
     public void setInputEnabled(byte inputEnabled) {
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
-            getPin(bitNumber).setIsInputEnabled((inputEnabled & (1 << bitNumber)) == 0);
+            getPin(bitNumber).setIsInputEnabled((inputEnabled & (1 << bitNumber)) != 0);
         }
         for (IoPortConfigListener ioPortConfigListener : ioPortConfigListeners) {
             ioPortConfigListener.onConfigChange(portNumber);

@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.ioPort.tx;
 
-import com.nikonhacker.Prefs;
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -32,16 +32,13 @@ public class TxIoPort extends IoPort {
     private PinFunction[] functions1;
     private PinFunction[] functions2;
     private PinFunction[] functions3;
-    private PinFunction[] inputFunctions;
-    private PinFunction[] outputFunctions;
 
-    private Prefs prefs;
-
-    public TxIoPort(int portNumber, InterruptController interruptController, Prefs prefs) {
-        super(portNumber, interruptController);
-        this.prefs = prefs;
-        inputFunctions = new PinFunction[]{new TxIoPinInputFunction(getShortName() + "0"), new TxIoPinInputFunction(getShortName() + "1"), new TxIoPinInputFunction(getShortName() + "2"), new TxIoPinInputFunction(getShortName() + "3"), new TxIoPinInputFunction(getShortName() + "4"), new TxIoPinInputFunction(getShortName() + "5"), new TxIoPinInputFunction(getShortName() + "6"), new TxIoPinInputFunction(getShortName() + "7")};
-        outputFunctions = new PinFunction[]{new TxOutputPinOutputFunction(getShortName() + "0"), new TxOutputPinOutputFunction(getShortName() + "1"), new TxOutputPinOutputFunction(getShortName() + "2"), new TxOutputPinOutputFunction(getShortName() + "3"), new TxOutputPinOutputFunction(getShortName() + "4"), new TxOutputPinOutputFunction(getShortName() + "5"), new TxOutputPinOutputFunction(getShortName() + "6"), new TxOutputPinOutputFunction(getShortName() + "7")};
+    public TxIoPort(int portNumber, InterruptController interruptController) {
+        super(Constants.CHIP_TX, portNumber, interruptController);
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            inputFunctions[bitNumber] = new TxIoPinInputFunction(getShortName() + bitNumber);
+            outputFunctions[bitNumber] = new TxIoPinOutputFunction(getShortName() + bitNumber);
+        }
     }
 
     public void setFunctions1(PinFunction[] functions1) {
@@ -172,10 +169,10 @@ public class TxIoPort extends IoPort {
      *
      * That way, ioPorts[2].getFn3Handlers()[7] will correctly return the TxIoPinTimerInputHandler(0x5, 1), presented here at the first place
      */
-    public static IoPort[] setupPorts(InterruptController interruptController, Prefs prefs) {
+    public static IoPort[] setupPorts(InterruptController interruptController) {
         TxIoPort[] ioPorts = new TxIoPort[TxIoListener.NUM_PORT];
         for (int i = 0; i < TxIoListener.NUM_PORT; i++) {
-            ioPorts[i] = new TxIoPort(i, interruptController, prefs);
+            ioPorts[i] = new TxIoPort(i, interruptController);
         }
 
         // Indicate port features
