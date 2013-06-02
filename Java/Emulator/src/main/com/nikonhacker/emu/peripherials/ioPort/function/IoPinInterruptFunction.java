@@ -15,7 +15,7 @@ public abstract class IoPinInterruptFunction extends AbstractInputPinFunction im
 
     @Override
     public String getFullName() {
-        return "Interrupt 0x" + Format.asHex(interruptNumber, 1) + " (" + getShortName() + ")";
+        return componentName + " Interrupt 0x" + Format.asHex(interruptNumber, 1) + " (" + getShortName() + ")";
     }
 
     @Override

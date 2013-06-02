@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractOutputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
@@ -24,7 +25,7 @@ public class TxIoPinCaptureOutputFunction extends AbstractOutputPinFunction impl
 
     @Override
     public Integer getValue(int defaultOutputValue) {
-        System.out.println("TxIoPinCaptureOutputFunction.getValue not implemented for pin " + getShortName());
+        if (IoPort.DEBUG) System.out.println("TxIoPinCaptureOutputFunction.getValue not implemented for pin " + getShortName());
         return null;
     }
 }

@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 
 import com.nikonhacker.Constants;
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
@@ -25,6 +26,6 @@ public class TxIoPinADTriggerFunction extends AbstractInputPinFunction implement
 
     @Override
     public void setValue(int value) {
-        System.out.println("TxIoPinADTriggerFunction.setValue not implemented for pin " + getShortName());
+        if (IoPort.DEBUG) System.out.println("TxIoPinADTriggerFunction.setValue not implemented for pin " + getShortName());
     }
 }

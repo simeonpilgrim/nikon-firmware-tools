@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
+import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
@@ -35,7 +36,7 @@ public class TxIoPinSerialCtsFunction extends AbstractInputPinFunction implement
 
     @Override
     public void setValue(int value) {
-        System.out.println("TxIoPinSerialCtsFunction.setValue not implemented for pin " + getShortName());
+        if (IoPort.DEBUG) System.out.println("TxIoPinSerialCtsFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

@@ -9,12 +9,11 @@ public interface Constants {
     int      CHIP_TX    = 1;
     String[] CHIP_LABEL = {"FR", "TX"};
 
-    Color  COLOR_HI       = Color.RED;
-    Color  COLOR_LO       = Color.BLUE;
-    Color  COLOR_DISABLED = Color.GRAY;
-    Color  COLOR_DANGLING = Color.ORANGE;
+    Color COLOR_HI  = Color.RED;
+    Color COLOR_HIZ = Color.ORANGE;
+    Color COLOR_LO  = Color.BLUE;
 
-    String LABEL_HI       = "VCC";
-    String LABEL_HIZ      = "---";
-    String LABEL_LO       = "GND";
+    String LABEL_HI  = "VCC";
+    String LABEL_HIZ = "---";
+    String LABEL_LO  = "GND";
 }

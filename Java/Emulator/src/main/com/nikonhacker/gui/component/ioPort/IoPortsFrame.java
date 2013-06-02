@@ -26,8 +26,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
     private       JLabel[][]                    labels;
     private       JPanel[][]                    pinCells;
-    private final JComponent[][]                pinInputs;
-    private final JComponent[][]                pinOutputs;
+    private final JComboBox[][]                 pinInputs;
+    private final JLabel[][]                    pinDisabledInputs;
+    private final JLabel[][]                    pinOutputs;
     private       ValueChangeListenerIoWire[][] spyWires;
 
 
@@ -42,8 +43,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
         // Pins from left to right (from bit 7 to 0)
         pinCells = new JPanel[ioPorts.length][8];
-        pinInputs = new JComponent[ioPorts.length][8];
-        pinOutputs = new JComponent[ioPorts.length][8];
+        pinInputs = new JComboBox[ioPorts.length][8];
+        pinDisabledInputs = new JLabel[ioPorts.length][8];
+        pinOutputs = new JLabel[ioPorts.length][8];
 
         // Listeners
         spyWires = new ValueChangeListenerIoWire[ioPorts.length][8];
@@ -82,7 +84,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 DynamicMatteBorder pinBorder = new DynamicMatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE);
 
                 // Prepare label for pin function name (config panel)
-                JLabel label = createNameLabel(pinBorder);
+                JLabel label = createLabel(pinBorder);
                 configPanel.add(label, bitNumber > 0 ? "grow" : "grow, wrap");
                 labels[portNumber][7 - bitNumber] = label;
 
@@ -93,9 +95,12 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
                 // Prepare components for pin inputs
                 pinInputs[portNumber][7 - bitNumber] = createInputComboBox(portNumber, bitNumber, pin, pinBorder);
+                pinDisabledInputs[portNumber][7 - bitNumber] = createLabel(pinBorder);
+                pinDisabledInputs[portNumber][7 - bitNumber].setText("dis.");
+                pinDisabledInputs[portNumber][7 - bitNumber].setForeground(Color.GRAY);
 
                 // Prepare components for pin output
-                pinOutputs[portNumber][7 - bitNumber] = createOutputLabel(pinBorder);
+                pinOutputs[portNumber][7 - bitNumber] = createLabel(pinBorder);
 
                 // Insert a spy wire next to each pin
                 spyWires[portNumber][bitNumber] = createAndInsertSpyWire(portNumber, bitNumber, pin);
@@ -104,8 +109,20 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         }
 
         // Footer line - legend (avoid "key" as there are pin KEYs)
-        addLegend(configPanel, "hover to see details");
-        addLegend(valuePanel, "hover to see connection");
+        addCommonLegend(configPanel, "hover to see details");
+        addCommonLegend(valuePanel, "hover to see connection");
+        JLabel label = new JLabel("OUT", SwingConstants.CENTER);
+        label.setPreferredSize(PREFERRED_SIZE);
+        label.setBackground(Color.BLACK);
+        label.setOpaque(true);
+        label.setForeground(Color.WHITE);
+        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Color.BLACK));
+        valuePanel.add(label);
+        label = new JLabel("IN", SwingConstants.CENTER);
+        label.setPreferredSize(PREFERRED_SIZE);
+        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Color.BLACK));
+        valuePanel.add(label);
+
 
         tabbedPane.addTab("Configuration", configPanel);
         tabbedPane.addTab("Values", valuePanel);
@@ -113,13 +130,11 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         getContentPane().add(tabbedPane);
     }
 
-    private void addLegend(JPanel panel, String detail) {
+    private void addCommonLegend(JPanel panel, String detail) {
         JSeparator separator = new JSeparator();
         panel.add(separator, "span 9, gapleft rel, growx, wrap");
         panel.add(new JLabel("legend"), "right");
         JLabel label;
-        label = new JLabel("", SwingConstants.CENTER);
-        panel.add(label);
         label = new JLabel(Constants.LABEL_HI, SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HI));
@@ -130,18 +145,14 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         panel.add(label);
         label = new JLabel("Hi-Z", SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
-        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_DANGLING));
-        panel.add(label);
-        label = new JLabel("Disabled", SwingConstants.CENTER);
-        label.setPreferredSize(PREFERRED_SIZE);
-        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_DISABLED));
+        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HIZ));
         panel.add(label);
         label = new JLabel(detail, SwingConstants.CENTER);
         panel.add(label);
-        panel.add(label, "span 3, wrap");
+        panel.add(label, "span 3");
     }
 
-    private JLabel createNameLabel(DynamicMatteBorder pinBorder) {
+    private JLabel createLabel(DynamicMatteBorder pinBorder) {
         JLabel label = new JLabel();
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBorder(pinBorder);
@@ -199,13 +210,6 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         return comboBox;
     }
 
-    private JComponent createOutputLabel(DynamicMatteBorder pinBorder) {
-        JComponent label1 = new JLabel("", SwingConstants.CENTER);
-        label1.setBorder(pinBorder);
-        label1.setPreferredSize(PREFERRED_SIZE);
-        return label1;
-    }
-
     private ValueChangeListenerIoWire createAndInsertSpyWire(final int finalPortNumber, final int finalBitNumber, final VariableFunctionPin pin) {
         ValueChangeListenerIoWire spyWire = new ValueChangeListenerIoWire(pin.getName() + "SPY", new IoPortValueChangeListener() {
             @Override
@@ -244,20 +248,19 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
             if (pin.isInputEnabled()) {
                 // input is enabled
                 pinComp = pinInputs[portNumber][7 - bitNumber];
-                if (pin.getInputValue() == null) {
-                    color = Constants.COLOR_DANGLING;
-                }
-                else if (pin.getInputValue() == 0) {
-                    color = Constants.COLOR_LO;
-                }
-                else {
-                    color = Constants.COLOR_HI;
-                }
             }
             else {
                 // input is disabled
-                color = Constants.COLOR_DISABLED;
-                pinComp = null;
+                pinComp = pinDisabledInputs[portNumber][7 - bitNumber];
+            }
+            if (pin.getInputValue() == null) {
+                color = Constants.COLOR_HIZ;
+            }
+            else if (pin.getInputValue() == 0) {
+                color = Constants.COLOR_LO;
+            }
+            else {
+                color = Constants.COLOR_HI;
             }
         }
         else {
@@ -266,7 +269,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
             if (pin.getOutputValue() == null) {
                 if (IoPort.DEBUG) System.err.println("OutputValue is null for pin " + pin.getName());
                 ((JLabel)pinComp).setText(Constants.LABEL_HIZ);
-                color = Constants.COLOR_DANGLING;
+                color = Constants.COLOR_HIZ;
             }
             else if (pin.getOutputValue() == 0) {
                 ((JLabel)pinComp).setText(Constants.LABEL_LO);
@@ -276,26 +279,21 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 ((JLabel)pinComp).setText(Constants.LABEL_HI);
                 color = Constants.COLOR_HI;
             }
+            pinComp.setBackground(color);
+            pinComp.setOpaque(true);
+            pinComp.setForeground(Color.white);
         }
 
         pinCells[portNumber][7 - bitNumber].removeAll();
 
         String toolTipText = computeTooltip(pin);
-
-        if (pinComp != null) {
-            pinCells[portNumber][7 - bitNumber].add(pinComp);
-            // Put the tooltip and bgColor on the component
-            pinComp.setToolTipText(toolTipText);
-            ((DynamicMatteBorder)(pinComp.getBorder())).setColor(color);
-        }
-        else {
-            // Put the tooltip on the blank panel
-            pinCells[portNumber][7 - bitNumber].setToolTipText(toolTipText);
-        }
+        pinComp.setToolTipText(toolTipText);
+        ((DynamicMatteBorder)(pinComp.getBorder())).setColor(color);
+        pinCells[portNumber][7 - bitNumber].add(pinComp);
     }
 
     /*
-     *  Compute tooltip as a chain describing pins connected to this one in series
+     *  Compute tooltip as a concatenation of lines describing pins connected to this one in series
      */
     private String computeTooltip(VariableFunctionPin pin) {
         // Html to allow multi-line

@@ -134,6 +134,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = {"FR_TOGGLE_INTERRUPT_CONTROLLER_WINDOW", "TX_TOGGLE_INTERRUPT_CONTROLLER_WINDOW"};
     private static final String[] COMMAND_TOGGLE_SERIAL_INTERFACES = {"FR_COMMAND_TOGGLE_SERIAL_INTERFACES", "TX_COMMAND_TOGGLE_SERIAL_INTERFACES"};
     private static final String[] COMMAND_TOGGLE_SERIAL_DEVICES = {"FR_COMMAND_TOGGLE_SERIAL_DEVICES", "TX_COMMAND_TOGGLE_SERIAL_DEVICES"};
+    private static final String[] COMMAND_TOGGLE_IO_PORTS_WINDOW = {"FR_COMMAND_TOGGLE_IO_PORTS_WINDOW", "TX_COMMAND_TOGGLE_IO_PORTS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_AD_CONVERTER = {"FR_COMMAND_TOGGLE_AD_CONVERTER", "TX_COMMAND_TOGGLE_AD_CONVERTER"};
 
     private static final String[] COMMAND_LOAD_STATE = {"FR_LOAD_STATE", "TX_LOAD_STATE"};
@@ -147,7 +148,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private static final String[] COMMAND_CHIP_OPTIONS = {"FR_OPTIONS", "TX_OPTIONS"};
 
     private static final String COMMAND_GENERATE_SYS_SYMBOLS = "GENERATE_SYS_SYMBOLS";
-    private static final String COMMAND_TOGGLE_IO_PORTS_WINDOW = "COMMAND_TOGGLE_IO_PORTS_WINDOW";
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_TOGGLE_SCREEN_EMULATOR = "TOGGLE_SCREEN_EMULATOR";
 
@@ -207,11 +207,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JCheckBoxMenuItem[] programmableTimersMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] serialInterfacesMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] serialDevicesMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] ioPortsMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] adConverterMenuItem = new JCheckBoxMenuItem[2];
 
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
-    private JCheckBoxMenuItem ioPortsMenuItem;
 
     private JCheckBoxMenuItem[] disassemblyMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] memoryActivityViewerMenuItem = new JCheckBoxMenuItem[2];
@@ -248,11 +248,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JButton[] programmableTimersButton = new JButton[2];
     private JButton[] serialInterfacesButton = new JButton[2];
     private JButton[] serialDevicesButton = new JButton[2];
+    private JButton[] ioPortsButton = new JButton[2];
     private JButton[] adConverterButton = new JButton[2];
     private JButton[] callStackButton = new JButton[2];
     private JButton[] iTronObjectButton = new JButton[2];
 
-    private JButton ioPortsButton;
     private JButton component4006Button;
     private JButton screenEmulatorButton;
 
@@ -273,12 +273,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private InterruptControllerFrame[] interruptControllerFrame = new InterruptControllerFrame[2];
     private SerialInterfaceFrame[] serialInterfaceFrame = new SerialInterfaceFrame[2];
     private GenericSerialFrame[] genericSerialFrame = new GenericSerialFrame[2];
+    private IoPortsFrame[] ioPortsFrame = new IoPortsFrame[2];
     private AdConverterFrame[] adConverterFrame = new AdConverterFrame[2];
     private CallStackFrame[] callStackFrame = new CallStackFrame[2];
 
     private Component4006Frame component4006Frame;
     private DocumentFrame screenEmulatorFrame;
-    private IoPortsFrame ioPortsFrame;
 
     private ITronObjectFrame[] ITronObjectFrame = new ITronObjectFrame[2];
 
@@ -412,7 +412,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         setContentPane(splitPane);
 
-        applyPrefsToUI(false);
+        applyPrefsToUI();
 
 
         for (int chip = 0; chip < 2; chip++) {
@@ -498,7 +498,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         return false;
     }
 
-    private void applyPrefsToUI(boolean usePrettyIoComponentsChanged) {
+    private void applyPrefsToUI() {
         if (BUTTON_SIZE_LARGE.equals(prefs.getButtonSize())) {
             toolbarButtonMargin.set(2, 14, 2, 14);
         }
@@ -513,8 +513,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         JButton button = (JButton) component;
                         ImageIcon icon = (ImageIcon) button.getClientProperty(BUTTON_PROPERTY_KEY_ICON);
                         if (icon != null) {
-                            Image newimg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH) ;
-                            button.setIcon(new ImageIcon(newimg));
+                            Image newImg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH) ;
+                            button.setIcon(new ImageIcon(newImg));
                         }
                     }
                 }
@@ -537,14 +537,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         initProgrammableTimerAnimationIcons(prefs.getButtonSize());
         for (int chip = 0; chip < 2; chip++) {
             toolBar[chip].revalidate();
-        }
-        if (usePrettyIoComponentsChanged) {
-            if (ioPortsFrame != null) {
-                // Close
-                toggleIoPortsWindow();
-                // Reopen
-                toggleIoPortsWindow();
-            }
         }
     }
 
@@ -619,6 +611,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(programmableTimersButton[chip]);
         serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
         bar.add(serialInterfacesButton[chip]);
+        ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], Constants.CHIP_LABEL[chip] + "I/O Ports", "I/O Ports");
+        bar.add(ioPortsButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -629,8 +623,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             bar.add(component4006Button);
         }
         else {
-            ioPortsButton = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW, "I/O Ports", "I/O Ports");
-            bar.add(ioPortsButton);
             serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial devices", "Serial devices");
             bar.add(serialDevicesButton[Constants.CHIP_TX]);
             adConverterButton[Constants.CHIP_TX] = makeButton("ad_converter", COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter", "A/D converter");
@@ -899,6 +891,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             serialInterfacesMenuItem[chip].addActionListener(this);
             componentsMenu.add(serialInterfacesMenuItem[chip]);
 
+            // I/O
+            ioPortsMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " I/O ports");
+            ioPortsMenuItem[chip].setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW[chip]);
+            ioPortsMenuItem[chip].addActionListener(this);
+            componentsMenu.add(ioPortsMenuItem[chip]);
+
             componentsMenu.add(new JSeparator());
         }
 
@@ -919,12 +917,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         componentsMenu.add(component4006MenuItem);
 
         componentsMenu.add(new JSeparator());
-
-        // I/O
-        ioPortsMenuItem = new JCheckBoxMenuItem("I/O ports (TX only)");
-        ioPortsMenuItem.setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW);
-        ioPortsMenuItem.addActionListener(this);
-        componentsMenu.add(ioPortsMenuItem);
 
         //Serial devices : TX only for now
         serialDevicesMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices (TX only)");
@@ -1175,6 +1167,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_SERIAL_DEVICES)) != Constants.CHIP_NONE) {
             toggleGenericSerialFrame(chip);
         }
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_IO_PORTS_WINDOW)) != Constants.CHIP_NONE) {
+            toggleIoPortsWindow(chip);
+        }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_AD_CONVERTER)) != Constants.CHIP_NONE) {
             toggleAdConverterFrame(chip);
         }
@@ -1198,9 +1193,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
             toggleComponent4006();
-        }
-        else if (COMMAND_TOGGLE_IO_PORTS_WINDOW.equals(e.getActionCommand())) {
-            toggleIoPortsWindow();
         }
 
         else if (COMMAND_QUIT.equals(e.getActionCommand())) {
@@ -1549,8 +1541,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             // save
             prefs.setButtonSize(group.getSelection().getActionCommand());
             prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
-            boolean isUsePrettyIoComponentsChanged = false;
-            applyPrefsToUI(isUsePrettyIoComponentsChanged);
+            applyPrefsToUI();
         }
     }
 
@@ -2001,7 +1992,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
 
                 // I/O ports
-                ioPorts = FrIoPort.setupPorts(interruptController, prefs);
+                ioPorts = FrIoPort.setupPorts(interruptController);
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
@@ -2026,7 +2017,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
-                ioPorts = TxIoPort.setupPorts(interruptController, prefs);
+                ioPorts = TxIoPort.setupPorts(interruptController);
 
                 // Serial interfaces
                 // Standard
@@ -2239,13 +2230,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 if (mustReOpen) toggleScreenEmulator();
             }
         }
-        else {
-            if (ioPortsFrame != null) {
-                ioPortsFrame.dispose();
-                ioPortsFrame = null;
-                if (mustReOpen) toggleIoPortsWindow();
-            }
-        }
 
         if (cpuStateEditorFrame[chip] != null) {
             cpuStateEditorFrame[chip].dispose();
@@ -2313,6 +2297,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             genericSerialFrame[chip].dispose();
             genericSerialFrame[chip] = null;
             if (mustReOpen) toggleGenericSerialFrame(chip);
+        }
+        if (ioPortsFrame[chip] != null) {
+            ioPortsFrame[chip].dispose();
+            ioPortsFrame[chip] = null;
+            if (mustReOpen) toggleIoPortsWindow(chip);
         }
         if (ITronObjectFrame[chip] != null) {
             ITronObjectFrame[chip].dispose();
@@ -2443,26 +2432,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         updateStates();
     }
 
-    private void toggleIoPortsWindow() {
-        if (ioPortsFrame == null) {
-            ioPortsFrame = new IoPortsFrame("I/O ports", "io", false, true, false, true, Constants.CHIP_TX, this, platform[Constants.CHIP_TX].getIoPorts());
-            for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ioPort.addIoPortsListener(ioPortsFrame);
-            }
-            addDocumentFrame(Constants.CHIP_TX, ioPortsFrame);
-            ioPortsFrame.display(true);
-        }
-        else {
-            for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ioPort.removeIoPortsListener(ioPortsFrame);
-            }
-            ioPortsFrame.dispose();
-            ioPortsFrame = null;
-        }
-        updateStates();
-    }
-
-
     private void toggleInterruptController(int chip) {
         if (interruptControllerFrame[chip] == null) {
             interruptControllerFrame[chip] = (chip == Constants.CHIP_FR)
@@ -2501,6 +2470,25 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else {
             genericSerialFrame[chip].dispose();
             genericSerialFrame[chip] = null;
+        }
+        updateStates();
+    }
+
+    private void toggleIoPortsWindow(int chip) {
+        if (ioPortsFrame[chip] == null) {
+            ioPortsFrame[chip] = new IoPortsFrame("I/O ports", "io", false, true, false, true, chip, this, platform[chip].getIoPorts());
+            for (IoPort ioPort : platform[chip].getIoPorts()) {
+                ioPort.addIoPortsListener(ioPortsFrame[chip]);
+            }
+            addDocumentFrame(chip, ioPortsFrame[chip]);
+            ioPortsFrame[chip].display(true);
+        }
+        else {
+            for (IoPort ioPort : platform[chip].getIoPorts()) {
+                ioPort.removeIoPortsListener(ioPortsFrame[chip]);
+            }
+            ioPortsFrame[chip].dispose();
+            ioPortsFrame[chip] = null;
         }
         updateStates();
     }
@@ -2647,9 +2635,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if (frame == screenEmulatorFrame) {
             toggleScreenEmulator(); return;
         }
-        else if (frame == ioPortsFrame) {
-            toggleIoPortsWindow(); return;
-        }
         else for (int chip = 0; chip < 2; chip++) {
                 if (frame == cpuStateEditorFrame[chip]) {
                     toggleCPUState(chip); return;
@@ -2690,6 +2675,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 else if (frame == genericSerialFrame[chip]) {
                     toggleGenericSerialFrame(chip); return;
                 }
+                else if (frame == ioPortsFrame[chip]) {
+                    toggleIoPortsWindow(chip); return;
+                }
                 else if (frame == adConverterFrame[chip]) {
                     toggleAdConverterFrame(chip); return;
                 }
@@ -2703,11 +2691,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void updateStates() {
         component4006MenuItem.setSelected(component4006Frame != null);
         screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
-        ioPortsMenuItem.setSelected(ioPortsFrame != null);
 
         component4006MenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]); component4006Button.setEnabled(isImageLoaded[Constants.CHIP_FR]);
         screenEmulatorMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]); screenEmulatorButton.setEnabled(isImageLoaded[Constants.CHIP_FR]);
-        ioPortsMenuItem.setEnabled(isImageLoaded[Constants.CHIP_TX]); ioPortsButton.setEnabled(isImageLoaded[Constants.CHIP_TX]);
 
         generateSysSymbolsMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]);
 
@@ -2727,6 +2713,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             programmableTimersMenuItem[chip].setSelected(programmableTimersFrame[chip] != null);
             interruptControllerMenuItem[chip].setSelected(interruptControllerFrame[chip] != null);
             serialInterfacesMenuItem[chip].setSelected(serialInterfaceFrame[chip] != null);
+            ioPortsMenuItem[chip].setSelected(ioPortsFrame[chip] != null);
             if (chip == Constants.CHIP_TX) {
                 serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
                 adConverterMenuItem[chip].setSelected(adConverterFrame[chip] != null);
@@ -2742,6 +2729,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             programmableTimersMenuItem[chip].setEnabled(isImageLoaded[chip]); programmableTimersButton[chip].setEnabled(isImageLoaded[chip]);
             interruptControllerMenuItem[chip].setEnabled(isImageLoaded[chip]); interruptControllerButton[chip].setEnabled(isImageLoaded[chip]);
             serialInterfacesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialInterfacesButton[chip].setEnabled(isImageLoaded[chip]);
+            ioPortsMenuItem[chip].setEnabled(isImageLoaded[chip]); ioPortsButton[chip].setEnabled(isImageLoaded[chip]);
             if (chip == Constants.CHIP_TX) {
                 serialDevicesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialDevicesButton[chip].setEnabled(isImageLoaded[chip]);
                 adConverterMenuItem[chip].setEnabled(isImageLoaded[chip]); adConverterButton[chip].setEnabled(isImageLoaded[chip]);
