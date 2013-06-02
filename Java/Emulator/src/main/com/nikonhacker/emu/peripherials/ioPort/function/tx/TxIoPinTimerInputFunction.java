@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
@@ -8,17 +9,18 @@ public class TxIoPinTimerInputFunction extends AbstractInputPinFunction implemen
     private int inputNumber;
 
     public TxIoPinTimerInputFunction(int timerNumber, int inputNumber) {
+        super(Constants.CHIP_LABEL[Constants.CHIP_TX]);
         this.timerNumber = timerNumber;
         this.inputNumber = inputNumber;
     }
 
     public TxIoPinTimerInputFunction(int timerNumber) {
-        this.timerNumber = timerNumber;
+        this(timerNumber, -1);
     }
 
     @Override
     public String getFullName() {
-        return "Timer " + timerNumber + " input " + inputNumber;
+        return componentName + " Timer " + timerNumber + " input " + inputNumber;
     }
 
     @Override
@@ -28,7 +30,7 @@ public class TxIoPinTimerInputFunction extends AbstractInputPinFunction implemen
 
     @Override
     public void setValue(int value) {
-        System.err.println(toString() + " - Setting value is not implemented");
+        System.out.println("TxIoPinTimerInputFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

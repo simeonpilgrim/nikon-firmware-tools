@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
@@ -8,16 +9,17 @@ public class TxIoPinSerialCtsFunction extends AbstractInputPinFunction implement
     private int serialInterfaceNumber;
 
     public TxIoPinSerialCtsFunction(int serialInterfaceNumber) {
+        super(Constants.CHIP_LABEL[Constants.CHIP_TX]);
         this.serialInterfaceNumber = serialInterfaceNumber;
     }
 
     @Override
     public String getFullName() {
         if (serialInterfaceNumber >= TxIoListener.NUM_SERIAL_IF) {
-            return "HSerial CTS " + (serialInterfaceNumber - TxIoListener.NUM_SERIAL_IF);
+            return componentName + " HSerial CTS " + (serialInterfaceNumber - TxIoListener.NUM_SERIAL_IF);
         }
         else {
-            return "Serial CTS " + serialInterfaceNumber;
+            return componentName + " Serial CTS " + serialInterfaceNumber;
         }
     }
 
@@ -33,7 +35,7 @@ public class TxIoPinSerialCtsFunction extends AbstractInputPinFunction implement
 
     @Override
     public void setValue(int value) {
-        System.err.println(toString() + " - Setting value is not implemented");
+        System.out.println("TxIoPinSerialCtsFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

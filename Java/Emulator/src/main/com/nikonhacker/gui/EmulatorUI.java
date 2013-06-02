@@ -38,6 +38,7 @@ import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.ioPort.fr.FrIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
@@ -1472,6 +1473,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             @Override
             public boolean accept(File f) {
                 if (f != null) {
+                    //noinspection SimplifiableIfStatement
                     if (f.isDirectory()) {
                         return true;
                     }
@@ -1528,18 +1530,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final JCheckBox closeAllWindowsOnStopCheckBox = new JCheckBox("Close all windows on Stop");
         closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
 
-        // Use pretty I/O components
-        final JCheckBox usePrettyIoComponentsCheckBox = new JCheckBox("Use switches and leds for I/O");
-        usePrettyIoComponentsCheckBox.setSelected(prefs.isUsePrettyIoComponents());
-
-
         // Setup panel
         options.add(new JLabel("Button size :"));
         options.add(small);
         options.add(medium);
         options.add(large);
         options.add(closeAllWindowsOnStopCheckBox);
-        options.add(usePrettyIoComponentsCheckBox);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 options,
@@ -1554,10 +1550,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             prefs.setButtonSize(group.getSelection().getActionCommand());
             prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
             boolean isUsePrettyIoComponentsChanged = false;
-            if (prefs.isUsePrettyIoComponents() != usePrettyIoComponentsCheckBox.isSelected()) {
-                isUsePrettyIoComponentsChanged = true;
-                prefs.setUsePrettyIoComponents(usePrettyIoComponentsCheckBox.isSelected());
-            }
             applyPrefsToUI(isUsePrettyIoComponentsChanged);
         }
     }
@@ -2095,6 +2087,31 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
             }
 
+            // Set up input port overrides according to prefs
+            for (int portNumber = 0; portNumber < ioPorts.length; portNumber++) {
+                for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+                    Integer override = prefs.getPortInputValueOverride(chip, portNumber, bitNumber);
+                    if (override != null) {
+                        Pin pin = ioPorts[portNumber].getPin(bitNumber);
+                        // Insert fixed source, if requested
+                        switch (override) {
+                            case 0:
+                                // GND
+                                new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName()).insertAtPin(pin);
+                                break;
+                            case 1:
+                                // VCC
+                                new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName()).insertAtPin(pin);
+                                break;
+                            default:
+                                new FixedSourceComponent(override, "Fixed " + override + " for " + pin.getName()).insertAtPin(pin);
+                                break;
+                        }
+                    }
+                }
+            }
+
+
             platform[chip].setCpuState(cpuState);
             platform[chip].setMemory(memory);
             platform[chip].setClockGenerator(clockGenerator);
@@ -2430,14 +2447,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         if (ioPortsFrame == null) {
             ioPortsFrame = new IoPortsFrame("I/O ports", "io", false, true, false, true, Constants.CHIP_TX, this, platform[Constants.CHIP_TX].getIoPorts());
             for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).addIoPortsListener(ioPortsFrame);
+                ioPort.addIoPortsListener(ioPortsFrame);
             }
             addDocumentFrame(Constants.CHIP_TX, ioPortsFrame);
             ioPortsFrame.display(true);
         }
         else {
             for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).removeIoPortsListener(ioPortsFrame);
+                ioPort.removeIoPortsListener(ioPortsFrame);
             }
             ioPortsFrame.dispose();
             ioPortsFrame = null;

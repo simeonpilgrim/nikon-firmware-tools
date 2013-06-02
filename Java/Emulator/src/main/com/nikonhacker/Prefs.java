@@ -24,29 +24,28 @@ public class Prefs {
     private int dividerLocation;
     private int lastDividerLocation;
     private boolean dividerKeepHidden;
-    private boolean usePrettyIoComponents = false;
 
     // Per chip
     private List<BreakTrigger>[] triggers;
     private List<MemoryWatch>[] memoryWatches;
     private EnumSet<OutputOption>[] outputOptions;
-    private Map<Integer,Byte>[] ioPortMap;
     private boolean[] autoUpdateITronObjectWindow;
     private boolean[] callStackHideJumps;
-    private int sleepTick[];
-    private boolean writeDisassemblyToFile[];
-    private boolean sourceCodeFollowsPc[];
-    private String codeStructureGraphOrientation[];
-    private boolean firmwareWriteProtected[];
-    private boolean timersCycleSynchronous[];
-    private boolean dmaSynchronous[];
-    private boolean autoEnableTimers[];
-    private boolean adValueFromList[];
-    private Map<String,List<Integer>> adValueListMap[];
-    private Map<String,Integer> adValueMap[];
+    private int[] sleepTick;
+    private boolean[] writeDisassemblyToFile;
+    private boolean[] sourceCodeFollowsPc;
+    private String[] codeStructureGraphOrientation;
+    private boolean[] firmwareWriteProtected;
+    private boolean[] timersCycleSynchronous;
+    private boolean[] dmaSynchronous;
+    private boolean[] autoEnableTimers;
+    private boolean[] adValueFromList;
+    private Map<String,List<Integer>>[] adValueListMap;
+    private Map<String,Integer>[] adValueMap;
     private EepromInitMode eepromInitMode;
     private byte[] lastEepromContents;
     private String lastEepromFileName;
+    private Map<String,Integer>[] ioValueOverrideMap;
 
 
     private static File getPreferenceFile() {
@@ -174,25 +173,15 @@ public class Prefs {
         return triggers[chip];
     }
 
-    public void setTriggers(int chip, List<BreakTrigger> triggers) {
-        this.triggers[chip] = triggers;
-    }
-
     public List<MemoryWatch> getWatches(int chip) {
         if (memoryWatches == null) memoryWatches = new List[2];
         if (memoryWatches[chip] == null) memoryWatches[chip] = new ArrayList<MemoryWatch>();
         return memoryWatches[chip];
     }
 
-    public void setWatches(int chip, List<MemoryWatch> watches) {
-        this.memoryWatches[chip] = watches;
-    }
-
-
     private String getKey(String windowName, int chip) {
         return windowName + "_" + Constants.CHIP_LABEL[chip];
     }
-
 
     public int getWindowPositionX(String windowName, int chip) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
@@ -330,28 +319,6 @@ public class Prefs {
         this.dividerKeepHidden = dividerKeepHidden;
     }
 
-    public boolean isUsePrettyIoComponents() {
-        return usePrettyIoComponents;
-    }
-
-    public void setUsePrettyIoComponents(boolean usePrettyIoComponents) {
-        this.usePrettyIoComponents = usePrettyIoComponents;
-    }
-
-    public byte getPortValue(int chip, int portNumber) {
-        if (ioPortMap == null) ioPortMap = new Map[2];
-        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
-        Byte value = ioPortMap[chip].get(portNumber);
-        if (value == null) return 0;
-        else return value;
-    }
-
-    public void setPortValue(int chip, int portNumber, byte value) {
-        if (ioPortMap == null) ioPortMap = new Map[2];
-        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
-        ioPortMap[chip].put(portNumber, value);
-    }
-
     public boolean areTimersCycleSynchronous(int chip) {
         if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         return timersCycleSynchronous[chip];
@@ -403,12 +370,13 @@ public class Prefs {
     }
 
     public int getAdValue(int chip, String channelKey) {
-        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
-        return adValueMap[chip].get(channelKey);
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        Integer value = adValueMap[chip].get(channelKey);
+        return (value == null?0:value);
     }
 
     public void setAdValue(int chip, String channelKey, int value) {
-        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
         adValueMap[chip].put(channelKey, value);
     }
 
@@ -439,6 +407,21 @@ public class Prefs {
 
     public void setLastEepromFileName(String lastEepromFileName) {
         this.lastEepromFileName = lastEepromFileName;
+    }
+
+    public Integer getPortInputValueOverride(int chip, int portNumber, int bitNumber) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        return ioValueOverrideMap[chip].get(portNumber + "-" + bitNumber);
+    }
+
+    public void setPortInputValueOverride(int chip, int portNumber, int bitNumber, int value) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        ioValueOverrideMap[chip].put(portNumber + "-" + bitNumber, value);
+    }
+
+    public void removePortInputValueOverride(int chip, int portNumber, int bitNumber) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        ioValueOverrideMap[chip].remove(portNumber + "-" + bitNumber);
     }
 
 

@@ -1,14 +1,10 @@
 package com.nikonhacker.emu.peripherials.ioPort.tx;
 
-import com.nikonhacker.Constants;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
-import com.nikonhacker.emu.peripherials.ioPort.IoPortsListener;
-import com.nikonhacker.emu.peripherials.ioPort.function.InputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.OutputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.tx.*;
 
@@ -26,8 +22,6 @@ public class TxIoPort extends IoPort {
     private byte openDrainControlRegister;
     /** Port pull-up control register */
     private byte pullUpControlRegister;
-    /** Port input enable control register */
-    private byte inputEnableControlRegister = (byte) 0xFF;
 
     /** The 3 following arrays declare the functions that can be performed by each Port Pin
      * when the corresponding bit of the corresponding register is 1.
@@ -38,15 +32,16 @@ public class TxIoPort extends IoPort {
     private PinFunction[] functions1;
     private PinFunction[] functions2;
     private PinFunction[] functions3;
-    private PinFunction[] inputFunctions  = {new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction(), new InputPinFunction()};
-    private PinFunction[] outputFunctions = {new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction(), new OutputPinFunction()};
+    private PinFunction[] inputFunctions;
+    private PinFunction[] outputFunctions;
 
     private Prefs prefs;
 
     public TxIoPort(int portNumber, InterruptController interruptController, Prefs prefs) {
         super(portNumber, interruptController);
         this.prefs = prefs;
-        externalValue = prefs.getPortValue(Constants.CHIP_TX, portNumber);
+        inputFunctions = new PinFunction[]{new TxIoPinInputFunction(getShortName() + "0"), new TxIoPinInputFunction(getShortName() + "1"), new TxIoPinInputFunction(getShortName() + "2"), new TxIoPinInputFunction(getShortName() + "3"), new TxIoPinInputFunction(getShortName() + "4"), new TxIoPinInputFunction(getShortName() + "5"), new TxIoPinInputFunction(getShortName() + "6"), new TxIoPinInputFunction(getShortName() + "7")};
+        outputFunctions = new PinFunction[]{new TxOutputPinOutputFunction(getShortName() + "0"), new TxOutputPinOutputFunction(getShortName() + "1"), new TxOutputPinOutputFunction(getShortName() + "2"), new TxOutputPinOutputFunction(getShortName() + "3"), new TxOutputPinOutputFunction(getShortName() + "4"), new TxOutputPinOutputFunction(getShortName() + "5"), new TxOutputPinOutputFunction(getShortName() + "6"), new TxOutputPinOutputFunction(getShortName() + "7")};
     }
 
     public void setFunctions1(PinFunction[] functions1) {
@@ -71,28 +66,11 @@ public class TxIoPort extends IoPort {
     }
 
     /**
-     * Method to get the register value
-     * @return internal values for outputs combined with the external values for inputs
-     */
-    public byte getValue() {
-        return (byte) ((internalValue & direction) | (externalValue & ~direction));
-    }
-
-    /**
-     * Method called by external devices to set the value
-     */
-    @Override
-    public void setExternalValue(byte value) {
-        this.externalValue = value;
-        prefs.setPortValue(Constants.CHIP_TX, portNumber, value);
-    }
-
-    /**
      * Get configuration register mask - called by external devices
      * @return mask: 0=Input 1=Output
      */
     public byte getControlRegister() {
-        return direction;
+        return getDirection();
     }
 
     /**
@@ -101,10 +79,7 @@ public class TxIoPort extends IoPort {
      * @param controlRegister mask: 0=Input 1=Output
      */
     public void setControlRegister(byte controlRegister) {
-        direction = controlRegister;
-        for (IoPortsListener ioPortsListener : ioPortsListeners) {
-            ioPortsListener.onConfigChange(portNumber, controlRegister, inputEnableControlRegister);
-        }
+        setDirection(controlRegister);
     }
 
     public byte getFunctionRegister1() {
@@ -149,13 +124,13 @@ public class TxIoPort extends IoPort {
                 // fn3 defines the behaviour of this pin
                 pins[pinNumber].setFunction(functions3[pinNumber]);
             }
-            else if ((direction & pinMask) != 0) {
-                // pin is configured as plain output
-                pins[pinNumber].setFunction(outputFunctions[pinNumber]);
-            }
-            else {
+            else if (pins[pinNumber].isInput()) {
                 // pin is configured as plain input
                 pins[pinNumber].setFunction(inputFunctions[pinNumber]);
+            }
+            else {
+                // pin is configured as plain output
+                pins[pinNumber].setFunction(outputFunctions[pinNumber]);
             }
         }
     }
@@ -179,14 +154,12 @@ public class TxIoPort extends IoPort {
     }
 
     public byte getInputEnableControlRegister() {
-        return inputEnableControlRegister;
+        return getInputEnabled();
     }
 
+
     public void setInputEnableControlRegister(byte inputEnableControlRegister) {
-        this.inputEnableControlRegister = inputEnableControlRegister;
-        for (IoPortsListener ioPortsListener : ioPortsListeners) {
-            ioPortsListener.onConfigChange(portNumber, direction, inputEnableControlRegister);
-        }
+        setInputEnabled(inputEnableControlRegister);
     }
 
     /**

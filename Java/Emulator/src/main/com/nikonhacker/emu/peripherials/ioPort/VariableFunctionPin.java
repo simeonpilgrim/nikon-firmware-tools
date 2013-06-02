@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.ioPort;
 
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
+import com.nikonhacker.emu.peripherials.ioPort.function.AbstractOutputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
 /**
@@ -21,24 +22,83 @@ public class VariableFunctionPin extends Pin {
         return function;
     }
 
-    /** To be called by external component */
+    /**
+     * To be called by CPU code
+     */
+    @Override
+    public Integer getInputValue() {
+        // Just check that this input pin is configured as input
+        if (IoPort.DEBUG && !(function instanceof AbstractInputPinFunction)) {
+            System.err.println("Code is trying to read pin " + getName() + " although it is " +
+                    (function==null
+                            ?"not configured as input"
+                            :("configured as " + function.getClass().getSimpleName())
+                    )
+                    + ". Forwarding request anyway...");
+        }
+
+        // Normal behaviour
+        return super.getInputValue();
+    }
+
+    /**
+     * To be called by external component
+     * This implementation delegates the behaviour to the attached function, if any
+     */
     public void setInputValue(int value) {
-        super.setInputValue(value);
         if (function instanceof AbstractInputPinFunction) {
             ((AbstractInputPinFunction) function).setValue(value);
         }
+        else {
+            if (IoPort.DEBUG) {
+                System.err.println("A component connected to pin " + getName() + " tries to set its value to " + value + " although it is " +
+                        (function==null
+                                ?"not configured as input"
+                                :("configured as " + function.getClass().getSimpleName())
+                        )
+                        + ". Forwarding request anyway...");
+            }
+        }
     }
 
-    /** To be called by CPU code */
+    /**
+     * To be called by external component
+     * This implementation delegates the behaviour to the attached function, if any
+     */
+    @Override
+    public Integer getOutputValue() {
+        if (function instanceof AbstractOutputPinFunction) {
+            return ((AbstractOutputPinFunction) function).getValue(outputValue);
+        }
+        else {
+            if (IoPort.DEBUG) {
+                System.err.println("A component connected to pin " + getName() + " tries to read its value although it is " +
+                        (function==null
+                                ?"not configured as output"
+                                :("configured as " + function.getClass().getSimpleName())
+                        )
+                        + ". Returning null...");
+            }
+        }
+        return null;
+    }
+
+    /**
+     * To be called by CPU code
+     */
+    @Override
     public void setOutputValue(int value) {
-        if (function instanceof AbstractInputPinFunction) {
+        // Just check that this input pin is configured as output
+        if (!(function instanceof AbstractOutputPinFunction)) {
             System.err.println("Code is trying to set pin " + getName() + " to " + value + " although it is " +
                     (function==null
-                     ?"not configured as input"
+                     ?"not configured as output"
                      :("configured as " + function.getClass().getSimpleName())
                     )
                     + ". Outputting anyway...");
         }
+
+        // Normal behaviour
         super.setOutputValue(value);
     }
 
