@@ -16,7 +16,7 @@ public class Pin {
      * This is the value set by the component this pin belongs to,
      * that can be read by the component whose pin is connected to this one.
      */
-    protected int outputValue;
+    protected Integer outputValue;
 
     private boolean isInput        = true;
     private boolean isInputEnabled = true;
@@ -43,7 +43,9 @@ public class Pin {
 
     public void setConnectedPin(Pin connectedPin) {
         this.connectedPin = connectedPin;
-        if (connectedPin != null) connectedPin.setInputValue(outputValue);
+        if (connectedPin != null && outputValue != null) {
+            connectedPin.setInputValue(outputValue);
+        }
     }
 
     /**

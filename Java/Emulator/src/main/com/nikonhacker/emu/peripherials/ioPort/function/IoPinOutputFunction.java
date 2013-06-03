@@ -9,7 +9,7 @@ public class IoPinOutputFunction extends AbstractOutputPinFunction implements Pi
     }
 
     @Override
-    public Integer getValue(int defaultOutputValue) {
+    public Integer getValue(Integer defaultOutputValue) {
         return defaultOutputValue;
     }
 

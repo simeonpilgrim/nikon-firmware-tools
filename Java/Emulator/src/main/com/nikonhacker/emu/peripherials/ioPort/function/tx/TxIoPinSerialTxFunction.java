@@ -35,7 +35,7 @@ public class TxIoPinSerialTxFunction extends AbstractOutputPinFunction implement
     }
 
     @Override
-    public Integer getValue(int defaultOutputValue) {
+    public Integer getValue(Integer defaultOutputValue) {
         if (IoPort.DEBUG) System.out.println("TxIoPinSerialTxFunction.getValue not implemented for pin " + getShortName());
         return null;
     }

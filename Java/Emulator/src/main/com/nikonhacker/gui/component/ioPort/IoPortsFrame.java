@@ -300,11 +300,11 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         String toolTipText = "<html>" + pin.getFunctionFullName();
         Pin currentPin = pin.getConnectedPin();
         while (currentPin != null) {
-            toolTipText += " &lt;-&gt; " + currentPin.getName();
             if (currentPin instanceof ForwardingPin) {
                 // Pin is part of a two-pin component. See what's on the other side
                 Pin targetPin = ((ForwardingPin)currentPin).getTargetPin();
-                toolTipText += "<br/>" + targetPin.getName();
+                // This is a wire component (e.g. logging on one side or the other)
+//                toolTipText += " &lt;-&gt; " + currentPin.getName() + "<br/>" + targetPin.getName();
                 // And go on with the component connected to that other side
                 currentPin = targetPin.getConnectedPin();
                 if (currentPin == null) {
@@ -312,6 +312,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 }
             }
             else {
+                toolTipText += " &lt;-&gt; " + currentPin.getName();
                 currentPin = null;
             }
         }

@@ -22,7 +22,7 @@ public abstract class Abstract2PinComponent {
     }
 
     /**
-     * Inserts this wire between the given pin and the pin originally connected to it
+     * Inserts this component between the given pin and the pin originally connected to it
      * The given pin gets connected to the the pin1 of this component
      * The pin formerly connected to the given pin gets connected to the pin2 of this component
      * @param pin
