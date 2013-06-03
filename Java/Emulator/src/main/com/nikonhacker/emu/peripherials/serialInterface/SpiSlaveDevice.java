@@ -8,7 +8,7 @@ public abstract class SpiSlaveDevice implements SerialDevice {
     private Pin selectPin;
 
     protected SpiSlaveDevice() {
-        selectPin = new SelectPin(this.getClass().getSimpleName() + " select pin");
+        selectPin = new SelectPin(this.getClass().getSimpleName() + " ~SELECT pin");
     }
 
     public void setSelected(boolean selected) {
