@@ -8,10 +8,10 @@ import com.nikonhacker.emu.peripherials.ioPort.util.ForwardingPin;
 import com.nikonhacker.emu.peripherials.ioPort.util.ValueChangeListenerIoWire;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.util.DynamicMatteBorder;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,6 +21,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
     // Size for all components
     private static final Dimension PREFERRED_SIZE    = new Dimension(55, 30);
     private static final int       COLOR_BORDER_SIZE = 2;
+    private static final Border    BORDER_HI         = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HI);
+    private static final Border    BORDER_HIZ        = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HIZ);
+    private static final Border    BORDER_LO         = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_LO);
 
     private final IoPort[] ioPorts;
 
@@ -81,10 +84,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 final VariableFunctionPin pin = ioPorts[portNumber].getPin(bitNumber);
 
                 // Prepare a border that will indicate the reflect value and will be used around all components representing that pin (shared)
-                DynamicMatteBorder pinBorder = new DynamicMatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE);
 
                 // Prepare label for pin function name (config panel)
-                JLabel label = createLabel(pinBorder);
+                JLabel label = createLabel();
                 configPanel.add(label, bitNumber > 0 ? "grow" : "grow, wrap");
                 labels[portNumber][7 - bitNumber] = label;
 
@@ -94,13 +96,15 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 pinCells[portNumber][7 - bitNumber] = pinCell;
 
                 // Prepare components for pin inputs
-                pinInputs[portNumber][7 - bitNumber] = createInputComboBox(portNumber, bitNumber, pin, pinBorder);
-                pinDisabledInputs[portNumber][7 - bitNumber] = createLabel(pinBorder);
+                pinInputs[portNumber][7 - bitNumber] = createInputComboBox(portNumber, bitNumber, pin);
+                pinDisabledInputs[portNumber][7 - bitNumber] = createLabel();
                 pinDisabledInputs[portNumber][7 - bitNumber].setText("dis.");
                 pinDisabledInputs[portNumber][7 - bitNumber].setForeground(Color.GRAY);
 
                 // Prepare components for pin output
-                pinOutputs[portNumber][7 - bitNumber] = createLabel(pinBorder);
+                pinOutputs[portNumber][7 - bitNumber] = createLabel();
+                pinOutputs[portNumber][7 - bitNumber].setOpaque(true);
+                pinOutputs[portNumber][7 - bitNumber].setForeground(Color.WHITE);
 
                 // Insert a spy wire next to each pin
                 spyWires[portNumber][bitNumber] = createAndInsertSpyWire(portNumber, bitNumber, pin);
@@ -152,15 +156,15 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         panel.add(label, "span 3");
     }
 
-    private JLabel createLabel(DynamicMatteBorder pinBorder) {
+    private JLabel createLabel() {
         JLabel label = new JLabel();
         label.setPreferredSize(PREFERRED_SIZE);
-        label.setBorder(pinBorder);
+        label.setBorder(BORDER_HIZ);
         label.setHorizontalAlignment(SwingConstants.CENTER);
         return label;
     }
 
-    private JComboBox createInputComboBox(final int portNumber, final int bitNumber, final VariableFunctionPin pin, DynamicMatteBorder pinBorder) {
+    private JComboBox createInputComboBox(final int portNumber, final int bitNumber, final VariableFunctionPin pin) {
         final JComboBox comboBox = new JComboBox();
         comboBox.addItem(Constants.LABEL_HI);
         comboBox.addItem(Constants.LABEL_HIZ);
@@ -180,7 +184,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         else {
             comboBox.setSelectedIndex(1);
         }
-        comboBox.setBorder(pinBorder);
+        comboBox.setBorder(BORDER_HIZ);
         comboBox.setPreferredSize(PREFERRED_SIZE);
         comboBox.addActionListener(new ActionListener() {
             @Override
@@ -243,6 +247,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         // State inputs/outputs
         JComponent pinComp;
         Color color;
+        Border border;
         if (pin.isInput()) {
             // pin is configured as input
             if (pin.isInputEnabled()) {
@@ -253,43 +258,53 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 // input is disabled
                 pinComp = pinDisabledInputs[portNumber][7 - bitNumber];
             }
-            if (pin.getInputValue() == null) {
-                color = Constants.COLOR_HIZ;
+            Integer inputValue = pin.getInputValue();
+            if (inputValue == null) {
+                border = BORDER_HIZ;
             }
-            else if (pin.getInputValue() == 0) {
-                color = Constants.COLOR_LO;
+            else if (inputValue == 0) {
+                border = BORDER_LO;
             }
             else {
-                color = Constants.COLOR_HI;
+                border = BORDER_HI;
             }
         }
         else {
             // pin is configured as output
             pinComp = pinOutputs[portNumber][7 - bitNumber];
-            if (pin.getOutputValue() == null) {
+            Integer outputValue = pin.getOutputValue();
+            if (outputValue == null) {
                 if (IoPort.DEBUG) System.err.println("OutputValue is null for pin " + pin.getName());
                 ((JLabel)pinComp).setText(Constants.LABEL_HIZ);
                 color = Constants.COLOR_HIZ;
+                border = BORDER_HIZ;
             }
-            else if (pin.getOutputValue() == 0) {
+            else if (outputValue == 0) {
                 ((JLabel)pinComp).setText(Constants.LABEL_LO);
                 color = Constants.COLOR_LO;
+                border = BORDER_LO;
             }
             else {
                 ((JLabel)pinComp).setText(Constants.LABEL_HI);
                 color = Constants.COLOR_HI;
+                border = BORDER_HI;
             }
             pinComp.setBackground(color);
-            pinComp.setOpaque(true);
-            pinComp.setForeground(Color.white);
         }
-
-        pinCells[portNumber][7 - bitNumber].removeAll();
 
         String toolTipText = computeTooltip(pin);
         pinComp.setToolTipText(toolTipText);
-        ((DynamicMatteBorder)(pinComp.getBorder())).setColor(color);
-        pinCells[portNumber][7 - bitNumber].add(pinComp);
+        pinComp.setBorder(border);
+
+        JPanel cell = pinCells[portNumber][7 - bitNumber];
+        if (cell.getComponents().length == 0 || cell.getComponent(0) != pinComp) {
+            // The cell does not currently contain the suitable component. Replace it.
+            cell.removeAll();
+            cell.add(pinComp);
+        }
+
+        // Also update config page
+        labels[portNumber][7 - bitNumber].setBorder(border);
     }
 
     /*
