@@ -25,7 +25,7 @@ public class TxIoPinTimerOutputFunction extends AbstractOutputPinFunction implem
     }
 
     @Override
-    public Integer getValue(int defaultOutputValue) {
+    public Integer getValue(Integer defaultOutputValue) {
         if (IoPort.DEBUG) System.out.println("TxIoPinTimerOutputFunction.getValue not implemented for pin " + getShortName());
         return null;
     }

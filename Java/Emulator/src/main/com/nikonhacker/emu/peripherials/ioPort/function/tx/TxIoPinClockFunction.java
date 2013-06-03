@@ -22,7 +22,7 @@ public class TxIoPinClockFunction  extends AbstractOutputPinFunction implements 
     }
 
     @Override
-    public Integer getValue(int defaultOutputValue) {
+    public Integer getValue(Integer defaultOutputValue) {
         if (IoPort.DEBUG) System.out.println("TxIoPinClockFunction.getValue not implemented for pin " + getShortName());
         return null;
     }

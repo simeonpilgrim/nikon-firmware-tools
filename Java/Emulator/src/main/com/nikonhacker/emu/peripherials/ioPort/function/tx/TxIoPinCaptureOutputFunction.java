@@ -24,7 +24,7 @@ public class TxIoPinCaptureOutputFunction extends AbstractOutputPinFunction impl
     }
 
     @Override
-    public Integer getValue(int defaultOutputValue) {
+    public Integer getValue(Integer defaultOutputValue) {
         if (IoPort.DEBUG) System.out.println("TxIoPinCaptureOutputFunction.getValue not implemented for pin " + getShortName());
         return null;
     }
