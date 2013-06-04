@@ -44,6 +44,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JButton addButton;
     private final JButton editButton;
     private final JButton deleteButton;
+    private final JButton moveUpButton;
+    private final JButton moveDownButton;
     private final JButton addSyscallButton;
 
     public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
@@ -116,6 +118,32 @@ public class BreakTriggerListFrame extends DocumentFrame {
             }
         });
         rightPanel.add(deleteButton);
+
+        moveUpButton = new JButton("Move Up");
+        moveUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        moveUpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] selections = triggerTable.getSelectedRows();
+                if (moveTrigger(selections, -1)) {
+                    triggerTable.clearSelection();
+                    triggerTable.addRowSelectionInterval(selections[0] - 1, selections[selections.length - 1] - 1);
+                }
+            }
+        });
+        rightPanel.add(moveUpButton);
+
+        moveDownButton = new JButton("Move Down");
+        moveDownButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        moveDownButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] selections = triggerTable.getSelectedRows();
+                if (moveTrigger(selections, 1)) {
+                    triggerTable.clearSelection();
+                    triggerTable.addRowSelectionInterval(selections[0] + 1, selections[selections.length - 1] + 1);
+                }
+            }
+        });
+        rightPanel.add(moveDownButton);
 
         editPanel.add(rightPanel, BorderLayout.EAST);
 
@@ -214,6 +242,28 @@ public class BreakTriggerListFrame extends DocumentFrame {
         editTrigger(trigger);
 
         setSelectedIndex(breakTriggers.size() - 1);
+    }
+
+    private boolean moveTrigger(int[] selectedRows, int direction) {
+        boolean hasMoved = false;
+        if (selectedRows.length > 0) {
+            // if there are holes in the selection, then only select the first one
+            if (selectedRows[selectedRows.length - 1] - selectedRows[0] != selectedRows.length - 1) {
+                selectedRows = new int[]{selectedRows[0]};
+            }
+            if (direction < 0 && selectedRows[0] > 0) {
+                // Move up
+                Collections.rotate(breakTriggers.subList(selectedRows[0] - 1, selectedRows[0] + selectedRows.length), - 1);
+                hasMoved = true;
+            }
+            if (direction > 0 && selectedRows[selectedRows.length - 1] < breakTriggers.size() - 1) {
+                // Move down
+                Collections.rotate(breakTriggers.subList(selectedRows[0], selectedRows[0] + selectedRows.length + 1), 1);
+                hasMoved = true;
+            }
+            updateBreaktriggers();
+        }
+        return hasMoved;
     }
 
     private void setSelectedIndex(int index) {
