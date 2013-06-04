@@ -114,7 +114,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
         // Footer line - legend (avoid "key" as there are pin KEYs)
         addCommonLegend(configPanel, "hover to see details");
-        addCommonLegend(valuePanel, "hover to see connection");
+        addCommonLegend(valuePanel, "hover to see connections");
         JLabel label = new JLabel("OUT", SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBackground(Color.BLACK);
