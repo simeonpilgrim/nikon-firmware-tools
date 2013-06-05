@@ -8,6 +8,7 @@ import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -29,6 +30,7 @@ public class Platform {
     private List<SerialDevice> serialDevices;
     private DmaController dmaController;
     private AdConverter adConverter;
+    private RealtimeClock realtimeClock;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -108,5 +110,13 @@ public class Platform {
 
     public void setAdConverter(AdConverter adConverter) {
         this.adConverter = adConverter;
+    }
+
+    public RealtimeClock getRealtimeClock() {
+        return realtimeClock;
+    }
+
+    public void setRealtimeClock(RealtimeClock realtimeClock) {
+        this.realtimeClock = realtimeClock;
     }
 }

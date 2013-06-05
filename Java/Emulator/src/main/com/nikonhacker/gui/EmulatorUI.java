@@ -44,6 +44,8 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
+import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
+import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
@@ -1763,7 +1765,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
 
-            // ------------------------ Show it
+        // ------------------------ Show it
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 tabbedPane,
@@ -1956,6 +1958,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             ClockGenerator clockGenerator;
             InterruptController interruptController;
             DmaController dmaController = null;
+            RealtimeClock realtimeClock = null;
             AdConverter adConverter = null;
             TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
@@ -2032,6 +2035,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
                 dmaController = new TxDmaController(platform[chip], prefs);
+                realtimeClock = new TxRealtimeClock(platform[chip], prefs);
 
                 // Devices to be linked to the Tx chip
 
@@ -2111,6 +2115,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             platform[chip].setIoPorts(ioPorts);
             platform[chip].setSerialInterfaces(serialInterfaces);
             platform[chip].setDmaController(dmaController);
+            platform[chip].setRealtimeClock(realtimeClock);
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
@@ -2151,9 +2156,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
 
             updateStates();
-
-            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-            setStatusText(chip, "Image load complete...");
 
         } catch (IOException e) {
             e.printStackTrace();

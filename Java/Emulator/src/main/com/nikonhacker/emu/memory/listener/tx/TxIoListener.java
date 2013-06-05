@@ -12,6 +12,7 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
+import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
 import org.apache.commons.lang3.StringUtils;
 
@@ -71,6 +72,16 @@ public class TxIoListener extends IoActivityListener {
     private static final int REGISTER_RSR    =    0xFF00_1304; // Byte count register
     private static final int REGISTER_DHR    =    0xFF00_130C; // DMA transfer control register
 
+    // Real Time Clock (RTC)
+    public static final int REGISTER_HOURR   =    0xFF00_1500; // Hour column register
+    public static final int REGISTER_MINR    =    0xFF00_1502; // Minute column register
+    public static final int REGISTER_SECR    =    0xFF00_1503; // Second column register
+    public static final int REGISTER_YEARR   =    0xFF00_1504; // Year column register
+    public static final int REGISTER_MONTHR  =    0xFF00_1505; // Month column register
+    public static final int REGISTER_DATER   =    0xFF00_1506; // Date column register
+    public static final int REGISTER_DAYR    =    0xFF00_1507; // Day of week column register
+    public static final int REGISTER_PAGER   =    0xFF00_1508; // PAGE register
+    public static final int REGISTER_RESTR   =    0xFF00_150C; // Reset register
 
     // Hi speed Serial ports
     public static final int NUM_HSERIAL_IF = 3;
@@ -283,7 +294,7 @@ public class TxIoListener extends IoActivityListener {
                         return (byte)txInputCaptureTimer.getTbtCap();
                     case REGISTER_TBTRDCAP + 3:
                         return (byte)txInputCaptureTimer.getCurrentValue(); // TODO is that really the value ??
-                    }
+                }
             }
             else if (addr < REGISTER_CAPCR0) {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
@@ -393,6 +404,32 @@ public class TxIoListener extends IoActivityListener {
 
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            // RTC registers
+            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            switch (addr) {
+                case REGISTER_HOURR + 1:
+                    return (byte)(clock.getTimeReg()>>16);
+                case REGISTER_MINR:
+                    return (byte)(clock.getTimeReg()>>8);
+                case REGISTER_SECR:
+                    return (byte)clock.getTimeReg();
+                case REGISTER_YEARR:
+                    return (byte)(clock.getDateReg()>>24);
+                case REGISTER_MONTHR:
+                    return (byte)(clock.getDateReg()>>16);
+                case REGISTER_DATER:
+                    return (byte)(clock.getDateReg()>>8);
+                case REGISTER_DAYR:
+                    return (byte)clock.getDateReg();
+                case REGISTER_PAGER + 3:
+                    return (byte)clock.getPager();
+                case REGISTER_RESTR + 3:
+                    return (byte)clock.getRestr();
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -550,6 +587,9 @@ public class TxIoListener extends IoActivityListener {
                         return  txInputCaptureTimer.getTcCap(captureChannel);
                 }
             }
+        }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            throw new RuntimeException("The RTC registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -810,6 +850,22 @@ public class TxIoListener extends IoActivityListener {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            // RTC registers
+            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            switch (addr) {
+                case REGISTER_HOURR:
+                    return clock.getTimeReg();
+                case REGISTER_YEARR:
+                    return clock.getDateReg();
+                case REGISTER_PAGER:
+                    return clock.getPager();
+                case REGISTER_RESTR:
+                    return clock.getRestr();
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+            }
+        }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
             // AD unit configuration registers
             int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
@@ -969,16 +1025,16 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 3:
-                         txInputCaptureTimer.setCmpCtl(compareChannel, value); break;
+                        txInputCaptureTimer.setCmpCtl(compareChannel, value); break;
                     case REGISTER_TCCMP0 + 3:
-                         txInputCaptureTimer.setTcCmp(compareChannel, value); break;
+                        txInputCaptureTimer.setTcCmp(compareChannel, value); break;
                 }
             }
             else {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 3:
-                         txInputCaptureTimer.setCapCr(captureChannel, value); break;
+                        txInputCaptureTimer.setCapCr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 3:
                         throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
                 }
@@ -1075,6 +1131,32 @@ public class TxIoListener extends IoActivityListener {
 
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            // RTC registers
+            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            switch (addr) {
+                case REGISTER_HOURR + 1:
+                    clock.setHourr(value); break;
+                case REGISTER_MINR:
+                    clock.setMinr(value); break;
+                case REGISTER_SECR:
+                    clock.setSecr(value); break;
+                case REGISTER_YEARR:
+                    clock.setYearr(value); break;
+                case REGISTER_MONTHR:
+                    clock.setMonthr(value); break;
+                case REGISTER_DATER:
+                    clock.setDater(value); break;
+                case REGISTER_DAYR:
+                    clock.setDayr(value); break;
+                case REGISTER_PAGER + 3:
+                    clock.setPager(value); break;
+                case REGISTER_RESTR + 3:
+                    clock.setRestr(value); break;
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1225,6 +1307,9 @@ public class TxIoListener extends IoActivityListener {
                         throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
                 }
             }
+        }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            throw new RuntimeException("The RTC registers cannot be written by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -1437,6 +1522,22 @@ public class TxIoListener extends IoActivityListener {
                     channel.setDtcr(value); break;
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+            }
+        }
+        else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
+            // RTC registers
+            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            switch (addr) {
+                case REGISTER_HOURR:
+                    clock.setTimeReg(value); break;
+                case REGISTER_YEARR:
+                    clock.setDateReg(value); break;
+                case REGISTER_PAGER:
+                    clock.setPager(value); break;
+                case REGISTER_RESTR:
+                    clock.setRestr(value); break;
+                default:
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
