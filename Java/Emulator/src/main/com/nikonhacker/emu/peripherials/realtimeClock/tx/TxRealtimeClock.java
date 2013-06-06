@@ -244,7 +244,7 @@ public class TxRealtimeClock implements RealtimeClock {
         if (i < 1 || i > 31)
             throw new RuntimeException("RTC day of month is invalid");
 
-        if (bcd2num((value >> 8) & 0xFF) > 6)
+        if (bcd2num(value & 0xFF) > 6)
             throw new RuntimeException("RTC day of week is invalid");
 
         if ((pager & 1) == 0) {
