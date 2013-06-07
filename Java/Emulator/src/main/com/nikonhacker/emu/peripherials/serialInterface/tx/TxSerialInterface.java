@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.CycleCounterListener;
 import com.nikonhacker.emu.Emulator;
@@ -695,7 +696,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     }
 
     public String getName() {
-        return "Tx Serial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial #" + serialInterfaceNumber;
     }
 
     public String toString() {
