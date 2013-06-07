@@ -48,6 +48,10 @@ public abstract class ProgrammableTimer {
         this.cycleCounterListener = cycleCounterListener;
     }
 
+    public int getTimerNumber() {
+        return timerNumber;
+    }
+
     public int getCurrentValue() {
         return currentValue;
     }
@@ -92,4 +96,7 @@ public abstract class ProgrammableTimer {
         return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
     }
 
+    public void increment() {
+        timerTask.run();
+    }
 }

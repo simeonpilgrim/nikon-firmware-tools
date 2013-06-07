@@ -16,7 +16,7 @@ public class TimerCycleCounterListener implements CycleCounterListener {
             Long cycleInterval = timerMap.get(programmableTimer);
             for (int i = 1; i <= increment; i++) {
                 if ((oldCount + i) % cycleInterval == 0) {
-                    programmableTimer.getTimerTask().run();
+                    programmableTimer.increment();
                 }
             }
         }

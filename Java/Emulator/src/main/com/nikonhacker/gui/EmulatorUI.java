@@ -2020,7 +2020,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
-                ioPorts = TxIoPort.setupPorts(interruptController);
+                ioPorts = TxIoPort.setupPorts(interruptController, programmableTimers);
 
                 // Serial interfaces
                 // Standard
