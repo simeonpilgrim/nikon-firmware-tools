@@ -45,4 +45,9 @@ public class SerialWire implements SerialDevice {
     public String getWireName() {
         return wireName;
     }
+
+    @Override
+    public String toString() {
+        return getWireName();
+    }
 }

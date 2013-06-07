@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
@@ -495,6 +496,6 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     public String getName() {
-        return "Fr Serial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_FR] + " Serial #" + serialInterfaceNumber;
     }
 }

@@ -25,4 +25,9 @@ public class DummySerialDevice implements SerialDevice {
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         // ignore
     }
+
+    @Override
+    public String toString() {
+        return "DummySerialDevice";
+    }
 }

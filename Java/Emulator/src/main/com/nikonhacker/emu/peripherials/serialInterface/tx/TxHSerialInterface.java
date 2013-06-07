@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -26,7 +27,7 @@ public class TxHSerialInterface extends TxSerialInterface {
 
     @Override
     public String getName() {
-        return "Tx HSerial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_TX] + " HSerial #" + serialInterfaceNumber;
     }
 
     /**

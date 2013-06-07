@@ -87,7 +87,7 @@ public abstract class SerialInterface implements SerialDevice {
 
     @Override
     public String toString() {
-        return this.getClass().getName() + " " + serialInterfaceNumber;
+        return this.getClass().getSimpleName() + " #" + serialInterfaceNumber;
     }
 
     @Override
