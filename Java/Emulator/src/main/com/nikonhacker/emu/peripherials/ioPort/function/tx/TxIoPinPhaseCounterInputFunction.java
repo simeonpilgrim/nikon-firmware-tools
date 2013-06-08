@@ -1,11 +1,9 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinPhaseCounterInputFunction extends AbstractInputPinFunction implements PinFunction {
+public class TxIoPinPhaseCounterInputFunction extends AbstractInputPinFunction {
     private final int phaseCounterNumber;
     private final int inputNumber;
 
@@ -27,7 +25,7 @@ public class TxIoPinPhaseCounterInputFunction extends AbstractInputPinFunction i
 
     @Override
     public void setValue(int value) {
-        if (IoPort.DEBUG) System.out.println("TxIoPinPhaseCounterInputFunction.setValue not implemented for pin " + getShortName());
+        if (logPinMessages) System.out.println("TxIoPinPhaseCounterInputFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

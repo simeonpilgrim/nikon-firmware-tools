@@ -53,7 +53,7 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
     }
 
     @Override
-    public boolean isLoggerOnly() {
+    public boolean isReadOnly() {
         return true;
     }
 

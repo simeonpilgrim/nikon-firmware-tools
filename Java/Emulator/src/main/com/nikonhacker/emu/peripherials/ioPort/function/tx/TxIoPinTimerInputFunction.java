@@ -2,11 +2,10 @@ package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 
-public class TxIoPinTimerInputFunction extends AbstractInputPinFunction implements PinFunction {
+public class TxIoPinTimerInputFunction extends AbstractInputPinFunction {
     private TxTimer timer;
     private int     inputNumber;
     private int     previousValue = -1;

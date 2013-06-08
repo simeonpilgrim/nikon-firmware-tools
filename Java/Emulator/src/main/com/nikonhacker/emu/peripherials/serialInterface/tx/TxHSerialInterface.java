@@ -8,8 +8,8 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 public class TxHSerialInterface extends TxSerialInterface {
     private static final int HSERIAL_RX_FIFO_SIZE = 32;
 
-    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
-        super(serialInterfaceNumber, interruptController, emulator);
+    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
     }
 
     @Override

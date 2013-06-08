@@ -199,12 +199,12 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 switch (comboBox.getSelectedIndex()) {
                     case 0:
                         // VCC
-                        new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName()).insertAtPin(otherSideOfSpyWirePin);
+                        new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName(), ui.getPrefs().isLogPinMessages(chip)).insertAtPin(otherSideOfSpyWirePin);
                         ui.getPrefs().setPortInputValueOverride(chip, portNumber, bitNumber, 1);
                         break;
                     case 2:
                         // GND
-                        new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName()).insertAtPin(otherSideOfSpyWirePin);
+                        new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName(), ui.getPrefs().isLogPinMessages(chip)).insertAtPin(otherSideOfSpyWirePin);
                         ui.getPrefs().setPortInputValueOverride(chip, portNumber, bitNumber, 0);
                         break;
                 }
@@ -274,7 +274,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
             pinComp = pinOutputs[portNumber][7 - bitNumber];
             Integer outputValue = pin.getOutputValue();
             if (outputValue == null) {
-                if (IoPort.DEBUG) System.err.println("OutputValue is null for pin " + pin.getName());
+                if (ui.getPrefs().isLogPinMessages(chip)) System.err.println("OutputValue is null for pin " + pin.getName());
                 ((JLabel)pinComp).setText(Constants.LABEL_HIZ);
                 color = Constants.COLOR_HIZ;
                 border = BORDER_HIZ;

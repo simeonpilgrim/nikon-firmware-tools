@@ -17,7 +17,7 @@ public interface MemoryActivityListener {
      *
      * @return true if this Listener is only a logger
      */
-    boolean isLoggerOnly();
+    boolean isReadOnly();
 
 
     /**

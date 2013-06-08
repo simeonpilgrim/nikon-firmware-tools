@@ -5,8 +5,9 @@ package com.nikonhacker.emu.peripherials.ioPort.util;
  * The pin formerly attached to A is attached to pin 2 of this component, but is left dangling
  */
 public class FixedSourceComponent extends Abstract2PinComponent {
-    public FixedSourceComponent(int overridingValue, String name) {
+    public FixedSourceComponent(int overridingValue, String name, boolean logPinMessages) {
         super(name);
+        setLogPinMessages(logPinMessages);
         // Replace pin 1 by a FixedSourcePin
         pin1 = new FixedSourcePin("Forced_" + overridingValue, overridingValue, this);
     }

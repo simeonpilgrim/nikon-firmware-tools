@@ -4,6 +4,12 @@ public abstract class AbstractSerialDevice implements SerialDevice {
     protected SerialDevice sourceDevice;
     protected SerialDevice targetDevice;
 
+    protected boolean logSerialMessages = true;
+
+    public void setLogSerialMessages(boolean logSerialMessages) {
+        this.logSerialMessages = logSerialMessages;
+    }
+
     @Override
     public void connectTargetDevice(SerialDevice targetDevice) {
         this.setTargetDevice(targetDevice);

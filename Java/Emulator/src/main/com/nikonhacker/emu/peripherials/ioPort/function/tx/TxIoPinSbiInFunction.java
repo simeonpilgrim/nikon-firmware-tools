@@ -1,11 +1,9 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinSbiInFunction extends AbstractInputPinFunction implements PinFunction {
+public class TxIoPinSbiInFunction extends AbstractInputPinFunction {
 
     public TxIoPinSbiInFunction() {
         super(Constants.CHIP_LABEL[Constants.CHIP_TX]);
@@ -23,7 +21,7 @@ public class TxIoPinSbiInFunction extends AbstractInputPinFunction implements Pi
 
     @Override
     public void setValue(int value) {
-        if (IoPort.DEBUG) System.out.println("TxIoPinSbiInFunction.setValue not implemented for pin " + getShortName());
+        if (logPinMessages) System.out.println("TxIoPinSbiInFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

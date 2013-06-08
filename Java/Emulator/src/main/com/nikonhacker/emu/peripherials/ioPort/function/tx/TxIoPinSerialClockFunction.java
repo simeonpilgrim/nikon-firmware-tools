@@ -2,11 +2,9 @@ package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractOutputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinSerialClockFunction extends AbstractOutputPinFunction implements PinFunction {
+public class TxIoPinSerialClockFunction extends AbstractOutputPinFunction {
     private int serialInterfaceNumber;
 
     public TxIoPinSerialClockFunction(int serialInterfaceNumber) {
@@ -36,7 +34,7 @@ public class TxIoPinSerialClockFunction extends AbstractOutputPinFunction implem
 
     @Override
     public Integer getValue(Integer defaultOutputValue) {
-        if (IoPort.DEBUG) System.out.println("TxIoPinSerialClockFunction.getValue not implemented for pin " + getShortName());
+        if (logPinMessages) System.out.println("TxIoPinSerialClockFunction.getValue not implemented for pin " + getShortName());
         return null;
     }
 }

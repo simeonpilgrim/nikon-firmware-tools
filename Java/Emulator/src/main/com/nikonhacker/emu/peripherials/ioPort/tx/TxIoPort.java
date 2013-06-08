@@ -34,11 +34,13 @@ public class TxIoPort extends IoPort {
     private PinFunction[] functions2;
     private PinFunction[] functions3;
 
-    public TxIoPort(int portNumber, InterruptController interruptController) {
-        super(Constants.CHIP_TX, portNumber, interruptController);
+    public TxIoPort(int portNumber, InterruptController interruptController, boolean logPinMessages) {
+        super(Constants.CHIP_TX, portNumber, interruptController, logPinMessages);
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             inputFunctions[bitNumber] = new TxIoPinInputFunction(getShortName() + bitNumber);
+            inputFunctions[bitNumber].setLogPinMessages(logPinMessages);
             outputFunctions[bitNumber] = new TxIoPinOutputFunction(getShortName() + bitNumber);
+            outputFunctions[bitNumber].setLogPinMessages(logPinMessages);
         }
     }
 
@@ -47,6 +49,11 @@ public class TxIoPort extends IoPort {
             throw new RuntimeException("Trying to assign a Function 1 Role array of length " + functions1.length + ": " + Arrays.toString(functions1));
         }
         this.functions1 = functions1;
+        for (PinFunction pinFunction : functions1) {
+            if (pinFunction != null) {
+                pinFunction.setLogPinMessages(logPinMessages);
+            }
+        }
     }
 
     public void setFunctions2(PinFunction[] functions2) {
@@ -54,6 +61,11 @@ public class TxIoPort extends IoPort {
             throw new RuntimeException("Trying to assign a Function 2 Role array of length " + functions2.length + ": " + Arrays.toString(functions2));
         }
         this.functions2 = functions2;
+        for (PinFunction pinFunction : functions2) {
+            if (pinFunction != null) {
+                pinFunction.setLogPinMessages(logPinMessages);
+            }
+        }
     }
 
     public void setFunctions3(PinFunction[] functions3) {
@@ -61,6 +73,11 @@ public class TxIoPort extends IoPort {
             throw new RuntimeException("Trying to assign a Function 3 Role array of length " + functions3.length + ": " + Arrays.toString(functions3));
         }
         this.functions3 = functions3;
+        for (PinFunction pinFunction : functions3) {
+            if (pinFunction != null) {
+                pinFunction.setLogPinMessages(logPinMessages);
+            }
+        }
     }
 
     /**
@@ -170,10 +187,10 @@ public class TxIoPort extends IoPort {
      *
      * That way, ioPorts[2].getFn3Handlers()[7] will correctly return the TxIoPinTimerInputHandler(0x5, 1), presented here at the first place
      */
-    public static IoPort[] setupPorts(InterruptController interruptController, ProgrammableTimer[] programmableTimers) {
+    public static IoPort[] setupPorts(InterruptController interruptController, ProgrammableTimer[] programmableTimers, boolean logPinMessages) {
         TxIoPort[] ioPorts = new TxIoPort[TxIoListener.NUM_PORT];
         for (int i = 0; i < TxIoListener.NUM_PORT; i++) {
-            ioPorts[i] = new TxIoPort(i, interruptController);
+            ioPorts[i] = new TxIoPort(i, interruptController, logPinMessages);
         }
 
         // Indicate port features

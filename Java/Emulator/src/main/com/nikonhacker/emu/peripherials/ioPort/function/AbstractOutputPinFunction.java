@@ -3,9 +3,14 @@ package com.nikonhacker.emu.peripherials.ioPort.function;
 public abstract class AbstractOutputPinFunction implements PinFunction {
 
     protected String componentName;
+    protected boolean logPinMessages = true;
 
     protected AbstractOutputPinFunction(String componentName) {
         this.componentName = componentName;
+    }
+
+    public void setLogPinMessages(boolean logPinMessages) {
+        this.logPinMessages = logPinMessages;
     }
 
     /**

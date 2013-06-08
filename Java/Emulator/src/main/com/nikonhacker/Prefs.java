@@ -39,6 +39,10 @@ public class Prefs {
     private boolean[] timersCycleSynchronous;
     private boolean[] dmaSynchronous;
     private boolean[] autoEnableTimers;
+    private boolean[] logMemoryMessages;
+    private boolean[] logSerialMessages;
+    private boolean[] logPinMessages;
+    private boolean[] logRegisterMessages;
     private boolean[] adValueFromList;
     private Map<String,List<Integer>>[] adValueListMap;
     private Map<String,Integer>[] adValueMap;
@@ -347,6 +351,46 @@ public class Prefs {
     public void setAutoEnableTimers(int chip, boolean isAutoEnableTimers) {
         if (autoEnableTimers == null || autoEnableTimers.length != 2) autoEnableTimers = new boolean[]{true, true};
         this.autoEnableTimers[chip] = isAutoEnableTimers;
+    }
+
+    public boolean isLogMemoryMessages(int chip) {
+        if (logMemoryMessages == null || logMemoryMessages.length != 2) logMemoryMessages = new boolean[]{false, false};
+        return logMemoryMessages[chip];
+    }
+
+    public void setLogMemoryMessages(int chip, boolean isLogMemoryMessages) {
+        if (logMemoryMessages == null || logMemoryMessages.length != 2) logMemoryMessages = new boolean[]{false, false};
+        this.logMemoryMessages[chip] = isLogMemoryMessages;
+    }
+
+    public boolean isLogSerialMessages(int chip) {
+        if (logSerialMessages == null || logSerialMessages.length != 2) logSerialMessages = new boolean[]{false, false};
+        return logSerialMessages[chip];
+    }
+
+    public void setLogSerialMessages(int chip, boolean isLogSerialMessages) {
+        if (logSerialMessages == null || logSerialMessages.length != 2) logSerialMessages = new boolean[]{false, false};
+        this.logSerialMessages[chip] = isLogSerialMessages;
+    }
+
+    public boolean isLogPinMessages(int chip) {
+        if (logPinMessages == null || logPinMessages.length != 2) logPinMessages = new boolean[]{false, false};
+        return logPinMessages[chip];
+    }
+
+    public void setLogPinMessages(int chip, boolean isLogPinMessages) {
+        if (logPinMessages == null || logPinMessages.length != 2) logPinMessages = new boolean[]{true, true};
+        this.logPinMessages[chip] = isLogPinMessages;
+    }
+
+    public boolean isLogRegisterMessages(int chip) {
+        if (logRegisterMessages == null || logRegisterMessages.length != 2) logRegisterMessages = new boolean[]{true, true};
+        return logRegisterMessages[chip];
+    }
+
+    public void setLogRegisterMessages(int chip, boolean isLogRegisterMessages) {
+        if (logRegisterMessages == null || logRegisterMessages.length != 2) logRegisterMessages = new boolean[]{true, true};
+        this.logRegisterMessages[chip] = isLogRegisterMessages;
     }
 
     public boolean isAdValueFromList(int chip) {

@@ -10,18 +10,20 @@ import com.nikonhacker.emu.peripherials.ioPort.function.fr.FrIoPinOutputFunction
 
 public class FrIoPort extends IoPort {
 
-    public FrIoPort(int portNumber, InterruptController interruptController) {
-        super(Constants.CHIP_FR, portNumber, interruptController);
+    public FrIoPort(int portNumber, InterruptController interruptController, boolean logPinMessages) {
+        super(Constants.CHIP_FR, portNumber, interruptController, logPinMessages);
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             inputFunctions[bitNumber] = new FrIoPinInputFunction(getShortName() + bitNumber);
+            inputFunctions[bitNumber].setLogPinMessages(logPinMessages);
             outputFunctions[bitNumber] = new FrIoPinOutputFunction(getShortName() + bitNumber);
+            outputFunctions[bitNumber].setLogPinMessages(logPinMessages);
         }
     }
 
-    public static IoPort[] setupPorts(InterruptController interruptController) {
+    public static IoPort[] setupPorts(InterruptController interruptController, boolean logPinMessages) {
         FrIoPort[] ioPorts = new FrIoPort[ExpeedPinIoListener.NUM_PORT];
         for (int portNumber = 0; portNumber < ioPorts.length; portNumber++) {
-            ioPorts[portNumber] = new FrIoPort(portNumber, interruptController);
+            ioPorts[portNumber] = new FrIoPort(portNumber, interruptController, logPinMessages);
             ioPorts[portNumber].setInputEnabled((byte) 0x00);
         }
 

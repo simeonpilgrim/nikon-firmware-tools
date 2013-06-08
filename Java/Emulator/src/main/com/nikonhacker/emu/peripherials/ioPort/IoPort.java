@@ -9,8 +9,6 @@ import java.util.List;
 
 public abstract class IoPort {
 
-    public static final boolean DEBUG = false;
-
     public static final int PORT_0 = 0;
     public static final int PORT_1 = 1;
     public static final int PORT_2 = 2;
@@ -43,16 +41,20 @@ public abstract class IoPort {
     protected PinFunction[] inputFunctions = new PinFunction[8];
     protected PinFunction[] outputFunctions = new PinFunction[8];
 
+    public boolean logPinMessages = true;
+
     /**
      * List of listeners to warn when the configuration of a port changes
      */
     protected List<IoPortConfigListener> ioPortConfigListeners = new ArrayList<IoPortConfigListener>();
 
-    public IoPort(int chip, int portNumber, InterruptController interruptController) {
+    public IoPort(int chip, int portNumber, InterruptController interruptController, boolean logPinMessages) {
         this.portNumber = portNumber;
         this.interruptController = interruptController;
+        this.logPinMessages = logPinMessages;
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             pins[bitNumber] = new VariableFunctionPin(Constants.CHIP_LABEL[chip] + " " + getShortName() + bitNumber);
+            pins[bitNumber].setLogPinMessages(logPinMessages);
         }
     }
 
@@ -80,7 +82,7 @@ public abstract class IoPort {
                     }
                 }
                 else {
-                    if (DEBUG) System.err.println("OutputValue is null for pin " + pins[bitNumber].getName());
+                    if (logPinMessages) System.err.println("OutputValue is null for pin " + pins[bitNumber].getName());
                 }
             }
         }
