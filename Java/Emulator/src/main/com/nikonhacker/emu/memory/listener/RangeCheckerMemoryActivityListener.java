@@ -8,7 +8,7 @@ public class RangeCheckerMemoryActivityListener extends Abstract8BitMemoryActivi
     }
 
     @Override
-    public boolean isLoggerOnly() {
+    public boolean isReadOnly() {
         return true;
     }
 

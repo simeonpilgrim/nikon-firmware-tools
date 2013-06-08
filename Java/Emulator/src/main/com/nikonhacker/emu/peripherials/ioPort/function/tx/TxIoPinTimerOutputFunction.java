@@ -2,11 +2,9 @@ package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractOutputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinTimerOutputFunction extends AbstractOutputPinFunction implements PinFunction {
+public class TxIoPinTimerOutputFunction extends AbstractOutputPinFunction {
     private int timerNumber;
 
     public TxIoPinTimerOutputFunction(int timerNumber) {
@@ -26,7 +24,7 @@ public class TxIoPinTimerOutputFunction extends AbstractOutputPinFunction implem
 
     @Override
     public Integer getValue(Integer defaultOutputValue) {
-        if (IoPort.DEBUG) System.out.println("TxIoPinTimerOutputFunction.getValue not implemented for pin " + getShortName());
+        if (logPinMessages) System.out.println("TxIoPinTimerOutputFunction.getValue not implemented for pin " + getShortName());
         return null;
     }
 }

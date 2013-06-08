@@ -7,7 +7,8 @@ public class Expeed4006IoListener extends IoActivityListener {
     public static final int BASE_ADDRESS = 0x4006_0000;
     public static final int ADDRESS_MASK = 0xFFFF_F000;
 
-    public Expeed4006IoListener() {
+    public Expeed4006IoListener(boolean logRegisterMessages) {
+        setLogRegisterMessages(logRegisterMessages);
     }
 
     @Override

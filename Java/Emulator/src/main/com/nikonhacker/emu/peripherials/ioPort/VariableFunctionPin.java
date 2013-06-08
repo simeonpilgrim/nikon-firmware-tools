@@ -25,7 +25,7 @@ public class VariableFunctionPin extends Pin {
     public Integer getInputValue() {
         // Just check that this input pin is configured as input
         if (!(function instanceof AbstractInputPinFunction)) {
-            if (IoPort.DEBUG) {
+            if (logPinMessages) {
                 System.err.println("Code is trying to read pin " + getName() + " although it is " +
                         (function==null
                                 ?"not configured as input"
@@ -48,7 +48,7 @@ public class VariableFunctionPin extends Pin {
             ((AbstractInputPinFunction) function).setValue(value);
         }
         else {
-            if (IoPort.DEBUG) {
+            if (logPinMessages) {
                 System.err.println("A component connected to pin " + getName() + " tries to set its value to " + value + " although it is " +
                         (function==null
                                 ?"not configured as input"
@@ -69,7 +69,7 @@ public class VariableFunctionPin extends Pin {
             return ((AbstractOutputPinFunction) function).getValue(outputValue);
         }
         else {
-            if (IoPort.DEBUG) {
+            if (logPinMessages) {
                 System.err.println("A component connected to pin " + getName() + " tries to read its value although it is " +
                         (function==null
                                 ?"not configured as output"
@@ -88,7 +88,7 @@ public class VariableFunctionPin extends Pin {
     public void setOutputValue(int value) {
         // Just check that this input pin is configured as output
         if (!(function instanceof AbstractOutputPinFunction)) {
-            if (IoPort.DEBUG) {
+            if (logPinMessages) {
                 System.err.println("Code is trying to set pin " + getName() + " to " + value + " although it is " +
                         (function==null
                          ?"not configured as output"

@@ -10,7 +10,6 @@
 package com.nikonhacker.emu.memory;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.EmulatorOptions;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -33,7 +32,7 @@ public class AutoAllocatingMemory extends AbstractMemory implements Memory {
      */
     final public int loadSigned8(int addr) {
         try {
-            if (EmulatorOptions.debugMemory)
+            if (logMemoryMessages)
                 System.err.println("LoadS8 address: 0x" + Integer.toHexString(addr)
                         + " val: " + readableMemory[getPTE(addr)][getOffset(addr)]);
 
@@ -58,7 +57,7 @@ public class AutoAllocatingMemory extends AbstractMemory implements Memory {
      */
     final public int loadUnsigned8(int addr) {
         try {
-            if (EmulatorOptions.debugMemory)
+            if (logMemoryMessages)
                 System.err.println("LoadU8 address: 0x" + Integer.toHexString(addr)
                         + " val: " + readableMemory[getPTE(addr)][getOffset(addr)]);
 
@@ -113,7 +112,7 @@ public class AutoAllocatingMemory extends AbstractMemory implements Memory {
      * @return the result
      */
     public int loadInstruction8(int addr) {
-        if (EmulatorOptions.debugMemory)
+        if (logMemoryMessages)
             System.err.println("LoadI8 address: 0x" + Integer.toHexString(addr)
                     + " val: " + executableMemory[getPTE(addr)][getOffset(addr)]);
         return executableMemory[getPTE(addr)][getOffset(addr)] & 0xFF;
@@ -142,7 +141,7 @@ public class AutoAllocatingMemory extends AbstractMemory implements Memory {
      * @param addr  the address of where to store
      */
     public final void store8(int addr, int value) {
-        if (EmulatorOptions.debugMemory) {
+        if (logMemoryMessages) {
             System.err.println("Store8 address: 0x" + Integer.toHexString(addr)
                     + " val: 0x" + Format.asHex((value & 0xFF), 2) + " - 0b" + StringUtils.leftPad(Integer.toBinaryString(value & 0xFF), 8).replace('0', ' '));
         }

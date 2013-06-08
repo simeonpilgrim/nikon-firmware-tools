@@ -14,8 +14,9 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
     private Platform platform;
 
-    public ExpeedPinIoListener(Platform platform) {
+    public ExpeedPinIoListener(Platform platform, boolean logRegisterMessages) {
         this.platform = platform;
+        this.logRegisterMessages = logRegisterMessages;
     }
 
     @Override

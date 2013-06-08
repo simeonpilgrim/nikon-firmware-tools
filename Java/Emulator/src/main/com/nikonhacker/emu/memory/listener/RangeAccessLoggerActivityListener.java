@@ -23,7 +23,7 @@ public class RangeAccessLoggerActivityListener extends AbstractAccessLoggerActiv
     }
 
     @Override
-    public boolean isLoggerOnly() {
+    public boolean isReadOnly() {
         return true;
     }
 }

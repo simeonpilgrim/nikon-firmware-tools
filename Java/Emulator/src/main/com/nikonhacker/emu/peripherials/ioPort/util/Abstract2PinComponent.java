@@ -1,20 +1,24 @@
 package com.nikonhacker.emu.peripherials.ioPort.util;
 
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 
 /**
  * This basic implementation is a 2-pin component with no connection in between
  */
 public abstract class Abstract2PinComponent {
-    protected final String name;
-    protected       Pin    pin1;
-    protected       Pin    pin2;
+    protected final String  name;
+    protected       Pin     pin1;
+    protected       Pin     pin2;
+    private         boolean logPinMessages = true;
 
     public Abstract2PinComponent(final String name) {
         this.name = name;
         pin1 = new Pin(name + ".pin1");
         pin2 = new Pin(name + ".pin2");
+    }
+
+    public void setLogPinMessages(boolean logPinMessages) {
+        this.logPinMessages = logPinMessages;
     }
 
     public String getName() {
@@ -31,7 +35,7 @@ public abstract class Abstract2PinComponent {
         Pin otherPin = pin.getConnectedPin();
         Pin.interconnect(pin, pin1);
         Pin.interconnect(pin2, otherPin);
-        if (IoPort.DEBUG) {
+        if (logPinMessages) {
             System.out.println("Connecting " + pin + " to " + pin1);
             System.out.println("Connecting " + pin2 + " to " + otherPin);
         }

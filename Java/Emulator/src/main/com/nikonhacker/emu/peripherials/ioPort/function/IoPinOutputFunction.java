@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.ioPort.function;
 
-public class IoPinOutputFunction extends AbstractOutputPinFunction implements PinFunction {
+public class IoPinOutputFunction extends AbstractOutputPinFunction {
     private String pinName;
 
     public IoPinOutputFunction(String componentName, String pinName) {

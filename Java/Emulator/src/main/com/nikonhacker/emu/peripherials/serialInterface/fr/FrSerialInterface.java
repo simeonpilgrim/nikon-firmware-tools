@@ -45,8 +45,8 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber, Emulator emulator) {
-        super(serialInterfaceNumber, interruptController, emulator);
+    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
 //        First, interrupt numbers were automatic but they are now custom
 //        rxInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + this.serialInterfaceNumber * 3;
 //        txInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + 1 + this.serialInterfaceNumber * 3;
@@ -218,7 +218,7 @@ public class FrSerialInterface extends SerialInterface {
      */
     public void write(Integer value) {
         if (value == null) {
-            System.out.println("FrSerialInterface.write(null)");
+            if (logSerialMessages) System.out.println("FrSerialInterface.write(null)");
         }
         else {
             Queue<Integer> rxFifo;
@@ -332,7 +332,7 @@ public class FrSerialInterface extends SerialInterface {
         else {
             if (rxFifo.isEmpty()) {
                 // throw exception ??
-                System.err.println("Attempt to read from empty FIFO");
+                if (logSerialMessages) System.err.println("Attempt to read from empty FIFO");
                 return -1;
             }
             else {
@@ -382,7 +382,7 @@ public class FrSerialInterface extends SerialInterface {
 
     public void setFcr1(int fcr1) {
         if ((fcr1 & 0xC) != 0) {
-            System.out.println("Error: attempt to write 0b11 to reserved bits 14-15 of FCR !");
+            if (logSerialMessages) System.out.println("Error: attempt to write 0b11 to reserved bits 14-15 of FCR !");
         }
 
         this.fcr1 = fcr1;
@@ -490,7 +490,7 @@ public class FrSerialInterface extends SerialInterface {
             case 4: // 9-bit
                 return 9;
             default:
-                System.err.println("Error: Invalid ESCR value: " + (escrIbsr & 0x3));
+                if (logSerialMessages) System.err.println("Error: Invalid ESCR value: " + (escrIbsr & 0x3));
                 return 8;
         }
     }

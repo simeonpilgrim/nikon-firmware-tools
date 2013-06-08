@@ -44,6 +44,7 @@ public class FrEmulatorTest extends TestCase {
         emulator.setCpuState(cpuState);
 
         memory = new AutoAllocatingMemory();
+        memory.setLogMemoryMessages(false);
         emulator.setMemory(memory);
     }
 

@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.ioPort.function;
 
-public class IoPinInputFunction extends AbstractInputPinFunction implements PinFunction {
+public class IoPinInputFunction extends AbstractInputPinFunction {
     private String pinName;
 
     public IoPinInputFunction(String componentName, String pinName) {

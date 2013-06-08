@@ -200,8 +200,9 @@ public class TxIoListener extends IoActivityListener {
 
     private final Platform platform;
 
-    public TxIoListener(Platform platform) {
+    public TxIoListener(Platform platform, boolean logRegisterMessages) {
         this.platform = platform;
+        setLogRegisterMessages(logRegisterMessages);
     }
 
     @Override
@@ -498,7 +499,7 @@ public class TxIoListener extends IoActivityListener {
                 return (byte)((TxDmaController)platform.getDmaController()).getDhr();
         }
 
-        System.err.println("Load8 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+        if (logRegisterMessages) System.err.println("Load8 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
 
         return null;
     }
@@ -683,7 +684,7 @@ public class TxIoListener extends IoActivityListener {
                 return ((TxInterruptController)platform.getInterruptController()).getDreqflg() & 0xFFFF;
         }
 
-        System.err.println("Load16 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+        if (logRegisterMessages) System.err.println("Load16 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
 
         return null;
     }
@@ -932,7 +933,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DHR:
                 return ((TxDmaController)platform.getDmaController()).getDhr();
         }
-        System.err.println("Load32 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+        if (logRegisterMessages) System.err.println("Load32 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
 
         return null;
     }
@@ -1227,7 +1228,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DHR + 3:
                 ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
-                System.err.println("Store8 0x" + Format.asHex(value, 2) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Store8 0x" + Format.asHex(value, 2) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 
@@ -1365,7 +1366,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DREQFLG + 2:
                 ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             default:
-                System.err.println("Store16 0x" + Format.asHex(value, 4) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Store16 0x" + Format.asHex(value, 4) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 
@@ -1608,7 +1609,7 @@ public class TxIoListener extends IoActivityListener {
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet
-                System.err.println("Store32 0x" + Format.asHex(value, 8) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Store32 0x" + Format.asHex(value, 8) + " to register 0x" + Format.asHex(addr, 8) + " is not supported yet");
         }
     }
 }

@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.ioPort.function;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
-public abstract class IoPinInterruptFunction extends AbstractInputPinFunction implements PinFunction {
+public abstract class IoPinInterruptFunction extends AbstractInputPinFunction {
     protected InterruptController interruptController;
     protected int                 interruptNumber;
 

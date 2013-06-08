@@ -29,10 +29,13 @@ public abstract class SerialInterface extends AbstractSerialDevice {
     protected final InterruptController interruptController;
     protected final Emulator            emulator;
 
-    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
+    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
         this.emulator = emulator;
+
+        setLogSerialMessages(logSerialMessages);
+
         // By default, a Serial Interface is connected to a dummy device
         DummySerialDevice dummySerialDevice = new DummySerialDevice();
         connectTargetDevice(dummySerialDevice);
@@ -81,7 +84,7 @@ public abstract class SerialInterface extends AbstractSerialDevice {
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         if (getNumBits() != numBits) {
-            System.err.println(toString() + ": Serial device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
+            if (logSerialMessages) System.err.println(toString() + ": Serial device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
         }
     }
 

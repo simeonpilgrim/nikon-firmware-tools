@@ -1565,7 +1565,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     dumpOptionCheckboxes(outputOptionsCheckBoxes, sampleOptions);
                     int baseAddress = platform[chip].getCpuState().getResetAddress();
                     int lastAddress = baseAddress;
-                    Memory sampleMemory = new DebuggableMemory();
+                    Memory sampleMemory = new DebuggableMemory(false);
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
                     StringWriter writer = new StringWriter();
                     Disassembler disassembler;
@@ -1680,48 +1680,57 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         JPanel emulationOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
         emulationOptionsPanel.add(new JLabel());
-        emulationOptionsPanel.add(new JLabel("IMPORTANT: these options only take effect after reloading the firmware or performing a 'Stop and reset')"));
+        JLabel warningLabel = new JLabel("NOTE: these options only take effect after reloading the firmware (or performing a 'Stop and reset')");
+        warningLabel.setBackground(Color.RED);
+        warningLabel.setOpaque(true);
+        warningLabel.setForeground(Color.WHITE);
+        warningLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        emulationOptionsPanel.add(warningLabel);
         emulationOptionsPanel.add(new JLabel());
 
         final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
         writeProtectFirmwareCheckBox.setSelected(prefs.isFirmwareWriteProtected(chip));
-        writeProtectFirmwareCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(writeProtectFirmwareCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
 
         final JCheckBox timerCycleSynchronousCheckBox = new JCheckBox("Make timers synchronous with CPU");
         timerCycleSynchronousCheckBox.setSelected(prefs.areTimersCycleSynchronous(chip));
-        timerCycleSynchronousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(timerCycleSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, timers will run based on the number of cycles executed by the CPU, so slowing down the CPU slows down timers"));
 
         final JCheckBox dmaSynchronousCheckBox = new JCheckBox("Make DMA synchronous");
         dmaSynchronousCheckBox.setSelected(prefs.isDmaSynchronous(chip));
-        dmaSynchronousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(dmaSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, DMA operations will be performed immediately, pausing the CPU. Otherwise they are performed in a separate thread."));
 
         final JCheckBox autoEnableTimersCheckBox = new JCheckBox("Auto enable timers");
         autoEnableTimersCheckBox.setSelected(prefs.isAutoEnableTimers(chip));
-        autoEnableTimersCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(autoEnableTimersCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, timers will be automatically enabled upon reset or firmware load."));
+
+        // Log memory messages
+        final JCheckBox logMemoryMessagesCheckBox = new JCheckBox("Log memory messages");
+        logMemoryMessagesCheckBox.setSelected(prefs.isLogMemoryMessages(chip));
+        emulationOptionsPanel.add(logMemoryMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, messages related to memory will be logged to the console."));
+
+        // Log serial messages
+        final JCheckBox logSerialMessagesCheckBox = new JCheckBox("Log serial messages");
+        logSerialMessagesCheckBox.setSelected(prefs.isLogSerialMessages(chip));
+        emulationOptionsPanel.add(logSerialMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, messages related to serial interfaces will be logged to the console."));
+
+        // Log register messages
+        final JCheckBox logRegisterMessagesCheckBox = new JCheckBox("Log register messages");
+        logRegisterMessagesCheckBox.setSelected(prefs.isLogRegisterMessages(chip));
+        emulationOptionsPanel.add(logRegisterMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, warnings related to unimplemented register addresses will be logged to the console."));
+
+        // Log pin messages
+        final JCheckBox logPinMessagesCheckBox = new JCheckBox("Log pin messages");
+        logPinMessagesCheckBox.setSelected(prefs.isLogPinMessages(chip));
+        emulationOptionsPanel.add(logPinMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, warnings related to unimplemented I/O pins will be logged to the console."));
 
         // ------------------------ Prepare tabbed pane
 
@@ -1776,10 +1785,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 JOptionPane.DEFAULT_OPTION))
         {
-            // save
+            // save output options
             dumpOptionCheckboxes(outputOptionsCheckBoxes, prefs.getOutputOptions(chip));
             // apply
             TxCPUState.initRegisterLabels(prefs.getOutputOptions(chip));
+
+            // save other prefs
+            prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
+            prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
+            prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
+            prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
+            prefs.setLogRegisterMessages(chip, logRegisterMessagesCheckBox.isSelected());
+            prefs.setLogPinMessages(chip, logPinMessagesCheckBox.isSelected());
+            prefs.setLogMemoryMessages(chip, logMemoryMessagesCheckBox.isSelected());
         }
     }
 
@@ -1950,7 +1968,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
 
             CPUState cpuState;
-            DebuggableMemory memory = new DebuggableMemory();
+            DebuggableMemory memory = new DebuggableMemory(prefs.isLogMemoryMessages(chip));
             ProgrammableTimer[] programmableTimers;
             IoPort[] ioPorts;
             SerialInterface[] serialInterfaces;
@@ -1983,11 +2001,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 interruptController = new FrInterruptController(platform[chip]);
 
                 // Standard FR registers
-                memory.addActivityListener(new ExpeedIoListener(platform[chip]));
+                memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Unknown component 4006
-                memory.addActivityListener(new Expeed4006IoListener());
+                memory.addActivityListener(new Expeed4006IoListener(prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
-                memory.addActivityListener(new ExpeedPinIoListener(platform[chip]));
+                memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < programmableTimers.length; i++) {
@@ -1995,11 +2013,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
 
                 // I/O ports
-                ioPorts = FrIoPort.setupPorts(interruptController);
+                ioPorts = FrIoPort.setupPorts(interruptController, prefs.isLogPinMessages(chip));
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
-                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B, emulator[Constants.CHIP_FR]);
+                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B, emulator[Constants.CHIP_FR], prefs.isLogSerialMessages(chip));
                 }
             }
             else {
@@ -2009,7 +2027,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 clockGenerator = new TxClockGenerator();
                 interruptController = new TxInterruptController(platform[chip]);
 
-                memory.addActivityListener(new TxIoListener(platform[chip]));
+                memory.addActivityListener(new TxIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 // First put all 16-bit timers
@@ -2020,16 +2038,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
-                ioPorts = TxIoPort.setupPorts(interruptController, programmableTimers);
+                ioPorts = TxIoPort.setupPorts(interruptController, programmableTimers, prefs.isLogPinMessages(chip));
 
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                    serialInterfaces[i] = new TxSerialInterface(i, interruptController, emulator[chip]);
+                    serialInterfaces[i] = new TxSerialInterface(i, interruptController, emulator[chip], prefs.isLogSerialMessages(chip));
                 }
                 // Hi-speed
                 for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, emulator[chip]);
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, emulator[chip], prefs.isLogSerialMessages(chip));
                 }
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
@@ -2092,14 +2110,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         switch (override) {
                             case 0:
                                 // GND
-                                new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName()).insertAtPin(pin);
+                                new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
                                 break;
                             case 1:
                                 // VCC
-                                new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName()).insertAtPin(pin);
+                                new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
                                 break;
                             default:
-                                new FixedSourceComponent(override, "Fixed " + override + " for " + pin.getName()).insertAtPin(pin);
+                                new FixedSourceComponent(override, "Fixed " + override + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
                                 break;
                         }
                     }

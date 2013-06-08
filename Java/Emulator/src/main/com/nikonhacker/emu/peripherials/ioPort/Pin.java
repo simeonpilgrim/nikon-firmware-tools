@@ -21,6 +21,8 @@ public class Pin {
     private boolean isInput        = true;
     private boolean isInputEnabled = true;
 
+    protected boolean logPinMessages = true;
+
     /**
      * Static method to connect two pins "both ways"
      */
@@ -31,6 +33,10 @@ public class Pin {
 
     public Pin(String name) {
         this.name = name;
+    }
+
+    public void setLogPinMessages(boolean logPinMessages) {
+        this.logPinMessages = logPinMessages;
     }
 
     public String getName() {
@@ -57,7 +63,7 @@ public class Pin {
         if (connectedPin != null) {
             return connectedPin.getOutputValue();
         }
-        // System.out.println("No pin is connected to " + name);
+        if (logPinMessages) System.out.println("No pin is connected to " + name);
         return null;
     }
 
@@ -83,7 +89,7 @@ public class Pin {
         // remember the output value
         this.outputValue = value;
         if (connectedPin == null) {
-            System.out.println("No pin is connected to " + name);
+            if (logPinMessages) System.out.println("No pin is connected to " + name);
         }
         else {
             connectedPin.setInputValue(value);

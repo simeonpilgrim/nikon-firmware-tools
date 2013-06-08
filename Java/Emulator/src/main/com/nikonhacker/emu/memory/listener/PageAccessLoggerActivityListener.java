@@ -18,7 +18,7 @@ public class PageAccessLoggerActivityListener extends AbstractAccessLoggerActivi
     }
 
     @Override
-    public boolean isLoggerOnly() {
+    public boolean isReadOnly() {
         return true;
     }
 }

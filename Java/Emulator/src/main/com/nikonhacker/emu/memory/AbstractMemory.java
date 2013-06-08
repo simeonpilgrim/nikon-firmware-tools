@@ -2,7 +2,6 @@ package com.nikonhacker.emu.memory;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.Range;
-import com.nikonhacker.emu.EmulatorOptions;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -21,21 +20,33 @@ import java.util.Collection;
 public abstract class AbstractMemory implements Memory {
     /** The size of a single page in bytes. */
     static final int PAGE_SIZE = 0x10000;
+
     /** Bits in offset (inside a page) = numbits(PAGE_SIZE-1) */
     static final int OFFSET_BITS = 16;
+
     /** The number of pages */
     static final int NUM_PAGES = 0x10000;
+
     /** The maximum amount of RAM available */
     public static final long MAX_RAM = (long) PAGE_SIZE * (long) NUM_PAGES;
+
     /** The memory backing store */
     byte readableMemory[][];
     byte writableMemory[][];
     byte executableMemory[][];
+
     /** Do we have more optimal nio mmap operation? */
     boolean HAVE_java_nio_FileChannelImpl_nio_mmap_file = false;
 
+    protected boolean logMemoryMessages = true;
+
     public AbstractMemory() {
         clear();
+    }
+
+    @Override
+    public void setLogMemoryMessages(boolean logMemoryMessages) {
+        this.logMemoryMessages = logMemoryMessages;
     }
 
     public void clear() {
@@ -104,7 +115,7 @@ public abstract class AbstractMemory implements Memory {
             addr = findFreePages(numPages);
         }
 
-        if (EmulatorOptions.debugMemory) {
+        if (logMemoryMessages) {
             System.out.println("Anonymous mapping: addr=0x"
                     + Integer.toHexString(addr) + " len=" + len + (read ? " r" : " -")
                     + (write ? "w" : "-") + (exec ? "x" : "-"));
@@ -157,7 +168,7 @@ public abstract class AbstractMemory implements Memory {
         if (addr == 0) {
             addr = findFreePages(num_pages);
         }
-        if (EmulatorOptions.debugMemory) {
+        if (logMemoryMessages) {
             System.out.println("Mapping file " + file + " offset=" + offset
                     + " addr=0x" + Integer.toHexString(addr) + " len=" + len
                     + (read ? " r" : " -") + (write ? "w" : "-") + (exec ? "x" : "-"));
