@@ -24,18 +24,19 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
  * microcontroller (via interrupt) that new data is available. That microcontroller will then read the
  * serial interface registers and act accordingly.
  */
-public abstract class SerialInterface implements SerialDevice {
-    protected final int serialInterfaceNumber;
+public abstract class SerialInterface extends AbstractSerialDevice {
+    protected final int                 serialInterfaceNumber;
     protected final InterruptController interruptController;
-    protected final Emulator emulator;
-    protected SerialDevice connectedDevice;
+    protected final Emulator            emulator;
 
     public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.interruptController = interruptController;
         this.emulator = emulator;
-        // By default, a Serial Interface uses a dummy device
-        connectedDevice = new DummySerialDevice();
+        // By default, a Serial Interface is connected to a dummy device
+        DummySerialDevice dummySerialDevice = new DummySerialDevice();
+        connectTargetDevice(dummySerialDevice);
+        dummySerialDevice.connectTargetDevice(this);
     }
 
     public int getSerialInterfaceNumber() {
@@ -63,25 +64,12 @@ public abstract class SerialInterface implements SerialDevice {
 
     public abstract String getName();
 
-    public void connectSerialDevice(SerialDevice serialDevice) {
-        this.connectedDevice = serialDevice;
-    }
-
-    public SerialDevice getConnectedSerialDevice() {
-        return connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.connectedDevice = new DummySerialDevice();
-    }
-
     public void bitNumberChanged(int nbBits) {
-        connectedDevice.onBitNumberChange(this, nbBits);
+        targetDevice.onBitNumberChange(this, nbBits);
     }
 
     public void valueReady(Integer value) {
-        connectedDevice.write(value);
+        targetDevice.write(value);
     }
 
 
@@ -93,7 +81,7 @@ public abstract class SerialInterface implements SerialDevice {
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         if (getNumBits() != numBits) {
-            System.err.println(toString() + ": Connected device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
+            System.err.println(toString() + ": Serial device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");
         }
     }
 

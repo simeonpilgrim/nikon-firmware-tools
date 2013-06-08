@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.peripherials.serialInterface.util;
 
-import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
@@ -65,14 +64,14 @@ public class SerialBus {
 
     public void connect() {
         internalMasterPartner = getInternalMasterPartner();
-        internalMasterPartner.connectSerialDevice(masterDevice);
-        masterDevice.connectSerialDevice(internalMasterPartner);
+        internalMasterPartner.connectTargetDevice(masterDevice);
+        masterDevice.connectTargetDevice(internalMasterPartner);
 
         this.internalSlavePartners = new HashSet<InternalSlavePartner>(slaveDevices.size());
         for (SerialDevice slaveDevice : slaveDevices) {
             InternalSlavePartner slavePartner = new InternalSlavePartner();
-            slavePartner.connectSerialDevice(slaveDevice);
-            slaveDevice.connectSerialDevice(slavePartner);
+            slavePartner.connectTargetDevice(slaveDevice);
+            slaveDevice.connectTargetDevice(slavePartner);
             internalSlavePartners.add(slavePartner);
         }
     }
@@ -85,12 +84,18 @@ public class SerialBus {
         return busName;
     }
 
+    /**
+     * In this implementation, targetDevice is the master Device
+     */
     protected class InternalMasterPartner extends SpiSlaveDevice {
-        private SerialDevice masterDevice;
 
         public InternalMasterPartner() {
         }
 
+        /**
+         * Values are forwarded to each of the attached slaves
+         * @param value
+         */
         @Override
         public void write(Integer value) {
             for (InternalSlavePartner internalSlavePartner : internalSlavePartners) {
@@ -99,55 +104,30 @@ public class SerialBus {
         }
 
         @Override
-        public void connectSerialDevice(SerialDevice masterDevice) {
-            this.masterDevice = masterDevice;
-        }
-
-        @Override
-        public void disconnectSerialDevice() {
-            this.masterDevice = new DummySerialDevice();
-        }
-
-        @Override
-        public SerialDevice getConnectedSerialDevice() {
-            return masterDevice;
-        }
-
-        @Override
         public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
             System.out.println("SerialTee$InternalAPartner.onBitNumberChange");
         }
 
         public void reverseWrite(Integer value) {
-            masterDevice.write(value);
+            targetDevice.write(value);
         }
     }
 
+    /**
+     * In this implementation, targetDevice is the slave Device
+     */
     protected class InternalSlavePartner extends SpiSlaveDevice {
-
-        private SerialDevice slaveDevice;
 
         public InternalSlavePartner() {
         }
 
+        /**
+         * Values from each of the attached slaves are forwarded to the master
+         * @param value
+         */
         @Override
         public void write(Integer value) {
             internalMasterPartner.reverseWrite(value);
-        }
-
-        @Override
-        public void connectSerialDevice(SerialDevice slaveDevice) {
-            this.slaveDevice = slaveDevice;
-        }
-
-        @Override
-        public void disconnectSerialDevice() {
-            this.slaveDevice = new DummySerialDevice();
-        }
-
-        @Override
-        public SerialDevice getConnectedSerialDevice() {
-            return slaveDevice;
         }
 
         @Override
@@ -156,7 +136,7 @@ public class SerialBus {
         }
 
         public void reverseWrite(Integer value) {
-            slaveDevice.write(value);
+            targetDevice.write(value);
         }
     }
 }

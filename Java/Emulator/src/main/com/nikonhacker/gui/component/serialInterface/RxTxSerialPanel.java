@@ -47,20 +47,20 @@ public class RxTxSerialPanel extends SerialDevicePanel {
         // We assume we have a regular A <> B setup to start with, not a triangle or separate devices on Rx and Tx
         // To do so:
         // 1. we get the device originally connected to the serial port
-        SerialDevice connectedSerialDevice = serialDevice.getConnectedSerialDevice();
+        SerialDevice connectedSerialDevice = serialDevice.getTargetDevice();
         // 2. we replace the above device by a logger wire, forwarding data to the original device
         if (connectedSerialDevice instanceof SpiSlaveDevice) {
-            serialDevice.connectSerialDevice(new PrintWriterLoggerSpiSlaveWire("Tx of " + serialDevice.toString(), (SpiSlaveDevice) connectedSerialDevice, rxTextArea.getPrintWriter()));
+            serialDevice.connectTargetDevice(new PrintWriterLoggerSpiSlaveWire("Tx of " + serialDevice.toString(), (SpiSlaveDevice) connectedSerialDevice, rxTextArea.getPrintWriter()));
         }
         else {
-            serialDevice.connectSerialDevice(new PrintWriterLoggerSerialWire("Tx of " + serialDevice.toString(), connectedSerialDevice, rxTextArea.getPrintWriter()));
+            serialDevice.connectTargetDevice(new PrintWriterLoggerSerialWire("Tx of " + serialDevice.toString(), connectedSerialDevice, rxTextArea.getPrintWriter()));
         }
         // 3. conversely, we connect a similar logger wire in the other direction.
         if (serialDevice instanceof SpiSlaveDevice) {
-            connectedSerialDevice.connectSerialDevice(new PrintWriterLoggerSpiSlaveWire("Rx of " + serialDevice.toString(), (SpiSlaveDevice) serialDevice, txTextArea.getPrintWriter()));
+            connectedSerialDevice.connectTargetDevice(new PrintWriterLoggerSpiSlaveWire("Rx of " + serialDevice.toString(), (SpiSlaveDevice) serialDevice, txTextArea.getPrintWriter()));
         }
         else {
-            connectedSerialDevice.connectSerialDevice(new PrintWriterLoggerSerialWire("Rx of " + serialDevice.toString(), serialDevice, txTextArea.getPrintWriter()));
+            connectedSerialDevice.connectTargetDevice(new PrintWriterLoggerSerialWire("Rx of " + serialDevice.toString(), serialDevice, txTextArea.getPrintWriter()));
         }
 
         prepareButtonGrid(buttonGrid, valueButtonListener, 8);
@@ -98,11 +98,11 @@ public class RxTxSerialPanel extends SerialDevicePanel {
 
     public void dispose() {
         // Find back the real device attached to the logging wire
-        SerialDevice wire = serialDevice.getConnectedSerialDevice();
-        SerialDevice realDevice = wire.getConnectedSerialDevice();
+        SerialDevice wire = serialDevice.getTargetDevice();
+        SerialDevice realDevice = wire.getTargetDevice();
         // Reconnect the devices directly, removing the logging wires
-        serialDevice.connectSerialDevice(realDevice);
-        realDevice.connectSerialDevice(serialDevice);
+        serialDevice.connectTargetDevice(realDevice);
+        realDevice.connectTargetDevice(serialDevice);
     }
 
 
