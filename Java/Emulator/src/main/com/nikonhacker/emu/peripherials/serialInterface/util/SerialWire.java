@@ -35,4 +35,14 @@ public class SerialWire extends AbstractSerialDevice {
     public String toString() {
         return getWireName();
     }
+
+    /**
+     * This method removes this wire and reconnects the original source and target
+     */
+    public void remove() {
+        SerialDevice originalSource = getSourceDevice();
+        SerialDevice originalTarget = getTargetDevice();
+        originalSource.setTargetDevice(originalTarget);
+        originalTarget.setSourceDevice(originalSource);
+    }
 }
