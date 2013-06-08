@@ -7,7 +7,7 @@ public interface Constants {
     int      CHIP_NONE  = -1;
     int      CHIP_FR    = 0;
     int      CHIP_TX    = 1;
-    String[] CHIP_LABEL = {"FR", "TX"};
+    String[] CHIP_LABEL = {"FR80", "TX19"};
 
     Color COLOR_HI  = Color.RED;
     Color COLOR_HIZ = Color.ORANGE;
