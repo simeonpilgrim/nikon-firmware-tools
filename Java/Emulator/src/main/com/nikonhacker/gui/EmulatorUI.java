@@ -2177,11 +2177,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // Slave 1
         final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // Slave 2
 
-        // disconnect them from dummy partners
-        txSerialInterfaceH2.disconnectSerialDevice();
-        eeprom.disconnectSerialDevice();
-        lcdDriver.disconnectSerialDevice();
-
         // Create a bus with the CPU as master
         SpiBus bus = new SpiBus("bus", txSerialInterfaceH2) ;
 
@@ -2200,10 +2195,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
         SerialInterface frSerialInterface5 = frSerialInterfaces[5];
         SerialInterface txSerialInterfaceH0 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 0];
-        frSerialInterface5.disconnectSerialDevice();
-        txSerialInterfaceH0.disconnectSerialDevice();
-        frSerialInterface5.connectSerialDevice(txSerialInterfaceH0);
-        txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
+        frSerialInterface5.connectTargetDevice(txSerialInterfaceH0);
+        txSerialInterfaceH0.connectTargetDevice(frSerialInterface5);
     }
 
     private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {

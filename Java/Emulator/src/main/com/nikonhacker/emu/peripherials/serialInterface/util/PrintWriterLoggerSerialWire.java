@@ -5,7 +5,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 import java.io.PrintWriter;
 
-public class PrintWriterLoggerSerialWire extends SerialWire implements SerialDevice {
+public class PrintWriterLoggerSerialWire extends SerialWire {
     private PrintWriter printWriter;
     private int mask = 0xFF; // 8 bits by default
 

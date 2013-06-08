@@ -47,28 +47,25 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 public void actionPerformed(ActionEvent e) {
                     JValueButton button = (JValueButton) e.getSource();
                     int value = button.getValue();
-                    send(serialInterface, txTextArea, value);
+                    send(serialInterface, rxTextArea, value);
                 }
             };
 
             // The logic is to insert two loggers (Rx and Tx) between the serialInterface and the device connected to it.
-            // We assume we have a regular A <> B setup to start with, not a triangle or separate devices on Rx and Tx
             // To do so:
-            // 1. we get the device originally connected to the serial port
-            SerialDevice connectedSerialDevice = serialInterface.getConnectedSerialDevice();
-            // 2. we replace the above device by a logger wire, forwarding data to the original device
-            serialInterface.connectSerialDevice(new PrintWriterLoggerSerialWire("Rx of " + serialInterface.getName(), connectedSerialDevice, rxTextArea.getPrintWriter()));
-            // 3. conversely, we connect a similar logger wire in the other direction.
-            connectedSerialDevice.connectSerialDevice(new PrintWriterLoggerSerialWire("Tx of " + serialInterface.getName(), serialInterface, txTextArea.getPrintWriter()));
+            // 1. we insert a wire between this serialInterface and this serialInterface's former target
+            serialInterface.connectTargetDevice(new PrintWriterLoggerSerialWire("Tx of " + serialInterface.getName(), serialInterface.getTargetDevice(), txTextArea.getPrintWriter()));
+            // 1. we insert another wire between this serialInterface's former source and this serialInterface
+            serialInterface.getSourceDevice().connectTargetDevice(new PrintWriterLoggerSerialWire("Rx of " + serialInterface.getName(), serialInterface, rxTextArea.getPrintWriter()));
 
             prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNumBits());
 
             serialInterfacePanel.add(new JLabel("Click to send data to SerialInterface:"));
             serialInterfacePanel.add(buttonGrid);
             serialInterfacePanel.add(new JLabel("Microcontroller => External device"));
-            serialInterfacePanel.add(new JScrollPane(rxTextArea));
-            serialInterfacePanel.add(new JLabel("External device => Microcontroller"));
             serialInterfacePanel.add(new JScrollPane(txTextArea));
+            serialInterfacePanel.add(new JLabel("External device => Microcontroller"));
+            serialInterfacePanel.add(new JScrollPane(rxTextArea));
 
             tabbedPane.addTab(serialInterface.getName(), null, serialInterfacePanel);
         }
@@ -98,14 +95,17 @@ public class SerialInterfaceFrame extends DocumentFrame {
     public void dispose() {
         super.dispose();
 
-        // Un-hook the loggers
+        // Reconnect the devices directly, removing the logging wires
         for (SerialInterface serialInterface : serialInterfaces) {
-            // Find back the real device attached to the logging wire
-            SerialDevice wire = serialInterface.getConnectedSerialDevice();
-            SerialDevice realDevice = wire.getConnectedSerialDevice();
-            // Reconnect the devices directly, removing the logging wires
-            serialInterface.connectSerialDevice(realDevice);
-            realDevice.connectSerialDevice(serialInterface);
+            // Reconnect the real target
+            SerialDevice currentTarget = serialInterface.getTargetDevice();
+            serialInterface.setTargetDevice(currentTarget.getTargetDevice());
+            currentTarget.setTargetDevice(null);
+
+            // Reconnect the real target
+            SerialDevice currentSource = serialInterface.getSourceDevice();
+            serialInterface.setSourceDevice(currentSource.getSourceDevice());
+            currentSource.setSourceDevice(null);
         }
     }
 }

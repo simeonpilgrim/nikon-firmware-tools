@@ -13,19 +13,14 @@ public class LcdDriver extends SpiSlaveDevice {
 
     private static final int MODE_SET_MASK       = 0b01100000;
     private static final int MODE_SET_VALUE      = 0b01000000;
-
     private static final int ADSET_MASK          = 0b01100000;
     private static final int ADSET_VALUE         = 0b00000000;
-
     private static final int DISCTL_MASK         = 0b01100000;
     private static final int DISCTL_VALUE        = 0b00100000;
-
     private static final int ICSET_MASK          = 0b01111000;
     private static final int ICSET_VALUE         = 0b01101000;
-
     private static final int BLKCTL_MASK         = 0b01111000;
     private static final int BLKCTL_VALUE        = 0b01110000;
-
     private static final int APCTL_MASK          = 0b01111100;
     private static final int APCTL_VALUE         = 0b01111100;
 
@@ -36,11 +31,10 @@ public class LcdDriver extends SpiSlaveDevice {
 
     private int mask = 0xFF; // 8 bits by default
 
-    private SerialDevice connectedDevice;
-    private String name;
+    private String  name;
     private boolean isCommandMode;
     private boolean isDisplayOn;
-    private int blinkFreqHalfHz;
+    private int     blinkFreqHalfHz;
     private int nibbleAddress = 0;
 
     public enum Command {}
@@ -206,21 +200,6 @@ public class LcdDriver extends SpiSlaveDevice {
         if (nibbleAddress == NUM_NIBBLES) {
             nibbleAddress = 0;
         }
-    }
-
-    @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        this.connectedDevice = connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.connectedDevice = null;
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return connectedDevice;
     }
 
     @Override

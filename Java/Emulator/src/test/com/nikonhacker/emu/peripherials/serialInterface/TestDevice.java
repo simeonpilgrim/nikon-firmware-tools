@@ -5,9 +5,8 @@ import com.nikonhacker.Format;
 /**
  * Generic serial test device
  */
-public class TestDevice implements SerialDevice {
+public class TestDevice extends AbstractSerialDevice {
     private final String deviceName;
-    private SerialDevice connectedDevice;
 
     public TestDevice(String deviceName) {
         this.deviceName = deviceName;
@@ -16,21 +15,6 @@ public class TestDevice implements SerialDevice {
     @Override
     public void write(Integer value) {
         System.out.println("        " + deviceName + " receives " + ((value == null)?"null":("0x" + Format.asHex(value, 2))));
-    }
-
-    @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        this.connectedDevice = connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.connectedDevice = new DummySerialDevice();
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return connectedDevice;
     }
 
     @Override
@@ -47,7 +31,7 @@ public class TestDevice implements SerialDevice {
 
     private void send(int value) {
         System.out.println(deviceName + " writes 0x" + Format.asHex(value, 2));
-        connectedDevice.write(value);
+        targetDevice.write(value);
     }
 
     @Override
