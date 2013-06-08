@@ -221,6 +221,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 updatePinState(finalPortNumber, finalBitNumber, pin);
             }
         });
+        spyWire.setLogPinMessages(ui.getPrefs().isLogPinMessages(chip));
         spyWire.insertAtPin(pin);
         return spyWire;
     }
