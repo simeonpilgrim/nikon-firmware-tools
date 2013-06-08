@@ -1,9 +1,9 @@
 package com.nikonhacker.gui.component.serialInterface;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSerialWire;
+import com.nikonhacker.emu.peripherials.serialInterface.util.SerialWire;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.PrintWriterArea;
@@ -42,6 +42,10 @@ public class SerialInterfaceFrame extends DocumentFrame {
             txTextArea.setWrapStyleWord(true);
             rxTextArea.setLineWrap(true);
             rxTextArea.setWrapStyleWord(true);
+            // Set autoscroll
+            rxTextArea.setAutoScroll(true);
+            txTextArea.setAutoScroll(true);
+
 
             final ActionListener valueButtonListener = new ActionListener() {
                 public void actionPerformed(ActionEvent e) {
@@ -97,15 +101,11 @@ public class SerialInterfaceFrame extends DocumentFrame {
 
         // Reconnect the devices directly, removing the logging wires
         for (SerialInterface serialInterface : serialInterfaces) {
-            // Reconnect the real target
-            SerialDevice currentTarget = serialInterface.getTargetDevice();
-            serialInterface.setTargetDevice(currentTarget.getTargetDevice());
-            currentTarget.setTargetDevice(null);
+            // Remove the Tx wire and reconnect the real target
+            ((SerialWire)serialInterface.getTargetDevice()).remove();
 
-            // Reconnect the real target
-            SerialDevice currentSource = serialInterface.getSourceDevice();
-            serialInterface.setSourceDevice(currentSource.getSourceDevice());
-            currentSource.setSourceDevice(null);
+            // Remove the Rx wire and reconnect the real source
+            ((SerialWire)serialInterface.getSourceDevice()).remove();
         }
     }
 }
