@@ -2017,7 +2017,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
-                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B, emulator[Constants.CHIP_FR], prefs.isLogSerialMessages(chip));
+                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, emulator[Constants.CHIP_FR], prefs.isLogSerialMessages(chip));
                 }
             }
             else {
