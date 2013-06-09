@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.timer;
 
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;

@@ -13,7 +13,7 @@ import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.itron.*;
 import com.nikonhacker.itron.fr.FrSysCallEnvironment;
 import com.nikonhacker.itron.tx.TxSysCallEnvironment;

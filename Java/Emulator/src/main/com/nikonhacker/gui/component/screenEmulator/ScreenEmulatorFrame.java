@@ -3,7 +3,7 @@ package com.nikonhacker.gui.component.screenEmulator;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;

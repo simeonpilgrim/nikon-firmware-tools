@@ -7,6 +7,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSe
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSpiSlaveWire;
 import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.component.VerticalLayout;
+import com.nikonhacker.gui.swing.JValueButton;
 
 import javax.swing.*;
 import java.awt.*;

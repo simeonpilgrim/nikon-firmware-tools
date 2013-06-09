@@ -8,6 +8,7 @@ import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.swing.JValueButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -42,8 +43,8 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         ActionListener standardInterruptButtonListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JInterruptButton button = (JInterruptButton) e.getSource();
-                int interruptNumber = button.getInterruptNumber();
+                JValueButton button = (JValueButton) e.getSource();
+                int interruptNumber = button.getValue();
                 String interruptName;
                 int icr;
                 boolean isNMI;
@@ -71,14 +72,14 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         JPanel standardButtonGrid = new JPanel(new GridLayout(0,4));
 
-        JInterruptButton nmiButton = createInterruptButton("INT 0x0F = NMI", 0x0F);
+        JValueButton nmiButton = createInterruptButton("INT 0x0F = NMI", 0x0F);
         nmiButton.setForeground(Color.RED);
         nmiButton.setMargin(buttonInsets);
         nmiButton.addActionListener(standardInterruptButtonListener);
         standardButtonGrid.add(nmiButton);
 
         for (int value = 0; value < 47; value++) {
-            JInterruptButton button = createInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
+            JValueButton button = createInterruptButton("INT 0x" + Format.asHex(value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET, 2)
                     + " = IR" + (value < 10 ? "0" : "") + value, value + FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET) ;
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
@@ -109,8 +110,8 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
 
         ActionListener customInterruptButtonListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JInterruptButton button = (JInterruptButton) e.getSource();
-                int interruptNumber = button.getInterruptNumber();
+                JValueButton button = (JValueButton) e.getSource();
+                int interruptNumber = button.getValue();
                 if (interruptController.request(new FrInterruptRequest(interruptNumber, nmiCheckBox.isSelected(), icrComboBox.getSelectedIndex()))) {
                     ui.setStatusText(Constants.CHIP_FR, "Interrupt 0x" + Format.asHex(interruptNumber, 2) + " was requested.");
                 }
@@ -124,7 +125,7 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         for (int i = 0; i < 16; i++) {
             for (int j = 0; j < 16; j++) {
                 final int value = i * 16 + j;
-                JInterruptButton button = createInterruptButton(Format.asHex(value, 2), value);
+                JValueButton button = createInterruptButton(Format.asHex(value, 2), value);
                 button.setMargin(buttonInsets);
                 button.addActionListener(customInterruptButtonListener);
                 customButtonGrid.add(button);
@@ -213,8 +214,8 @@ public class FrInterruptControllerFrame extends InterruptControllerFrame {
         return 3;
     }
 
-    private JInterruptButton createInterruptButton(String text, int interruptNumber) {
-        JInterruptButton button = new JInterruptButton(text, interruptNumber);
+    private JValueButton createInterruptButton(String text, int interruptNumber) {
+        JValueButton button = new JValueButton(text, interruptNumber);
 
         // Set custom Tooltip
         String tooltip = "INT 0x" + Format.asHex(interruptNumber,2);

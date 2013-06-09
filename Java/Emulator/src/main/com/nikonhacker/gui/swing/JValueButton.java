@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component.serialInterface;
+package com.nikonhacker.gui.swing;
 
 import com.nikonhacker.Format;
 
@@ -12,7 +12,14 @@ public class JValueButton extends JButton {
         this.value = value;
     }
 
+    public JValueButton(String text, int value) {
+        super(text);
+        this.value = value;
+    }
+
     public int getValue() {
         return value;
     }
+
+
 }

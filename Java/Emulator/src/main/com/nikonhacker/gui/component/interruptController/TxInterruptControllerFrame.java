@@ -6,6 +6,7 @@ import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.swing.JValueButton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -39,8 +40,8 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
 
         ActionListener standardInterruptButtonListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JInterruptButton button = (JInterruptButton) e.getSource();
-                int interruptNumber = button.getInterruptNumber();
+                JValueButton button = (JValueButton) e.getSource();
+                int interruptNumber = button.getValue();
 
                 String interruptName = "Interrupt " + button.getText() + " (" + interruptNumber + ")";
                 if (interruptController.request(interruptNumber)) {
@@ -55,7 +56,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         JPanel standardButtonGrid = new JPanel(new GridLayout(0,8));
 
         for (int value = 0; value < 128; value++) {
-            JInterruptButton button = createInterruptButton(value);
+            JValueButton button = createInterruptButton(value);
             button.setMargin(buttonInsets);
             button.addActionListener(standardInterruptButtonListener);
             standardButtonGrid.add(button);
@@ -127,10 +128,10 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         return 2;
     }
 
-    private JInterruptButton createInterruptButton(int value) {
+    private JValueButton createInterruptButton(int value) {
         TxInterruptController.InterruptDescription interruptDescription = TxInterruptController.hardwareInterruptDescription[value];
         String symbolicName = interruptDescription.symbolicName;
-        JInterruptButton button = new JInterruptButton(symbolicName, value);
+        JValueButton button = new JValueButton(symbolicName, value);
         if (symbolicName == null) {
             button.setText("-");
             button.setForeground(Color.ORANGE.darker());
