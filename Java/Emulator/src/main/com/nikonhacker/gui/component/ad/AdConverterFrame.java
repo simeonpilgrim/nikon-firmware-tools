@@ -5,7 +5,7 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.AdUnit;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.StringUtils;
 

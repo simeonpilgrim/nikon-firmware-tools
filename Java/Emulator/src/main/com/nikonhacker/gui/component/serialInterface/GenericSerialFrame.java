@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.serialInterface;
 
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component;
+package com.nikonhacker.gui.swing;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.gui.EmulatorUI;
