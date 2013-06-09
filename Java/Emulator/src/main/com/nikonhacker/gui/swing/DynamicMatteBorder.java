@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.util;
+package com.nikonhacker.gui.swing;
 
 import javax.swing.border.MatteBorder;
 import java.awt.*;

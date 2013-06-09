@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component;
+package com.nikonhacker.gui.swing;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

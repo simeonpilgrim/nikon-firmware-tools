@@ -18,8 +18,8 @@ import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;

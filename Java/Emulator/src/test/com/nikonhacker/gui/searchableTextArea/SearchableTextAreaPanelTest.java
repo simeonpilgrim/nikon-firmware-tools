@@ -1,6 +1,6 @@
 package com.nikonhacker.gui.searchableTextArea;
 
-import com.nikonhacker.gui.component.SearchableTextAreaPanel;
+import com.nikonhacker.gui.swing.SearchableTextAreaPanel;
 
 import javax.swing.*;
 import java.awt.*;

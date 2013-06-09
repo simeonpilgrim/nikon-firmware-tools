@@ -5,8 +5,8 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.PageAccessLoggerActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.PrintWriterArea;
 import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;

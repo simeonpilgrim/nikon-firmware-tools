@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component;
+package com.nikonhacker.gui.swing;
 
 import org.apache.commons.lang3.StringUtils;
 

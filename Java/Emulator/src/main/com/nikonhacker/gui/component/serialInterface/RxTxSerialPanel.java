@@ -5,9 +5,9 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSerialWire;
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSpiSlaveWire;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.VerticalLayout;
 import com.nikonhacker.gui.swing.JValueButton;
+import com.nikonhacker.gui.swing.PrintWriterArea;
+import com.nikonhacker.gui.swing.VerticalLayout;
 
 import javax.swing.*;
 import java.awt.*;

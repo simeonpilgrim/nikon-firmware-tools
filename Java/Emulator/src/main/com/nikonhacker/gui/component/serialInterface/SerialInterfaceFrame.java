@@ -5,10 +5,10 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSerialWire;
 import com.nikonhacker.emu.peripherials.serialInterface.util.SerialWire;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.VerticalLayout;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.gui.swing.JValueButton;
+import com.nikonhacker.gui.swing.PrintWriterArea;
+import com.nikonhacker.gui.swing.VerticalLayout;
 
 import javax.swing.*;
 import java.awt.*;
