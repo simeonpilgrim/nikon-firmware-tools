@@ -603,17 +603,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(makeSlider(chip));
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        cpuStateButton[chip] = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW[chip], Constants.CHIP_LABEL[chip] + " CPU State window", "CPU");
+        cpuStateButton[chip] = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW[chip], Constants.CHIP_LABEL[chip] + " CPU state window", "CPU");
         bar.add(cpuStateButton[chip]);
-        memoryHexEditorButton[chip] = makeButton("memory_editor", COMMAND_TOGGLE_MEMORY_HEX_EDITOR[chip], Constants.CHIP_LABEL[chip] + " Memory hex editor", "Hex Editor");
+        memoryHexEditorButton[chip] = makeButton("memory_editor", COMMAND_TOGGLE_MEMORY_HEX_EDITOR[chip], Constants.CHIP_LABEL[chip] + " memory hex editor", "Hex Editor");
         bar.add(memoryHexEditorButton[chip]);
-        interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Interrupt controller", "Interrupt");
+        interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " interrupt controller", "Interrupt");
         bar.add(interruptControllerButton[chip]);
         programmableTimersButton[chip] = makeButton("reload", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
         bar.add(programmableTimersButton[chip]);
-        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
+        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " serial interfaces", "Serial interfaces");
         bar.add(serialInterfacesButton[chip]);
-        ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], Constants.CHIP_LABEL[chip] + "I/O Ports", "I/O Ports");
+        ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
         bar.add(ioPortsButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -625,7 +625,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             bar.add(component4006Button);
         }
         else {
-            serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial devices", "Serial devices");
+            serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices", "Serial devices");
             bar.add(serialDevicesButton[Constants.CHIP_TX]);
             adConverterButton[Constants.CHIP_TX] = makeButton("ad_converter", COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter", "A/D converter");
             bar.add(adConverterButton[Constants.CHIP_TX]);
@@ -635,13 +635,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         disassemblyButton[chip] = makeButton("disassembly_log", COMMAND_TOGGLE_DISASSEMBLY_WINDOW[chip], "Real time " + Constants.CHIP_LABEL[chip] + " disassembly log", "Disassembly");
         bar.add(disassemblyButton[chip]);
-        memoryActivityViewerButton[chip] = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER[chip], Constants.CHIP_LABEL[chip] + " Memory activity viewer", "Activity");
+        memoryActivityViewerButton[chip] = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER[chip], Constants.CHIP_LABEL[chip] + " memory activity viewer", "Activity");
         bar.add(memoryActivityViewerButton[chip]);
         customMemoryRangeLoggerButton[chip] = makeButton("custom_logger", COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW[chip], "Custom " + Constants.CHIP_LABEL[chip] + " logger", "Custom logger");
         bar.add(customMemoryRangeLoggerButton[chip]);
-        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Call Stack window", "CallStack");
+        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " call stack window", "CallStack");
         bar.add(callStackButton[chip]);
-        iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON Object window", "µITRON Object");
+        iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON object window", "µITRON Object");
         bar.add(iTronObjectButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
