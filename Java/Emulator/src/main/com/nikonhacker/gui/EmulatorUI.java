@@ -390,7 +390,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             toolBar[chip] = createToolBar(chip);
 
             contentPane[chip] = new JPanel(new BorderLayout());
-            contentPane[chip].add(toolBar[chip], BorderLayout.PAGE_START);
+            contentPane[chip].add(toolBar[chip], BorderLayout.NORTH);
             contentPane[chip].add(mdiPane[chip], BorderLayout.CENTER);
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
@@ -409,8 +409,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, contentPane[Constants.CHIP_FR], contentPane[Constants.CHIP_TX]);
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(0.5);
-
-        //togglePane(false);
 
         setContentPane(splitPane);
 
