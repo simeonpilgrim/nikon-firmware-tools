@@ -26,6 +26,9 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int RELOAD_TIMER1_INTERRUPT_REQUEST_NR = 0x19;
     public static final int RELOAD_TIMER2_INTERRUPT_REQUEST_NR = 0x1A;
 
+    public static final int SERIAL_IF_RX_REQUEST_NR = 0x1B;
+    public static final int SERIAL_IF_TX_REQUEST_NR = 0x1C;
+
     public static final int DELAY_INTERRUPT_REQUEST_NR         = 0x3F;
 
     public final static Map<Integer, String> interruptDescriptions = new HashMap<>();

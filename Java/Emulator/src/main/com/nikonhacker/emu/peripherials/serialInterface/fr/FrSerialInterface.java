@@ -4,6 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 import java.util.LinkedList;
@@ -45,14 +46,11 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber, Emulator emulator, boolean logSerialMessages) {
+    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
         super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
-//        First, interrupt numbers were automatic but they are now custom
-//        rxInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + this.serialInterfaceNumber * 3;
-//        txInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + 1 + this.serialInterfaceNumber * 3;
-//        txInterruptNumber = baseInterruptNumber + 1;
-        rxInterruptNumber = baseInterruptNumber;
-        txInterruptNumber = baseInterruptNumber;
+        // This is pure speculation but seems to work for interrupt 5 at least
+        rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
+        txInterruptNumber = FrInterruptController.SERIAL_IF_TX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
     }
 
     public void setScrIbcr(int scrIbcr) {
