@@ -9,8 +9,8 @@ import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.CallStackItem;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.VerticalLayout;
 import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.VerticalLayout;
 
 import javax.swing.*;
 import javax.swing.border.Border;

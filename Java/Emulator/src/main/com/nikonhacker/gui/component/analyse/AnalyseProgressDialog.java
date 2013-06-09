@@ -7,8 +7,8 @@ import com.nikonhacker.disassembly.fr.Dfr;
 import com.nikonhacker.disassembly.tx.Dtx;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.SearchableTextAreaPanel;
+import com.nikonhacker.gui.swing.PrintWriterArea;
+import com.nikonhacker.gui.swing.SearchableTextAreaPanel;
 
 import javax.swing.*;
 import java.awt.*;

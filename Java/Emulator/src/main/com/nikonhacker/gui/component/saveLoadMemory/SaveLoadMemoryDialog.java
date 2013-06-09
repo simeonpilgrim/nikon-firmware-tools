@@ -3,7 +3,7 @@ package com.nikonhacker.gui.component.saveLoadMemory;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.memory.Memory;
-import com.nikonhacker.gui.component.FileSelectionPanel;
+import com.nikonhacker.gui.swing.FileSelectionPanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;

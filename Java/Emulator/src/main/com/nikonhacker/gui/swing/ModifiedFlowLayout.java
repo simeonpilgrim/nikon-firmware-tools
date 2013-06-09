@@ -1,4 +1,4 @@
-package com.nikonhacker.gui.component;
+package com.nikonhacker.gui.swing;
 
 import java.awt.*;
 
