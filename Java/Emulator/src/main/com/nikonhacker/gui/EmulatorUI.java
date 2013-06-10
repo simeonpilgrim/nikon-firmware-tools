@@ -84,10 +84,7 @@ import com.nikonhacker.gui.component.serialInterface.GenericSerialFrame;
 import com.nikonhacker.gui.component.serialInterface.SerialInterfaceFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.gui.component.timer.ProgrammableTimersFrame;
-import com.nikonhacker.gui.swing.DocumentFrame;
-import com.nikonhacker.gui.swing.FileSelectionPanel;
-import com.nikonhacker.gui.swing.ModifiedFlowLayout;
-import com.nikonhacker.gui.swing.VerticalLayout;
+import com.nikonhacker.gui.swing.*;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import net.miginfocom.swing.MigLayout;
@@ -117,7 +114,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
+public class EmulatorUI extends JFrame implements ActionListener {
 
     // Constants
     private static final String[] COMMAND_IMAGE_LOAD = {"FR_IMAGE_LOAD", "TX_IMAGE_LOAD"};
@@ -356,25 +353,25 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * event-dispatching thread.
      */
     private static void createAndShowGUI() {
-        //Make sure we have nice window decorations.
+        // Choose to keep Java-style for main window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
 
-        //Create and set up the window.
+        // Create and set up the window.
         EmulatorUI frame = new EmulatorUI();
 
-        //Display the window.
+        // Display the window.
         frame.setVisible(true);
     }
 
     public EmulatorUI() {
         super(ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
 
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
         prefs = Prefs.load();
         // Apply register label prefs immediately
         FrCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_FR));
         TxCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_TX));
-
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         //Set up the GUI.
         setJMenuBar(createMenuBar());
@@ -383,20 +380,37 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         JPanel[] contentPane = new JPanel[2];
         for(int chip=0; chip < 2; chip++) {
-            mdiPane[chip] = new JDesktopPane();
+            // This is the contentPane that will make one side of the JSplitPane
+            contentPane[chip] = new JPanel(new BorderLayout());
+
+            // First we create a toolbar and put it on top
+            toolBar[chip] = createToolBar(chip);
+            contentPane[chip].add(toolBar[chip], BorderLayout.NORTH);
+
+
+            // Then we prepare a "desktop" panel and put it at the center
+            // This subclass of JDesktopPane implements Scrollable and has a size which auto-adapts dynamically
+            // to the size and position of its internal frames
+            mdiPane[chip] = new ScrollableDesktop();
+            mdiPane[chip].setBackground(Constants.CHIP_BACKGROUND_COLOR[chip]);
+            mdiPane[chip].setOpaque(true);
+
+            // We wrap it inside a panel to force a stretch to the size of the JSplitPane panel
+            // Otherwise, as the size of the panel auto-adapts, it starts at 0,0 if no component is present,
+            // so the background color would only be only visible in the bounding box surrounding the internal frames
+            JPanel forcedStretchPanel = new JPanel(new BorderLayout());
+            forcedStretchPanel.add(mdiPane[chip], BorderLayout.CENTER);
+
+            // And we wrap the result in a JScrollPane to take care of the actual scrolling,
+            // before adding it at the center
+            contentPane[chip].add(new JScrollPane(forcedStretchPanel), BorderLayout.CENTER);
+
+            // Finally, we prepare the status bar and add it at the bottom
             statusBar[chip] = new JLabel(statusText[chip]);
             statusBar[chip].setOpaque(true);
             statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-            toolBar[chip] = createToolBar(chip);
-
-            contentPane[chip] = new JPanel(new BorderLayout());
-            contentPane[chip].add(toolBar[chip], BorderLayout.NORTH);
-            contentPane[chip].add(mdiPane[chip], BorderLayout.CENTER);
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
-
-        mdiPane[Constants.CHIP_FR].setBackground(new Color(240,240,255));
-        mdiPane[Constants.CHIP_TX].setBackground(new Color(248,255,248));
 
         setIconImages(Arrays.asList(
                 Toolkit.getDefaultToolkit().getImage(EmulatorUI.class.getResource("images/nh_16x16.png")),
@@ -423,6 +437,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         restoreMainWindowSettings();
 
+        pack();
+
         updateStates();
 
         //Make dragging a little faster but perhaps uglier.
@@ -436,6 +452,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
         }).start();
     }
+
+
     private void saveMainWindowSettings() {
         prefs.setMainWindowPosition(getX(), getY());
         prefs.setMainWindowSize(getWidth(), getHeight());
@@ -450,10 +468,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             //Settings were never saved. Make the app window indented 50 pixels from each edge of the screen.
             int inset = 50;
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
+            int width = screenSize.width - inset * 2;
+            int height = screenSize.height - inset * 2;
+            setLocation(inset, inset);
+            setPreferredSize(new Dimension(width, height));
         }
         else {
-            setBounds(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY(), prefs.getMainWindowSizeX(), prefs.getMainWindowSizeY());
+            setLocation(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY());
+            setPreferredSize(new Dimension(prefs.getMainWindowSizeX(), prefs.getMainWindowSizeY()));
 
             splitPane.setDividerLocation(prefs.getDividerLocation());
             splitPane.setLastDividerLocation(prefs.getLastDividerLocation());
@@ -667,7 +689,24 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JSlider makeSlider(int chip) {
         intervalSlider[chip] = new JSlider(JSlider.HORIZONTAL, 0, 5, prefs.getSleepTick(chip));
 
-        intervalSlider[chip].addChangeListener(this);
+        intervalSlider[chip].addChangeListener(new ChangeListener() {
+            /**
+             * React to slider moves
+             * @param e
+             */
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                // if (!source.getValueIsAdjusting())
+                for (int chip = 0; chip < 2; chip++) {
+                    if (source == intervalSlider[chip]) {
+                        setEmulatorSleepCode(chip, source.getValue());
+                        prefs.setSleepTick( chip, source.getValue());
+                    }
+                }
+            }
+        });
+
         intervalSlider[chip].putClientProperty("JComponent.sizeVariant", "large");
 
         //Create the label table
@@ -1919,21 +1958,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
     private String makeLink(String link) {
         return "<a href=" + link + ">" + link + "</a>";
-    }
-
-    /**
-     * React to slider moves
-     * @param e
-     */
-    public void stateChanged(ChangeEvent e) {
-        JSlider source = (JSlider)e.getSource();
-        // if (!source.getValueIsAdjusting())
-        for (int chip = 0; chip < 2; chip++) {
-            if (source == intervalSlider[chip]) {
-                setEmulatorSleepCode(chip, source.getValue());
-                prefs.setSleepTick( chip, source.getValue());
-            }
-        }
     }
 
     private void setEmulatorSleepCode(int chip, int value) {
