@@ -10,6 +10,7 @@ import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaChannel;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
+import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
@@ -120,6 +121,15 @@ public class TxIoListener extends IoActivityListener {
     public static final int REGISTER_IMCGF   =    0xFF00_1934; // CG interrupt mode control register F
     public static final int REGISTER_IMCG10  =    0xFF00_1938; // CG interrupt mode control register 10
     public static final int REGISTER_IMCG11  =    0xFF00_193C; // CG interrupt mode control register 11
+
+    // Key-on Wakeup
+    public static final int NUM_KEY = 32;
+    private static final int KEY_OFFSET_SHIFT = 2; // 1 << 2 = 4 bytes per key
+    private static final int REGISTER_KWUPST00 =    0xFF00_1A00; // Key Status register
+    private static final int REGISTER_PKEY     =    0xFF00_1A80; // Key State register
+    private static final int REGISTER_KWUPCNT  =    0xFF00_1A84; // Key Control register
+    private static final int REGISTER_KWUPCLR  =    0xFF00_1A88; // Key Interrupt clear register
+    private static final int REGISTER_KWUPINT  =    0xFF00_1A8C; // Key Interrupt register
 
     // I/O Port
     public static final int NUM_PORT = 20;
@@ -433,6 +443,31 @@ public class TxIoListener extends IoActivityListener {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
+            // Key registers
+            TxKeyCircuit keyCircuit = ((TxKeyCircuit)platform.getKeyCircuit());
+            int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
+            switch (addr) {
+                case REGISTER_PKEY:
+                case REGISTER_PKEY+1:
+                case REGISTER_PKEY+2:
+                case REGISTER_PKEY+3:
+                    return (byte)(keyCircuit.getPKEY() >> ((3 - (addr & 3)) * 8));
+                case REGISTER_KWUPCNT:
+                    return (byte)keyCircuit.getKWUPCNT();
+                case REGISTER_KWUPCLR:
+                    return (byte)keyCircuit.getKWUPCLR();
+                case REGISTER_KWUPINT:
+                case REGISTER_KWUPINT+1:
+                case REGISTER_KWUPINT+2:
+                case REGISTER_KWUPINT+3:
+                    return keyCircuit.getKWUPINTn(addr&3);
+                default:
+                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT))
+                        return (byte)keyCircuit.keys[keyNumber].getKWUPST();
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+            }
+        }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
             // AD unit configuration registers
             int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
@@ -591,6 +626,9 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             throw new RuntimeException("The RTC registers cannot be accessed by 16-bit for now");
+        }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
+            throw new RuntimeException("The KEY registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -865,6 +903,25 @@ public class TxIoListener extends IoActivityListener {
                     return clock.getRestr();
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+            }
+        }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
+            // Key registers
+            TxKeyCircuit keyCircuit = ((TxKeyCircuit)platform.getKeyCircuit());
+            int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
+            switch (addr) {
+                case REGISTER_PKEY:
+                    return keyCircuit.getPKEY();
+                case REGISTER_KWUPCNT:
+                    return keyCircuit.getKWUPCNT();
+                case REGISTER_KWUPCLR:
+                    return keyCircuit.getKWUPCLR();
+                case REGISTER_KWUPINT:
+                    return keyCircuit.getKWUPINT();
+                default:
+                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT))
+                        return keyCircuit.keys[keyNumber].getKWUPST();
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1160,6 +1217,22 @@ public class TxIoListener extends IoActivityListener {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT+4) {
+            // Key registers
+            TxKeyCircuit keyCircuit = ((TxKeyCircuit)platform.getKeyCircuit());
+            int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
+            switch (addr) {
+                case REGISTER_KWUPCNT:
+                    keyCircuit.setKWUPCNT(value); break;
+                case REGISTER_KWUPCLR:
+                    keyCircuit.setKWUPCLR(value); break;
+                default:
+                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
+                        keyCircuit.keys[keyNumber].setKWUPST(value); break;
+                    }
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+            }
+        }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
             // AD unit configuration registers
             int adUnitNumber = (addr - REGISTER_ADACLK) >> AD_UNIT_OFFSET_SHIFT;
@@ -1311,6 +1384,9 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             throw new RuntimeException("The RTC registers cannot be written by 16-bit for now");
+        }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
+            throw new RuntimeException("The KEY registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -1539,6 +1615,22 @@ public class TxIoListener extends IoActivityListener {
                     clock.setRestr(value); break;
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+            }
+        }
+        else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
+            // Key registers
+            TxKeyCircuit keyCircuit = ((TxKeyCircuit)platform.getKeyCircuit());
+            int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
+            switch (addr) {
+                case REGISTER_KWUPCNT:
+                    keyCircuit.setKWUPCNT(value); break;
+                case REGISTER_KWUPCLR:
+                    keyCircuit.setKWUPCLR(value); break;
+                default:
+                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
+                        keyCircuit.keys[keyNumber].setKWUPST(value); break;
+                    }
+                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
