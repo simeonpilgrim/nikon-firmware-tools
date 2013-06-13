@@ -103,9 +103,17 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             try {
                 File selectedFile = fc.getSelectedFile();
-                prefs.setLastEepromFileName(selectedFile.getAbsolutePath());
                 eeprom.loadBinary(selectedFile);
                 refreshData();
+
+                // Store path in prefs
+                // Make it relative if possible
+                String workDir = new File(".").getCanonicalPath() + File.separator;
+                String fileName = selectedFile.getCanonicalPath();
+                if (fileName.startsWith(workDir)) {
+                    fileName = fileName.substring(workDir.length());
+                }
+                prefs.setLastEepromFileName(fileName);
             } catch (IOException e) {
                 JOptionPane.showMessageDialog(this, "Error loading eeprom contents from file: " + e.getMessage(), "Load error", JOptionPane.ERROR_MESSAGE);
                 e.printStackTrace();
