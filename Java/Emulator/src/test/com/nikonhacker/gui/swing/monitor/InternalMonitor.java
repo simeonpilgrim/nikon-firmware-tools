@@ -23,7 +23,7 @@ public class InternalMonitor extends ComponentAdapter {
         frame.setContentPane(desktop);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setSize(500, 400);
-        frame.show();
+        frame.setVisible(true);
         internalFrame.show();
     }
 
