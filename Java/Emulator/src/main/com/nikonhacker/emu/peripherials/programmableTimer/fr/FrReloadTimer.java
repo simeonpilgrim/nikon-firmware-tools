@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.programmableTimer.fr;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.clock.fr.FrClockGenerator;
+import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;

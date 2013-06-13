@@ -1,9 +1,9 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.emu.clock.ClockGenerator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;

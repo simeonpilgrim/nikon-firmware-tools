@@ -2,10 +2,10 @@ package com.nikonhacker.emu.memory.listener.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
-import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdUnit;
+import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaChannel;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
