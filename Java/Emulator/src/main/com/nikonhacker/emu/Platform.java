@@ -7,6 +7,7 @@ import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
@@ -31,6 +32,7 @@ public class Platform {
     private DmaController dmaController;
     private AdConverter adConverter;
     private RealtimeClock realtimeClock;
+    private KeyCircuit keyCircuit;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -118,5 +120,13 @@ public class Platform {
 
     public void setRealtimeClock(RealtimeClock realtimeClock) {
         this.realtimeClock = realtimeClock;
+    }
+
+    public KeyCircuit getKeyCircuit() {
+        return keyCircuit;
+    }
+
+    public void setKeyCircuit(KeyCircuit keyCircuit) {
+        this.keyCircuit = keyCircuit;
     }
 }

@@ -39,6 +39,8 @@ import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.ioPort.fr.FrIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
+import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
+import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
@@ -1999,6 +2001,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             InterruptController interruptController;
             DmaController dmaController = null;
             RealtimeClock realtimeClock = null;
+            KeyCircuit keyCircuit = null;
             AdConverter adConverter = null;
             TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
 
@@ -2060,7 +2063,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
-                ioPorts = TxIoPort.setupPorts(interruptController, programmableTimers, prefs.isLogPinMessages(chip));
+                ioPorts = TxIoPort.setupPorts(platform[chip], interruptController, programmableTimers, prefs.isLogPinMessages(chip));
 
                 // Serial interfaces
                 // Standard
@@ -2076,6 +2079,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
                 dmaController = new TxDmaController(platform[chip], prefs);
                 realtimeClock = new TxRealtimeClock(platform[chip], prefs);
+                keyCircuit = new TxKeyCircuit(interruptController);
 
                 // Devices to be linked to the Tx chip
 
@@ -2156,6 +2160,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             platform[chip].setSerialInterfaces(serialInterfaces);
             platform[chip].setDmaController(dmaController);
             platform[chip].setRealtimeClock(realtimeClock);
+            platform[chip].setKeyCircuit(keyCircuit);
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
