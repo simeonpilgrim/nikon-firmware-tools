@@ -10,9 +10,10 @@
     <property name="app-version"      value="2.34" />
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
-    <property name="class-dir"        location="ant-classes"/>
-    <property name="gen-dir"          location="ant-gen"/>
-    <property name="dist-dir"         location="dist"/>
+    <property name="target-dir"       location="ant_build"/>
+    <property name="class-dir"        location="${target-dir}/classes"/>
+    <property name="gen-dir"          location="${target-dir}/gen"/>
+    <property name="dist-dir"         location="${target-dir}/dist"/>
     <property name="jar-dir"          location="${dist-dir}/jar"/>
     <property name="lib-dir"          location="lib"/>
     <property name="batch-dir"        location="batch"/>
@@ -64,9 +65,7 @@
 
 	<!-- Build the executable jar.  -->
 	<target name="make-jar" depends="compile" description="Create the Nikon Emulator jar">
-		<delete includeEmptyDirs="true" quiet="true">
-			<fileset dir="${jar-dir}"/>
-		</delete>
+        <delete dir="${jar-dir}"/>
 		<mkdir dir="${jar-dir}"/>
 		<jar destfile="${jar-dir}/${app-name}.jar">
 			<fileset dir="${class-dir}"/>
@@ -130,8 +129,7 @@
 
     <!-- Clean dirs -->
     <target name="clean" description="cleanup module">
-        <delete dir="${class-dir}"/>
-        <delete dir="${gen-dir}"/>
+        <delete dir="${target-dir}"/>
     </target>
     
     <!-- Process Jflex file -->
