@@ -106,11 +106,15 @@ public class ScrollableDesktop extends JDesktopPane implements Scrollable, Conta
         updatePreferredSize();
     }
 
+    /**
+     * Recompute the preferred desktop size according to windows it contains
+     */
     private void updatePreferredSize() {
         int maxRight = 0;
         int maxBottom = 0;
         for (Component component : getComponents()) {
-            if (component.isVisible()) {
+            // Only take into account visible components and, for JInternalFrames, those that are neither minimized nor maximized
+            if (component.isVisible() && !(component instanceof JInternalFrame.JDesktopIcon) && (!(component instanceof JInternalFrame) || (!((JInternalFrame) component).isMaximum()))) {
                 Point location = component.getLocation();
                 Dimension size = component.getSize();
                 maxRight = Math.max(maxRight, location.x + size.width);
