@@ -170,7 +170,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
             MemoryWatch watch = ui.getPrefs().getWatches(chip).get(index);
             List<MemoryValueBreakCondition> memoryValueBreakConditions = new ArrayList<MemoryValueBreakCondition>();
             int currentValue = memory.load32(watch.getAddress());
-            String triggerName = watch.getName() + " = 0x" + Format.asHex(currentValue, 8);
+            String triggerName = watch.getName() + " changes";
 
             CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
             CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
