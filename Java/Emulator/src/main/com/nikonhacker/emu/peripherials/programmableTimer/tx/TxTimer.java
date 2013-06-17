@@ -11,6 +11,9 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 
+/**
+ * This implements "16-bit Timer/Event Counters (TMRBs)" according to section 11 of the hardware specification
+ */
 public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
     private TxCPUState cpuState;
     private TxClockGenerator clockGenerator;
