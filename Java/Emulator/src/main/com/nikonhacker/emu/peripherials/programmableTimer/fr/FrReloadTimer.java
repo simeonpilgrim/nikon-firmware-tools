@@ -12,7 +12,8 @@ import java.util.concurrent.Executors;
 
 /**
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
- * Based on spec http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
+ * Based on section 20 of the 91605 hardware spec
+ * http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
  */
 public class FrReloadTimer extends ProgrammableTimer {
 
