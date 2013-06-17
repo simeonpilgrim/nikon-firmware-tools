@@ -12,6 +12,9 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 
+/**
+ * This implements "32-bit Input Capture (TMRC)" according to section 12 of the hardware specification
+ */
 public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
     public static final int CMPCTL_CMPEN_MASK   = 0b00000001;
     public static final int CMPCTL_RDEN_MASK    = 0b00000010;
