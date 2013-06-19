@@ -1175,19 +1175,16 @@ public class EmulatorUI extends JFrame implements ActionListener {
             openAnalyseDialog(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_PLAY)) != Constants.CHIP_NONE) {
-            prepareBreakTriggers(chip, RunMode.RUN, null);
-            startEmulator(chip);
+            startEmulator(chip, RunMode.RUN, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_DEBUG)) != Constants.CHIP_NONE) {
-            prepareBreakTriggers(chip, RunMode.DEBUG, null);
-            startEmulator(chip);
+            startEmulator(chip, RunMode.DEBUG, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_PAUSE)) != Constants.CHIP_NONE) {
             pauseEmulator(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_STEP)) != Constants.CHIP_NONE) {
-            prepareBreakTriggers(chip, RunMode.STEP, null);
-            startEmulator(chip);
+            startEmulator(chip, RunMode.STEP, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_STOP)) != Constants.CHIP_NONE) {
             if (isEmulatorPlaying(chip)) {
@@ -2949,7 +2946,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     public void playToAddress(int chip, RunMode runMode, Integer endAddress) {
         prepareBreakTriggers(chip, runMode, endAddress);
-        startEmulator(chip);
+        startEmulator(chip, runMode, endAddress);
     }
 
 
@@ -3001,14 +2998,16 @@ public class EmulatorUI extends JFrame implements ActionListener {
         statusBar[chip].setBackground(runMode==RunMode.DEBUG? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
     }
 
-    private void startEmulator(final int chip) {
+    private void startEmulator(final int chip, RunMode runMode, Integer endAddress) {
         //System.err.println("Start request for " + Constants.CHIP_LABEL[chip]);
+        prepareBreakTriggers(chip, runMode, endAddress);
         prepareEmulation(chip);
         if (prefs.isSyncPlay()) {
             // Start the other one too
             int otherChip = 1 - chip;
             setStatusText(otherChip, "Sync play...");
             statusBar[otherChip].setBackground(STATUS_BGCOLOR_RUN);
+            prepareBreakTriggers(otherChip, runMode, null);
             prepareEmulation(otherChip);
         }
         //System.err.println("Requesting clock start");
@@ -3064,7 +3063,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 }
             }
 
-            startEmulator(chip);
+            prepareEmulation(chip);
+            masterClock.start();
         }
     }
 
