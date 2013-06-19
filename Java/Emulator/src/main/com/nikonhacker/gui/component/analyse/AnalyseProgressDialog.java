@@ -88,7 +88,7 @@ public class AnalyseProgressDialog extends JDialog {
                 emulatorUI.getPrefs().setOutputOption(chip, OutputOption.VERBOSE, wasVerbose);
                 setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 closeButton.setEnabled(true);
-                emulatorUI.updateStates();
+                emulatorUI.updateState(chip);
             }
         });
         disassemblerThread.start();

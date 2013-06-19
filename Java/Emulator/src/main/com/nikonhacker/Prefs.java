@@ -50,6 +50,7 @@ public class Prefs {
     private byte[] lastEepromContents;
     private String lastEepromFileName;
     private Map<String,Integer>[] ioValueOverrideMap;
+    private boolean syncPlay = true;
 
 
     private static File getPreferenceFile() {
@@ -468,6 +469,13 @@ public class Prefs {
         ioValueOverrideMap[chip].remove(portNumber + "-" + bitNumber);
     }
 
+    public boolean isSyncPlay() {
+        return syncPlay;
+    }
+
+    public void setSyncPlay(boolean syncPlay) {
+        this.syncPlay = syncPlay;
+    }
 
     /**
      * This is basically just a structure with an X Y value.
