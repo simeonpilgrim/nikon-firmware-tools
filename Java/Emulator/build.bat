@@ -84,7 +84,7 @@ for /R %template-dir% %%i in (*.java) do (
     set _line=!_line:@BUILDTIME@=%build-time%!
     echo !_line! >> !_NAME!
   )
-  %CC% "%%i"
+  %CC% "!_NAME!"
   if ERRORLEVEL 1 goto error
 )
 endlocal
