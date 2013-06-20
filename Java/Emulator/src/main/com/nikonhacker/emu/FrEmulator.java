@@ -51,7 +51,12 @@ public class FrEmulator extends Emulator {
      */
     @Override
     public BreakCondition onClockTick() throws EmulationException {
-        // TODO skip clock ticks if previous instruction required several cycles
+
+        // Skip clock ticks if previous instruction required several cycles
+        if (context.cycleIncrement > 1) {
+            context.cycleIncrement--;
+            return null;
+        }
 
         try {
             statement.reset();
