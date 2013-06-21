@@ -50,5 +50,10 @@ public class SpiBus extends SerialBus {
                     throw new RuntimeException("Tring to write serial value 0x" + Format.asHex(value, 2) + " while more than slave device is selected (" + msg.trim() + ")!");
             }
         }
+
+        @Override
+        public String toString() {
+            return "SpiBus SlavePartner";
+        }
     }
 }
