@@ -13,6 +13,6 @@ public class DummySerialDevice extends AbstractSerialDevice {
 
     @Override
     public String toString() {
-        return "DummySerialDevice";
+        return "Dummy Serial Device";
     }
 }
