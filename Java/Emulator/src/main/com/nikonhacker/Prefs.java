@@ -51,6 +51,9 @@ public class Prefs {
     private String lastEepromFileName;
     private Map<String,Integer>[] ioValueOverrideMap;
     private boolean syncPlay = true;
+    private int[] serialInterfaceFrameSelectedTab;
+    private int[] genericSerialFrameSelectedTab;
+    private int[] ioPortsFrameSelectedTab;
 
 
     private static File getPreferenceFile() {
@@ -402,6 +405,36 @@ public class Prefs {
     public void setAdValueFromList(int chip, boolean isAdValueFromList) {
         if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
         this.adValueFromList[chip] = isAdValueFromList;
+    }
+
+    public int getSerialInterfaceFrameSelectedTab(int chip) {
+        if (this.serialInterfaceFrameSelectedTab == null || this.serialInterfaceFrameSelectedTab.length != 2) this.serialInterfaceFrameSelectedTab = new int[]{0, 0};
+        return serialInterfaceFrameSelectedTab[chip];
+    }
+
+    public void setSerialInterfaceFrameSelectedTab(int chip, int serialInterfaceFrameSelectedTab) {
+        if (this.serialInterfaceFrameSelectedTab == null || this.serialInterfaceFrameSelectedTab.length != 2) this.serialInterfaceFrameSelectedTab = new int[]{0, 0};
+        this.serialInterfaceFrameSelectedTab[chip] = serialInterfaceFrameSelectedTab;
+    }
+
+    public int getGenericSerialFrameSelectedTab(int chip) {
+        if (this.genericSerialFrameSelectedTab == null || this.genericSerialFrameSelectedTab.length != 2) this.genericSerialFrameSelectedTab = new int[]{0, 0};
+        return genericSerialFrameSelectedTab[chip];
+    }
+
+    public void setGenericSerialFrameSelectedTab(int chip, int genericSerialFrameSelectedTab) {
+        if (this.genericSerialFrameSelectedTab == null || this.genericSerialFrameSelectedTab.length != 2) this.genericSerialFrameSelectedTab = new int[]{0, 0};
+        this.genericSerialFrameSelectedTab[chip] = genericSerialFrameSelectedTab;
+    }
+
+    public int getIoPortsFrameSelectedTab(int chip) {
+        if (this.ioPortsFrameSelectedTab == null || this.ioPortsFrameSelectedTab.length != 2) this.ioPortsFrameSelectedTab = new int[]{0, 0};
+        return ioPortsFrameSelectedTab[chip];
+    }
+
+    public void setIoPortsFrameSelectedTab(int chip, int ioPortsFrameSelectedTab) {
+        if (this.ioPortsFrameSelectedTab == null || this.ioPortsFrameSelectedTab.length != 2) this.ioPortsFrameSelectedTab = new int[]{0, 0};
+        this.ioPortsFrameSelectedTab[chip] = ioPortsFrameSelectedTab;
     }
 
     public List<Integer> getAdValueList(int chip, String channelKey) {
