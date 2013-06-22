@@ -2037,6 +2037,29 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 setProgrammableTimerAnimationEnabled(chip, false);
             }
 
+            // As serial and I/O are interconnected, make sure all spying windows are closed before
+            // reinstanciating serial interfaces and i/o ports, otherwise we keep references to dead objects
+            boolean wasSerialInterfaceFrameOpen[] = {false, false};
+            boolean wasGenericSerialFrameOpen[] = {false, false};
+            boolean wasIoPortsFrameOpen[] = {false, false};
+            for (int c = 0; c < 2; c++) {
+                if (serialInterfaceFrame[c] != null) {
+                    wasSerialInterfaceFrameOpen[c] = true;
+                    serialInterfaceFrame[c].dispose();
+                    serialInterfaceFrame[c] = null;
+                }
+                if (genericSerialFrame[c] != null) {
+                    wasGenericSerialFrameOpen[c] = true;
+                    genericSerialFrame[c].dispose();
+                    genericSerialFrame[c] = null;
+                }
+                if (ioPortsFrame[c] != null) {
+                    wasIoPortsFrameOpen[c] = true;
+                    ioPortsFrame[c].dispose();
+                    ioPortsFrame[c] = null;
+                }
+            }
+
             // Remove old emulator from the list of clockable devices
             masterClock.remove(emulator[chip]);
 
@@ -2283,6 +2306,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
             }
             else {
                 closeAllFrames(chip, true);
+                // Restore serial and I/O chips spy windows if they were open
+                for (int c = 0; c < 2; c++) {
+                    if (wasSerialInterfaceFrameOpen[c]) toggleSerialInterfaces(c);
+                    if (wasGenericSerialFrameOpen[c]) toggleGenericSerialFrame(c);
+                    if (wasIoPortsFrameOpen[c]) toggleIoPortsWindow(c);
+                }
             }
 
             updateState(chip);
