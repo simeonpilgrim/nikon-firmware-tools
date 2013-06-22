@@ -14,12 +14,13 @@ import java.util.List;
  */
 public class GenericSerialFrame extends DocumentFrame {
 
-    private List <SerialDevicePanel> serialDevicePanels = new ArrayList<>();
+    private List<SerialDevicePanel> serialDevicePanels = new ArrayList<>();
+    private final JTabbedPane tabbedPane;
 
     public GenericSerialFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final List<SerialDevice> serialDevices) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
 
         for (final SerialDevice serialDevice : serialDevices) {
             SerialDevicePanel serialDevicePanel = SerialPanelFactory.getSerialDevicePanel(serialDevice, ui);
@@ -29,6 +30,9 @@ public class GenericSerialFrame extends DocumentFrame {
 
         // Add tab panel
         getContentPane().add(tabbedPane);
+
+        tabbedPane.setSelectedIndex(ui.getPrefs().getGenericSerialFrameSelectedTab(chip));
+
     }
 
     @Override
@@ -39,5 +43,8 @@ public class GenericSerialFrame extends DocumentFrame {
         for (SerialDevicePanel serialDevicePanel : serialDevicePanels) {
             serialDevicePanel.dispose();
         }
+
+        // Remember the selected Index
+        ui.getPrefs().setGenericSerialFrameSelectedTab(chip, tabbedPane.getSelectedIndex());
     }
 }

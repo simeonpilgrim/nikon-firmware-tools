@@ -33,13 +33,14 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
     private final JLabel[][]                    pinDisabledInputs;
     private final JLabel[][]                    pinOutputs;
     private       ValueChangeListenerIoWire[][] spyWires;
+    private final JTabbedPane tabbedPane;
 
 
     public IoPortsFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final IoPort[] ioPorts) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.ioPorts = ioPorts;
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
 
         // Labels from left to right (from bit 7 to 0)
         labels = new JLabel[ioPorts.length][8];
@@ -130,6 +131,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
         tabbedPane.addTab("Configuration", configPanel);
         tabbedPane.addTab("Values", valuePanel);
+
+        tabbedPane.setSelectedIndex(ui.getPrefs().getIoPortsFrameSelectedTab(chip));
 
         getContentPane().add(tabbedPane);
     }
@@ -352,6 +355,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 spyWires[portNumber][bitNumber].remove();
             }
         }
+
+        // Remember the selected Index
+        ui.getPrefs().setIoPortsFrameSelectedTab(chip, tabbedPane.getSelectedIndex());
     }
 
 }

@@ -25,16 +25,18 @@ import java.awt.event.ActionListener;
  */
 public class SerialInterfaceFrame extends DocumentFrame {
 
-    private final Insets buttonInsets = new Insets(1,1,1,1);
+    private final Insets buttonInsets = new Insets(1, 1, 1, 1);
     private SerialInterface[] serialInterfaces;
+    private final JTabbedPane tabbedPane;
 
     public SerialInterfaceFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final SerialInterface[] serialInterfaces) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.serialInterfaces = serialInterfaces;
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
 
-        if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("================ Connecting " + Constants.CHIP_LABEL[chip] + " serial interface loggers... ================");
+        if (ui.getPrefs().isLogSerialMessages(chip))
+            System.out.println("================ Connecting " + Constants.CHIP_LABEL[chip] + " serial interface loggers... ================");
         for (final SerialInterface serialInterface : serialInterfaces) {
             JPanel serialInterfacePanel = new JPanel(new VerticalLayout());
 
@@ -82,6 +84,8 @@ public class SerialInterfaceFrame extends DocumentFrame {
             tabbedPane.addTab(serialInterface.getName(), null, serialInterfacePanel);
         }
 
+        tabbedPane.setSelectedIndex(ui.getPrefs().getSerialInterfaceFrameSelectedTab(chip));
+
         // Add tab panel
         getContentPane().add(tabbedPane);
     }
@@ -117,6 +121,9 @@ public class SerialInterfaceFrame extends DocumentFrame {
             ((SerialWire)serialInterface.getSourceDevice()).remove();
             if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("After  DISC: " + formatSerialChain(serialInterface));
         }
+
+        // Remember the selected Index
+        ui.getPrefs().setSerialInterfaceFrameSelectedTab(chip, tabbedPane.getSelectedIndex());
     }
 
     private String formatSerialChain(SerialInterface serialInterface) {
