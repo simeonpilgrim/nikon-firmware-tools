@@ -2922,9 +2922,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         stopMenuItem[chip].setEnabled(isImageLoaded[chip]);
         stopButton[chip].setEnabled(isImageLoaded[chip]);
 
-        chipOptionsMenuItem[chip].setEnabled(!isAtLeastOneEmulatorPlaying());
-        chipOptionsButton[chip].setEnabled(!isAtLeastOneEmulatorPlaying());
-
         if (isImageLoaded[chip]) {
             // Depends whether emulator is playing or not
             loadMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); loadButton[chip].setEnabled(!isEmulatorPlaying[chip]);
@@ -2932,6 +2929,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             debugMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); debugButton[chip].setEnabled(!isEmulatorPlaying[chip]);
             pauseMenuItem[chip].setEnabled(isEmulatorPlaying[chip]); pauseButton[chip].setEnabled(isEmulatorPlaying[chip]);
             stepMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); stepButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+            chipOptionsMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); chipOptionsButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+
             // Editable components
             if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
             if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
@@ -2946,6 +2945,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             debugMenuItem[chip].setEnabled(false); debugButton[chip].setEnabled(false);
             pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
             stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
+            chipOptionsMenuItem[chip].setEnabled(false); chipOptionsButton[chip].setEnabled(false);
+
             // Editable components  TODO does it make sense ? And why true ?
             if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
             if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
@@ -2954,11 +2955,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
         }
-    }
-
-
-    private boolean isAtLeastOneEmulatorPlaying() {
-        return (isEmulatorPlaying[Constants.CHIP_FR] || isEmulatorPlaying[Constants.CHIP_TX]);
     }
 
 
