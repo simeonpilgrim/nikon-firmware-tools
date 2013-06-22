@@ -1872,6 +1872,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
             prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
             prefs.setLogRegisterMessages(chip, logRegisterMessagesCheckBox.isSelected());
+            prefs.setLogSerialMessages(chip, logSerialMessagesCheckBox.isSelected());
             prefs.setLogPinMessages(chip, logPinMessagesCheckBox.isSelected());
             prefs.setLogMemoryMessages(chip, logMemoryMessagesCheckBox.isSelected());
         }
