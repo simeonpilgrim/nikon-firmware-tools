@@ -312,9 +312,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private JLabel[]  statusBar      = new JLabel[2];
     private JSlider[] intervalSlider = new JSlider[2];
 
-    private static ImageIcon[] programmableTimerButtonIcons;
-    private int               programmableTimerButtonAnimationCounter = 0;
-    private java.util.Timer[] programmableTimerButtonAnimationTimer   = new java.util.Timer[2];
+    private static ImageIcon[]       programmableTimersPauseButtonIcon           = new ImageIcon[2];
+    private        int[]             programmableTimersPauseButtonAnimationIndex = new int[2];
+    private        java.util.Timer[] programmableTimersPauseButtonAnimationTimer = new java.util.Timer[2];
 
     // Business fields
     private static File[] imageFile = new File[2];
@@ -322,7 +322,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private final MasterClock masterClock = new MasterClock();
     private       Emulator[]  emulator    = new Emulator[2];
     private       Platform[]  platform    = new Platform[2];
-    private St950x0 eeprom;
+    private       St950x0 eeprom;
 
     private boolean[] isImageLoaded     = {false, false};
     private boolean[] isEmulatorPlaying = {false, false};
@@ -347,6 +347,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 }
             }
         }
+
+        initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
 
         // Using System L&F allows transparent window icon in the title bar on Windows, but causes a Sort exception in JDK 1.7 because of stricter sort - see http://www.java.net/node/700601
         // Use old less strict sort to avoid the Exception
@@ -509,6 +511,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
     // TODO instead of having the next two methods here, use a custom JFoldableSplitPane extends JSplitPane, and give it two methods void setFolded(boolean folded) and boolean isFolded()
+
     /**
      * Method circumventing package access to setKeepHidden() method of BasicSplitPaneUI
      * @param splitPane
@@ -516,12 +519,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
      * @author taken from http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
      */
     private void setKeepHidden(JSplitPane splitPane, boolean keepHidden) {
-        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
-            try{
-                Method setKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("setKeepHidden", new Class<?>[] { Boolean.TYPE }); //boolean.class });
+        if (splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try {
+                Method setKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("setKeepHidden", new Class<?>[]{Boolean.TYPE}); //boolean.class });
                 setKeepHidden.setAccessible(true);
-                setKeepHidden.invoke(splitPane.getUI(), new Object[] { keepHidden });
-            }catch(Exception e) {
+                setKeepHidden.invoke(splitPane.getUI(), new Object[]{keepHidden});
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -534,12 +537,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
      * @author inspired by http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
      */
     private boolean getKeepHidden(JSplitPane splitPane) {
-        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
-            try{
+        if (splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try {
                 Method getKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("getKeepHidden", new Class<?>[]{});
                 getKeepHidden.setAccessible(true);
-                return (Boolean)(getKeepHidden.invoke(splitPane.getUI()));
-            }catch(Exception e) {
+                return (Boolean) (getKeepHidden.invoke(splitPane.getUI()));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -561,7 +564,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                         JButton button = (JButton) component;
                         ImageIcon icon = (ImageIcon) button.getClientProperty(BUTTON_PROPERTY_KEY_ICON);
                         if (icon != null) {
-                            Image newImg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH) ;
+                            Image newImg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
                             button.setIcon(new ImageIcon(newImg));
                         }
                     }
@@ -603,14 +606,14 @@ public class EmulatorUI extends JFrame implements ActionListener {
             long now = System.currentTimeMillis();
             long cps;
             try {
-                cps = (1000 * (totalCycles - lastUpdateCycles[chip]))/(now - lastUpdateTime[chip]);
+                cps = (1000 * (totalCycles - lastUpdateCycles[chip])) / (now - lastUpdateTime[chip]);
             } catch (Exception e) {
                 cps = -1;
             }
 
             lastUpdateCycles[chip] = totalCycles;
             lastUpdateTime[chip] = now;
-            statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps<0?"?":(""+cps)) + "Hz)");
+            statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "Hz)");
         }
         else {
             statusBar[chip].setText(statusText[chip]);
@@ -655,7 +658,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         bar.add(memoryHexEditorButton[chip]);
         interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " interrupt controller", "Interrupt");
         bar.add(interruptControllerButton[chip]);
-        programmableTimersButton[chip] = makeButton("reload", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
+        programmableTimersButton[chip] = makeButton("timer", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
         bar.add(programmableTimersButton[chip]);
         serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " serial interfaces", "Serial interfaces");
         bar.add(serialInterfacesButton[chip]);
@@ -2034,7 +2037,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                     timer.setActive(false);
                 }
                 // Stop button animation
-                setProgrammableTimerAnimationEnabled(chip, false);
+                setProgrammableTimerAnimationEnabled(chip, true);
             }
 
             // As serial and I/O are interconnected, make sure all spying windows are closed before
@@ -2578,7 +2581,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleProgrammableTimersWindow(int chip) {
         if (programmableTimersFrame[chip] == null) {
-            programmableTimersFrame[chip] = new ProgrammableTimersFrame("Programmable timers", "reload", true, true, false, true, chip, this, platform[chip].getProgrammableTimers());
+            programmableTimersFrame[chip] = new ProgrammableTimersFrame("Programmable timers", "timer", true, true, false, true, chip, this, platform[chip].getProgrammableTimers());
             addDocumentFrame(chip, programmableTimersFrame[chip]);
             programmableTimersFrame[chip].display(true);
         }
@@ -2664,27 +2667,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
 
-    static {
-        initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
-    }
-
-
     private static void initProgrammableTimerAnimationIcons(String buttonSize) {
-        programmableTimerButtonIcons = new ImageIcon[17];
-        for (int i = 0; i < programmableTimerButtonIcons.length; i++) {
-            String imgLocation = "images/reload";
-            String text;
-            if (i == 0) {
-                text = "Start programmable timer";
-            }
-            else {
-                imgLocation += "_" + i;
-                text = "Stop programmable timer";
-            }
-            programmableTimerButtonIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
-            if (BUTTON_SIZE_SMALL.equals(buttonSize)) {
-                programmableTimerButtonIcons[i] = new ImageIcon(programmableTimerButtonIcons[i].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
-            }
+        programmableTimersPauseButtonIcon[0] = new ImageIcon(EmulatorUI.class.getResource("images/timer.png"), "Start programmable timer");
+        programmableTimersPauseButtonIcon[1] = new ImageIcon(EmulatorUI.class.getResource("images/timer_pause.png"), "Start programmable timer");
+        if (BUTTON_SIZE_SMALL.equals(buttonSize)) {
+            programmableTimersPauseButtonIcon[0] = new ImageIcon(programmableTimersPauseButtonIcon[0].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
+            programmableTimersPauseButtonIcon[1] = new ImageIcon(programmableTimersPauseButtonIcon[1].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
         }
     }
 
@@ -2692,23 +2680,22 @@ public class EmulatorUI extends JFrame implements ActionListener {
     public void setProgrammableTimerAnimationEnabled(final int chip, boolean enabled) {
         if (enabled) {
             // Animate button
-            programmableTimerButtonAnimationTimer[chip] = new java.util.Timer(false);
-            programmableTimerButtonAnimationTimer[chip].scheduleAtFixedRate(new TimerTask() {
+            programmableTimersPauseButtonAnimationTimer[chip] = new java.util.Timer(false);
+            programmableTimersPauseButtonAnimationTimer[chip].scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    programmableTimerButtonAnimationCounter++;
-                    if (programmableTimerButtonAnimationCounter == programmableTimerButtonIcons.length) {
-                        programmableTimerButtonAnimationCounter = 1;
-                    }
-                    programmableTimersButton[chip].setIcon(programmableTimerButtonIcons[programmableTimerButtonAnimationCounter]);
+                    programmableTimersPauseButtonAnimationIndex[chip] = 1 - programmableTimersPauseButtonAnimationIndex[chip];
+                    programmableTimersButton[chip].setIcon(programmableTimersPauseButtonIcon[programmableTimersPauseButtonAnimationIndex[chip]]);
                 }
-            }, 0, 300 /*ms*/);
+            }, 0, 800 /*ms*/);
         }
         else {
-            // Stop button animation
-            programmableTimerButtonAnimationTimer[chip].cancel();
-            programmableTimerButtonAnimationTimer[chip] = null;
-            programmableTimersButton[chip].setIcon(programmableTimerButtonIcons[0]);
+            // Stop button animation if active
+            if (programmableTimersPauseButtonAnimationTimer[chip] != null)  {
+                programmableTimersPauseButtonAnimationTimer[chip].cancel();
+                programmableTimersPauseButtonAnimationTimer[chip] = null;
+                programmableTimersButton[chip].setIcon(programmableTimersPauseButtonIcon[0]);
+            }
         }
     }
 
@@ -3184,7 +3171,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             timer.setActive(active);
         }
         // Start/stop button animation
-        setProgrammableTimerAnimationEnabled(chip, active);
+        setProgrammableTimerAnimationEnabled(chip, !active);
         // Update window status, if open
         if (programmableTimersFrame[chip] != null) {
             programmableTimersFrame[chip].updateState(active);
