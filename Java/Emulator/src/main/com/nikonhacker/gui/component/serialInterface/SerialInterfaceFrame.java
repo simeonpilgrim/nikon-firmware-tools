@@ -1,6 +1,8 @@
 package com.nikonhacker.gui.component.serialInterface;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.PrintWriterLoggerSerialWire;
 import com.nikonhacker.emu.peripherials.serialInterface.util.SerialWire;
@@ -9,6 +11,7 @@ import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.gui.swing.JValueButton;
 import com.nikonhacker.gui.swing.PrintWriterArea;
 import com.nikonhacker.gui.swing.VerticalLayout;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
@@ -31,6 +34,7 @@ public class SerialInterfaceFrame extends DocumentFrame {
 
         JTabbedPane tabbedPane = new JTabbedPane();
 
+        if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("================ Connecting " + Constants.CHIP_LABEL[chip] + " serial interface loggers... ================");
         for (final SerialInterface serialInterface : serialInterfaces) {
             JPanel serialInterfacePanel = new JPanel(new VerticalLayout());
 
@@ -56,6 +60,8 @@ public class SerialInterfaceFrame extends DocumentFrame {
                 }
             };
 
+            if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("Before CONN: " + formatSerialChain(serialInterface));
+
             // The logic is to insert two loggers (Rx and Tx) between the serialInterface and the device connected to it.
             // To do so:
             // 1. we insert a wire between this serialInterface and this serialInterface's former target
@@ -63,8 +69,9 @@ public class SerialInterfaceFrame extends DocumentFrame {
             // 1. we insert another wire between this serialInterface's former source and this serialInterface
             serialInterface.getSourceDevice().connectTargetDevice(new PrintWriterLoggerSerialWire("Rx of " + serialInterface.getName(), serialInterface, rxTextArea.getPrintWriter()));
 
-            prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNumBits());
+            if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("After  CONN: " + formatSerialChain(serialInterface));
 
+            prepareButtonGrid(buttonGrid, valueButtonListener, serialInterface.getNumBits());
             serialInterfacePanel.add(new JLabel("Click to send data to SerialInterface:"));
             serialInterfacePanel.add(buttonGrid);
             serialInterfacePanel.add(new JLabel("Microcontroller => External device"));
@@ -101,12 +108,36 @@ public class SerialInterfaceFrame extends DocumentFrame {
         super.dispose();
 
         // Reconnect the devices directly, removing the logging wires
+        if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("============= Disconnecting " + Constants.CHIP_LABEL[chip] + " serial interface loggers... ================");
         for (SerialInterface serialInterface : serialInterfaces) {
             // Remove the Tx wire and reconnect the real target
+            if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("Before DISC: " + formatSerialChain(serialInterface));
             ((SerialWire)serialInterface.getTargetDevice()).remove();
-
             // Remove the Rx wire and reconnect the real source
             ((SerialWire)serialInterface.getSourceDevice()).remove();
+            if (ui.getPrefs().isLogSerialMessages(chip)) System.out.println("After  DISC: " + formatSerialChain(serialInterface));
         }
+    }
+
+    private String formatSerialChain(SerialInterface serialInterface) {
+        String result = StringUtils.center(serialInterface.toString(), 22);
+
+        SerialDevice source = serialInterface;
+        do {
+            source = source.getSourceDevice();
+            result = StringUtils.center(source.toString(), 22) + " S> " + result;
+        }
+        while (!(source instanceof SerialInterface));
+
+        result = StringUtils.leftPad(result, 130);
+
+        SerialDevice target = serialInterface;
+        do {
+            target = target.getTargetDevice();
+            result = result + " T> " + StringUtils.center(target.toString(), 22);
+        }
+        while (!(target instanceof SerialInterface));
+
+        return Constants.CHIP_LABEL[chip] + "#" + serialInterface.getSerialInterfaceNumber() + ": " + result;
     }
 }
