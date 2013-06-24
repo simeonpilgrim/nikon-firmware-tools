@@ -37,6 +37,10 @@ public abstract class CodeStructure {
      */
     private Map<Integer, Integer> ends = new TreeMap<Integer, Integer>();
 
+    // Cache for task-related addresses
+    public Integer tblTaskData;
+    public Integer pCurrentTCB;
+
 
     public CodeStructure(int address) {
         this.entryPoint = address;
