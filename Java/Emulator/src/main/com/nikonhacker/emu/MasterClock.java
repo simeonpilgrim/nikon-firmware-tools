@@ -27,13 +27,13 @@ public class MasterClock implements Runnable {
      * This method will cause an exception if called when the clock is running
      * This method should always be followed by a start()
      * @param clockable the object to wake up repeatedly
-     * @param clockableCallback the object containing methods called on exit or Exception
+     * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
-    public synchronized void add(Clockable clockable, ClockableCallback clockableCallback, boolean enabled) {
+    public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
         if (running) throw new RuntimeException("Cannot add devices once the clock is running !");
 
-        if (clockableCallback == null) {
-            clockableCallback = new ClockableCallback() {
+        if (clockableCallbackHandler == null) {
+            clockableCallbackHandler = new ClockableCallbackHandler() {
                 @Override
                 public void onNormalExit(Object o) {
                     System.out.println("Normal exit with return " + o.toString());
@@ -47,7 +47,7 @@ public class MasterClock implements Runnable {
         }
 
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
-        entries.add(new ClockableEntry(clockable, clockableCallback, enabled));
+        entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
 
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
@@ -141,7 +141,7 @@ public class MasterClock implements Runnable {
                                 entryToStop = currentEntry;
                                 // Warn the callback method
                                 //System.err.println("Calling onNormalExit() on callback for " + currentEntry.clockable.getClass().getSimpleName());
-                                currentEntry.clockableCallback.onNormalExit(result);
+                                currentEntry.clockableCallbackHandler.onNormalExit(result);
                             }
                         }
                         catch (Exception e) {
@@ -149,7 +149,7 @@ public class MasterClock implements Runnable {
                             entryToStop = currentEntry;
                             // Warn the callback method
                             //System.err.println("Calling onException() on callback for " + currentEntry.clockable.getClass().getSimpleName());
-                            currentEntry.clockableCallback.onException(e);
+                            currentEntry.clockableCallbackHandler.onException(e);
                         }
 
                         if (entryToStop != null) {
@@ -161,7 +161,7 @@ public class MasterClock implements Runnable {
                                 for (ClockableEntry entryToDisable : entries) {
                                     if (entryToDisable.enabled) {
                                         //System.err.println("Calling onNormalExit() on callback for " + entryToDisable.clockable.getClass().getSimpleName());
-                                        entryToDisable.clockableCallback.onNormalExit("Sync stop due to " + entryToStop.clockable.getClass().getSimpleName());
+                                        entryToDisable.clockableCallbackHandler.onNormalExit("Sync stop due to " + entryToStop.clockable.getClass().getSimpleName());
                                         //System.err.println("Disabling " + entryToDisable.clockable.getClass().getSimpleName());
                                         entryToDisable.enabled = false;
                                     }
@@ -234,15 +234,15 @@ public class MasterClock implements Runnable {
 
     // This is a wrapper for the device, its counter value and its counter threshold
     private class ClockableEntry {
-        Clockable         clockable;
-        ClockableCallback clockableCallback;
-        int     counterValue     = 0;
-        int     counterThreshold = 0;
+        Clockable                clockable;
+        ClockableCallbackHandler clockableCallbackHandler;
+        int counterValue     = 0;
+        int counterThreshold = 0;
         boolean enabled;
 
-        public ClockableEntry(Clockable clockable, ClockableCallback clockableCallback, boolean enabled) {
+        public ClockableEntry(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
             this.clockable = clockable;
-            this.clockableCallback = clockableCallback;
+            this.clockableCallbackHandler = clockableCallbackHandler;
             this.enabled = enabled;
         }
     }
