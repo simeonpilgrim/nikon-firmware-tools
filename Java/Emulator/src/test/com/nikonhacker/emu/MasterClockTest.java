@@ -28,7 +28,7 @@ public class MasterClockTest  extends TestCase {
         Thread.sleep(5000);
     }
 
-    private static class TestClockable implements Clockable, ClockableCallback {
+    private static class TestClockable implements Clockable, ClockableCallbackHandler {
         private String name;
         private int frequencyHz;
         private int runs = 0;

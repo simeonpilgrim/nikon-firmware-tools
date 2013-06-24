@@ -2070,7 +2070,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
 
             // Add it to the list of clockable devices, in disabled state
-            masterClock.add(emulator[chip], new ClockableCallback() {
+            masterClock.add(emulator[chip], new ClockableCallbackHandler() {
                 @Override
                 public void onNormalExit(Object o) {
                     try {
