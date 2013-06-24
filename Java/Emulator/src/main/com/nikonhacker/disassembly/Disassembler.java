@@ -437,6 +437,10 @@ public abstract class Disassembler {
             debugPrintWriter.println("  " + codeStructure.getNumReturns() + " returns");
             debugPrintWriter.println();
 
+            // Filling task-related sybmols
+            codeStructure.tblTaskData = findSymbolAddressByName("tblTaskData");
+            codeStructure.pCurrentTCB = findSymbolAddressByName("pCurrentTCB");
+
             if (outWriter != null) {
                 debugPrintWriter.println("Writing output to disk...");
                 for (Range range : memRanges) {
@@ -561,6 +565,16 @@ public abstract class Disassembler {
         cleanup();
 
         System.out.println("Disassembly done.");
+    }
+
+    public Integer findSymbolAddressByName(String name) {
+        for (Integer candidateAddress : symbols.keySet()) {
+            Symbol s = symbols.get(candidateAddress);
+            if (name.equalsIgnoreCase(s.getName())) {
+                return candidateAddress;
+            }
+        }
+        return null;
     }
 
     protected abstract CodeStructure getCodeStructure(int start);
