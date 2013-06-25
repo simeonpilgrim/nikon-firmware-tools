@@ -1,18 +1,19 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinChipSelectFunction extends AbstractInputPinFunction implements PinFunction {
+public class TxIoPinChipSelectFunction extends AbstractInputPinFunction {
     private int blockNumber;
 
     public TxIoPinChipSelectFunction(int blockNumber) {
+        super(Constants.CHIP_LABEL[Constants.CHIP_TX]);
         this.blockNumber = blockNumber;
     }
 
     @Override
     public String getFullName() {
-        return "Chip Select (block space " + blockNumber + ")";
+        return componentName + " Chip Select (block space " + blockNumber + ")";
     }
 
     @Override
@@ -22,7 +23,7 @@ public class TxIoPinChipSelectFunction extends AbstractInputPinFunction implemen
 
     @Override
     public void setValue(int value) {
-        System.err.println(toString() + " - Setting value is not implemented");
+        if (logPinMessages) System.out.println("TxIoPinChipSelectFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

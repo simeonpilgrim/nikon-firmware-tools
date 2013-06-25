@@ -18,14 +18,15 @@ import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintWriterArea;
+import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -43,6 +44,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JButton addButton;
     private final JButton editButton;
     private final JButton deleteButton;
+    private final JButton moveUpButton;
+    private final JButton moveDownButton;
     private final JButton addSyscallButton;
 
     public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
@@ -111,10 +114,36 @@ public class BreakTriggerListFrame extends DocumentFrame {
         deleteButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         deleteButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                deleteTrigger(triggerTable.getSelectedRow());
+                deleteTriggers(triggerTable.getSelectedRows());
             }
         });
         rightPanel.add(deleteButton);
+
+        moveUpButton = new JButton("Move Up");
+        moveUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        moveUpButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] selections = triggerTable.getSelectedRows();
+                if (moveTrigger(selections, -1)) {
+                    triggerTable.clearSelection();
+                    triggerTable.addRowSelectionInterval(selections[0] - 1, selections[selections.length - 1] - 1);
+                }
+            }
+        });
+        rightPanel.add(moveUpButton);
+
+        moveDownButton = new JButton("Move Down");
+        moveDownButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        moveDownButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] selections = triggerTable.getSelectedRows();
+                if (moveTrigger(selections, 1)) {
+                    triggerTable.clearSelection();
+                    triggerTable.addRowSelectionInterval(selections[0] + 1, selections[selections.length - 1] + 1);
+                }
+            }
+        });
+        rightPanel.add(moveDownButton);
 
         editPanel.add(rightPanel, BorderLayout.EAST);
 
@@ -156,13 +185,31 @@ public class BreakTriggerListFrame extends DocumentFrame {
         }
     }
 
-    private void deleteTrigger(int index) {
-        if (index != -1) {
-            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to delete the trigger '" + triggerList.get(index).getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                breakTriggers.remove(index);
+    private void deleteTriggers(int[] indices) {
+        if (indices.length > 0) {
+            String message;
+            if (indices.length ==1) {
+                message = "Are you sure you want to delete the trigger '" + triggerList.get(indices[0]).getName() + "' ?";
+            }
+            else {
+                message = "Are you sure you want to delete " + indices.length + " triggers ?";
+            }
+            if (JOptionPane.showConfirmDialog(this, message, "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                List<Integer> indexList = new ArrayList<>();
+                for (int index : indices) {
+                    indexList.add(index);
+                }
+                // Make sure indices are sorted (the getSelectedRows() does not guarantee that)
+                Collections.sort(indexList);
+                // Reverse order because items at the end of the list will be shifted when we remove items
+                Collections.reverse(indexList);
+                // Remove, starting at the maximum index
+                for (Integer index : indexList) {
+                    breakTriggers.remove(index.intValue());
+                }
                 ui.onBreaktriggersChange(chip);
                 if (!breakTriggers.isEmpty()) {
-                    setSelectedIndex(Math.min(index, breakTriggers.size() - 1));
+                    setSelectedIndex(Math.min(indices[0], breakTriggers.size() - 1));
                 }
             }
         }
@@ -195,6 +242,28 @@ public class BreakTriggerListFrame extends DocumentFrame {
         editTrigger(trigger);
 
         setSelectedIndex(breakTriggers.size() - 1);
+    }
+
+    private boolean moveTrigger(int[] selectedRows, int direction) {
+        boolean hasMoved = false;
+        if (selectedRows.length > 0) {
+            // if there are holes in the selection, then only select the first one
+            if (selectedRows[selectedRows.length - 1] - selectedRows[0] != selectedRows.length - 1) {
+                selectedRows = new int[]{selectedRows[0]};
+            }
+            if (direction < 0 && selectedRows[0] > 0) {
+                // Move up
+                Collections.rotate(breakTriggers.subList(selectedRows[0] - 1, selectedRows[0] + selectedRows.length), - 1);
+                hasMoved = true;
+            }
+            if (direction > 0 && selectedRows[selectedRows.length - 1] < breakTriggers.size() - 1) {
+                // Move down
+                Collections.rotate(breakTriggers.subList(selectedRows[0], selectedRows[0] + selectedRows.length + 1), 1);
+                hasMoved = true;
+            }
+            updateBreaktriggers();
+        }
+        return hasMoved;
     }
 
     private void setSelectedIndex(int index) {

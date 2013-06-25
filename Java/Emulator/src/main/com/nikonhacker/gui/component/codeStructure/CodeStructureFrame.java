@@ -13,7 +13,7 @@ import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.Jump;
 import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;

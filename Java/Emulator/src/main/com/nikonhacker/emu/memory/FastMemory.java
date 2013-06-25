@@ -23,6 +23,7 @@ public class FastMemory extends AbstractMemory implements Memory  {
     /** Constructor - used when this is the instantiated class */
     public FastMemory() {
         super();
+        setLogMemoryMessages(false);
     }
 
 

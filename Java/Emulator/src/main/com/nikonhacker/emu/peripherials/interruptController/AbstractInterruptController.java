@@ -9,8 +9,11 @@ import java.util.List;
 public abstract class AbstractInterruptController implements InterruptController {
     protected final List<InterruptRequest> interruptRequestQueue = new ArrayList<InterruptRequest>();
 
+    /**
+     * TODO this is weird: interruptController requires a platform
+     * but platform also points to interruptController
+     */
     protected Platform platform;
-
 
     public AbstractInterruptController(Platform platform) {
         this.platform = platform;

@@ -17,8 +17,8 @@ import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
 import com.nikonhacker.gui.component.saveLoadMemory.SaveLoadMemoryDialog;
+import com.nikonhacker.gui.swing.DocumentFrame;
 import org.fife.ui.hex.event.HexEditorEvent;
 import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
@@ -170,7 +170,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
             MemoryWatch watch = ui.getPrefs().getWatches(chip).get(index);
             List<MemoryValueBreakCondition> memoryValueBreakConditions = new ArrayList<MemoryValueBreakCondition>();
             int currentValue = memory.load32(watch.getAddress());
-            String triggerName = watch.getName() + " = 0x" + Format.asHex(currentValue, 8);
+            String triggerName = watch.getName() + " changes";
 
             CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
             CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();

@@ -1,13 +1,15 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.emu.clock.ClockGenerator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
+import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -29,6 +31,8 @@ public class Platform {
     private List<SerialDevice> serialDevices;
     private DmaController dmaController;
     private AdConverter adConverter;
+    private RealtimeClock realtimeClock;
+    private KeyCircuit keyCircuit;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -108,5 +112,21 @@ public class Platform {
 
     public void setAdConverter(AdConverter adConverter) {
         this.adConverter = adConverter;
+    }
+
+    public RealtimeClock getRealtimeClock() {
+        return realtimeClock;
+    }
+
+    public void setRealtimeClock(RealtimeClock realtimeClock) {
+        this.realtimeClock = realtimeClock;
+    }
+
+    public KeyCircuit getKeyCircuit() {
+        return keyCircuit;
+    }
+
+    public void setKeyCircuit(KeyCircuit keyCircuit) {
+        this.keyCircuit = keyCircuit;
     }
 }

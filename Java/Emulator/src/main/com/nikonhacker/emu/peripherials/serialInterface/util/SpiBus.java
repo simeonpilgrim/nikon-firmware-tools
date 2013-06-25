@@ -31,7 +31,7 @@ public class SpiBus extends SerialBus {
             // List selected devices
             List<InternalSlavePartner> partnersOfSelectedSlaves = new ArrayList<>();
             for (InternalSlavePartner internalSlavePartner : internalSlavePartners) {
-                if (((SpiSlaveDevice) internalSlavePartner.getConnectedSerialDevice()).isSelected()) {
+                if (((SpiSlaveDevice) internalSlavePartner.getTargetDevice()).isSelected()) {
                     partnersOfSelectedSlaves.add(internalSlavePartner);
                 }
             }
@@ -45,10 +45,15 @@ public class SpiBus extends SerialBus {
                 default:
                     String msg="";
                     for (InternalSlavePartner partnerOfSelectedSlaves : partnersOfSelectedSlaves) {
-                        msg += partnerOfSelectedSlaves.getConnectedSerialDevice() + " ";
+                        msg += partnerOfSelectedSlaves.getTargetDevice() + " ";
                     }
                     throw new RuntimeException("Tring to write serial value 0x" + Format.asHex(value, 2) + " while more than slave device is selected (" + msg.trim() + ")!");
             }
+        }
+
+        @Override
+        public String toString() {
+            return "SpiBus SlavePartner";
         }
     }
 }

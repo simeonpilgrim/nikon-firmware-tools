@@ -5,8 +5,7 @@ import com.nikonhacker.Format;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TimerDevice implements SerialDevice {
-    private SerialDevice connectedDevice;
+public class TimerDevice extends AbstractSerialDevice {
     private int i = 0;
     private String deviceName;
 
@@ -16,12 +15,12 @@ public class TimerDevice implements SerialDevice {
         t.schedule(new TimerTask() {
             @Override
             public void run() {
-                if (connectedDevice == null) {
+                if (targetDevice == null) {
                     System.out.println(deviceName + " cannot send value 0x" + Format.asHex(i, 2));
                 }
                 else {
                     System.out.println(deviceName + " sends 0x" + Format.asHex(i, 2));
-                    connectedDevice.write(i);
+                    targetDevice.write(i);
                 }
                 i++;
             }
@@ -34,23 +33,7 @@ public class TimerDevice implements SerialDevice {
     }
 
     @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        this.connectedDevice = connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.connectedDevice = new DummySerialDevice();
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return connectedDevice;
-    }
-
-    @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
-
     }
 
     @Override

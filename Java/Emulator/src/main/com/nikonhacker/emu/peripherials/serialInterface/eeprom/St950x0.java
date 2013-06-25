@@ -1,7 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.eeprom;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
@@ -32,7 +31,6 @@ public abstract class St950x0 extends SpiSlaveDevice {
     public static final int WRITE1 = 0b0000_1010; // WRITE Write Data to Memory Array (1)
 
     private String name;
-    private SerialDevice connectedDevice;
 
     int statusRegister = 0b1111_0000;
     private byte[] memory;
@@ -79,9 +77,11 @@ public abstract class St950x0 extends SpiSlaveDevice {
     public boolean isWriteLatchEnabled() {
         return (statusRegister & 0b00000010) != 0;
     }
+
     public void setWriteLatchEnabled() {
         statusRegister = statusRegister | 0b00000010;
     }
+
     public void clearWriteLatchEnabled() {
         statusRegister = statusRegister & 0b11111101;
     }
@@ -183,7 +183,7 @@ public abstract class St950x0 extends SpiSlaveDevice {
                 throw new RuntimeException("St950x0.write(0x" + Format.asHex(byteValue & 0xFF, 2) + ") called while eeprom is not SELECTed !");
             }
             // Writing a value to serial eeprom means clock is ticking, so a value has to be transmitted back synchronously
-            connectedDevice.write(read());
+            targetDevice.write(read());
 
             if (currentCommand == null) {
                 // first byte is a new command
@@ -284,22 +284,6 @@ public abstract class St950x0 extends SpiSlaveDevice {
 
     public int getNumBits() {
         return numBits;
-    }
-
-
-    @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        this.connectedDevice = connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.connectedDevice = new DummySerialDevice();
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return connectedDevice;
     }
 
     @Override

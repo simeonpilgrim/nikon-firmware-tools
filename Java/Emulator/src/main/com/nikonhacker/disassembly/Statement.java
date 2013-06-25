@@ -126,10 +126,10 @@ public abstract class Statement {
                         break;
                     case LIKELY:
                         if (options.contains(OutputOption.QUESTION)) {
-                            out += "  " + StringUtils.rightPad(instruction.getName(), 6) + " " + getOperandString();
+                            out += "  ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
                         }
                         else {
-                            out += "  ?" + StringUtils.rightPad(instruction.getName(), 5) + " " + getOperandString();
+                            out += "    " + StringUtils.rightPad(instruction.getName(), 4) + " " + getOperandString();
                         }
                         break;
                     default:

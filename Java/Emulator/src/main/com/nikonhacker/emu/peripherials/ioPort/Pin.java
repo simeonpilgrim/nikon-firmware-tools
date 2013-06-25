@@ -13,23 +13,30 @@ public class Pin {
     private Pin connectedPin;
 
     /**
-     * This is the value set by another component, that can be read by the component to which this pin belongs
+     * This is the value set by the component this pin belongs to,
+     * that can be read by the component whose pin is connected to this one.
      */
-    private int inputValue;
+    protected Integer outputValue;
+
+    private boolean isInput        = true;
+    private boolean isInputEnabled = true;
+
+    protected boolean logPinMessages = true;
 
     /**
-     * This is the value set by this component, that can be read by the component whose pin is connected to this one
+     * Static method to connect two pins "both ways"
      */
-    private int outputValue;
-
-    /** Static method to connect two pins "both ways" */
     public static void interconnect(Pin pinA, Pin pinB) {
-        pinA.setConnectedPin(pinB);
-        pinB.setConnectedPin(pinA);
+        if (pinA != null) pinA.setConnectedPin(pinB);
+        if (pinB != null) pinB.setConnectedPin(pinA);
     }
 
     public Pin(String name) {
         this.name = name;
+    }
+
+    public void setLogPinMessages(boolean logPinMessages) {
+        this.logPinMessages = logPinMessages;
     }
 
     public String getName() {
@@ -42,32 +49,67 @@ public class Pin {
 
     public void setConnectedPin(Pin connectedPin) {
         this.connectedPin = connectedPin;
+        if (connectedPin != null && outputValue != null) {
+            connectedPin.setInputValue(outputValue);
+        }
     }
 
-    /** To be called by CPU code */
-    public int getInputValue() {
-        return inputValue;
+    /**
+     * To be called by CPU code
+     * Else returns the output value of the connected pin, if any
+     * Otherwise, returns null and logs the problem.
+     */
+    public Integer getInputValue() {
+        if (connectedPin != null) {
+            return connectedPin.getOutputValue();
+        }
+        if (logPinMessages) System.out.println("No pin is connected to " + name);
+        return null;
     }
 
-    /** To be called by external component */
+    /**
+     * To be called by external component
+     */
     public void setInputValue(int value) {
-        this.inputValue = value;
+        // Default implementation does nothing
     }
 
-    /** To be called by external component */
-    public int getOutputValue() {
+    /**
+     * To be called by external component
+     */
+    public Integer getOutputValue() {
         return outputValue;
     }
 
-    /** To be called by CPU code */
+    /**
+     * To be called by CPU code
+     * This pin forwards the value to to the attached pin, if any
+     */
     public void setOutputValue(int value) {
+        // remember the output value
         this.outputValue = value;
-        if (getConnectedPin() == null) {
-            System.out.println("No pin is connected to " + name);
+        if (connectedPin == null) {
+            if (logPinMessages) System.out.println("No pin is connected to " + name);
         }
         else {
-            getConnectedPin().setInputValue(value);
+            connectedPin.setInputValue(value);
         }
+    }
+
+    public boolean isInput() {
+        return isInput;
+    }
+
+    public void setIsInput(boolean isInput) {
+        this.isInput = isInput;
+    }
+
+    public boolean isInputEnabled() {
+        return isInputEnabled;
+    }
+
+    public void setIsInputEnabled(boolean isInputEnabled) {
+        this.isInputEnabled = isInputEnabled;
     }
 
     @Override

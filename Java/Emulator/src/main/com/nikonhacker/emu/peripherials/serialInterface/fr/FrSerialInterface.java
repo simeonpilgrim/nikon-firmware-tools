@@ -1,8 +1,10 @@
 package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
 import java.util.LinkedList;
@@ -44,14 +46,11 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, int baseInterruptNumber, Emulator emulator) {
-        super(serialInterfaceNumber, interruptController, emulator);
-//        First, interrupt numbers were automatic but they are now custom
-//        rxInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + this.serialInterfaceNumber * 3;
-//        txInterruptNumber = InterruptController.SERIAL_IF_RX_0_REQUEST_NR + 1 + this.serialInterfaceNumber * 3;
-//        txInterruptNumber = baseInterruptNumber + 1;
-        rxInterruptNumber = baseInterruptNumber;
-        txInterruptNumber = baseInterruptNumber;
+    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
+        // This is pure speculation but seems to work for interrupt 5 at least
+        rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
+        txInterruptNumber = FrInterruptController.SERIAL_IF_TX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
     }
 
     public void setScrIbcr(int scrIbcr) {
@@ -217,7 +216,7 @@ public class FrSerialInterface extends SerialInterface {
      */
     public void write(Integer value) {
         if (value == null) {
-            System.out.println("FrSerialInterface.write(null)");
+            if (logSerialMessages) System.out.println("FrSerialInterface.write(null)");
         }
         else {
             Queue<Integer> rxFifo;
@@ -331,7 +330,7 @@ public class FrSerialInterface extends SerialInterface {
         else {
             if (rxFifo.isEmpty()) {
                 // throw exception ??
-                System.err.println("Attempt to read from empty FIFO");
+                if (logSerialMessages) System.err.println("Attempt to read from empty FIFO");
                 return -1;
             }
             else {
@@ -381,7 +380,7 @@ public class FrSerialInterface extends SerialInterface {
 
     public void setFcr1(int fcr1) {
         if ((fcr1 & 0xC) != 0) {
-            System.out.println("Error: attempt to write 0b11 to reserved bits 14-15 of FCR !");
+            if (logSerialMessages) System.out.println("Error: attempt to write 0b11 to reserved bits 14-15 of FCR !");
         }
 
         this.fcr1 = fcr1;
@@ -489,12 +488,12 @@ public class FrSerialInterface extends SerialInterface {
             case 4: // 9-bit
                 return 9;
             default:
-                System.err.println("Error: Invalid ESCR value: " + (escrIbsr & 0x3));
+                if (logSerialMessages) System.err.println("Error: Invalid ESCR value: " + (escrIbsr & 0x3));
                 return 8;
         }
     }
 
     public String getName() {
-        return "Fr Serial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_FR] + " Serial #" + serialInterfaceNumber;
     }
 }

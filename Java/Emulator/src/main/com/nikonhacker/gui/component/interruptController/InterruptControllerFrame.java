@@ -4,7 +4,7 @@ import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;

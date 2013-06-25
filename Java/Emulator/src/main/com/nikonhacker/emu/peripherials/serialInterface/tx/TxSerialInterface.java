@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.CycleCounterListener;
 import com.nikonhacker.emu.Emulator;
@@ -55,8 +56,8 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     private Integer cycleCounter = 0;
     private Integer delayedValue;
 
-    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
-        super(serialInterfaceNumber, interruptController, emulator);
+    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
     }
 
     public int getEn() {
@@ -68,6 +69,9 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         this.en = en & 0x1;
     }
 
+    /**
+     * This is the method called by assembly code to read data received via serial port
+     */
     public int getBuf() {
 //        if (en == 0) {
 //            throw new RuntimeException("Attempt to receive data from disabled " + getName());
@@ -80,6 +84,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         }
         else {
             poll = rxFifo.poll();
+            clearRstRor();
             // TODO signal if empty ?
         }
 
@@ -90,6 +95,10 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         return poll;
     }
 
+    /**
+     * This is the method called by assembly code to send data via serial port
+     * @param buf the value to send
+     */
     public void setBuf(int buf) {
 //        System.out.println(getName() + ".setBuf(0x" + Format.asHex(buf, 8) + ")");
 //        if (en == 0) {
@@ -144,7 +153,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
 //        System.out.println(getName() + ".setMod0(0x" + Format.asHex(mod0, 8) + ")");
         this.mod0 = mod0;
         if (getMod0Sm() != 0b00) {
-            System.err.println(getName() + " is being configured as UART. Only I/O serial mode is supported for now");
+            if (logSerialMessages) System.err.println(getName() + " is being configured as UART. Only I/O serial mode is supported for now");
         }
     }
 
@@ -251,8 +260,24 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
 
 
     public int getRst() {
-        return rst;
+        return rst | (rxFifo.size() & 0b0000_0111);
     }
+
+    /**
+     * Clear RST Reception OverRun flag
+     */
+    protected void clearRstRor() {
+        rst = rst & 0b0111_1111;
+    }
+
+    /**
+     * Set RST Reception OverRun flag
+     */
+    protected void setRstRor() {
+        rst = rst | 0b1000_0000;
+    }
+
+
 
     public void setRst(int rst) {
         throw new RuntimeException(getName() + " RST register should not be written");
@@ -526,13 +551,13 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         }
         else {
             if (!isEnSet()) {
-                System.out.println(getName() + " is disabled. Returning null.");
+                if (logSerialMessages) System.out.println(getName() + " is disabled. Returning null.");
             }
             else if (!isMod1TxeSet()) {
-                System.out.println("TX is disabled on " + getName() + ". Returning null.");
+                if (logSerialMessages) System.out.println("TX is disabled on " + getName() + ". Returning null.");
             }
             else {
-                System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Returning null.");
+                if (logSerialMessages) System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Returning null.");
             }
             return null;
         }
@@ -541,7 +566,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     private Integer getTxValue() {
         if (!isFcnfCnfgSet()) { // FIFO disabled
             if (isMod2TbempSet()) {
-                System.err.println(getName() + ": TX buffer underrun");
+                if (logSerialMessages) System.err.println(getName() + ": TX buffer underrun");
                 // There's no data in buffer => Underrun : new data to return. Return null
                 if (isCrIocSet()) { // Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
                     setCrPerr();
@@ -557,7 +582,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         }
         else {
             if (txFifo.size() == 0) {
-                System.err.println(getName() + ": TX fifo underrun");
+                if (logSerialMessages) System.err.println(getName() + ": TX fifo underrun");
 //                if (isCrIocSet()) {// Buffer underrun can normally only happen in SCLK input mode. In SCLK output mode, clock is stopped
 //                    setCrPerr(); // TODO This is not explicitly specified in case of FIFO. Sounds logical but...
 //                }
@@ -598,7 +623,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     @Override
     public void write(Integer value) {
         if (value == null) {
-            System.out.println("TxSerialInterface.write(null)");
+            if (logSerialMessages) System.out.println("TxSerialInterface.write(null)");
         }
         else {
             if (isEnSet() && isMod0RxeSet() && isMod1FdpxRxSet()) {
@@ -606,13 +631,13 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
             }
             else {
                 if (!isEnSet()) {
-                    System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                    if (logSerialMessages) System.out.println(getName() + " is disabled. Value 0x" + Format.asHex(value, 2) + " is ignored.");
                 }
                 else if (!isMod0RxeSet()) {
-                    System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                    if (logSerialMessages) System.out.println("RX is disabled on " + getName() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
                 }
                 else {
-                    System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
+                    if (logSerialMessages) System.out.println("Duplex mode on " + getName() + " is " + getMod1Fdpx() + ". Value 0x" + Format.asHex(value, 2) + " is ignored.");
                 }
             }
         }
@@ -622,9 +647,9 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         // TODO if UART mode with parity, check parity and set CR:PERR accordingly
         if (!isFcnfCnfgSet()) { // FIFO disabled
             if (isMod2RbfllSet()) {
-                System.err.println(getName() + ": RX buffer overrun");
+                if (logSerialMessages) System.err.println(getName() + ": RX buffer overrun");
                 // There's already an unread data in buffer => Overrun : new data is lost. No change to current buffer
-                setCrOerr(); // TODO This is not explicitly specified in case of buffer. Sounds logical but...
+                setCrOerr(); // See 14.2.14 1st section
             }
             else {
                 rxBuf = value;
@@ -637,9 +662,10 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         }
         else { // FIFO enabled
             if (rxFifo.size() >= getUsableRxFifoSize()) {
-                System.err.println(getName() + ": RX fifo overrun");
+                if (logSerialMessages) System.err.println(getName() + ": RX fifo overrun");
                 // Fifo is already full => Overrun : new data is lost. No change to current fifo
-                setCrOerr(); // Signal error
+                setCrOerr(); // See 14.2.14 1st section - CR:OERR seems to apply also to FIFO
+                setRstRor(); // This is FIFO specific. I guess it has to be set here...
             }
             else {
                 rxFifo.add(value);
@@ -654,7 +680,6 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
                 }
             }
         }
-
     }
 
     protected int getRxInterruptNumber() {
@@ -671,7 +696,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     }
 
     public String getName() {
-        return "Tx Serial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial #" + serialInterfaceNumber;
     }
 
     public String toString() {

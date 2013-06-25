@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -7,13 +8,26 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 public class TxHSerialInterface extends TxSerialInterface {
     private static final int HSERIAL_RX_FIFO_SIZE = 32;
 
-    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator) {
-        super(serialInterfaceNumber, interruptController, emulator);
+    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
+    }
+
+    @Override
+    public int getRst() {
+        int rlvl;
+        if (rxFifo.size() < 32) {
+            rlvl = rxFifo.size() & 0b0011_1111;// RLVL is on 6 bytes
+        }
+        else {
+            // but 32 is coded as 0b000000 (!). See 15.3.1.11
+            rlvl = 0;
+        }
+        return rst | rlvl;
     }
 
     @Override
     public String getName() {
-        return "Tx HSerial #" + serialInterfaceNumber;
+        return Constants.CHIP_LABEL[Constants.CHIP_TX] + " HSerial #" + serialInterfaceNumber;
     }
 
     /**

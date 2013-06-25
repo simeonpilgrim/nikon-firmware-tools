@@ -2,7 +2,7 @@ package com.nikonhacker.gui.component.timer;
 
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.*;
@@ -24,7 +24,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
     private final JButton enableButton;
     private final JPanel topPanel;
 
-    public ProgrammableTimersFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final ProgrammableTimer[] timers) {
+    public ProgrammableTimersFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final ProgrammableTimer[] timers) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.timers = timers;
 
@@ -33,7 +33,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         enableButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                toggleProgrammableTimers();
+                ui.toggleProgrammableTimers(chip);
             }
         });
 
@@ -66,7 +66,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         updateState(timers[0].isActive());
     }
 
-    private void toggleProgrammableTimers() {
+    private void toggleProgrammableTimers(int chip) {
         boolean active = !timers[0].isActive();
         for (ProgrammableTimer timer : timers) {
             timer.setActive(active);
@@ -76,7 +76,7 @@ public class ProgrammableTimersFrame extends DocumentFrame {
         updateState(active);
     }
 
-    private void updateState(boolean active) {
+    public void updateState(boolean active) {
         // Change label/button
         statusLabel.setText("Timer emulation is " + (active ? "active" : "inactive"));
         enableButton.setText(active ? "Disable" : "Enable");

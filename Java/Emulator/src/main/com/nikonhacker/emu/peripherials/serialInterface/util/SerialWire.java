@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.util;
 
-import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 /**
@@ -9,40 +9,40 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  *
  * This class should be used as a base class or template for more creative uses
  */
-public class SerialWire implements SerialDevice {
+public class SerialWire extends AbstractSerialDevice {
     private String wireName;
-    private SerialDevice realTargetDevice;
 
     public SerialWire(String wireName, SerialDevice realTargetDevice) {
         this.wireName = wireName;
-        this.realTargetDevice = realTargetDevice;
+        connectTargetDevice(realTargetDevice);
     }
 
     @Override
     public void write(Integer value) {
-        realTargetDevice.write(value);
-    }
-
-    @Override
-    public void connectSerialDevice(SerialDevice sourceDevice) {
-        realTargetDevice.connectSerialDevice(sourceDevice);
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        realTargetDevice.connectSerialDevice(new DummySerialDevice());
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return realTargetDevice;
+        targetDevice.write(value);
     }
 
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        // Do nothing
     }
 
     public String getWireName() {
         return wireName;
+    }
+
+    @Override
+    public String toString() {
+        return getWireName();
+    }
+
+    /**
+     * This method removes this wire and reconnects the original source and target
+     */
+    public void remove() {
+        SerialDevice originalSource = getSourceDevice();
+        SerialDevice originalTarget = getTargetDevice();
+        originalSource.setTargetDevice(originalTarget);
+        originalTarget.setSourceDevice(originalSource);
     }
 }

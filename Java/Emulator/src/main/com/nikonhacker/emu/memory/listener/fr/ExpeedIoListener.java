@@ -8,10 +8,10 @@ import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
 public class ExpeedIoListener extends IoActivityListener {
 
-    private static final int REGISTER_DICR    = 0x44;
+    private static final int REGISTER_DICR = 0x44;
 
     // Timer
-    public static final int NUM_TIMER = 3;
+    public static final  int NUM_TIMER        = 3;
     private static final int REGISTER_TMRLRA0 = 0x48;
     private static final int REGISTER_TMR0    = 0x4A;
     private static final int REGISTER_TMCSR0  = 0x4E;
@@ -30,30 +30,32 @@ public class ExpeedIoListener extends IoActivityListener {
      *  Let's assume the SerialInterface at 0x60 is the first in the Expeed, and that there are 6 serial interfaces
      *  (60, 70, 80, 90, A0, B0). This is pure speculation of course.
      */
-    public static final int NUM_SERIAL_IF = 6;
+    public static final  int NUM_SERIAL_IF         = 6;
     private static final int SERIAL_IF_OFFSET_BITS = 4;
     private static final int SERIAL_IF_OFFSET      = 1 << SERIAL_IF_OFFSET_BITS;
-    private static final int REGISTER_SCR_IBRC0  = 0x60;
-    private static final int REGISTER_SMR0       = 0x61;
-    private static final int REGISTER_SSR0       = 0x62;
-    private static final int REGISTER_ESCR_IBSR0 = 0x63;
-    private static final int REGISTER_RDR_TDR0   = 0x64;
-    private static final int REGISTER_BGR10      = 0x66;
-    private static final int REGISTER_BGR00      = 0x67;
-    private static final int REGISTER_ISMK0      = 0x68;
-    private static final int REGISTER_ISBA0      = 0x69;
-    private static final int REGISTER_FCR10      = 0x6C;
-    private static final int REGISTER_FCR00      = 0x6D;
-    private static final int REGISTER_FBYTE20    = 0x6E;
-    private static final int REGISTER_FBYTE10    = 0x6F;
+    private static final int REGISTER_SCR_IBRC0    = 0x60;
+    private static final int REGISTER_SMR0         = 0x61;
+    private static final int REGISTER_SSR0         = 0x62;
+    private static final int REGISTER_ESCR_IBSR0   = 0x63;
+    private static final int REGISTER_RDR_TDR0     = 0x64;
+    private static final int REGISTER_BGR10        = 0x66;
+    private static final int REGISTER_BGR00        = 0x67;
+    private static final int REGISTER_ISMK0        = 0x68;
+    private static final int REGISTER_ISBA0        = 0x69;
+    private static final int REGISTER_FCR10        = 0x6C;
+    private static final int REGISTER_FCR00        = 0x6D;
+    private static final int REGISTER_FBYTE20      = 0x6E;
+    private static final int REGISTER_FBYTE10      = 0x6F;
 
     public static final int REGISTER_ICR00 = 0x440;
 
 
     private final Platform platform;
+    protected boolean logRegisterMessages;
 
-    public ExpeedIoListener(Platform platform) {
+    public ExpeedIoListener(Platform platform, boolean logRegisterMessages) {
         this.platform = platform;
+        this.logRegisterMessages = logRegisterMessages;
     }
 
     @Override

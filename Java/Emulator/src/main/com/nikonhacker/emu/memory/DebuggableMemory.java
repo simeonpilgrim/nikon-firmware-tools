@@ -27,8 +27,9 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
 
     private List<MemoryActivityListener> activityListeners = new ArrayList<MemoryActivityListener>();
 
-    public DebuggableMemory() {
+    public DebuggableMemory(boolean logMemoryMessages) {
         clear();
+        setLogMemoryMessages(logMemoryMessages);
     }
 
     public void clear() {
@@ -36,7 +37,7 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public void addActivityListener(MemoryActivityListener activityListener) {
-        if (activityListener.isLoggerOnly()) {
+        if (activityListener.isReadOnly()) {
             // add at the end so that logging occurs after modifications
             activityListeners.add(activityListener);
         }

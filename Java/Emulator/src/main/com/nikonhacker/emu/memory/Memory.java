@@ -78,4 +78,6 @@ public interface Memory {
     void loadAllFromStream(InputStream inputStream) throws IOException;
 
     void clear();
+
+    void setLogMemoryMessages(boolean logMemoryMessages);
 }

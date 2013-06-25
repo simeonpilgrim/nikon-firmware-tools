@@ -21,23 +21,38 @@ public interface SerialDevice {
      * Method used to connect another device that will receive from this device.
      * The write method of that SerialDevice will be called when there is data transmitted by this SerialDevice
      * Only one device can be connected. If you want to sniff traffic, insert a SerialWire in between
-     * @param connectedDevice
+     * This method indicates that the target of this device is targetDevice, and that the source of targetDevice is this
+     * @param targetDevice
      */
-    public void connectSerialDevice(SerialDevice connectedDevice);
+    public void connectTargetDevice(SerialDevice targetDevice);
 
     /**
-     * Method used to disconnect the another device.
-     * Normally, this is implemented as a replacement of the connectedDevice by a DummySerialDevice that will
-     * just read bytes sent and throw them away
-     * @see DummySerialDevice
-     */
-    public void disconnectSerialDevice();
-
-    /**
-     * Method used to know what is the connected device that is currently called when transmitting
+     * Method used to know what target device is currently called when transmitting
      * @return
      */
-    public SerialDevice getConnectedSerialDevice();
+    public SerialDevice getTargetDevice();
+
+    /**
+     * Method used to set the target device that will be called when transmitting.
+     * Normally called by connectSerialDevice()
+     */
+    public void setTargetDevice(SerialDevice targetDevice);
+
+
+    /**
+     * Method used to know what source device this device receives data from.
+     * This field is mainly a way for intermediate loggers to know what was the original device connected to them
+     * @return
+     */
+    public SerialDevice getSourceDevice();
+
+
+    /**
+     * Method used to set the source device that this device will receive data from.
+     * This field is mainly a way for intermediate loggers to set the original device connected to them
+     * @return
+     */
+    public void setSourceDevice(SerialDevice sourceDevice);
 
     /**
      * Method to be called when reconfiguring data size (UART only)

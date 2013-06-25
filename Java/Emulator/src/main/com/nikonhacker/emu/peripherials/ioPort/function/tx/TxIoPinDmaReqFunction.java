@@ -1,18 +1,19 @@
 package com.nikonhacker.emu.peripherials.ioPort.function.tx;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
-import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
-public class TxIoPinDmaReqFunction extends AbstractInputPinFunction implements PinFunction {
+public class TxIoPinDmaReqFunction extends AbstractInputPinFunction {
     private int channelNumber;
 
     public TxIoPinDmaReqFunction(int channelNumber) {
+        super(Constants.CHIP_LABEL[Constants.CHIP_TX]);
         this.channelNumber = channelNumber;
     }
 
     @Override
     public String getFullName() {
-        return "DMA Req (channel " + channelNumber + ")";
+        return componentName + " DMA Req (channel " + channelNumber + ")";
     }
 
     @Override
@@ -22,7 +23,7 @@ public class TxIoPinDmaReqFunction extends AbstractInputPinFunction implements P
 
     @Override
     public void setValue(int value) {
-        System.err.println(toString() + " - Setting value is not implemented");
+        if (logPinMessages) System.out.println("TxIoPinDmaReqFunction.setValue not implemented for pin " + getShortName());
     }
 
 }

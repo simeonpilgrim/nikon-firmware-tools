@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.io;
 
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
-import com.nikonhacker.emu.peripherials.ioPort.util.ConsoleLoggingWire;
+import com.nikonhacker.emu.peripherials.ioPort.util.ConsoleLoggingIoWire;
 import com.nikonhacker.emu.peripherials.ioPort.util.Diode;
 
 import java.util.Random;
@@ -66,7 +66,7 @@ public class PinTest {
 
         System.out.println();
         System.out.println("Inserting SOURCE <> TARGET wire");
-        ConsoleLoggingWire wire = new ConsoleLoggingWire("WIRE");
+        ConsoleLoggingIoWire wire = new ConsoleLoggingIoWire("WIRE");
         wire.insertAtPin(sourceComponent.getOutputPin());
 
         System.out.println("Testing SOURCE => TARGET direction (with wire)");

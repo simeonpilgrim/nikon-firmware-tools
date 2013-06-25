@@ -2,13 +2,13 @@ package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 
-public abstract class SpiSlaveDevice implements SerialDevice {
+public abstract class SpiSlaveDevice extends AbstractSerialDevice {
 
     protected boolean selected = false;
     private Pin selectPin;
 
     protected SpiSlaveDevice() {
-        selectPin = new SelectPin(this.getClass().getSimpleName() + " select pin");
+        selectPin = new SelectPin(this.getClass().getSimpleName() + " ~SELECT pin");
     }
 
     public void setSelected(boolean selected) {

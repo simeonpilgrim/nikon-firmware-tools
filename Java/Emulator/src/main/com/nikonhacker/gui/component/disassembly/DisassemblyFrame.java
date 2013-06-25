@@ -2,9 +2,9 @@ package com.nikonhacker.gui.component.disassembly;
 
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.PrintWriterArea;
-import com.nikonhacker.gui.component.SearchableTextAreaPanel;
+import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.PrintWriterArea;
+import com.nikonhacker.gui.swing.SearchableTextAreaPanel;
 
 import java.awt.*;
 import java.io.PrintWriter;

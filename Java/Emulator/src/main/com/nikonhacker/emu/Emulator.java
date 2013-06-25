@@ -12,7 +12,7 @@ import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import java.io.PrintWriter;
 import java.util.*;
 
-public abstract class Emulator {
+public abstract class Emulator implements Clockable {
     protected long totalCycles;
     protected IndentPrinter printer;
     protected PrintWriter breakLogPrintWriter;
@@ -24,7 +24,7 @@ public abstract class Emulator {
     StatementContext context = new StatementContext();
 
     // TODO : Shouldn't these 2 only be in the StatementContext object ?
-    // TODO : or better yet in a Platform object
+    // TODO : or better yet: the Emulator should receive a Platform object
     // TODO @Deprecated
     protected Memory memory;
     // TODO @Deprecated
@@ -111,11 +111,24 @@ public abstract class Emulator {
     }
 
     /**
-     * Starts emulating
-     * @return the BreakCondition that caused the emulator to stop
+     * Start emulating in sync mode
+     * @return the condition that made emulation stop
      * @throws EmulationException
      */
-    public abstract BreakCondition play() throws EmulationException ;
+    public BreakCondition play() throws EmulationException {
+        Object o = null;
+        while (o == null) {
+            o = onClockTick();
+        }
+        return (BreakCondition)o;
+    }
+
+    /**
+     * Perform one emulation step
+     * @return the condition that made emulation stop, or null if it should continue
+     * @throws EmulationException
+     */
+    public abstract BreakCondition onClockTick() throws EmulationException ;
 
     public void addCycleCounterListener(CycleCounterListener cycleCounterListener) {
         synchronized (cycleCounterListeners) {

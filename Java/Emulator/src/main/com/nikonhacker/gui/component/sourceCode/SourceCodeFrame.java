@@ -8,7 +8,7 @@ import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.DocumentFrame;
+import com.nikonhacker.gui.swing.DocumentFrame;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -37,7 +37,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final ImageIcon enabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointLogIcon.png"));
     private final ImageIcon disabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointLogIcon.png"));
 //    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
-    
+
     private Gutter gutter;
     private Object pcHighlightTag = null;
     private final JTextField searchField;
@@ -288,16 +288,24 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
         }
         newPopupMenu.addSeparator();
+
         newPopupMenu.add(new JMenuItem(new FindTextAction()));
+
         newPopupMenu.addSeparator();
+
         toggleBreakPointMenuItem = new JMenuItem(new ToggleBreakpointAction());
         newPopupMenu.add(toggleBreakPointMenuItem);
+
         newPopupMenu.addSeparator();
-        runToHereMenuItem = new JMenuItem(new RunToHereAction(true));
-        newPopupMenu.add(runToHereMenuItem);
-        newPopupMenu.addSeparator();
-        debugToHereMenuItem = new JMenuItem(new RunToHereAction(false));
+
+        debugToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.DEBUG, true));
         newPopupMenu.add(debugToHereMenuItem);
+
+        newPopupMenu.addSeparator();
+
+        runToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.RUN, false));
+        newPopupMenu.add(runToHereMenuItem);
+
         listingArea.setPopupMenu(newPopupMenu);
 
         RTextScrollPane scrollPane = new RTextScrollPane(listingArea);
@@ -338,10 +346,9 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
 
     public void setEditable(boolean enabled) {
-        this.enabled = enabled;
         toggleBreakPointMenuItem.setEnabled(enabled);
-        runToHereMenuItem.setEnabled(enabled);
         debugToHereMenuItem.setEnabled(enabled);
+        runToHereMenuItem.setEnabled(enabled);
     }
 
     public void highlightPc() {
@@ -413,10 +420,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      */
     private class RunToHereAction extends TextAction {
 
-        private boolean debugMode;
+        private EmulatorUI.RunMode runMode;
+        private boolean            debugMode;
 
-        public RunToHereAction(boolean debugMode) {
-            super((debugMode?"Debug":"Run") + " to this line");
+        public RunToHereAction(EmulatorUI.RunMode runMode, boolean debugMode) {
+            super(runMode.getLabel() + " to this line");
+            this.runMode = runMode;
             this.debugMode = debugMode;
         }
 
@@ -427,7 +436,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     JTextArea textArea = (JTextArea) textComponent;
                     Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                     if (addressFromLine != null) {
-                        ui.playToAddress(chip, addressFromLine, debugMode);
+                        ui.playToAddress(chip, runMode, addressFromLine);
                     }
                 }
             } catch (BadLocationException ble) {
@@ -436,7 +445,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    
+
     public void actionPerformed(ActionEvent e) {
         // "FindNext" => search forward, "FindPrev" => search backward
         String command = e.getActionCommand();
@@ -494,8 +503,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             e.printStackTrace();
         }
     }
-    
-    
+
+
     // Real source code handling methods
 
 
@@ -572,7 +581,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 return i;
             }
         }
-        
+
         return null;
     }
 

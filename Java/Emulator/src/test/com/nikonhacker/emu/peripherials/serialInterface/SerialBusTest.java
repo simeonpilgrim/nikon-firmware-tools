@@ -28,11 +28,11 @@ public class SerialBusTest {
     }
 
     private static void insertConsoleWire(String name, SerialDevice device) {
-        SerialDevice connectedSerialDevice = device.getConnectedSerialDevice();
+        SerialDevice connectedSerialDevice = device.getTargetDevice();
         // 2. we replace the above device by a logger wire, forwarding data to the original device
-        device.connectSerialDevice(new ConsoleLoggerSerialWire(name + " Rx of " + device.toString(), connectedSerialDevice));
+        device.connectTargetDevice(new ConsoleLoggerSerialWire(name + " Rx of " + device.toString(), connectedSerialDevice));
         // 3. conversely, we connect a similar logger wire in the other direction.
-        connectedSerialDevice.connectSerialDevice(new ConsoleLoggerSerialWire(name + " Tx of " + device.toString(), device));
+        connectedSerialDevice.connectTargetDevice(new ConsoleLoggerSerialWire(name + " Tx of " + device.toString(), device));
 
     }
 }

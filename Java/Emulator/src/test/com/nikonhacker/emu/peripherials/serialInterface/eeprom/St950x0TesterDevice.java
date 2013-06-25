@@ -1,12 +1,11 @@
 package com.nikonhacker.emu.peripherials.serialInterface.eeprom;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.DummySerialDevice;
+import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
-public class St950x0TesterDevice implements SerialDevice {
-    private final String deviceName;
-    private SerialDevice eeprom;
+public class St950x0TesterDevice extends AbstractSerialDevice {
+    private final String       deviceName;
 
     public St950x0TesterDevice(String deviceName) {
         this.deviceName = deviceName;
@@ -15,21 +14,6 @@ public class St950x0TesterDevice implements SerialDevice {
     @Override
     public void write(Integer value) {
         System.err.println("        " + deviceName + " receives 0x" + Format.asHex(value, 2));
-    }
-
-    @Override
-    public void connectSerialDevice(SerialDevice connectedDevice) {
-        this.eeprom = connectedDevice;
-    }
-
-    @Override
-    public void disconnectSerialDevice() {
-        this.eeprom = new DummySerialDevice();
-    }
-
-    @Override
-    public SerialDevice getConnectedSerialDevice() {
-        return eeprom;
     }
 
     @Override
@@ -61,7 +45,7 @@ public class St950x0TesterDevice implements SerialDevice {
 
     private void write(int value) {
         System.err.println(deviceName + " writes 0x" + Format.asHex(value, 2));
-        eeprom.write(value);
+        targetDevice.write(value);
     }
 
 }

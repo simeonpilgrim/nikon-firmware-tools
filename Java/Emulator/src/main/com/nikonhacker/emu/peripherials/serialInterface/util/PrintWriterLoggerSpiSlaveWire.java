@@ -6,7 +6,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 import java.io.PrintWriter;
 
-public class PrintWriterLoggerSpiSlaveWire extends SpiSlaveWire implements SerialDevice {
+public class PrintWriterLoggerSpiSlaveWire extends SpiSlaveWire {
     private PrintWriter printWriter;
     private int mask = 0xFF; // 8 bits by default
 

@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.programmableTimer.tx;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.CpuPowerModeChangeListener;
-import com.nikonhacker.emu.clock.tx.TxClockGenerator;
+import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
@@ -11,6 +11,9 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
 
+/**
+ * This implements "16-bit Timer/Event Counters (TMRBs)" according to section 11 of the hardware specification
+ */
 public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeListener {
     private TxCPUState cpuState;
     private TxClockGenerator clockGenerator;
@@ -23,8 +26,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     private int im;
     private int rg0;
     private int rg1;
-    private int cp0;
-    private int cp1;
+    private int cp0 = 0;
+    private int cp1 = 0;
 
     // Flip-flop output
     private boolean ff0 = false; // undefined in fact
@@ -64,7 +67,10 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                scheduleTask();
+                if (getModClk() != 0) {
+                    // Not in Event Counter mode
+                    scheduleTask();
+                }
             }
         }
         else {
@@ -93,12 +99,16 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
         if (countEnabled && prescalerEnabled) {
             scale = 1;
-            intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getT0Frequency() /* T0tick/s */ ;
+            if (getModClk() != 0) {
+                // Not in Event Counter mode
+                // Compute timing
+                intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getT0Frequency() /* T0tick/s */ ;
 
-            if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
-                /* unsustainable frequency */
-                scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
-                intervalNanoseconds *= scale;
+                if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
+                    /* unsustainable frequency */
+                    scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
+                    intervalNanoseconds *= scale;
+                }
             }
             // Prepare task
             timerTask = new TimerTask() {
@@ -106,26 +116,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 public void run() {
                     if (active && operate) {
                         boolean interruptCondition = false;
-
                         currentValue += scale;
-                        // TODO: Simplest implementation for now: If capture is requested upon TBnINx,
-                        // then cp0 and cp1 registers will always reflect the counter value, no matter the input values
-						switch (getModCpm()) {
-							case 0b01:
-								// on TBnIN1 up
-								cp0 = currentValue;
-								// on TBnIN0 up
-								cp1 = currentValue;
-								break;
-							case 0b10:
-								// on TBnIN0 down
-								cp0 = currentValue;
-								// on TBnIN0 up
-								cp1 = currentValue;
-								break;
-							case 0b11:
-								// TODO
-						}
                         // Comparator 0
                         if (rg0 > 0 && (currentValue / scale == rg0 / scale)) {
                             // CP0 matches
@@ -173,7 +164,10 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 System.out.println("Start requested on timer " + timerNumber + " but its TB" + Format.asHex(timerNumber, 1) + "EN register is 0. Postponing...");
             }
             else {
-                scheduleTask();
+                if (getModClk() != 0) {
+                    // Not in Event Counter mode
+                    scheduleTask();
+                }
             }
         }
         else {
@@ -226,8 +220,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     public int getDivider() {
         switch (getModClk()) {
             case 0b00:
-                System.out.println("Timer " + timerNumber + " should tick according to external pin TBnIN0. Using T16 frequency...");
-                return 32;  // Incorrect, but we have no actual pin connected, so...
+                throw new RuntimeException("Timer " + Format.asHex(timerNumber, 1) + " should tick according to external pin TB" + Format.asHex(timerNumber, 1) + "IN0. getDivider() should not be called !");
             case 0b01: return 2;  // T1  = T0/2
             case 0b10: return 8;  // T4  = T0/8
             case 0b11: return 32; // T16 = T0/32
@@ -236,15 +229,17 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public void setMod(int mod) {
-        if ((mod & 0b11000) != 0) {
-            if ((mod & 0b11000) == 0b11000) {
-                // TODO latching according to TBnMOD<TBnCPM1:0>. See section 11.3.5
-                throw new RuntimeException("Latching on TBnOUT (cascading) not implemented");
-            }
-            else {
-                System.err.println("Latching is only partly implemented");
-            }
+        if ((mod & 0b00100000) != 0) {
+            // Software capture request
+            capture0();
         }
+        if ((mod & 0b00011000) == 0b00011000) {
+            // latching according to TBnMOD<TBnCPM1:0>. See section 11.3.5
+            throw new RuntimeException("Latching on TBnOUT (cascading) not implemented");
+        }
+        // Spec says TBnCLK "**Clears** and controls the TMRBn up-counter."
+        currentValue = 0;
+
         this.mod = mod;
     }
 
@@ -316,12 +311,20 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         this.cp0 = cp0;
     }
 
+    public void capture0() {
+        setCp0(currentValue);
+    }
+
     public int getCp1() {
         return cp1;
     }
 
     public void setCp1(int cp1) {
         this.cp1 = cp1;
+    }
+
+    public void capture1() {
+        setCp1(currentValue);
     }
 
     public boolean getFf0() {

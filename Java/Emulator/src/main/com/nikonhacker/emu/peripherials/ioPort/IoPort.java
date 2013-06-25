@@ -1,6 +1,8 @@
 package com.nikonhacker.emu.peripherials.ioPort;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.ioPort.function.PinFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,81 +37,120 @@ public abstract class IoPort {
     /** InterruptController is passed to constructor to be able to actually trigger requests */
     protected InterruptController interruptController;
 
-    protected VariableFunctionPin[] pins;
+    protected VariableFunctionPin[] pins = new VariableFunctionPin[8];
+    protected PinFunction[] inputFunctions = new PinFunction[8];
+    protected PinFunction[] outputFunctions = new PinFunction[8];
 
-    /** Port register value as set by external devices. This value will be remembered in Prefs */
-    protected byte externalValue;
-    /** Port register value as set by CPU */
-    protected byte internalValue;
+    public boolean logPinMessages = true;
 
-    /** Port direction mask - 0=Input 1=Output */
-    protected byte direction;
-
-    /** List of listeners to warn when the value of a full port changes
-     * TODO: does this have sense ? Shouldn't we only work at the pin level ?
-     * TODO: distinguish internal/external listeners ?
+    /**
+     * List of listeners to warn when the configuration of a port changes
      */
-    protected List<IoPortsListener> ioPortsListeners = new ArrayList<IoPortsListener>();
+    protected List<IoPortConfigListener> ioPortConfigListeners = new ArrayList<IoPortConfigListener>();
 
-    public IoPort(int portNumber, InterruptController interruptController) {
+    public IoPort(int chip, int portNumber, InterruptController interruptController, boolean logPinMessages) {
         this.portNumber = portNumber;
         this.interruptController = interruptController;
-        pins = new VariableFunctionPin[8];
+        this.logPinMessages = logPinMessages;
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
-            pins[bitNumber] = new VariableFunctionPin(getShortName() + bitNumber);
+            pins[bitNumber] = new VariableFunctionPin(Constants.CHIP_LABEL[chip] + " " + getShortName() + bitNumber);
+            pins[bitNumber].setLogPinMessages(logPinMessages);
         }
     }
 
-    public InterruptController getInterruptController() {
-        return interruptController;
-    }
-
-    public byte getInternalValue() {
-        return internalValue;
+    /**
+     * Method called by CPU to get the value
+     */
+    public byte getValue() {
+        byte value = 0;
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            int mask = 1 << bitNumber;
+            if (pins[bitNumber].isInput()) {
+                // IN
+                Integer inputValue = pins[bitNumber].getInputValue();
+                // dangling inputs are considered low level
+                if (inputValue != null && inputValue != 0) {
+                    value |= mask;
+                }
+            }
+            else {
+                // OUT
+                Integer outputValue = pins[bitNumber].getOutputValue();
+                if (outputValue != null) {
+                    if (outputValue != 0) {
+                        value |= mask;
+                    }
+                }
+                else {
+                    if (logPinMessages) System.err.println("OutputValue is null for pin " + pins[bitNumber].getName());
+                }
+            }
+        }
+        return value;
     }
 
     /**
      * Method called by CPU to set the value
      */
-    public void setInternalValue(byte newValue) {
-        for (IoPortsListener ioPortsListener : ioPortsListeners) {
-            ioPortsListener.onOutputValueChange(portNumber, newValue);
-        }
-
-        // Warn connected device, if any
-        int changedBits = internalValue ^ newValue; // todo : if changebits != 0
+    public void setValue(byte newValue) {
+        // Forward to individual output pins
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             int mask = 1 << bitNumber;
-            if (   ((direction & mask) != 0) // pin is configured as output
-                    && ((changedBits & mask) != 0)     // state has changed
-                    ) {
-                // Set the value of the output port
+            if (!pins[bitNumber].isInput()) {
+                // pin is configured as output. Set the value of the output port
                 pins[bitNumber].setOutputValue(((newValue & mask) != 0)?1:0);
             }
         }
-        this.internalValue = newValue;
     }
 
     /**
-     * Method called to get the external value, e.g. to be remembered to Prefs
+     * Port pin direction mask - 0=Input 1=Output
      */
-    public byte getExternalValue() {
-        return externalValue;
-    }
-
-    /**
-     * Method called by external devices to set the value
-     */
-    public void setExternalValue(byte externalValue) {
-        this.externalValue = externalValue;
-    }
-
     public byte getDirection() {
+        byte direction = 0;
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            if (!getPin(bitNumber).isInput()) {
+                direction |= (1 << bitNumber);
+            }
+        }
         return direction;
     }
 
+    /**
+     * Port pin direction mask - 0=Input 1=Output
+     */
     public void setDirection(byte direction) {
-        this.direction = direction;
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            getPin(bitNumber).setIsInput((direction & (1 << bitNumber)) == 0);
+        }
+        for (IoPortConfigListener ioPortConfigListener : ioPortConfigListeners) {
+            ioPortConfigListener.onConfigChange(portNumber);
+        }
+    }
+
+    /**
+     * Port pin input enabled mask - 0=Disabled 1=Enabled
+     */
+    public byte getInputEnabled() {
+        byte inputEnabled = 0;
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            if (!getPin(bitNumber).isInputEnabled()) {
+                inputEnabled |= (1 << bitNumber);
+            }
+        }
+        return inputEnabled;
+    }
+
+    /**
+     * Port pin input enabled mask - 0=Disabled 1=Enabled
+     */
+    public void setInputEnabled(byte inputEnabled) {
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            getPin(bitNumber).setIsInputEnabled((inputEnabled & (1 << bitNumber)) != 0);
+        }
+        for (IoPortConfigListener ioPortConfigListener : ioPortConfigListeners) {
+            ioPortConfigListener.onConfigChange(portNumber);
+        }
     }
 
     private String getPortCharacter() {
@@ -133,11 +174,11 @@ public abstract class IoPort {
         return getFullName();
     }
 
-    public void addIoPortsListener(IoPortsListener ioPortsListener) {
-        ioPortsListeners.add(ioPortsListener);
+    public void addIoPortsListener(IoPortConfigListener ioPortConfigListener) {
+        ioPortConfigListeners.add(ioPortConfigListener);
     }
 
-    public void removeIoPortsListener(IoPortsListener ioPortsListener) {
-        ioPortsListeners.remove(ioPortsListener);
+    public void removeIoPortsListener(IoPortConfigListener ioPortConfigListener) {
+        ioPortConfigListeners.remove(ioPortConfigListener);
     }
 }

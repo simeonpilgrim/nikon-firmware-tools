@@ -24,28 +24,36 @@ public class Prefs {
     private int dividerLocation;
     private int lastDividerLocation;
     private boolean dividerKeepHidden;
-    private boolean usePrettyIoComponents = false;
 
     // Per chip
     private List<BreakTrigger>[] triggers;
     private List<MemoryWatch>[] memoryWatches;
     private EnumSet<OutputOption>[] outputOptions;
-    private Map<Integer,Byte>[] ioPortMap;
     private boolean[] autoUpdateITronObjectWindow;
     private boolean[] callStackHideJumps;
-    private int sleepTick[];
-    private boolean writeDisassemblyToFile[];
-    private boolean sourceCodeFollowsPc[];
-    private String codeStructureGraphOrientation[];
-    private boolean firmwareWriteProtected[];
-    private boolean timersCycleSynchronous[];
-    private boolean dmaSynchronous[];
-    private boolean adValueFromList[];
-    private Map<String,List<Integer>> adValueListMap[];
-    private Map<String,Integer> adValueMap[];
+    private int[] sleepTick;
+    private boolean[] writeDisassemblyToFile;
+    private boolean[] sourceCodeFollowsPc;
+    private String[] codeStructureGraphOrientation;
+    private boolean[] firmwareWriteProtected;
+    private boolean[] timersCycleSynchronous;
+    private boolean[] dmaSynchronous;
+    private boolean[] autoEnableTimers;
+    private boolean[] logMemoryMessages;
+    private boolean[] logSerialMessages;
+    private boolean[] logPinMessages;
+    private boolean[] logRegisterMessages;
+    private boolean[] adValueFromList;
+    private Map<String,List<Integer>>[] adValueListMap;
+    private Map<String,Integer>[] adValueMap;
     private EepromInitMode eepromInitMode;
     private byte[] lastEepromContents;
     private String lastEepromFileName;
+    private Map<String,Integer>[] ioValueOverrideMap;
+    private boolean syncPlay = true;
+    private int[] serialInterfaceFrameSelectedTab;
+    private int[] genericSerialFrameSelectedTab;
+    private int[] ioPortsFrameSelectedTab;
 
 
     private static File getPreferenceFile() {
@@ -173,25 +181,15 @@ public class Prefs {
         return triggers[chip];
     }
 
-    public void setTriggers(int chip, List<BreakTrigger> triggers) {
-        this.triggers[chip] = triggers;
-    }
-
     public List<MemoryWatch> getWatches(int chip) {
         if (memoryWatches == null) memoryWatches = new List[2];
         if (memoryWatches[chip] == null) memoryWatches[chip] = new ArrayList<MemoryWatch>();
         return memoryWatches[chip];
     }
 
-    public void setWatches(int chip, List<MemoryWatch> watches) {
-        this.memoryWatches[chip] = watches;
-    }
-
-
     private String getKey(String windowName, int chip) {
         return windowName + "_" + Constants.CHIP_LABEL[chip];
     }
-
 
     public int getWindowPositionX(String windowName, int chip) {
         if (windowPositionMap==null) windowPositionMap = new HashMap<String, WindowPosition>();
@@ -329,28 +327,6 @@ public class Prefs {
         this.dividerKeepHidden = dividerKeepHidden;
     }
 
-    public boolean isUsePrettyIoComponents() {
-        return usePrettyIoComponents;
-    }
-
-    public void setUsePrettyIoComponents(boolean usePrettyIoComponents) {
-        this.usePrettyIoComponents = usePrettyIoComponents;
-    }
-
-    public byte getPortValue(int chip, int portNumber) {
-        if (ioPortMap == null) ioPortMap = new Map[2];
-        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
-        Byte value = ioPortMap[chip].get(portNumber);
-        if (value == null) return 0;
-        else return value;
-    }
-
-    public void setPortValue(int chip, int portNumber, byte value) {
-        if (ioPortMap == null) ioPortMap = new Map[2];
-        if (ioPortMap[chip] == null) ioPortMap[chip] = new HashMap<Integer, Byte>();
-        ioPortMap[chip].put(portNumber, value);
-    }
-
     public boolean areTimersCycleSynchronous(int chip) {
         if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
         return timersCycleSynchronous[chip];
@@ -371,6 +347,56 @@ public class Prefs {
         this.dmaSynchronous[chip] = isDmaSynchronous;
     }
 
+    public boolean isAutoEnableTimers(int chip) {
+        if (autoEnableTimers == null || autoEnableTimers.length != 2) autoEnableTimers = new boolean[]{true, true};
+        return autoEnableTimers[chip];
+    }
+
+    public void setAutoEnableTimers(int chip, boolean isAutoEnableTimers) {
+        if (autoEnableTimers == null || autoEnableTimers.length != 2) autoEnableTimers = new boolean[]{true, true};
+        this.autoEnableTimers[chip] = isAutoEnableTimers;
+    }
+
+    public boolean isLogMemoryMessages(int chip) {
+        if (logMemoryMessages == null || logMemoryMessages.length != 2) logMemoryMessages = new boolean[]{false, false};
+        return logMemoryMessages[chip];
+    }
+
+    public void setLogMemoryMessages(int chip, boolean isLogMemoryMessages) {
+        if (logMemoryMessages == null || logMemoryMessages.length != 2) logMemoryMessages = new boolean[]{false, false};
+        this.logMemoryMessages[chip] = isLogMemoryMessages;
+    }
+
+    public boolean isLogSerialMessages(int chip) {
+        if (logSerialMessages == null || logSerialMessages.length != 2) logSerialMessages = new boolean[]{false, false};
+        return logSerialMessages[chip];
+    }
+
+    public void setLogSerialMessages(int chip, boolean isLogSerialMessages) {
+        if (logSerialMessages == null || logSerialMessages.length != 2) logSerialMessages = new boolean[]{false, false};
+        this.logSerialMessages[chip] = isLogSerialMessages;
+    }
+
+    public boolean isLogPinMessages(int chip) {
+        if (logPinMessages == null || logPinMessages.length != 2) logPinMessages = new boolean[]{false, false};
+        return logPinMessages[chip];
+    }
+
+    public void setLogPinMessages(int chip, boolean isLogPinMessages) {
+        if (logPinMessages == null || logPinMessages.length != 2) logPinMessages = new boolean[]{true, true};
+        this.logPinMessages[chip] = isLogPinMessages;
+    }
+
+    public boolean isLogRegisterMessages(int chip) {
+        if (logRegisterMessages == null || logRegisterMessages.length != 2) logRegisterMessages = new boolean[]{true, true};
+        return logRegisterMessages[chip];
+    }
+
+    public void setLogRegisterMessages(int chip, boolean isLogRegisterMessages) {
+        if (logRegisterMessages == null || logRegisterMessages.length != 2) logRegisterMessages = new boolean[]{true, true};
+        this.logRegisterMessages[chip] = isLogRegisterMessages;
+    }
+
     public boolean isAdValueFromList(int chip) {
         if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
         return adValueFromList[chip];
@@ -379,6 +405,36 @@ public class Prefs {
     public void setAdValueFromList(int chip, boolean isAdValueFromList) {
         if (adValueFromList == null || adValueFromList.length != 2) adValueFromList = new boolean[]{true, true};
         this.adValueFromList[chip] = isAdValueFromList;
+    }
+
+    public int getSerialInterfaceFrameSelectedTab(int chip) {
+        if (this.serialInterfaceFrameSelectedTab == null || this.serialInterfaceFrameSelectedTab.length != 2) this.serialInterfaceFrameSelectedTab = new int[]{0, 0};
+        return serialInterfaceFrameSelectedTab[chip];
+    }
+
+    public void setSerialInterfaceFrameSelectedTab(int chip, int serialInterfaceFrameSelectedTab) {
+        if (this.serialInterfaceFrameSelectedTab == null || this.serialInterfaceFrameSelectedTab.length != 2) this.serialInterfaceFrameSelectedTab = new int[]{0, 0};
+        this.serialInterfaceFrameSelectedTab[chip] = serialInterfaceFrameSelectedTab;
+    }
+
+    public int getGenericSerialFrameSelectedTab(int chip) {
+        if (this.genericSerialFrameSelectedTab == null || this.genericSerialFrameSelectedTab.length != 2) this.genericSerialFrameSelectedTab = new int[]{0, 0};
+        return genericSerialFrameSelectedTab[chip];
+    }
+
+    public void setGenericSerialFrameSelectedTab(int chip, int genericSerialFrameSelectedTab) {
+        if (this.genericSerialFrameSelectedTab == null || this.genericSerialFrameSelectedTab.length != 2) this.genericSerialFrameSelectedTab = new int[]{0, 0};
+        this.genericSerialFrameSelectedTab[chip] = genericSerialFrameSelectedTab;
+    }
+
+    public int getIoPortsFrameSelectedTab(int chip) {
+        if (this.ioPortsFrameSelectedTab == null || this.ioPortsFrameSelectedTab.length != 2) this.ioPortsFrameSelectedTab = new int[]{0, 0};
+        return ioPortsFrameSelectedTab[chip];
+    }
+
+    public void setIoPortsFrameSelectedTab(int chip, int ioPortsFrameSelectedTab) {
+        if (this.ioPortsFrameSelectedTab == null || this.ioPortsFrameSelectedTab.length != 2) this.ioPortsFrameSelectedTab = new int[]{0, 0};
+        this.ioPortsFrameSelectedTab[chip] = ioPortsFrameSelectedTab;
     }
 
     public List<Integer> getAdValueList(int chip, String channelKey) {
@@ -392,12 +448,13 @@ public class Prefs {
     }
 
     public int getAdValue(int chip, String channelKey) {
-        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
-        return adValueMap[chip].get(channelKey);
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        Integer value = adValueMap[chip].get(channelKey);
+        return (value == null?0:value);
     }
 
     public void setAdValue(int chip, String channelKey, int value) {
-        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[2];
+        if (adValueMap == null || adValueMap.length != 2) adValueMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
         adValueMap[chip].put(channelKey, value);
     }
 
@@ -430,6 +487,28 @@ public class Prefs {
         this.lastEepromFileName = lastEepromFileName;
     }
 
+    public Integer getPortInputValueOverride(int chip, int portNumber, int bitNumber) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        return ioValueOverrideMap[chip].get(portNumber + "-" + bitNumber);
+    }
+
+    public void setPortInputValueOverride(int chip, int portNumber, int bitNumber, int value) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        ioValueOverrideMap[chip].put(portNumber + "-" + bitNumber, value);
+    }
+
+    public void removePortInputValueOverride(int chip, int portNumber, int bitNumber) {
+        if (ioValueOverrideMap == null || ioValueOverrideMap.length != 2) ioValueOverrideMap = new Map[]{new HashMap<String, Integer>(), new HashMap<String, Integer>()};
+        ioValueOverrideMap[chip].remove(portNumber + "-" + bitNumber);
+    }
+
+    public boolean isSyncPlay() {
+        return syncPlay;
+    }
+
+    public void setSyncPlay(boolean syncPlay) {
+        this.syncPlay = syncPlay;
+    }
 
     /**
      * This is basically just a structure with an X Y value.

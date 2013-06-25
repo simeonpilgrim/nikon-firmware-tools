@@ -47,7 +47,7 @@ import java.awt.event.KeyEvent;
 public class InternalFrameDemo extends JFrame implements ActionListener {
     private JDesktopPane mdiPane;
 
-    private static DebuggableMemory memory = new DebuggableMemory();
+    private static DebuggableMemory memory = new DebuggableMemory(false);
     private static TrackingMemoryActivityListener activityListener = new TrackingMemoryActivityListener(memory.getNumPages(), memory.getPageSize());
 
 

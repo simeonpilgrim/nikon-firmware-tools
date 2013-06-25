@@ -4,9 +4,19 @@ package com.nikonhacker.emu.memory.listener;
  * An IO Activity Listener is hooked to a page of memory addresses meant to contain IO registers
  */
 public abstract class IoActivityListener implements MemoryActivityListener {
+    protected boolean logRegisterMessages;
+
+    /**
+     * This method declares if this listener does only read the information, or if it can change the returned value
+     * @return
+     */
     @Override
-    public boolean isLoggerOnly() {
+    public boolean isReadOnly() {
         return false;
+    }
+
+    public void setLogRegisterMessages(boolean logRegisterMessages) {
+        this.logRegisterMessages = logRegisterMessages;
     }
 
     @Override

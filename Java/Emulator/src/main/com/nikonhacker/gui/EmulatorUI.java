@@ -15,12 +15,10 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.Dtx;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.*;
-import com.nikonhacker.emu.clock.ClockGenerator;
-import com.nikonhacker.emu.clock.fr.FrClockGenerator;
-import com.nikonhacker.emu.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
@@ -28,6 +26,9 @@ import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdPrefsValueProvider;
+import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
+import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
+import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
@@ -37,11 +38,16 @@ import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.ioPort.fr.FrIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
+import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
+import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
+import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
+import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
+import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
@@ -56,10 +62,6 @@ import com.nikonhacker.emu.trigger.condition.*;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
-import com.nikonhacker.gui.component.DocumentFrame;
-import com.nikonhacker.gui.component.FileSelectionPanel;
-import com.nikonhacker.gui.component.ModifiedFlowLayout;
-import com.nikonhacker.gui.component.VerticalLayout;
 import com.nikonhacker.gui.component.ad.AdConverterFrame;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
@@ -84,6 +86,7 @@ import com.nikonhacker.gui.component.serialInterface.GenericSerialFrame;
 import com.nikonhacker.gui.component.serialInterface.SerialInterfaceFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.gui.component.timer.ProgrammableTimersFrame;
+import com.nikonhacker.gui.swing.*;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.xml.StaxDriver;
 import net.miginfocom.swing.MigLayout;
@@ -113,201 +116,224 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-public class EmulatorUI extends JFrame implements ActionListener, ChangeListener {
+public class EmulatorUI extends JFrame implements ActionListener {
 
-    // Constants
-    private static final String[] COMMAND_IMAGE_LOAD = {"FR_IMAGE_LOAD", "TX_IMAGE_LOAD"};
-    private static final String[] COMMAND_ANALYSE_DISASSEMBLE = {"FR_ANALYSE_DISASSEMBLE", "TX_ANALYSE_DISASSEMBLE"};
-    private static final String[] COMMAND_EMULATOR_PLAY = {"FR_EMULATOR_PLAY", "TX_EMULATOR_PLAY"};
-    private static final String[] COMMAND_EMULATOR_DEBUG = {"FR_EMULATOR_DEBUG", "TX_EMULATOR_DEBUG"};
-    private static final String[] COMMAND_EMULATOR_PAUSE = {"FR_EMULATOR_PAUSE", "TX_EMULATOR_PAUSE"};
-    private static final String[] COMMAND_EMULATOR_STEP = {"FR_EMULATOR_STEP", "TX_EMULATOR_STEP"};
-    private static final String[] COMMAND_EMULATOR_STOP = {"FR_EMULATOR_STOP", "TX_EMULATOR_STOP"};
-    private static final String[] COMMAND_SETUP_BREAKPOINTS = {"FR_SETUP_BREAKPOINTS", "TX_SETUP_BREAKPOINTS"};
-    private static final String[] COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER = {"FR_TOGGLE_MEMORY_ACTIVITY_VIEWER", "TX_TOGGLE_MEMORY_ACTIVITY_VIEWER"};
-    private static final String[] COMMAND_TOGGLE_MEMORY_HEX_EDITOR = {"FR_TOGGLE_MEMORY_HEX_EDITOR", "TX_TOGGLE_MEMORY_HEX_EDITOR"};
-    private static final String[] COMMAND_TOGGLE_DISASSEMBLY_WINDOW = {"FR_TOGGLE_DISASSEMBLY_WINDOW", "TX_TOGGLE_DISASSEMBLY_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_CPUSTATE_WINDOW = {"FR_TOGGLE_CPUSTATE_WINDOW", "TX_TOGGLE_CPUSTATE_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW = {"FR_COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW", "TX_COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW"};
+    // Constants for commands
+    private static final String[] COMMAND_IMAGE_LOAD                         = {"FR_IMAGE_LOAD", "TX_IMAGE_LOAD"};
+    private static final String[] COMMAND_ANALYSE_DISASSEMBLE                = {"FR_ANALYSE_DISASSEMBLE", "TX_ANALYSE_DISASSEMBLE"};
+    private static final String[] COMMAND_EMULATOR_PLAY                      = {"FR_EMULATOR_PLAY", "TX_EMULATOR_PLAY"};
+    private static final String[] COMMAND_EMULATOR_DEBUG                     = {"FR_EMULATOR_DEBUG", "TX_EMULATOR_DEBUG"};
+    private static final String[] COMMAND_EMULATOR_PAUSE                     = {"FR_EMULATOR_PAUSE", "TX_EMULATOR_PAUSE"};
+    private static final String[] COMMAND_EMULATOR_STEP                      = {"FR_EMULATOR_STEP", "TX_EMULATOR_STEP"};
+    private static final String[] COMMAND_EMULATOR_STOP                      = {"FR_EMULATOR_STOP", "TX_EMULATOR_STOP"};
+    private static final String[] COMMAND_SETUP_BREAKPOINTS                  = {"FR_SETUP_BREAKPOINTS", "TX_SETUP_BREAKPOINTS"};
+    private static final String[] COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER      = {"FR_TOGGLE_MEMORY_ACTIVITY_VIEWER", "TX_TOGGLE_MEMORY_ACTIVITY_VIEWER"};
+    private static final String[] COMMAND_TOGGLE_MEMORY_HEX_EDITOR           = {"FR_TOGGLE_MEMORY_HEX_EDITOR", "TX_TOGGLE_MEMORY_HEX_EDITOR"};
+    private static final String[] COMMAND_TOGGLE_DISASSEMBLY_WINDOW          = {"FR_TOGGLE_DISASSEMBLY_WINDOW", "TX_TOGGLE_DISASSEMBLY_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_CPUSTATE_WINDOW             = {"FR_TOGGLE_CPUSTATE_WINDOW", "TX_TOGGLE_CPUSTATE_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW        = {"FR_COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW", "TX_COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW"};
     private static final String[] COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW = {"FR_TOGGLE_INTERRUPT_CONTROLLER_WINDOW", "TX_TOGGLE_INTERRUPT_CONTROLLER_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_SERIAL_INTERFACES = {"FR_COMMAND_TOGGLE_SERIAL_INTERFACES", "TX_COMMAND_TOGGLE_SERIAL_INTERFACES"};
-    private static final String[] COMMAND_TOGGLE_SERIAL_DEVICES = {"FR_COMMAND_TOGGLE_SERIAL_DEVICES", "TX_COMMAND_TOGGLE_SERIAL_DEVICES"};
-    private static final String[] COMMAND_TOGGLE_AD_CONVERTER = {"FR_COMMAND_TOGGLE_AD_CONVERTER", "TX_COMMAND_TOGGLE_AD_CONVERTER"};
+    private static final String[] COMMAND_TOGGLE_SERIAL_INTERFACES           = {"FR_COMMAND_TOGGLE_SERIAL_INTERFACES", "TX_COMMAND_TOGGLE_SERIAL_INTERFACES"};
+    private static final String[] COMMAND_TOGGLE_SERIAL_DEVICES              = {"FR_COMMAND_TOGGLE_SERIAL_DEVICES", "TX_COMMAND_TOGGLE_SERIAL_DEVICES"};
+    private static final String[] COMMAND_TOGGLE_IO_PORTS_WINDOW             = {"FR_COMMAND_TOGGLE_IO_PORTS_WINDOW", "TX_COMMAND_TOGGLE_IO_PORTS_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_AD_CONVERTER                = {"FR_COMMAND_TOGGLE_AD_CONVERTER", "TX_COMMAND_TOGGLE_AD_CONVERTER"};
+    private static final String[] COMMAND_LOAD_STATE                         = {"FR_LOAD_STATE", "TX_LOAD_STATE"};
+    private static final String[] COMMAND_SAVE_STATE                         = {"FR_SAVE_STATE", "TX_SAVE_STATE"};
+    private static final String[] COMMAND_SAVE_LOAD_MEMORY                   = {"FR_SAVE_LOAD_MEMORY", "TX_SAVE_LOAD_MEMORY"};
+    private static final String[] COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW       = {"FR_TOGGLE_CODE_STRUCTURE_WINDOW", "TX_TOGGLE_CODE_STRUCTURE_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_SOURCE_CODE_WINDOW          = {"FR_TOGGLE_SOURCE_CODE_WINDOW", "TX_TOGGLE_SOURCE_CODE_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW  = {"FR_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW", "TX_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW           = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_ITRON_OBJECT_WINDOW         = {"FR_TOGGLE_ITRON_OBJECT_WINDOW", "TX_TOGGLE_ITRON_OBJECT_WINDOW"};
+    private static final String[] COMMAND_CHIP_OPTIONS                       = {"FR_OPTIONS", "TX_OPTIONS"};
 
-    private static final String[] COMMAND_LOAD_STATE = {"FR_LOAD_STATE", "TX_LOAD_STATE"};
-    private static final String[] COMMAND_SAVE_STATE = {"FR_SAVE_STATE", "TX_SAVE_STATE"};
-    private static final String[] COMMAND_SAVE_LOAD_MEMORY = {"FR_SAVE_LOAD_MEMORY", "TX_SAVE_LOAD_MEMORY"};
-    private static final String[] COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW = {"FR_TOGGLE_CODE_STRUCTURE_WINDOW", "TX_TOGGLE_CODE_STRUCTURE_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_SOURCE_CODE_WINDOW = {"FR_TOGGLE_SOURCE_CODE_WINDOW", "TX_TOGGLE_SOURCE_CODE_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW = {"FR_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW", "TX_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
-    private static final String[] COMMAND_TOGGLE_ITRON_OBJECT_WINDOW = {"FR_TOGGLE_ITRON_OBJECT_WINDOW", "TX_TOGGLE_ITRON_OBJECT_WINDOW"};
-    private static final String[] COMMAND_CHIP_OPTIONS = {"FR_OPTIONS", "TX_OPTIONS"};
-
-    private static final String COMMAND_GENERATE_SYS_SYMBOLS = "GENERATE_SYS_SYMBOLS";
-    private static final String COMMAND_TOGGLE_IO_PORTS_WINDOW = "COMMAND_TOGGLE_IO_PORTS_WINDOW";
+    private static final String COMMAND_GENERATE_SYS_SYMBOLS         = "GENERATE_SYS_SYMBOLS";
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
-    private static final String COMMAND_TOGGLE_SCREEN_EMULATOR = "TOGGLE_SCREEN_EMULATOR";
+    private static final String COMMAND_TOGGLE_SCREEN_EMULATOR       = "TOGGLE_SCREEN_EMULATOR";
+    private static final String COMMAND_UI_OPTIONS                   = "UI_OPTIONS";
+    private static final String COMMAND_DECODE                       = "DECODE";
+    private static final String COMMAND_ENCODE                       = "ENCODE";
+    private static final String COMMAND_QUIT                         = "QUIT";
+    private static final String COMMAND_ABOUT                        = "ABOUT";
+    private static final String COMMAND_TEST                         = "TEST";
 
-    private static final String COMMAND_UI_OPTIONS = "UI_OPTIONS";
+    private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
 
-    private static final String COMMAND_DECODE = "DECODE";
-    private static final String COMMAND_ENCODE = "ENCODE";
-    private static final String COMMAND_QUIT = "QUIT";
-    private static final String COMMAND_ABOUT = "ABOUT";
-    private static final String COMMAND_TEST = "TEST";
-
-    public static final String BUTTON_SIZE_SMALL = "SMALL";
+    public static final String BUTTON_SIZE_SMALL  = "SMALL";
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
-    public static final String BUTTON_SIZE_LARGE = "LARGE";
+    public static final String BUTTON_SIZE_LARGE  = "LARGE";
 
-    private static final int BASE_ADDRESS_FUNCTION_CALL[] = {0xFFFFFFF0,0x10001000};
+    private static final String BUTTON_PROPERTY_KEY_ICON = "icon";
+
+    // Business constants
+
+    private static final int BASE_ADDRESS_FUNCTION_CALL[] = {0xFFFFFFF0, 0x10001000};
 
     private static final int CAMERA_SCREEN_MEMORY_Y = 0xCE57DC60;
     private static final int CAMERA_SCREEN_MEMORY_U = CAMERA_SCREEN_MEMORY_Y + 0x64000;
     private static final int CAMERA_SCREEN_MEMORY_V = CAMERA_SCREEN_MEMORY_Y + 2 * 0x64000;
-    private static final int CAMERA_SCREEN_WIDTH = 640;
-    private static final int CAMERA_SCREEN_HEIGHT = 480;
+    private static final int CAMERA_SCREEN_WIDTH    = 640;
+    private static final int CAMERA_SCREEN_HEIGHT   = 480;
 
     private static final String[] CPUSTATE_ENTRY_NAME = {"FrCPUState", "TxCPUState"};
-    private static final String[] MEMORY_ENTRY_NAME = {"FrMemory", "TxMemory"};
+    private static final String[] MEMORY_ENTRY_NAME   = {"FrMemory", "TxMemory"};
 
-    private static final String STATUS_DEFAULT_TEXT = "Ready";
-    private static final String BUTTON_PROPERTY_KEY_ICON = "icon";
+    private static final String STATUS_DEFAULT_TEXT   = "Ready";
 
     public static final Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
-    public static final Color STATUS_BGCOLOR_RUN = Color.GREEN;
-    public static final Color STATUS_BGCOLOR_DEBUG = Color.ORANGE;
-    public static final Color STATUS_BGCOLOR_BREAK = new Color(255, 127, 127);
+    public static final Color STATUS_BGCOLOR_RUN     = Color.GREEN;
+    public static final Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
+    public static final Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
+
+    /** Type of run */
+    public static enum RunMode {
+        /** Run without any break */
+        RUN("Run"),
+
+        /** Run without all break triggers enabled */
+        DEBUG("Debug"),
+
+        /** Just execute one instruction, then break, */
+        STEP("Step");
+        private String label;
+
+        RunMode(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+    }
 
 
     // UI
 
     private final Insets toolbarButtonMargin;
 
-    private JDesktopPane[] mdiPane = new JDesktopPane[2];
-    private final JPanel[] toolBar = new JPanel[2];
+    private final JSplitPane splitPane;
+    private final JDesktopPane[] mdiPane = new JDesktopPane[2];
+    private final JPanel[]       toolBar = new JPanel[2];
 
     // Menu items
-    private JMenuItem[] loadMenuItem = new JMenuItem[2];
-    private JMenuItem[] playMenuItem = new JMenuItem[2];
-    private JMenuItem[] debugMenuItem = new JMenuItem[2];
-    private JMenuItem[] pauseMenuItem = new JMenuItem[2];
-    private JMenuItem[] stepMenuItem = new JMenuItem[2];
-    private JMenuItem[] stopMenuItem = new JMenuItem[2];
+    private JMenuItem[] loadMenuItem       = new JMenuItem[2];
+    private JMenuItem[] playMenuItem       = new JMenuItem[2];
+    private JMenuItem[] debugMenuItem      = new JMenuItem[2];
+    private JMenuItem[] pauseMenuItem      = new JMenuItem[2];
+    private JMenuItem[] stepMenuItem       = new JMenuItem[2];
+    private JMenuItem[] stopMenuItem       = new JMenuItem[2];
     private JMenuItem[] breakpointMenuItem = new JMenuItem[2];
 
     private JMenuItem generateSysSymbolsMenuItem;
 
-    private JCheckBoxMenuItem[] cpuStateMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] memoryHexEditorMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] cpuStateMenuItem            = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] memoryHexEditorMenuItem     = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] interruptControllerMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] programmableTimersMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] serialInterfacesMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] serialDevicesMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] adConverterMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] programmableTimersMenuItem  = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] serialInterfacesMenuItem    = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] serialDevicesMenuItem       = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] ioPortsMenuItem             = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] adConverterMenuItem         = new JCheckBoxMenuItem[2];
 
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
-    private JCheckBoxMenuItem ioPortsMenuItem;
 
-    private JCheckBoxMenuItem[] disassemblyMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] memoryActivityViewerMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] disassemblyMenuItem             = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] memoryActivityViewerMenuItem    = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] customMemoryRangeLoggerMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] callStackMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] iTronObjectMenuItem = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] callStackMenuItem               = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] iTronObjectMenuItem             = new JCheckBoxMenuItem[2];
 
-    private JMenuItem[] analyseMenuItem = new JMenuItem[2];
-    private JCheckBoxMenuItem[] codeStructureMenuItem = new JCheckBoxMenuItem[2];
-    private JCheckBoxMenuItem[] sourceCodeMenuItem = new JCheckBoxMenuItem[2];
-    private JMenuItem[] saveLoadMemoryMenuItem = new JMenuItem[2];
-    private JMenuItem[] chipOptionsMenuItem = new JMenuItem[2];
+    private JMenuItem[]         analyseMenuItem        = new JMenuItem[2];
+    private JCheckBoxMenuItem[] codeStructureMenuItem  = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] sourceCodeMenuItem     = new JCheckBoxMenuItem[2];
+    private JMenuItem[]         saveLoadMemoryMenuItem = new JMenuItem[2];
+    private JMenuItem[]         chipOptionsMenuItem    = new JMenuItem[2];
 
     @SuppressWarnings("FieldCanBeLocal")
     private JMenuItem uiOptionsMenuItem;
 
     // Buttons
-    private JButton[] loadButton = new JButton[2];
-    private JButton[] playButton = new JButton[2];
-    private JButton[] debugButton = new JButton[2];
-    private JButton[] pauseButton = new JButton[2];
-    private JButton[] stepButton = new JButton[2];
-    private JButton[] stopButton = new JButton[2];
+    private JButton[] loadButton       = new JButton[2];
+    private JButton[] playButton       = new JButton[2];
+    private JButton[] debugButton      = new JButton[2];
+    private JButton[] pauseButton      = new JButton[2];
+    private JButton[] stepButton       = new JButton[2];
+    private JButton[] stopButton       = new JButton[2];
     private JButton[] breakpointButton = new JButton[2];
 
-    private JButton[] disassemblyButton = new JButton[2];
-    private JButton[] cpuStateButton = new JButton[2];
-    private JButton[] memoryActivityViewerButton = new JButton[2];
-    private JButton[] memoryHexEditorButton = new JButton[2];
+    private JButton[] disassemblyButton             = new JButton[2];
+    private JButton[] cpuStateButton                = new JButton[2];
+    private JButton[] memoryActivityViewerButton    = new JButton[2];
+    private JButton[] memoryHexEditorButton         = new JButton[2];
     private JButton[] customMemoryRangeLoggerButton = new JButton[2];
-    private JButton[] codeStructureButton = new JButton[2];
-    private JButton[] sourceCodeButton = new JButton[2];
-    private JButton[] interruptControllerButton = new JButton[2];
-    private JButton[] programmableTimersButton = new JButton[2];
-    private JButton[] serialInterfacesButton = new JButton[2];
-    private JButton[] serialDevicesButton = new JButton[2];
-    private JButton[] adConverterButton = new JButton[2];
-    private JButton[] callStackButton = new JButton[2];
-    private JButton[] iTronObjectButton = new JButton[2];
+    private JButton[] codeStructureButton           = new JButton[2];
+    private JButton[] sourceCodeButton              = new JButton[2];
+    private JButton[] interruptControllerButton     = new JButton[2];
+    private JButton[] programmableTimersButton      = new JButton[2];
+    private JButton[] serialInterfacesButton        = new JButton[2];
+    private JButton[] serialDevicesButton           = new JButton[2];
+    private JButton[] ioPortsButton                 = new JButton[2];
+    private JButton[] adConverterButton             = new JButton[2];
+    private JButton[] callStackButton               = new JButton[2];
+    private JButton[] iTronObjectButton             = new JButton[2];
 
-    private JButton ioPortsButton;
     private JButton component4006Button;
     private JButton screenEmulatorButton;
 
-    private JButton[] analyseButton = new JButton[2];
+    private JButton[] analyseButton        = new JButton[2];
     private JButton[] saveLoadMemoryButton = new JButton[2];
-    private JButton[] chipOptionsButton = new JButton[2];
+    private JButton[] chipOptionsButton    = new JButton[2];
 
     // Frames
-    private CPUStateEditorFrame[] cpuStateEditorFrame = new CPUStateEditorFrame[2];
-    private DisassemblyFrame[] disassemblyLogFrame = new DisassemblyFrame[2];
-    private BreakTriggerListFrame[] breakTriggerListFrame = new BreakTriggerListFrame[2];
-    private MemoryActivityViewerFrame[] memoryActivityViewerFrame = new MemoryActivityViewerFrame[2];
-    private MemoryHexEditorFrame[] memoryHexEditorFrame = new MemoryHexEditorFrame[2];
+    private CPUStateEditorFrame[]          cpuStateEditorFrame          = new CPUStateEditorFrame[2];
+    private DisassemblyFrame[]             disassemblyLogFrame          = new DisassemblyFrame[2];
+    private BreakTriggerListFrame[]        breakTriggerListFrame        = new BreakTriggerListFrame[2];
+    private MemoryActivityViewerFrame[]    memoryActivityViewerFrame    = new MemoryActivityViewerFrame[2];
+    private MemoryHexEditorFrame[]         memoryHexEditorFrame         = new MemoryHexEditorFrame[2];
     private CustomMemoryRangeLoggerFrame[] customMemoryRangeLoggerFrame = new CustomMemoryRangeLoggerFrame[2];
-    private CodeStructureFrame[] codeStructureFrame = new CodeStructureFrame[2];
-    private SourceCodeFrame[] sourceCodeFrame = new SourceCodeFrame[2];
-    private ProgrammableTimersFrame[] programmableTimersFrame = new ProgrammableTimersFrame[2];
-    private InterruptControllerFrame[] interruptControllerFrame = new InterruptControllerFrame[2];
-    private SerialInterfaceFrame[] serialInterfaceFrame = new SerialInterfaceFrame[2];
-    private GenericSerialFrame[] genericSerialFrame = new GenericSerialFrame[2];
-    private AdConverterFrame[] adConverterFrame = new AdConverterFrame[2];
-    private CallStackFrame[] callStackFrame = new CallStackFrame[2];
+    private CodeStructureFrame[]           codeStructureFrame           = new CodeStructureFrame[2];
+    private SourceCodeFrame[]              sourceCodeFrame              = new SourceCodeFrame[2];
+    private ProgrammableTimersFrame[]      programmableTimersFrame      = new ProgrammableTimersFrame[2];
+    private InterruptControllerFrame[]     interruptControllerFrame     = new InterruptControllerFrame[2];
+    private SerialInterfaceFrame[]         serialInterfaceFrame         = new SerialInterfaceFrame[2];
+    private GenericSerialFrame[]           genericSerialFrame           = new GenericSerialFrame[2];
+    private IoPortsFrame[]                 ioPortsFrame                 = new IoPortsFrame[2];
+    private AdConverterFrame[]             adConverterFrame             = new AdConverterFrame[2];
+    private CallStackFrame[]               callStackFrame               = new CallStackFrame[2];
 
     private Component4006Frame component4006Frame;
-    private DocumentFrame screenEmulatorFrame;
-    private IoPortsFrame ioPortsFrame;
+    private DocumentFrame      screenEmulatorFrame;
 
     private ITronObjectFrame[] ITronObjectFrame = new ITronObjectFrame[2];
 
-    private String[] statusText = {STATUS_DEFAULT_TEXT, STATUS_DEFAULT_TEXT};
-    private JLabel[] statusBar = new JLabel[2];
+    // Misc UI related fields
+    private String[]  statusText     = {STATUS_DEFAULT_TEXT, STATUS_DEFAULT_TEXT};
+    private JLabel[]  statusBar      = new JLabel[2];
     private JSlider[] intervalSlider = new JSlider[2];
 
-    private static ImageIcon[] programmableTimerButtonIcons;
-    private int programmableTimerButtonAnimationCounter = 0;
-
+    private static ImageIcon[]       programmableTimersPauseButtonIcon           = new ImageIcon[2];
+    private        int[]             programmableTimersPauseButtonAnimationIndex = new int[2];
+    private        java.util.Timer[] programmableTimersPauseButtonAnimationTimer = new java.util.Timer[2];
 
     // Business fields
     private static File[] imageFile = new File[2];
 
-    private Emulator[] emulator = new Emulator[2];
+    private final MasterClock masterClock = new MasterClock();
+    private       Emulator[]  emulator    = new Emulator[2];
+    private       Platform[]  platform    = new Platform[2];
+    private       St950x0 eeprom;
 
-    private Platform[] platform = new Platform[2];
-
-    private java.util.Timer[] programmableTimerButtonAnimationTimer = new java.util.Timer[2];
-    private CodeStructure[] codeStructure = new CodeStructure[2];
-
-    private boolean[] isImageLoaded = {false, false};
+    private boolean[] isImageLoaded     = {false, false};
     private boolean[] isEmulatorPlaying = {false, false};
 
+
+    private CodeStructure[] codeStructure = new CodeStructure[2];
+
     private long lastUpdateCycles[] = {0, 0};
-    private long lastUpdateTime[] = {0, 0};
+    private long lastUpdateTime[]   = {0, 0};
 
     private Prefs prefs = new Prefs();
-    private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
-    private final JSplitPane splitPane;
-    private St95040 eeprom;
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
@@ -321,6 +347,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
         }
+
+        initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
 
         // Using System L&F allows transparent window icon in the title bar on Windows, but causes a Sort exception in JDK 1.7 because of stricter sort - see http://www.java.net/node/700601
         // Use old less strict sort to avoid the Exception
@@ -352,25 +380,25 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * event-dispatching thread.
      */
     private static void createAndShowGUI() {
-        //Make sure we have nice window decorations.
+        // Choose to keep Java-style for main window decorations.
         JFrame.setDefaultLookAndFeelDecorated(true);
 
-        //Create and set up the window.
+        // Create and set up the window.
         EmulatorUI frame = new EmulatorUI();
 
-        //Display the window.
+        // Display the window.
         frame.setVisible(true);
     }
 
     public EmulatorUI() {
         super(ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
 
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
         prefs = Prefs.load();
         // Apply register label prefs immediately
         FrCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_FR));
         TxCPUState.initRegisterLabels(prefs.getOutputOptions(Constants.CHIP_TX));
-
-        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
         //Set up the GUI.
         setJMenuBar(createMenuBar());
@@ -378,21 +406,38 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         toolbarButtonMargin = new Insets(2, 14, 2, 14);
 
         JPanel[] contentPane = new JPanel[2];
-        for(int chip=0; chip < 2; chip++) {
-            mdiPane[chip] = new JDesktopPane();
+        for (int chip = 0; chip < 2; chip++) {
+            // This is the contentPane that will make one side of the JSplitPane
+            contentPane[chip] = new JPanel(new BorderLayout());
+
+            // First we create a toolbar and put it on top
+            toolBar[chip] = createToolBar(chip);
+            contentPane[chip].add(toolBar[chip], BorderLayout.NORTH);
+
+
+            // Then we prepare a "desktop" panel and put it at the center
+            // This subclass of JDesktopPane implements Scrollable and has a size which auto-adapts dynamically
+            // to the size and position of its internal frames
+            mdiPane[chip] = new ScrollableDesktop();
+            mdiPane[chip].setBackground(Constants.CHIP_BACKGROUND_COLOR[chip]);
+            mdiPane[chip].setOpaque(true);
+
+            // We wrap it inside a panel to force a stretch to the size of the JSplitPane panel
+            // Otherwise, as the size of the panel auto-adapts, it starts at 0,0 if no component is present,
+            // so the background color would only be only visible in the bounding box surrounding the internal frames
+            JPanel forcedStretchPanel = new JPanel(new BorderLayout());
+            forcedStretchPanel.add(mdiPane[chip], BorderLayout.CENTER);
+
+            // And we wrap the result in a JScrollPane to take care of the actual scrolling,
+            // before adding it at the center
+            contentPane[chip].add(new JScrollPane(forcedStretchPanel), BorderLayout.CENTER);
+
+            // Finally, we prepare the status bar and add it at the bottom
             statusBar[chip] = new JLabel(statusText[chip]);
             statusBar[chip].setOpaque(true);
             statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-            toolBar[chip] = createToolBar(chip);
-
-            contentPane[chip] = new JPanel(new BorderLayout());
-            contentPane[chip].add(toolBar[chip], BorderLayout.PAGE_START);
-            contentPane[chip].add(mdiPane[chip], BorderLayout.CENTER);
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
-
-        mdiPane[Constants.CHIP_FR].setBackground(new Color(240,240,255));
-        mdiPane[Constants.CHIP_TX].setBackground(new Color(248,255,248));
 
         setIconImages(Arrays.asList(
                 Toolkit.getDefaultToolkit().getImage(EmulatorUI.class.getResource("images/nh_16x16.png")),
@@ -406,11 +451,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         splitPane.setOneTouchExpandable(true);
         splitPane.setDividerLocation(0.5);
 
-        //togglePane(false);
-
         setContentPane(splitPane);
 
-        applyPrefsToUI(false);
+        applyPrefsToUI();
 
 
         for (int chip = 0; chip < 2; chip++) {
@@ -420,6 +463,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
         restoreMainWindowSettings();
+
+        pack();
 
         updateStates();
 
@@ -434,6 +479,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             }
         }).start();
     }
+
+
     private void saveMainWindowSettings() {
         prefs.setMainWindowPosition(getX(), getY());
         prefs.setMainWindowSize(getWidth(), getHeight());
@@ -448,16 +495,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             //Settings were never saved. Make the app window indented 50 pixels from each edge of the screen.
             int inset = 50;
             Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-            setBounds(inset, inset, screenSize.width - inset * 2, screenSize.height - inset * 2);
+            int width = screenSize.width - inset * 2;
+            int height = screenSize.height - inset * 2;
+            setLocation(inset, inset);
+            setPreferredSize(new Dimension(width, height));
         }
         else {
-            setBounds(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY(), prefs.getMainWindowSizeX(), prefs.getMainWindowSizeY());
+            setLocation(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY());
+            setPreferredSize(new Dimension(prefs.getMainWindowSizeX(), prefs.getMainWindowSizeY()));
 
             splitPane.setDividerLocation(prefs.getDividerLocation());
             splitPane.setLastDividerLocation(prefs.getLastDividerLocation());
             setKeepHidden(splitPane, prefs.isDividerKeepHidden());
         }
     }
+
+    // TODO instead of having the next two methods here, use a custom JFoldableSplitPane extends JSplitPane, and give it two methods void setFolded(boolean folded) and boolean isFolded()
 
     /**
      * Method circumventing package access to setKeepHidden() method of BasicSplitPaneUI
@@ -466,12 +519,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @author taken from http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
      */
     private void setKeepHidden(JSplitPane splitPane, boolean keepHidden) {
-        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
-            try{
-                Method setKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("setKeepHidden", new Class<?>[] { Boolean.TYPE }); //boolean.class });
+        if (splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try {
+                Method setKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("setKeepHidden", new Class<?>[]{Boolean.TYPE}); //boolean.class });
                 setKeepHidden.setAccessible(true);
-                setKeepHidden.invoke(splitPane.getUI(), new Object[] { keepHidden });
-            }catch(Exception e) {
+                setKeepHidden.invoke(splitPane.getUI(), new Object[]{keepHidden});
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -484,19 +537,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
      * @author inspired by http://java-swing-tips.googlecode.com/svn/trunk/OneTouchExpandable/src/java/example/MainPanel.java
      */
     private boolean getKeepHidden(JSplitPane splitPane) {
-        if(splitPane.getUI() instanceof BasicSplitPaneUI) {
-            try{
+        if (splitPane.getUI() instanceof BasicSplitPaneUI) {
+            try {
                 Method getKeepHidden = BasicSplitPaneUI.class.getDeclaredMethod("getKeepHidden", new Class<?>[]{});
                 getKeepHidden.setAccessible(true);
-                return (Boolean)(getKeepHidden.invoke(splitPane.getUI()));
-            }catch(Exception e) {
+                return (Boolean) (getKeepHidden.invoke(splitPane.getUI()));
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
         return false;
     }
 
-    private void applyPrefsToUI(boolean usePrettyIoComponentsChanged) {
+    private void applyPrefsToUI() {
         if (BUTTON_SIZE_LARGE.equals(prefs.getButtonSize())) {
             toolbarButtonMargin.set(2, 14, 2, 14);
         }
@@ -511,8 +564,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                         JButton button = (JButton) component;
                         ImageIcon icon = (ImageIcon) button.getClientProperty(BUTTON_PROPERTY_KEY_ICON);
                         if (icon != null) {
-                            Image newimg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH) ;
-                            button.setIcon(new ImageIcon(newimg));
+                            Image newImg = icon.getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH);
+                            button.setIcon(new ImageIcon(newImg));
                         }
                     }
                 }
@@ -536,14 +589,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         for (int chip = 0; chip < 2; chip++) {
             toolBar[chip].revalidate();
         }
-        if (usePrettyIoComponentsChanged) {
-            if (ioPortsFrame != null) {
-                // Close
-                toggleIoPortsWindow();
-                // Reopen
-                toggleIoPortsWindow();
-            }
-        }
     }
 
     public Prefs getPrefs() {
@@ -561,14 +606,14 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             long now = System.currentTimeMillis();
             long cps;
             try {
-                cps = (1000 * (totalCycles - lastUpdateCycles[chip]))/(now - lastUpdateTime[chip]);
+                cps = (1000 * (totalCycles - lastUpdateCycles[chip])) / (now - lastUpdateTime[chip]);
             } catch (Exception e) {
                 cps = -1;
             }
 
             lastUpdateCycles[chip] = totalCycles;
             lastUpdateTime[chip] = now;
-            statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps<0?"?":(""+cps)) + "Hz)");
+            statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "Hz)");
         }
         else {
             statusBar[chip].setText(statusText[chip]);
@@ -607,16 +652,18 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         bar.add(makeSlider(chip));
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
-        cpuStateButton[chip] = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW[chip], Constants.CHIP_LABEL[chip] + " CPU State window", "CPU");
+        cpuStateButton[chip] = makeButton("cpu", COMMAND_TOGGLE_CPUSTATE_WINDOW[chip], Constants.CHIP_LABEL[chip] + " CPU state window", "CPU");
         bar.add(cpuStateButton[chip]);
-        memoryHexEditorButton[chip] = makeButton("memory_editor", COMMAND_TOGGLE_MEMORY_HEX_EDITOR[chip], Constants.CHIP_LABEL[chip] + " Memory hex editor", "Hex Editor");
+        memoryHexEditorButton[chip] = makeButton("memory_editor", COMMAND_TOGGLE_MEMORY_HEX_EDITOR[chip], Constants.CHIP_LABEL[chip] + " memory hex editor", "Hex Editor");
         bar.add(memoryHexEditorButton[chip]);
-        interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Interrupt controller", "Interrupt");
+        interruptControllerButton[chip] = makeButton("interrupt", COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip], Constants.CHIP_LABEL[chip] + " interrupt controller", "Interrupt");
         bar.add(interruptControllerButton[chip]);
-        programmableTimersButton[chip] = makeButton("reload", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
+        programmableTimersButton[chip] = makeButton("timer", COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " programmable timers", "Programmable timers");
         bar.add(programmableTimersButton[chip]);
-        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " Serial interfaces", "Serial interfaces");
+        serialInterfacesButton[chip] = makeButton("serial", COMMAND_TOGGLE_SERIAL_INTERFACES[chip], Constants.CHIP_LABEL[chip] + " serial interfaces", "Serial interfaces");
         bar.add(serialInterfacesButton[chip]);
+        ioPortsButton[chip] = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW[chip], Constants.CHIP_LABEL[chip] + " I/O Ports", "I/O Ports");
+        bar.add(ioPortsButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
 
@@ -627,9 +674,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             bar.add(component4006Button);
         }
         else {
-            ioPortsButton = makeButton("io", COMMAND_TOGGLE_IO_PORTS_WINDOW, "I/O Ports", "I/O Ports");
-            bar.add(ioPortsButton);
-            serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " Serial devices", "Serial devices");
+            serialDevicesButton[Constants.CHIP_TX] = makeButton("serial_devices", COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices", "Serial devices");
             bar.add(serialDevicesButton[Constants.CHIP_TX]);
             adConverterButton[Constants.CHIP_TX] = makeButton("ad_converter", COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter", "A/D converter");
             bar.add(adConverterButton[Constants.CHIP_TX]);
@@ -639,13 +684,13 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         disassemblyButton[chip] = makeButton("disassembly_log", COMMAND_TOGGLE_DISASSEMBLY_WINDOW[chip], "Real time " + Constants.CHIP_LABEL[chip] + " disassembly log", "Disassembly");
         bar.add(disassemblyButton[chip]);
-        memoryActivityViewerButton[chip] = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER[chip], Constants.CHIP_LABEL[chip] + " Memory activity viewer", "Activity");
+        memoryActivityViewerButton[chip] = makeButton("memory_activity", COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER[chip], Constants.CHIP_LABEL[chip] + " memory activity viewer", "Activity");
         bar.add(memoryActivityViewerButton[chip]);
         customMemoryRangeLoggerButton[chip] = makeButton("custom_logger", COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW[chip], "Custom " + Constants.CHIP_LABEL[chip] + " logger", "Custom logger");
         bar.add(customMemoryRangeLoggerButton[chip]);
-        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " Call Stack window", "CallStack");
+        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " call stack window", "CallStack");
         bar.add(callStackButton[chip]);
-        iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON Object window", "µITRON Object");
+        iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON object window", "µITRON Object");
         bar.add(iTronObjectButton[chip]);
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -673,7 +718,24 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     private JSlider makeSlider(int chip) {
         intervalSlider[chip] = new JSlider(JSlider.HORIZONTAL, 0, 5, prefs.getSleepTick(chip));
 
-        intervalSlider[chip].addChangeListener(this);
+        intervalSlider[chip].addChangeListener(new ChangeListener() {
+            /**
+             * React to slider moves
+             * @param e
+             */
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSlider source = (JSlider)e.getSource();
+                // if (!source.getValueIsAdjusting())
+                for (int chip = 0; chip < 2; chip++) {
+                    if (source == intervalSlider[chip]) {
+                        setEmulatorSleepCode(chip, source.getValue());
+                        prefs.setSleepTick( chip, source.getValue());
+                    }
+                }
+            }
+        });
+
         intervalSlider[chip].putClientProperty("JComponent.sizeVariant", "large");
 
         //Create the label table
@@ -897,6 +959,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             serialInterfacesMenuItem[chip].addActionListener(this);
             componentsMenu.add(serialInterfacesMenuItem[chip]);
 
+            // I/O
+            ioPortsMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " I/O ports");
+            ioPortsMenuItem[chip].setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW[chip]);
+            ioPortsMenuItem[chip].addActionListener(this);
+            componentsMenu.add(ioPortsMenuItem[chip]);
+
             componentsMenu.add(new JSeparator());
         }
 
@@ -917,12 +985,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         componentsMenu.add(component4006MenuItem);
 
         componentsMenu.add(new JSeparator());
-
-        // I/O
-        ioPortsMenuItem = new JCheckBoxMenuItem("I/O ports (TX only)");
-        ioPortsMenuItem.setActionCommand(COMMAND_TOGGLE_IO_PORTS_WINDOW);
-        ioPortsMenuItem.addActionListener(this);
-        componentsMenu.add(ioPortsMenuItem);
 
         //Serial devices : TX only for now
         serialDevicesMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices (TX only)");
@@ -1083,6 +1145,19 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 //        testMenuItem.addActionListener(this);
 //        helpMenu.add(testMenuItem);
 
+        // Global "Keep in sync" setting
+        menuBar.add(Box.createHorizontalGlue());
+        final JCheckBox syncEmulators = new JCheckBox("Keep emulators in sync");
+        syncEmulators.setSelected(prefs.isSyncPlay());
+        masterClock.setSyncPlay(prefs.isSyncPlay());
+        syncEmulators.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                prefs.setSyncPlay(syncEmulators.isSelected());
+                masterClock.setSyncPlay(syncEmulators.isSelected());
+            }
+        });
+        menuBar.add(syncEmulators);
         return menuBar;
     }
 
@@ -1103,16 +1178,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             openAnalyseDialog(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_PLAY)) != Constants.CHIP_NONE) {
-            playEmulator(chip, false, false, null);
+            startEmulator(chip, RunMode.RUN, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_DEBUG)) != Constants.CHIP_NONE) {
-            playEmulator(chip, false, true, null);
+            startEmulator(chip, RunMode.DEBUG, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_PAUSE)) != Constants.CHIP_NONE) {
             pauseEmulator(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_STEP)) != Constants.CHIP_NONE) {
-            playEmulator(chip, true, false, null);
+            startEmulator(chip, RunMode.STEP, null);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_EMULATOR_STOP)) != Constants.CHIP_NONE) {
             if (isEmulatorPlaying(chip)) {
@@ -1173,6 +1248,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_SERIAL_DEVICES)) != Constants.CHIP_NONE) {
             toggleGenericSerialFrame(chip);
         }
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_IO_PORTS_WINDOW)) != Constants.CHIP_NONE) {
+            toggleIoPortsWindow(chip);
+        }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_AD_CONVERTER)) != Constants.CHIP_NONE) {
             toggleAdConverterFrame(chip);
         }
@@ -1196,9 +1274,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
             toggleComponent4006();
-        }
-        else if (COMMAND_TOGGLE_IO_PORTS_WINDOW.equals(e.getActionCommand())) {
-            toggleIoPortsWindow();
         }
 
         else if (COMMAND_QUIT.equals(e.getActionCommand())) {
@@ -1471,6 +1546,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             @Override
             public boolean accept(File f) {
                 if (f != null) {
+                    //noinspection SimplifiableIfStatement
                     if (f.isDirectory()) {
                         return true;
                     }
@@ -1527,18 +1603,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final JCheckBox closeAllWindowsOnStopCheckBox = new JCheckBox("Close all windows on Stop");
         closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
 
-        // Use pretty I/O components
-        final JCheckBox usePrettyIoComponentsCheckBox = new JCheckBox("Use switches and leds for I/O");
-        usePrettyIoComponentsCheckBox.setSelected(prefs.isUsePrettyIoComponents());
-
-
         // Setup panel
         options.add(new JLabel("Button size :"));
         options.add(small);
         options.add(medium);
         options.add(large);
         options.add(closeAllWindowsOnStopCheckBox);
-        options.add(usePrettyIoComponentsCheckBox);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 options,
@@ -1552,12 +1622,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             // save
             prefs.setButtonSize(group.getSelection().getActionCommand());
             prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
-            boolean isUsePrettyIoComponentsChanged = false;
-            if (prefs.isUsePrettyIoComponents() != usePrettyIoComponentsCheckBox.isSelected()) {
-                isUsePrettyIoComponentsChanged = true;
-                prefs.setUsePrettyIoComponents(usePrettyIoComponentsCheckBox.isSelected());
-            }
-            applyPrefsToUI(isUsePrettyIoComponentsChanged);
+            applyPrefsToUI();
         }
     }
 
@@ -1579,7 +1644,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                     dumpOptionCheckboxes(outputOptionsCheckBoxes, sampleOptions);
                     int baseAddress = platform[chip].getCpuState().getResetAddress();
                     int lastAddress = baseAddress;
-                    Memory sampleMemory = new DebuggableMemory();
+                    Memory sampleMemory = new DebuggableMemory(false);
                     sampleMemory.map(baseAddress, 0x100, true, true, true);
                     StringWriter writer = new StringWriter();
                     Disassembler disassembler;
@@ -1694,38 +1759,57 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
 
         JPanel emulationOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
         emulationOptionsPanel.add(new JLabel());
-        emulationOptionsPanel.add(new JLabel("IMPORTANT: these options only take effect after reloading the firmware or performing a 'Stop and reset')"));
+        JLabel warningLabel = new JLabel("NOTE: these options only take effect after reloading the firmware (or performing a 'Stop and reset')");
+        warningLabel.setBackground(Color.RED);
+        warningLabel.setOpaque(true);
+        warningLabel.setForeground(Color.WHITE);
+        warningLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        emulationOptionsPanel.add(warningLabel);
         emulationOptionsPanel.add(new JLabel());
 
         final JCheckBox writeProtectFirmwareCheckBox = new JCheckBox("Write-protect firmware");
         writeProtectFirmwareCheckBox.setSelected(prefs.isFirmwareWriteProtected(chip));
-        writeProtectFirmwareCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(writeProtectFirmwareCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
 
         final JCheckBox timerCycleSynchronousCheckBox = new JCheckBox("Make timers synchronous with CPU");
         timerCycleSynchronousCheckBox.setSelected(prefs.areTimersCycleSynchronous(chip));
-        timerCycleSynchronousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(timerCycleSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, timers will run based on the number of cycles executed by the CPU, so slowing down the CPU slows down timers"));
 
         final JCheckBox dmaSynchronousCheckBox = new JCheckBox("Make DMA synchronous");
         dmaSynchronousCheckBox.setSelected(prefs.isDmaSynchronous(chip));
-        dmaSynchronousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
-            }
-        });
         emulationOptionsPanel.add(dmaSynchronousCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, DMA operations will be performed immediately, pausing the CPU. Otherwise they are performed in a separate thread."));
+
+        final JCheckBox autoEnableTimersCheckBox = new JCheckBox("Auto enable timers");
+        autoEnableTimersCheckBox.setSelected(prefs.isAutoEnableTimers(chip));
+        emulationOptionsPanel.add(autoEnableTimersCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, timers will be automatically enabled upon reset or firmware load."));
+
+        // Log memory messages
+        final JCheckBox logMemoryMessagesCheckBox = new JCheckBox("Log memory messages");
+        logMemoryMessagesCheckBox.setSelected(prefs.isLogMemoryMessages(chip));
+        emulationOptionsPanel.add(logMemoryMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, messages related to memory will be logged to the console."));
+
+        // Log serial messages
+        final JCheckBox logSerialMessagesCheckBox = new JCheckBox("Log serial messages");
+        logSerialMessagesCheckBox.setSelected(prefs.isLogSerialMessages(chip));
+        emulationOptionsPanel.add(logSerialMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, messages related to serial interfaces will be logged to the console."));
+
+        // Log register messages
+        final JCheckBox logRegisterMessagesCheckBox = new JCheckBox("Log register messages");
+        logRegisterMessagesCheckBox.setSelected(prefs.isLogRegisterMessages(chip));
+        emulationOptionsPanel.add(logRegisterMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, warnings related to unimplemented register addresses will be logged to the console."));
+
+        // Log pin messages
+        final JCheckBox logPinMessagesCheckBox = new JCheckBox("Log pin messages");
+        logPinMessagesCheckBox.setSelected(prefs.isLogPinMessages(chip));
+        emulationOptionsPanel.add(logPinMessagesCheckBox);
+        emulationOptionsPanel.add(new JLabel("If checked, warnings related to unimplemented I/O pins will be logged to the console."));
 
         // ------------------------ Prepare tabbed pane
 
@@ -1769,7 +1853,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
 
 
-            // ------------------------ Show it
+        // ------------------------ Show it
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 tabbedPane,
@@ -1780,10 +1864,20 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 null,
                 JOptionPane.DEFAULT_OPTION))
         {
-            // save
+            // save output options
             dumpOptionCheckboxes(outputOptionsCheckBoxes, prefs.getOutputOptions(chip));
             // apply
             TxCPUState.initRegisterLabels(prefs.getOutputOptions(chip));
+
+            // save other prefs
+            prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
+            prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
+            prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
+            prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
+            prefs.setLogRegisterMessages(chip, logRegisterMessagesCheckBox.isSelected());
+            prefs.setLogSerialMessages(chip, logSerialMessagesCheckBox.isSelected());
+            prefs.setLogPinMessages(chip, logPinMessagesCheckBox.isSelected());
+            prefs.setLogMemoryMessages(chip, logMemoryMessagesCheckBox.isSelected());
         }
     }
 
@@ -1909,21 +2003,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         return "<a href=" + link + ">" + link + "</a>";
     }
 
-    /**
-     * React to slider moves
-     * @param e
-     */
-    public void stateChanged(ChangeEvent e) {
-        JSlider source = (JSlider)e.getSource();
-        // if (!source.getValueIsAdjusting())
-        for (int chip = 0; chip < 2; chip++) {
-            if (source == intervalSlider[chip]) {
-                setEmulatorSleepCode(chip, source.getValue());
-                prefs.setSleepTick( chip, source.getValue());
-            }
-        }
-    }
-
     private void setEmulatorSleepCode(int chip, int value) {
         emulator[chip].exitSleepLoop();
         switch (value) {
@@ -1949,12 +2028,91 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
 
-    private void loadImage(int chip) {
+    private void loadImage(final int chip) {
+        //System.err.println("Loading image for " + Constants.CHIP_LABEL[chip]);
         try {
+            // Stop timers if active from a previous session (reset)
+            if (platform[chip] != null && platform[chip].getProgrammableTimers()[0].isActive()) {
+                for (ProgrammableTimer timer : platform[chip].getProgrammableTimers()) {
+                    timer.setActive(false);
+                }
+                // Stop button animation
+                setProgrammableTimerAnimationEnabled(chip, true);
+            }
+
+            // As serial and I/O are interconnected, make sure all spying windows are closed before
+            // reinstanciating serial interfaces and i/o ports, otherwise we keep references to dead objects
+            boolean wasSerialInterfaceFrameOpen[] = {false, false};
+            boolean wasGenericSerialFrameOpen[] = {false, false};
+            boolean wasIoPortsFrameOpen[] = {false, false};
+            for (int c = 0; c < 2; c++) {
+                if (serialInterfaceFrame[c] != null) {
+                    wasSerialInterfaceFrameOpen[c] = true;
+                    serialInterfaceFrame[c].dispose();
+                    serialInterfaceFrame[c] = null;
+                }
+                if (genericSerialFrame[c] != null) {
+                    wasGenericSerialFrameOpen[c] = true;
+                    genericSerialFrame[c].dispose();
+                    genericSerialFrame[c] = null;
+                }
+                if (ioPortsFrame[c] != null) {
+                    wasIoPortsFrameOpen[c] = true;
+                    ioPortsFrame[c].dispose();
+                    ioPortsFrame[c] = null;
+                }
+            }
+
+            // Remove old emulator from the list of clockable devices
+            masterClock.remove(emulator[chip]);
+
+            // Create a brand new emulator
             emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
 
+            // Add it to the list of clockable devices, in disabled state
+            masterClock.add(emulator[chip], new ClockableCallbackHandler() {
+                @Override
+                public void onNormalExit(Object o) {
+                    try {
+                        isEmulatorPlaying[chip] = false;
+                        emulator[chip].clearBreakConditions();
+                        signalEmulatorStopped(chip);
+                        if (o instanceof BreakCondition) {
+                            if (((BreakCondition)o).getBreakTrigger() != null) {
+                                setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
+                                statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
+                            }
+                            setStatusText(chip, "Emulation complete");
+                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                        }
+                        else {
+                            setStatusText(chip, "Emulation complete" + ((o==null)?"":(": " + o.toString())));
+                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    updateState(chip);
+                }
+
+                @Override
+                public void onException(Exception e) {
+                    isEmulatorPlaying[chip] = false;
+                    emulator[chip].clearBreakConditions();
+                    signalEmulatorStopped(chip);
+                    e.printStackTrace();
+                    String message = e.getMessage();
+                    if (StringUtils.isEmpty(message)) {
+                        message = e.getClass().getName();
+                    }
+                    JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", Constants.CHIP_LABEL[chip] + " Emulator error", JOptionPane.ERROR_MESSAGE);
+                }
+            }, false);
+
+            // Prepare all devices
             CPUState cpuState;
-            DebuggableMemory memory = new DebuggableMemory();
+            DebuggableMemory memory = new DebuggableMemory(prefs.isLogMemoryMessages(chip));
             ProgrammableTimer[] programmableTimers;
             IoPort[] ioPorts;
             SerialInterface[] serialInterfaces;
@@ -1962,17 +2120,10 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             ClockGenerator clockGenerator;
             InterruptController interruptController;
             DmaController dmaController = null;
+            RealtimeClock realtimeClock = null;
+            KeyCircuit keyCircuit = null;
             AdConverter adConverter = null;
             TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
-
-            // Stop timers if active from a previous session (reset)
-            if (platform[chip] != null && platform[chip].getProgrammableTimers()[0].isActive()) {
-                for (ProgrammableTimer timer : platform[chip].getProgrammableTimers()) {
-                    timer.setActive(false);
-                }
-                // Stop button animation
-                setProgrammableTimerAnimationEnabled(chip, false);
-            }
 
             // TODO We should not create a new platform, just reset it
             // TODO Otherwise, the cross-linkings risks memory leaks
@@ -1986,9 +2137,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 interruptController = new FrInterruptController(platform[chip]);
 
                 // Standard FR registers
-                memory.addActivityListener(new ExpeedIoListener(platform[chip]));
+                memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // Unknown component 4006
+                memory.addActivityListener(new Expeed4006IoListener(prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
-                memory.addActivityListener(new ExpeedPinIoListener(platform[chip]));
+                memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < programmableTimers.length; i++) {
@@ -1996,11 +2149,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
 
                 // I/O ports
-                ioPorts = FrIoPort.setupPorts(interruptController, prefs);
+                ioPorts = FrIoPort.setupPorts(interruptController, prefs.isLogPinMessages(chip));
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
-                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, 0x1B, emulator[Constants.CHIP_FR]);
+                    serialInterfaces[i] = new FrSerialInterface(i, interruptController, emulator[Constants.CHIP_FR], prefs.isLogSerialMessages(chip));
                 }
             }
             else {
@@ -2010,7 +2163,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 clockGenerator = new TxClockGenerator();
                 interruptController = new TxInterruptController(platform[chip]);
 
-                memory.addActivityListener(new TxIoListener(platform[chip]));
+                memory.addActivityListener(new TxIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 // First put all 16-bit timers
@@ -2021,21 +2174,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
 
                 // I/O ports
-                ioPorts = TxIoPort.setupPorts(interruptController, prefs);
+                ioPorts = TxIoPort.setupPorts(platform[chip], interruptController, programmableTimers, prefs.isLogPinMessages(chip));
 
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                    serialInterfaces[i] = new TxSerialInterface(i, interruptController, emulator[chip]);
+                    serialInterfaces[i] = new TxSerialInterface(i, interruptController, emulator[chip], prefs.isLogSerialMessages(chip));
                 }
                 // Hi-speed
                 for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, emulator[chip]);
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, interruptController, emulator[chip], prefs.isLogSerialMessages(chip));
                 }
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
                 dmaController = new TxDmaController(platform[chip], prefs);
+                realtimeClock = new TxRealtimeClock(platform[chip], prefs);
+                keyCircuit = new TxKeyCircuit(interruptController);
 
                 // Devices to be linked to the Tx chip
 
@@ -2082,6 +2237,31 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
             }
 
+            // Set up input port overrides according to prefs
+            for (int portNumber = 0; portNumber < ioPorts.length; portNumber++) {
+                for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+                    Integer override = prefs.getPortInputValueOverride(chip, portNumber, bitNumber);
+                    if (override != null) {
+                        Pin pin = ioPorts[portNumber].getPin(bitNumber);
+                        // Insert fixed source, if requested
+                        switch (override) {
+                            case 0:
+                                // GND
+                                new FixedSourceComponent(0, "Fixed " + Constants.LABEL_LO + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
+                                break;
+                            case 1:
+                                // VCC
+                                new FixedSourceComponent(1, "Fixed " + Constants.LABEL_HI + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
+                                break;
+                            default:
+                                new FixedSourceComponent(override, "Fixed " + override + " for " + pin.getName(), prefs.isLogPinMessages(chip)).insertAtPin(pin);
+                                break;
+                        }
+                    }
+                }
+            }
+
+
             platform[chip].setCpuState(cpuState);
             platform[chip].setMemory(memory);
             platform[chip].setClockGenerator(clockGenerator);
@@ -2090,6 +2270,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             platform[chip].setIoPorts(ioPorts);
             platform[chip].setSerialInterfaces(serialInterfaces);
             platform[chip].setDmaController(dmaController);
+            platform[chip].setRealtimeClock(realtimeClock);
+            platform[chip].setKeyCircuit(keyCircuit);
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
@@ -2103,7 +2285,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
             // TODO: let user choose whether he wants to load at reset address or refer to a dfr/dtx file's "-i" option
-            // That would allow to load "reloactable" areas at their right place.
+            // That would allow to load "relocatable" areas at their right place.
             // e.g. TX code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by code 0xBFC1C742-0xBFC1C76A
             memory.loadFile(imageFile[chip], cpuState.getResetAddress(), prefs.isFirmwareWriteProtected(chip));
             isImageLoaded[chip] = true;
@@ -2118,14 +2300,24 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
             }
 
+            if (prefs.isAutoEnableTimers(chip)) {
+                toggleProgrammableTimers(chip);
+            }
+
             if (prefs.isCloseAllWindowsOnStop()) {
                 closeAllFrames(chip, false);
             }
             else {
                 closeAllFrames(chip, true);
+                // Restore serial and I/O chips spy windows if they were open
+                for (int c = 0; c < 2; c++) {
+                    if (wasSerialInterfaceFrameOpen[c]) toggleSerialInterfaces(c);
+                    if (wasGenericSerialFrameOpen[c]) toggleGenericSerialFrame(c);
+                    if (wasIoPortsFrameOpen[c]) toggleIoPortsWindow(c);
+                }
             }
 
-            updateStates();
+            updateState(chip);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -2147,11 +2339,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // Slave 1
         final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // Slave 2
 
-        // disconnect them from dummy partners
-        txSerialInterfaceH2.disconnectSerialDevice();
-        eeprom.disconnectSerialDevice();
-        lcdDriver.disconnectSerialDevice();
-
         // Create a bus with the CPU as master
         SpiBus bus = new SpiBus("bus", txSerialInterfaceH2) ;
 
@@ -2170,15 +2357,17 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         // Reconnect Fr Serial channel 5 with Tx serial interface HSC0
         SerialInterface frSerialInterface5 = frSerialInterfaces[5];
         SerialInterface txSerialInterfaceH0 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 0];
-        frSerialInterface5.disconnectSerialDevice();
-        txSerialInterfaceH0.disconnectSerialDevice();
-        frSerialInterface5.connectSerialDevice(txSerialInterfaceH0);
-        txSerialInterfaceH0.connectSerialDevice(frSerialInterface5);
+        frSerialInterface5.connectTargetDevice(txSerialInterfaceH0);
+        txSerialInterfaceH0.connectTargetDevice(frSerialInterface5);
     }
 
     private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {
+        // FR 0x50000100.bit5 => TX P53 (INTF), triggered (low) by FR at 001A8CBE and 001A8E24 and set back hi at 001A8E58
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(5), txIoPorts[IoPort.PORT_5].getPin(3));
-        // Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), ???); // used on input by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
+
+        // TX PC3 => FR 0x50000107.bit6 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
+        Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), txIoPorts[IoPort.PORT_C].getPin(3));
+
         // Pin.interconnect(main power button, txIoPorts[IoPort.PORT_A].getPin(0));
     }
 
@@ -2199,13 +2388,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 screenEmulatorFrame.dispose();
                 screenEmulatorFrame = null;
                 if (mustReOpen) toggleScreenEmulator();
-            }
-        }
-        else {
-            if (ioPortsFrame != null) {
-                ioPortsFrame.dispose();
-                ioPortsFrame = null;
-                if (mustReOpen) toggleIoPortsWindow();
             }
         }
 
@@ -2276,6 +2458,11 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             genericSerialFrame[chip] = null;
             if (mustReOpen) toggleGenericSerialFrame(chip);
         }
+        if (ioPortsFrame[chip] != null) {
+            ioPortsFrame[chip].dispose();
+            ioPortsFrame[chip] = null;
+            if (mustReOpen) toggleIoPortsWindow(chip);
+        }
         if (ITronObjectFrame[chip] != null) {
             ITronObjectFrame[chip].dispose();
             ITronObjectFrame[chip] = null;
@@ -2293,7 +2480,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             breakTriggerListFrame[chip].dispose();
             breakTriggerListFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleDisassemblyLog(int chip) {
@@ -2308,7 +2495,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             disassemblyLogFrame[chip].dispose();
             disassemblyLogFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleCPUState(int chip) {
@@ -2323,7 +2510,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             cpuStateEditorFrame[chip].dispose();
             cpuStateEditorFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleMemoryActivityViewer(int chip) {
@@ -2336,7 +2523,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryActivityViewerFrame[chip].dispose();
             memoryActivityViewerFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleMemoryHexEditor(int chip) {
@@ -2349,7 +2536,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             memoryHexEditorFrame[chip].dispose();
             memoryHexEditorFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleScreenEmulator() {
@@ -2362,7 +2549,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             screenEmulatorFrame.dispose();
             screenEmulatorFrame = null;
         }
-        updateStates();
+        updateState(Constants.CHIP_FR);
     }
 
 
@@ -2376,7 +2563,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             component4006Frame.dispose();
             component4006Frame = null;
         }
-        updateStates();
+        updateState(Constants.CHIP_FR);
     }
 
     private void toggleCustomMemoryRangeLoggerComponentFrame(int chip) {
@@ -2389,12 +2576,12 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             customMemoryRangeLoggerFrame[chip].dispose();
             customMemoryRangeLoggerFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleProgrammableTimersWindow(int chip) {
         if (programmableTimersFrame[chip] == null) {
-            programmableTimersFrame[chip] = new ProgrammableTimersFrame("Programmable timers", "reload", true, true, false, true, chip, this, platform[chip].getProgrammableTimers());
+            programmableTimersFrame[chip] = new ProgrammableTimersFrame("Programmable timers", "timer", true, true, false, true, chip, this, platform[chip].getProgrammableTimers());
             addDocumentFrame(chip, programmableTimersFrame[chip]);
             programmableTimersFrame[chip].display(true);
         }
@@ -2402,28 +2589,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             programmableTimersFrame[chip].dispose();
             programmableTimersFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
-
-    private void toggleIoPortsWindow() {
-        if (ioPortsFrame == null) {
-            ioPortsFrame = new IoPortsFrame("I/O ports", "io", false, true, false, true, Constants.CHIP_TX, this, platform[Constants.CHIP_TX].getIoPorts());
-            for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).addIoPortsListener(ioPortsFrame);
-            }
-            addDocumentFrame(Constants.CHIP_TX, ioPortsFrame);
-            ioPortsFrame.display(true);
-        }
-        else {
-            for (IoPort ioPort : platform[Constants.CHIP_TX].getIoPorts()) {
-                ((TxIoPort)ioPort).removeIoPortsListener(ioPortsFrame);
-            }
-            ioPortsFrame.dispose();
-            ioPortsFrame = null;
-        }
-        updateStates();
-    }
-
 
     private void toggleInterruptController(int chip) {
         if (interruptControllerFrame[chip] == null) {
@@ -2437,7 +2604,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             interruptControllerFrame[chip].dispose();
             interruptControllerFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
 
@@ -2451,7 +2618,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             serialInterfaceFrame[chip].dispose();
             serialInterfaceFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleGenericSerialFrame(int chip) {
@@ -2464,7 +2631,26 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             genericSerialFrame[chip].dispose();
             genericSerialFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
+    }
+
+    private void toggleIoPortsWindow(int chip) {
+        if (ioPortsFrame[chip] == null) {
+            ioPortsFrame[chip] = new IoPortsFrame("I/O ports", "io", false, true, false, true, chip, this, platform[chip].getIoPorts());
+            for (IoPort ioPort : platform[chip].getIoPorts()) {
+                ioPort.addIoPortsListener(ioPortsFrame[chip]);
+            }
+            addDocumentFrame(chip, ioPortsFrame[chip]);
+            ioPortsFrame[chip].display(true);
+        }
+        else {
+            for (IoPort ioPort : platform[chip].getIoPorts()) {
+                ioPort.removeIoPortsListener(ioPortsFrame[chip]);
+            }
+            ioPortsFrame[chip].dispose();
+            ioPortsFrame[chip] = null;
+        }
+        updateState(chip);
     }
 
     private void toggleAdConverterFrame(int chip) {
@@ -2477,31 +2663,16 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             adConverterFrame[chip].dispose();
             adConverterFrame[chip] = null;
         }
-        updateStates();
-    }
-
-
-    static {
-        initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
+        updateState(chip);
     }
 
 
     private static void initProgrammableTimerAnimationIcons(String buttonSize) {
-        programmableTimerButtonIcons = new ImageIcon[17];
-        for (int i = 0; i < programmableTimerButtonIcons.length; i++) {
-            String imgLocation = "images/reload";
-            String text;
-            if (i == 0) {
-                text = "Start programmable timer";
-            }
-            else {
-                imgLocation += "_" + i;
-                text = "Stop programmable timer";
-            }
-            programmableTimerButtonIcons[i] = new ImageIcon(EmulatorUI.class.getResource(imgLocation + ".png"), text);
-            if (BUTTON_SIZE_SMALL.equals(buttonSize)) {
-                programmableTimerButtonIcons[i] = new ImageIcon(programmableTimerButtonIcons[i].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
-            }
+        programmableTimersPauseButtonIcon[0] = new ImageIcon(EmulatorUI.class.getResource("images/timer.png"), "Start programmable timer");
+        programmableTimersPauseButtonIcon[1] = new ImageIcon(EmulatorUI.class.getResource("images/timer_pause.png"), "Start programmable timer");
+        if (BUTTON_SIZE_SMALL.equals(buttonSize)) {
+            programmableTimersPauseButtonIcon[0] = new ImageIcon(programmableTimersPauseButtonIcon[0].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
+            programmableTimersPauseButtonIcon[1] = new ImageIcon(programmableTimersPauseButtonIcon[1].getImage().getScaledInstance(16, 16, java.awt.Image.SCALE_SMOOTH));
         }
     }
 
@@ -2509,23 +2680,22 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     public void setProgrammableTimerAnimationEnabled(final int chip, boolean enabled) {
         if (enabled) {
             // Animate button
-            programmableTimerButtonAnimationTimer[chip] = new java.util.Timer(false);
-            programmableTimerButtonAnimationTimer[chip].scheduleAtFixedRate(new TimerTask() {
+            programmableTimersPauseButtonAnimationTimer[chip] = new java.util.Timer(false);
+            programmableTimersPauseButtonAnimationTimer[chip].scheduleAtFixedRate(new TimerTask() {
                 @Override
                 public void run() {
-                    programmableTimerButtonAnimationCounter++;
-                    if (programmableTimerButtonAnimationCounter == programmableTimerButtonIcons.length) {
-                        programmableTimerButtonAnimationCounter = 1;
-                    }
-                    programmableTimersButton[chip].setIcon(programmableTimerButtonIcons[programmableTimerButtonAnimationCounter]);
+                    programmableTimersPauseButtonAnimationIndex[chip] = 1 - programmableTimersPauseButtonAnimationIndex[chip];
+                    programmableTimersButton[chip].setIcon(programmableTimersPauseButtonIcon[programmableTimersPauseButtonAnimationIndex[chip]]);
                 }
-            }, 0, 300 /*ms*/);
+            }, 0, 800 /*ms*/);
         }
         else {
-            // Stop button animation
-            programmableTimerButtonAnimationTimer[chip].cancel();
-            programmableTimerButtonAnimationTimer[chip] = null;
-            programmableTimersButton[chip].setIcon(programmableTimerButtonIcons[0]);
+            // Stop button animation if active
+            if (programmableTimersPauseButtonAnimationTimer[chip] != null)  {
+                programmableTimersPauseButtonAnimationTimer[chip].cancel();
+                programmableTimersPauseButtonAnimationTimer[chip] = null;
+                programmableTimersButton[chip].setIcon(programmableTimersPauseButtonIcon[0]);
+            }
         }
     }
 
@@ -2541,7 +2711,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             callStackFrame[chip].dispose();
             callStackFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleITronObject(int chip) {
@@ -2558,7 +2728,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             ITronObjectFrame[chip].dispose();
             ITronObjectFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
 
@@ -2572,7 +2742,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             codeStructureFrame[chip].dispose();
             codeStructureFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     private void toggleSourceCodeWindow(int chip) {
@@ -2585,7 +2755,7 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
             sourceCodeFrame[chip].dispose();
             sourceCodeFrame[chip] = null;
         }
-        updateStates();
+        updateState(chip);
     }
 
     /**
@@ -2608,9 +2778,6 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         else if (frame == screenEmulatorFrame) {
             toggleScreenEmulator(); return;
-        }
-        else if (frame == ioPortsFrame) {
-            toggleIoPortsWindow(); return;
         }
         else for (int chip = 0; chip < 2; chip++) {
                 if (frame == cpuStateEditorFrame[chip]) {
@@ -2652,6 +2819,9 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 else if (frame == genericSerialFrame[chip]) {
                     toggleGenericSerialFrame(chip); return;
                 }
+                else if (frame == ioPortsFrame[chip]) {
+                    toggleIoPortsWindow(chip); return;
+                }
                 else if (frame == adConverterFrame[chip]) {
                     toggleAdConverterFrame(chip); return;
                 }
@@ -2663,94 +2833,115 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
     }
 
     public void updateStates() {
-        component4006MenuItem.setSelected(component4006Frame != null);
-        screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
-        ioPortsMenuItem.setSelected(ioPortsFrame != null);
-
-        component4006MenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]); component4006Button.setEnabled(isImageLoaded[Constants.CHIP_FR]);
-        screenEmulatorMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]); screenEmulatorButton.setEnabled(isImageLoaded[Constants.CHIP_FR]);
-        ioPortsMenuItem.setEnabled(isImageLoaded[Constants.CHIP_TX]); ioPortsButton.setEnabled(isImageLoaded[Constants.CHIP_TX]);
-
-        generateSysSymbolsMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]);
-
-        for (int chip = 0; chip < 2; chip++) {
-            // Menus and buttons enabled or not
-            codeStructureMenuItem[chip].setEnabled(codeStructure[chip] != null); codeStructureButton[chip].setEnabled(codeStructure[chip] != null);
-            sourceCodeMenuItem[chip].setEnabled(codeStructure[chip] != null); sourceCodeButton[chip].setEnabled(codeStructure[chip] != null);
-
-            // CheckboxMenuItem checked or not
-            cpuStateMenuItem[chip].setSelected(cpuStateEditorFrame[chip] != null);
-            disassemblyMenuItem[chip].setSelected(disassemblyLogFrame[chip] != null);
-            memoryActivityViewerMenuItem[chip].setSelected(memoryActivityViewerFrame[chip] != null);
-            memoryHexEditorMenuItem[chip].setSelected(memoryHexEditorFrame[chip] != null);
-            customMemoryRangeLoggerMenuItem[chip].setSelected(customMemoryRangeLoggerFrame[chip] != null);
-            codeStructureMenuItem[chip].setSelected(codeStructureFrame[chip] != null);
-            sourceCodeMenuItem[chip].setSelected(sourceCodeFrame[chip] != null);
-            programmableTimersMenuItem[chip].setSelected(programmableTimersFrame[chip] != null);
-            interruptControllerMenuItem[chip].setSelected(interruptControllerFrame[chip] != null);
-            serialInterfacesMenuItem[chip].setSelected(serialInterfaceFrame[chip] != null);
-            if (chip == Constants.CHIP_TX) {
-                serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
-                adConverterMenuItem[chip].setSelected(adConverterFrame[chip] != null);
-            }
-
-            analyseMenuItem[chip].setEnabled(isImageLoaded[chip]); analyseButton[chip].setEnabled(isImageLoaded[chip]);
-
-            cpuStateMenuItem[chip].setEnabled(isImageLoaded[chip]); cpuStateButton[chip].setEnabled(isImageLoaded[chip]);
-            disassemblyMenuItem[chip].setEnabled(isImageLoaded[chip]); disassemblyButton[chip].setEnabled(isImageLoaded[chip]);
-            memoryActivityViewerMenuItem[chip].setEnabled(isImageLoaded[chip]); memoryActivityViewerButton[chip].setEnabled(isImageLoaded[chip]);
-            memoryHexEditorMenuItem[chip].setEnabled(isImageLoaded[chip]); memoryHexEditorButton[chip].setEnabled(isImageLoaded[chip]);
-            customMemoryRangeLoggerMenuItem[chip].setEnabled(isImageLoaded[chip]); customMemoryRangeLoggerButton[chip].setEnabled(isImageLoaded[chip]);
-            programmableTimersMenuItem[chip].setEnabled(isImageLoaded[chip]); programmableTimersButton[chip].setEnabled(isImageLoaded[chip]);
-            interruptControllerMenuItem[chip].setEnabled(isImageLoaded[chip]); interruptControllerButton[chip].setEnabled(isImageLoaded[chip]);
-            serialInterfacesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialInterfacesButton[chip].setEnabled(isImageLoaded[chip]);
-            if (chip == Constants.CHIP_TX) {
-                serialDevicesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialDevicesButton[chip].setEnabled(isImageLoaded[chip]);
-                adConverterMenuItem[chip].setEnabled(isImageLoaded[chip]); adConverterButton[chip].setEnabled(isImageLoaded[chip]);
-            }
-            callStackMenuItem[chip].setEnabled(isImageLoaded[chip]); callStackButton[chip].setEnabled(isImageLoaded[chip]);
-            iTronObjectMenuItem[chip].setEnabled(isImageLoaded[chip]); iTronObjectButton[chip].setEnabled(isImageLoaded[chip]);
-
-            saveLoadMemoryMenuItem[chip].setEnabled(isImageLoaded[chip]); saveLoadMemoryButton[chip].setEnabled(isImageLoaded[chip]);
-
-            stopMenuItem[chip].setEnabled(isImageLoaded[chip]); stopButton[chip].setEnabled(isImageLoaded[chip]);
-
-            chipOptionsMenuItem[chip].setEnabled(!isAtLeastOneEmulatorPlaying()); chipOptionsButton[chip].setEnabled(!isAtLeastOneEmulatorPlaying());
-
-            if (isImageLoaded[chip]) {
-                // Depends whether emulator is playing or not
-                loadMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); loadButton[chip].setEnabled(!isEmulatorPlaying[chip]);
-                playMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); playButton[chip].setEnabled(!isEmulatorPlaying[chip]);
-                debugMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); debugButton[chip].setEnabled(!isEmulatorPlaying[chip]);
-                pauseMenuItem[chip].setEnabled(isEmulatorPlaying[chip]); pauseButton[chip].setEnabled(isEmulatorPlaying[chip]);
-                stepMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); stepButton[chip].setEnabled(!isEmulatorPlaying[chip]);
-                // Editable components
-                if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
-                if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
-                if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
-                if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
-                if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!isEmulatorPlaying[chip]);
-                if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!isEmulatorPlaying[chip]);
-            }
-            else {
-                loadMenuItem[chip].setEnabled(true); loadButton[chip].setEnabled(true);
-                playMenuItem[chip].setEnabled(false); playButton[chip].setEnabled(false);
-                debugMenuItem[chip].setEnabled(false); debugButton[chip].setEnabled(false);
-                pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
-                stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
-                // Editable components  TODO does it make sense ? And why true ?
-                if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
-                if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
-                if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
-                if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(true);
-                if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
-                if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
-            }
-        }
+        updateState(Constants.CHIP_FR);
+        updateState(Constants.CHIP_TX);
     }
 
-    private boolean isAtLeastOneEmulatorPlaying() {
-        return (isEmulatorPlaying[Constants.CHIP_FR] || isEmulatorPlaying[Constants.CHIP_TX]);
+    public void updateState(int chip) {
+        if (chip == Constants.CHIP_FR) {
+            component4006MenuItem.setSelected(component4006Frame != null);
+            screenEmulatorMenuItem.setSelected(screenEmulatorFrame != null);
+
+            component4006MenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]);
+            component4006Button.setEnabled(isImageLoaded[Constants.CHIP_FR]);
+            screenEmulatorMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]);
+            screenEmulatorButton.setEnabled(isImageLoaded[Constants.CHIP_FR]);
+
+            generateSysSymbolsMenuItem.setEnabled(isImageLoaded[Constants.CHIP_FR]);
+        }
+
+        // Menus and buttons enabled or not
+        codeStructureMenuItem[chip].setEnabled(codeStructure[chip] != null);
+        codeStructureButton[chip].setEnabled(codeStructure[chip] != null);
+        sourceCodeMenuItem[chip].setEnabled(codeStructure[chip] != null);
+        sourceCodeButton[chip].setEnabled(codeStructure[chip] != null);
+
+        // CheckboxMenuItem checked or not
+        cpuStateMenuItem[chip].setSelected(cpuStateEditorFrame[chip] != null);
+        disassemblyMenuItem[chip].setSelected(disassemblyLogFrame[chip] != null);
+        memoryActivityViewerMenuItem[chip].setSelected(memoryActivityViewerFrame[chip] != null);
+        memoryHexEditorMenuItem[chip].setSelected(memoryHexEditorFrame[chip] != null);
+        customMemoryRangeLoggerMenuItem[chip].setSelected(customMemoryRangeLoggerFrame[chip] != null);
+        codeStructureMenuItem[chip].setSelected(codeStructureFrame[chip] != null);
+        sourceCodeMenuItem[chip].setSelected(sourceCodeFrame[chip] != null);
+        programmableTimersMenuItem[chip].setSelected(programmableTimersFrame[chip] != null);
+        interruptControllerMenuItem[chip].setSelected(interruptControllerFrame[chip] != null);
+        serialInterfacesMenuItem[chip].setSelected(serialInterfaceFrame[chip] != null);
+        ioPortsMenuItem[chip].setSelected(ioPortsFrame[chip] != null);
+        if (chip == Constants.CHIP_TX) {
+            serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
+            adConverterMenuItem[chip].setSelected(adConverterFrame[chip] != null);
+        }
+
+        analyseMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        analyseButton[chip].setEnabled(isImageLoaded[chip]);
+
+        cpuStateMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        cpuStateButton[chip].setEnabled(isImageLoaded[chip]);
+        disassemblyMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        disassemblyButton[chip].setEnabled(isImageLoaded[chip]);
+        memoryActivityViewerMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        memoryActivityViewerButton[chip].setEnabled(isImageLoaded[chip]);
+        memoryHexEditorMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        memoryHexEditorButton[chip].setEnabled(isImageLoaded[chip]);
+        customMemoryRangeLoggerMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        customMemoryRangeLoggerButton[chip].setEnabled(isImageLoaded[chip]);
+        programmableTimersMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        programmableTimersButton[chip].setEnabled(isImageLoaded[chip]);
+        interruptControllerMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        interruptControllerButton[chip].setEnabled(isImageLoaded[chip]);
+        serialInterfacesMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        serialInterfacesButton[chip].setEnabled(isImageLoaded[chip]);
+        ioPortsMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        ioPortsButton[chip].setEnabled(isImageLoaded[chip]);
+        if (chip == Constants.CHIP_TX) {
+            serialDevicesMenuItem[chip].setEnabled(isImageLoaded[chip]); serialDevicesButton[chip].setEnabled(isImageLoaded[chip]);
+            adConverterMenuItem[chip].setEnabled(isImageLoaded[chip]); adConverterButton[chip].setEnabled(isImageLoaded[chip]);
+        }
+        callStackMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        callStackButton[chip].setEnabled(isImageLoaded[chip]);
+        iTronObjectMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        iTronObjectButton[chip].setEnabled(isImageLoaded[chip]);
+
+        saveLoadMemoryMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        saveLoadMemoryButton[chip].setEnabled(isImageLoaded[chip]);
+
+        stopMenuItem[chip].setEnabled(isImageLoaded[chip]);
+        stopButton[chip].setEnabled(isImageLoaded[chip]);
+
+        if (isImageLoaded[chip]) {
+            // Depends whether emulator is playing or not
+            loadMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); loadButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+            playMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); playButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+            debugMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); debugButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+            pauseMenuItem[chip].setEnabled(isEmulatorPlaying[chip]); pauseButton[chip].setEnabled(isEmulatorPlaying[chip]);
+            stepMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); stepButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+            chipOptionsMenuItem[chip].setEnabled(!isEmulatorPlaying[chip]); chipOptionsButton[chip].setEnabled(!isEmulatorPlaying[chip]);
+
+            // Editable components
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+            if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+            if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(isEmulatorPlaying[chip]);
+            if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
+            if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+            if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+        }
+        else {
+            loadMenuItem[chip].setEnabled(true); loadButton[chip].setEnabled(true);
+            playMenuItem[chip].setEnabled(false); playButton[chip].setEnabled(false);
+            debugMenuItem[chip].setEnabled(false); debugButton[chip].setEnabled(false);
+            pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
+            stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
+            chipOptionsMenuItem[chip].setEnabled(false); chipOptionsButton[chip].setEnabled(false);
+
+            // Editable components  TODO does it make sense ? And why true ?
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
+            if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
+            if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
+            if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(true);
+            if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
+            if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
+        }
     }
 
 
@@ -2766,25 +2957,29 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         this.codeStructure[chip] = codeStructure;
     }
 
+    public void playToAddress(int chip, RunMode runMode, Integer endAddress) {
+        prepareBreakTriggers(chip, runMode, endAddress);
+        startEmulator(chip, runMode, endAddress);
+    }
+
+
     /**
-     * Starts an emulating session
+     * Prepares breakpoints for the given run mode on the given chip
      * @param chip
-     * @param stepMode if true, only execute one exception
-     * @param debugMode if true, defined user breakpoints are active
+     * @param runMode mode to run in
      * @param endAddress if not null, stop when reaching this address
      */
-    private void playEmulator(int chip, boolean stepMode, boolean debugMode, Integer endAddress) {
+    private void prepareBreakTriggers(int chip, RunMode runMode, Integer endAddress) {
+        //System.err.println("Play request for " + Constants.CHIP_LABEL[chip]);
         if (!isImageLoaded[chip]) {
             throw new RuntimeException("No Image loaded !");
         }
 
-        emulator[chip].clearBreakConditions();
-
-        if (stepMode) {
+        if (runMode == RunMode.STEP) {
             emulator[chip].addBreakCondition(new AlwaysBreakCondition());
         }
         else {
-            if (debugMode) {
+            if (runMode == RunMode.DEBUG) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
                     if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged() || breakTrigger.getInterruptToRequest() != null || breakTrigger.getPcToSet() != null) {
                         // Arm memory change detection triggers
@@ -2812,54 +3007,35 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 emulator[chip].addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
         }
-        setStatusText(chip, (debugMode?"Debug":"Run") + " session in progress...");
-        statusBar[chip].setBackground(debugMode? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
-        startEmulator(chip);
+        setStatusText(chip, runMode.label + " session in progress...");
+        statusBar[chip].setBackground(runMode==RunMode.DEBUG? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
     }
 
-
-    public void playToAddress(int chip, Integer endAddress, boolean debugMode) {
-        playEmulator(chip, false, debugMode, endAddress);
+    private void startEmulator(final int chip, RunMode runMode, Integer endAddress) {
+        //System.err.println("Start request for " + Constants.CHIP_LABEL[chip]);
+        prepareBreakTriggers(chip, runMode, endAddress);
+        prepareEmulation(chip);
+        if (prefs.isSyncPlay()) {
+            // Start the other one too
+            int otherChip = 1 - chip;
+            setStatusText(otherChip, "Sync play...");
+            statusBar[otherChip].setBackground(STATUS_BGCOLOR_RUN);
+            prepareBreakTriggers(otherChip, runMode, null);
+            prepareEmulation(otherChip);
+        }
+        //System.err.println("Requesting clock start");
+        masterClock.start();
     }
 
-    private void startEmulator(final int chip) {
+    private void prepareEmulation(final int chip) {
+        //System.err.println("Preparing emulation of " + Constants.CHIP_LABEL[chip]);
         isEmulatorPlaying[chip] = true;
-        updateStates();
-        Thread emulatorThread = new Thread(new Runnable() {
-            public void run() {
-                emulator[chip].setCpuState(platform[chip].getCpuState());
-                emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
-                BreakCondition stopCause = null;
-                try {
-                    stopCause = emulator[chip].play();
-                }
-                catch (Throwable t) {
-                    t.printStackTrace();
-                    String message = t.getMessage();
-                    if (StringUtils.isEmpty(message)) {
-                        message = t.getClass().getName();
-                    }
-                    JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", "Emulator error", JOptionPane.ERROR_MESSAGE);
-                }
-                try {
-                    isEmulatorPlaying[chip] = false;
-                    signalEmulatorStopped(chip);
-                    if (stopCause != null && stopCause.getBreakTrigger() != null) {
-                        setStatusText(chip, "Break trigger matched : " + stopCause.getBreakTrigger().getName());
-                        statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
-                    }
-                    else {
-                        setStatusText(chip, "Emulation complete");
-                        statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-                    }
-                }
-                catch (Throwable t) {
-                    t.printStackTrace();
-                }
-                updateStates();
-            }
-        });
-        emulatorThread.start();
+        masterClock.setEnabled(emulator[chip], true);
+        emulator[chip].setCpuState(platform[chip].getCpuState());
+        emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
+        // TODO what's the use of this here ?
+        platform[chip].getCpuState().setAllRegistersDefined();
+        updateState(chip);
     }
 
     private void signalEmulatorStopped(int chip) {
@@ -2900,7 +3076,8 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
                 }
             }
 
-            startEmulator(chip);
+            prepareEmulation(chip);
+            masterClock.start();
         }
     }
 
@@ -2981,6 +3158,23 @@ public class EmulatorUI extends JFrame implements ActionListener, ChangeListener
         }
         if (breakTriggerListFrame[chip] != null) {
             breakTriggerListFrame[chip].updateBreaktriggers();
+        }
+    }
+
+    public void toggleProgrammableTimers(int chip) {
+        enableProgrammableTimers(chip, !platform[chip].getProgrammableTimers()[0].isActive());
+    }
+
+    private void enableProgrammableTimers(int chip, boolean active) {
+        ProgrammableTimer[] timers = platform[chip].getProgrammableTimers();
+        for (ProgrammableTimer timer : timers) {
+            timer.setActive(active);
+        }
+        // Start/stop button animation
+        setProgrammableTimerAnimationEnabled(chip, !active);
+        // Update window status, if open
+        if (programmableTimersFrame[chip] != null) {
+            programmableTimersFrame[chip].updateState(active);
         }
     }
 }
