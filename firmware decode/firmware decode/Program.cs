@@ -97,14 +97,15 @@ namespace Nikon_Decode
 
             //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
-            //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
+            DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
 
             //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x74e884, 0x74e891, 0x74e896, 0x74e8a5, 0x74e8b2, 0x74e8c0, 0x74e8d1);
-            SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b720101_.bin", 0xB426d0, 0xB426dd, 0xB426e3, 0xB426f2, 0xB426fd, 0xB42707, 0xB42717);
+            //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b720101_.bin", 0xB426d0, 0xB426dd, 0xB426e3, 0xB426f2, 0xB426fd, 0xB42707, 0xB42717);
+            //SearchDumpsForDiff_B(@"C:\Users\spilgrim\Downloads\Nikon\D3000\B5500101.bin", 0x3b3548-0x19618c, 0x196180, 0x19618c, 0x19619C, 0x1961b4, 0x1961c4, 0x1961d4, 0x1961e4, 0x1961f4, 0x196204, 0x196218, 0x196228);
 
             //SearchDumpsFor(@"C:\Dev\examples\D3000", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
             //SearchDumpsFor(@"C:\Dev\examples\D5100", 0x4A, 0x46, 0x49, 0x46); // JPEG tiff header
@@ -295,7 +296,7 @@ namespace Nikon_Decode
                 {
                     int t1 = dcode[off];
                     int t2 = dcode[off + 1];
-                    int d1 = t2 - t1;
+                    int d1 = (t2 - t1)/8;
                     int v1 = (int)ReadUint32(data, loc + ((off + 0) * 4));
                     int v2 = (int)ReadUint32(data, loc + ((off + 1) * 4));
 
@@ -316,6 +317,44 @@ namespace Nikon_Decode
             sw.Close();
             sw.Dispose();
         }
+
+        static void SearchDumpsForDiff_B(string filename, int offset, params int[] dcode)
+        {
+            var sw = new StreamWriter(File.Open(filename + "status_b.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            byte[] data = File.ReadAllBytes(filename);
+
+            if (data.Length == 0) return;
+
+            int dl = dcode.Length;
+            for (int loc = 0; loc < (data.Length - (dcode.Length * 4)); loc++)
+            {
+                for (int off = 0; off < (dcode.Length - 1); off++)
+                {
+                    int t1 = dcode[off];
+                    int t2 = dcode[off + 1];
+                    int d1 = (t2 - t1) / 8;
+                    int v1 = (int)ReadUint16(data, loc + ((off + 0) * 2));
+                    int v2 = (int)ReadUint16(data, loc + ((off + 1) * 2));
+
+                    int d2 = v2 - v1;
+
+                    if (d1 != d2)
+                        break;
+
+                    if (off == (dcode.Length - 2))
+                    {
+                        sw.WriteLine("Match at {0:X8}", loc-offset);
+                        Console.WriteLine("Match at {0:X8}", loc-offset);
+                    }
+                }
+
+            }
+
+            sw.Close();
+            sw.Dispose();
+        }
+
 
         static void SearchDumpsFor(string dir, params byte[] bcode)
         {
