@@ -289,7 +289,12 @@ public abstract class Disassembler {
                 case 'M':
                 case 'm':
                     argument = optionHandler.getArgument();
-                    memRanges.add(OptionHandler.parseTypeRange(option, argument));
+                    if ("?".equals(argument)) {
+                        System.err.println(OptionHandler.getFullHelp());
+                    }
+                    else {
+                        memRanges.add(OptionHandler.parseTypeRange(option, argument));
+                    }
                     break;
 
                 case 'O':
