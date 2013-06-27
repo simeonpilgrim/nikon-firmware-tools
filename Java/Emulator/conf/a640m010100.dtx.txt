@@ -143,6 +143,7 @@
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC0197C=prepare_task_env
 -s 0xBFC01E5C=Call_software_interrupt
+-s 0xBFC0251C=SetupTasking($a0 [IN num_tasks])
 -s 0xBFC026B4=useless_BFC026B4 /* disabled by a constant with value false */
 -s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
 -s 0xBFC02BE8=sys_dis_dsp
