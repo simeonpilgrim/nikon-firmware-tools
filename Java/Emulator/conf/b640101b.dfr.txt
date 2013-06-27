@@ -1271,9 +1271,9 @@
 -s 0x4160C=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
 -s 0x4166E=sys_can_wup(R4 [IN tsk_id], R12 [OUT err_code], R13 [OUT wakeup_count] /* Cancel Wakeup Request */)
 -s 0x416D2=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
--s 0x4172C=sys__TaskSetupReturnPointers
+-s 0x4172C=sys__TaskSetupReturnPointers(R14 [IN ptr_TCB], R5 [IN task_argument], R6 [IN ptr_task_function], R7 [IN ptr_task_context])
 -s 0x41750=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
--s 0x41770=sys__SetupTopLevelStack
+-s 0x41770=sys__SetupTCBFields(R2 [IN ptr_task_data], R14 [OUT ptr_TCB], R7 [OUT ptr_task_stack], R8 [OUT 0xFFFFFFFF])
 -s 0x4179A=gbl_ret_02
 -s 0x417AA=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
 -s 0x41848=sys_dis_dsp(R12 [OUT err_code] /* Disable Dispatch */)

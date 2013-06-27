@@ -64,6 +64,9 @@ public class OptionHandler
         return argument;
     }
 
+    public static String getFullHelp() {
+        return "Here are the allowed memory range options (-m)\n" + memtypehelp;
+    }
 
     /**
      * Parses a String of the form start-end=offset or start,length=offset

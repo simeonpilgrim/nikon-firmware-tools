@@ -3030,9 +3030,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private void prepareEmulation(final int chip) {
         //System.err.println("Preparing emulation of " + Constants.CHIP_LABEL[chip]);
         isEmulatorPlaying[chip] = true;
-        masterClock.setEnabled(emulator[chip], true);
         emulator[chip].setCpuState(platform[chip].getCpuState());
         emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
+        masterClock.setEnabled(emulator[chip], true);
         // TODO what's the use of this here ?
         platform[chip].getCpuState().setAllRegistersDefined();
         updateState(chip);
