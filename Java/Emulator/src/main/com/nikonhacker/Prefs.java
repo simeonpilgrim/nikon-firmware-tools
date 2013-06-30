@@ -1,6 +1,7 @@
 package com.nikonhacker;
 
 
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.disassembly.WriteListenerRegister32;
@@ -118,6 +119,9 @@ public class Prefs {
         xStream.alias("r32", Register32.class);
         xStream.alias("nr32", NullRegister32.class);
         xStream.alias("wlr32", WriteListenerRegister32.class);
+        xStream.useAttributeFor(Register32.class, "value");
+        xStream.aliasField("v", Register32.class, "value");
+        xStream.aliasField("r", CPUState.class, "regValue");
         return xStream;
     }
 
