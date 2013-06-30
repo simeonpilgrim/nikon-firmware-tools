@@ -2,6 +2,9 @@ package com.nikonhacker;
 
 
 import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.Register32;
+import com.nikonhacker.disassembly.WriteListenerRegister32;
+import com.nikonhacker.disassembly.tx.NullRegister32;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
@@ -111,6 +114,10 @@ public class Prefs {
     private static XStream getPrefsXStream() {
         XStream xStream = XStreamUtils.getBaseXStream();
         xStream.omitField(BreakTrigger.class, "function");
+        xStream.alias("wpos", WindowPosition.class);
+        xStream.alias("r32", Register32.class);
+        xStream.alias("nr32", NullRegister32.class);
+        xStream.alias("wlr32", WriteListenerRegister32.class);
         return xStream;
     }
 
