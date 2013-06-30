@@ -198,7 +198,7 @@ public class FrSerialInterface extends SerialInterface {
                 ssr = ssr | 0x2;
 
                 // Request Fifo TX interrupt if enabled (FCR1:FTIE)
-                if ((fcr1 & 0x04) != 0) {
+                if ((fcr1 & 0x02) != 0) {
                     interruptController.request(txInterruptNumber);
                 }
             }
