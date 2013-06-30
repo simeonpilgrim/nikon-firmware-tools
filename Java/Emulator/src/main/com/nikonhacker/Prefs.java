@@ -5,6 +5,7 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
+import com.thoughtworks.xstream.XStream;
 
 import java.io.*;
 import java.util.*;
@@ -62,7 +63,7 @@ public class Prefs {
 
     public static void save(Prefs prefs) {
         try {
-            XStreamUtils.save(prefs, new FileOutputStream(getPreferenceFile()));
+            XStreamUtils.save(prefs, new FileOutputStream(getPreferenceFile()), getPrefsXStream());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -73,13 +74,14 @@ public class Prefs {
         File lastKnownGoodFile = new File(preferenceFile.getAbsolutePath() + ".lastKnownGood");
         File corruptFile = new File(preferenceFile.getAbsolutePath() + ".corrupt");
         try {
-            return loadGivenFile(preferenceFile, lastKnownGoodFile);
-        } catch (Exception e) {
+            return loadFile(preferenceFile, lastKnownGoodFile);
+        }
+        catch (Exception e) {
             System.out.println("Could not load preferences file. Attempting a rename to " + corruptFile.getName() + " and trying to revert to " + lastKnownGoodFile.getName() + " instead...");
             e.printStackTrace();
             preferenceFile.renameTo(corruptFile);
             try {
-                return loadGivenFile(lastKnownGoodFile, preferenceFile);
+                return loadFile(lastKnownGoodFile, preferenceFile);
             } catch (IOException e1) {
                 System.out.println("Could not load " + lastKnownGoodFile.getName() + ". Starting with a blank preference file...");
             }
@@ -87,15 +89,16 @@ public class Prefs {
         return new Prefs();
     }
 
-    private static Prefs loadGivenFile(File file, File backupTargetFile) throws IOException {
+    private static Prefs loadFile(File file, File backupTargetFile) throws IOException {
         if (file.exists()) {
             FileInputStream inputStream = new FileInputStream(file);
-            Prefs prefs = (Prefs) XStreamUtils.load(inputStream);
+            XStream prefsXStream = getPrefsXStream();
+            Prefs prefs = (Prefs) XStreamUtils.load(inputStream, prefsXStream);
             inputStream.close();
             if (backupTargetFile != null) {
                 // Parsing was OK. Back-up config
                 FileOutputStream outputStream = new FileOutputStream(backupTargetFile);
-                XStreamUtils.save(prefs, outputStream);
+                XStreamUtils.save(prefs, outputStream, prefsXStream);
                 outputStream.close();
             }
             return prefs;
@@ -103,6 +106,12 @@ public class Prefs {
         else {
             return new Prefs();
         }
+    }
+
+    private static XStream getPrefsXStream() {
+        XStream xStream = XStreamUtils.getBaseXStream();
+        xStream.omitField(BreakTrigger.class, "function");
+        return xStream;
     }
 
     public String getButtonSize() {

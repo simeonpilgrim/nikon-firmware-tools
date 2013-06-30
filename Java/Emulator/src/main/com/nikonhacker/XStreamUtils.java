@@ -9,7 +9,10 @@ import java.nio.charset.Charset;
 
 public class XStreamUtils {
     public static void save(Object object, OutputStream outputStream) {
-        XStream xStream = new XStream(new StaxDriver());
+        save(object, outputStream, getBaseXStream());
+    }
+
+    public static void save(Object object, OutputStream outputStream, XStream xStream) {
         Writer writer = null;
         try {
             writer = new OutputStreamWriter(outputStream, Charset.forName("UTF-8"));
@@ -26,12 +29,22 @@ public class XStreamUtils {
     }
 
     public static Object load(InputStream inputStream) {
-        XStream xStream = new XStream(new StaxDriver()) {
+        return load(inputStream, getBaseXStream());
+    }
+
+    public static Object load(InputStream inputStream, XStream xStream) {
+        Reader reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
+        return xStream.fromXML(reader);
+    }
+
+    public static XStream getBaseXStream() {
+        return new XStream(new StaxDriver()) {
             @Override
             protected MapperWrapper wrapMapper(MapperWrapper next) {
                 return new MapperWrapper(next) {
                     @Override
                     public boolean shouldSerializeMember(Class definedIn, String fieldName) {
+                        //noinspection SimplifiableIfStatement
                         if (definedIn == Object.class) {
                             return false;
                         }
@@ -40,9 +53,6 @@ public class XStreamUtils {
                 };
             }
         };
-
-
-        Reader reader = new InputStreamReader(inputStream, Charset.forName("UTF-8"));
-        return xStream.fromXML(reader);
     }
+
 }
