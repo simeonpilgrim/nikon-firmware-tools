@@ -1,14 +1,16 @@
 package com.nikonhacker.emu.memory.listener;
 
 import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 
 import java.io.PrintWriter;
+import java.util.EnumSet;
 
 public class PageAccessLoggerActivityListener extends AbstractAccessLoggerActivityListener implements MemoryActivityListener {
     private int targetPage;
 
-    public PageAccessLoggerActivityListener(PrintWriter printWriter, int targetPage, CPUState cpuState) {
-        super(printWriter, cpuState);
+    public PageAccessLoggerActivityListener(PrintWriter printWriter, int targetPage, CPUState cpuState, EnumSet<DebuggableMemory.AccessSource> selectedAccessSource) {
+        super(printWriter, cpuState, selectedAccessSource);
         this.targetPage = targetPage;
     }
 

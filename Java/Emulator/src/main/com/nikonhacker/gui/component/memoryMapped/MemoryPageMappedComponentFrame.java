@@ -10,6 +10,7 @@ import com.nikonhacker.gui.swing.PrintWriterArea;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.EnumSet;
 
 
 public class MemoryPageMappedComponentFrame extends DocumentFrame {
@@ -25,7 +26,7 @@ public class MemoryPageMappedComponentFrame extends DocumentFrame {
         final PrintWriterArea textArea = new PrintWriterArea(ROWS, COLUMNS);
         textArea.setAutoScroll(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
-        listener = new PageAccessLoggerActivityListener(textArea.getPrintWriter(), page, cpuState);
+        listener = new PageAccessLoggerActivityListener(textArea.getPrintWriter(), page, cpuState, EnumSet.of(DebuggableMemory.AccessSource.CODE));
         memory.addActivityListener(listener);
         setLayout(new BorderLayout());
         add(new JScrollPane(textArea), BorderLayout.CENTER);

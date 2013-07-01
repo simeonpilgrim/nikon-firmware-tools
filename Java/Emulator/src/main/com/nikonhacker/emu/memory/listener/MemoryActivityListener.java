@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
+import com.nikonhacker.emu.memory.DebuggableMemory;
+
 public interface MemoryActivityListener {
 
     /**
@@ -26,12 +28,14 @@ public interface MemoryActivityListener {
      * memory. It is the responsibility of the programmer that only one listener attached to an address returns a
      * non-null value
      *
+     *
      * @param pageData the page that address belongs to
      * @param address the address from which data is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      * @return the value to return instead of the backing memory. If null, the original value can be returned
      */
-    Byte onLoadData8(byte[] pageData, int address, byte value);
+    Byte onLoadData8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a halfword of instruction is read from the monitored area
@@ -39,12 +43,14 @@ public interface MemoryActivityListener {
      * memory. It is the responsibility of the programmer that only one listener attached to an address returns a
      * non-null value
      *
+     *
      * @param pageData the page that address belongs to
      * @param address the address from which data is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      * @return the value to return instead of the backing memory. If null, the original value can be returned
      */
-    Integer onLoadData16(byte[] pageData, int address, int value);
+    Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a word of instruction is read from the monitored area
@@ -52,12 +58,14 @@ public interface MemoryActivityListener {
      * memory. It is the responsibility of the programmer that only one listener attached to an address returns a
      * non-null value
      *
+     *
      * @param pageData the page that address belongs to
      * @param address the address from which data is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      * @return the value to return instead of the backing memory. If null, the original value can be returned
      */
-    Integer onLoadData32(byte[] pageData, int address, int value);
+    Integer onLoadData32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
 
     /**
@@ -66,8 +74,9 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address from which instruction is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      */
-    void onLoadInstruction8(byte[] pageData, int address, byte value);
+    void onLoadInstruction8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a halfword of instruction is read from the monitored area
@@ -75,8 +84,9 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address from which instruction is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      */
-    void onLoadInstruction16(byte[] pageData, int address, int value);
+    void onLoadInstruction16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a word of instruction is read from the monitored area
@@ -84,8 +94,9 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address from which instruction is read
      * @param value the value stored at this place if it was a standard memory address
+     * @param accessSource
      */
-    void onLoadInstruction32(byte[] pageData, int address, int value);
+    void onLoadInstruction32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
 
     /**
@@ -94,8 +105,9 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address to which data is written
      * @param value the value being stored at that address
+     * @param accessSource
      */
-    void onStore8(byte[] pageData, int address, byte value);
+    void onStore8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a half-word is written to the monitored area
@@ -103,8 +115,9 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address to which data is written
      * @param value the value being stored at that address
+     * @param accessSource
      */
-    void onStore16(byte[] pageData, int address, int value);
+    void onStore16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
     /**
      * Method to be called each time a word is written to the monitored area
@@ -112,7 +125,8 @@ public interface MemoryActivityListener {
      * @param pageData the page that address belongs to
      * @param address the address to which data is written
      * @param value the value being stored at that address
+     * @param accessSource
      */
-    void onStore32(byte[] pageData, int address, int value);
+    void onStore32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource);
 
 }

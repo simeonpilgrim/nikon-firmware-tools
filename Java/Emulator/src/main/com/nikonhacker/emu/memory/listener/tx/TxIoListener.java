@@ -2,6 +2,7 @@ package com.nikonhacker.emu.memory.listener.tx;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdUnit;
@@ -222,12 +223,14 @@ public class TxIoListener extends IoActivityListener {
 
     /**
      * Called when reading 8-bit value from register address range
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Byte onLoadData8(byte[] ioPage, int addr, byte value) {
+    public Byte onLoadData8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -542,12 +545,14 @@ public class TxIoListener extends IoActivityListener {
     /**
      * Called when reading 16-bit value from register address range
      *
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onLoadData16(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -730,12 +735,14 @@ public class TxIoListener extends IoActivityListener {
     /**
      * Called when reading 32-bit value from register address range
      *
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onLoadData32(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return null;
@@ -995,7 +1002,7 @@ public class TxIoListener extends IoActivityListener {
         return null;
     }
 
-    public void onStore8(byte[] ioPage, int addr, byte value) {
+    public void onStore8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;
@@ -1305,7 +1312,7 @@ public class TxIoListener extends IoActivityListener {
         }
     }
 
-    public void onStore16(byte[] ioPage, int addr, int value) {
+    public void onStore16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;
@@ -1446,7 +1453,7 @@ public class TxIoListener extends IoActivityListener {
         }
     }
 
-    public void onStore32(byte[] ioPage, int addr, int value) {
+    public void onStore32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
             // IMC registers. Do nothing, just don't go further
             return;

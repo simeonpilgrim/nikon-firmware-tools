@@ -8,7 +8,7 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
-import com.nikonhacker.emu.memory.AutoAllocatingMemory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -215,7 +215,7 @@ public class FrEmulator extends Emulator {
         }
         int initialPc = Format.parseUnsigned(args[1]);
 
-        AutoAllocatingMemory memory = new AutoAllocatingMemory();
+        DebuggableMemory memory = new DebuggableMemory(false);
         memory.loadFile(new File(args[0]), initialPc, false); // TODO use ranges
         memory.setLogMemoryMessages(false);
 

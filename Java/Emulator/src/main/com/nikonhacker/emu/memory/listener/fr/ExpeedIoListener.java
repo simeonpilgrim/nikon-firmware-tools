@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.memory.listener.fr;
 
 import com.nikonhacker.emu.Platform;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
@@ -65,12 +66,14 @@ public class ExpeedIoListener extends IoActivityListener {
 
     /**
      * Called when reading 8-bit value from register address range
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Byte onLoadData8(byte[] ioPage, int addr, byte value) {
+    public Byte onLoadData8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -110,12 +113,14 @@ public class ExpeedIoListener extends IoActivityListener {
     /**
      * Called when reading 16-bit value from register address range
      *
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onLoadData16(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -166,16 +171,18 @@ public class ExpeedIoListener extends IoActivityListener {
     /**
      * Called when reading 32-bit value from register address range
      *
+     *
      * @param ioPage
      * @param addr
      * @param value
+     * @param accessSource
      * @return value to be returned, or null to return previously written value like normal memory
      */
-    public Integer onLoadData32(byte[] ioPage, int addr, int value) {
+    public Integer onLoadData32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         return null;
     }
 
-    public void onStore8(byte[] ioPage, int addr, byte value) {
+    public void onStore8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
         if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
             // Interrupt request level registers
             ((FrInterruptController)platform.getInterruptController()).updateRequestICR(addr - REGISTER_ICR00, value);
@@ -242,7 +249,7 @@ public class ExpeedIoListener extends IoActivityListener {
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
-    public void onStore16(byte[] ioPage, int addr, int value) {
+    public void onStore16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -310,7 +317,7 @@ public class ExpeedIoListener extends IoActivityListener {
         }
     }
 
-    public void onStore32(byte[] ioPage, int addr, int value) {
+    public void onStore32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         // noop
     }
 }

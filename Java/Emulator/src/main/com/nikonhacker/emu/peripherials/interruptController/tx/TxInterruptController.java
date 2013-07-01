@@ -8,6 +8,7 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptController;
@@ -467,7 +468,7 @@ public class TxInterruptController extends AbstractInterruptController {
 
     public int getRequestImcSection(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
-        int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr);
+        int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr, DebuggableMemory.AccessSource.INT);
         return getSection(imc, description.intcImcCtrlRegSection);
     }
 
@@ -511,7 +512,7 @@ public class TxInterruptController extends AbstractInterruptController {
             throw new RuntimeException("No IMCGxx register found for interrupt #" + interruptNumber);
         }
 
-        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr);
+        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr, DebuggableMemory.AccessSource.INT);
         return getSection(registerValue, description.cgCtrlRegSection);
     }
 

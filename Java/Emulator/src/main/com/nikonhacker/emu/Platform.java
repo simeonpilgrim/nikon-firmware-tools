@@ -1,7 +1,7 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
@@ -21,18 +21,18 @@ import java.util.List;
  */
 public class Platform {
 
-    private CPUState cpuState;
-    private Memory memory;
-    private ClockGenerator clockGenerator;
+    private CPUState            cpuState;
+    private DebuggableMemory    memory;
+    private ClockGenerator      clockGenerator;
     private InterruptController interruptController;
     private ProgrammableTimer[] programmableTimers;
-    private IoPort[] ioPorts;
-    private SerialInterface[] serialInterfaces;
-    private List<SerialDevice> serialDevices;
-    private DmaController dmaController;
-    private AdConverter adConverter;
-    private RealtimeClock realtimeClock;
-    private KeyCircuit keyCircuit;
+    private IoPort[]            ioPorts;
+    private SerialInterface[]   serialInterfaces;
+    private List<SerialDevice>  serialDevices;
+    private DmaController       dmaController;
+    private AdConverter         adConverter;
+    private RealtimeClock       realtimeClock;
+    private KeyCircuit          keyCircuit;
 
     public CPUState getCpuState() {
         return cpuState;
@@ -42,11 +42,11 @@ public class Platform {
         this.cpuState = cpuState;
     }
 
-    public Memory getMemory() {
+    public DebuggableMemory getMemory() {
         return memory;
     }
 
-    public void setMemory(Memory memory) {
+    public void setMemory(DebuggableMemory memory) {
         this.memory = memory;
     }
 

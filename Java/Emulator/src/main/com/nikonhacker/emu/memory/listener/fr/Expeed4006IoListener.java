@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.memory.listener.fr;
 
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 
 public class Expeed4006IoListener extends IoActivityListener {
@@ -18,12 +19,12 @@ public class Expeed4006IoListener extends IoActivityListener {
 
 
     @Override
-    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+    public Byte onLoadData8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         return null;
     }
 
     @Override
-    public Integer onLoadData16(byte[] pageData, int address, int value) {
+    public Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         // return fake acknowledge at register 0x40060010
         if (address == 0x40060010) return 0x1000;
         // otherwise, ignore
@@ -31,21 +32,21 @@ public class Expeed4006IoListener extends IoActivityListener {
     }
 
     @Override
-    public Integer onLoadData32(byte[] pageData, int address, int value) {
+    public Integer onLoadData32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         return null;
     }
 
 
     @Override
-    public void onStore8(byte[] pageData, int address, byte value) {
+    public void onStore8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
     }
 
     @Override
-    public void onStore16(byte[] pageData, int address, int value) {
+    public void onStore16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         //System.err.println("Storing 0x" + Format.asHex(value, 4) + " to unknown component at 0x" + Format.asHex(address, 8));
     }
 
     @Override
-    public void onStore32(byte[] pageData, int address, int value) {
+    public void onStore32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
     }
 }

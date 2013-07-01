@@ -12,6 +12,7 @@ package com.nikonhacker.emu.memory;
 import com.nikonhacker.emu.memory.listener.MemoryActivityListener;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 /*
@@ -26,6 +27,18 @@ import java.util.List;
 public class DebuggableMemory extends AbstractMemory implements Memory {
 
     private List<MemoryActivityListener> activityListeners = new ArrayList<MemoryActivityListener>();
+
+    public enum AccessSource{
+        /** Access due to code reading/writing to memory */
+        CODE,
+        /** Access done by interrupt controller */
+        INT,
+        /** Access done by DMA controller */
+        DMA;
+
+        public static EnumSet<AccessSource> selectableAccessSource = EnumSet.of(CODE, INT, DMA);
+    }
+
 
     public DebuggableMemory(boolean logMemoryMessages) {
         clear();
@@ -58,10 +71,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the sign extended result
      */
     final public int loadSigned8(int addr) {
-        return loadSigned8(addr, true);
+        return loadSigned8(addr, AccessSource.CODE);
     }
-    
-    final public int loadSigned8(int addr, boolean enableListeners) {
+
+    final public int loadSigned8(int addr, AccessSource accessSource) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
         try {
@@ -72,10 +85,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             }
 
             byte value = pageData[offset];
-            if (enableListeners) {
+            if (accessSource != null) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     if (activityListener.matches(addr)) {
-                        Byte b = activityListener.onLoadData8(pageData, addr, value);
+                        Byte b = activityListener.onLoadData8(pageData, addr, value, accessSource);
                         if (b != null) {
                             value = b;
                         }
@@ -99,10 +112,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the zero extended result
      */
     final public int loadUnsigned8(int addr) {
-        return loadUnsigned8(addr, true);
+        return loadUnsigned8(addr, AccessSource.CODE);
     }
     
-    final public int loadUnsigned8(int addr, boolean enableListeners) {
+    final public int loadUnsigned8(int addr, AccessSource accessSource) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
         try {
@@ -113,10 +126,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             }
 
             byte value = pageData[offset];
-            if (enableListeners) {
+            if (accessSource != null) {
                 for (MemoryActivityListener activityListener : activityListeners) {
                     if (activityListener.matches(addr)) {
-                        Byte b = activityListener.onLoadData8(pageData, addr, value);
+                        Byte b = activityListener.onLoadData8(pageData, addr, value, accessSource);
                         if (b != null) {
                             value = b;
                         }
@@ -139,15 +152,15 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the sign extended result
      */
     public int loadSigned16(int addr) {
-        return loadSigned16(addr, true);
+        return loadSigned16(addr, AccessSource.CODE);
     }
     
-    public int loadSigned16(int addr, boolean enableListeners) {
-        int value = (loadSigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
-        if (enableListeners) {
+    public int loadSigned16(int addr, AccessSource accessSource) {
+        int value = (loadSigned8(addr, null) << 8) | loadUnsigned8(addr + 1, null);
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    Integer i = activityListener.onLoadData16(readableMemory[getPTE(addr)], addr, value);
+                    Integer i = activityListener.onLoadData16(readableMemory[getPTE(addr)], addr, value, accessSource);
                     if (i != null) {
                         value = i;
                     }
@@ -167,15 +180,15 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the zero extended result
      */
     public int loadUnsigned16(int addr) {
-        return loadUnsigned16(addr, true);   
+        return loadUnsigned16(addr, AccessSource.CODE);
     }
     
-    public int loadUnsigned16(int addr, boolean enableListeners) {
-        int value = (loadUnsigned8(addr, false) << 8) | loadUnsigned8(addr + 1, false);
-        if (enableListeners) {
+    public int loadUnsigned16(int addr, AccessSource accessSource) {
+        int value = (loadUnsigned8(addr, null) << 8) | loadUnsigned8(addr + 1, null);
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    Integer i = activityListener.onLoadData16(readableMemory[getPTE(addr)], addr, value);
+                    Integer i = activityListener.onLoadData16(readableMemory[getPTE(addr)], addr, value, accessSource);
                     if (i != null) {
                         value = i;
                     }
@@ -194,16 +207,16 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the result
      */
     public int load32(int addr) {
-        return load32(addr, true);
+        return load32(addr, AccessSource.CODE);
     }
 
-    public int load32(int addr, boolean enableListeners) {
-        int value = (loadSigned8(addr, false) << 24) | (loadUnsigned8(addr + 1, false) << 16)
-                | (loadUnsigned8(addr + 2, false) << 8) | loadUnsigned8(addr + 3, false);
-        if (enableListeners) {
+    public int load32(int addr, AccessSource accessSource) {
+        int value = (loadSigned8(addr, null) << 24) | (loadUnsigned8(addr + 1, null) << 16)
+                | (loadUnsigned8(addr + 2, null) << 8) | loadUnsigned8(addr + 3, null);
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    Integer i = activityListener.onLoadData32(readableMemory[getPTE(addr)], addr, value);
+                    Integer i = activityListener.onLoadData32(readableMemory[getPTE(addr)], addr, value, accessSource);
                     if (i != null) {
                         value = i;
                     }
@@ -221,16 +234,16 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the result
      */
     public int loadInstruction8(int addr) {
-        return loadInstruction8(addr, true);
+        return loadInstruction8(addr, AccessSource.CODE);
     }
 
-    public int loadInstruction8(int addr, boolean enableListeners) {
+    public int loadInstruction8(int addr, AccessSource accessSource) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
-        if (enableListeners) {
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onLoadInstruction8(executableMemory[page], addr, executableMemory[page][offset]);
+                    activityListener.onLoadInstruction8(executableMemory[page], addr, executableMemory[page][offset], accessSource);
                 }
             }
         }
@@ -238,15 +251,15 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     }
 
     public int loadInstruction16(int addr) {
-        return loadInstruction16(addr, true);
+        return loadInstruction16(addr, AccessSource.CODE);
     }
 
-    public int loadInstruction16(int addr, boolean enableListeners) {
-        int value = (loadInstruction8(addr, false) << 8) | loadInstruction8(addr + 1, false);
-        if (enableListeners) {
+    public int loadInstruction16(int addr, AccessSource accessSource) {
+        int value = (loadInstruction8(addr, null) << 8) | loadInstruction8(addr + 1, null);
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onLoadInstruction16(executableMemory[getPTE(addr)], addr, value);
+                    activityListener.onLoadInstruction16(executableMemory[getPTE(addr)], addr, value, accessSource);
                 }
             }
         }
@@ -260,17 +273,17 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @return the result
      */
     public int loadInstruction32(int addr) {
-        return loadInstruction32(addr, true);
+        return loadInstruction32(addr, AccessSource.CODE);
     }
 
-    public int loadInstruction32(int addr, boolean enableListeners) {
-        int value = (loadInstruction8(addr, false) << 24)
-                | (loadInstruction8(addr + 1, false) << 16)
-                | (loadInstruction8(addr + 2, false) << 8) | loadInstruction8(addr + 3, false);
-        if (enableListeners) {
+    public int loadInstruction32(int addr, AccessSource accessSource) {
+        int value = (loadInstruction8(addr, null) << 24)
+                | (loadInstruction8(addr + 1, null) << 16)
+                | (loadInstruction8(addr + 2, null) << 8) | loadInstruction8(addr + 3, null);
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onLoadInstruction32(executableMemory[getPTE(addr)], addr, value);
+                    activityListener.onLoadInstruction32(executableMemory[getPTE(addr)], addr, value, accessSource);
                 }
             }
         }
@@ -284,10 +297,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @param addr  the address of where to store
      */
     public final void store8(int addr, int value) {
-        store8(addr, value, true);
+        store8(addr, value, AccessSource.CODE);
     }
 
-    public final void store8(int addr, int value, boolean enableListeners) {
+    public final void store8(int addr, int value, AccessSource accessSource) {
         int page = getPTE(addr);
         int offset = getOffset(addr);
 
@@ -296,10 +309,10 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
             map(truncateToPage(addr), PAGE_SIZE, true, true, true);
             pageData = writableMemory[page];
         }
-        if (enableListeners) {
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onStore8(pageData, addr, (byte) value);
+                    activityListener.onStore8(pageData, addr, (byte) value, accessSource);
                 }
             }
         }
@@ -313,19 +326,19 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @param addr  the address of where to store
      */
     public void store16(int addr, int value) {
-        store16(addr, value, true);
+        store16(addr, value, AccessSource.CODE);
     }
 
-    public void store16(int addr, int value, boolean enableListeners) {
-        if (enableListeners) {
+    public void store16(int addr, int value, AccessSource accessSource) {
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onStore16(writableMemory[getPTE(addr)], addr, value);
+                    activityListener.onStore16(writableMemory[getPTE(addr)], addr, value, accessSource);
                 }
             }
         }
-        store8(addr, value >> 8, false);
-        store8(addr + 1, value, false);
+        store8(addr, value >> 8, null);
+        store8(addr + 1, value, null);
     }
 
     /**
@@ -335,21 +348,21 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
      * @param addr  the address of where to store
      */
     public void store32(int addr, int value) {
-        store32(addr, value, true);
+        store32(addr, value, AccessSource.CODE);
     }
 
-    public void store32(int addr, int value, boolean enableListeners) {
-        if (enableListeners) {
+    public void store32(int addr, int value, AccessSource accessSource) {
+        if (accessSource != null) {
             for (MemoryActivityListener activityListener : activityListeners) {
                 if (activityListener.matches(addr)) {
-                    activityListener.onStore32(writableMemory[getPTE(addr)], addr, value);
+                    activityListener.onStore32(writableMemory[getPTE(addr)], addr, value, accessSource);
                 }
             }
         }
-        store8(addr, value >> 24, false);
-        store8(addr + 1, value >> 16, false);
-        store8(addr + 2, value >> 8, false);
-        store8(addr + 3, value, false);
+        store8(addr, value >> 24, null);
+        store8(addr + 1, value >> 16, null);
+        store8(addr + 2, value >> 8, null);
+        store8(addr + 3, value, null);
     }
 
 }
