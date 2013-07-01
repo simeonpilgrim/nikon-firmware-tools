@@ -1,8 +1,7 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.emu.memory.AutoAllocatingMemory;
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
@@ -24,17 +23,17 @@ import java.util.Random;
 public class FrEmulatorTest extends TestCase {
 
     public static final boolean STAY_SILENT_IF_OK = true;
-    public static final boolean STOP_ON_ERROR = true;
+    public static final boolean STOP_ON_ERROR     = true;
 
     static final int BASE_ADDRESS = 0x40000;
 
     private static final int RANDOM_32 = 0xBAF60715;
     private static final int RANDOM_16 = 0xBF01;
-    private static final int RANDOM_8 = 0xB3;
+    private static final int RANDOM_8  = 0xB3;
 
-    static FrEmulator emulator;
-    static FrCPUState cpuState;
-    static Memory memory;
+    static FrEmulator       emulator;
+    static FrCPUState       cpuState;
+    static DebuggableMemory memory;
 
     static {
         emulator = new FrEmulator();
@@ -47,7 +46,7 @@ public class FrEmulatorTest extends TestCase {
         cpuState = new FrCPUState(BASE_ADDRESS);
         emulator.setCpuState(cpuState);
 
-        memory = new AutoAllocatingMemory();
+        memory = new DebuggableMemory(false);
         memory.setLogMemoryMessages(false);
         emulator.setMemory(memory);
 

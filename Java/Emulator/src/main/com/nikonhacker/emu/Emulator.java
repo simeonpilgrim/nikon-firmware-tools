@@ -4,7 +4,7 @@ import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -26,7 +26,7 @@ public abstract class Emulator implements Clockable {
     // TODO : Shouldn't these 2 only be in the StatementContext object ?
     // TODO : or better yet: the Emulator should receive a Platform object
     // TODO @Deprecated
-    protected Memory memory;
+    protected DebuggableMemory memory;
     // TODO @Deprecated
     protected CPUState cpuState;
 
@@ -94,7 +94,7 @@ public abstract class Emulator implements Clockable {
         context.cpuState = cpuState;
     }
 
-    public void setMemory(Memory memory) {
+    public void setMemory(DebuggableMemory memory) {
         this.memory = memory;
         context.memory = memory;
     }

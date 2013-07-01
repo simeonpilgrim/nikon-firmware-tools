@@ -2,6 +2,7 @@ package com.nikonhacker.emu.memory.listener.fr;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 
 public class ExpeedPinIoListener extends IoActivityListener {
@@ -26,37 +27,37 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
 
     @Override
-    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+    public Byte onLoadData8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         int portNumber = address - PORT_BASE_ADDRESS;
         return platform.getIoPorts()[portNumber].getValue();
     }
 
     @Override
-    public Integer onLoadData16(byte[] pageData, int address, int value) {
+    public Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         System.err.println("Loading 16b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
         return null;
     }
 
     @Override
-    public Integer onLoadData32(byte[] pageData, int address, int value) {
+    public Integer onLoadData32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         System.err.println("Loading 32b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
         return null;
     }
 
 
     @Override
-    public void onStore8(byte[] pageData, int address, byte value) {
+    public void onStore8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         int portNumber = address - PORT_BASE_ADDRESS;
         platform.getIoPorts()[portNumber].setValue(value);
     }
 
     @Override
-    public void onStore16(byte[] pageData, int address, int value) {
+    public void onStore16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         System.err.println("Storing 16b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
     }
 
     @Override
-    public void onStore32(byte[] pageData, int address, int value) {
+    public void onStore32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         System.err.println("Storing 32b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
     }
 }

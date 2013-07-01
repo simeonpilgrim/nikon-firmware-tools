@@ -117,11 +117,11 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     yOffset = yPos * screenWidth + xPos * 2;
                     uvOffset = yPos * screenWidth + xPos;
 
-                    int u = memory.loadUnsigned8(uStart + uvOffset, false);
-                    int v = memory.loadUnsigned8(vStart + uvOffset, false);
+                    int u = memory.loadUnsigned8(uStart + uvOffset, null);
+                    int v = memory.loadUnsigned8(vStart + uvOffset, null);
 
-                    setPixelFromYUV(xPos * 2, yPos, memory.loadUnsigned8(yStart + yOffset, false) - 128, u - 128, v - 128);
-                    setPixelFromYUV(xPos * 2 + 1, yPos, memory.loadUnsigned8(yStart + yOffset + 1, false) - 128, u - 128, v - 128);
+                    setPixelFromYUV(xPos * 2, yPos, memory.loadUnsigned8(yStart + yOffset, null) - 128, u - 128, v - 128);
+                    setPixelFromYUV(xPos * 2 + 1, yPos, memory.loadUnsigned8(yStart + yOffset + 1, null) - 128, u - 128, v - 128);
                 }
             }
 

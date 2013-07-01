@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
+import com.nikonhacker.emu.memory.DebuggableMemory;
+
 /**
  * An IO Activity Listener is hooked to a page of memory addresses meant to contain IO registers
  */
@@ -20,17 +22,17 @@ public abstract class IoActivityListener implements MemoryActivityListener {
     }
 
     @Override
-    public void onLoadInstruction8(byte[] pageData, int address, byte value) {
+    public void onLoadInstruction8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         // Do nothing. Loading instruction from register has no sense
     }
 
     @Override
-    public void onLoadInstruction16(byte[] pageData, int address, int value) {
+    public void onLoadInstruction16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         // Do nothing. Loading instruction from register has no sense
     }
 
     @Override
-    public void onLoadInstruction32(byte[] pageData, int address, int value) {
+    public void onLoadInstruction32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
         // Do nothing. Loading instruction from register has no sense
     }
 }

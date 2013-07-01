@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.memory.listener;
 
+import com.nikonhacker.emu.memory.DebuggableMemory;
+
 public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityListener implements MemoryActivityListener {
 
     /** Arrays to track activity */
@@ -57,7 +59,7 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
         return true;
     }
 
-    public Byte onLoadData8(byte[] pageData, int address, byte value) {
+    public Byte onLoadData8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 
@@ -79,7 +81,7 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
         return null;
     }
 
-    public void onLoadInstruction8(byte[] pageData, int address, byte value) {
+    public void onLoadInstruction8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 
@@ -99,7 +101,7 @@ public class TrackingMemoryActivityListener extends Abstract8BitMemoryActivityLi
         if (mustRotateValues || ((cellActivityMaps[pageNumber][offset] & 0xFF)!=0xFF)) cellActivityMaps[pageNumber][offset]+= 0x01;
     }
 
-    public void onStore8(byte[] pageData, int address, byte value) {
+    public void onStore8(byte[] pageData, int address, byte value, DebuggableMemory.AccessSource accessSource) {
         int pageNumber = address >>> 16;
         int offset = address & 0xFFFF;
 

@@ -2,7 +2,7 @@ package com.nikonhacker.emu.peripherials.dmaController.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
@@ -395,7 +395,7 @@ public class TxDmaChannel {
             signalAbnormalCompletion();
         }
         else {
-            Memory memory = txDmaController.getPlatform().getMemory();
+            DebuggableMemory memory = txDmaController.getPlatform().getMemory();
             // Perform transfer
             int srcIncrement = getCcrSacIncrement() * ((getDtcrSacmStartBit()==0)?dpsBytes:(1 << getDtcrSacmStartBit()));
             int dstIncrement = getCcrDacIncrement() * ((getDtcrDacmStartBit()==0)?dpsBytes:(1 << getDtcrDacmStartBit()));
@@ -406,27 +406,27 @@ public class TxDmaChannel {
             while (bcr != 0 && doLoop) {
                 switch (dpsBytes) {
                     case 1:
-                        value = memory.loadUnsigned8(sar);
+                        value = memory.loadUnsigned8(sar, DebuggableMemory.AccessSource.DMA);
                         txDmaController.setDhr(value);
-                        memory.store8(dar, value);
+                        memory.store8(dar, value, DebuggableMemory.AccessSource.DMA);
                         break;
                     case 2:
-                        value = memory.loadUnsigned16(sar);
+                        value = memory.loadUnsigned16(sar, DebuggableMemory.AccessSource.DMA);
                         if (!isCcrBig()) {
                             // Endian switchover function
                             value = Format.swap2bytes(value);
                         }
                         txDmaController.setDhr(value);
-                        memory.store16(dar, value);
+                        memory.store16(dar, value, DebuggableMemory.AccessSource.DMA);
                         break;
                     case 4:
-                        value = memory.load32(sar);
+                        value = memory.load32(sar, DebuggableMemory.AccessSource.DMA);
                         if (!isCcrBig()) {
                             // Endian switchover function
                             value = Format.swap4bytes(value);
                         }
                         txDmaController.setDhr(value);
-                        memory.store32(dar, value);
+                        memory.store32(dar, value, DebuggableMemory.AccessSource.DMA);
                         break;
                 }
                 sar += srcIncrement;

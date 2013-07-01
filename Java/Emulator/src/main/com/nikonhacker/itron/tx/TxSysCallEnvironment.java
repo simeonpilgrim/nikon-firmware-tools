@@ -4,7 +4,7 @@ import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.TxEmulator;
-import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.itron.*;
 
@@ -43,8 +43,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new TxTaskInformation(objId, errorCode);
         }
         else {
-            Memory memory = platform.getMemory();
-            int stateValue = memory.load32(pk_robj);
+            DebuggableMemory memory = platform.getMemory();
+            int stateValue = memory.load32(pk_robj, null);
             /* Strangely, the TX implementation always returns 0 (OK) as error code, even when task_id does not exist (optimization ?).
                Let's return "non existent object" if state is 0.
             */
@@ -54,14 +54,14 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             else {
                 return new TxTaskInformation(objId, errorCode,
                         stateValue,
-                        memory.load32(pk_robj + 4),
-                        memory.load32(pk_robj + 8),
-                        memory.load32(pk_robj + 12),
-                        memory.load32(pk_robj + 16),
-                        memory.load32(pk_robj + 20),
-                        memory.load32(pk_robj + 24),
-                        memory.load32(pk_robj + 28),
-                        memory.load32(pk_robj + 32));
+                        memory.load32(pk_robj + 4, null),
+                        memory.load32(pk_robj + 8, null),
+                        memory.load32(pk_robj + 12, null),
+                        memory.load32(pk_robj + 16, null),
+                        memory.load32(pk_robj + 20, null),
+                        memory.load32(pk_robj + 24, null),
+                        memory.load32(pk_robj + 28, null),
+                        memory.load32(pk_robj + 32, null));
             }
         }
     }
@@ -82,9 +82,9 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            DebuggableMemory memory = platform.getMemory();
             // Note: structure is different from µITRON 3
-            return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
+            return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
         }
     }
 
@@ -104,9 +104,9 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new EventFlagInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            DebuggableMemory memory = platform.getMemory();
             // Note: structure is different from µITRON 3
-            return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
+            return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
         }
     }
 
@@ -126,8 +126,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
-            return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
+            DebuggableMemory memory = platform.getMemory();
+            return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
         }
     }
 
@@ -169,10 +169,10 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 emulator.setCpuState(tmpCpuState);
 
                 // Prepare code
-                Memory memory = platform.getMemory();
-                memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40);                      // EA40  jalr    $v0
-                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500);                  // 6500    nop
-                memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500);                  // 6500  nop
+                DebuggableMemory memory = platform.getMemory();
+                memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40, null);                      // EA40  jalr    $v0
+                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500, null);                  // 6500    nop
+                memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500, null);                  // 6500  nop
 
                 // Put a breakpoint on the instruction after the call
                 emulator.clearBreakConditions();

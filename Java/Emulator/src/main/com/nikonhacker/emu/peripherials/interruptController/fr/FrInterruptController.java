@@ -6,6 +6,7 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
+import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptControllerException;
@@ -76,7 +77,7 @@ public class FrInterruptController extends AbstractInterruptController {
             int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
-            icr = platform.getMemory().loadUnsigned8(icrAddress) & 0x1F | 0x10;
+            icr = platform.getMemory().loadUnsigned8(icrAddress, DebuggableMemory.AccessSource.INT) & 0x1F | 0x10;
         }
         else {
             throw new InterruptControllerException("Cannot determine ICR value for interrupt 0x" + Format.asHex(interruptNumber, 2));
