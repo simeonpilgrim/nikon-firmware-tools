@@ -9,29 +9,30 @@ import com.nikonhacker.emu.memory.listener.RangeAccessLoggerActivityListener;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.gui.swing.PrintWriterArea;
+import com.nikonhacker.gui.swing.VerticalLayout;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.Set;
 
 
-public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements ActionListener {
-    private static final int ROWS = 60;
+public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
+    private static final int ROWS    = 60;
     private static final int COLUMNS = 80;
 
     private DebuggableMemory memory;
-    private CPUState cpuState;
-    private MemoryActivityListener listener;
-    private final JTextField minAddressField, maxAddressField;
+    private CPUState         cpuState;
+    private java.util.Map<JTextField, MemoryActivityListener> listeners = new HashMap<>();
     private final PrintWriterArea textArea;
 
     // By default, only log code access
     private final Set<DebuggableMemory.AccessSource> selectedAccessSource = EnumSet.of(DebuggableMemory.AccessSource.CODE);
 
-    public CustomMemoryRangeLoggerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, CPUState cpuState) {
+    public CustomMemoryRangeLoggerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, EmulatorUI ui, final DebuggableMemory memory, final CPUState cpuState) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
         this.cpuState = cpuState;
@@ -40,16 +41,45 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
         textArea.setAutoScroll(true);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 10));
 
-        JPanel selectionPanel = new JPanel();
+        JPanel selectionPanelContainer = new JPanel(new VerticalLayout());
+
+        addRange(selectionPanelContainer);
+
+        JPanel contentPanel = new JPanel(new BorderLayout());
+        contentPanel.add(selectionPanelContainer, BorderLayout.NORTH);
+        contentPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        getContentPane().add(contentPanel);
+    }
+
+    private void addRange(final JPanel selectionPanelContainer) {
+        final JTextField minAddressField = new JTextField(8);
+        final JTextField maxAddressField = new JTextField(8);
+        ActionListener actionListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int minAddress = Format.parseIntHexField(minAddressField);
+                int maxAddress = Format.parseIntHexField(maxAddressField);
+                MemoryActivityListener listener = listeners.get(minAddressField);
+                if (listener != null) {
+                    memory.removeActivityListener(listener);
+                    textArea.getPrintWriter().println("Stopping previous listener");
+                }
+                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSource);
+                memory.addActivityListener(listener);
+                listeners.put(minAddressField, listener);
+                textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
+            }
+        };
+
+        final JPanel selectionPanel = new JPanel();
         selectionPanel.add(new JLabel("0x"));
-        minAddressField = new JTextField(8);
         selectionPanel.add(minAddressField);
-        minAddressField.addActionListener(this);
+        minAddressField.addActionListener(actionListener);
 
         selectionPanel.add(new JLabel("- 0x"));
-        maxAddressField = new JTextField(8);
         selectionPanel.add(maxAddressField);
-        maxAddressField.addActionListener(this);
+        maxAddressField.addActionListener(actionListener);
 
         for (final DebuggableMemory.AccessSource accessSource : DebuggableMemory.AccessSource.selectableAccessSource) {
             final JCheckBox checkBox = new JCheckBox(accessSource.name());
@@ -69,30 +99,42 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame implements Actio
         }
 
         final JButton goButton = new JButton("Go");
-        goButton.addActionListener(this);
+        goButton.addActionListener(actionListener);
         selectionPanel.add(goButton);
 
-        JPanel contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(selectionPanel, BorderLayout.NORTH);
-        contentPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+        final JButton plusButton = new JButton("+");
+        plusButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                addRange(selectionPanelContainer);
+            }
+        });
+        selectionPanel.add(plusButton);
+        final CustomMemoryRangeLoggerFrame frame = this;
+        final JButton minusButton = new JButton("-");
+        minusButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (listeners.size() > 1) {
+                    MemoryActivityListener listener = listeners.get(minAddressField);
+                    if (listener != null) {
+                        memory.removeActivityListener(listener);
+                        textArea.getPrintWriter().println("Stopping previous listener");
+                    }
+                    listeners.remove(minAddressField);
+                    selectionPanelContainer.remove(selectionPanel);
+                    frame.pack();
+                }
+            }
+        });
+        selectionPanel.add(minusButton);
 
-        getContentPane().add(contentPanel);
-    }
-
-    public void actionPerformed(ActionEvent e) {
-        int minAddress = Format.parseIntHexField(minAddressField);
-        int maxAddress = Format.parseIntHexField(maxAddressField);
-        if (listener != null) {
-            memory.removeActivityListener(listener);
-            textArea.getPrintWriter().println("Stopping previous listener");
-        }
-        listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSource);
-        memory.addActivityListener(listener);
-        textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
+        selectionPanelContainer.add(selectionPanel);
+        this.pack();
     }
 
     public void dispose() {
-        if (listener != null) {
+        for (MemoryActivityListener listener : listeners.values()) {
             memory.removeActivityListener(listener);
         }
         super.dispose();
