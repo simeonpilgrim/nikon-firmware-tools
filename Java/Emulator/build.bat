@@ -40,7 +40,7 @@ set class-dir=%target-dir%\classes
 set jar-dir=%target-dir%
 
 set app-name=NikonEmulator
-for /F "tokens=5 delims==<> " %%i in ('findstr "\"app-version\"" build.xml') do set app-version=%%~i
+for /F "tokens=5 delims==<>/ " %%i in ('findstr "\"app-version\"" build.xml') do set app-version=%%~i
 
 set CC=javac -deprecation -g -g:lines,vars,source -source 1.7 -target 1.7 -d %class-dir% -sourcepath %source-dir%;%gen-dir% -classpath "%lib-dir%/commons-io-2.1.jar;%lib-dir%/commons-lang3-3.1.jar;%lib-dir%/jacksum.jar;%lib-dir%/xstream-1.4.2.jar;%lib-dir%/jgraphx.jar;%lib-dir%/rsyntaxtextarea.jar;%lib-dir%/miglayout-4.0.jar;%lib-dir%/glazedlists-1.8.0_java15.jar"
 
