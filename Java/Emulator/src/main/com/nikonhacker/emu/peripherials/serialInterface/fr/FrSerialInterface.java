@@ -54,10 +54,18 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     public void setScrIbcr(int scrIbcr) {
-        if ((scrIbcr & 0x80) != 0) {
+        if ((scrIbcr & 0b1000_0000) != 0) {
             clearViaUpcl();
         }
-        this.scrIbcr = scrIbcr;
+        this.scrIbcr = scrIbcr & 0b0111_1111;
+    }
+
+    public int getScrIbcr() {
+        return scrIbcr;
+    }
+
+    private boolean isSlaveMode() {
+        return (scrIbcr & 0b0100_0000) != 0;
     }
 
     /**
@@ -74,16 +82,12 @@ public class FrSerialInterface extends SerialInterface {
         ssr = 0x3; // ORE-RDRF-TDRE-TBI=0011
     }
 
-    public int getScrIbcr() {
-        return scrIbcr & 0x7F;
-    }
-
     public void setSmr(int smr) {
-        int md = (smr & 0xE0) >> 5;
-        if (md != 2) {
-            throw new RuntimeException("Serial Interface " + serialInterfaceNumber + ": cannot be configured in mode MD=0b" + Format.asBinary(md, 3) + ".\nOnly CSIO mode (0b010) is supported by emulator");
+        int md = smr >>> 5;
+        if (md != 0b010) {
+            throw new RuntimeException("Serial Interface " + serialInterfaceNumber + ": cannot be configured in mode MD=0b" + Format.asBinary(md, 3) + ".\nOnly CSIO mode (0b010) is supported for now");
         }
-        if ((smr & 0x10) != 0) {
+        if ((smr & 0b0001_0000) != 0) {
             throw new RuntimeException("Serial Interface " + serialInterfaceNumber + ": reserved bit 4 of SMR must be 0");
         }
 
@@ -91,7 +95,7 @@ public class FrSerialInterface extends SerialInterface {
     }
 
     public int getSmr() {
-        return smr & 0xEF;
+        return smr;
     }
 
     public void setSsr(int ssr) {
@@ -154,7 +158,10 @@ public class FrSerialInterface extends SerialInterface {
                 fbyte2 = txFifo.size();
             }
         }
-        super.valueReady(read());
+        // In slave mode, we have to wait for a byte to come in to send
+        if (!isSlaveMode()) {
+            super.valueReady(read());
+        }
     }
 
     /**
@@ -305,6 +312,10 @@ public class FrSerialInterface extends SerialInterface {
                     }
                 }
             }
+        }
+        // In slave mode, we have to send a byte when we receive one
+        if (isSlaveMode()) {
+            super.valueReady(read());
         }
     }
 
