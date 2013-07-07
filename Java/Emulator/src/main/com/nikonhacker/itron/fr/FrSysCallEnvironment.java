@@ -209,11 +209,11 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
     }
 
     public String[] getTaskPropertyNames() {
-        return new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex", "nextPcHex", "addrContextHex"};
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "nextPcHex", "addrContextHex", "extendedInformationHex"};
     }
 
     public String[] getTaskColumnLabels() {
-        return new String[]{"Task Id", "State", "Priority", "Extended Information", "Next PC", "Context addr"};
+        return new String[]{"Task Id", "State", "Priority", "Next PC", "Context addr", "Extended Information"};
     }
 
     @Override
