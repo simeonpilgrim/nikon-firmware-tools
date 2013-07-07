@@ -133,6 +133,8 @@
 -s 0xBFC00BD8=clear@FFFF3EF0_3FF8
 -s 0xBFC00C10=mem_wordcopy($a0 [IN dest], $a1 [IN src], $a2 [IN counter])
 -s 0xBFC00C68=copy_intr_excep_handlers_to_0x80000000
+-s 0xBFC00CB0=sys_config_interrupt($a0 [IN bNumber], $a1 [IN bValue] /* Setup imc register */)
+-s 0xBFC00CE8=sys_get_cfg_int($a0 [IN bNumber], $v0 [OUT low5bit_imc], $v1 [OUT high3bit_imc] /* read int type, level, dmac */)
 -s 0xBFC00D20=setINTCLR($a0 [IN mask])
 -s 0xBFC00D40=setInterruptLEVel($a0 [IN level])
 -s 0xBFC00D60=getInterruptLEVel($v0 [OUT level])
@@ -147,10 +149,11 @@
 -s 0xBFC026B4=useless_BFC026B4 /* disabled by a constant with value false */
 -s 0xBFC0272C=return_addr_after_Task_JR_@BFC01BE0
 -s 0xBFC02BE8=sys_dis_dsp
--s 0xBFC02C28=sys_unknown_BFC02C28($a0 [IN xxx_id_or_0_for_current], $v0 [OUT field_2_or_0xD6_if_field4_is_0x10])
+-s 0xBFC02C28=sys_can_wup($a0 [IN tsk_id], $v0 [OUT err_code_or_wupcount] /* Cancel wakeup requests */)
 -s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
 -s 0xBFC02D98=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
 -s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
+-s 0xBFC02E28=sys_cfg_int($a0 [IN bNumber], $a1 [IN low5bit_imc], $a [IN high3bit_imc] /* Setup int type, level, dmac */)
 -s 0xBFC02E40=sys_deact_tsk($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
 -s 0xBFC0332C=change_task_priority
@@ -158,6 +161,7 @@
 -s 0xBFC035DC=sys_pol_flg
 -s 0xBFC0369C=sys_set_flg($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
 -s 0xBFC03818=sys_get_ilev($a0 [IN ptr_for_interrupt_level])
+-s 0xBFC0385C=sys_get_cfg_int_00($a0 [IN bNumber], $v0 [OUT low5bit_imc], $v1 [OUT high3bit_imc] /* read int type, level, dmac */)
 -s 0xBFC03870=sys_snd_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg] /* Send message */)
 -s 0xBFC03948=sys_get_tid($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id] /* get task id in the RUNNING state */)
 -s 0xBFC03984=sys_ena_dsp
@@ -168,11 +172,11 @@
 -s 0xBFC03CD8=sys_ref_flg($a0 [IN flg_id], $a1 [IN ptr_to_pk_rflg], $v0 [OUT err_code] /* Get EventFlag Status */)
 -s 0xBFC03D40=is_val_andA7FF_not2000 ($a0 [IN word], $v0 [OUT result_1_0])
 -s 0xBFC03D58=sys_sta_tsk($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
--s 0xBFC03DC4=is_low11bit_zero ($a0 [IN word], $v0 [OUT result_1_0])
--s 0xBFC03DD8=is_bit13_zero ($a0 [IN word], $v0 [OUT result_1_0])
+-s 0xBFC03DC4=is_low11bit_zero($a0 [IN word], $v0 [OUT result_1_0])
+-s 0xBFC03DD8=is_bit13_zero($a0 [IN word], $v0 [OUT result_1_0])
 -s 0xBFC03DEC=sys_ref_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_rmbx], $v0 [OUT err_code] /* Get Mailbox Status */)
 -s 0xBFC03EA0=sys_rcv_mbx($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
--s 0xBFC03F38=is_bit15_zero ($a0 [IN word], $v0 [OUT result_1_0])
+-s 0xBFC03F38=is_bit15_zero($a0 [IN word], $v0 [OUT result_1_0])
 -s 0xBFC0A008=TO_BE_RELOCATED_Flash_Programming_interface
 -s 0xBFC0DB00=init_SC0
 -s 0xBFC0DD78=init_timer0xB
@@ -217,7 +221,7 @@
 -s 0xBFC12AD0=sys_slp_tsk_00
 -s 0xBFC12ADC=sys_wuk_tsk_00
 -s 0xBFC12AE8=sys_wuk_tsk_01
--s 0xBFC12AF4=sys_unknown_BFC02C28_00($a0 [IN xxx_id_or_0_for_current], $v0 [OUT field_2_or_0xD6_if_field4_is_0x10])
+-s 0xBFC12AF4=sys_can_wup_00($a0 [IN tsk_id], $v0 [OUT err_code_or_wupcount] /* Cancel wakeup requests */)
 -s 0xBFC12B00=sys_set_flg_00
 -s 0xBFC12B0C=sys_set_flg_01($a0 [IN flag_id], $a1 [IN set_pattern], $v0 [OUT err_code] /* Set Eventflag */)
 -s 0xBFC12B18=sys_clr_flg_00($a0 [IN flag_id], $a1 [IN clr_pattern], $v0 [OUT err_code] /* Clear Eventflag */)
@@ -235,9 +239,9 @@
 -s 0xBFC12BD0=sys_rcv_mbx00($a0 [IN mbx_id], $a1 [IN ptr_to_pk_msg?] /* Receive message */)
 -s 0xBFC12BDC=sys_ref_mbx00
 -s 0xBFC12BF8=sys_ref_mbx01
--s 0xBFC12C14=sys_lock_cpu
+-s 0xBFC12C14=sys_lock_cpu($a0 [IN ptr_from_ilevel] /* save old ilevel, lock dispatch and set ilevel 7 */)
 -s 0xBFC12C2C=sys_dis_int
--s 0xBFC12C40=setInterruptLEVel_etc_unlock_cpu_TBC($a0 [IN ptr_to_level])
+-s 0xBFC12C40=sys_unl_cpu($a0 [IN ptr_to_ilevel] /* set ilevel, unlock dispatch if ilevel==0 */)
 -s 0xBFC12C5C=setInterruptLEVel_03($a0 [IN ptr_to_level])
 -s 0xBFC12C68=setInterruptLEVel_01($a0 [IN level])
 -s 0xBFC12C74=setInterruptLEVel_02($a0 [IN level])
@@ -247,6 +251,7 @@
 -s 0xBFC12D14=setup_ILEV_DMA($a0 [IN interrupt_number])
 -s 0xBFC12D90=dis_INT_clearINTreq_01
 -s 0xBFC12DC8=dis_INT_clearINTreq_00($a0 [IN interrupt_number])
+-s 0xBFC12E18=sys_cfg_irq($a0 [IN bNumber], $a1 [IN low5bit_imc], $a [IN high3bit_imc] /* Setup hw irq type, level, dmac; enable it */)
 -s 0xBFC12E58=sys_clear_bit13_of_FFFFFFE8_00
 -s 0xBFC12E64=sys_set_bit5_of_FFFFFFE8_00
 -s 0xBFC12E70=sys_get_tid_00($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id])
