@@ -44,8 +44,6 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JButton addButton;
     private final JButton editButton;
     private final JButton deleteButton;
-    private final JButton moveUpButton;
-    private final JButton moveDownButton;
     private final JButton addSyscallButton;
 
     public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
@@ -119,7 +117,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         });
         rightPanel.add(deleteButton);
 
-        moveUpButton = new JButton("Move Up");
+        JButton moveUpButton = new JButton("Move Up");
         moveUpButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         moveUpButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -132,7 +130,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         });
         rightPanel.add(moveUpButton);
 
-        moveDownButton = new JButton("Move Down");
+        JButton moveDownButton = new JButton("Move Down");
         moveDownButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         moveDownButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -339,7 +337,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     }
                     else {
                         try {
-                            int interrupt = Format.parseUnsigned("0x" + (String)editedValue);
+                            int interrupt = Format.parseUnsigned("0x" + editedValue);
                             baseObject.setInterruptToRequest(interrupt);
                         } catch (ParsingException e) {
                             // ignore the change
@@ -352,7 +350,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     }
                     else {
                         try {
-                            int pcToSet = Format.parseUnsigned("0x" + (String)editedValue);
+                            int pcToSet = Format.parseUnsigned("0x" + editedValue);
                             baseObject.setPcToSet(pcToSet);
                         } catch (ParsingException e) {
                             // ignore the change
