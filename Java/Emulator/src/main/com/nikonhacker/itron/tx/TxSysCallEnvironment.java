@@ -262,11 +262,11 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public String[] getTaskPropertyNames() {
-        return new String[]{"objectIdHex", "taskState", "taskPriority", "taskBasePriority", "reasonForWaiting", "objectIdWaiting", "timeLeft", "actRequestCount", "wuRequestCount", "suspendCount", "nextPcHex", "addrContextHex"};
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "nextPcHex", "addrContextHex", "taskBasePriority", "reasonForWaiting", "objectIdWaiting", "timeLeft", "actRequestCount", "wuRequestCount", "suspendCount"};
     }
 
     public String[] getTaskColumnLabels() {
-        return new String[]{"Task Id", "State", "Priority", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount", "Next PC", "Context addr"};
+        return new String[]{"Task Id", "State", "Priority", "Next PC", "Context addr", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount"};
     }
 
     @Override
