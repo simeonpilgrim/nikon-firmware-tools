@@ -5708,6 +5708,7 @@
 
 ########## Global variables
 
+-s 0x000DC310=tblTaskData
 -s 0x68000800=pCurrentTCB
 -s 0x68000910=Real_Time_Clock
 

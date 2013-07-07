@@ -4,7 +4,7 @@ import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.TxEmulator;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.itron.*;
 
@@ -43,25 +43,88 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new TxTaskInformation(objId, errorCode);
         }
         else {
-            DebuggableMemory memory = platform.getMemory();
-            int stateValue = memory.load32(pk_robj, null);
+            Memory memory = platform.getMemory();
+            int stateValue = memory.load32(pk_robj);
             /* Strangely, the TX implementation always returns 0 (OK) as error code, even when task_id does not exist (optimization ?).
+
+               coderat 26.06.2013 
+               this is a bug in iTRON implementation for TMP19A: no one function checks if tsk_id is in range
+
                Let's return "non existent object" if state is 0.
             */
             if (stateValue == 0) {
                 return new TxTaskInformation(objId, ErrorCode.E_ID);
             }
             else {
+                // empty context
+                Integer addrContext = null;
+                Integer nextPC = null;
+                final int MAX_TASKS = 0xD; // it is hardcoded 
+
+                /* Get these labels only once for the first task, because it takes too long.
+                   Actually, correct way is to have one function that returns at once complete task table,
+                   otherwise we risk inconsistent data. */
+                if (codeStructure == null) {
+                    if (objId==1)
+                        System.err.println("Next PC/Context not available! Code must be disassembled with 'structure' option first");
+                } else {
+                    if (objId==1) {
+                        // address of task constant data table
+                        if (codeStructure.tblTaskData==null) {
+                            System.err.println("Next PC/Context not available! No label called 'tblTaskData' was found in disassembly");
+                        }
+                        if (codeStructure.pCurrentTCB==null) {
+                            System.err.println("Next PC/Context not available! No label called 'pCurrentTCB' was found in disassembly");
+                        }
+                        if (codeStructure.tblTCB==null) {
+                            System.err.println("Next PC/Context not available! No label called 'tblTCB' was found in disassembly");
+                        }
+                    }
+
+                    // gathering optinal information
+                    if (codeStructure.tblTCB != null && codeStructure.pCurrentTCB != null) {
+
+                        // check if enough elements in task table
+                        if (objId>0 && objId<=MAX_TASKS) {
+
+                            int TCB = codeStructure.tblTCB + (objId-1) * 0x10;
+                            // if it is current TCB, context may be not set yet
+                            if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
+                                nextPC = platform.getCpuState().getPc();
+                            } else {
+                                addrContext = memory.load32(TCB+0xC);
+
+                                // is context reasonable pointer?
+                                if (addrContext!=0 && addrContext!=-1) {
+                                    if ((addrContext&1)!=0) {
+                                        // task was never started, look for start address TaskData
+                                        if (codeStructure.tblTaskData != null) {
+                                            nextPC = memory.load32(codeStructure.tblTaskData + (objId-1)*0x14 + 4);
+                                        }
+                                    } else {
+                                        // load return-instruction-address from task context
+                                        nextPC = memory.load32(addrContext + 4);
+                                    }
+                                } else {
+                                    // not good value
+                                    addrContext = 0;
+                                }
+                            }
+                        }
+                    }
+                }
                 return new TxTaskInformation(objId, errorCode,
                         stateValue,
-                        memory.load32(pk_robj + 4, null),
-                        memory.load32(pk_robj + 8, null),
-                        memory.load32(pk_robj + 12, null),
-                        memory.load32(pk_robj + 16, null),
-                        memory.load32(pk_robj + 20, null),
-                        memory.load32(pk_robj + 24, null),
-                        memory.load32(pk_robj + 28, null),
-                        memory.load32(pk_robj + 32, null));
+                        memory.load32(pk_robj + 4),
+                        memory.load32(pk_robj + 8),
+                        memory.load32(pk_robj + 12),
+                        memory.load32(pk_robj + 16),
+                        memory.load32(pk_robj + 20),
+                        memory.load32(pk_robj + 24),
+                        memory.load32(pk_robj + 28),
+                        memory.load32(pk_robj + 32),
+                        nextPC,
+                        addrContext);
             }
         }
     }
@@ -82,9 +145,9 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            DebuggableMemory memory = platform.getMemory();
+            Memory memory = platform.getMemory();
             // Note: structure is different from µITRON 3
-            return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
+            return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
@@ -104,9 +167,9 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new EventFlagInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            DebuggableMemory memory = platform.getMemory();
+            Memory memory = platform.getMemory();
             // Note: structure is different from µITRON 3
-            return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
+            return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
@@ -126,8 +189,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            DebuggableMemory memory = platform.getMemory();
-            return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj, null), memory.load32(pk_robj + 4, null));
+            Memory memory = platform.getMemory();
+            return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
 
@@ -169,10 +232,10 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 emulator.setCpuState(tmpCpuState);
 
                 // Prepare code
-                DebuggableMemory memory = platform.getMemory();
-                memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40, null);                      // EA40  jalr    $v0
-                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500, null);                  // 6500    nop
-                memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500, null);                  // 6500  nop
+                Memory memory = platform.getMemory();
+                memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40);                      // EA40  jalr    $v0
+                memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500);                  // 6500    nop
+                memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500);                  // 6500  nop
 
                 // Put a breakpoint on the instruction after the call
                 emulator.clearBreakConditions();
@@ -199,11 +262,11 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     }
 
     public String[] getTaskPropertyNames() {
-        return new String[]{"objectIdHex", "taskState", "taskPriority", "taskBasePriority", "reasonForWaiting", "objectIdWaiting", "timeLeft", "actRequestCount", "wuRequestCount", "suspendCount"};
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "taskBasePriority", "reasonForWaiting", "objectIdWaiting", "timeLeft", "actRequestCount", "wuRequestCount", "suspendCount", "nextPcHex", "addrContextHex"};
     }
 
     public String[] getTaskColumnLabels() {
-        return new String[]{"Task Id", "State", "Priority", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount"};
+        return new String[]{"Task Id", "State", "Priority", "Base Prio", "Wait Reason", "Wait Id", "Time Left", "ActReqCount", "WkUpReqCount", "SuspendCount", "Next PC", "Context addr"};
     }
 
     @Override

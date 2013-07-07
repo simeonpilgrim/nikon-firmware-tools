@@ -10,8 +10,9 @@ public class FrTaskInformation extends TaskInformation {
         super(objectId, errorCode);
     }
 
-    public FrTaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int extendedInformation) {
-        super(objectId, errorCode, stateValue, taskPriority, extendedInformation);
+    public FrTaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int extendedInformation,
+                             Integer pc, Integer context) {
+        super(objectId, errorCode, stateValue, taskPriority, extendedInformation, pc, context);
     }
 
     @Override
@@ -19,7 +20,10 @@ public class FrTaskInformation extends TaskInformation {
         if (getErrorCode() != ErrorCode.E_OK) {
             return getErrorCode().toString();
         }
-        return "Task 0x" + Format.asHex(objectId, 2) + ": State " + taskState.name() + ", priority=" + taskPriority + ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8);
+        return "Task 0x" + Format.asHex(objectId, 2) + ": State " + taskState.name() + ", priority=" + taskPriority +
+                ", extendedInformation=0x" + Format.asHex(getExtendedInformation(), 8) +
+                ", context=" + getAddrContextHex() +
+                ", nextPC=" + getNextPcHex();
     }
 
 }

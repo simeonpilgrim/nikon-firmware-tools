@@ -24,6 +24,7 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.EnumSet;
 
@@ -47,7 +48,7 @@ public class ITronObjectFrame extends DocumentFrame {
     public ITronObjectFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Platform platform, CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
-        sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform):new TxSysCallEnvironment(platform, codeStructure);
+        sysCallEnvironment = (chip==Constants.CHIP_FR)?new FrSysCallEnvironment(platform, codeStructure):new TxSysCallEnvironment(platform, codeStructure);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
 
@@ -75,16 +76,20 @@ public class ITronObjectFrame extends DocumentFrame {
         topPanel.add(autoUpdateCheckbox);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
-        
+
         JTabbedPane tabbedPane = new JTabbedPane();
 
         // Tasks
         taskInformationList = GlazedLists.threadSafeList(new BasicEventList<TaskInformation>());
         taskPanel = new JPanel(new BorderLayout());
         SortedList<TaskInformation> sortedTaskInformationList = new SortedList<TaskInformation>(taskInformationList, null);
-        JTable taskTable = new JTable(new EventTableModel<TaskInformation>(sortedTaskInformationList, GlazedLists.tableFormat(sysCallEnvironment.getTaskInformationClass(),
-                sysCallEnvironment.getTaskPropertyNames(),
-                sysCallEnvironment.getTaskColumnLabels()))){
+        final JTable taskTable = new JTable(new EventTableModel<TaskInformation>(
+                sortedTaskInformationList,
+                GlazedLists.tableFormat(sysCallEnvironment.getTaskInformationClass(),
+                                        sysCallEnvironment.getTaskPropertyNames(),
+                                        sysCallEnvironment.getTaskColumnLabels())
+                                        )
+        ){
             @Override
             public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
                 Component c = super.prepareRenderer(renderer, row, column);
@@ -114,6 +119,32 @@ public class ITronObjectFrame extends DocumentFrame {
                 return c;
             }
         };
+
+        // Handle jump on double click
+        taskTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getComponent().isEnabled() && e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
+                    Point p = e.getPoint();
+                    int row = taskTable.rowAtPoint(p);
+                    int column = taskTable.columnAtPoint(p);
+                    if ("nextPcHex".equals(sysCallEnvironment.getTaskPropertyNames()[column])) {
+                        try {
+                            ui.jumpToSource(chip, Format.parseUnsigned(taskTable.getValueAt(row, column).toString()));
+                        } catch (ParsingException e1) {
+                            // ignore
+                        }
+                    }
+                    if ("addrContextHex".equals(sysCallEnvironment.getTaskPropertyNames()[column])) {
+                        try {
+                            ui.jumpToMemory(chip, Format.parseUnsigned(taskTable.getValueAt(row, column).toString()));
+                        } catch (ParsingException e1) {
+                            // ignore
+                        }
+                    }
+                }
+            }
+        });
+
         TableComparatorChooser.install(taskTable, sortedTaskInformationList, AbstractTableComparatorChooser.SINGLE_COLUMN);
 
         taskScroller = new JScrollPane(taskTable);

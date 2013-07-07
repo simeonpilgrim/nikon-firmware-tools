@@ -444,6 +444,7 @@ public abstract class Disassembler {
             // Filling task-related sybmols
             codeStructure.tblTaskData = findSymbolAddressByName("tblTaskData");
             codeStructure.pCurrentTCB = findSymbolAddressByName("pCurrentTCB");
+            codeStructure.tblTCB = findSymbolAddressByName("tblTCB");
 
             if (outWriter != null) {
                 debugPrintWriter.println("Writing output to disk...");

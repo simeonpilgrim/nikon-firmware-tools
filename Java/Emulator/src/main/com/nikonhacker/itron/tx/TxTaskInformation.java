@@ -54,8 +54,11 @@ public class TxTaskInformation extends TaskInformation {
         super(objectId, errorCode);
     }
 
-    public TxTaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int taskBasePriority, int reasonForWaiting, int objectIdWaiting, int timeLeft, int actRequestCount, int wuRequestCount, int suspendCount) {
-        super(objectId, errorCode, stateValue, taskPriority, 0);
+    public TxTaskInformation(int objectId, ErrorCode errorCode, int stateValue, int taskPriority, int taskBasePriority,
+                             int reasonForWaiting, int objectIdWaiting, int timeLeft, int actRequestCount, int wuRequestCount,
+                             int suspendCount, Integer pc, Integer context) {
+
+        super(objectId, errorCode, stateValue, taskPriority, 0, pc, context);
 
         this.taskBasePriority = taskBasePriority;
         this.reasonForWaiting = WaitReason.fromValue(reasonForWaiting);
@@ -107,6 +110,8 @@ public class TxTaskInformation extends TaskInformation {
                 ", timeLeft=" + timeLeft +
                 ", actRequestCount=" + actRequestCount +
                 ", wuRequestCount=" + wuRequestCount +
-                ", suspendCount=" + suspendCount;
+                ", suspendCount=" + suspendCount +
+                ", context=" + getAddrContextHex() +
+                ", nextPC=" + getNextPcHex();
     }
 }

@@ -40,6 +40,7 @@ public abstract class CodeStructure {
     // Cache for task-related addresses
     public Integer tblTaskData;
     public Integer pCurrentTCB;
+    public Integer tblTCB;
 
 
     public CodeStructure(int address) {

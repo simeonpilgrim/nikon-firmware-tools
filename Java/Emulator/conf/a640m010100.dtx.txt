@@ -993,8 +993,11 @@
 -s 0xBFC8D9DC=mem_copy_18bytes($a0 [IN dest_addr], $a1 [IN src_addr])
 -s 0xFFFF4008=Flash_Programming_interface
 
-
 ########## Constants and variables
+
+-s 0xBFC044B8=tblTaskData
+-s 0xFFFFFFF0=pCurrentTCB
+-s 0xFFFFF244=tblTCB
 
 #-s 0xBFC0084C=float_compare_how_table
 #-s 0xBFC04490=jump_table_from_0xBFC119C

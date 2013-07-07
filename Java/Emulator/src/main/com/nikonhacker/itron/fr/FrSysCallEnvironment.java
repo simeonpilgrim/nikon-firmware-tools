@@ -1,6 +1,7 @@
 package com.nikonhacker.itron.fr;
 
 import com.nikonhacker.BinaryArithmetics;
+import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.emu.FrEmulator;
 import com.nikonhacker.emu.Platform;
@@ -19,9 +20,11 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
 
     private final FrEmulator emulator;
+    private final CodeStructure codeStructure;
 
-    public FrSysCallEnvironment(Platform platform) {
+    public FrSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
         super(platform);
+        this.codeStructure = codeStructure;
         // Use a separate emulator, but sharing memory and interrupt controller
         emulator = new FrEmulator();
         emulator.setMemory(platform.getMemory());
@@ -38,11 +41,73 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             return new FrTaskInformation(objId, errorCode);
         }
         else {
+            // empty context
+            Integer addrContext = null;
+            Integer nextPC = null;
+
             Memory memory = platform.getMemory();
+            /* Get these labels only once for the first task, because it takes too long.
+               Actually, correct way is to have one function that returns at once complete task table,
+               otherwise we risk inconsistent data. */
+            if (codeStructure == null) {
+                // make only one warning
+                if (objId==1) {
+                    System.err.println("Next PC/Context not available! Code must be disassembled with 'structure' option first");
+                }
+            }
+            else {
+                if (objId==1) {
+                    // address of task constant data table
+                    if (codeStructure.tblTaskData==null) {
+                        System.err.println("Next PC/Context not available! No label called 'tblTaskData' was found in disassembly");
+                    }
+                    if (codeStructure.pCurrentTCB==null) {
+                        System.err.println("Next PC/Context not available! No label called 'pCurrentTCB' was found in disassembly");
+                    }
+                }
+
+                // gathering optional information
+                if (codeStructure.tblTaskData != null && codeStructure.pCurrentTCB != null) {
+
+                    // check if enough elements in task table
+                    if (objId>0 && objId<=memory.loadUnsigned16(codeStructure.tblTaskData)) {
+                        int elementSize = memory.loadUnsigned16(codeStructure.tblTaskData+2);
+
+                        // check if reasonable size of element
+                        if (elementSize>0 && elementSize<2048) {
+                            int taskData = codeStructure.tblTaskData+4+(objId-1)*elementSize;
+                            int TCB = memory.load32(taskData);
+
+                            // if it is current TCB, context may be not set yet
+                            if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
+                                nextPC = platform.getCpuState().getPc();
+                            }
+                            else {
+                                int context = memory.load32(TCB+0x18);
+
+                                // is context reasonable pointer?
+                                if (context!=0 && context!=-1) {
+                                    // load return-instruction-address from task context
+                                    nextPC = memory.load32(context);
+                                    addrContext = context;
+                                }
+                                else if (context==0) {
+                                    // if DORMANT state look for start address in constants
+                                    if ((memory.load32(TCB+8)&0x1F) == 0x10) {
+                                        nextPC = memory.load32(taskData+0x10);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             return new FrTaskInformation(objId, errorCode,
                     memory.load32(pk_robj + 8),
                     memory.load32(pk_robj + 4),
-                    memory.load32(pk_robj));
+                    memory.load32(pk_robj),
+                    nextPC,
+                    addrContext);
         }
     }
 
@@ -144,11 +209,11 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
     }
 
     public String[] getTaskPropertyNames() {
-        return new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex"};
+        return new String[]{"objectIdHex", "taskState", "taskPriority", "extendedInformationHex", "nextPcHex", "addrContextHex"};
     }
 
     public String[] getTaskColumnLabels() {
-        return new String[]{"Task Id", "State", "Priority", "Extended Information"};
+        return new String[]{"Task Id", "State", "Priority", "Extended Information", "Next PC", "Context addr"};
     }
 
     @Override
