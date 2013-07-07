@@ -32,6 +32,7 @@ public abstract class ITronObject {
         return objectId;
     }
 
+    /** Helper method required for GlazedList display */
     public String getObjectIdHex() {
         return "0x" + Format.asHex(objectId, 2);
     }
