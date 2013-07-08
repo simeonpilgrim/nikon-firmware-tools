@@ -337,6 +337,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
 
     public static void main(String[] args) throws EmulationException, IOException, ClassNotFoundException, UnsupportedLookAndFeelException, IllegalAccessException, InstantiationException {
+
+        // Workaround for JDK bug - https://code.google.com/p/nikon-firmware-tools/issues/detail?id=17
+        System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+
         if (args.length > 0) {
             if (new File(args[0]).exists()) {
                 imageFile[Constants.CHIP_FR] = new File(args[0]);
