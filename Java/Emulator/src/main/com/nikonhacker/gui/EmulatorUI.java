@@ -43,6 +43,7 @@ import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
+import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
@@ -2135,7 +2136,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
-                programmableTimers = new ProgrammableTimer[ExpeedIoListener.NUM_TIMER];
+                programmableTimers = new ProgrammableTimer[ExpeedIoListener.NUM_TIMER + ExpeedIoListener.NUM_FREERUN_TIMER];
                 serialInterfaces = new SerialInterface[ExpeedIoListener.NUM_SERIAL_IF];
                 clockGenerator = new FrClockGenerator();
                 interruptController = new FrInterruptController(platform[chip]);
@@ -2148,8 +2149,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
-                for (int i = 0; i < programmableTimers.length; i++) {
+                for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
                     programmableTimers[i] = new FrReloadTimer(i, interruptController, timerCycleCounterListener);
+                }
+                for (int i = 0; i < ExpeedIoListener.NUM_FREERUN_TIMER; i++) {
+                    programmableTimers[ExpeedIoListener.NUM_TIMER + i] = new FrFreeRunTimer(i, interruptController, timerCycleCounterListener);
                 }
 
                 // I/O ports

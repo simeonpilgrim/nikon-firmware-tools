@@ -4,6 +4,7 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
+import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
@@ -24,6 +25,16 @@ public class ExpeedIoListener extends IoActivityListener {
     private static final int REGISTER_TMRLRA2 = REGISTER_TMRLRA0 + 0x10;
     private static final int REGISTER_TMR2    = REGISTER_TMR0 + 0x10;
     private static final int REGISTER_TMCSR2  = REGISTER_TMCSR0 + 0x10;
+
+    // 32-bit FreeRun Timer
+    public static final  int NUM_FREERUN_TIMER= 2;
+    private static final int REGISTER_CPCLR0  = 0x100;
+    private static final int REGISTER_TCDT0   = REGISTER_CPCLR0 + 0x8;
+    private static final int REGISTER_TCCS0   = REGISTER_CPCLR0 + 0xE;
+
+    private static final int REGISTER_CPCLR1  = REGISTER_CPCLR0 + 0x30;
+    private static final int REGISTER_TCDT1   = REGISTER_CPCLR1 + 0x8;
+    private static final int REGISTER_TCCS1   = REGISTER_CPCLR1 + 0xE;
 
     // Serial ports
     /**
@@ -107,6 +118,10 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (byte)serialInterface.getFbyte1();
             }
         }
+        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now");
+        }
         return null;
     }
 
@@ -140,30 +155,58 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (serialInterface.getFcr1() << 8) | serialInterface.getFcr0();
                 case REGISTER_FBYTE20:
                     return (serialInterface.getFbyte2() << 8) | serialInterface.getFbyte1();
-                }
+            }
         }
-        // Reload Timer configuration registers
-        switch (addr) {
-            case REGISTER_TMRLRA0:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getReloadValue();
-            case REGISTER_TMR0:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getCurrentValue();
-            case REGISTER_TMCSR0:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getConfiguration();
+        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            int channel;
 
-            case REGISTER_TMRLRA1:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getReloadValue();
-            case REGISTER_TMR1:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getCurrentValue();
-            case REGISTER_TMCSR1:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getConfiguration();
+            if (addr >= REGISTER_CPCLR1) {
+                channel = NUM_TIMER + 1;
+                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
+            }
+            else {
+                channel = NUM_TIMER;
+            }
+            switch (addr) {
+                case REGISTER_CPCLR0:
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR() >> 16);
+                case REGISTER_CPCLR0+2:
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR() & 0xFFFF);
+                case REGISTER_TCDT0:
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT() >> 16);
+                case REGISTER_TCDT0+2:
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT() & 0xFFFF);
+                case REGISTER_TCCS0:
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCCS();
+                default:
+                    throw new RuntimeException("Warning: ignoring attempt to read 16-bit register in FreeRun Timer.");
+            }
+        }
+        else {
+            // Reload Timer configuration registers
+            switch (addr) {
+                case REGISTER_TMRLRA0:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getReloadValue();
+                case REGISTER_TMR0:
+                    return platform.getProgrammableTimers()[0].getCurrentValue();
+                case REGISTER_TMCSR0:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getConfiguration();
 
-            case REGISTER_TMRLRA2:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getReloadValue();
-            case REGISTER_TMR2:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getCurrentValue();
-            case REGISTER_TMCSR2:
-                return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getConfiguration();
+                case REGISTER_TMRLRA1:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getReloadValue();
+                case REGISTER_TMR1:
+                    return platform.getProgrammableTimers()[1].getCurrentValue();
+                case REGISTER_TMCSR1:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getConfiguration();
+
+                case REGISTER_TMRLRA2:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getReloadValue();
+                case REGISTER_TMR2:
+                    return platform.getProgrammableTimers()[2].getCurrentValue();
+                case REGISTER_TMCSR2:
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getConfiguration();
+            }
         }
         return null;
     }
@@ -179,6 +222,26 @@ public class ExpeedIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onLoadData32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
+        if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            int channel;
+
+            if (addr >= REGISTER_CPCLR1) {
+                channel = NUM_TIMER + 1;
+                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
+            }
+            else {
+                channel = NUM_TIMER;
+            }
+            switch (addr) {
+                case REGISTER_CPCLR0:
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR();
+                case REGISTER_TCDT0:
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT();
+                default:
+                    throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
+            }
+        }
         return null;
     }
 
@@ -232,6 +295,10 @@ public class ExpeedIoListener extends IoActivityListener {
                     break;
             }
         }
+        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now");
+        }
         else {
             switch (addr) {
                 // Delay interrupt register
@@ -284,6 +351,24 @@ public class ExpeedIoListener extends IoActivityListener {
                     break;
             }
         }
+        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            int channel;
+
+            if (addr >= REGISTER_CPCLR1) {
+                channel = NUM_TIMER + 1;
+                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
+            }
+            else {
+                channel = NUM_TIMER;
+            }
+            switch (addr) {
+                case REGISTER_TCCS0:
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTCCS(value); break;
+                default:
+                    throw new RuntimeException("Warning: ignoring attempt to write 16-bit register in FreeRun Timer.");
+            }
+        }
         else {
             // Reload Timer configuration registers
             switch (addr) {
@@ -318,6 +403,25 @@ public class ExpeedIoListener extends IoActivityListener {
     }
 
     public void onStore32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        // noop
+        if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+            // FreeRun timer
+            int channel;
+
+            if (addr >= REGISTER_CPCLR1) {
+                channel = NUM_TIMER + 1;
+                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
+            }
+            else {
+                channel = NUM_TIMER;
+            }
+            switch (addr) {
+                case REGISTER_CPCLR0:
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setCPCLR(value); break;
+                case REGISTER_TCDT0:
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTCDT(value); break;
+                default:
+                    throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
+            }
+        }
     }
 }
