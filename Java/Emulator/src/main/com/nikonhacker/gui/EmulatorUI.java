@@ -605,24 +605,30 @@ public class EmulatorUI extends JFrame implements ActionListener {
         updateStatusBar(chip);
     }
 
-    private void updateStatusBar(int chip) {
-        if (emulator[chip] != null) {
-            long totalCycles = emulator[chip].getTotalCycles();
-            long now = System.currentTimeMillis();
-            long cps;
-            try {
-                cps = (1000 * (totalCycles - lastUpdateCycles[chip])) / (now - lastUpdateTime[chip]);
-            } catch (Exception e) {
-                cps = -1;
-            }
+    private void updateStatusBar(final int chip) {
+        // Updates UI. Make sure it runs in the event dispatch thread
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (emulator[chip] != null) {
+                    long totalCycles = emulator[chip].getTotalCycles();
+                    long now = System.currentTimeMillis();
+                    long cps;
+                    try {
+                        cps = (1000 * (totalCycles - lastUpdateCycles[chip])) / (now - lastUpdateTime[chip]);
+                    } catch (Exception e) {
+                        cps = -1;
+                    }
 
-            lastUpdateCycles[chip] = totalCycles;
-            lastUpdateTime[chip] = now;
-            statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "Hz)");
-        }
-        else {
-            statusBar[chip].setText(statusText[chip]);
-        }
+                    lastUpdateCycles[chip] = totalCycles;
+                    lastUpdateTime[chip] = now;
+                    statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "Hz)");
+                }
+                else {
+                    statusBar[chip].setText(statusText[chip]);
+                }
+            }
+        });
     }
 
     private JPanel createToolBar(int chip) {
