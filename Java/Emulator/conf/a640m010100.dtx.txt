@@ -153,7 +153,7 @@
 -s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get Task Status */)
 -s 0xBFC02D98=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
 -s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
--s 0xBFC02E28=sys_cfg_int($a0 [IN bNumber], $a1 [IN low5bit_imc], $a [IN high3bit_imc] /* Setup int type, level, dmac */)
+-s 0xBFC02E28=sys_cfg_int($a0 [IN bNumber], $a1 [IN low5bit_imc], $a2 [IN high3bit_imc] /* Setup int type, level, dmac */)
 -s 0xBFC02E40=sys_deact_tsk($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
 -s 0xBFC031BC=check_FFFFFFE8_low11b_nonzero($v0 [OUT is_non_zero])
 -s 0xBFC0332C=change_task_priority
@@ -251,7 +251,7 @@
 -s 0xBFC12D14=setup_ILEV_DMA($a0 [IN interrupt_number])
 -s 0xBFC12D90=dis_INT_clearINTreq_01
 -s 0xBFC12DC8=dis_INT_clearINTreq_00($a0 [IN interrupt_number])
--s 0xBFC12E18=sys_cfg_irq($a0 [IN bNumber], $a1 [IN low5bit_imc], $a [IN high3bit_imc] /* Setup hw irq type, level, dmac; enable it */)
+-s 0xBFC12E18=sys_cfg_irq($a0 [IN bNumber], $a1 [IN low5bit_imc], $a2 [IN high3bit_imc] /* Setup hw irq type, level, dmac; enable it */)
 -s 0xBFC12E58=sys_clear_bit13_of_FFFFFFE8_00
 -s 0xBFC12E64=sys_set_bit5_of_FFFFFFE8_00
 -s 0xBFC12E70=sys_get_tid_00($v0 [OUT err_code], $a0 [IN ptr_to_tsk_id])
