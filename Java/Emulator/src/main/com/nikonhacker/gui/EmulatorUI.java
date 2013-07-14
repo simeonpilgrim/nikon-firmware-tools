@@ -2939,6 +2939,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(!isEmulatorPlaying[chip]);
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!isEmulatorPlaying[chip]);
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!isEmulatorPlaying[chip]);
+            if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(!isEmulatorPlaying[chip]);
         }
         else {
             loadMenuItem[chip].setEnabled(true); loadButton[chip].setEnabled(true);
@@ -2955,6 +2956,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(true);
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
+            if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(true);
         }
     }
 

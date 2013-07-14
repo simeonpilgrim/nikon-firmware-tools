@@ -23,19 +23,23 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
-    private javax.swing.Timer refreshTimer;
-    private final JList interruptQueueJList;
-    private final JLabel statusText;
+    private       javax.swing.Timer refreshTimer;
+    private final JList             interruptQueueJList;
+    private final JLabel            statusText;
 
     Timer interruptTimer = null;
 
-    public InterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final InterruptController interruptController, final Memory memory) {
+    private boolean editable = false;
+    private final JTabbedPane tabbedPane;
+    private final JButton removeButton;
+
+    public InterruptControllerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final InterruptController interruptController, final Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.interruptController = interruptController;
 
-        Insets buttonInsets = new Insets(1,1,1,1);
+        Insets buttonInsets = new Insets(1, 1, 1, 1);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
+        tabbedPane = new JTabbedPane();
 
         // Add custom panels, chip dependant
 
@@ -57,6 +61,19 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
 
         statusPanel.add(listScroller, BorderLayout.CENTER);
 
+        removeButton = new JButton("Remove");
+        removeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = interruptQueueJList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    interruptController.getInterruptRequestQueue().remove(selectedIndex);
+                    updateList();
+                }
+            }
+        });
+        statusPanel.add(removeButton, BorderLayout.SOUTH);
+
         tabbedPane.addTab("Status", null, statusPanel);
 
         // Add tab panel
@@ -73,14 +90,7 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
         tabbedPane.addChangeListener(new ChangeListener() {
             // This method is called whenever the selected tab changes
             public void stateChanged(ChangeEvent evt) {
-                JTabbedPane pane = (JTabbedPane)evt.getSource();
-                // Only refresh if corresponding tab is selected
-                if (pane.getSelectedIndex() == getStatusTabIndex()) {
-                    setStatusAutoRefresh(true);
-                }
-                else {
-                    setStatusAutoRefresh(false);
-                }
+                updateInterruptListRefreshTimer();
             }
         });
 
@@ -102,9 +112,9 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
         }
     }
 
-    public void setStatusAutoRefresh(boolean enabled) {
-        updateList();
-        if (enabled) {
+    protected void updateInterruptListRefreshTimer() {
+        // Only refresh if corresponding tab is selected && editable is false
+        if (tabbedPane.getSelectedIndex() == getStatusTabIndex() && !editable) {
             if (!refreshTimer.isRunning()) {
                 refreshTimer.start();
             }
@@ -116,6 +126,13 @@ public abstract class InterruptControllerFrame extends DocumentFrame {
         }
     }
 
+
+    public void setEditable(boolean editable) {
+        updateList();
+        this.editable = editable;
+        removeButton.setEnabled(editable);
+        updateInterruptListRefreshTimer();
+    }
 
     protected abstract void stopTimer();
 
