@@ -875,40 +875,40 @@ public class EmulatorUI extends JFrame implements ActionListener {
         for (int chip = 0; chip < 2; chip++) {
             //emulator play
             playMenuItem[chip] = new JMenuItem("Start (or resume) " + Constants.CHIP_LABEL[chip] + " emulator");
-            if (chip == Constants.CHIP_FR) playMenuItem[chip].setMnemonic(KeyEvent.VK_E);
-            playMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, ActionEvent.CTRL_MASK | CHIP_MODIFIER[chip]));
+            //if (chip == Constants.CHIP_FR) playMenuItem[chip].setMnemonic(KeyEvent.VK_E);
+            playMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, CHIP_MODIFIER[chip]));
             playMenuItem[chip].setActionCommand(COMMAND_EMULATOR_PLAY[chip]);
             playMenuItem[chip].addActionListener(this);
             runMenu.add(playMenuItem[chip]);
 
             //emulator debug
             debugMenuItem[chip] = new JMenuItem("Debug " + Constants.CHIP_LABEL[chip] + " emulator");
-            if (chip == Constants.CHIP_FR) debugMenuItem[chip].setMnemonic(KeyEvent.VK_G);
-            debugMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
+            //if (chip == Constants.CHIP_FR) debugMenuItem[chip].setMnemonic(KeyEvent.VK_G);
+            debugMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F6, CHIP_MODIFIER[chip]));
             debugMenuItem[chip].setActionCommand(COMMAND_EMULATOR_DEBUG[chip]);
             debugMenuItem[chip].addActionListener(this);
             runMenu.add(debugMenuItem[chip]);
 
             //emulator pause
             pauseMenuItem[chip] = new JMenuItem("Pause " + Constants.CHIP_LABEL[chip] + " emulator");
-            if (chip == Constants.CHIP_FR) pauseMenuItem[chip].setMnemonic(KeyEvent.VK_P);
-            pauseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //if (chip == Constants.CHIP_FR) pauseMenuItem[chip].setMnemonic(KeyEvent.VK_P);
+            pauseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F7, CHIP_MODIFIER[chip]));
             pauseMenuItem[chip].setActionCommand(COMMAND_EMULATOR_PAUSE[chip]);
             pauseMenuItem[chip].addActionListener(this);
             runMenu.add(pauseMenuItem[chip]);
 
             //emulator step
             stepMenuItem[chip] = new JMenuItem("Step " + Constants.CHIP_LABEL[chip] + " emulator");
-            if (chip == Constants.CHIP_FR) stepMenuItem[chip].setMnemonic(KeyEvent.VK_T);
-            stepMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0));
+            //if (chip == Constants.CHIP_FR) stepMenuItem[chip].setMnemonic(KeyEvent.VK_T);
+            stepMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F8, CHIP_MODIFIER[chip]));
             stepMenuItem[chip].setActionCommand(COMMAND_EMULATOR_STEP[chip]);
             stepMenuItem[chip].addActionListener(this);
             runMenu.add(stepMenuItem[chip]);
 
             //emulator stop
             stopMenuItem[chip] = new JMenuItem("Stop and reset " + Constants.CHIP_LABEL[chip] + " emulator");
-            if (chip == Constants.CHIP_FR) stopMenuItem[chip].setMnemonic(KeyEvent.VK_R);
-            playMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F5, ActionEvent.SHIFT_MASK | CHIP_MODIFIER[chip]));
+            //if (chip == Constants.CHIP_FR) stopMenuItem[chip].setMnemonic(KeyEvent.VK_R);
+            stopMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F9, CHIP_MODIFIER[chip]));
             stopMenuItem[chip].setActionCommand(COMMAND_EMULATOR_STOP[chip]);
             stopMenuItem[chip].addActionListener(this);
             runMenu.add(stopMenuItem[chip]);
@@ -917,7 +917,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
             //setup breakpoints
             breakpointMenuItem[chip] = new JMenuItem("Setup " + Constants.CHIP_LABEL[chip] + " breakpoints");
-            if (chip == Constants.CHIP_FR) breakpointMenuItem[chip].setMnemonic(KeyEvent.VK_B);
+            //if (chip == Constants.CHIP_FR) breakpointMenuItem[chip].setMnemonic(KeyEvent.VK_B);
             breakpointMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
             breakpointMenuItem[chip].setActionCommand(COMMAND_SETUP_BREAKPOINTS[chip]);
             breakpointMenuItem[chip].addActionListener(this);
