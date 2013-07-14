@@ -246,7 +246,7 @@ public class ExpeedIoListener extends IoActivityListener {
     }
 
     public void onStore8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48 * 4) {
+        if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48) {
             // Interrupt request level registers
             ((FrInterruptController)platform.getInterruptController()).updateRequestICR(addr - REGISTER_ICR00, value);
         }
