@@ -1116,6 +1116,7 @@ public class TxCPUState extends CPUState {
             System.out.println("TxCPUState.accepts() called while no InterruptController was defined");
             return false;
         }
+        // Note: this could be optimized by directly masking IE/ERL/EXL here instead of using methods that call a method that does bitshifting
         return  getPowerMode() == PowerMode.RUN
                 && isStatusIESet() // TBC IE is a filter for acceptance, not generation
                 && !isStatusERLSet()
