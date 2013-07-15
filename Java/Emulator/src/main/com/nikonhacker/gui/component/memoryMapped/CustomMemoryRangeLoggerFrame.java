@@ -15,6 +15,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Set;
@@ -48,6 +49,19 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(selectionPanelContainer, BorderLayout.NORTH);
         contentPanel.add(new JScrollPane(textArea), BorderLayout.CENTER);
+
+        JButton clearButton = new JButton("Clear log");
+        clearButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    textArea.clear();
+                } catch (IOException e1) {
+                    // ignore
+                }
+            }
+        });
+        contentPanel.add(clearButton, BorderLayout.SOUTH);
 
         getContentPane().add(contentPanel);
     }
