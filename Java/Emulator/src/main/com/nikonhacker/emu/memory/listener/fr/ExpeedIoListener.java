@@ -59,7 +59,11 @@ public class ExpeedIoListener extends IoActivityListener {
     private static final int REGISTER_FBYTE20      = 0x6E;
     private static final int REGISTER_FBYTE10      = 0x6F;
 
+    // Interrupt controller
     public static final int REGISTER_ICR00 = 0x440;
+    public static final int REGISTER_EIRR0 = 0x40;
+    public static final int REGISTER_ENIR0 = 0x41;
+    public static final int REGISTER_ELVR0 = 0x42;
 
 
     private final Platform platform;
@@ -118,9 +122,22 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (byte)serialInterface.getFbyte1();
             }
         }
-        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
+        else if ((addr >= REGISTER_CPCLR0 && addr < (REGISTER_TCCS0 + 2)) || (addr >= REGISTER_CPCLR1 && addr < (REGISTER_TCCS1 + 2))) {
             // FreeRun timer
             throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now");
+        }
+        else if ((addr >= REGISTER_EIRR0) && (addr < (REGISTER_ELVR0 + 2))) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            switch (addr) {
+                case REGISTER_EIRR0:
+                    return (byte)interruptController.getEirr();
+                case REGISTER_ENIR0:
+                    return (byte)interruptController.getEnir();
+                case REGISTER_ELVR0:
+                    return (byte)(interruptController.getElvr() >> 8);
+                case REGISTER_ELVR0+1:
+                    return (byte)(interruptController.getElvr() & 0xFF);
+            }
         }
         return null;
     }
@@ -183,6 +200,15 @@ public class ExpeedIoListener extends IoActivityListener {
                     throw new RuntimeException("Warning: ignoring attempt to read 16-bit register in FreeRun Timer.");
             }
         }
+        else if (addr>=REGISTER_EIRR0 && addr<(REGISTER_ELVR0 + 2)) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            switch (addr) {
+                case REGISTER_EIRR0:
+                    return ((interruptController.getEirr() << 8) | interruptController.getEnir());
+                case REGISTER_ELVR0:
+                    return interruptController.getElvr();
+            }
+        }
         else {
             // Reload Timer configuration registers
             switch (addr) {
@@ -242,6 +268,10 @@ public class ExpeedIoListener extends IoActivityListener {
                     throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
             }
         }
+        else if (addr == REGISTER_EIRR0) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            return ((interruptController.getEirr() << 24) | (interruptController.getEnir() << 16) | interruptController.getElvr());
+        }
         return null;
     }
 
@@ -299,6 +329,19 @@ public class ExpeedIoListener extends IoActivityListener {
             // FreeRun timer
             throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now");
         }
+        else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            switch (addr) {
+                case REGISTER_EIRR0:
+                    interruptController.setEirr(value); break;
+                case REGISTER_ENIR0:
+                    interruptController.setEnir(value); break;
+                case REGISTER_ELVR0:
+                    interruptController.setElvrHi(value); break;
+                case REGISTER_ELVR0+1:
+                    interruptController.setElvrLo(value); break;
+            }
+        }
         else {
             switch (addr) {
                 // Delay interrupt register
@@ -310,7 +353,6 @@ public class ExpeedIoListener extends IoActivityListener {
                         platform.getInterruptController().request(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     break;
-
             }
         }
         //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
@@ -369,6 +411,18 @@ public class ExpeedIoListener extends IoActivityListener {
                     throw new RuntimeException("Warning: ignoring attempt to write 16-bit register in FreeRun Timer.");
             }
         }
+        else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            switch (addr) {
+                case REGISTER_EIRR0:
+                    interruptController.setEirr(value >> 8);
+                    interruptController.setEnir(value & 0xFF);
+                    break;
+                case REGISTER_ELVR0:
+                    interruptController.setElvr(value);
+                    break;
+            }
+        }
         else {
             // Reload Timer configuration registers
             switch (addr) {
@@ -422,6 +476,12 @@ public class ExpeedIoListener extends IoActivityListener {
                 default:
                     throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
             }
+        }
+        else if (addr == REGISTER_EIRR0) {
+            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            interruptController.setEirr((value >> 24) & 0xFF);
+            interruptController.setEnir((value >> 16) & 0xFF);
+            interruptController.setElvr(value & 0xFFFF);
         }
     }
 }

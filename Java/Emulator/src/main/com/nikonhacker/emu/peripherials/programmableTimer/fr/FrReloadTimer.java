@@ -81,6 +81,7 @@ public class FrReloadTimer extends ProgrammableTimer {
         // UF
         if ((configuration & 0x0004) == 0) {
             isInUnderflowCondition = false;
+            interruptController.removeRequest(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
         }
 
         // CNTE
