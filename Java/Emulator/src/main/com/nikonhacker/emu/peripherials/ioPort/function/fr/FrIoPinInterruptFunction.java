@@ -7,8 +7,12 @@ import com.nikonhacker.emu.peripherials.ioPort.function.IoPinInterruptFunction;
 
 public class FrIoPinInterruptFunction extends IoPinInterruptFunction {
 
-    public FrIoPinInterruptFunction(InterruptController interruptController, int interruptNumber) {
-        super(Constants.CHIP_LABEL[Constants.CHIP_FR], interruptController, interruptNumber);
+    private int externalInterruptChannel;
+
+    public FrIoPinInterruptFunction(InterruptController interruptController, int externalInterruptChannel) {
+        super(Constants.CHIP_LABEL[Constants.CHIP_FR], interruptController,
+                FrInterruptController.INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET + externalInterruptChannel);
+        this.externalInterruptChannel = externalInterruptChannel;
     }
 
     @Override
@@ -18,9 +22,7 @@ public class FrIoPinInterruptFunction extends IoPinInterruptFunction {
 
     @Override
     public void setValue(int value) {
-        // Hardcoded falling edge mode
-        if (value == 0) {
-            interruptController.request(interruptNumber);
-        }
+        // connect to external interrupt source 6
+        ((FrInterruptController)interruptController).setExternalInterruptChannelValue(externalInterruptChannel, value);
     }
 }

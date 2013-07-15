@@ -39,8 +39,8 @@ public class FrIoPort extends IoPort {
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             ioPorts[IoPort.PORT_7].getPin(bitNumber).setFunction(ioPorts[IoPort.PORT_7].inputFunctions[bitNumber]);
         }
-        // Override Port7.pin6 as interrupt 0x16 trigger
-        ioPorts[IoPort.PORT_7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 0x16));
+        // Override Port7.pin6 as external interrupt trigger channel 6 (interrupt 0x16)
+        ioPorts[IoPort.PORT_7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 6));
 
         return ioPorts;
     }
