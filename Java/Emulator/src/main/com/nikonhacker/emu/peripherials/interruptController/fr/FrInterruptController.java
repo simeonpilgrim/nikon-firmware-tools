@@ -138,16 +138,17 @@ public class FrInterruptController extends AbstractInterruptController {
     }
 
     /* typical usage for external interrupt registers:
-    0x2ABA     written to ELVR0(0x00000042)               (@0x00101518)
-                read from ELVR0(0x00000042) : 0x2ABA      (@0x00101522)
-    0xAABA     written to ELVR0(0x00000042)               (@0x00101532)
-    0x00       written to EIRR0(0x00000040)               (@0x001017CE)
-    0x41       written to ENIR0(0x00000041)               (@0x001017D4)
-                read from ENIR0(0x00000041) : 0x41        (@0x001A88AE)
-    0x01       written to ENIR0(0x00000041)               (@0x001A88AE)
-                read from ELVR0(0x00000042) : 0xAABA      (@0x001A88C0)
-    0xAABA     written to ELVR0(0x00000042)               (@0x001A88D0)
-    0xBF       written to EIRR0(0x00000040)               (@0x001A88DA)
+    (L=low level, H=high level, R=rising edge, F=falling edge)
+    0x2ABA     written to ELVR0(0x00000042)               (@0x00101518) => 0b0010_1010_1011_1010: trigger on LRRRRFRR
+                read from ELVR0(0x00000042) : 0x2ABA      (@0x00101522) => 0b0010_1010_1011_1010: trigger on LRRRRFRR
+    0xAABA     written to ELVR0(0x00000042)               (@0x00101532) => 0b1010_1010_1011_1010: trigger on RRRRRFRR
+    0x00       written to EIRR0(0x00000040)               (@0x001017CE) => 0b0000_0000          : clear all channels
+    0x41       written to ENIR0(0x00000041)               (@0x001017D4) => 0b0100_0001          : ch 6 and 0 enabled
+                read from ENIR0(0x00000041) : 0x41        (@0x001A88AE) => 0b0100_0001          : ch 6 and 0 enabled
+    0x01       written to ENIR0(0x00000041)               (@0x001A88AE) => 0b0000_0001          : only ch 0 enabled
+                read from ELVR0(0x00000042) : 0xAABA      (@0x001A88C0) => 0b1010_1010_1011_1010: trigger on RRRRRFRR
+    0xAABA     written to ELVR0(0x00000042)               (@0x001A88D0) => 0b1010_1010_1011_1010: trigger on RRRRRFRR
+    0xBF       written to EIRR0(0x00000040)               (@0x001A88DA) => 0b1011_1111          : clear channel 6
     */
 
     /** change state of external interrupt input */
