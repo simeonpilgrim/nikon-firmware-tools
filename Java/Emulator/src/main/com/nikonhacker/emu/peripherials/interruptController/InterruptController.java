@@ -13,6 +13,9 @@ public interface InterruptController {
 
     public void removeRequest(InterruptRequest interruptRequest);
 
+    /** remove request if it is edge-triggered */
+    public void removeEdgeTriggeredRequest(InterruptRequest interruptRequest);
+
     public boolean hasPendingRequests();
 
     public InterruptRequest getNextRequest();

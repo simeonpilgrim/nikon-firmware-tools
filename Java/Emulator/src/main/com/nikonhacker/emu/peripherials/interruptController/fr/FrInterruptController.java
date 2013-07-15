@@ -133,6 +133,10 @@ public class FrInterruptController extends AbstractInterruptController {
         }
     }
 
+    public void removeEdgeTriggeredRequest(InterruptRequest interruptRequest) {
+        // empty, because all FR interrupts are all level-triggered
+    }
+
     /* typical usage for external interrupt registers:
     0x2ABA     written to ELVR0(0x00000042)               (@0x00101518)
                 read from ELVR0(0x00000042) : 0x2ABA      (@0x00101522)

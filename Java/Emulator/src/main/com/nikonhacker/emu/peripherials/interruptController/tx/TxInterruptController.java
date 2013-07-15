@@ -370,6 +370,14 @@ public class TxInterruptController extends AbstractInterruptController {
         }
     }
 
+    public void removeEdgeTriggeredRequest(InterruptRequest interruptRequest) {
+        // TODO
+        // TX interrupt controller is different, having no external interrupts. After having problems with general solution, the implementation was split.
+        // Also I wanted to keep your code with call of interruptController.request(...) as much as possible the same. Then it is more sure to work correctly.
+        // All TX interrupts are in fact configurable level/edge/etc. So generic solution was not possible.
+        // Well, it is easy to test in parts and easy to do code review.
+    }
+
     @Override
     public String getStatus() {
         return "IVR=0x" + Format.asHex(ivr, 8) + " - ILEV=0x" + Format.asHex(ilev, 8) + " - Current interrupt level: " + getIlevCmask();

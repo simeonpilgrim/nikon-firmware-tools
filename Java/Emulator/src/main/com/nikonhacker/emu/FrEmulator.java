@@ -130,7 +130,7 @@ public class FrEmulator extends Emulator {
                                     printer2.indent();
                                 }
                             }
-                            interruptController.removeRequest(interruptRequest);
+                            interruptController.removeEdgeTriggeredRequest(interruptRequest);
                             ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc, context);
 
                             ((FrCPUState)cpuState).setILM(interruptRequest.getICR(), false);

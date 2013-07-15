@@ -27,6 +27,11 @@ public class DummyInterruptController implements InterruptController {
 
     }
 
+    @Override
+    public void removeEdgeTriggeredRequest(InterruptRequest interruptRequest) {
+
+    }
+
     public boolean hasPendingRequests() {
         return false;
     }
