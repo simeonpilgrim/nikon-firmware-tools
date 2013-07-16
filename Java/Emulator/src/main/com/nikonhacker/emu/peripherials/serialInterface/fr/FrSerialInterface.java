@@ -426,7 +426,7 @@ public class FrSerialInterface extends SerialInterface {
         }
         else {
             if (!isScrRxeSet()) {
-                if (logSerialMessages) System.err.println("FrSerialInterface.write() was called while Rx is disabled");
+                if (logSerialMessages) System.err.println("FrSerialInterface.write(0x" + Format.asHex(value, 2) + ") was called while Rx is disabled. Ignored");
             }
             else {
                 Queue<Integer> rxFifo;
