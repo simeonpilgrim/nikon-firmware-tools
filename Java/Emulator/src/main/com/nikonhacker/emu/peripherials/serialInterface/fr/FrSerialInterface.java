@@ -358,8 +358,8 @@ public class FrSerialInterface extends SerialInterface {
         Queue<Integer> txFifo = isTxFifo1()?fifo1:fifo2;
 
         if (!isScrTxeSet()) {
-            // TODO: shouldn't we just return 0 if Tx is disabled ?
             if (logSerialMessages) System.err.println("FrSerialInterface.read()  was called while Tx is disabled");
+            return 0;
         }
 
         // NOTE: normally, TDR empty is set when transmission starts, while bus idle is set when transmission ends
