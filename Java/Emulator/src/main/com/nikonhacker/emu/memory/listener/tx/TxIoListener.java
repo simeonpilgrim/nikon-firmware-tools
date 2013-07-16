@@ -1090,7 +1090,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 3:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP + 3:
-                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is this register writable ?
+                        throw new RuntimeException("Cannot write to TBTRDCAP register");
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -1108,7 +1108,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0 + 3:
                         txInputCaptureTimer.setCapCr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 3:
-                        throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
+                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
@@ -1373,7 +1373,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 2:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP + 2:
-                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is this register writable ?
+                        throw new RuntimeException("Cannot write to TBTRDCAP register");
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -1392,7 +1392,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0 + 2:
                         txInputCaptureTimer.setCapCr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 2:
-                        throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
+                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
@@ -1533,7 +1533,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP:
                         txInputCaptureTimer.setTbtCap(value); break;
                     case REGISTER_TBTRDCAP:
-                        txInputCaptureTimer.setCurrentValue(value); break; // TODO is this register writable ?
+                        throw new RuntimeException("Cannot write to TBTRDCAP register");
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
@@ -1552,7 +1552,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0:
                         txInputCaptureTimer.setCapCr(captureChannel, value); break;
                     case REGISTER_TCCAP0:
-                        throw new RuntimeException("Cannot write to TBTRDCAP register of channel " + captureChannel);
+                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
