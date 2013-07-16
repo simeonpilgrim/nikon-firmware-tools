@@ -22,7 +22,6 @@ public class FrIoPinInterruptFunction extends IoPinInterruptFunction {
 
     @Override
     public void setValue(int value) {
-        // connect to external interrupt source 6
         ((FrInterruptController)interruptController).setExternalInterruptChannelValue(externalInterruptChannel, value);
     }
 }
