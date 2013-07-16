@@ -697,7 +697,7 @@
 -s 0xBFC470C0=INTF_body
 -s 0xBFC47148=Task0x8
 -s 0xBFC47468=transmit_2bytes_response
--s 0xBFC475A4=cal_HSC0_checksum
+-s 0xBFC475A4=cal_HSC0_checksum($a0 [IN source /* if $a0==0 => TX buffer, otherwise => RX buffer */], $v0 [OUT checksum])
 -s 0xBFC47610=transmit_HSC0_TX_buffer
 -s 0xBFC476DC=save_HSC0_RXdata /* SRC = payload in HSC1_RX_buffer, DEST = second address in tsk8_table */
 -s 0xBFC478C4=dynamic_call_table0xFFFF5A6C
