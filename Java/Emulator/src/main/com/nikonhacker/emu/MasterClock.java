@@ -49,6 +49,10 @@ public class MasterClock implements Runnable {
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
 
+        computeFrequencies();
+    }
+
+    public void computeFrequencies() {
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
         for (ClockableEntry entry : entries) {
@@ -126,7 +130,7 @@ public class MasterClock implements Runnable {
             for (ClockableEntry currentEntry : entries) {
                 // Increment its counter
                 currentEntry.counterValue++;
-                if (currentEntry.counterValue == currentEntry.counterThreshold) {
+                if (currentEntry.counterValue >= currentEntry.counterThreshold) {
                     // Threshold reached for this entry
                     //System.err.println("Threshold matched for " + currentEntry.clockable.getClass().getSimpleName() + ", which is " + (currentEntry.enabled?"enabled":"disabled"));
                     // Reset Counter
