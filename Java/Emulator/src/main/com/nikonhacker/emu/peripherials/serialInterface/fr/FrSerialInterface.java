@@ -14,7 +14,7 @@ import java.util.Queue;
  * Behaviour based on spec in http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
  */
 public class FrSerialInterface extends SerialInterface {
-    public static final int FIFO_SIZE = 16;
+    public static final int FIFO_SIZE = 128; // Spec says 16, but code splits message at 0x80
 
     public static final int SCR_TXE_MASK  = 0b0000_0001;
     public static final int SCR_RXE_MASK  = 0b0000_0010;
