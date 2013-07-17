@@ -14,6 +14,17 @@ public class MasterClock implements Runnable {
 
     private boolean running = false;
 
+    /**
+     * The total elapsed time since the start of the MasterClock, in picoseconds (e-12)
+     * MAX_LONG being (2e63 - 1) = 9.22e18, it will overflow after 9223372 seconds,
+     * which is 2562 hours or more than 100 emulated days.
+     */
+    private long totalElapsedTimePs;
+
+    /**
+     * The duration represented by one MasterClock loop, in picoseconds (e-12)
+     */
+    private long masterClockLoopDurationPs;
 
     public MasterClock() {
     }
@@ -63,6 +74,8 @@ public class MasterClock implements Runnable {
         for (ClockableEntry entry : entries) {
             entry.counterThreshold = (int) (leastCommonMultipleFrequency / entry.clockable.getFrequencyHz());
         }
+
+        masterClockLoopDurationPs = 1000000000000L/leastCommonMultipleFrequency;
     }
 
     /**
@@ -136,7 +149,7 @@ public class MasterClock implements Runnable {
                     // Reset Counter
                     currentEntry.counterValue = 0;
                     if (currentEntry.enabled) {
-                        // And it's enabled. Call its onClockTick() method
+                        // If it's enabled. Call its onClockTick() method
                         try {
                             Object result = currentEntry.clockable.onClockTick();
                             //System.err.println(currentEntry.clockable.getClass().getSimpleName() + ".onClockTick() returned " + result);
@@ -190,6 +203,8 @@ public class MasterClock implements Runnable {
                     }
                 }
             }
+            // Increment elapsed time
+            totalElapsedTimePs += masterClockLoopDurationPs;
         }
         //System.err.println("Clock is stopped\r\n=======================================================");
     }
@@ -205,6 +220,18 @@ public class MasterClock implements Runnable {
         return allEntriesDisabled;
     }
 
+    public void resetTotalElapsedTimePs() {
+        totalElapsedTimePs = 0;
+    }
+
+
+    public long getTotalElapsedTimePs() {
+        return totalElapsedTimePs;
+    }
+
+    public String getFormatedTotalElapsedTime() {
+        return totalElapsedTimePs/1000000000.0 + "ms";
+    }
 
     //
     // Code from http://stackoverflow.com/questions/4201860/how-to-find-gcf-lcm-on-a-set-of-numbers
