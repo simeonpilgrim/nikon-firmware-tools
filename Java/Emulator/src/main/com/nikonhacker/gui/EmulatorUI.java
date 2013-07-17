@@ -622,7 +622,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
                     lastUpdateCycles[chip] = totalCycles;
                     lastUpdateTime[chip] = now;
-                    statusBar[chip].setText(statusText[chip] + " (" + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "Hz)");
+                    statusBar[chip].setText(statusText[chip] + " (" + masterClock.getFormatedTotalElapsedTime() + " or " + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "cps)");
                 }
                 else {
                     statusBar[chip].setText(statusText[chip]);
@@ -3111,6 +3111,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
             Thread.sleep(120);
         } catch (InterruptedException e) {
             // nop
+        }
+        if (prefs.isSyncPlay()) {
+            masterClock.resetTotalElapsedTimePs();
         }
         loadImage(chip);
     }
