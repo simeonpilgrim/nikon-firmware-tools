@@ -31,7 +31,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
     private final PrintWriterArea textArea;
 
     // By default, only log code access
-    private final Set<DebuggableMemory.AccessSource> selectedAccessSource = EnumSet.of(DebuggableMemory.AccessSource.CODE);
+    private final Set<DebuggableMemory.AccessSource> selectedAccessSources = EnumSet.of(DebuggableMemory.AccessSource.CODE);
 
     public CustomMemoryRangeLoggerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, EmulatorUI ui, final DebuggableMemory memory, final CPUState cpuState) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -79,7 +79,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
                     memory.removeActivityListener(listener);
                     textArea.getPrintWriter().println("Stopping previous listener");
                 }
-                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSource);
+                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSources, ui.getMasterClock());
                 memory.addActivityListener(listener);
                 listeners.put(minAddressField, listener);
                 textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
@@ -97,15 +97,15 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
 
         for (final DebuggableMemory.AccessSource accessSource : DebuggableMemory.AccessSource.selectableAccessSource) {
             final JCheckBox checkBox = new JCheckBox(accessSource.name());
-            checkBox.setSelected(selectedAccessSource.contains(accessSource));
+            checkBox.setSelected(selectedAccessSources.contains(accessSource));
             checkBox.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (checkBox.isSelected()) {
-                        selectedAccessSource.add(accessSource);
+                        selectedAccessSources.add(accessSource);
                     }
                     else {
-                        selectedAccessSource.remove(accessSource);
+                        selectedAccessSources.remove(accessSource);
                     }
                 }
             });
