@@ -600,6 +600,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
         return prefs;
     }
 
+    public MasterClock getMasterClock() {
+        return masterClock;
+    }
+
     public void setStatusText(int chip, String message) {
         statusText[chip] = message;
         updateStatusBar(chip);
@@ -622,7 +626,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
                     lastUpdateCycles[chip] = totalCycles;
                     lastUpdateTime[chip] = now;
-                    statusBar[chip].setText(statusText[chip] + " (" + masterClock.getFormatedTotalElapsedTime() + " or " + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "cps)");
+                    statusBar[chip].setText(statusText[chip] + " (" + masterClock.getFormatedTotalElapsedTimeMs() + " or " + totalCycles + " cycles emulated. Current speed is " + (cps < 0 ? "?" : ("" + cps)) + "cps)");
                 }
                 else {
                     statusBar[chip].setText(statusText[chip]);

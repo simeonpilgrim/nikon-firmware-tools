@@ -1,9 +1,12 @@
 package com.nikonhacker.emu;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 public class MasterClock implements Runnable {
+
+    private DecimalFormat milliSecondFormater = new DecimalFormat("0000.000000000");
 
     /**
      * All objects to "clock", encapsulated in an internal class to store their counter value and threshold
@@ -229,8 +232,8 @@ public class MasterClock implements Runnable {
         return totalElapsedTimePs;
     }
 
-    public String getFormatedTotalElapsedTime() {
-        return totalElapsedTimePs/1000000000.0 + "ms";
+    public String getFormatedTotalElapsedTimeMs() {
+        return milliSecondFormater.format(totalElapsedTimePs/1000000000.0) + "ms";
     }
 
     //
