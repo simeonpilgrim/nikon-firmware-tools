@@ -356,6 +356,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                 }
             }
             // determine conversion interval
+            // TODO: this is plain wrong:
             conversionIntervalCycles = getClkAdclk();
             // register timer (add is protected against multiple adds of the same listener)
             emulator.addCycleCounterListener(this);
