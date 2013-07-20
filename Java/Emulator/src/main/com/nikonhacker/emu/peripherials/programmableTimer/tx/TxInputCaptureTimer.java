@@ -211,7 +211,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
 
         if (countEnabled && prescalerEnabled) {
             scale = 1;
-            intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getT0Frequency() /* T0tick/s */ ;
+            intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getT0Hz() /* T0tick/s */ ;
 
             if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
                 /* unsustainable frequency */

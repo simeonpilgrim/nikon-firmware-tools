@@ -31,8 +31,9 @@ public class TxEmulator extends Emulator {
 
 
     @Override
-    public long getFrequencyHz() {
-        return 80_000_000;
+    public int getFrequencyHz() {
+        // TODO use ((TxClockGenerator)platform.getClockGenerator).getFsysHz();
+        return 80000000;
     }
 
     /**
