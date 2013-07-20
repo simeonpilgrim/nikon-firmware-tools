@@ -65,7 +65,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
             initScheduler = true;
         }
         // ICRE
-        if ((configuration & 0x100)!=0) {
+        if ((configuration & 0x100) != 0) {
             interruptEnabled = true;
             // TODO : we do not know the interrupt number
             throw new RuntimeException("FreeRun timer interrupt is not implemented");
@@ -76,12 +76,12 @@ public class FrFreeRunTimer extends ProgrammableTimer {
             // TODO : clear interrupt request on controller
         }
         // ECKE
-        if ((configuration & 0x8000) == 1) {
+        if ((configuration & 0x8000) != 0) {
             // TODO : we do not know external clocks
             throw new RuntimeException("FreeRun timer external clock is not implemented");
         }
         // SCLR
-        if ((configuration & 0x10)!=0) {
+        if ((configuration & 0x10) != 0) {
             longCurrentValue = 0;
         }
         // STOP
