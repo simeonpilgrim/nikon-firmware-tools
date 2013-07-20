@@ -719,6 +719,9 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
         if (cycleCounter >= CYCLES_PER_BYTE) {
             if (delayedValue != null) {
                 super.valueReady(delayedValue);
+                // device may stop transmission automatically if FIFO was used and configured like this
+                if (!isMod1TxeSet())
+                    remainRegistered = false;
             }
             else {
                 // End of transmission - unregister
