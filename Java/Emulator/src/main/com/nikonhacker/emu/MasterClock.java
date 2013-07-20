@@ -267,7 +267,7 @@ public class MasterClock implements Runnable {
 
 
     // This is a wrapper for the device, its counter value and its counter threshold
-    private class ClockableEntry {
+    private static class ClockableEntry {
         Clockable                clockable;
         ClockableCallbackHandler clockableCallbackHandler;
         int counterValue     = 0;

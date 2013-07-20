@@ -320,7 +320,7 @@ public class LcdSerialPanel extends SerialDevicePanel {
     }
 
 
-    class ImagePanel extends JPanel {
+    static class ImagePanel extends JPanel {
         BufferedImage image;
 
         ImagePanel() {

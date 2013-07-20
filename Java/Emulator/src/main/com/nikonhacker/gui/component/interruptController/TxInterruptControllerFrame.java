@@ -161,7 +161,7 @@ public class TxInterruptControllerFrame extends InterruptControllerFrame {
         ui.setStatusText(Constants.CHIP_TX, "Stopped interrupt timer");
     }
 
-    private class ListEntry {
+    private static class ListEntry {
         int value;
         String text;
 

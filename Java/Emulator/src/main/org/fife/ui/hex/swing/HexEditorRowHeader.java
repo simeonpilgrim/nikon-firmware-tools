@@ -146,7 +146,7 @@ class HexEditorRowHeader extends JList implements TableModelListener {
 	 * @author Robert Futrell
 	 * @version 1.0
 	 */
-	private class CellRenderer extends DefaultListCellRenderer {
+	private static class CellRenderer extends DefaultListCellRenderer {
 
 		private static final long serialVersionUID = 1L;
 

@@ -15,7 +15,7 @@ public class PrintWriterLoggerIoWire extends Abstract2PinComponent {
         ((PrintWriterLoggerForwardingPin) pin2).setTargetPin(pin1);
     }
 
-    private class PrintWriterLoggerForwardingPin extends ForwardingPin {
+    private static class PrintWriterLoggerForwardingPin extends ForwardingPin {
         private final PrintWriter printWriter;
 
         public PrintWriterLoggerForwardingPin(String name, PrintWriter printWriter) {
