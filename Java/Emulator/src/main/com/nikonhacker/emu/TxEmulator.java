@@ -148,7 +148,7 @@ public class TxEmulator extends Emulator {
                             BreakTrigger trigger = breakCondition.getBreakTrigger();
                             if (trigger != null) {
                                 if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                    trigger.log(breakLogPrintWriter, platform.cpuState, context.callStack, platform.memory);
+                                    trigger.log(breakLogPrintWriter, platform, context.callStack);
                                 }
                                 if (trigger.getInterruptToRequest() != null) {
                                     platform.interruptController.request(trigger.getInterruptToRequest());
