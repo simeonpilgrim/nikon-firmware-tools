@@ -2,6 +2,9 @@ package com.nikonhacker.disassembly;
 
 import com.nikonhacker.Format;
 
+/**
+ * Note: this class has a natural ordering that is inconsistent with equals
+ */
 public class Range implements Comparable<Range> {
     private int start;
     private int end;
