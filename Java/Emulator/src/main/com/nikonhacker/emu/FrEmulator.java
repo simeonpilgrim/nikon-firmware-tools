@@ -9,6 +9,7 @@ import com.nikonhacker.disassembly.fr.FrInstructionSet;
 import com.nikonhacker.disassembly.fr.FrStatement;
 import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -40,8 +41,9 @@ public class FrEmulator extends Emulator {
     }
 
     @Override
-    public long getFrequencyHz() {
-        return 132_000_000;
+    public int getFrequencyHz() {
+        // TODO use ((FrClockGenerator)platform.getClockGenerator).getXxx();
+        return FrClockGenerator.FREQUENCY;
     }
 
     /**

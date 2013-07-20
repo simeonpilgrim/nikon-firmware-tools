@@ -9,14 +9,29 @@ import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
  */
 public class TxClockGenerator implements ClockGenerator {
 
-    private static final long FC = 80000000; // Hz, or 80MHz
-    private int gear;
+    private static final int F_OSC_HZ = 80_000_000; // High speed oscillator, 80MHz
+    private static final int FS_HZ    = 1_000_000; // Low speed oscillator, say 1MHz
+
+    private int sysCr0;
+    private int pllSel;
+
     private int gearDivider = 1;
     private int prescaler;
     private int prescalerDivider = 2;
+
+
+
+
+
+
+    // TODO don't store individual fields ! Store the register value and add getters for fields
+
+
+
+
     private boolean fpSel;
-    private int scoSel;
-    private int nmiFlg;
+    private int     scoSel;
+    private int     nmiFlg;
     private int rstFlg = 0b0001; // Power-on reset by default
 
     public TxClockGenerator() {
@@ -28,23 +43,20 @@ public class TxClockGenerator implements ClockGenerator {
      * to be input to each prescaler is obtained by selecting the "fperiph" clock at the SYSCR1<FPSEL> and then dividing
      * the clock according to the setting of SYSCR1<PRCK2:0>. After the controller is reset, fperiph/2 is selected as φT0.
      */
-    public long getT0Frequency() {
-        return getFPeriph() / prescalerDivider;
-    }
 
     public byte getSysCr0() {
-        return (byte) gear;
+        return (byte) sysCr0;
     }
 
     public void setSysCr0(byte sysCr0) {
-        gear = sysCr0 & 0xb111;
-        switch (gear) {
+        this.sysCr0 = sysCr0 & 0b111;
+        switch (this.sysCr0) {
             case 0b000: gearDivider = 1; break;
             case 0b100: gearDivider = 2; break;
             case 0b101: gearDivider = 4; break;
             case 0b110: gearDivider = 8; break;
             case 0b111: gearDivider = 16; break;
-            default: throw new RuntimeException("Unrecognized gear in register SYSCR0 : 0b" + Format.asHex(gear, 8));
+            default: throw new RuntimeException("Unrecognized gear in register SYSCR0 : 0b" + Format.asHex(this.sysCr0, 8));
         }
     }
 
@@ -79,6 +91,23 @@ public class TxClockGenerator implements ClockGenerator {
         setSysCr2((byte) ((value >> 16) & 0xFF));
     }
 
+    public int getPllSel() {
+        return pllSel;
+    }
+
+    public void setPllSel(int pllsel) {
+        boolean wasPllselSet = isPllselSet();
+        this.pllSel = pllsel & 0x1;
+        if (isPllselSet() != wasPllselSet) {
+            // TODO
+            //notifyFrequencyChange();
+        }
+    }
+
+    public boolean isPllselSet() {
+        return pllSel != 0;
+    }
+
     public int readAndClearNmiFlag() {
         int value = nmiFlg;
         nmiFlg = 0;
@@ -101,16 +130,36 @@ public class TxClockGenerator implements ClockGenerator {
         this.rstFlg = rstFlg;
     }
 
-    public long getFPeriph() {
+
+    public int getT0Hz() {
+        return getFPeriphHz() / prescalerDivider;
+    }
+
+    public int getFcHz() {
+        if (isPllselSet()) {
+            // TODO
+            return F_OSC_HZ;
+        }
+        else {
+            return F_OSC_HZ;
+        }
+    }
+
+    public int getFPeriphHz() {
         if (fpSel) {
-            return FC;
+            return F_OSC_HZ;
         }
         else {
             return getFGear();
         }
     }
 
-    private long getFGear() {
-        return FC / gearDivider;
+    public int getFsysHz() {
+        // TODO
+        return F_OSC_HZ;
+    }
+
+    private int getFGear() {
+        return F_OSC_HZ / gearDivider;
     }
 }

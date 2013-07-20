@@ -39,7 +39,7 @@ public class MasterClockTest  extends TestCase {
             this.frequencyHz = frequencyHz;
         }
 
-        public long getFrequencyHz() {
+        public int getFrequencyHz() {
             return frequencyHz;
         }
 

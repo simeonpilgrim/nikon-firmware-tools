@@ -6,7 +6,7 @@ public interface Clockable {
      * This method return the frequency of this device, in Hertz
      * @return
      */
-    public long getFrequencyHz();
+    public int getFrequencyHz();
 
     /**
      * This method is called each time the clock ticks
