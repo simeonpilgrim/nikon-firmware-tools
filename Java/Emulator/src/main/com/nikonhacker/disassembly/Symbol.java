@@ -120,7 +120,7 @@ public class Symbol {
         return out;
     }
 
-    public class Parameter {
+    public static class Parameter {
 
         private int register = REG_NONE;
         private String inVariableName = null;

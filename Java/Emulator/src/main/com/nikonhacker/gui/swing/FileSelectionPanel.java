@@ -160,7 +160,7 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
         }
     }
 
-    public class DependentField {
+    public static class DependentField {
         JTextField field;
         String suffix;
 
