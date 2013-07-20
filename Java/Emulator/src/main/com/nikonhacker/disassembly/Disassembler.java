@@ -373,25 +373,37 @@ public abstract class Disassembler {
     }
 
     public void readOptions(int chip, String filename) throws IOException, ParsingException {
-        BufferedReader fp = new BufferedReader(new FileReader(filename));
-
-        String buf;
-        while ((buf = fp.readLine()) != null) {
-            buf = buf.trim();
-            if (buf.length() > 0 && buf.charAt(0) != '#') {
-                if ((buf.charAt(0) == '-') && buf.length() > 2) {
-                    // This is an option line
-                    if (Character.isWhitespace(buf.charAt(2))) {
-                        String option = buf.substring(0, 2);
-                        String params = buf.substring(2).trim();
-                        if (StringUtils.isNotBlank(params)) {
-                            processOptions(chip, new String[]{option, params});
-                            continue;
+        FileReader reader = null;
+        BufferedReader fp = null;
+        try {
+            reader = new FileReader(filename);
+            fp = new BufferedReader(reader);
+            String buf;
+            while ((buf = fp.readLine()) != null) {
+                buf = buf.trim();
+                if (buf.length() > 0 && buf.charAt(0) != '#') {
+                    if ((buf.charAt(0) == '-') && buf.length() > 2) {
+                        // This is an option line
+                        if (Character.isWhitespace(buf.charAt(2))) {
+                            String option = buf.substring(0, 2);
+                            String params = buf.substring(2).trim();
+                            if (StringUtils.isNotBlank(params)) {
+                                processOptions(chip, new String[]{option, params});
+                                continue;
+                            }
                         }
                     }
-                }
 
-                processOptions(chip, new String[]{buf});
+                    processOptions(chip, new String[]{buf});
+                }
+            }
+        }
+        finally {
+            if (fp != null) {
+                fp.close();
+            }
+            if (reader != null) {
+                reader.close();
             }
         }
     }
