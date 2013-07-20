@@ -31,6 +31,8 @@ public abstract class SerialInterface extends AbstractSerialDevice {
 
     public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
         this.serialInterfaceNumber = serialInterfaceNumber;
+        // TODO: syncing on emulator should be replaced by a sync on masterclock
+        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
         this.interruptController = interruptController;
         this.emulator = emulator;
 

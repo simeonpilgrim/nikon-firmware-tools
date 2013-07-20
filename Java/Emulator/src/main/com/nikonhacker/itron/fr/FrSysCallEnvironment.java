@@ -19,16 +19,16 @@ import com.nikonhacker.itron.*;
 public class FrSysCallEnvironment extends SysCallEnvironment {
     private static final int BASE_ADDRESS_SYSCALL = 0xFFFFFF00;
 
-    private final FrEmulator emulator;
+    private final FrEmulator    emulator;
     private final CodeStructure codeStructure;
 
     public FrSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
         super(platform);
+
+        // Using a separate emulator, but sharing memory and interrupt controller
+        emulator = new FrEmulator(syscallPlatform);
+
         this.codeStructure = codeStructure;
-        // Use a separate emulator, but sharing memory and interrupt controller
-        emulator = new FrEmulator();
-        emulator.setMemory(platform.getMemory());
-        emulator.setInterruptController(platform.getInterruptController());
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
@@ -45,7 +45,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             Integer addrContext = null;
             Integer nextPC = null;
 
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             /* Get these labels only once for the first task, because it takes too long.
                Actually, correct way is to have one function that returns at once complete task table,
                otherwise we risk inconsistent data. */
@@ -80,7 +80,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
                             // if it is current TCB, context may be not set yet
                             if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = platform.getCpuState().getPc();
+                                nextPC = syscallPlatform.getCpuState().getPc();
                             }
                             else {
                                 int context = memory.load32(TCB+0x18);
@@ -121,7 +121,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             return new SemaphoreInformation(objId, errorCode);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             return new SemaphoreInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
@@ -136,7 +136,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             return new EventFlagInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             return new EventFlagInformation(objId, errorCode, memory.load32(pk_robj), memory.load32(pk_robj + 4), memory.load32(pk_robj + 8));
         }
     }
@@ -151,7 +151,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            return new MailboxInformation(objId, errorCode, platform.getMemory().load32(pk_robj), platform.getMemory().load32(pk_robj + 4), platform.getMemory().load32(pk_robj + 8));
+            return new MailboxInformation(objId, errorCode, syscallPlatform.getMemory().load32(pk_robj), syscallPlatform.getMemory().load32(pk_robj + 4), syscallPlatform.getMemory().load32(pk_robj + 8));
         }
     }
 
@@ -168,7 +168,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
     private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
         // Create alternate cpuState
-        FrCPUState tmpCpuState = ((FrCPUState)platform.getCpuState()).createCopy();
+        FrCPUState tmpCpuState = ((FrCPUState)syscallPlatform.getCpuState()).createCopy();
 
         // Tweak alt cpuState
         tmpCpuState.I = 0; // prevent interrupts
@@ -180,10 +180,10 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
         tmpCpuState.setReg(5, r5);
         tmpCpuState.setReg(12, BinaryArithmetics.signExtend(8, syscallNumber));
 
-        emulator.setCpuState(tmpCpuState);
+        syscallPlatform.setCpuState(tmpCpuState);
 
         // Prepare code
-        Memory memory = platform.getMemory();
+        Memory memory = syscallPlatform.getMemory();
         memory.store16(BASE_ADDRESS_SYSCALL, 0x1F40);                      // 1F40    INT     #0x40; R12=sys_xxx_xxx(r4=R4, r5=R5)
         memory.store16(BASE_ADDRESS_SYSCALL + 2, 0xE0FF);                  // HALT, infinite loop
 

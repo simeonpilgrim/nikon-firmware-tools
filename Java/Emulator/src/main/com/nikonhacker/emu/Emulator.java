@@ -5,7 +5,6 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.StatementContext;
 import com.nikonhacker.emu.memory.DebuggableMemory;
-import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 
@@ -23,15 +22,17 @@ public abstract class Emulator implements Clockable {
 
     StatementContext context = new StatementContext();
 
-    // TODO : Shouldn't these 2 only be in the StatementContext object ?
-    // TODO : or better yet: the Emulator should receive a Platform object
-    // TODO @Deprecated
-    protected DebuggableMemory memory;
-    // TODO @Deprecated
-    protected CPUState cpuState;
+    protected Platform platform;
 
-    protected InterruptController interruptController = new DummyInterruptController();
     protected final List<CycleCounterListener> cycleCounterListeners = new ArrayList<CycleCounterListener>();
+
+    /**
+     * An Emulator must receive a platform.
+     * @param platform
+     */
+    public Emulator(Platform platform) {
+        this.platform = platform;
+    }
 
     /**
      * Provide an output to send disassembled form of executed instructions to
@@ -88,20 +89,10 @@ public abstract class Emulator implements Clockable {
         this.exitSleepLoop = true;
     }
 
-
-    public void setCpuState(CPUState cpuState) {
-        this.cpuState = cpuState;
-        context.cpuState = cpuState;
-    }
-
-    public void setMemory(DebuggableMemory memory) {
-        this.memory = memory;
+    // TODO shouldn't the context be filled in the constructor ? Are memory, etc. changed after Emulator construction ?
+    public void setContext(DebuggableMemory memory, CPUState cpuState, InterruptController interruptController) {
         context.memory = memory;
-    }
-
-
-    public void setInterruptController(InterruptController interruptController) {
-        this.interruptController = interruptController;
+        context.cpuState = cpuState;
         context.interruptController = interruptController;
     }
 

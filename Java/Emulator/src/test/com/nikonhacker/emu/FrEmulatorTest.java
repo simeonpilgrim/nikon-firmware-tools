@@ -36,25 +36,25 @@ public class FrEmulatorTest extends TestCase {
     static DebuggableMemory memory;
 
     static {
-        emulator = new FrEmulator();
-        Platform platform = new Platform();
+        MasterClock masterClock = new MasterClock();
+        Platform platform = new Platform(masterClock);
+
+        cpuState = new FrCPUState(BASE_ADDRESS);
+        platform.setCpuState(cpuState);
+
+        memory = new DebuggableMemory(false);
+        memory.setLogMemoryMessages(false);
+        platform.setMemory(memory);
+
         FrInterruptController interruptController = new FrInterruptController(platform);
+        platform.setInterruptController(interruptController);
+
+        emulator = new FrEmulator(platform);
 
         emulator.clearBreakConditions();
         emulator.addBreakCondition(new AlwaysBreakCondition());
 
-        cpuState = new FrCPUState(BASE_ADDRESS);
-        emulator.setCpuState(cpuState);
-
-        memory = new DebuggableMemory(false);
-        memory.setLogMemoryMessages(false);
-        emulator.setMemory(memory);
-
-        platform.setCpuState(cpuState);
-        platform.setMemory(memory);
-        platform.setInterruptController(interruptController);
-
-        emulator.setInterruptController(interruptController);
+        emulator.setContext(memory, cpuState, interruptController);
     }
 
     /*

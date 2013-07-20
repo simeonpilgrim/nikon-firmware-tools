@@ -57,6 +57,8 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     private Integer delayedValue;
 
     public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        // TODO: syncing on emulator should be replaced by a sync on masterclock
+        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
         super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
     }
 

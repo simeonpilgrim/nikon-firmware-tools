@@ -87,6 +87,8 @@ public class FrSerialInterface extends SerialInterface {
 
 
     public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+        // TODO: syncing on emulator should be replaced by a sync on masterclock
+        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
         super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
         // This is pure speculation but seems to work for interrupt 5 at least
         rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;

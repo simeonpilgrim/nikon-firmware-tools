@@ -5,6 +5,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
+import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
@@ -21,10 +22,11 @@ import java.util.List;
  */
 public class Platform {
 
-    private CPUState            cpuState;
-    private DebuggableMemory    memory;
-    private ClockGenerator      clockGenerator;
-    private InterruptController interruptController;
+    private MasterClock masterClock;
+    CPUState         cpuState;
+    DebuggableMemory memory;
+    private ClockGenerator clockGenerator;
+    InterruptController interruptController = new DummyInterruptController();
     private ProgrammableTimer[] programmableTimers;
     private IoPort[]            ioPorts;
     private SerialInterface[]   serialInterfaces;
@@ -33,6 +35,14 @@ public class Platform {
     private AdConverter         adConverter;
     private RealtimeClock       realtimeClock;
     private KeyCircuit          keyCircuit;
+
+    public Platform(MasterClock masterClock) {
+        this.masterClock = masterClock;
+    }
+
+    public MasterClock getMasterClock() {
+        return masterClock;
+    }
 
     public CPUState getCpuState() {
         return cpuState;
