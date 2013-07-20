@@ -16,7 +16,7 @@ import java.util.Queue;
  */
 public class TxSerialInterface extends SerialInterface implements CycleCounterListener {
     private static final int SERIAL_RX_FIFO_SIZE = 4;
-    private static final int CYCLES_PER_BYTE = 10;
+    private static final int CYCLES_PER_BYTE = 500;
 
     /**
      * Rx buffer
