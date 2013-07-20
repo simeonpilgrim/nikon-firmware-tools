@@ -6,7 +6,7 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.fr.Syscall;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.CallStackItem;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
@@ -181,27 +181,26 @@ public class BreakTrigger {
     /**
      * This is the default logging behaviour
      * @param printWriter printWriter to which the log must be output
-     * @param cpuState optional cpu state at the time the condition matches
+     * @param platform the platform we're running
      * @param callStack optional call stack at the time the condition matches
-     * @param memory
      */
-    public void log(PrintWriter printWriter, CPUState cpuState, Deque<CallStackItem> callStack, DebuggableMemory memory) {
-        String msg;
+    public void log(PrintWriter printWriter, Platform platform, Deque<CallStackItem> callStack) {
+        String msg = platform.getMasterClock().getFormatedTotalElapsedTimeMs() + " ";
         if (function != null) {
             // This is a function call. Parse its arguments and log them
-            msg = function.getName() + "(";
+            msg += function.getName() + "(";
             if (function.getParameterList() != null) {
                 for (Symbol.Parameter parameter : function.getParameterList()) {
                     if (parameter.getInVariableName() != null) {
                         String paramString = parameter.getInVariableName() + "=";
-                        int value = cpuState.getReg(parameter.getRegister());
+                        int value = platform.getCpuState().getReg(parameter.getRegister());
                         if (parameter.getInVariableName().startsWith("sz")) {
                             paramString+="\"";
                             // Dump as String
-                            int character = memory.loadUnsigned8(value++, com.nikonhacker.emu.memory.DebuggableMemory.AccessSource.CODE);
+                            int character = platform.getMemory().loadUnsigned8(value++, com.nikonhacker.emu.memory.DebuggableMemory.AccessSource.CODE);
                             while (character > 0) {
                                 paramString += (char)character;
-                                character = memory.loadUnsigned8(value++, com.nikonhacker.emu.memory.DebuggableMemory.AccessSource.CODE);
+                                character = platform.getMemory().loadUnsigned8(value++, com.nikonhacker.emu.memory.DebuggableMemory.AccessSource.CODE);
                             }
                             paramString+="\"";
                         }
@@ -219,7 +218,7 @@ public class BreakTrigger {
             msg +=") ";
         }
         else {
-            msg = name + " triggered at 0x" + Format.asHex(cpuState.pc, 8);
+            msg += name + " triggered at 0x" + Format.asHex(platform.getCpuState().pc, 8);
         }
 
         if (callStack != null) {
