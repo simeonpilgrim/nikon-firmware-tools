@@ -29,7 +29,8 @@ public class FrEmulator extends Emulator {
 
     FrStatement statement = new FrStatement();
 
-    public FrEmulator() {
+    public FrEmulator(Platform platform) {
+        super(platform);
     }
 
     @Override
@@ -63,11 +64,11 @@ public class FrEmulator extends Emulator {
         try {
             statement.reset();
 
-            statement.getNextStatement(memory, cpuState.pc);
+            statement.getNextStatement(platform.memory, platform.cpuState.pc);
 
             statement.setInstruction(FrInstructionSet.instructionMap[statement.data[0]]);
 
-            statement.decodeOperands(cpuState.pc, memory);
+            statement.decodeOperands(platform.cpuState.pc, platform.memory);
 
             if (printer != null) {
                 // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
@@ -75,7 +76,7 @@ public class FrEmulator extends Emulator {
                 if (printer2 != null) {
                     // OK. copy is still not null
                     statement.formatOperandsAndComment(context, false, outputOptions);
-                    printer2.print("0x" + Format.asHex(cpuState.pc, 8) + " " + statement.toString(outputOptions));
+                    printer2.print("0x" + Format.asHex(platform.cpuState.pc, 8) + " " + statement.toString(outputOptions));
 
                     switch(statement.getInstruction().getFlowType()) {
                         case CALL:
@@ -107,10 +108,10 @@ public class FrEmulator extends Emulator {
             /* Delay slot processing */
             if (context.nextPc != null) {
                 if (context.delaySlotDone) {
-                    cpuState.pc = context.nextPc;
+                    platform.cpuState.pc = context.nextPc;
                     context.nextPc = null;
                     if (context.nextReturnAddress != null) {
-                        cpuState.setReg(FrCPUState.RP, context.nextReturnAddress);
+                        platform.cpuState.setReg(FrCPUState.RP, context.nextReturnAddress);
                         context.nextReturnAddress = null;
                     }
                 }
@@ -120,11 +121,11 @@ public class FrEmulator extends Emulator {
             }
             else {
                 // If not in a delay slot, check interrupts
-                if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-                    FrInterruptRequest interruptRequest = (FrInterruptRequest) interruptController.getNextRequest();
+                if(platform.interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
+                    FrInterruptRequest interruptRequest = (FrInterruptRequest) platform.interruptController.getNextRequest();
                     //Double test because lack of synchronization means the status could have changed in between
                     if (interruptRequest != null) {
-                        if (cpuState.accepts(interruptRequest)){
+                        if (platform.cpuState.accepts(interruptRequest)){
                             if (printer != null) {
                                 IndentPrinter printer2 = printer;
                                 if (printer2 != null) {
@@ -132,10 +133,10 @@ public class FrEmulator extends Emulator {
                                     printer2.indent();
                                 }
                             }
-                            interruptController.removeEdgeTriggeredRequest(interruptRequest);
-                            ((FrInterruptController)interruptController).processInterrupt(interruptRequest.getInterruptNumber(), cpuState.pc, context);
+                            platform.interruptController.removeEdgeTriggeredRequest(interruptRequest);
+                            ((FrInterruptController)platform.interruptController).processInterrupt(interruptRequest.getInterruptNumber(), platform.cpuState.pc, context);
 
-                            ((FrCPUState)cpuState).setILM(interruptRequest.getICR(), false);
+                            ((FrCPUState)platform.cpuState).setILM(interruptRequest.getICR(), false);
                         }
                     }
                 }
@@ -146,17 +147,17 @@ public class FrEmulator extends Emulator {
                 //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (debug)
                 synchronized (breakConditions) {
                     for (BreakCondition breakCondition : breakConditions) {
-                        if (breakCondition.matches(cpuState, memory)) {
+                        if (breakCondition.matches(platform.cpuState, platform.memory)) {
                             BreakTrigger trigger = breakCondition.getBreakTrigger();
                             if (trigger != null) {
                                 if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                    trigger.log(breakLogPrintWriter, cpuState, context.callStack, memory);
+                                    trigger.log(breakLogPrintWriter, platform.cpuState, context.callStack, platform.memory);
                                 }
                                 if (trigger.getInterruptToRequest() != null) {
-                                    interruptController.request(trigger.getInterruptToRequest());
+                                    platform.interruptController.request(trigger.getInterruptToRequest());
                                 }
                                 if (trigger.getPcToSet() != null) {
-                                    cpuState.pc = trigger.getPcToSet();
+                                    platform.cpuState.pc = trigger.getPcToSet();
                                 }
                             }
                             if (trigger == null || trigger.mustBreak()) {
@@ -194,7 +195,7 @@ public class FrEmulator extends Emulator {
         catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
-            System.err.println(cpuState);
+            System.err.println(platform.cpuState);
             try {
                 statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
@@ -202,7 +203,7 @@ public class FrEmulator extends Emulator {
             catch(Exception e1) {
                 System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
-            System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
+            System.err.println("(on or before PC=0x" + Format.asHex(platform.cpuState.pc, 8) + ")");
             throw new EmulationException(e);
         }
         return null;
@@ -223,17 +224,16 @@ public class FrEmulator extends Emulator {
 
         FrCPUState cpuState = new FrCPUState(initialPc);
 
-        Platform platform = new Platform();
+        MasterClock masterClock = new MasterClock();
+        Platform platform = new Platform(masterClock);
         platform.setCpuState(cpuState);
         platform.setMemory(memory);
 
-        FrEmulator emulator = new FrEmulator();
+        FrEmulator emulator = new FrEmulator(platform);
 
-        emulator.setMemory(memory);
-        emulator.setCpuState(cpuState);
-        emulator.setInterruptController(new FrInterruptController(platform));
+        emulator.setContext(memory, cpuState, new FrInterruptController(platform));
         emulator.setPrinter(new PrintWriter(System.out));
 
-        new MasterClock().add(new FrEmulator(), null, true);
+        masterClock.add(new FrEmulator(platform), null, true);
     }
 }

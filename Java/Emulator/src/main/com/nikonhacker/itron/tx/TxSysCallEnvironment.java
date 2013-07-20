@@ -27,10 +27,10 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
 
     public TxSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
         super(platform);
+        // Using a separate emulator, but sharing memory (and interrupt controller, though not used in Tx)
+        emulator = new TxEmulator(syscallPlatform);
+
         this.codeStructure = codeStructure;
-        // Use a separate emulator, but sharing memory
-        this.emulator = new TxEmulator();
-        this.emulator.setMemory(platform.getMemory());
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
@@ -43,7 +43,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new TxTaskInformation(objId, errorCode);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             int stateValue = memory.load32(pk_robj);
             /* Strangely, the TX implementation always returns 0 (OK) as error code, even when task_id does not exist (optimization ?).
 
@@ -90,7 +90,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                             int TCB = codeStructure.tblTCB + (objId-1) * 0x10;
                             // if it is current TCB, context may be not set yet
                             if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = platform.getCpuState().getPc();
+                                nextPC = syscallPlatform.getCpuState().getPc();
                             } else {
                                 addrContext = memory.load32(TCB+0xC);
 
@@ -145,7 +145,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new SemaphoreInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             // Note: structure is different from µITRON 3
             return new SemaphoreInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
@@ -167,7 +167,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new EventFlagInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             // Note: structure is different from µITRON 3
             return new EventFlagInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
@@ -189,7 +189,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             return new MailboxInformation(objId, errorCode, 0, 0, 0);
         }
         else {
-            Memory memory = platform.getMemory();
+            Memory memory = syscallPlatform.getMemory();
             return new MailboxInformation(objId, errorCode, 0, memory.load32(pk_robj), memory.load32(pk_robj + 4));
         }
     }
@@ -217,7 +217,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             }
             else {
                 // Create alternate cpuState
-                TxCPUState tmpCpuState = ((TxCPUState)platform.getCpuState()).createCopy();
+                TxCPUState tmpCpuState = ((TxCPUState)syscallPlatform.getCpuState()).createCopy();
 
                 // Tweak alt cpuState
                 tmpCpuState.clearStatusIE(); // prevent interrupts
@@ -229,10 +229,10 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 tmpCpuState.setReg(TxCPUState.A1, a1);
                 tmpCpuState.setReg(TxCPUState.V0, address + 1); // assume all Tx syscalls are in 16b ISA
 
-                emulator.setCpuState(tmpCpuState);
+                syscallPlatform.setCpuState(tmpCpuState);
 
                 // Prepare code
-                Memory memory = platform.getMemory();
+                Memory memory = syscallPlatform.getMemory();
                 memory.store16(BASE_ADDRESS_SYSCALL, 0xEA40);                      // EA40  jalr    $v0
                 memory.store16(BASE_ADDRESS_SYSCALL + 2, 0x6500);                  // 6500    nop
                 memory.store16(BASE_ADDRESS_SYSCALL + 4, 0x6500);                  // 6500  nop

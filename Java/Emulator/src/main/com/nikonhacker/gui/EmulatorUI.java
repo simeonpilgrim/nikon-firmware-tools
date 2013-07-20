@@ -2046,6 +2046,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private void loadImage(final int chip) {
         //System.err.println("Loading image for " + Constants.CHIP_LABEL[chip]);
         try {
+
+            // 1. CLEANUP
+
             // Stop timers if active from a previous session (reset)
             if (platform[chip] != null && platform[chip].getProgrammableTimers()[0].isActive()) {
                 for (ProgrammableTimer timer : platform[chip].getProgrammableTimers()) {
@@ -2081,49 +2084,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // Remove old emulator from the list of clockable devices
             masterClock.remove(emulator[chip]);
 
+
+            // 2. CREATE NEW
+
+            // TODO We should not create a new platform, just reset it
+            // TODO Otherwise, the cross-linkings risks memory leaks
+            platform[chip] = new Platform(masterClock);
+
             // Create a brand new emulator
-            emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator()):(new TxEmulator());
-
-            // Add it to the list of clockable devices, in disabled state
-            masterClock.add(emulator[chip], new ClockableCallbackHandler() {
-                @Override
-                public void onNormalExit(Object o) {
-                    try {
-                        isEmulatorPlaying[chip] = false;
-                        emulator[chip].clearBreakConditions();
-                        signalEmulatorStopped(chip);
-                        if (o instanceof BreakCondition) {
-                            if (((BreakCondition)o).getBreakTrigger() != null) {
-                                setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
-                                statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
-                            }
-                            setStatusText(chip, "Emulation complete");
-                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-                        }
-                        else {
-                            setStatusText(chip, "Emulation complete" + ((o==null)?"":(": " + o.toString())));
-                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-                        }
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    updateState(chip);
-                }
-
-                @Override
-                public void onException(Exception e) {
-                    isEmulatorPlaying[chip] = false;
-                    emulator[chip].clearBreakConditions();
-                    signalEmulatorStopped(chip);
-                    e.printStackTrace();
-                    String message = e.getMessage();
-                    if (StringUtils.isEmpty(message)) {
-                        message = e.getClass().getName();
-                    }
-                    JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", Constants.CHIP_LABEL[chip] + " Emulator error", JOptionPane.ERROR_MESSAGE);
-                }
-            }, false);
+            emulator[chip] = (chip == Constants.CHIP_FR)?(new FrEmulator(platform[chip])):(new TxEmulator(platform[chip]));
 
             // Prepare all devices
             CPUState cpuState;
@@ -2139,10 +2108,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             KeyCircuit keyCircuit = null;
             AdConverter adConverter = null;
             TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
-
-            // TODO We should not create a new platform, just reset it
-            // TODO Otherwise, the cross-linkings risks memory leaks
-            platform[chip] = new Platform();
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -2293,8 +2258,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
-            emulator[chip].setMemory(memory);
-            emulator[chip].setInterruptController(interruptController);
+            // TODO
+            emulator[chip].setContext(memory, cpuState, interruptController);
             emulator[chip].clearCycleCounterListeners();
             if (timerCycleCounterListener != null) {
                 emulator[chip].addCycleCounterListener(timerCycleCounterListener);
@@ -2318,6 +2283,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
             }
 
+            // 3. RESTORE
+
             if (prefs.isAutoEnableTimers(chip)) {
                 toggleProgrammableTimers(chip);
             }
@@ -2334,6 +2301,47 @@ public class EmulatorUI extends JFrame implements ActionListener {
                     if (wasIoPortsFrameOpen[c]) toggleIoPortsWindow(c);
                 }
             }
+
+            // Finally, add the emulator to the list of clockable devices, in disabled state
+            masterClock.add(emulator[chip], new ClockableCallbackHandler() {
+                @Override
+                public void onNormalExit(Object o) {
+                    try {
+                        isEmulatorPlaying[chip] = false;
+                        emulator[chip].clearBreakConditions();
+                        signalEmulatorStopped(chip);
+                        if (o instanceof BreakCondition) {
+                            if (((BreakCondition)o).getBreakTrigger() != null) {
+                                setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
+                                statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
+                            }
+                            setStatusText(chip, "Emulation complete");
+                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                        }
+                        else {
+                            setStatusText(chip, "Emulation complete" + ((o==null)?"":(": " + o.toString())));
+                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                        }
+                    }
+                    catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    updateState(chip);
+                }
+
+                @Override
+                public void onException(Exception e) {
+                    isEmulatorPlaying[chip] = false;
+                    emulator[chip].clearBreakConditions();
+                    signalEmulatorStopped(chip);
+                    e.printStackTrace();
+                    String message = e.getMessage();
+                    if (StringUtils.isEmpty(message)) {
+                        message = e.getClass().getName();
+                    }
+                    JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", Constants.CHIP_LABEL[chip] + " Emulator error", JOptionPane.ERROR_MESSAGE);
+                }
+            }, false);
 
             updateState(chip);
 
@@ -3050,7 +3058,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private void prepareEmulation(final int chip) {
         //System.err.println("Preparing emulation of " + Constants.CHIP_LABEL[chip]);
         isEmulatorPlaying[chip] = true;
-        emulator[chip].setCpuState(platform[chip].getCpuState());
         emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
         masterClock.setEnabled(emulator[chip], true);
         // TODO what's the use of this here ?

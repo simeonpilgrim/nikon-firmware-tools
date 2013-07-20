@@ -18,7 +18,8 @@ public class TxEmulator extends Emulator {
 
     TxStatement statement = new TxStatement();
 
-    public TxEmulator() {
+    public TxEmulator(Platform platform) {
+        super(platform);
     }
 
     @Override
@@ -48,12 +49,12 @@ public class TxEmulator extends Emulator {
         try {
             statement.reset();
 
-            if (((TxCPUState) cpuState).is16bitIsaMode) {
-                statement.fill16bInstruction(memory.loadInstruction16(cpuState.pc), cpuState.pc, memory);
-                statement.decode16BitOperands(cpuState.pc);
+            if (((TxCPUState) platform.cpuState).is16bitIsaMode) {
+                statement.fill16bInstruction(platform.memory.loadInstruction16(platform.cpuState.pc), platform.cpuState.pc, platform.memory);
+                statement.decode16BitOperands(platform.cpuState.pc);
             }
             else {
-                statement.fill32bInstruction(memory.loadInstruction32(cpuState.pc));
+                statement.fill32bInstruction(platform.memory.loadInstruction32(platform.cpuState.pc));
                 statement.decode32BitOperands();
             }
 
@@ -63,7 +64,7 @@ public class TxEmulator extends Emulator {
                 if (printer2 != null) {
                     // OK. copy is still not null
                     statement.formatOperandsAndComment(context, false, outputOptions);
-                    printer2.print("0x" + Format.asHex(cpuState.pc, 8) + " " + statement.toString(outputOptions));
+                    printer2.print("0x" + Format.asHex(platform.cpuState.pc, 8) + " " + statement.toString(outputOptions));
 
                     switch(statement.getInstruction().getFlowType()) {
                         case CALL:
@@ -95,7 +96,7 @@ public class TxEmulator extends Emulator {
             /* Delay slot processing */
             if (context.nextPc != null) {
                 if (context.delaySlotDone) {
-                    cpuState.setPc(context.nextPc);
+                    platform.cpuState.setPc(context.nextPc);
                     context.nextPc = null;
                     if (context.nextReturnAddress != null) {
                         int targetRegister = TxCPUState.RA;
@@ -103,7 +104,7 @@ public class TxEmulator extends Emulator {
                             targetRegister = context.nextReturnAddressTargetRegister;
                             context.nextReturnAddressTargetRegister = null;
                         }
-                        cpuState.setReg(targetRegister, context.nextReturnAddress);
+                        platform.cpuState.setReg(targetRegister, context.nextReturnAddress);
                         context.nextReturnAddress = null;
                     }
                 }
@@ -113,11 +114,11 @@ public class TxEmulator extends Emulator {
             }
             else {
                 // If not in a delay slot, check interrupts
-                if(interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
-                    final InterruptRequest interruptRequest = interruptController.getNextRequest();
+                if(platform.interruptController.hasPendingRequests()) { // This call is not synchronized, so it skips fast
+                    final InterruptRequest interruptRequest = platform.interruptController.getNextRequest();
                     //Double test because lack of synchronization means the status could have changed in between
                     if (interruptRequest != null) {
-                        if (cpuState.accepts(interruptRequest)){
+                        if (platform.cpuState.accepts(interruptRequest)){
                             if (printer != null) {
                                 IndentPrinter printer2 = printer;
                                 if (printer2 != null) {
@@ -127,12 +128,12 @@ public class TxEmulator extends Emulator {
                             }
                             // TODO : We probably should not remove the request from queue automatically.
                             // TODO   This has to be done explicitely by writing to INTCLR register
-                            interruptController.removeRequest(interruptRequest);
+                            platform.interruptController.removeRequest(interruptRequest);
                             // TODO : Currently, interrupts are not checked in delay slots (see above).
                             // TODO   Permit that and use address of branch instruction instead of PC if in delay slot !
                             // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
                             context.pushInterrupt(interruptRequest);
-                            ((TxInterruptController)interruptController).processInterrupt((TxInterruptRequest) interruptRequest, cpuState.getPc(), context);
+                            ((TxInterruptController)platform.interruptController).processInterrupt((TxInterruptRequest) interruptRequest, platform.cpuState.getPc(), context);
                         }
                     }
                 }
@@ -143,17 +144,17 @@ public class TxEmulator extends Emulator {
                 //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (debug)
                 synchronized (breakConditions) {
                     for (BreakCondition breakCondition : breakConditions) {
-                        if (breakCondition.matches(cpuState, memory)) {
+                        if (breakCondition.matches(platform.cpuState, platform.memory)) {
                             BreakTrigger trigger = breakCondition.getBreakTrigger();
                             if (trigger != null) {
                                 if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                    trigger.log(breakLogPrintWriter, cpuState, context.callStack, memory);
+                                    trigger.log(breakLogPrintWriter, platform.cpuState, context.callStack, platform.memory);
                                 }
                                 if (trigger.getInterruptToRequest() != null) {
-                                    interruptController.request(trigger.getInterruptToRequest());
+                                    platform.interruptController.request(trigger.getInterruptToRequest());
                                 }
                                 if (trigger.getPcToSet() != null) {
-                                    cpuState.pc = trigger.getPcToSet();
+                                    platform.cpuState.pc = trigger.getPcToSet();
                                 }
                             }
                             if (trigger == null || trigger.mustBreak()) {
@@ -191,14 +192,14 @@ public class TxEmulator extends Emulator {
         catch (Exception e) {
             e.printStackTrace();
             System.err.println(e.getMessage());
-            System.err.println(cpuState);
+            System.err.println(platform.cpuState);
             try {
                 statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
             } catch (Exception e1) {
                 System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
-            System.err.println("(on or before PC=0x" + Format.asHex(cpuState.pc, 8) + ")");
+            System.err.println("(on or before PC=0x" + Format.asHex(platform.cpuState.pc, 8) + ")");
             throw new EmulationException(e);
         }
         return null;
