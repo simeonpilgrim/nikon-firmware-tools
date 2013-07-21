@@ -102,7 +102,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             if (getModClk() != 0) {
                 // Not in Event Counter mode
                 // Compute timing
-                intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getT0Hz() /* T0tick/s */ ;
+                intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getFt0Hz() /* T0tick/s */ ;
 
                 if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
                     /* unsustainable frequency */

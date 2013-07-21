@@ -41,6 +41,10 @@ public class TxInterruptController extends AbstractInterruptController {
     private int intClr  = 0x0;
     private int dreqflg = 0x000000FF;
 
+    // Note: this flag is sometimes referred in the spec as being part of the Clock Generator,
+    // and is in its address range. It seems much more logical to have it here though, as it's described in chapter 6
+    private int nmiFlg;
+
     private final static int Ilev_Mlev_pos   = 31;
     private final static int Ilev_Cmask_mask = 0b00000000_00000000_00000000_00000111;
 
@@ -325,11 +329,11 @@ public class TxInterruptController extends AbstractInterruptController {
      * @return true if interrupt could be requested
      */
     public boolean request(InterruptRequest interruptRequest) {
-        if (((TxCPUState)platform.getCpuState()).getPowerMode() != TxCPUState.PowerMode.RUN) {
+        if (((TxCPUState) platform.getCpuState()).getPowerMode() != TxCPUState.PowerMode.RUN) {
             // See if this interrupt can clear standby state
             int interruptNumber = interruptRequest.getInterruptNumber();
             if (isImcgIntxen(getIMCGSectionForInterrupt(interruptNumber))) {
-                ((TxCPUState)platform.getCpuState()).setPowerMode(TxCPUState.PowerMode.RUN);
+                ((TxCPUState) platform.getCpuState()).setPowerMode(TxCPUState.PowerMode.RUN);
             }
             else {
                 // CPU is asleep and cannot be woken up by this interrupt. Request cancelled
@@ -435,11 +439,11 @@ public class TxInterruptController extends AbstractInterruptController {
     }
 
     public void setIvr31_9(int ivr31_9) {
-        this.ivr = (ivr & 0x000001FF) | (ivr31_9 & 0xFFFFFE00) ;
+        this.ivr = (ivr & 0x000001FF) | (ivr31_9 & 0xFFFFFE00);
     }
 
     public void setIvr8_0(int ivr8_0) {
-        this.ivr = (ivr & 0xFFFFFE00) | (ivr8_0 & 0x000001FF) ;
+        this.ivr = (ivr & 0xFFFFFE00) | (ivr8_0 & 0x000001FF);
     }
 
     public int getIntClr() {
@@ -509,6 +513,7 @@ public class TxInterruptController extends AbstractInterruptController {
 
 
     // CG
+
     /**
      * Returns the part (8 bits) of IMCGx register value corresponding to the given interrupt #
      * @param interruptNumber See spec section 6.5.1.5
@@ -562,15 +567,28 @@ public class TxInterruptController extends AbstractInterruptController {
         return (register32 >> (8 * sectionNumber)) & 0xFF;
     }
 
+    public void setNmiFlg(int nmiFlg) {
+        this.nmiFlg = nmiFlg;
+    }
 
+    public int getNmiFlg() {
+        return nmiFlg;
+    }
+
+
+    public int readAndClearNmiFlag() {
+        int value = nmiFlg;
+        nmiFlg = 0;
+        return value;
+    }
 
     public static class InterruptDescription {
-        public String symbolicName;
-        public String description;
-        private int intcImcCtrlRegAddr;
-        private int intcImcCtrlRegSection;
-        private int cgCtrlRegAddr;
-        private int cgCtrlRegSection;
+        public  String symbolicName;
+        public  String description;
+        private int    intcImcCtrlRegAddr;
+        private int    intcImcCtrlRegSection;
+        private int    cgCtrlRegAddr;
+        private int    cgCtrlRegSection;
 
         private InterruptDescription(String symbolicName, String description, int intcImcCtrlRegAddr, int intcImcCtrlRegSection, int cgCtrlRegAddr, int cgCtrlRegSection) {
             this.symbolicName = symbolicName;
@@ -670,7 +688,7 @@ public class TxInterruptController extends AbstractInterruptController {
                         txCPUState.setCauseCE(interruptRequest.getCoprocessorNumber());
                     }
 
-                    if (   (interruptRequest.getType() == Type.INSTRUCTION_ADDRESS_ERROR_EXCEPTION)
+                    if ((interruptRequest.getType() == Type.INSTRUCTION_ADDRESS_ERROR_EXCEPTION)
                             || (interruptRequest.getType() == Type.DATA_ADDRESS_ERROR_EXCEPTION)) {
                         txCPUState.setReg(TxCPUState.BadVAddr, interruptRequest.getBadVAddr());
                     }

@@ -311,14 +311,19 @@ public class TxCPUState extends CPUState {
     public enum PowerMode {
         RUN,
         HALT,
-        DOZE
+        DOZE,
+        STOP,
+        SLEEP,
+        IDLE,
+        BACKUP_STOP,
+        BACKUP_SLEEP
     }
 
     // Fields
 
     private Register32[][] shadowRegisterSets;
 
-    private PowerMode powerMode;
+    private PowerMode powerMode = PowerMode.IDLE;
 
     public boolean is16bitIsaMode = false;
 

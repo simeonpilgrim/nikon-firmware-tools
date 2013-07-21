@@ -2258,7 +2258,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
 
-            // TODO
+            clockGenerator.setPlatform(platform[chip]);
+
+            // TODO is it the right way to create a context here ?
+            // TODO passing cpu, memory and interrupt controller a second time although they're in the platform
+            // TODO sounds weird...
             emulator[chip].setContext(memory, cpuState, interruptController);
             emulator[chip].clearCycleCounterListeners();
             if (timerCycleCounterListener != null) {

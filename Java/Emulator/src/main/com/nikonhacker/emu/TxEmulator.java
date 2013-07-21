@@ -8,6 +8,7 @@ import com.nikonhacker.disassembly.tx.TxInstructionSet;
 import com.nikonhacker.disassembly.tx.TxStatement;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
+import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -33,8 +34,7 @@ public class TxEmulator extends Emulator {
 
     @Override
     public int getFrequencyHz() {
-        // TODO use ((TxClockGenerator)platform.getClockGenerator).getFsysHz();
-        return 80000000;
+        return ((TxClockGenerator)platform.getClockGenerator()).getfCpuHz();
     }
 
     /**

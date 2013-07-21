@@ -63,19 +63,27 @@ public class MasterClock implements Runnable {
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
 
-        computeFrequencies();
+        computeIntervals();
     }
 
-    public void computeFrequencies() {
+    public void computeIntervals() {
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
         for (ClockableEntry entry : entries) {
-            leastCommonMultipleFrequency = lcm(entry.clockable.getFrequencyHz(), leastCommonMultipleFrequency);
+            if (entry.clockable.getFrequencyHz() > 0) {
+                leastCommonMultipleFrequency = lcm(entry.clockable.getFrequencyHz(), leastCommonMultipleFrequency);
+                entry.isFrequencyZero = false;
+            }
+            else {
+                entry.isFrequencyZero = true;
+            }
         }
 
         // OK. Now set each counter threshold to the value of lcm/freq
         for (ClockableEntry entry : entries) {
-            entry.counterThreshold = (int) (leastCommonMultipleFrequency / entry.clockable.getFrequencyHz());
+            if (!entry.isFrequencyZero) {
+                entry.counterThreshold = (int) (leastCommonMultipleFrequency / entry.clockable.getFrequencyHz());
+            }
         }
 
         masterClockLoopDurationPs = 1000000000000L/leastCommonMultipleFrequency;
@@ -148,10 +156,10 @@ public class MasterClock implements Runnable {
                 currentEntry.counterValue++;
                 if (currentEntry.counterValue >= currentEntry.counterThreshold) {
                     // Threshold reached for this entry
-                    //System.err.println("Threshold matched for " + currentEntry.clockable.getClass().getSimpleName() + ", which is " + (currentEntry.enabled?"enabled":"disabled"));
+                    // System.err.println("Threshold matched for " + currentEntry.clockable.getClass().getSimpleName() + ", which is " + (currentEntry.enabled?"enabled":"disabled"));
                     // Reset Counter
                     currentEntry.counterValue = 0;
-                    if (currentEntry.enabled) {
+                    if (currentEntry.enabled && !currentEntry.isFrequencyZero) {
                         // If it's enabled. Call its onClockTick() method
                         try {
                             Object result = currentEntry.clockable.onClockTick();
@@ -273,6 +281,7 @@ public class MasterClock implements Runnable {
         int counterValue     = 0;
         int counterThreshold = 0;
         boolean enabled;
+        boolean isFrequencyZero;
 
         public ClockableEntry(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
             this.clockable = clockable;
