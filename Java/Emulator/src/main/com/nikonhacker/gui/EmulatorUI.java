@@ -158,7 +158,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String COMMAND_ABOUT                        = "ABOUT";
     private static final String COMMAND_TEST                         = "TEST";
 
-    private static final int[] CHIP_MODIFIER = new int[]{0, ActionEvent.SHIFT_MASK};
+    private static final int[] CHIP_MODIFIER = new int[]{ActionEvent.ALT_MASK, ActionEvent.SHIFT_MASK};
 
     public static final String BUTTON_SIZE_SMALL  = "SMALL";
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
