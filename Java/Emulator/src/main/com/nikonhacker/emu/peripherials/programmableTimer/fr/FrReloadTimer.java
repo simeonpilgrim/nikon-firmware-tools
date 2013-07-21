@@ -8,7 +8,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 
 /**
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
@@ -87,17 +86,17 @@ public class FrReloadTimer extends ProgrammableTimer {
         // CNTE
         boolean countOperationEnabled = (configuration & 0x0002) != 0;
 
-        if (executorService == null) {
-            if (countOperationEnabled) {
-                // Changing to enabled
-                initScheduler = true;
-            }
-        }
-        else {
+        if (enabled) {
             if (!countOperationEnabled) {
                 // Changing to disabled
                 unscheduleTask();
-                executorService = null;
+                enabled = false;
+            }
+        }
+        else {
+            if (countOperationEnabled) {
+                // Changing to enabled
+                initScheduler = true;
             }
         }
 
@@ -108,12 +107,12 @@ public class FrReloadTimer extends ProgrammableTimer {
 
         // OK. Done parsing configuration.
         if (initScheduler) {
-            if (executorService != null) {
+            if (enabled) {
                 // It is a reconfiguration
                 unscheduleTask();
             }
-            // Create a new scheduler
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            // enable
+            enabled = true;
 
             scale = 1;
             intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
@@ -138,7 +137,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                                 currentValue += reloadValue;
                             } else {
                                 unscheduleTask();
-                                executorService = null;
+                                enabled = false;
                             }
                         }
                     }

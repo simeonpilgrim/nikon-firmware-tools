@@ -7,7 +7,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 
 /**
      Counter use case:
@@ -87,7 +86,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
         // STOP
         boolean countOperationEnabled = ((configuration & 0x40) == 0);
         
-        if (executorService == null) {
+        if (!enabled) {
             if (countOperationEnabled) {
                 // Changing to enabled
                 initScheduler = true;
@@ -97,18 +96,18 @@ public class FrFreeRunTimer extends ProgrammableTimer {
             if (!countOperationEnabled) {
                 // Changing to disabled
                 unscheduleTask();
-                executorService = null;
+                enabled = false;
             }
         }
 
         // OK. Done parsing configuration.
         if (initScheduler) {
-            if (executorService != null) {
+            if (enabled) {
                 // It is a reconfiguration
                 unscheduleTask();
             }
             // Create a new scheduler
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            enabled = true;
 
             scale = 1;
             intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
