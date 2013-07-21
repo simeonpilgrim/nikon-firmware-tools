@@ -59,6 +59,8 @@ public class Prefs {
     private int[] serialInterfaceFrameSelectedTab;
     private int[] genericSerialFrameSelectedTab;
     private int[] ioPortsFrameSelectedTab;
+    private EmulatorUI.RunMode[] altModeForSyncedCpuUponStep;
+    private EmulatorUI.RunMode[] altModeForSyncedCpuUponDebug;
 
 
     private static File getPreferenceFile() {
@@ -528,6 +530,26 @@ public class Prefs {
 
     public void setSyncPlay(boolean syncPlay) {
         this.syncPlay = syncPlay;
+    }
+
+    public EmulatorUI.RunMode getAltModeForSyncedCpuUponDebug(int chip) {
+        if (this.altModeForSyncedCpuUponDebug == null || this.altModeForSyncedCpuUponDebug.length != 2) this.altModeForSyncedCpuUponDebug = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
+        return altModeForSyncedCpuUponDebug[chip];
+    }
+
+    public void setAltModeForSyncedCpuUponDebug(int chip, EmulatorUI.RunMode altModeForSyncedCpuUponDebug) {
+        if (this.altModeForSyncedCpuUponDebug == null || this.altModeForSyncedCpuUponDebug.length != 2) this.altModeForSyncedCpuUponDebug = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
+        this.altModeForSyncedCpuUponDebug[chip] = altModeForSyncedCpuUponDebug;
+    }
+
+    public EmulatorUI.RunMode getAltModeForSyncedCpuUponStep(int chip) {
+        if (this.altModeForSyncedCpuUponStep == null || this.altModeForSyncedCpuUponStep.length != 2) this.altModeForSyncedCpuUponStep = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
+        return altModeForSyncedCpuUponStep[chip];
+    }
+
+    public void setAltModeForSyncedCpuUponStep(int chip, EmulatorUI.RunMode altModeForSyncedCpuUponStep) {
+        if (this.altModeForSyncedCpuUponStep == null || this.altModeForSyncedCpuUponStep.length != 2) this.altModeForSyncedCpuUponStep = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
+        this.altModeForSyncedCpuUponStep[chip] = altModeForSyncedCpuUponStep;
     }
 
     /**
