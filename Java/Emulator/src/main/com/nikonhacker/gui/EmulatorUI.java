@@ -158,7 +158,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String COMMAND_ABOUT                        = "ABOUT";
     private static final String COMMAND_TEST                         = "TEST";
 
-    private static final int[] CHIP_MODIFIER = new int[]{ActionEvent.ALT_MASK, ActionEvent.SHIFT_MASK};
+    private static final int[] CHIP_MODIFIER = new int[]{ActionEvent.CTRL_MASK, ActionEvent.SHIFT_MASK};
 
     public static final String BUTTON_SIZE_SMALL  = "SMALL";
     public static final String BUTTON_SIZE_MEDIUM = "MEDIUM";
@@ -820,7 +820,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         for (int chip = 0; chip < 2; chip++) {
             loadMenuItem[chip] = new JMenuItem("Load " + Constants.CHIP_LABEL[chip] + " firmware image");
             if (chip == Constants.CHIP_FR) loadMenuItem[chip].setMnemonic(KeyEvent.VK_L);
-            loadMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            loadMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, CHIP_MODIFIER[chip]));
             loadMenuItem[chip].setActionCommand(COMMAND_IMAGE_LOAD[chip]);
             loadMenuItem[chip].addActionListener(this);
             fileMenu.add(loadMenuItem[chip]);
@@ -921,7 +921,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //setup breakpoints
             breakpointMenuItem[chip] = new JMenuItem("Setup " + Constants.CHIP_LABEL[chip] + " breakpoints");
             //if (chip == Constants.CHIP_FR) breakpointMenuItem[chip].setMnemonic(KeyEvent.VK_B);
-            breakpointMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            breakpointMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, CHIP_MODIFIER[chip]));
             breakpointMenuItem[chip].setActionCommand(COMMAND_SETUP_BREAKPOINTS[chip]);
             breakpointMenuItem[chip].addActionListener(this);
             runMenu.add(breakpointMenuItem[chip]);
@@ -940,7 +940,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //CPU state
             cpuStateMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " CPU State window");
             if (chip == Constants.CHIP_FR) cpuStateMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-            cpuStateMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            cpuStateMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, CHIP_MODIFIER[chip]));
             cpuStateMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CPUSTATE_WINDOW[chip]);
             cpuStateMenuItem[chip].addActionListener(this);
             componentsMenu.add(cpuStateMenuItem[chip]);
@@ -948,7 +948,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //memory hex editor
             memoryHexEditorMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " Memory hex editor");
             if (chip == Constants.CHIP_FR) memoryHexEditorMenuItem[chip].setMnemonic(KeyEvent.VK_H);
-            memoryHexEditorMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            memoryHexEditorMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_H, CHIP_MODIFIER[chip]));
             memoryHexEditorMenuItem[chip].setActionCommand(COMMAND_TOGGLE_MEMORY_HEX_EDITOR[chip]);
             memoryHexEditorMenuItem[chip].addActionListener(this);
             componentsMenu.add(memoryHexEditorMenuItem[chip]);
@@ -956,7 +956,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //Interrupt controller
             interruptControllerMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " interrupt controller");
             if (chip == Constants.CHIP_FR) interruptControllerMenuItem[chip].setMnemonic(KeyEvent.VK_I);
-            interruptControllerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            interruptControllerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, CHIP_MODIFIER[chip]));
             interruptControllerMenuItem[chip].setActionCommand(COMMAND_TOGGLE_INTERRUPT_CONTROLLER_WINDOW[chip]);
             interruptControllerMenuItem[chip].addActionListener(this);
             componentsMenu.add(interruptControllerMenuItem[chip]);
@@ -1021,7 +1021,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //memory activity viewer
             memoryActivityViewerMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " Memory activity viewer");
             if (chip == Constants.CHIP_FR) memoryActivityViewerMenuItem[chip].setMnemonic(KeyEvent.VK_M);
-            memoryActivityViewerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            memoryActivityViewerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, CHIP_MODIFIER[chip]));
             memoryActivityViewerMenuItem[chip].setActionCommand(COMMAND_TOGGLE_MEMORY_ACTIVITY_VIEWER[chip]);
             memoryActivityViewerMenuItem[chip].addActionListener(this);
             traceMenu.add(memoryActivityViewerMenuItem[chip]);
@@ -1029,7 +1029,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //disassembly
             disassemblyMenuItem[chip] = new JCheckBoxMenuItem("Real-time " + Constants.CHIP_LABEL[chip] + " disassembly log");
             if (chip == Constants.CHIP_FR) disassemblyMenuItem[chip].setMnemonic(KeyEvent.VK_D);
-            disassemblyMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            disassemblyMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, CHIP_MODIFIER[chip]));
             disassemblyMenuItem[chip].setActionCommand(COMMAND_TOGGLE_DISASSEMBLY_WINDOW[chip]);
             disassemblyMenuItem[chip].addActionListener(this);
             traceMenu.add(disassemblyMenuItem[chip]);
@@ -1037,7 +1037,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //Custom logger
             customMemoryRangeLoggerMenuItem[chip] = new JCheckBoxMenuItem("Custom " + Constants.CHIP_LABEL[chip] + " logger window");
 //        if (chip == CHIP_FR) customMemoryRangeLoggerMenuItem[chip].setMnemonic(KeyEvent.VK_4);
-//        customMemoryRangeLoggerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+//        customMemoryRangeLoggerMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_4, CHIP_MODIFIER[chip]));
             customMemoryRangeLoggerMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW[chip]);
             customMemoryRangeLoggerMenuItem[chip].addActionListener(this);
             traceMenu.add(customMemoryRangeLoggerMenuItem[chip]);
@@ -1045,7 +1045,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //Call Stack
             callStackMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " Call stack");
 //        if (chip == CHIP_FR) callStackMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-//        callStackMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+//        callStackMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, CHIP_MODIFIER[chip]));
             callStackMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW[chip]);
             callStackMenuItem[chip].addActionListener(this);
             traceMenu.add(callStackMenuItem[chip]);
@@ -1053,7 +1053,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //µITRON Object
             iTronObjectMenuItem[chip] = new JCheckBoxMenuItem("µITRON " + Constants.CHIP_LABEL[chip] + " Objects");
 //        if (chip == CHIP_FR) iTronObjectMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-//        iTronObjectMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+//        iTronObjectMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, CHIP_MODIFIER[chip]));
             iTronObjectMenuItem[chip].setActionCommand(COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip]);
             iTronObjectMenuItem[chip].addActionListener(this);
             traceMenu.add(iTronObjectMenuItem[chip]);
@@ -1069,7 +1069,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         // FR syscall symbols
         generateSysSymbolsMenuItem = new JMenuItem("Generate " + Constants.CHIP_LABEL[Constants.CHIP_FR] + " system call symbols");
         //        if (chip == CHIP_FR) generateSysSymbolsMenuItem.setMnemonic(KeyEvent.VK_A);
-        //        generateSysSymbolsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+        //        generateSysSymbolsMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, CHIP_MODIFIER[chip]));
         generateSysSymbolsMenuItem.setActionCommand(COMMAND_GENERATE_SYS_SYMBOLS);
         generateSysSymbolsMenuItem.addActionListener(this);
         sourceMenu.add(generateSysSymbolsMenuItem);
@@ -1081,7 +1081,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //analyse / disassemble
             analyseMenuItem[chip] = new JMenuItem("Analyse / Disassemble " + Constants.CHIP_LABEL[chip] + " code");
             if (chip == Constants.CHIP_FR) analyseMenuItem[chip].setMnemonic(KeyEvent.VK_A);
-            analyseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            analyseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, CHIP_MODIFIER[chip]));
             analyseMenuItem[chip].setActionCommand(COMMAND_ANALYSE_DISASSEMBLE[chip]);
             analyseMenuItem[chip].addActionListener(this);
             sourceMenu.add(analyseMenuItem[chip]);
@@ -1091,7 +1091,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //code structure
             codeStructureMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " code structure");
             if (chip == Constants.CHIP_FR) codeStructureMenuItem[chip].setMnemonic(KeyEvent.VK_C);
-            //        codeStructureMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        codeStructureMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, CHIP_MODIFIER[chip]));
             codeStructureMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW[chip]);
             codeStructureMenuItem[chip].addActionListener(this);
             sourceMenu.add(codeStructureMenuItem[chip]);
@@ -1099,7 +1099,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //source code
             sourceCodeMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " source code");
             if (chip == Constants.CHIP_FR) sourceCodeMenuItem[chip].setMnemonic(KeyEvent.VK_S);
-            //        sourceCodeMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        sourceCodeMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, CHIP_MODIFIER[chip]));
             sourceCodeMenuItem[chip].setActionCommand(COMMAND_TOGGLE_SOURCE_CODE_WINDOW[chip]);
             sourceCodeMenuItem[chip].addActionListener(this);
             sourceMenu.add(sourceCodeMenuItem[chip]);
@@ -1119,7 +1119,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // save/load memory area
             saveLoadMemoryMenuItem[chip] = new JMenuItem("Save/Load " + Constants.CHIP_LABEL[chip] + " memory area");
             if (chip == Constants.CHIP_FR) saveLoadMemoryMenuItem[chip].setMnemonic(KeyEvent.VK_S);
-            //        saveLoadMemoryMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            //        saveLoadMemoryMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, CHIP_MODIFIER[chip]));
             saveLoadMemoryMenuItem[chip].setActionCommand(COMMAND_SAVE_LOAD_MEMORY[chip]);
             saveLoadMemoryMenuItem[chip].addActionListener(this);
             toolsMenu.add(saveLoadMemoryMenuItem[chip]);
@@ -1127,7 +1127,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             //chip options
             chipOptionsMenuItem[chip] = new JMenuItem(Constants.CHIP_LABEL[chip] + " options");
             if (chip == Constants.CHIP_FR) chipOptionsMenuItem[chip].setMnemonic(KeyEvent.VK_O);
-            chipOptionsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.ALT_MASK | CHIP_MODIFIER[chip]));
+            chipOptionsMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, CHIP_MODIFIER[chip]));
             chipOptionsMenuItem[chip].setActionCommand(COMMAND_CHIP_OPTIONS[chip]);
             chipOptionsMenuItem[chip].addActionListener(this);
             toolsMenu.add(chipOptionsMenuItem[chip]);
@@ -1207,7 +1207,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (isEmulatorPlaying(chip)) {
                 pauseEmulator(chip);
             }
-            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the emulator and lose the current state ?", "Reset ?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to reset the " + Constants.CHIP_LABEL[chip] + " emulator and lose the current state ?", "Reset ?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
                 stopEmulator(chip);
             }
         }
