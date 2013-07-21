@@ -68,10 +68,6 @@ public abstract class ProgrammableTimer {
         return active;
     }
 
-    public TimerTask getTimerTask() {
-        return timerTask;
-    }
-
     protected void scheduleTask() {
         cycleCounterListener.registerTimer(this, intervalNanoseconds);
     }
