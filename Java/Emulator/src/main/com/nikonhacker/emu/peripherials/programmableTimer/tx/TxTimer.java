@@ -57,7 +57,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         if ((en & 0x80) != 0) {
             if (enabled) {
                 // It is a reconfiguration
-                unscheduleTask();
+                unregister();
             }
             // enable
             enabled = true;
@@ -67,14 +67,14 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 // restart it
                 if (getModClk() != 0) {
                     // Not in Event Counter mode
-                    scheduleTask();
+                    register();
                 }
             }
         }
         else {
             if (enabled) {
                 // Shut down
-                unscheduleTask();
+                unregister();
                 // disable
                 enabled = false;
             }
@@ -99,6 +99,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             if (getModClk() != 0) {
                 // Not in Event Counter mode
                 // Compute timing
+                // TODO what if Ft0Hz changes
                 intervalNanoseconds = 1000000000L /*ns/s*/ * getDivider() /*T0tick/timertick*/ / clockGenerator.getFt0Hz() /* T0tick/s */ ;
 
                 if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
@@ -163,7 +164,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             else {
                 if (getModClk() != 0) {
                     // Not in Event Counter mode
-                    scheduleTask();
+                    register();
                 }
             }
         }
@@ -171,7 +172,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             currentValue = 0;
             if (enabled) {
                 // Unregister it (but leave it enabled)
-                unscheduleTask();
+                unregister();
             }
             timerTask = null;
         }

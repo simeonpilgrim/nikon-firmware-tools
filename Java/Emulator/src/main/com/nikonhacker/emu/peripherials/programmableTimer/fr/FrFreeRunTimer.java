@@ -95,7 +95,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
         else {
             if (!countOperationEnabled) {
                 // Changing to disabled
-                unscheduleTask();
+                unregister();
                 enabled = false;
             }
         }
@@ -104,7 +104,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
         if (initScheduler) {
             if (enabled) {
                 // It is a reconfiguration
-                unscheduleTask();
+                unregister();
             }
             // Create a new scheduler
             enabled = true;
@@ -148,7 +148,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
                 }
             };
 
-            scheduleTask();
+            register();
         }
 
         tccs = configuration & 0xFDFF;

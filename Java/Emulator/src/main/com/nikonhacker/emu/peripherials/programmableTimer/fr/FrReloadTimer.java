@@ -89,7 +89,7 @@ public class FrReloadTimer extends ProgrammableTimer {
         if (enabled) {
             if (!countOperationEnabled) {
                 // Changing to disabled
-                unscheduleTask();
+                unregister();
                 enabled = false;
             }
         }
@@ -109,7 +109,7 @@ public class FrReloadTimer extends ProgrammableTimer {
         if (initScheduler) {
             if (enabled) {
                 // It is a reconfiguration
-                unscheduleTask();
+                unregister();
             }
             // enable
             enabled = true;
@@ -136,7 +136,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                             if (mustReload) {
                                 currentValue += reloadValue;
                             } else {
-                                unscheduleTask();
+                                unregister();
                                 enabled = false;
                             }
                         }
@@ -144,7 +144,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                 }
             };
 
-            scheduleTask();
+            register();
         }
 
         this.configuration = configuration;
