@@ -3,8 +3,6 @@ package com.nikonhacker.emu.peripherials.programmableTimer;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
 import java.util.TimerTask;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public abstract class ProgrammableTimer {
 
@@ -22,12 +20,14 @@ public abstract class ProgrammableTimer {
 
     /**
      * This is an emulator setting allowing to pause timers even though their emulated state is enabled.
-     * The Java timer continues to run, but each execution does nothing
+     * The timer is still registered, but each execution does nothing
      */
     protected boolean active = false;
 
-    /** Underlying scheduler */
-    protected ScheduledExecutorService executorService;
+    /**
+     * This is the actual emulated state of the timer
+     */
+    protected boolean enabled = false;
 
     /**
      * The scale compensates for the fact that emulated clocks cannot run faster than MAX_EMULATOR_FREQUENCY
@@ -73,21 +73,11 @@ public abstract class ProgrammableTimer {
     }
 
     protected void scheduleTask() {
-        if (cycleCounterListener != null) {
-            cycleCounterListener.registerTimer(this, intervalNanoseconds);
-        }
-        else {
-            executorService.scheduleAtFixedRate(timerTask, 0, intervalNanoseconds, TimeUnit.NANOSECONDS);
-        }
+        cycleCounterListener.registerTimer(this, intervalNanoseconds);
     }
 
     protected void unscheduleTask() {
-        if (cycleCounterListener != null) {
-            cycleCounterListener.unregisterTimer(this);
-        }
-        else {
-            executorService.shutdownNow();
-        }
+        cycleCounterListener.unregisterTimer(this);
     }
 
 

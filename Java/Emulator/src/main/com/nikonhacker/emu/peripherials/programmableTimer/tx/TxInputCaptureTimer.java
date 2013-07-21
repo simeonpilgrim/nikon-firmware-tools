@@ -10,7 +10,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 
 /**
  * This implements "32-bit Input Capture (TMRC)" according to section 12 of the hardware specification
@@ -70,7 +69,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
 
 
     public int getEn() {
-        return (executorService == null)?0:0x80;
+        return enabled ? 0x80 : 0;
     }
 
    /**
@@ -80,13 +79,12 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
      */
     public void setEn(int en) {
         if ((en & 0x80) != 0) {
-            // enable
-            if (executorService != null) {
+            if (enabled) {
                 // It is a reconfiguration
                 unscheduleTask();
             }
-            // Create a new scheduler
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            // enable
+            enabled = true;
 
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
@@ -95,12 +93,11 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             }
         }
         else {
-            // disable
-            if (executorService != null) {
+            if (enabled) {
                 // Shut down
                 unscheduleTask();
-                // Destroy it
-                executorService = null;
+                // disable
+                enabled = false;
             }
         }
     }
@@ -256,7 +253,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 }
             };
 
-            if (executorService == null) {
+            if (!enabled) {
                 System.out.println("Start requested on capture timer but its TCEN register is 0. Postponing...");
             }
             else {
@@ -265,10 +262,9 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
         }
         else {
             currentValue = 0;
-            if (executorService != null) {
-                // Stop it (and prepare a new one, because it cannot be restarted)
+            if (enabled) {
+                // Unregister it (but leave it enabled)
                 unscheduleTask();
-                executorService = Executors.newSingleThreadScheduledExecutor();
             }
             timerTask = null;
         }

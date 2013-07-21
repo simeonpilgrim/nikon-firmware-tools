@@ -9,7 +9,6 @@ import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 import java.util.TimerTask;
-import java.util.concurrent.Executors;
 
 /**
  * This implements "16-bit Timer/Event Counters (TMRBs)" according to section 11 of the hardware specification
@@ -46,7 +45,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
 
     public int getEn() {
-        return (executorService == null)?0:0x80;
+        return enabled ? 0x80 : 0;
     }
 
     /**
@@ -56,13 +55,12 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
      */
     public void setEn(int en) {
         if ((en & 0x80) != 0) {
-            // enable
-            if (executorService != null) {
+            if (enabled) {
                 // It is a reconfiguration
                 unscheduleTask();
             }
-            // Create a new scheduler
-            executorService = Executors.newSingleThreadScheduledExecutor();
+            // enable
+            enabled = true;
 
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
@@ -74,12 +72,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             }
         }
         else {
-            // disable
-            if (executorService != null) {
+            if (enabled) {
                 // Shut down
                 unscheduleTask();
-                // Destroy it
-                executorService = null;
+                // disable
+                enabled = false;
             }
         }
     }
@@ -160,7 +157,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 }
             };
 
-            if (executorService == null) {
+            if (!enabled) {
                 System.out.println("Start requested on timer " + timerNumber + " but its TB" + Format.asHex(timerNumber, 1) + "EN register is 0. Postponing...");
             }
             else {
@@ -172,10 +169,9 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         }
         else {
             currentValue = 0;
-            if (executorService != null) {
-                // Stop it (and prepare a new one, because it cannot be restarted)
+            if (enabled) {
+                // Unregister it (but leave it enabled)
                 unscheduleTask();
-                executorService = Executors.newSingleThreadScheduledExecutor();
             }
             timerTask = null;
         }

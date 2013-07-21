@@ -1786,11 +1786,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         emulationOptionsPanel.add(writeProtectFirmwareCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, any attempt to write to the loaded firmware area will result in an Emulator error. This can help trap spurious writes"));
 
-        final JCheckBox timerCycleSynchronousCheckBox = new JCheckBox("Make timers synchronous with CPU");
-        timerCycleSynchronousCheckBox.setSelected(prefs.areTimersCycleSynchronous(chip));
-        emulationOptionsPanel.add(timerCycleSynchronousCheckBox);
-        emulationOptionsPanel.add(new JLabel("If checked, timers will run based on the number of cycles executed by the CPU, so slowing down the CPU slows down timers"));
-
         final JCheckBox dmaSynchronousCheckBox = new JCheckBox("Make DMA synchronous");
         dmaSynchronousCheckBox.setSelected(prefs.isDmaSynchronous(chip));
         emulationOptionsPanel.add(dmaSynchronousCheckBox);
@@ -1916,7 +1911,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
             // save other prefs
             prefs.setFirmwareWriteProtected(chip, writeProtectFirmwareCheckBox.isSelected());
-            prefs.setTimersCycleSynchronous(chip, timerCycleSynchronousCheckBox.isSelected());
             prefs.setDmaSynchronous(chip, dmaSynchronousCheckBox.isSelected());
             prefs.setAutoEnableTimers(chip, autoEnableTimersCheckBox.isSelected());
             prefs.setLogRegisterMessages(chip, logRegisterMessagesCheckBox.isSelected());
@@ -2139,7 +2133,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             RealtimeClock realtimeClock = null;
             KeyCircuit keyCircuit = null;
             AdConverter adConverter = null;
-            TimerCycleCounterListener timerCycleCounterListener = prefs.areTimersCycleSynchronous(chip)?new TimerCycleCounterListener():null;
+            TimerCycleCounterListener timerCycleCounterListener = new TimerCycleCounterListener();
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -2297,9 +2291,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // TODO sounds weird...
             emulator[chip].setContext(memory, cpuState, interruptController);
             emulator[chip].clearCycleCounterListeners();
-            if (timerCycleCounterListener != null) {
-                emulator[chip].addCycleCounterListener(timerCycleCounterListener);
-            }
+            emulator[chip].addCycleCounterListener(timerCycleCounterListener);
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 

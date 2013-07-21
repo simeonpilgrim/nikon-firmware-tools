@@ -41,7 +41,6 @@ public class Prefs {
     private boolean[] sourceCodeFollowsPc;
     private String[] codeStructureGraphOrientation;
     private boolean[] firmwareWriteProtected;
-    private boolean[] timersCycleSynchronous;
     private boolean[] dmaSynchronous;
     private boolean[] autoEnableTimers;
     private boolean[] logMemoryMessages;
@@ -347,16 +346,6 @@ public class Prefs {
 
     public void setDividerKeepHidden(boolean dividerKeepHidden) {
         this.dividerKeepHidden = dividerKeepHidden;
-    }
-
-    public boolean areTimersCycleSynchronous(int chip) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
-        return timersCycleSynchronous[chip];
-    }
-
-    public void setTimersCycleSynchronous(int chip, boolean areTimersCycleSynchronous) {
-        if (timersCycleSynchronous == null || timersCycleSynchronous.length != 2) timersCycleSynchronous = new boolean[]{true, true};
-        this.timersCycleSynchronous[chip] = areTimersCycleSynchronous;
     }
 
     public boolean isDmaSynchronous(int chip) {
