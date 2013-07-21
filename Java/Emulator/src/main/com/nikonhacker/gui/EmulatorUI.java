@@ -207,7 +207,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
     }
 
-
     // UI
 
     private final Insets toolbarButtonMargin;
@@ -1826,6 +1825,37 @@ public class EmulatorUI extends JFrame implements ActionListener {
         emulationOptionsPanel.add(logPinMessagesCheckBox);
         emulationOptionsPanel.add(new JLabel("If checked, warnings related to unimplemented I/O pins will be logged to the console."));
 
+        emulationOptionsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+
+        // Alt mode upon Debug
+        JPanel altDebugPanel = new JPanel(new FlowLayout());
+        Object[] altDebugMode = EnumSet.allOf(RunMode.class).toArray();
+        final JComboBox altModeForDebugCombo = new JComboBox(new DefaultComboBoxModel(altDebugMode));
+        for (int j = 0; j < altDebugMode.length; j++) {
+            if (altDebugMode[j].equals(prefs.getAltModeForSyncedCpuUponDebug(chip))) {
+                altModeForDebugCombo.setSelectedIndex(j);
+            }
+        }
+        altDebugPanel.add(new JLabel(Constants.CHIP_LABEL[1 - chip] + " mode when " + Constants.CHIP_LABEL[chip] + " runs in sync Debug: "));
+        altDebugPanel.add(altModeForDebugCombo);
+        emulationOptionsPanel.add(altDebugPanel);
+        emulationOptionsPanel.add(new JLabel("If 'sync mode' is selected, this is the mode the " + Constants.CHIP_LABEL[1 - chip] + " chip will run in when running the " + Constants.CHIP_LABEL[chip] + " in Debug mode"));
+
+        // Alt mode upon Step
+        JPanel altStepPanel = new JPanel(new FlowLayout());
+        Object[] altStepMode = EnumSet.allOf(RunMode.class).toArray();
+        final JComboBox altModeForStepCombo = new JComboBox(new DefaultComboBoxModel(altStepMode));
+        for (int j = 0; j < altStepMode.length; j++) {
+            if (altStepMode[j].equals(prefs.getAltModeForSyncedCpuUponStep(chip))) {
+                altModeForStepCombo.setSelectedIndex(j);
+            }
+        }
+        altStepPanel.add(new JLabel(Constants.CHIP_LABEL[1 - chip] + " mode when " + Constants.CHIP_LABEL[chip] + " runs in sync Step: "));
+        altStepPanel.add(altModeForStepCombo);
+        emulationOptionsPanel.add(altStepPanel);
+        emulationOptionsPanel.add(new JLabel("If 'sync mode' is selected, this is the mode the " + Constants.CHIP_LABEL[1 - chip] + " chip will run in when running the " + Constants.CHIP_LABEL[chip] + " in Step mode"));
+
+
         // ------------------------ Prepare tabbed pane
 
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -1893,6 +1923,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             prefs.setLogSerialMessages(chip, logSerialMessagesCheckBox.isSelected());
             prefs.setLogPinMessages(chip, logPinMessagesCheckBox.isSelected());
             prefs.setLogMemoryMessages(chip, logMemoryMessagesCheckBox.isSelected());
+            prefs.setAltModeForSyncedCpuUponDebug(chip, (RunMode) altModeForDebugCombo.getSelectedItem());
+            prefs.setAltModeForSyncedCpuUponStep(chip, (RunMode) altModeForStepCombo.getSelectedItem());
         }
     }
 
@@ -3052,7 +3084,18 @@ public class EmulatorUI extends JFrame implements ActionListener {
             int otherChip = 1 - chip;
             setStatusText(otherChip, "Sync play...");
             statusBar[otherChip].setBackground(STATUS_BGCOLOR_RUN);
-            prepareBreakTriggers(otherChip, runMode, null);
+            RunMode altRunMode;
+            switch (runMode) {
+                case STEP:
+                    altRunMode = prefs.getAltModeForSyncedCpuUponStep(chip);
+                    break;
+                case DEBUG:
+                    altRunMode = prefs.getAltModeForSyncedCpuUponDebug(chip);
+                    break;
+                default:
+                    altRunMode = RunMode.RUN;
+            }
+            prepareBreakTriggers(otherChip, altRunMode, null);
             prepareEmulation(otherChip);
         }
         //System.err.println("Requesting clock start");
