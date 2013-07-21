@@ -293,8 +293,7 @@ public class TxClockGenerator extends ClockGenerator {
         }
 
         platform.getMasterClock().computeIntervals();
-        // System.out.println("Tx CPU speed is now " + getfCpuHz() + "Hz");
-        System.out.println(toString());
+        // System.out.println(toString());
     }
 
     public int getFoscHz() {
