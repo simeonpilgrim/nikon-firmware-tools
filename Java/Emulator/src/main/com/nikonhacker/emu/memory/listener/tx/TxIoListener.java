@@ -105,12 +105,12 @@ public class TxIoListener extends IoActivityListener {
 
 
     // Clock Generator.
-    // Note: section 6.6.1 lists FF0017xx while section 22 lists FF0019xx
-    public static final int REGISTER_SYSCR  = 0xFF00_1900; // System Control Registers
-    public static final int REGISTER_OSCCR  = 0xFF00_1904; //
-    public static final int REGISTER_SDBYCR = 0xFF00_1908; //
+    // Note: section 6.6.1 lists addresses in the range FF0017xx while section 22 lists FF0019xx, which seems correct
+    public static final int REGISTER_SYSCR  = 0xFF00_1900; // System Control Register
+    public static final int REGISTER_OSCCR  = 0xFF00_1904; // Oscillator Control Register
+    public static final int REGISTER_SDBYCR = 0xFF00_1908; // Standby Control Register
     public static final int REGISTER_PLLSEL = 0xFF00_190C; // PLL Select Register
-    public static final int REGISTER_SCKSEL = 0xFF00_1910; //
+    public static final int REGISTER_SCKSEL = 0xFF00_1910; // System Clock Select Register
     public static final int REGISTER_ICRCG  = 0xFF00_1914; // CG interrupt request clear register
     public static final int REGISTER_NMIFLG = 0xFF00_1918; // NMI flag register
     public static final int REGISTER_RSTFLG = 0xFF00_191C; // Reset flag register
@@ -522,19 +522,27 @@ public class TxIoListener extends IoActivityListener {
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
-                throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
+                return 0;
             case REGISTER_SYSCR + 1:
-                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr2();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSyscr2();
             case REGISTER_SYSCR + 2:
-                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr1();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSyscr1();
             case REGISTER_SYSCR + 3:
-                return ((TxClockGenerator)platform.getClockGenerator()).getSysCr0();
+                return ((TxClockGenerator)platform.getClockGenerator()).getSyscr0();
+            case REGISTER_OSCCR:
+                return 0;
+            case REGISTER_OSCCR + 1:
+                return 0;
+            case REGISTER_OSCCR + 2:
+                return ((TxClockGenerator)platform.getClockGenerator()).getOsccr1();
+            case REGISTER_OSCCR + 3:
+                return ((TxClockGenerator)platform.getClockGenerator()).getOsccr0();
             case REGISTER_PLLSEL + 3:
-                return (byte)((TxClockGenerator)platform.getClockGenerator()).getPllSel();
+                return (byte)((TxClockGenerator)platform.getClockGenerator()).getPllsel();
             case REGISTER_NMIFLG + 3:
-                return (byte)((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
+                return (byte)((TxInterruptController)platform.getInterruptController()).readAndClearNmiFlag();
             case REGISTER_RSTFLG + 3:
-                return (byte)((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
+                return (byte)((TxClockGenerator)platform.getClockGenerator()).getRstflg();
             case REGISTER_DREQFLG + 3:
                 return (byte)((TxInterruptController)platform.getInterruptController()).getDreqflg();
             // DMA controller
@@ -728,12 +736,16 @@ public class TxIoListener extends IoActivityListener {
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_SYSCR + 2:
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+            case REGISTER_OSCCR:
+                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
+            case REGISTER_OSCCR + 2:
+                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
-                return ((TxClockGenerator)platform.getClockGenerator()).getPllSel();
+                return ((TxClockGenerator)platform.getClockGenerator()).getPllsel();
             case REGISTER_NMIFLG + 2:
-                return ((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag() & 0xFFFF;
+                return ((TxInterruptController)platform.getInterruptController()).readAndClearNmiFlag() & 0xFFFF;
             case REGISTER_RSTFLG + 2:
-                return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg() & 0xFFFF;
+                return ((TxClockGenerator)platform.getClockGenerator()).getRstflg() & 0xFFFF;
             case REGISTER_DREQFLG + 2:
                 return ((TxInterruptController)platform.getInterruptController()).getDreqflg() & 0xFFFF;
         }
@@ -986,20 +998,21 @@ public class TxIoListener extends IoActivityListener {
         switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
-                TxClockGenerator clockGenerator = (TxClockGenerator) platform.getClockGenerator();
-                return (clockGenerator.getSysCr2() << 16) |(clockGenerator.getSysCr1() << 8) | clockGenerator.getSysCr0();
-            // Interrupt Controller
+                return ((TxClockGenerator) platform.getClockGenerator()).getSyscr();
+            case REGISTER_OSCCR:
+                return ((TxClockGenerator) platform.getClockGenerator()).getOsccr();
             case REGISTER_PLLSEL:
-                return ((TxClockGenerator)platform.getClockGenerator()).getPllSel();
+                return ((TxClockGenerator)platform.getClockGenerator()).getPllsel();
+            // Interrupt Controller
             case REGISTER_ILEV:
                 return ((TxInterruptController)platform.getInterruptController()).getIlev();
             case REGISTER_IVR:
                 // TODO Until the IVR is read, no hardware interrupt from INTC is accepted (see HW spec section 6.4.1.4)
                 return ((TxInterruptController)platform.getInterruptController()).getIvr();
             case REGISTER_NMIFLG:
-                return ((TxClockGenerator)platform.getClockGenerator()).readAndClearNmiFlag();
+                return ((TxInterruptController)platform.getInterruptController()).readAndClearNmiFlag();
             case REGISTER_RSTFLG:
-                return ((TxClockGenerator)platform.getClockGenerator()).getRstFlg();
+                return ((TxClockGenerator)platform.getClockGenerator()).getRstflg();
             case REGISTER_DREQFLG:
                 return ((TxInterruptController)platform.getInterruptController()).getDreqflg();
             // DMA controller
@@ -1299,19 +1312,27 @@ public class TxIoListener extends IoActivityListener {
         else switch (addr) {
             // Clock generator
             case REGISTER_SYSCR:
-                throw new RuntimeException("The highest byte of SYSCR register can not be accessed by 8-bit for now");
+                break; // ignore
             case REGISTER_SYSCR + 1:
-                ((TxClockGenerator)platform.getClockGenerator()).setSysCr2(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSyscr2(value); break;
             case REGISTER_SYSCR + 2:
-                ((TxClockGenerator)platform.getClockGenerator()).setSysCr1(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSyscr1(value); break;
             case REGISTER_SYSCR + 3:
-                ((TxClockGenerator)platform.getClockGenerator()).setSysCr0(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSyscr0(value); break;
+            case REGISTER_OSCCR:
+                break; // ignore
+            case REGISTER_OSCCR + 1:
+                break; // ignore
+            case REGISTER_OSCCR + 2:
+                ((TxClockGenerator)platform.getClockGenerator()).setOsccr1(value); break;
+            case REGISTER_OSCCR + 3:
+                ((TxClockGenerator)platform.getClockGenerator()).setOsccr0(value); break;
             case REGISTER_PLLSEL + 3:
-                ((TxClockGenerator)platform.getClockGenerator()).setPllSel(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setPllsel(value); break;
             case REGISTER_NMIFLG + 3:
-                ((TxClockGenerator)platform.getClockGenerator()).setNmiFlg(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setNmiFlg(value); break;
             case REGISTER_RSTFLG + 3:
-                ((TxClockGenerator)platform.getClockGenerator()).setRstFlg(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setRstflg(value); break;
             // Interrupt Controller
             case REGISTER_INTCLR + 3:
                 throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
@@ -1458,12 +1479,16 @@ public class TxIoListener extends IoActivityListener {
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_SYSCR + 2:
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+            case REGISTER_OSCCR:
+                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
+            case REGISTER_OSCCR + 2:
+                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
-                ((TxClockGenerator)platform.getClockGenerator()).setPllSel(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setPllsel(value); break;
             case REGISTER_NMIFLG + 2:
-                ((TxClockGenerator)platform.getClockGenerator()).setNmiFlg(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setNmiFlg(value); break;
             case REGISTER_RSTFLG + 2:
-                ((TxClockGenerator)platform.getClockGenerator()).setRstFlg(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setRstflg(value); break;
             // Interrupt Controller
             case REGISTER_INTCLR + 2:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
@@ -1707,13 +1732,15 @@ public class TxIoListener extends IoActivityListener {
         else switch(addr) {
             // Clock generator
             case REGISTER_SYSCR:
-                ((TxClockGenerator)platform.getClockGenerator()).setSysCr(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setSyscr(value); break;
+            case REGISTER_OSCCR:
+                ((TxClockGenerator)platform.getClockGenerator()).setOsccr(value); break;
             case REGISTER_NMIFLG:
-                ((TxClockGenerator)platform.getClockGenerator()).setNmiFlg(value); break;
+                ((TxInterruptController)platform.getInterruptController()).setNmiFlg(value); break;
             case REGISTER_RSTFLG:
-                ((TxClockGenerator)platform.getClockGenerator()).setRstFlg(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setRstflg(value); break;
             case REGISTER_PLLSEL:
-                ((TxClockGenerator)platform.getClockGenerator()).setPllSel(value); break;
+                ((TxClockGenerator)platform.getClockGenerator()).setPllsel(value); break;
             // Interrupt Controller
             case REGISTER_ILEV:
                 ((TxInterruptController)platform.getInterruptController()).setIlev(value); break;
