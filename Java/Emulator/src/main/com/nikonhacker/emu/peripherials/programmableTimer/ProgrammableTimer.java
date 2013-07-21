@@ -68,11 +68,11 @@ public abstract class ProgrammableTimer {
         return active;
     }
 
-    protected void scheduleTask() {
+    protected void register() {
         cycleCounterListener.registerTimer(this, intervalNanoseconds);
     }
 
-    protected void unscheduleTask() {
+    protected void unregister() {
         cycleCounterListener.unregisterTimer(this);
     }
 

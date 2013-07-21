@@ -81,7 +81,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
         if ((en & 0x80) != 0) {
             if (enabled) {
                 // It is a reconfiguration
-                unscheduleTask();
+                unregister();
             }
             // enable
             enabled = true;
@@ -89,13 +89,13 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
             if (timerTask != null) {
                 // restart it
-                scheduleTask();
+                register();
             }
         }
         else {
             if (enabled) {
                 // Shut down
-                unscheduleTask();
+                unregister();
                 // disable
                 enabled = false;
             }
@@ -257,14 +257,14 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 System.out.println("Start requested on capture timer but its TCEN register is 0. Postponing...");
             }
             else {
-                scheduleTask();
+                register();
             }
         }
         else {
             currentValue = 0;
             if (enabled) {
                 // Unregister it (but leave it enabled)
-                unscheduleTask();
+                unregister();
             }
             timerTask = null;
         }
