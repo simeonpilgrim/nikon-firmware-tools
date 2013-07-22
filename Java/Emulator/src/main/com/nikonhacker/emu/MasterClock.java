@@ -1,8 +1,8 @@
 package com.nikonhacker.emu;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MasterClock implements Runnable {
 
@@ -11,7 +11,7 @@ public class MasterClock implements Runnable {
     /**
      * All objects to "clock", encapsulated in an internal class to store their counter value and threshold
      */
-    private final List<ClockableEntry> entries = new ArrayList<>();
+    private final List<ClockableEntry> entries = new CopyOnWriteArrayList<>();
 
     private boolean syncPlay = false;
 
@@ -29,6 +29,12 @@ public class MasterClock implements Runnable {
      */
     private long masterClockLoopDurationPs;
 
+    /**
+     * A temp field to indicate that the computing of intervals based on frequencies must be performed again
+     * (due to a change in the list of Clockable, or a frequency change)
+     */
+    private boolean intervalComputingRequested;
+
     public MasterClock() {
     }
 
@@ -36,16 +42,16 @@ public class MasterClock implements Runnable {
         return running;
     }
 
+    public void requestIntervalComputing() {
+        intervalComputingRequested = true;
+    }
+
     /**
      * Add a clockable object.
-     * This method will cause an exception if called when the clock is running
-     * This method should always be followed by a start()
      * @param clockable the object to wake up repeatedly
      * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
     public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
-        if (running) throw new RuntimeException("Cannot add devices once the clock is running !");
-
         if (clockableCallbackHandler == null) {
             clockableCallbackHandler = new ClockableCallbackHandler() {
                 @Override
@@ -62,11 +68,26 @@ public class MasterClock implements Runnable {
 
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
-
-        computeIntervals();
+        intervalComputingRequested = true;
     }
 
-    public void computeIntervals() {
+    /**
+     * Removes a clockable object.
+     * @param clockable the object to remove
+     */
+    public synchronized void remove(Clockable clockable) {
+        for (int i = 0; i < entries.size(); i++) {
+            ClockableEntry entry = entries.get(i);
+            if (entry.clockable == clockable) {
+                //System.err.println("Removing " + entry.clockable.getClass().getSimpleName());
+                entries.remove(entry);
+                break;
+            }
+        }
+        intervalComputingRequested = true;
+    }
+
+    private void computeIntervals() {
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
         for (ClockableEntry entry : entries) {
@@ -87,23 +108,6 @@ public class MasterClock implements Runnable {
         }
 
         masterClockLoopDurationPs = 1000000000000L/leastCommonMultipleFrequency;
-    }
-
-    /**
-     * Removes a clockable object.
-     * This method will cause an exception if called when the clock is running
-     * @param clockable the object to remove
-     */
-    public synchronized void remove(Clockable clockable) {
-        if (running) throw new RuntimeException("Cannot add devices once the clock is running !");
-        for (int i = 0; i < entries.size(); i++) {
-            ClockableEntry entry = entries.get(i);
-            if (entry.clockable == clockable) {
-                //System.err.println("Removing " + entry.clockable.getClass().getSimpleName());
-                entries.remove(entry);
-                break;
-            }
-        }
     }
 
     public void setEnabled(Clockable clockable, boolean enabled) {
@@ -150,6 +154,10 @@ public class MasterClock implements Runnable {
         ClockableEntry entryToStop = null;
         // Infinite loop
         while (running) {
+            if (intervalComputingRequested) {
+                intervalComputingRequested = false;
+                computeIntervals();
+            }
             // At each loop turn, check to see if an entry has reached its counter threshold
             for (ClockableEntry currentEntry : entries) {
                 // Increment its counter
@@ -243,6 +251,7 @@ public class MasterClock implements Runnable {
     public String getFormatedTotalElapsedTimeMs() {
         return milliSecondFormater.format(totalElapsedTimePs/1000000000.0) + "ms";
     }
+
 
     //
     // Code from http://stackoverflow.com/questions/4201860/how-to-find-gcf-lcm-on-a-set-of-numbers
