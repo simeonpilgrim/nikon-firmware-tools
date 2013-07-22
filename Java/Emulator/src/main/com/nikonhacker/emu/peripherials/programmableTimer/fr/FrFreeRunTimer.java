@@ -6,8 +6,6 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
-import java.util.TimerTask;
-
 /**
      Counter use case:
     Starting listener for FR80 range 0x00000100 - 0x0000013F
@@ -118,36 +116,6 @@ public class FrFreeRunTimer extends ProgrammableTimer {
                 intervalNanoseconds *= scale;
             }
 
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    if (active) {
-                        // coderat: this is my guess, timer 0x130 is definetly counting down
-                        // TODO to prove this to the end, we must check if usage of timer 0x100 expects
-                        // counting up. I didn't find the place yet.
-                        if ((tccs & 0x400)!=0) {
-                            longCurrentValue -= scale;
-                            if (longCurrentValue < 0) {
-                                iclr = true;
-                                if (interruptEnabled) {
-                                    // TODO generate interrupt
-                                }
-                                longCurrentValue = cpclr;
-                            }
-                        } else {
-                            longCurrentValue += scale;
-                            if (longCurrentValue >= cpclr) {
-                                iclr = true;
-                                if (interruptEnabled) {
-                                    // TODO generate interrupt
-                                }
-                                longCurrentValue = 0;
-                            }
-                        }
-                    }
-                }
-            };
-
             register();
         }
 
@@ -177,6 +145,33 @@ public class FrFreeRunTimer extends ProgrammableTimer {
     /** return current value */
     public int getTCDT() {
         return (int)(longCurrentValue > 0x7FFFFFFF ? (longCurrentValue-0x100000000L) : longCurrentValue);
+    }
+
+    public void increment() {
+        if (active) {
+            // coderat: this is my guess, timer 0x130 is definetly counting down
+            // TODO to prove this to the end, we must check if usage of timer 0x100 expects
+            // counting up. I didn't find the place yet.
+            if ((tccs & 0x400)!=0) {
+                longCurrentValue -= scale;
+                if (longCurrentValue < 0) {
+                    iclr = true;
+                    if (interruptEnabled) {
+                        // TODO generate interrupt
+                    }
+                    longCurrentValue = cpclr;
+                }
+            } else {
+                longCurrentValue += scale;
+                if (longCurrentValue >= cpclr) {
+                    iclr = true;
+                    if (interruptEnabled) {
+                        // TODO generate interrupt
+                    }
+                    longCurrentValue = 0;
+                }
+            }
+        }
     }
 
     @Override
