@@ -8,8 +8,6 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
-import java.util.TimerTask;
-
 /**
  * This implements "16-bit Timer/Event Counters (TMRBs)" according to section 11 of the hardware specification
  */
@@ -34,6 +32,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     private static final int MAX_COUNTER_VALUE = (1 << 16) - 1;
     private boolean operateInIdle = true;
     private boolean operate;
+
+    protected boolean mustRun = false;
 
     public TxTimer(int timerNumber, TxCPUState cpuState, TxClockGenerator clockGenerator, TxInterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
         super(timerNumber, interruptController, cycleCounterListener);
@@ -63,7 +63,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             enabled = true;
 
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
-            if (timerTask != null) {
+            if (mustRun) {
                 // restart it
                 if (getModClk() != 0) {
                     // Not in Event Counter mode
@@ -82,7 +82,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public int getRun() {
-        return (timerTask != null)?0x1:0x0 ; // | prescaler?0x4:0x0
+        return mustRun ? 0x1 : 0x0; // | prescaler?0x4:0x0
     }
 
     /**
@@ -109,54 +109,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 }
             }
             // Prepare task
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    if (active && operate) {
-                        boolean interruptCondition = false;
-                        currentValue += scale;
-                        // Comparator 0
-                        if (rg0 > 0 && (currentValue / scale == rg0 / scale)) {
-                            // CP0 matches
-                            if ((im & 0b001) == 0) {
-                                st |= 0b001;
-                                interruptCondition = true;
-                            }
-                            if ((ffcr & 0b00000100) != 0) {
-                                toggleFf0();
-                            }
-                        }
-
-                        // Comparator 1
-                        if (rg1 > 0 && (currentValue / scale == rg1 / scale)) {
-                            // CP1 matches
-                            if ((im & 0b010) == 0) {
-                                st |= 0b010;
-                                interruptCondition = true;
-                            }
-                            if ((ffcr & 0b00001000) != 0) {
-                                toggleFf0();
-                            }
-                            if (getModCle()) {
-                                currentValue -= rg1;
-                            }
-                        }
-
-                        // Wrap at 16bit
-                        if (currentValue > MAX_COUNTER_VALUE) {
-                            // overflow
-                            if ((im & 0b100) == 0) {
-                                st |= 0b100;
-                                interruptCondition = true;
-                            }
-                            currentValue -= MAX_COUNTER_VALUE;
-                        }
-                        if (interruptCondition) {
-                            interruptController.request(TxInterruptController.INTTB0 + timerNumber);
-                        }
-                    }
-                }
-            };
+            mustRun = true;
 
             if (!enabled) {
                 System.out.println("Start requested on timer " + timerNumber + " but its TB" + Format.asHex(timerNumber, 1) + "EN register is 0. Postponing...");
@@ -174,7 +127,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 // Unregister it (but leave it enabled)
                 unregister();
             }
-            timerTask = null;
+            mustRun = false;
         }
     }
 
@@ -335,6 +288,52 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     private void updateOperate() {
         operate = operateInIdle || (cpuState.getPowerMode()== TxCPUState.PowerMode.RUN);
+    }
+
+    public void increment() {
+        if (active && operate) {
+            boolean interruptCondition = false;
+            currentValue += scale;
+            // Comparator 0
+            if (rg0 > 0 && (currentValue / scale == rg0 / scale)) {
+                // CP0 matches
+                if ((im & 0b001) == 0) {
+                    st |= 0b001;
+                    interruptCondition = true;
+                }
+                if ((ffcr & 0b00000100) != 0) {
+                    toggleFf0();
+                }
+            }
+
+            // Comparator 1
+            if (rg1 > 0 && (currentValue / scale == rg1 / scale)) {
+                // CP1 matches
+                if ((im & 0b010) == 0) {
+                    st |= 0b010;
+                    interruptCondition = true;
+                }
+                if ((ffcr & 0b00001000) != 0) {
+                    toggleFf0();
+                }
+                if (getModCle()) {
+                    currentValue -= rg1;
+                }
+            }
+
+            // Wrap at 16bit
+            if (currentValue > MAX_COUNTER_VALUE) {
+                // overflow
+                if ((im & 0b100) == 0) {
+                    st |= 0b100;
+                    interruptCondition = true;
+                }
+                currentValue -= MAX_COUNTER_VALUE;
+            }
+            if (interruptCondition) {
+                interruptController.request(TxInterruptController.INTTB0 + timerNumber);
+            }
+        }
     }
 
     @Override

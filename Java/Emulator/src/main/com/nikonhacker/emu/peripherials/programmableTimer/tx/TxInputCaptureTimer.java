@@ -9,8 +9,6 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
-import java.util.TimerTask;
-
 /**
  * This implements "32-bit Input Capture (TMRC)" according to section 12 of the hardware specification
  */
@@ -24,6 +22,8 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     private TxClockGenerator clockGenerator;
 
     private boolean previousMsbSet = false;
+
+    protected boolean mustRun = false;
 
     // Registers
     /** Timer run */
@@ -87,7 +87,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
             enabled = true;
 
             // If a run was requested before enabling the timer, or this timer was just temporarily disabled
-            if (timerTask != null) {
+            if (mustRun) {
                 // restart it
                 register();
             }
@@ -216,42 +216,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 intervalNanoseconds *= scale;
             }
             // Prepare task
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    if (active && operate) {
-
-                        currentValue += scale;
-
-                        // Comparator 1
-                        for (int compareChannel = 0; compareChannel < TxIoListener.NUM_COMPARE_CHANNEL; compareChannel++) {
-                            if (isCmpCtlCmpEn(compareChannel)) {
-                                if (currentValue / scale == tcCmp[compareChannel] / scale) {
-                                    // match
-                                    interruptController.request(TxInterruptController.INTCMP0 + compareChannel);
-                                    // Spec Block diagram also indicates INTCAP0 in this block. Typo I guess...
-                                    if (isCmpCtlTcffEn(compareChannel)) {
-                                        toggleFf(compareChannel);
-                                    }
-                                    // TODO set output pin TCCOUT0 + comparechannel = 1;
-                                    if (isCmpCtlCmpRdEn(compareChannel)) {
-                                        // Double buffering
-                                        tcCmp[compareChannel] = tcCmpBuf[compareChannel];
-                                    }
-                                }
-                            }
-                        }
-
-                        // Detect overflow at 32bit
-                        boolean msbSet = (currentValue & 0x80000000) != 0;
-                        if (!msbSet && previousMsbSet) {
-                            // overflow : interrupt
-                            interruptController.request(TxInterruptController.INTTBT);
-                        }
-                        previousMsbSet = msbSet;
-                    }
-                }
-            };
+            mustRun = true;
 
             if (!enabled) {
                 System.out.println("Start requested on capture timer but its TCEN register is 0. Postponing...");
@@ -266,7 +231,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
                 // Unregister it (but leave it enabled)
                 unregister();
             }
-            timerTask = null;
+            mustRun = false;
         }
     }
 
@@ -318,6 +283,41 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     private void updateOperate() {
         operate = operateInIdle || (cpuState.getPowerMode()== TxCPUState.PowerMode.RUN);
     }
+
+    public void increment() {
+        if (active && operate) {
+
+            currentValue += scale;
+
+            // Comparator 1
+            for (int compareChannel = 0; compareChannel < TxIoListener.NUM_COMPARE_CHANNEL; compareChannel++) {
+                if (isCmpCtlCmpEn(compareChannel)) {
+                    if (currentValue / scale == tcCmp[compareChannel] / scale) {
+                        // match
+                        interruptController.request(TxInterruptController.INTCMP0 + compareChannel);
+                        // Spec Block diagram also indicates INTCAP0 in this block. Typo I guess...
+                        if (isCmpCtlTcffEn(compareChannel)) {
+                            toggleFf(compareChannel);
+                        }
+                        // TODO set output pin TCCOUT0 + comparechannel = 1;
+                        if (isCmpCtlCmpRdEn(compareChannel)) {
+                            // Double buffering
+                            tcCmp[compareChannel] = tcCmpBuf[compareChannel];
+                        }
+                    }
+                }
+            }
+
+            // Detect overflow at 32bit
+            boolean msbSet = (currentValue & 0x80000000) != 0;
+            if (!msbSet && previousMsbSet) {
+                // overflow : interrupt
+                interruptController.request(TxInterruptController.INTTBT);
+            }
+            previousMsbSet = msbSet;
+        }
+    }
+
 
     @Override
     public String toString() {

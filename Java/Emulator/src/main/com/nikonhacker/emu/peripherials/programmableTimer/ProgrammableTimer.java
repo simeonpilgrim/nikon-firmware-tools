@@ -2,8 +2,6 @@ package com.nikonhacker.emu.peripherials.programmableTimer;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 
-import java.util.TimerTask;
-
 public abstract class ProgrammableTimer {
 
     /** Lower boundary of sustainable interval between emulator scheduler ticks */
@@ -35,8 +33,6 @@ public abstract class ProgrammableTimer {
      * And at each trigger, the reload counter is inc/decremented by (scale)
      */
     protected int scale;
-
-    protected TimerTask timerTask = null;
 
     protected long intervalNanoseconds = 1000000000L; // in ns/Timertick. For example, intervalNanoseconds=1000000000 ns/Timertick means f = 1Hz
 
@@ -82,7 +78,5 @@ public abstract class ProgrammableTimer {
         return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
     }
 
-    public void increment() {
-        timerTask.run();
-    }
+    public abstract void increment();
 }

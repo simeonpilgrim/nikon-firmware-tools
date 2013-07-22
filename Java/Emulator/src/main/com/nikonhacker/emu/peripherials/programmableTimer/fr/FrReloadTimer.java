@@ -7,8 +7,6 @@ import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptContro
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
-import java.util.TimerTask;
-
 /**
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
  * Based on section 20 of the 91605 hardware spec
@@ -123,27 +121,6 @@ public class FrReloadTimer extends ProgrammableTimer {
                 intervalNanoseconds *= scale;
             }
 
-            timerTask = new TimerTask() {
-                @Override
-                public void run() {
-                    if (active) {
-                        currentValue -= scale;
-                        if (currentValue < 0) {
-                            isInUnderflowCondition = true;
-                            if (interruptEnabled) {
-                                interruptController.request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
-                            }
-                            if (mustReload) {
-                                currentValue += reloadValue;
-                            } else {
-                                unregister();
-                                enabled = false;
-                            }
-                        }
-                    }
-                }
-            };
-
             register();
         }
 
@@ -157,6 +134,24 @@ public class FrReloadTimer extends ProgrammableTimer {
 
     public int getConfiguration() {
         return (configuration & 0x3FFA) | (isInUnderflowCondition?4:0);
+    }
+
+    public void increment() {
+        if (active) {
+            currentValue -= scale;
+            if (currentValue < 0) {
+                isInUnderflowCondition = true;
+                if (interruptEnabled) {
+                    interruptController.request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+                }
+                if (mustReload) {
+                    currentValue += reloadValue;
+                } else {
+                    unregister();
+                    enabled = false;
+                }
+            }
+        }
     }
 
     @Override
