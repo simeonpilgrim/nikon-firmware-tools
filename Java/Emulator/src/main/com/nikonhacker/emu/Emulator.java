@@ -95,6 +95,9 @@ public abstract class Emulator implements Clockable {
         context.cpuState = cpuState;
         context.interruptController = interruptController;
     }
+    public void setContextFromPlatform(Platform platform) {
+        setContext(platform.getMemory(), platform.getCpuState(), platform.getInterruptController());
+    }
 
     public void setOutputOptions(Set<OutputOption> outputOptions) {
         this.outputOptions = outputOptions;

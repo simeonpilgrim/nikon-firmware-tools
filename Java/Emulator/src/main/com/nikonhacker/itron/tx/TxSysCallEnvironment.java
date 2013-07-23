@@ -243,6 +243,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
 
                 // Start emulator synchronously
                 try {
+                    emulator.setContextFromPlatform(syscallPlatform);
                     emulator.play();
 
                     // Read error code
