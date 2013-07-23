@@ -52,6 +52,7 @@ public class MasterClock implements Runnable {
      * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
     public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
+/*
         if (clockableCallbackHandler == null) {
             clockableCallbackHandler = new ClockableCallbackHandler() {
                 @Override
@@ -65,10 +66,10 @@ public class MasterClock implements Runnable {
                 }
             };
         }
-
+*/
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
-        intervalComputingRequested = true;
+        requestIntervalComputing();
     }
 
     /**
@@ -84,7 +85,7 @@ public class MasterClock implements Runnable {
                 break;
             }
         }
-        intervalComputingRequested = true;
+        requestIntervalComputing();
     }
 
     private void computeIntervals() {
@@ -177,7 +178,9 @@ public class MasterClock implements Runnable {
                                 entryToStop = currentEntry;
                                 // Warn the callback method
                                 //System.err.println("Calling onNormalExit() on callback for " + currentEntry.clockable.getClass().getSimpleName());
-                                currentEntry.clockableCallbackHandler.onNormalExit(result);
+                                if (currentEntry.clockableCallbackHandler != null) {
+                                    currentEntry.clockableCallbackHandler.onNormalExit(result);
+                                }
                             }
                         }
                         catch (Exception e) {
@@ -185,7 +188,9 @@ public class MasterClock implements Runnable {
                             entryToStop = currentEntry;
                             // Warn the callback method
                             //System.err.println("Calling onException() on callback for " + currentEntry.clockable.getClass().getSimpleName());
-                            currentEntry.clockableCallbackHandler.onException(e);
+                            if (currentEntry.clockableCallbackHandler != null) {
+                                currentEntry.clockableCallbackHandler.onException(e);
+                            }
                         }
 
                         if (entryToStop != null) {
