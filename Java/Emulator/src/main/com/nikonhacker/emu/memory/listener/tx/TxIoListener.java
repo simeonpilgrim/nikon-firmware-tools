@@ -271,19 +271,19 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return (byte) txTimer.getEn();
+                    return (byte) txTimer.getTben();
                 case REGISTER_TB0RUN:
-                    return (byte) txTimer.getRun();
+                    return (byte) txTimer.getTbrun();
                 case REGISTER_TB0CR:
-                    return (byte) txTimer.getCr();
+                    return (byte) txTimer.getTbcr();
                 case REGISTER_TB0MOD:
-                    return (byte) txTimer.getMod();
+                    return (byte) txTimer.getTbmod();
                 case REGISTER_TB0FFCR:
                     throw new RuntimeException("The TBnFFCR register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0ST:
-                    return (byte) txTimer.getSt();
+                    return (byte) txTimer.getTbst();
                 case REGISTER_TB0IM:
-                    return (byte) txTimer.getIm();
+                    return (byte) txTimer.getTbim();
                 case REGISTER_TB0UC:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
@@ -295,9 +295,9 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_TB0RG1 + 1:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
-                    return (byte) txTimer.getCp0();
+                    return (byte) txTimer.getTbcp0();
                 case REGISTER_TB0CP1:
-                    return (byte) txTimer.getCp1();
+                    return (byte) txTimer.getTbcp1();
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -306,13 +306,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
-                        return (byte)txInputCaptureTimer.getEn();
+                        return (byte)txInputCaptureTimer.getTcen();
                     case REGISTER_TBTRUN + 3:
-                        return (byte)txInputCaptureTimer.getRun();
+                        return (byte)txInputCaptureTimer.getTbtrun();
                     case REGISTER_TBTCR + 3:
-                        return (byte)txInputCaptureTimer.getCr();
+                        return (byte)txInputCaptureTimer.getTbtcr();
                     case REGISTER_TBTCAP + 3:
-                        return (byte)txInputCaptureTimer.getTbtCap();
+                        return (byte)txInputCaptureTimer.getTbtcap();
                     case REGISTER_TBTRDCAP + 3:
                         return (byte)txInputCaptureTimer.getCurrentValue();
                 }
@@ -321,18 +321,18 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 3:
-                        return (byte) txInputCaptureTimer.getCmpCtl(compareChannel);
+                        return (byte) txInputCaptureTimer.getCmpctl(compareChannel);
                     case REGISTER_TCCMP0 + 3:
-                        return (byte) txInputCaptureTimer.getTcCmp(compareChannel);
+                        return (byte) txInputCaptureTimer.getTccmp(compareChannel);
                 }
             }
             else {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 3:
-                        return (byte) txInputCaptureTimer.getCapCr(captureChannel);
+                        return (byte) txInputCaptureTimer.getCapcr(captureChannel);
                     case REGISTER_TCCAP0 + 3:
-                        return (byte) txInputCaptureTimer.getTcCap(captureChannel);
+                        return (byte) txInputCaptureTimer.getTccap(captureChannel);
                 }
             }
         }
@@ -584,29 +584,29 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return txTimer.getEn();
+                    return txTimer.getTben();
                 case REGISTER_TB0RUN:
-                    return txTimer.getRun();
+                    return txTimer.getTbrun();
                 case REGISTER_TB0CR:
-                    return txTimer.getCr();
+                    return txTimer.getTbcr();
                 case REGISTER_TB0MOD:
-                    return txTimer.getMod();
+                    return txTimer.getTbmod();
                 case REGISTER_TB0FFCR:
-                    return txTimer.getFfcr();
+                    return txTimer.getTbffcr();
                 case REGISTER_TB0ST:
-                    return txTimer.getSt();
+                    return txTimer.getTbst();
                 case REGISTER_TB0IM:
-                    return txTimer.getIm();
+                    return txTimer.getTbim();
                 case REGISTER_TB0UC:
-                    return txTimer.getUc();
+                    return txTimer.getTbuc();
                 case REGISTER_TB0RG0:
-                    return txTimer.getRg0();
+                    return txTimer.getTbrg0();
                 case REGISTER_TB0RG1:
-                    return txTimer.getRg1();
+                    return txTimer.getTbrg1();
                 case REGISTER_TB0CP0:
-                    return txTimer.getCp0();
+                    return txTimer.getTbcp0();
                 case REGISTER_TB0CP1:
-                    return txTimer.getCp1();
+                    return txTimer.getTbcp1();
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -615,13 +615,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
-                        return txInputCaptureTimer.getEn();
+                        return txInputCaptureTimer.getTcen();
                     case REGISTER_TBTRUN + 2:
-                        return txInputCaptureTimer.getRun();
+                        return txInputCaptureTimer.getTbtrun();
                     case REGISTER_TBTCR + 2:
-                        return txInputCaptureTimer.getCr();
+                        return txInputCaptureTimer.getTbtcr();
                     case REGISTER_TBTCAP + 2:
-                        return txInputCaptureTimer.getTbtCap();
+                        return txInputCaptureTimer.getTbtcap();
                     case REGISTER_TBTRDCAP + 2:
                         return txInputCaptureTimer.getCurrentValue();
                 }
@@ -630,9 +630,9 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 2:
-                        return  txInputCaptureTimer.getCmpCtl(compareChannel);
+                        return  txInputCaptureTimer.getCmpctl(compareChannel);
                     case REGISTER_TCCMP0 + 2:
-                        return  txInputCaptureTimer.getTcCmp(compareChannel);
+                        return  txInputCaptureTimer.getTccmp(compareChannel);
                 }
 
             }
@@ -640,9 +640,9 @@ public class TxIoListener extends IoActivityListener {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 2:
-                        return  txInputCaptureTimer.getCapCr(captureChannel);
+                        return  txInputCaptureTimer.getCapcr(captureChannel);
                     case REGISTER_TCCAP0 + 2:
-                        return  txInputCaptureTimer.getTcCap(captureChannel);
+                        return  txInputCaptureTimer.getTccap(captureChannel);
                 }
             }
         }
@@ -799,29 +799,29 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    return txTimer.getEn();
+                    return txTimer.getTben();
                 case REGISTER_TB0RUN:
-                    return txTimer.getRun();
+                    return txTimer.getTbrun();
                 case REGISTER_TB0CR:
-                    return txTimer.getCr();
+                    return txTimer.getTbcr();
                 case REGISTER_TB0MOD:
-                    return txTimer.getMod();
+                    return txTimer.getTbmod();
                 case REGISTER_TB0FFCR:
-                    return txTimer.getFfcr();
+                    return txTimer.getTbffcr();
                 case REGISTER_TB0ST:
-                    return txTimer.getSt();
+                    return txTimer.getTbst();
                 case REGISTER_TB0IM:
-                    return txTimer.getIm();
+                    return txTimer.getTbim();
                 case REGISTER_TB0UC:
-                    return txTimer.getUc();
+                    return txTimer.getTbuc();
                 case REGISTER_TB0RG0:
-                    return txTimer.getRg0();
+                    return txTimer.getTbrg0();
                 case REGISTER_TB0RG1:
-                    return txTimer.getRg1();
+                    return txTimer.getTbrg1();
                 case REGISTER_TB0CP0:
-                    return txTimer.getCp0();
+                    return txTimer.getTbcp0();
                 case REGISTER_TB0CP1:
-                    return txTimer.getCp1();
+                    return txTimer.getTbcp1();
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -830,13 +830,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
-                        return txInputCaptureTimer.getEn();
+                        return txInputCaptureTimer.getTcen();
                     case REGISTER_TBTRUN:
-                        return txInputCaptureTimer.getRun();
+                        return txInputCaptureTimer.getTbtrun();
                     case REGISTER_TBTCR:
-                        return txInputCaptureTimer.getCr();
+                        return txInputCaptureTimer.getTbtcr();
                     case REGISTER_TBTCAP:
-                        return txInputCaptureTimer.getTbtCap();
+                        return txInputCaptureTimer.getTbtcap();
                     case REGISTER_TBTRDCAP:
                         return txInputCaptureTimer.getCurrentValue();
                 }
@@ -845,9 +845,9 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0:
-                        return  txInputCaptureTimer.getCmpCtl(compareChannel);
+                        return  txInputCaptureTimer.getCmpctl(compareChannel);
                     case REGISTER_TCCMP0:
-                        return  txInputCaptureTimer.getTcCmp(compareChannel);
+                        return  txInputCaptureTimer.getTccmp(compareChannel);
                 }
 
             }
@@ -855,9 +855,9 @@ public class TxIoListener extends IoActivityListener {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0:
-                        return  txInputCaptureTimer.getCapCr(captureChannel);
+                        return  txInputCaptureTimer.getCapcr(captureChannel);
                     case REGISTER_TCCAP0:
-                        return  txInputCaptureTimer.getTcCap(captureChannel);
+                        return  txInputCaptureTimer.getTccap(captureChannel);
                 }
             }
         }
@@ -1062,19 +1062,19 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    txTimer.setEn(value); break;
+                    txTimer.setTben(value); break;
                 case REGISTER_TB0RUN:
-                    txTimer.setRun(value); break;
+                    txTimer.setTbrun(value); break;
                 case REGISTER_TB0CR:
-                    txTimer.setCr(value); break;
+                    txTimer.setTbcr(value); break;
                 case REGISTER_TB0MOD:
-                    txTimer.setMod(value); break;
+                    txTimer.setTbmod(value); break;
                 case REGISTER_TB0FFCR:
-                    txTimer.setFfcr(value); break;
+                    txTimer.setTbffcr(value); break;
                 case REGISTER_TB0ST:
-                    txTimer.setSt(value); break;
+                    txTimer.setTbst(value); break;
                 case REGISTER_TB0IM:
-                    txTimer.setIm(value); break;
+                    txTimer.setTbim(value); break;
                 case REGISTER_TB0UC:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0:
@@ -1090,9 +1090,9 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_TB0RG1 + 1:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0:
-                    txTimer.setCp0(value); break;
+                    txTimer.setTbcp0(value); break;
                 case REGISTER_TB0CP1:
-                    txTimer.setCp1(value); break;
+                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1101,13 +1101,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 3:
-                        txInputCaptureTimer.setEn(value); break;
+                        txInputCaptureTimer.setTcen(value); break;
                     case REGISTER_TBTRUN + 3:
-                        txInputCaptureTimer.setRun(value); break;
+                        txInputCaptureTimer.setTbtrun(value); break;
                     case REGISTER_TBTCR + 3:
-                        txInputCaptureTimer.setCr(value); break;
+                        txInputCaptureTimer.setTbtcr(value); break;
                     case REGISTER_TBTCAP + 3:
-                        txInputCaptureTimer.setTbtCap(value); break;
+                        txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 3:
                         if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
@@ -1118,16 +1118,16 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 3:
-                        txInputCaptureTimer.setCmpCtl(compareChannel, value); break;
+                        txInputCaptureTimer.setCmpctl(compareChannel, value); break;
                     case REGISTER_TCCMP0 + 3:
-                        txInputCaptureTimer.setTcCmp(compareChannel, value); break;
+                        txInputCaptureTimer.setTccmp(compareChannel, value); break;
                 }
             }
             else {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 3:
-                        txInputCaptureTimer.setCapCr(captureChannel, value); break;
+                        txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 3:
                         throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }
@@ -1365,29 +1365,29 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    txTimer.setEn(value); break;
+                    txTimer.setTben(value); break;
                 case REGISTER_TB0RUN:
-                    txTimer.setRun(value); break;
+                    txTimer.setTbrun(value); break;
                 case REGISTER_TB0CR:
-                    txTimer.setCr(value); break;
+                    txTimer.setTbcr(value); break;
                 case REGISTER_TB0MOD:
-                    txTimer.setMod(value); break;
+                    txTimer.setTbmod(value); break;
                 case REGISTER_TB0FFCR:
-                    txTimer.setFfcr(value); break;
+                    txTimer.setTbffcr(value); break;
                 case REGISTER_TB0ST:
-                    txTimer.setSt(value); break;
+                    txTimer.setTbst(value); break;
                 case REGISTER_TB0IM:
-                    txTimer.setIm(value); break;
+                    txTimer.setTbim(value); break;
                 case REGISTER_TB0UC:
-                    txTimer.setUc(value); break;
+                    txTimer.setTbuc(value); break;
                 case REGISTER_TB0RG0:
-                    txTimer.setRg0(value); break;
+                    txTimer.setTbrg0(value); break;
                 case REGISTER_TB0RG1:
-                    txTimer.setRg1(value); break;
+                    txTimer.setTbrg1(value); break;
                 case REGISTER_TB0CP0:
-                    txTimer.setCp0(value); break;
+                    txTimer.setTbcp0(value); break;
                 case REGISTER_TB0CP1:
-                    txTimer.setCp1(value); break;
+                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1396,13 +1396,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
-                        txInputCaptureTimer.setEn(value); break;
+                        txInputCaptureTimer.setTcen(value); break;
                     case REGISTER_TBTRUN + 2:
-                        txInputCaptureTimer.setRun(value); break;
+                        txInputCaptureTimer.setTbtrun(value); break;
                     case REGISTER_TBTCR + 2:
-                        txInputCaptureTimer.setCr(value); break;
+                        txInputCaptureTimer.setTbtcr(value); break;
                     case REGISTER_TBTCAP + 2:
-                        txInputCaptureTimer.setTbtCap(value); break;
+                        txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 2:
                         if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
@@ -1413,9 +1413,9 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 2:
-                        txInputCaptureTimer.setCmpCtl(compareChannel, value); break;
+                        txInputCaptureTimer.setCmpctl(compareChannel, value); break;
                     case REGISTER_TCCMP0 + 2:
-                        txInputCaptureTimer.setTcCmp(compareChannel, value); break;
+                        txInputCaptureTimer.setTccmp(compareChannel, value); break;
                 }
 
             }
@@ -1423,7 +1423,7 @@ public class TxIoListener extends IoActivityListener {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 2:
-                        txInputCaptureTimer.setCapCr(captureChannel, value); break;
+                        txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 2:
                         throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }
@@ -1533,29 +1533,29 @@ public class TxIoListener extends IoActivityListener {
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
                 case REGISTER_TB0EN:
-                    txTimer.setEn(value); break;
+                    txTimer.setTben(value); break;
                 case REGISTER_TB0RUN:
-                    txTimer.setRun(value); break;
+                    txTimer.setTbrun(value); break;
                 case REGISTER_TB0CR:
-                    txTimer.setCr(value); break;
+                    txTimer.setTbcr(value); break;
                 case REGISTER_TB0MOD:
-                    txTimer.setMod(value); break;
+                    txTimer.setTbmod(value); break;
                 case REGISTER_TB0FFCR:
-                    txTimer.setFfcr(value); break;
+                    txTimer.setTbffcr(value); break;
                 case REGISTER_TB0ST:
-                    txTimer.setSt(value); break;
+                    txTimer.setTbst(value); break;
                 case REGISTER_TB0IM:
-                    txTimer.setIm(value); break;
+                    txTimer.setTbim(value); break;
                 case REGISTER_TB0UC:
-                    txTimer.setUc(value); break;
+                    txTimer.setTbuc(value); break;
                 case REGISTER_TB0RG0:
-                    txTimer.setRg0(value); break;
+                    txTimer.setTbrg0(value); break;
                 case REGISTER_TB0RG1:
-                    txTimer.setRg1(value); break;
+                    txTimer.setTbrg1(value); break;
                 case REGISTER_TB0CP0:
-                    txTimer.setCp0(value); break;
+                    txTimer.setTbcp0(value); break;
                 case REGISTER_TB0CP1:
-                    txTimer.setCp1(value); break;
+                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1564,13 +1564,13 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN:
-                        txInputCaptureTimer.setEn(value); break;
+                        txInputCaptureTimer.setTcen(value); break;
                     case REGISTER_TBTRUN:
-                        txInputCaptureTimer.setRun(value); break;
+                        txInputCaptureTimer.setTbtrun(value); break;
                     case REGISTER_TBTCR:
-                        txInputCaptureTimer.setCr(value); break;
+                        txInputCaptureTimer.setTbtcr(value); break;
                     case REGISTER_TBTCAP:
-                        txInputCaptureTimer.setTbtCap(value); break;
+                        txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP:
                         if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
@@ -1581,9 +1581,9 @@ public class TxIoListener extends IoActivityListener {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0:
-                        txInputCaptureTimer.setCmpCtl(compareChannel, value); break;
+                        txInputCaptureTimer.setCmpctl(compareChannel, value); break;
                     case REGISTER_TCCMP0:
-                        txInputCaptureTimer.setTcCmp(compareChannel, value); break;
+                        txInputCaptureTimer.setTccmp(compareChannel, value); break;
                 }
 
             }
@@ -1591,7 +1591,7 @@ public class TxIoListener extends IoActivityListener {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0:
-                        txInputCaptureTimer.setCapCr(captureChannel, value); break;
+                        txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0:
                         throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
                 }

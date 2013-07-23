@@ -35,25 +35,25 @@ public class TxIoPinTimerInputFunction extends AbstractInputPinFunction {
         if (previousValue != value) {
             if (inputNumber == 0) {
                 // IN0
-                if (timer.getModClk() == 0b00) {
+                if (timer.getTbmodTbclk() == 0b00) {
                     // Event counter mode
-                    timer.increment();
+                    timer.onClockTick();
                 }
                 else {
                     // Capture mode
-                    int modCpm = timer.getModCpm();
+                    int modCpm = timer.getTbmodTbcpm();
                     if (value == 1) {
                         // Rising edge
                         if (modCpm == 0b01 || modCpm == 0b10) {
                             // Capture TBnCP0 on rising of TBnIN0
-                            timer.capture0();
+                            timer.performCapture0();
                         }
                     }
                     else {
                         // Falling edge
                         if (modCpm == 0b10) {
                             // Capture TBnCP1 on falling of TBnIN0
-                            timer.capture1();
+                            timer.performCapture1();
                         }
                     }
                 }
@@ -62,9 +62,9 @@ public class TxIoPinTimerInputFunction extends AbstractInputPinFunction {
                 // IN1
                 if (value == 1) {
                     // Rising edge
-                    if (timer.getModCpm() == 0b01) {
+                    if (timer.getTbmodTbcpm() == 0b01) {
                         // Capture TBnCP1 on rising of TBnIN1
-                        timer.capture0();
+                        timer.performCapture0();
                     }
                 }
             }

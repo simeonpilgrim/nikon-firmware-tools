@@ -187,15 +187,15 @@ public class ExpeedIoListener extends IoActivityListener {
             }
             switch (addr) {
                 case REGISTER_CPCLR0:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR() >> 16);
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr() >> 16);
                 case REGISTER_CPCLR0+2:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR() & 0xFFFF);
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr() & 0xFFFF);
                 case REGISTER_TCDT0:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT() >> 16);
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt() >> 16);
                 case REGISTER_TCDT0+2:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT() & 0xFFFF);
+                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt() & 0xFFFF);
                 case REGISTER_TCCS0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCCS();
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTccs();
                 default:
                     throw new RuntimeException("Warning: ignoring attempt to read 16-bit register in FreeRun Timer.");
             }
@@ -213,25 +213,25 @@ public class ExpeedIoListener extends IoActivityListener {
             // Reload Timer configuration registers
             switch (addr) {
                 case REGISTER_TMRLRA0:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getReloadValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getTmrlra();
                 case REGISTER_TMR0:
-                    return platform.getProgrammableTimers()[0].getCurrentValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getTmr();
                 case REGISTER_TMCSR0:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getConfiguration();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getTmcsr();
 
                 case REGISTER_TMRLRA1:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getReloadValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getTmrlra();
                 case REGISTER_TMR1:
-                    return platform.getProgrammableTimers()[1].getCurrentValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getTmr();
                 case REGISTER_TMCSR1:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getConfiguration();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[1]).getTmcsr();
 
                 case REGISTER_TMRLRA2:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getReloadValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getTmrlra();
                 case REGISTER_TMR2:
-                    return platform.getProgrammableTimers()[2].getCurrentValue();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getTmr();
                 case REGISTER_TMCSR2:
-                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getConfiguration();
+                    return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getTmcsr();
             }
         }
         return null;
@@ -261,9 +261,9 @@ public class ExpeedIoListener extends IoActivityListener {
             }
             switch (addr) {
                 case REGISTER_CPCLR0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCPCLR();
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr();
                 case REGISTER_TCDT0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTCDT();
+                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt();
                 default:
                     throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
             }
@@ -406,7 +406,7 @@ public class ExpeedIoListener extends IoActivityListener {
             }
             switch (addr) {
                 case REGISTER_TCCS0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTCCS(value); break;
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTccs(value); break;
                 default:
                     throw new RuntimeException("Warning: ignoring attempt to write 16-bit register in FreeRun Timer.");
             }
@@ -427,30 +427,30 @@ public class ExpeedIoListener extends IoActivityListener {
             // Reload Timer configuration registers
             switch (addr) {
                 case REGISTER_TMRLRA0:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR0:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer0 value.");
                 case REGISTER_TMCSR0:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[0]).setTmcsr(value & 0xFFFF);
                     break;
 
                 case REGISTER_TMRLRA1:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR1:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer1 value.");
                 case REGISTER_TMCSR1:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[1]).setTmcsr(value & 0xFFFF);
                     break;
 
                 case REGISTER_TMRLRA2:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setReloadValue(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR2:
                     throw new RuntimeException("Warning: ignoring attempt to write reloadTimer2 value");
                 case REGISTER_TMCSR2:
-                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setConfiguration(value & 0xFFFF);
+                    ((FrReloadTimer)platform.getProgrammableTimers()[2]).setTmcsr(value & 0xFFFF);
                     break;
             }
         }
@@ -470,9 +470,9 @@ public class ExpeedIoListener extends IoActivityListener {
             }
             switch (addr) {
                 case REGISTER_CPCLR0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setCPCLR(value); break;
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setCpclr(value); break;
                 case REGISTER_TCDT0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTCDT(value); break;
+                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTcdt(value); break;
                 default:
                     throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
             }
