@@ -193,6 +193,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
         // Start emulator synchronously
         try {
+            emulator.setContextFromPlatform(syscallPlatform);
             emulator.play();
 
             // Read error code

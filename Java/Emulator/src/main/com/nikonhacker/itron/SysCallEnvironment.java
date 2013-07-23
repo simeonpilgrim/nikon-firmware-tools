@@ -14,6 +14,7 @@ public abstract class SysCallEnvironment {
         // Using a separate platform, but sharing memory and interruptcontroller
         MasterClock syscallMasterClock = platform.getMasterClock();
         syscallPlatform = new Platform(syscallMasterClock);
+        syscallPlatform.setCpuState(platform.getCpuState());
         syscallPlatform.setMemory(platform.getMemory());
         syscallPlatform.setInterruptController(platform.getInterruptController());
     }
