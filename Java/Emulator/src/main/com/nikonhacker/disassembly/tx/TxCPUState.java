@@ -310,8 +310,8 @@ public class TxCPUState extends CPUState {
 
     public enum PowerMode {
         RUN,
-        HALT,
-        DOZE,
+        HALT, // What is this state ?
+        DOZE, // What is this state ?
         STOP,
         SLEEP,
         IDLE,

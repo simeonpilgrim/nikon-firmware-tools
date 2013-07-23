@@ -42,7 +42,6 @@ import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
-import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
@@ -2133,10 +2132,14 @@ public class EmulatorUI extends JFrame implements ActionListener {
             RealtimeClock realtimeClock = null;
             KeyCircuit keyCircuit = null;
             AdConverter adConverter = null;
-            TimerCycleCounterListener timerCycleCounterListener = new TimerCycleCounterListener();
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
+
+                // Initializing only the platform's cpuState here is ugly, but is required
+                // so that timers can hook to the cpu passed via the platform (at least on TX)...
+                platform[chip].setCpuState(cpuState);
+
                 programmableTimers = new ProgrammableTimer[ExpeedIoListener.NUM_TIMER + ExpeedIoListener.NUM_FREERUN_TIMER];
                 serialInterfaces = new SerialInterface[ExpeedIoListener.NUM_SERIAL_IF];
                 clockGenerator = new FrClockGenerator();
@@ -2151,10 +2154,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
-                    programmableTimers[i] = new FrReloadTimer(i, interruptController, timerCycleCounterListener);
+                    programmableTimers[i] = new FrReloadTimer(i, platform[chip]);
                 }
                 for (int i = 0; i < ExpeedIoListener.NUM_FREERUN_TIMER; i++) {
-                    programmableTimers[ExpeedIoListener.NUM_TIMER + i] = new FrFreeRunTimer(i, interruptController, timerCycleCounterListener);
+                    programmableTimers[ExpeedIoListener.NUM_TIMER + i] = new FrFreeRunTimer(i, platform[chip]);
                 }
 
                 // I/O ports
@@ -2167,6 +2170,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             }
             else {
                 cpuState = new TxCPUState();
+
+                // Initializing only the platform's cpuState here is ugly, but is required
+                // so that timers can hook to the cpu passed via the platform...
+                platform[chip].setCpuState(cpuState);
+
                 programmableTimers = new ProgrammableTimer[TxIoListener.NUM_16B_TIMER + TxIoListener.NUM_32B_TIMER];
                 serialInterfaces = new SerialInterface[TxIoListener.NUM_SERIAL_IF + TxIoListener.NUM_HSERIAL_IF];
                 clockGenerator = new TxClockGenerator();
@@ -2177,10 +2185,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 // Programmable timers
                 // First put all 16-bit timers
                 for (int i = 0; i < TxIoListener.NUM_16B_TIMER; i++) {
-                    programmableTimers[i] = new TxTimer(i, (TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
+                    programmableTimers[i] = new TxTimer(i, platform[chip]);
                 }
                 // Then add the 32-bit input capture timer
-                programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer((TxCPUState) cpuState, (TxClockGenerator)clockGenerator, (TxInterruptController)interruptController, timerCycleCounterListener);
+                programmableTimers[TxIoListener.NUM_16B_TIMER] = new TxInputCaptureTimer(platform[chip]);
 
                 // I/O ports
                 ioPorts = TxIoPort.setupPorts(platform[chip], interruptController, programmableTimers, prefs.isLogPinMessages(chip));
@@ -2271,7 +2279,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             }
 
 
-            platform[chip].setCpuState(cpuState);
             platform[chip].setMemory(memory);
             platform[chip].setClockGenerator(clockGenerator);
             platform[chip].setInterruptController(interruptController);
@@ -2291,7 +2298,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // TODO sounds weird...
             emulator[chip].setContext(memory, cpuState, interruptController);
             emulator[chip].clearCycleCounterListeners();
-            emulator[chip].addCycleCounterListener(timerCycleCounterListener);
 
             setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 

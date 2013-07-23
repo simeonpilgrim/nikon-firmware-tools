@@ -1,10 +1,10 @@
 package com.nikonhacker.emu.peripherials.programmableTimer.fr;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
-import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 /**
      Counter use case:
@@ -19,163 +19,204 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
                 ...
                 read from 0x00000138 : 0x00000000  (@0x00107660)
 
- * This is a implementation of a Fujitsu 32-bit Reload Timer
+ * This is an implementation of a Fujitsu 32-bit Free Run Timer
  * Idea comes from Chapter 19 of 91660 Hardware manual (32-bit Free-Run Timer) from CM71-10146-3E.pdf,
- * but registers do not match. So own interpretation was done.
+ * but register adresses do not match. So own interpretation was done.
  */
 public class FrFreeRunTimer extends ProgrammableTimer {
+    public static final int TCCS_CLK_MASK           = 0b00000000_00001111;
+    public static final int TCCS_SCLR_MASK          = 0b00000000_00010000;
+    public static final int TCCS_STOP_MASK          = 0b00000000_01000000;
+    public static final int TCCS_ICRE_MASK          = 0b00000001_00000000;
+    public static final int TCCS_ICLR_MASK          = 0b00000010_00000000;
+    /**
+     * coderat: this is my guess, timer 0x130 is definitely counting down
+     * TODO to prove this to the end, we must check if usage of timer 0x100 expects
+     * TODO counting up. I didn't find the place yet.
+     */
+    public static final int TCCS_DOWN_MASK_PROBABLY = 0b00000100_00000000;
+    public static final int TCCS_ECKE_MASK          = 0b10000000_00000000;
+
     /** comparison value */
-    private long cpclr = 1;
-    
-    /*  currentValue (in superclass) is too complex to use */
-    private long longCurrentValue = 0;
-    /** configuration corresponds to the Reload Timer register TMCSRn */
-    private int tccs = 0x40;
+    private int cpclr = 1;
 
-    // The following fields are set upon setting configuration
-    private int divider = 1;
+    /** TCCS is the configuration. It corresponds roughly to the Reload Timer register TMCSRn */
+    private int tccs = TCCS_STOP_MASK;
 
+    /** indicates if timer has reached comparison value */
     private boolean iclr = false;
-    private boolean interruptEnabled = false;
-    
-    public FrFreeRunTimer(int timerNumber, InterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
-        super(timerNumber, interruptController, cycleCounterListener);
+
+    public FrFreeRunTimer(int timerNumber, Platform platform) {
+        super(timerNumber, platform);
     }
 
-    public void setTCCS(int configuration) {
-        boolean initScheduler = false;
+    /** Return status value */
+    public int getTccs() {
+        return tccs | ( iclr ? TCCS_ICLR_MASK : 0);
+    }
 
-        int oldDivider = divider;
-        switch (configuration & 0xF) {
-            case 0x0: divider = 1;  break;
-            case 0x1: divider = 2;  break;
-            case 0x2: divider = 4;  break;
-            case 0x3: divider = 8; break;
-            case 0x4: divider = 16; break;
-            case 0x5: divider = 32; break;
-            case 0x6: divider = 64; break;
-            case 0x7: divider = 128; break;
-            case 0x8: divider = 256; break;
-            default: throw new RuntimeException("Error configuring Free-Run timer " + timerNumber + ": CLK is not supported (TCCS" + timerNumber + "=0b" + Format.asBinary(configuration, 16) + ")");
+    public void setTccs(int tccs) {
+        // read old values
+        int oldDivider = getDivider();
+        boolean wasEnabled = !isTccsStopSet();
+
+        // store new register
+        this.tccs = tccs & ~TCCS_ICLR_MASK; // Ignore ICLR
+
+        // compare values with old, and reconfigure if needed
+        int newDivider = getDivider();
+        enabled = !isTccsStopSet();
+
+        if (wasEnabled & !enabled) {
+            // Stopping
+            unRegister();
         }
-        if (oldDivider != divider) {
-            initScheduler = true;
+        if (oldDivider != newDivider) {
+            updateFrequency();
         }
+        if (!wasEnabled && enabled) {
+            // Starting
+            register();
+        }
+
         // ICRE
-        if ((configuration & 0x100) != 0) {
-            interruptEnabled = true;
+        if (isTccsIcreSet()) {
             // TODO : we do not know the interrupt number
-            throw new RuntimeException("FreeRun timer interrupt is not implemented");
+            throw new RuntimeException(getName() + ": interrupt is not implemented");
         }
         // ICLR
-        if ((configuration & 0x200) == 0) {
+        if (!isTccsIclrSet()) {
             iclr = false;
             // TODO : clear interrupt request on controller
         }
         // ECKE
-        if ((configuration & 0x8000) != 0) {
+        if (isTccsEckeSet()) {
             // TODO : we do not know external clocks
-            throw new RuntimeException("FreeRun timer external clock is not implemented");
+            throw new RuntimeException(getName() + ": external clock is not implemented");
         }
         // SCLR
-        if ((configuration & 0x10) != 0) {
-            longCurrentValue = 0;
+        if (isTccsSclrSet()) {
+            currentValue = 0;
         }
-        // STOP
-        boolean countOperationEnabled = ((configuration & 0x40) == 0);
-        
-        if (!enabled) {
-            if (countOperationEnabled) {
-                // Changing to enabled
-                initScheduler = true;
-            }
-        }
-        else {
-            if (!countOperationEnabled) {
-                // Changing to disabled
-                unregister();
-                enabled = false;
-            }
-        }
-
-        // OK. Done parsing configuration.
-        if (initScheduler) {
-            if (enabled) {
-                // It is a reconfiguration
-                unregister();
-            }
-            // Create a new scheduler
-            enabled = true;
-
-            scale = 1;
-            intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
-
-            if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
-                /* unsustainable frequency */
-                scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
-                intervalNanoseconds *= scale;
-            }
-
-            register();
-        }
-
-        tccs = configuration & 0xFDFF;
     }
 
-    /** return status value */
-    public int getTCCS() {
-        return tccs | ( iclr ? 0x200: 0);
+    private boolean isTccsStopSet() {
+        return (tccs & TCCS_STOP_MASK) != 0;
+    }
+
+    private boolean isTccsSclrSet() {
+        return (tccs & TCCS_SCLR_MASK) != 0;
+    }
+
+    private boolean isTccsEckeSet() {
+        return (tccs & TCCS_ECKE_MASK) != 0;
+    }
+
+    private boolean isTccsIclrSet() {
+        return (tccs & TCCS_ICLR_MASK) != 0;
+    }
+
+    private boolean isTccsIcreSet() {
+        return (tccs & TCCS_ICRE_MASK) != 0;
+    }
+
+    private boolean isTccsDownSet() {
+        return (tccs & TCCS_DOWN_MASK_PROBABLY) != 0;
+    }
+
+    private int getDivider() {
+        switch (tccs & TCCS_CLK_MASK) {
+            case 0x0: return 1;
+            case 0x1: return 2;
+            case 0x2: return 4;
+            case 0x3: return 8;
+            case 0x4: return 16;
+            case 0x5: return 32;
+            case 0x6: return 64;
+            case 0x7: return 128;
+            case 0x8: return 256;
+            default: throw new RuntimeException("Error configuring " + getName() + ": CLK is not supported (TCCS" + timerNumber + "=0b" + Format.asBinary(tccs, 16) + ")");
+        }
     }
 
     /** set comparison value */
-    public void setCPCLR(int value) {
-        cpclr = (value<0 ? (0x100000000L+(long)value) : (long)value);
+    public void setCpclr(int cpclr) {
+        this.cpclr = cpclr;
     }
 
     /** return comparison value */
-    public int getCPCLR() {
-        return (int) (cpclr > 0x7FFFFFFF ? (cpclr-0x100000000L) : cpclr);
+    public int getCpclr() {
+        return cpclr;
     }
 
     /** set new start value */
-    public void setTCDT(int value) {
-        longCurrentValue = (value<0 ? (0x100000000L+(long)value) : (long)value);
+    public void setTcdt(int tcdt) {
+        currentValue = tcdt;
     }
 
     /** return current value */
-    public int getTCDT() {
-        return (int)(longCurrentValue > 0x7FFFFFFF ? (longCurrentValue-0x100000000L) : longCurrentValue);
+    public int getTcdt() {
+        return currentValue;
     }
 
-    public void increment() {
+    @Override
+    public int getFrequencyHz() {
+        return FrClockGenerator.PCLK_FREQUENCY / getDivider();
+    }
+
+    @Override
+    public Object onClockTick() throws Exception {
         if (active) {
-            // coderat: this is my guess, timer 0x130 is definetly counting down
-            // TODO to prove this to the end, we must check if usage of timer 0x100 expects
-            // counting up. I didn't find the place yet.
-            if ((tccs & 0x400)!=0) {
-                longCurrentValue -= scale;
-                if (longCurrentValue < 0) {
+            if (isTccsDownSet()) {
+                currentValue--;
+                if (currentValue == 0) {
                     iclr = true;
-                    if (interruptEnabled) {
+                    if (isTccsIcreSet()) {
                         // TODO generate interrupt
                     }
-                    longCurrentValue = cpclr;
+                    currentValue = cpclr;
                 }
             } else {
-                longCurrentValue += scale;
-                if (longCurrentValue >= cpclr) {
+                currentValue++;
+                if (currentValue == cpclr) {
                     iclr = true;
-                    if (interruptEnabled) {
+                    if (isTccsIcreSet()) {
                         // TODO generate interrupt
                     }
-                    longCurrentValue = 0;
+                    currentValue = 0;
                 }
             }
         }
+        return null;
     }
 
     @Override
     public String toString() {
-        return "FreeRun timer #" + timerNumber + " (value=" + currentValue + (interruptEnabled?", interrupt enabled":", interrupt disabled")+ ")";
+        return getName(); // TODO
     }
+
+    @Override
+    protected String getName() {
+        return Constants.CHIP_LABEL[Constants.CHIP_FR] + " Free Run Timer";
+    }
+
+//    if (enabled) {
+//        // It is a reconfiguration
+//        unRegister();
+//    }
+//    // Create a new scheduler
+//    enabled = true;
+//
+//    scale = 1;
+//    intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
+//
+//    if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
+//                /* unsustainable frequency */
+//        scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
+//        intervalNanoseconds *= scale;
+//    }
+//
+//    register();
+
+
 }

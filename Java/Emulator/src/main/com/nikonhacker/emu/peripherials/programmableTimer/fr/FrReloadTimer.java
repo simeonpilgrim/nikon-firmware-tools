@@ -1,11 +1,11 @@
 package com.nikonhacker.emu.peripherials.programmableTimer.fr;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
-import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListener;
 
 /**
  * This is a lightweight implementation of a Fujitsu 16-bit Reload Timer
@@ -14,148 +14,209 @@ import com.nikonhacker.emu.peripherials.programmableTimer.TimerCycleCounterListe
  */
 public class FrReloadTimer extends ProgrammableTimer {
 
-    /** reloadValue corresponds to the Reload Timer register TMRLRAn */
-    private int reloadValue;
+    public static final int TMCSR_TRG_MASK  = 0b00000000_00000001;
+    public static final int TMCSR_CNTE_MASK = 0b00000000_00000010;
+    public static final int TMCSR_UF_MASK   = 0b00000000_00000100;
+    public static final int TMCSR_INTE_MASK = 0b00000000_00001000;
+    public static final int TMCSR_RELD_MASK = 0b00000000_00010000;
+    public static final int TMCSR_CSL_MASK  = 0b00001110_00000000;
+
+    /** Reload Timer register TMRLRAn corresponds to the reloadValue */
+    private int tmrlra;
 
     /*  currentValue (in superclass) corresponds to the Reload Timer register TMRn */
 
-    /** configuration corresponds to the Reload Timer register TMCSRn */
-    private int configuration;
+    /** Reload Timer register TMCSRn is the configuration */
+    private int tmcsr;
 
-    // The following fields are set upon setting configuration
-    private int divider;
-    private boolean mustReload; // vs one-shot
-    private boolean interruptEnabled; // underflow interrupt enabled
-    private boolean isInUnderflowCondition; // indicates an underflow has occurred
+    /** indicates an underflow has occurred */
+    private boolean isInUnderflowCondition;
 
-    public FrReloadTimer(int timerNumber, InterruptController interruptController, TimerCycleCounterListener cycleCounterListener) {
-        super(timerNumber, interruptController, cycleCounterListener);
+    public FrReloadTimer(int timerNumber, Platform platform) {
+        super(timerNumber, platform);
+    }
+
+    public int getTmrlra() {
+        return tmrlra;
+    }
+
+    /**
+     * Set reload value
+     * @param tmrlra
+     */
+    public void setTmrlra(int tmrlra) {
+        this.tmrlra = tmrlra;
     }
 
 
-    public void setReloadValue(int reloadValue) {
-        this.reloadValue = reloadValue;
+    public int getTmr() {
+        return currentValue;
     }
 
-    public void setConfiguration(int configuration) {
-        boolean initScheduler = false;
-        // Reserved
-        if ((configuration & 0xC000) != 0) {
-            System.out.println("Warning, trying to configure reload timer " + timerNumber + " with bits 15-14 != 00 (TMSCR" + timerNumber + "=0b" + Format.asBinary(configuration, 16) + ")");
-        }
+    public int getTmcsr() {
+        // bits15-14 are reserved and read as 0
+        // bit2 is underflow flag
+        // bit0 is always read as 0
+        return (tmcsr & 0b00111111_11111010) | (isInUnderflowCondition ? TMCSR_UF_MASK : 0);
+    }
 
+    /**
+     * Set configuration
+     * @param tmcsr
+     */
+    public void setTmcsr(int tmcsr) {
         // TRGM1-0
-        if ((configuration & 0x3000) != 0) {
-            throw new RuntimeException("Error configuring reload timer " + timerNumber + ": only TRGM0/1=0b00 is supported (TMSCR" + timerNumber + "=0b" + Format.asBinary(configuration, 16) + ")");
-        }
-
-        // CSL2-1-0
-        int oldDivider = divider;
-        int csl = (configuration & 0x0E00) >> 9;
-        switch (csl) {
-            case 0x0: divider = 2;  break;
-            case 0x1: divider = 4;  break;
-            case 0x2: divider = 8;  break;
-            case 0x3: divider = 16; break;
-            case 0x4: divider = 32; break;
-            case 0x5: divider = 64; break;
-            default: throw new RuntimeException("Error configuring reload timer " + timerNumber + ": CSL in Event Counter mode is not supported (TMSCR" + timerNumber + "=0b" + Format.asBinary(configuration, 16) + ")");
-        }
-        if (oldDivider != divider) {
-            initScheduler = true;
+        if ((tmcsr & TMCSR_TRGM_MASK()) != 0) {
+            throw new RuntimeException("Error configuring reload timer " + timerNumber + ": only TRGM0/1=0b00 is supported (TMCSR" + timerNumber + "=0b" + Format.asBinary(tmcsr, 16) + ")");
         }
 
         // GATE: ignored
-        // Undefined: ignored
         // OUTL: ignored
 
-        // RELD
-        mustReload = (configuration & 0x0010) != 0;
+        // read old values
+        int oldDivider = getDivider();
+        boolean wasEnabled = isTmcsrCnteSet();
 
-        // INTE
-        interruptEnabled = (configuration & 0x0008) != 0;
+        // store new register
+        this.tmcsr = tmcsr;
 
-        // UF
-        if ((configuration & 0x0004) == 0) {
-            isInUnderflowCondition = false;
-            interruptController.removeRequest(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+        // compare values with old, and reconfigure if needed
+        int newDivider = getDivider();
+        enabled = isTmcsrCnteSet();
+
+        if (wasEnabled & !enabled) {
+            // Stopping
+            unRegister();
         }
-
-        // CNTE
-        boolean countOperationEnabled = (configuration & 0x0002) != 0;
-
-        if (enabled) {
-            if (!countOperationEnabled) {
-                // Changing to disabled
-                unregister();
-                enabled = false;
-            }
+        if (oldDivider != newDivider) {
+            updateFrequency();
         }
-        else {
-            if (countOperationEnabled) {
-                // Changing to enabled
-                initScheduler = true;
-            }
-        }
-
-        //TRG
-        if ((configuration & 0x0001) != 0) {
-            currentValue = reloadValue;
-        }
-
-        // OK. Done parsing configuration.
-        if (initScheduler) {
-            if (enabled) {
-                // It is a reconfiguration
-                unregister();
-            }
-            // enable
-            enabled = true;
-
-            scale = 1;
-            intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
-
-            if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
-                /* unsustainable frequency */
-                scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
-                intervalNanoseconds *= scale;
-            }
-
+        if (!wasEnabled && enabled) {
+            // Starting
             register();
         }
 
-        this.configuration = configuration;
+        // Clear underflow status if requested (UF written as 0)
+        if (!isTmcsrUfSet()) {
+            isInUnderflowCondition = false;
+            platform.getInterruptController().removeRequest(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+        }
+
+        // Reload value if requested
+        if (isTmcsrTrgSet()) {
+            currentValue = tmrlra;
+        }
     }
 
-
-    public int getReloadValue() {
-        return reloadValue;
+    private int TMCSR_TRGM_MASK() {
+        return 0b00110000_00000000;
     }
 
-    public int getConfiguration() {
-        return (configuration & 0x3FFA) | (isInUnderflowCondition?4:0);
+    /**
+     * @return true if reload value must happen now
+     */
+    private boolean isTmcsrTrgSet() {
+        return (tmcsr & TMCSR_TRG_MASK) != 0;
     }
 
-    public void increment() {
-        if (active) {
-            currentValue -= scale;
-            if (currentValue < 0) {
-                isInUnderflowCondition = true;
-                if (interruptEnabled) {
-                    interruptController.request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
-                }
-                if (mustReload) {
-                    currentValue += reloadValue;
-                } else {
-                    unregister();
-                    enabled = false;
-                }
-            }
+    /**
+     * @return true if counter is enabled
+     */
+    private boolean isTmcsrCnteSet() {
+        return (tmcsr & TMCSR_CNTE_MASK) != 0;
+    }
+
+    /**
+     * True if underflow status flag is set
+     * @return
+     */
+    private boolean isTmcsrUfSet() {
+        return (tmcsr & TMCSR_UF_MASK) != 0;
+    }
+
+    /**
+     * @return true=must reload, false=one shot
+     */
+    private boolean isTmcsrReldSet() {
+        return (tmcsr & TMCSR_RELD_MASK) != 0;
+    }
+
+    /**
+     * @return true if underflow interrupt is enabled
+     */
+    private boolean isTmcsrInteSet() {
+        return (tmcsr & TMCSR_INTE_MASK) != 0;
+    }
+
+    /**
+     * Divider
+     * @return
+     */
+    private int getDivider() {
+        // CSL2-1-0
+        int csl = (tmcsr & TMCSR_CSL_MASK) >> 9;
+        switch (csl) {
+            case 0x0: return 2;
+            case 0x1: return 4;
+            case 0x2: return 8;
+            case 0x3: return 16;
+            case 0x4: return 32;
+            case 0x5: return 64;
+            default: throw new RuntimeException("Error configuring reload timer " + timerNumber + ": CSL in Event Counter mode is not supported (TMCSR" + timerNumber + "=0b" + Format.asBinary(tmcsr, 16) + ")");
         }
     }
 
     @Override
-    public String toString() {
-        return "Reload timer #" + timerNumber + " (value=" + currentValue + (interruptEnabled?", interrupt enabled":", interrupt disabled")+ ")";
+    public int getFrequencyHz() {
+        return FrClockGenerator.PCLK_FREQUENCY / getDivider();
     }
+
+    @Override
+    public Object onClockTick() throws Exception {
+        if (active) {
+            currentValue--;
+            if (currentValue < 0) {
+                isInUnderflowCondition = true;
+                if (isTmcsrInteSet()) {
+                    platform.getInterruptController().request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+                }
+                if (isTmcsrReldSet()) {
+                    currentValue += tmrlra;
+                } else {
+                    enabled = false;
+                    return "DONE";
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " (value=" + currentValue + (isTmcsrInteSet() ? ", interrupt enabled" : ", interrupt disabled") + ")";
+    }
+
+    @Override
+    protected String getName() {
+        return Constants.CHIP_LABEL[Constants.CHIP_FR] + " Reload timer #" + timerNumber;
+    }
+
+//        if (enabled) {
+//            // It is a reconfiguration
+//            unregister();
+//        }
+//        // enable
+//        enabled = true;
+//
+//        scale = 1;
+//        intervalNanoseconds = 1000000000L /*ns/s*/ * divider /*pclk tick/timer tick*/ / FrClockGenerator.PCLK_FREQUENCY;
+//
+//        if (intervalNanoseconds < MIN_EMULATOR_INTERVAL_NANOSECONDS) {
+//            /* unsustainable frequency */
+//            scale = (int) Math.ceil((double)MIN_EMULATOR_INTERVAL_NANOSECONDS / intervalNanoseconds);
+//            intervalNanoseconds *= scale;
+//        }
+//
+//        register();
+
 }
