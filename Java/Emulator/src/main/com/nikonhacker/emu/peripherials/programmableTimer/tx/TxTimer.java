@@ -43,6 +43,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     public static final int TBIM_TBIMn1_MASK  = 0b00000010;
     public static final int TBIM_TBIM0Fn_MASK = 0b00000100;
 
+    public static final int TBCLK_PIN_DRIVEN = 0b00;
+
     // Registers
 
     /** Timer enable */
@@ -105,7 +107,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
         if (!wasEnabled && enabled) {
             // Register unless it is pin-driven
-            if (getTbmodTbclk() != 0b00) {
+            if (getTbmodTbclk() != TBCLK_PIN_DRIVEN) {
                 register();
             }
         }
@@ -184,7 +186,20 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         int newTbclk = getTbmodTbclk();
 
         if (oldTbclk != newTbclk) {
-            updateFrequency();
+            if (enabled) {
+                if ((oldTbclk != TBCLK_PIN_DRIVEN) && (newTbclk == TBCLK_PIN_DRIVEN)) {
+                    // from clock to pin => unregister
+                    unRegister();
+                }
+                if ((oldTbclk != TBCLK_PIN_DRIVEN) && (newTbclk != TBCLK_PIN_DRIVEN)) {
+                    // from clock to aanother clock => recompute frequencies
+                    updateFrequency();
+                }
+                if ((oldTbclk == TBCLK_PIN_DRIVEN) && (newTbclk != TBCLK_PIN_DRIVEN)) {
+                    // from pin to clock => register
+                    register();
+                }
+            }
         }
 
         if (isTbmodTbcp0Set()) {
