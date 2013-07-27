@@ -311,6 +311,11 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
 
 
     @Override
+    public int getChip() {
+        return Constants.CHIP_TX;
+    }
+
+    @Override
     public int getFrequencyHz() {
         return ((TxClockGenerator)platform.getClockGenerator()).getFt0Hz() / getDivider();
     }
