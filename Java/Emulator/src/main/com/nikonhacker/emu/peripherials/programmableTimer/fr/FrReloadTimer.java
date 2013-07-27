@@ -167,6 +167,11 @@ public class FrReloadTimer extends ProgrammableTimer {
     }
 
     @Override
+    public int getChip() {
+        return Constants.CHIP_FR;
+    }
+
+    @Override
     public int getFrequencyHz() {
         return FrClockGenerator.PCLK_FREQUENCY / getDivider();
     }

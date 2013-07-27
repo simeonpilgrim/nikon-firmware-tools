@@ -1,5 +1,6 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
@@ -31,6 +32,11 @@ public class TxEmulator extends Emulator {
         TxCPUState.initRegisterLabels(outputOptions);
     }
 
+
+    @Override
+    public int getChip() {
+        return Constants.CHIP_TX;
+    }
 
     @Override
     public int getFrequencyHz() {

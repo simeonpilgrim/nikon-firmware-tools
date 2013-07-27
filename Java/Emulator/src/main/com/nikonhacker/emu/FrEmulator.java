@@ -1,5 +1,6 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
@@ -39,6 +40,11 @@ public class FrEmulator extends Emulator {
         FrInstructionSet.init(outputOptions);
         FrStatement.initFormatChars(outputOptions);
         FrCPUState.initRegisterLabels(outputOptions);
+    }
+
+    @Override
+    public int getChip() {
+        return Constants.CHIP_FR;
     }
 
     @Override

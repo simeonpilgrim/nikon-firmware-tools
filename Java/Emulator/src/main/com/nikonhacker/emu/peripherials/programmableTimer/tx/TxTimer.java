@@ -412,6 +412,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
 
     @Override
+    public int getChip() {
+        return Constants.CHIP_TX;
+    }
+
+    @Override
     public int getFrequencyHz() {
         return ((TxClockGenerator)platform.getClockGenerator()).getFt0Hz() / getDivider();
     }
@@ -488,6 +493,6 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     @Override
     protected String getName() {
-        return Constants.CHIP_LABEL[Constants.CHIP_TX] + "Timer " + Format.asHex(timerNumber, 1);
+        return Constants.CHIP_LABEL[Constants.CHIP_TX] + " Timer " + Format.asHex(timerNumber, 1);
     }
 }

@@ -39,6 +39,11 @@ public class MasterClockTest  extends TestCase {
             this.frequencyHz = frequencyHz;
         }
 
+        @Override
+        public int getChip() {
+            return -1;
+        }
+
         public int getFrequencyHz() {
             return frequencyHz;
         }
