@@ -1,5 +1,6 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.OutputOption;
@@ -143,4 +144,10 @@ public abstract class Emulator implements Clockable {
             cycleCounterListeners.clear();
         }
     }
+
+    @Override
+    public String toString() {
+        return Constants.CHIP_LABEL[getChip()] + " Emulator";
+    }
+
 }
