@@ -1,12 +1,14 @@
 package com.nikonhacker.emu;
 
+import com.nikonhacker.Constants;
+
 import java.text.DecimalFormat;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MasterClock implements Runnable {
 
-    private DecimalFormat milliSecondFormater = new DecimalFormat("0000.000000000");
+    private DecimalFormat milliSecondFormatter = new DecimalFormat("0000.000000000");
 
     /**
      * All objects to "clock", encapsulated in an internal class to store their counter value and threshold
@@ -30,7 +32,7 @@ public class MasterClock implements Runnable {
     private long masterClockLoopDurationPs;
 
     /**
-     * A temp field to indicate that the computing of intervals based on frequencies must be performed again
+     * A temp flag to indicate that the computing of intervals based on frequencies must be performed again
      * (due to a change in the list of Clockable, or a frequency change)
      */
     private boolean intervalComputingRequested;
@@ -52,25 +54,19 @@ public class MasterClock implements Runnable {
      * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
     public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
-/*
-        if (clockableCallbackHandler == null) {
-            clockableCallbackHandler = new ClockableCallbackHandler() {
-                @Override
-                public void onNormalExit(Object o) {
-                    System.out.println("Normal exit with return " + o.toString());
-                }
-
-                @Override
-                public void onException(Exception e) {
-                    System.out.println("Exit with exception " + e.getMessage());
-                }
-            };
-        }
-*/
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
         requestIntervalComputing();
     }
+
+    /**
+     * Simpler version
+     * @param clockable
+     */
+    public void add(Clockable clockable) {
+        add(clockable, null, true);
+    }
+
 
     /**
      * Removes a clockable object.
@@ -109,13 +105,28 @@ public class MasterClock implements Runnable {
         }
 
         masterClockLoopDurationPs = 1000000000000L/leastCommonMultipleFrequency;
+/*
+        System.err.println("MasterClock reconfigured with one tick=" + masterClockLoopDurationPs + "ps, with the following entries:");
+        for (ClockableEntry entry : entries) {
+            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " @" + entry.clockable.getFrequencyHz() + "Hz, every " + entry.counterThreshold + " ticks");
+        }
+        System.err.println("---------------------------------------");
+*/
     }
 
     public void setEnabled(Clockable clockable, boolean enabled) {
-        for (ClockableEntry entry : entries) {
-            if (entry.clockable == clockable) {
-                //System.err.println(enabled?"Enabling ":"Disabling " + entry.clockable.getClass().getSimpleName());
-                entry.enabled = enabled;
+        for (ClockableEntry candidateEntry : entries) {
+            if (candidateEntry.clockable == clockable) {
+                //System.err.println(enabled?"Enabling ":"Disabling " + candidateEntry.clockable.getClass().getSimpleName());
+                if (!enabled && candidateEntry.clockableCallbackHandler != null) {
+                    //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
+                    candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to stopping of " + clockable.toString());
+                }
+                candidateEntry.enabled = enabled;
+                if (candidateEntry.clockable instanceof Emulator) {
+                    setLinkedEntriesEnabled(candidateEntry.clockable.getChip(), enabled);
+                }
+                break;
             }
         }
         if (!enabled) {
@@ -152,7 +163,7 @@ public class MasterClock implements Runnable {
     public void run() {
         //System.err.println("Clock is starting");
         running = true;
-        ClockableEntry entryToStop = null;
+        ClockableEntry entryToDisable = null;
         // Infinite loop
         while (running) {
             if (intervalComputingRequested) {
@@ -175,7 +186,7 @@ public class MasterClock implements Runnable {
                             //System.err.println(currentEntry.clockable.getClass().getSimpleName() + ".onClockTick() returned " + result);
                             if (result != null) {
                                 // A non-null result means this entry shouldn't run anymore
-                                entryToStop = currentEntry;
+                                entryToDisable = currentEntry;
                                 // Warn the callback method
                                 //System.err.println("Calling onNormalExit() on callback for " + currentEntry.clockable.getClass().getSimpleName());
                                 if (currentEntry.clockableCallbackHandler != null) {
@@ -185,7 +196,7 @@ public class MasterClock implements Runnable {
                         }
                         catch (Exception e) {
                             // In case of exception this entry shouldn't run anymore
-                            entryToStop = currentEntry;
+                            entryToDisable = currentEntry;
                             // Warn the callback method
                             //System.err.println("Calling onException() on callback for " + currentEntry.clockable.getClass().getSimpleName());
                             if (currentEntry.clockableCallbackHandler != null) {
@@ -193,36 +204,18 @@ public class MasterClock implements Runnable {
                             }
                         }
 
-                        if (entryToStop != null) {
-                            // Actually disable that entry
-                            //System.err.println("Disabling " + currentEntry.clockable.getClass().getSimpleName());
-                            entryToStop.enabled = false;
-                            if (syncPlay) {
-                                // Warn all other remaining entries that they are forced to stop, and disable them
-                                for (ClockableEntry entryToDisable : entries) {
-                                    if (entryToDisable.enabled) {
-                                        //System.err.println("Calling onNormalExit() on callback for " + entryToDisable.clockable.getClass().getSimpleName());
-                                        entryToDisable.clockableCallbackHandler.onNormalExit("Sync stop due to " + entryToStop.clockable.getClass().getSimpleName());
-                                        //System.err.println("Disabling " + entryToDisable.clockable.getClass().getSimpleName());
-                                        entryToDisable.enabled = false;
-                                    }
-                                }
-                                // Stop clock
-                                //System.err.println("Requesting clock stop");
+                        if (entryToDisable != null) {
+                            disableEntry(entryToDisable);
+                            // Clear entryToDisable
+                            entryToDisable = null;
+
+                            // Check if all entries are disabled
+                            if (allEntriesDisabled()) {
+                                // Zll entries are now disabled. Stop clock
+                                // System.err.println("This was the last entry. Requesting clock stop");
                                 running = false;
                                 break;
                             }
-                            else {
-                                // Check if all entries are disabled
-                                if (allEntriesDisabled()) {
-                                    // This was the last entry to run. Stop clock
-                                    //System.err.println("This was the last entry. Requesting clock stop");
-                                    running = false;
-                                    break;
-                                }
-                            }
-                            // Reset entryToStop
-                            entryToStop = null;
                         }
                     }
                 }
@@ -231,6 +224,49 @@ public class MasterClock implements Runnable {
             totalElapsedTimePs += masterClockLoopDurationPs;
         }
         //System.err.println("Clock is stopped\r\n=======================================================");
+    }
+
+    /**
+     * Disable the given entry, and if it's an emulator, all timers linked to it,
+     * plus, if syncPlay, the other emulator and its timers
+     * @param entryToDisable
+     */
+    private void disableEntry(ClockableEntry entryToDisable) {
+        // Actually disable that entry
+        //System.err.println("Disabling " + currentEntry.clockable.getClass().getSimpleName());
+        entryToDisable.enabled = false;
+        if (entryToDisable.clockable instanceof Emulator) {
+            setLinkedEntriesEnabled(entryToDisable.clockable.getChip(), false);
+            if (syncPlay) {
+                // Warn all other emulators that they are forced to stop, and disable them
+                for (ClockableEntry candidateEntry : entries) {
+                    if (candidateEntry.enabled && candidateEntry.clockable instanceof Emulator) {
+                        //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
+                        if (candidateEntry.clockableCallbackHandler != null) {
+                            candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to " + entryToDisable.clockable.getClass().getSimpleName());
+                        }
+                        //System.err.println("Disabling " + candidateEntry.clockable.getClass().getSimpleName());
+                        candidateEntry.enabled = false;
+                        setLinkedEntriesEnabled(candidateEntry.clockable.getChip(), false);
+                    }
+                }
+                // Stop clock
+                //System.err.println("Requesting clock stop");
+            }
+        }
+    }
+
+    private void setLinkedEntriesEnabled(int chip, boolean enabled) {
+        for (ClockableEntry candidateEntry : entries) {
+            if ((candidateEntry.enabled != enabled) && (candidateEntry.clockable.getChip() == chip)) {
+                if (!enabled && candidateEntry.clockableCallbackHandler != null) {
+                    //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
+                    candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to chip " + Constants.CHIP_LABEL[chip] + " stopping.");
+                }
+                //System.err.println((enabled?"Enabling ":"Disabling ") + candidateEntry.clockable.getClass().getSimpleName());
+                candidateEntry.enabled = enabled;
+            }
+        }
     }
 
     private boolean allEntriesDisabled() {
@@ -254,7 +290,7 @@ public class MasterClock implements Runnable {
     }
 
     public String getFormatedTotalElapsedTimeMs() {
-        return milliSecondFormater.format(totalElapsedTimePs/1000000000.0) + "ms";
+        return milliSecondFormatter.format(totalElapsedTimePs/1000000000.0) + "ms";
     }
 
 
@@ -301,6 +337,13 @@ public class MasterClock implements Runnable {
             this.clockable = clockable;
             this.clockableCallbackHandler = clockableCallbackHandler;
             this.enabled = enabled;
+        }
+
+        @Override
+        public String toString() {
+            return "ClockableEntry (" + (enabled ?"ON":"OFF") +") for " + clockable +
+                    "enabled=" + enabled +
+                    '}';
         }
     }
 }

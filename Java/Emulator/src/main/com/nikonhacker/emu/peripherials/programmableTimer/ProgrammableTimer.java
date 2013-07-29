@@ -66,7 +66,7 @@ public abstract class ProgrammableTimer implements Clockable {
     }
 
     protected void register() {
-        platform.getMasterClock().add(this, null, true);
+        platform.getMasterClock().add(this);
     }
 
     protected void updateFrequency() {
