@@ -423,6 +423,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     @Override
     public Object onClockTick() {
+//        System.out.println(getName() + (operate?" operates":" doesn't operate"));
         if (operate) {
             boolean interruptCondition = false;
             currentValue++;
