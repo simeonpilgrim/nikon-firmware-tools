@@ -103,7 +103,7 @@ public class StatementContext {
     public CallStackItem popItem() {
         if (callStack != null && !callStack.isEmpty()) {
             CallStackItem poppedItem = callStack.pop();
-            while (poppedItem != null && poppedItem.getInstruction() != null && poppedItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) {
+            while (!callStack.isEmpty() && poppedItem != null && poppedItem.getInstruction() != null && poppedItem.getInstruction().getFlowType() == Instruction.FlowType.JMP) {
                 poppedItem = callStack.pop();
             }
             return poppedItem;
