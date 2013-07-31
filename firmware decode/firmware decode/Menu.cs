@@ -23,7 +23,8 @@ namespace Nikon_Decode
             public uint BFT_start;
             public uint BFT_end;
             public long BFT_Count { get { return (BFT_end - BFT_start) / Unknown_xx.size_of; } }
-            public uint File_offset;
+            public FirmOffsets offsets;
+            public uint File_offset(uint addr) { return offsets.Resolve(addr); }
 
             public long EngTableAddr;
             public long EngLastAddr;
@@ -33,7 +34,7 @@ namespace Nikon_Decode
 
             public uint Copy_From;
             public uint Copy_To;
-            public uint Copy_Offset { get { return (Copy_To - Copy_From) + File_offset; } }
+            public uint Copy_Offset { get { return (Copy_To - Copy_From) + File_offset(Copy_From); } }
 
             public string DFR_file;
 
@@ -48,7 +49,7 @@ namespace Nikon_Decode
             {
                 BFT_start = 0x8F9D1934;
                 BFT_end = 0x8F9D555C;
-                File_offset = 0x40000;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x5EA9A0;
                 EngLastAddr = 0x5ECC64;
@@ -80,7 +81,7 @@ namespace Nikon_Decode
             {
                 BFT_start = 0; // not known yet.
                 BFT_end = 0; // not known yet.
-                File_offset = 0x40000;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x46ABC8;
                 EngMenuTextAddr = 0x46B564;
@@ -111,7 +112,7 @@ namespace Nikon_Decode
             {
                 BFT_start = 0x8F9BF0E8;
                 BFT_end = 0x8F9C4470;
-                File_offset = 0x40000;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x52A790;
                 EngMenuTextAddr = 0x52B484;
@@ -137,13 +138,42 @@ namespace Nikon_Decode
             }
         }
 
+        internal class FirmOffsets
+        {
+            List<Tuple<uint,uint,uint>> offsets = new List<Tuple<uint,uint,uint>>();
+
+            public FirmOffsets(params uint[] vals)
+            {
+                for (int i = 0; i < (vals.Length / 3); i++)
+                {
+                    var start = vals[i * 3 + 0];
+                    var end = vals[i * 3 + 1];
+                    var offset = vals[i * 3 + 2];
+                    offsets.Add(new Tuple<uint, uint, uint>(start, end, offset));
+                }
+            }
+
+            public uint Resolve(uint addr)
+            {
+                foreach (var os in offsets)
+                {
+                    if (os.Item1 <= addr && os.Item2 > addr)
+                    {
+                        return os.Item3;
+                    }
+                }
+                return 0;
+            }
+
+        }
+
         internal class D300S_0101_Const : FirmConsts
         {
             public D300S_0101_Const()
             {
                 BFT_start = 0x0;
                 BFT_end = 0x0;
-                File_offset = 0x40000;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x465640;
                 EngMenuTextAddr = 0x466130;
@@ -174,7 +204,7 @@ namespace Nikon_Decode
             {
                 BFT_start = 0x0;
                 BFT_end = 0x0;
-                File_offset = 0x40000;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x3FF7E0;
                 EngMenuTextAddr = 0x400220;
@@ -201,6 +231,33 @@ namespace Nikon_Decode
                 };
             }
         }
+
+
+        internal class D800_0101_Const : FirmConsts
+        {
+            public D800_0101_Const()
+            {
+                BFT_start = 0x84F245F8;
+                BFT_end = 0x84F2C158;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000, 0xC00000, 0x1040000, 0x220000);
+                
+                EngTableAddr = 0xD13A64;
+                EngMenuTextAddr = 0xD14BF4;
+                EngLastAddr = 0xD17174;
+
+                // D14558, D14B7C, D13A64
+
+                Copy_From = 0x4EF4F4;
+                Copy_To = 0x84F436B4; ;
+
+                DFR_file = @"";
+
+                MenuRootList = new long[] { 
+                    0x84F436B4
+                };
+            }
+        }
+
 
         private static void InteractiveTextD5100(string fileName)
         {
@@ -258,6 +315,12 @@ namespace Nikon_Decode
         private static void DumpMenusD700(string fileName)
         {
             firmConsts = new D700_0103_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenusD800(string fileName)
+        {
+            firmConsts = new D800_0101_Const();
             DumpMenus(fileName);
         }
 
@@ -757,10 +820,14 @@ namespace Nikon_Decode
             {
 
             }
-            long addr = baseAddr + (offset * 4) - firmConsts.File_offset;
 
-            long saddr = ReadUint32(data, addr) - firmConsts.File_offset;
-            long eaddr = ReadUint32(data, addr + 4) - firmConsts.File_offset;
+            long addr = baseAddr + (offset * 4);
+            addr -= firmConsts.File_offset((uint)addr);
+
+            long saddr = ReadUint32(data, addr);
+            saddr -= firmConsts.File_offset((uint)saddr);
+            long eaddr = ReadUint32(data, addr + 4);
+            eaddr -= firmConsts.File_offset((uint)eaddr);
 
             StringBuilder sb = new StringBuilder();
             int state = 0;
