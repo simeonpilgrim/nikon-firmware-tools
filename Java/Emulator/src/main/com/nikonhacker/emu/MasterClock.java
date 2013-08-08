@@ -341,9 +341,7 @@ public class MasterClock implements Runnable {
 
         @Override
         public String toString() {
-            return "ClockableEntry (" + (enabled ?"ON":"OFF") +") for " + clockable +
-                    "enabled=" + enabled +
-                    '}';
+            return "ClockableEntry (" + (enabled ?"ON":"OFF") +") for " + clockable + '}';
         }
     }
 }
