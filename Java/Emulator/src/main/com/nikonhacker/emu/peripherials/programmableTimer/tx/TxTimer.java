@@ -114,7 +114,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     private boolean isTbenTbenSet() {
-        return (tben /* & TBEN_TBEN_MASK */) != 0;
+        return (tben & TBEN_TBEN_MASK) != 0;
     }
 
 

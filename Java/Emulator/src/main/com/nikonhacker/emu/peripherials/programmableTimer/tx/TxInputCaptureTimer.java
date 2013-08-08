@@ -101,7 +101,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     }
 
     public boolean isTcenTcenSet() {
-        return tcen /* & TCEN_TCEN_MASK */ != 0;
+        return (tcen & TCEN_TCEN_MASK) != 0;
     }
 
 
