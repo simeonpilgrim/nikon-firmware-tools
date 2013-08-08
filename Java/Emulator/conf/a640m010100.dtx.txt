@@ -210,7 +210,7 @@
 -s 0xBFC129A0=setup_WDMOD
 -s 0xBFC129C0=disables_timerF
 -s 0xBFC12A30=TBF_RUN
--s 0xBFC12A3C=Stop_TBF
+-s 0xBFC12A3C=TBF_STOP
 -s 0xBFC12A5C=sys_sta_tsk_00($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code] /* Start task */)
 -s 0xBFC12A68=sys_sta_tsk_01
 -s 0xBFC12A74=sys_ext_tsk
