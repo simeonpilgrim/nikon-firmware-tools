@@ -196,6 +196,7 @@
 -s 0xBFC115D4=INT17_body_shutter
 -s 0xBFC115F4=INT_KWUP_body
 -s 0xBFC1160C=INTRTC_body
+-s 0xBFC11878=delay_5M_TimerF_cycles
 -s 0xBFC116A8=Task0x1_init_bfc116a8
 -s 0xBFC11BC8=get_system_realtime
 -s 0xBFC11E80=setup_all_ports
@@ -204,10 +205,10 @@
 -s 0xBFC126C4=setup_get_key
 -s 0xBFC1279C=get_buttons_status
 -s 0xBFC128B4=setup_RTC
--s 0xBFC128F8=clear_WDcounter_0
+-s 0xBFC128F8=clear_WatchdogCounter_0
 -s 0xBFC12924=disables_WatchDog
--s 0xBFC12994=clear_WDcounter
--s 0xBFC129A0=setup_WDMOD
+-s 0xBFC12994=clear_WatchdogCounter
+-s 0xBFC129A0=setup_WatchdogMOD
 -s 0xBFC129C0=disables_timerF
 -s 0xBFC12A30=TBF_RUN
 -s 0xBFC12A3C=TBF_STOP
@@ -298,7 +299,7 @@
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
 -s 0xBFC15D70=load_eeprom_to_FFFF4000 /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
 -s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN buffer], $a2 [IN counter], $a3 [IN is_mode_read /* 0=writing, 1=reading */])
--s 0xBFC15DE4=change_WDMOD
+-s 0xBFC15DE4=change_WatchdogMOD
 -s 0xBFC15E54=check_sum_compare
 -s 0xBFC15EB8=prepare_HSC0_setting
 -s 0xBFC15FDC=setup_rcv_FR_stru_part1
