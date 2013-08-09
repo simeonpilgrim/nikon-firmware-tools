@@ -197,7 +197,7 @@ public class FrFreeRunTimer extends ProgrammableTimer {
 
     @Override
     public String toString() {
-        return getName(); // TODO
+        return getName() + " @" + getFrequencyString();
     }
 
     @Override

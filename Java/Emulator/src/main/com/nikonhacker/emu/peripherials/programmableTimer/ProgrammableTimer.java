@@ -79,8 +79,19 @@ public abstract class ProgrammableTimer implements Clockable {
 
     @Override
     public String toString() {
-        return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive)");
+        return "ProgrammableTimer #" + timerNumber + (active?" (active)":" (inactive) @" + getFrequencyHz() + "Hz");
     }
 
     protected abstract String getName();
+
+    protected String getFrequencyString() {
+        String frequencyHz;
+        try {
+            frequencyHz = getFrequencyHz() + "Hz";
+        }
+        catch (Exception e) {
+            frequencyHz = "?Hz";
+        }
+        return frequencyHz;
+    }
 }
