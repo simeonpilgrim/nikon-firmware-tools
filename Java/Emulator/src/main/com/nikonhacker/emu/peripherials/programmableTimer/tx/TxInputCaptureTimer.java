@@ -358,7 +358,7 @@ public class TxInputCaptureTimer extends ProgrammableTimer implements CpuPowerMo
     @Override
     public String toString() {
         int requestLevel = ((TxInterruptController) platform.getInterruptController()).getRequestLevel(TxInterruptController.INTTBT);
-        return getName() + ": TCEN=0x" + Format.asHex(getTcen(), 2)
+        return getName() + " @" + getFrequencyString() + ": TCEN=0x" + Format.asHex(getTcen(), 2)
                 + ", TBTRUN=0x" + Format.asHex(getTbtrun(), 2)
                 + ", TBTCR=0x" + Format.asHex(getTbtcr(), 2)
                 + ", level=0b" + Format.asBinary(requestLevel, 3) + (requestLevel == 0 ? " (interrupt disabled)" : " (interrupt enabled)")
