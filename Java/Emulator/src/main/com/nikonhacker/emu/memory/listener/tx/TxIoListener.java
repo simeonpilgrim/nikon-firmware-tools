@@ -155,10 +155,10 @@ public class TxIoListener extends IoActivityListener {
     private static final int REGISTER_TB0ST     = 0xFF00_4514; // Timer status register
     private static final int REGISTER_TB0IM     = 0xFF00_4518; // Timer Interrupt mask register
     private static final int REGISTER_TB0UC     = 0xFF00_451C; // Timer up counter register
-    private static final int REGISTER_TB0RG0    = 0xFF00_4520; // Timer register low word
-    private static final int REGISTER_TB0RG1    = 0xFF00_4524; // Timer register hi word
-    private static final int REGISTER_TB0CP0    = 0xFF00_4528; // Timer Capture register lo word
-    private static final int REGISTER_TB0CP1    = 0xFF00_452C; // Timer Capture register hi word
+    private static final int REGISTER_TB0RG0    = 0xFF00_4520; // Timer compare value 0 register
+    private static final int REGISTER_TB0RG1    = 0xFF00_4524; // Timer compare value 1 register
+    private static final int REGISTER_TB0CP0    = 0xFF00_4528; // Timer captured value 0 register
+    private static final int REGISTER_TB0CP1    = 0xFF00_452C; // Timer captured value 1 register
 
     // 32-bit Capture input timer
     public static final  int NUM_32B_TIMER     = 1;
