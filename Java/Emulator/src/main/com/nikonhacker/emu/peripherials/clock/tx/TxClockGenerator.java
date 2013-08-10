@@ -120,7 +120,6 @@ public class TxClockGenerator extends ClockGenerator {
         syscr = (syscr & 0xFF00_FFFF) | (syscr2 << 16);
 
         computeFrequencies();
-
     }
 
     public int getSyscrScosel() {
