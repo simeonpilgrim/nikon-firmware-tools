@@ -1023,6 +1023,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DHR:
                 return ((TxDmaController)platform.getDmaController()).getDhr();
         }
+
         if (logRegisterMessages) System.err.println("Load32 from register 0x" + Format.asHex(addr, 8) + " is not supported yet");
 
         return null;
