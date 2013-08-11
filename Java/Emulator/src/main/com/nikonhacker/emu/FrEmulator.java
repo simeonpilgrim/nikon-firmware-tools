@@ -49,8 +49,7 @@ public class FrEmulator extends Emulator {
 
     @Override
     public int getFrequencyHz() {
-        // TODO use ((FrClockGenerator)platform.getClockGenerator).getXxx();
-        return FrClockGenerator.FREQUENCY;
+        return ((FrClockGenerator)platform.getClockGenerator()).getCClkFrequency();
     }
 
     /**
