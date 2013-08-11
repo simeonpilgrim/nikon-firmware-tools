@@ -198,7 +198,10 @@ public class FrReloadTimer extends ProgrammableTimer {
 
     @Override
     public String toString() {
-        return getName() + " @" + getFrequencyString() + " (value=" + currentValue + (isTmcsrInteSet() ? ", interrupt enabled" : ", interrupt disabled") + ")";
+        return getName() + " @" + getFrequencyString() + ": TMR" + Format.asHex(timerNumber, 1)
+                + ", TMCSR=0b" + Format.asBinary(tmcsr, 16) + ", TMRLRA=" + tmrlra + "d"
+                + (isTmcsrInteSet() ? ", interrupt enabled" : ", interrupt disabled")
+                + ", value=" + currentValue + "d";
     }
 
     @Override
