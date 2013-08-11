@@ -10,7 +10,7 @@ import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
  */
 public class FrClockGenerator extends ClockGenerator {
 
-    private static final int F_OSC_HZ = 100_000_000; //MHz
+    private static final int F_OSC_HZ = 200_000_000; //MHz
 
 
     private static final int CSELR_CKS_MASK  = 0b00000011;
@@ -217,7 +217,7 @@ public class FrClockGenerator extends ClockGenerator {
     }
 
     public int getDivr2Divp() {
-        return (divr1 & DIVR2_DIVP_MASK) >> 4;
+        return (divr2 & DIVR2_DIVP_MASK) >> 4;
     }
 
     public int getPClkClockDivisionRate() {
