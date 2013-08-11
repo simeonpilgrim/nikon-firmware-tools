@@ -173,7 +173,7 @@ public class FrReloadTimer extends ProgrammableTimer {
 
     @Override
     public int getFrequencyHz() {
-        return FrClockGenerator.PCLK_FREQUENCY / getDivider();
+        return ((FrClockGenerator)platform.getClockGenerator()).getPClkFrequency() / getDivider();
     }
 
     @Override

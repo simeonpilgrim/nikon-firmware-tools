@@ -1,8 +1,10 @@
 package com.nikonhacker.emu.memory.listener.fr;
 
+import com.nikonhacker.Format;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
+import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
@@ -10,7 +12,13 @@ import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
 public class ExpeedIoListener extends IoActivityListener {
 
-    private static final int REGISTER_DICR = 0x44;
+    // Interrupt controller
+    private static final int REGISTER_EIRR0 = 0x40;
+    private static final int REGISTER_ENIR0 = 0x41;
+    private static final int REGISTER_ELVR0 = 0x42;
+
+    // Delay interrupt
+    private static final int REGISTER_DICR  = 0x44;
 
     // Timer
     public static final  int NUM_TIMER        = 3;
@@ -35,6 +43,10 @@ public class ExpeedIoListener extends IoActivityListener {
     private static final int REGISTER_CPCLR1  = REGISTER_CPCLR0 + 0x30;
     private static final int REGISTER_TCDT1   = REGISTER_CPCLR1 + 0x8;
     private static final int REGISTER_TCCS1   = REGISTER_CPCLR1 + 0xE;
+
+    private static final int REGISTER_DIVR0 = 0x488;
+    private static final int REGISTER_DIVR1 = 0x489;
+    private static final int REGISTER_DIVR2 = 0x48A;
 
     // Serial ports
     /**
@@ -61,9 +73,6 @@ public class ExpeedIoListener extends IoActivityListener {
 
     // Interrupt controller
     public static final int REGISTER_ICR00 = 0x440;
-    public static final int REGISTER_EIRR0 = 0x40;
-    public static final int REGISTER_ENIR0 = 0x41;
-    public static final int REGISTER_ELVR0 = 0x42;
 
 
     private final Platform platform;
@@ -89,6 +98,11 @@ public class ExpeedIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Byte onLoadData8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
+        if (addr >= REGISTER_ICR00 && addr < REGISTER_ICR00 + 48) {
+            // Interrupt request level registers
+            // Standard memory is used
+            return null;
+        }
         // Serial Interface configuration registers
         if (addr >= REGISTER_SCR_IBRC0 && addr < REGISTER_SCR_IBRC0 + NUM_SERIAL_IF * SERIAL_IF_OFFSET) {
             int serialInterfaceNr = (addr - REGISTER_SCR_IBRC0) >> SERIAL_IF_OFFSET_BITS;
@@ -139,6 +153,28 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (byte)(interruptController.getElvr() & 0xFF);
             }
         }
+        else {
+            switch (addr) {
+                // Delay interrupt register
+                case REGISTER_DICR:
+                    // Seems the code often writes to AC to DICR, then immediately rereads it to AC (!) and moves AC into AC (!!).
+                    // Maybe to defeat the pipeline and give a little delay for the interrupt to occur ? Anyway...
+                    // Spec says highest 7 bits are read as 1. No precision for bit 0.
+                    // Assume it is zero...
+                    return (byte)0b11111110;
+
+                // Clock division registers
+                case REGISTER_DIVR0:
+                    return (byte)((FrClockGenerator)platform.getClockGenerator()).getDivr0();
+                case REGISTER_DIVR1:
+                    return (byte)((FrClockGenerator)platform.getClockGenerator()).getDivr1();
+                case REGISTER_DIVR2:
+                    return (byte)((FrClockGenerator)platform.getClockGenerator()).getDivr2();
+            }
+        }
+
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet");
+
         return null;
     }
 
@@ -210,8 +246,8 @@ public class ExpeedIoListener extends IoActivityListener {
             }
         }
         else {
-            // Reload Timer configuration registers
             switch (addr) {
+                // Reload Timer configuration registers
                 case REGISTER_TMRLRA0:
                     return ((FrReloadTimer)platform.getProgrammableTimers()[0]).getTmrlra();
                 case REGISTER_TMR0:
@@ -232,8 +268,16 @@ public class ExpeedIoListener extends IoActivityListener {
                     return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getTmr();
                 case REGISTER_TMCSR2:
                     return ((FrReloadTimer)platform.getProgrammableTimers()[2]).getTmcsr();
+
+                case REGISTER_DIVR0:
+                case REGISTER_DIVR1:
+                case REGISTER_DIVR2:
+                    throw new RuntimeException("Warning: reading DIVR registers by 16bit is not supported");
             }
         }
+
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet");
+
         return null;
     }
 
@@ -272,6 +316,17 @@ public class ExpeedIoListener extends IoActivityListener {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
             return ((interruptController.getEirr() << 24) | (interruptController.getEnir() << 16) | interruptController.getElvr());
         }
+        else {
+            switch (addr) {
+                case REGISTER_DIVR0:
+                case REGISTER_DIVR1:
+                case REGISTER_DIVR2:
+                    throw new RuntimeException("Warning: reading DIVR registers by 32bit is not supported");
+            }
+        }
+
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet");
+
         return null;
     }
 
@@ -353,9 +408,22 @@ public class ExpeedIoListener extends IoActivityListener {
                         platform.getInterruptController().request(FrInterruptController.DELAY_INTERRUPT_REQUEST_NR);
                     }
                     break;
+
+
+                case REGISTER_DIVR0:
+                    ((FrClockGenerator)platform.getClockGenerator()).setDivr0(value & 0xFF);
+                    break;
+                case REGISTER_DIVR1:
+                    ((FrClockGenerator)platform.getClockGenerator()).setDivr1(value & 0xFF);
+                    break;
+                case REGISTER_DIVR2:
+                    ((FrClockGenerator)platform.getClockGenerator()).setDivr2(value & 0xFF);
+                    break;
+
+                default:
+                    if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
             }
         }
-        //System.out.println("Setting register 0x" + Format.asHex(offset, 4) + " to 0x" + Format.asHex(value, 2));
     }
 
     public void onStore16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
@@ -424,6 +492,7 @@ public class ExpeedIoListener extends IoActivityListener {
             }
         }
         else {
+            // TODO remove copy/paste by using the same logic as for Serial Ports
             // Reload Timer configuration registers
             switch (addr) {
                 case REGISTER_TMRLRA0:
@@ -452,6 +521,14 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_TMCSR2:
                     ((FrReloadTimer)platform.getProgrammableTimers()[2]).setTmcsr(value & 0xFFFF);
                     break;
+
+                case REGISTER_DIVR0:
+                case REGISTER_DIVR1:
+                case REGISTER_DIVR2:
+                    throw new RuntimeException("Warning: writing DIVR registers by 16bit is not supported");
+
+                default:
+                    if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
             }
         }
     }
@@ -477,11 +554,81 @@ public class ExpeedIoListener extends IoActivityListener {
                     throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer.");
             }
         }
-        else if (addr == REGISTER_EIRR0) {
-            FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
-            interruptController.setEirr((value >> 24) & 0xFF);
-            interruptController.setEnir((value >> 16) & 0xFF);
-            interruptController.setElvr(value & 0xFFFF);
+        else switch(addr) {
+            case REGISTER_EIRR0:
+                FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+                interruptController.setEirr((value >> 24) & 0xFF);
+                interruptController.setEnir((value >> 16) & 0xFF);
+                interruptController.setElvr(value & 0xFFFF);
+                break;
+
+            case REGISTER_DIVR0:
+            case REGISTER_DIVR1:
+            case REGISTER_DIVR2:
+                throw new RuntimeException("Warning: writing DIVR registers by 32bit is not supported");
+
+            default:
+                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
     }
 }
+
+/*
+
+TODO: Unimplemented registers accessed by the code
+
+Register 0x000000B6: Load16 is not supported yet => ???
+
+Register 0x000000F0: Store8 value 0x00 is not supported yet => Remote control ???
+Register 0x000000F1: Load8 is not supported yet
+Register 0x000000F1: Store8 value 0x00 is not supported yet
+Register 0x000000F1: Store8 value 0x20 is not supported yet
+Register 0x000000F2: Load16 is not supported yet
+Register 0x000000F2: Store16 value 0x000C is not supported yet
+Register 0x000000F2: Store16 value 0x002C is not supported yet
+Register 0x000000F2: Store16 value 0x00EC is not supported yet
+Register 0x000000F2: Store16 value 0x02EC is not supported yet
+Register 0x000000F2: Store16 value 0x0AEC is not supported yet
+
+Register 0x00000150: Store32 value 0x000009C3 is not supported yet => Other freerun timer ?
+Register 0x00000150: Store32 value 0x0000C92B is not supported yet
+Register 0x00000150: Store32 value 0x0000DABF is not supported yet
+Register 0x00000150: Store32 value 0x00011557 is not supported yet
+Register 0x00000150: Store32 value 0x0001869F is not supported yet
+Register 0x00000150: Store32 value 0x000249EF is not supported yet
+Register 0x0000015E: Store16 value 0x0000 is not supported yet
+Register 0x0000015E: Store16 value 0x000B is not supported yet
+
+Register 0x000003E0: Store32 value 0x47000000 is not supported yet => CARR ??(accessed by 32bits ?)
+Register 0x000003E3: Store8 value 0x03 is not supported yet        => DCHCR ??
+Register 0x000003E7: Store8 value 0x03 is not supported yet        => ICHCR ??
+
+Register 0x00000481: Store8 value 0x00 is not supported yet
+Register 0x00000482: Store8 value 0x03 is not supported yet
+
+Register 0x00000600: Store32 value 0x00040185 is not supported yet
+Register 0x00000604: Store32 value 0x7000008D is not supported yet
+Register 0x00000608: Store32 value 0x03000105 is not supported yet
+Register 0x0000060C: Store32 value 0x400001CD is not supported yet
+Register 0x00000610: Store32 value 0x7F00008D is not supported yet
+Register 0x00000614: Store32 value 0x7F01009D is not supported yet
+
+Register 0x00000640: Store32 value 0x00000040 is not supported yet
+Register 0x00000644: Store32 value 0x00000040 is not supported yet
+Register 0x00000648: Store32 value 0x00000040 is not supported yet
+Register 0x0000064C: Store32 value 0x00000040 is not supported yet
+Register 0x00000650: Store32 value 0x00000080 is not supported yet
+Register 0x00000654: Store32 value 0x00000080 is not supported yet
+
+Register 0x00000680: Store32 value 0x799F9910 is not supported yet
+Register 0x00000684: Store32 value 0x333A5500 is not supported yet
+Register 0x00000688: Store32 value 0x02250501 is not supported yet
+Register 0x0000068C: Store32 value 0x01105502 is not supported yet
+Register 0x00000690: Store32 value 0x01105500 is not supported yet
+Register 0x00000694: Store32 value 0x02105500 is not supported yet
+
+Register 0x000006F8: Store32 value 0x0000001C is not supported yet
+
+Register 0x000007EF: Store8 value 0x10 is not supported yet
+
+*/
