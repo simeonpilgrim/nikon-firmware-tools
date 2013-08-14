@@ -64,7 +64,7 @@ public class TxDmaChannel {
     }
 
     public void setCcr(int ccr) {
-        this.ccr = ccr & 0x7FFFFFFF;
+        this.ccr = ccr & ~CCR_STR_MASK;
         if (isStartRequested(ccr)) {
             // First check if a termination bit is set
             if (isCsrNormalCompletion()) {
@@ -212,8 +212,20 @@ public class TxDmaChannel {
         return (ccr & CCR_NIEN_MASK) != 0;
     }
 
-    public void setCcrMSByte(byte ccrMSByte) {
-        setCcr((ccr & 0x80FFFFFF) | (ccrMSByte << 24));
+    public void setCcrByte0(byte ccrByte0) {
+        setCcr((ccr & 0xFFFFFF00) | ccrByte0);
+    }
+
+    public void setCcrByte1(byte ccrByte1) {
+        setCcr((ccr & 0xFFFF00FF) | (ccrByte1 << 8));
+    }
+
+    public void setCcrByte2(byte ccrByte2) {
+        setCcr((ccr & 0xFF00FFFF) | (ccrByte2 << 16));
+    }
+
+    public void setCcrByte3(byte ccrByte3) {
+        setCcr((ccr & 0x00FFFFFF) | (ccrByte3 << 24));
     }
 
 

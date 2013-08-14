@@ -407,8 +407,11 @@ public class TxIoListener extends IoActivityListener {
             int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
             TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
             switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0:
+                case REGISTER_CCR0 + 1:
+                case REGISTER_CCR0 + 2:
                 case REGISTER_CCR0 + 3:
-                    return (byte)channel.getCcr();
+                    return (byte)(channel.getCcr() >> ((3 - (addr & 0b11)) * 8));
                 case REGISTER_CSR0 + 3:
                     return (byte)channel.getCsr();
                 case REGISTER_SAR0 + 3:
@@ -419,9 +422,6 @@ public class TxIoListener extends IoActivityListener {
                     return (byte)channel.getBcr();
                 case REGISTER_DTCR0 + 3:
                     return (byte)channel.getDtcr();
-
-                case REGISTER_CCR0:
-                    return (byte)(channel.getCcr()>>24);
 
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
@@ -462,7 +462,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_PKEY+1:
                 case REGISTER_PKEY+2:
                 case REGISTER_PKEY+3:
-                    return (byte)(keyCircuit.getPKEY() >> ((3 - (addr & 3)) * 8));
+                    return (byte)(keyCircuit.getPKEY() >> ((3 - (addr & 0b11)) * 8));
                 case REGISTER_KWUPCNT:
                     return (byte)keyCircuit.getKWUPCNT();
                 case REGISTER_KWUPCLR:
@@ -1207,8 +1207,14 @@ public class TxIoListener extends IoActivityListener {
             int dmaChannelNr = (addr - REGISTER_CCR0) >> DMA_CHANNEL_OFFSET_SHIFT;
             TxDmaChannel channel = ((TxDmaController)platform.getDmaController()).getChannel(dmaChannelNr);
             switch (addr - (dmaChannelNr << DMA_CHANNEL_OFFSET_SHIFT)) {
+                case REGISTER_CCR0:
+                    channel.setCcrByte3(value); break;
+                case REGISTER_CCR0 + 1:
+                    channel.setCcrByte2(value); break;
+                case REGISTER_CCR0 + 2:
+                    channel.setCcrByte1(value); break;
                 case REGISTER_CCR0 + 3:
-                    channel.setCcr(value); break;
+                    channel.setCcrByte0(value); break;
                 case REGISTER_CSR0 + 3:
                     channel.setCsr(value); break;
                 case REGISTER_SAR0 + 3:
@@ -1219,9 +1225,6 @@ public class TxIoListener extends IoActivityListener {
                     channel.setBcr(value); break;
                 case REGISTER_DTCR0 + 3:
                     channel.setDtcr(value); break;
-
-                case REGISTER_CCR0:
-                    channel.setCcrMSByte(value); break;
 
                 default:
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
