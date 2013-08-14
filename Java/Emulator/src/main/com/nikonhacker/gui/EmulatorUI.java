@@ -2349,8 +2349,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
                                 setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
                                 statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
                             }
-                            setStatusText(chip, "Emulation complete");
-                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                            else {
+                                setStatusText(chip, "Emulation complete");
+                                statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                            }
                         }
                         else {
                             setStatusText(chip, "Emulation complete" + ((o==null)?"":(": " + o.toString())));
