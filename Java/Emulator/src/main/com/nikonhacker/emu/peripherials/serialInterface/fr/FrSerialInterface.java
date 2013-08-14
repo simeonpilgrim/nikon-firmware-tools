@@ -3,7 +3,7 @@ package com.nikonhacker.emu.peripherials.serialInterface.fr;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Emulator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -86,10 +86,10 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
-        // TODO: syncing on emulator should be replaced by a sync on masterclock
-        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
-        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
+    public FrSerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
+        // TODO: syncing on emulator must be replaced by a sync on masterclock
+        // TODO: then emulator param can then be removed
+        super(serialInterfaceNumber, platform, emulator, logSerialMessages);
         // This is pure speculation but seems to work for interrupt 5 at least
         rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
         txInterruptNumber = FrInterruptController.SERIAL_IF_TX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
@@ -111,11 +111,11 @@ public class FrSerialInterface extends SerialInterface {
         synchronized (this) {
             // if TX interrupt (TIE or TBIE) becomes disabled, remove the current request, if any
             if (isTieOrTbieSetInScr(this.scrIbcr) && !isTieOrTbieSetInScr(scrIbcr)) {
-                interruptController.removeRequest(txInterruptNumber);
+                platform.getInterruptController().removeRequest(txInterruptNumber);
             }
             // if RX interrupt (RIE) becomes disabled, remove the current request, if any
             if (isRieSetInScr(this.scrIbcr) && !isRieSetInScr(scrIbcr)) {
-                interruptController.removeRequest(rxInterruptNumber);
+                platform.getInterruptController().removeRequest(rxInterruptNumber);
             }
             this.scrIbcr = scrIbcr & 0b0111_1111;
         }
@@ -202,7 +202,7 @@ public class FrSerialInterface extends SerialInterface {
             synchronized (this) {
                 // important to check for, because level-triggered interrupts can be shared
                 if (((this.ssr & (SSR_ORE_MASK | SSR_RDRF_MASK)) == 0) && isScrRieSet()) {
-                    interruptController.removeRequest(rxInterruptNumber);
+                    platform.getInterruptController().removeRequest(rxInterruptNumber);
                 }
                 clearSsrOre();
             }
@@ -297,7 +297,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // If there is still an Tx interrupt being requested, remove it
         if (isTieOrTbieSetInScr(scrIbcr)) {
-            interruptController.removeRequest(txInterruptNumber);
+            platform.getInterruptController().removeRequest(txInterruptNumber);
         }
 
         Queue<Integer> txFifo = isTxFifo1()?fifo1:fifo2;
@@ -375,7 +375,7 @@ public class FrSerialInterface extends SerialInterface {
 
             // Request TX interrupt if enabled for non-fifo (TIE)
             if (isScrTieSet()) {
-                interruptController.request(txInterruptNumber);
+                platform.getInterruptController().request(txInterruptNumber);
             }
 
             signalBusIdle();
@@ -395,7 +395,7 @@ public class FrSerialInterface extends SerialInterface {
 
                 // Request TX interrupt if enabled for Fifo (FTIE)
                 if (isFcr1FtieSet()) {
-                    interruptController.request(txInterruptNumber);
+                    platform.getInterruptController().request(txInterruptNumber);
                 }
 
                 signalBusIdle();
@@ -411,7 +411,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // Request Bus idle TX interrupt if enabled
         if (isScrTbieSet()) {
-            interruptController.request(txInterruptNumber);
+            platform.getInterruptController().request(txInterruptNumber);
         }
     }
 
@@ -450,7 +450,7 @@ public class FrSerialInterface extends SerialInterface {
 
                         // Request RX interrupt, if enabled
                         if (isScrRieSet()) {
-                            interruptController.request(rxInterruptNumber);
+                            platform.getInterruptController().request(rxInterruptNumber);
                         }
                     }
                     else {
@@ -480,7 +480,7 @@ public class FrSerialInterface extends SerialInterface {
 
                         // "A reception interrupt request is output when the ORE and RIE bits are set to "1".
                         if (isScrRieSet()) {
-                            interruptController.request(rxInterruptNumber);
+                            platform.getInterruptController().request(rxInterruptNumber);
                         }
                     }
                     else  {
@@ -513,7 +513,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // Request RX interrupt, if enabled
         if (isScrRieSet()) {
-            interruptController.request(rxInterruptNumber);
+            platform.getInterruptController().request(rxInterruptNumber);
         }
     }
 
@@ -547,7 +547,7 @@ public class FrSerialInterface extends SerialInterface {
                 }
             }
             if (((ssr & (SSR_ORE_MASK | SSR_RDRF_MASK)) == 0) && isScrRieSet()) {
-                interruptController.removeRequest(rxInterruptNumber);
+                platform.getInterruptController().removeRequest(rxInterruptNumber);
             }
         }
         return value;

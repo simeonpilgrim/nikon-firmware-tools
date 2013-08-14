@@ -2,14 +2,14 @@ package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.Emulator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 public class TxHSerialInterface extends TxSerialInterface {
     private static final int HSERIAL_RX_FIFO_SIZE = 32;
 
-    public TxHSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
-        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
+    public TxHSerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
+        super(serialInterfaceNumber, platform, emulator, logSerialMessages);
     }
 
     @Override

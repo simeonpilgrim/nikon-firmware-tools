@@ -4,7 +4,7 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.CycleCounterListener;
 import com.nikonhacker.emu.Emulator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -56,10 +56,10 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
     private Integer cycleCounter = 0;
     private Integer delayedValue;
 
-    public TxSerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+    public TxSerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
         // TODO: syncing on emulator should be replaced by a sync on masterclock
         // TODO: interruptController and emulator(now masterclock) should be replaced by platform
-        super(serialInterfaceNumber, interruptController, emulator, logSerialMessages);
+        super(serialInterfaceNumber, platform, emulator, logSerialMessages);
     }
 
     public int getEn() {
@@ -577,7 +577,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
             }
             setMod2Tbemp();
             if (isMod1FdpxTxSet()) {
-                interruptController.request(getTxInterruptNumber());
+                platform.getInterruptController().request(getTxInterruptNumber());
             }
             // TODO if UART mode 9 bits, also include bit in MOD0:TB8
             return txBuf;
@@ -594,7 +594,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
                 Integer value = txFifo.poll();
                 if (isTfcTfisSet()?(txFifo.size() <= txInterruptFillLevel):(txFifo.size() == txInterruptFillLevel)) {
                     if (isMod1FdpxTxSet()) {
-                        interruptController.request(getTxInterruptNumber());
+                        platform.getInterruptController().request(getTxInterruptNumber());
                     }
                     if (isFcnfRxtxcntSet()) {
                         clearMod1Txe();
@@ -658,7 +658,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
                 // TODO if UART mode 9 bits, also set bit in CR:RB8
                 setMod2Rbfll();
                 if (isMod1FdpxRxSet()) {
-                    interruptController.request(getRxInterruptNumber());
+                    platform.getInterruptController().request(getRxInterruptNumber());
                 }
             }
         }
@@ -674,7 +674,7 @@ public class TxSerialInterface extends SerialInterface implements CycleCounterLi
 
                 if (isRfcRfisSet()?(rxFifo.size() >= rxInterruptFillLevel):(rxFifo.size() == rxInterruptFillLevel)) {
                     if (isFcnfRfieSet()) {
-                        interruptController.request(getRxInterruptNumber());
+                        platform.getInterruptController().request(getRxInterruptNumber());
                     }
                     if (isFcnfRxtxcntSet()) {
                         clearMod0Rxe();
