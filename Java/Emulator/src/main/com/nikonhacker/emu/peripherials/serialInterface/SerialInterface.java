@@ -1,7 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.emu.Emulator;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.Platform;
 
 /**
  * This class is the base class for emulation of the serial interface of a microcontroller.
@@ -25,15 +25,15 @@ import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
  * serial interface registers and act accordingly.
  */
 public abstract class SerialInterface extends AbstractSerialDevice {
-    protected final int                 serialInterfaceNumber;
-    protected final InterruptController interruptController;
-    protected final Emulator            emulator;
+    protected final Platform platform;
+    protected final int      serialInterfaceNumber;
+    protected final Emulator emulator;
 
-    public SerialInterface(int serialInterfaceNumber, InterruptController interruptController, Emulator emulator, boolean logSerialMessages) {
+    public SerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
         this.serialInterfaceNumber = serialInterfaceNumber;
+        this.platform = platform;
         // TODO: syncing on emulator should be replaced by a sync on masterclock
-        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
-        this.interruptController = interruptController;
+        // TODO: emulator will be replaced by platform
         this.emulator = emulator;
 
         setLogSerialMessages(logSerialMessages);

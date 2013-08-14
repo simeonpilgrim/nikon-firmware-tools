@@ -1,14 +1,17 @@
 package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
+import com.nikonhacker.emu.MasterClock;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import junit.framework.TestCase;
 
 public class FrSerialInterfaceTest extends TestCase {
     public void testInterface() {
 
-        InterruptController interruptController = new DummyInterruptController();
-        FrSerialInterface serialInterface = new FrSerialInterface(5, interruptController, null, true);
+        MasterClock masterClock = new MasterClock();
+        Platform platform = new Platform(masterClock);
+        platform.setInterruptController(new DummyInterruptController());
+        FrSerialInterface serialInterface = new FrSerialInterface(5, platform, null, true);
         serialInterface.setScrIbcr(0);
         serialInterface.setScrIbcr(0xB0);
         serialInterface.setSmr(0x45);
