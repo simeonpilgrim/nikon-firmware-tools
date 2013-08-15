@@ -2165,7 +2165,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
-                    serialInterfaces[i] = new FrSerialInterface(i, platform[chip], emulator[Constants.CHIP_FR], prefs.isLogSerialMessages(chip));
+                    serialInterfaces[i] = new FrSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
                 }
             }
             else {
@@ -2196,11 +2196,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                    serialInterfaces[i] = new TxSerialInterface(i, platform[chip], emulator[chip], prefs.isLogSerialMessages(chip));
+                    serialInterfaces[i] = new TxSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
                 }
                 // Hi-speed
                 for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, platform[chip], emulator[chip], prefs.isLogSerialMessages(chip));
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
                 }
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
