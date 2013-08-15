@@ -3,7 +3,6 @@ package com.nikonhacker.emu.peripherials.serialInterface.tx;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.emu.Clockable;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -79,10 +78,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected int tst = 0b10000000; // Transmit FIFO status register
     protected int fcnf; // FIFO configuration register
 
-    public TxSerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
-        // TODO: syncing on emulator should be replaced by a sync on masterclock
-        // TODO: interruptController and emulator(now masterclock) should be replaced by platform
-        super(serialInterfaceNumber, platform, emulator, logSerialMessages);
+    public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
+        super(serialInterfaceNumber, platform, logSerialMessages);
     }
 
 

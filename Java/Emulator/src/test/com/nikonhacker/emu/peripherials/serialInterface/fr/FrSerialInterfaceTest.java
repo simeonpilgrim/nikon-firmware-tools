@@ -11,7 +11,7 @@ public class FrSerialInterfaceTest extends TestCase {
         MasterClock masterClock = new MasterClock();
         Platform platform = new Platform(masterClock);
         platform.setInterruptController(new DummyInterruptController());
-        FrSerialInterface serialInterface = new FrSerialInterface(5, platform, null, true);
+        FrSerialInterface serialInterface = new FrSerialInterface(5, platform, true);
         serialInterface.setScrIbcr(0);
         serialInterface.setScrIbcr(0xB0);
         serialInterface.setSmr(0x45);

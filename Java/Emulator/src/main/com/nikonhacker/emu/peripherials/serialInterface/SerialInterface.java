@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
 
 /**
@@ -27,14 +26,10 @@ import com.nikonhacker.emu.Platform;
 public abstract class SerialInterface extends AbstractSerialDevice {
     protected final Platform platform;
     protected final int      serialInterfaceNumber;
-    protected final Emulator emulator;
 
-    public SerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
+    public SerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
         this.serialInterfaceNumber = serialInterfaceNumber;
         this.platform = platform;
-        // TODO: syncing on emulator should be replaced by a sync on masterclock
-        // TODO: emulator will be replaced by platform
-        this.emulator = emulator;
 
         setLogSerialMessages(logSerialMessages);
 

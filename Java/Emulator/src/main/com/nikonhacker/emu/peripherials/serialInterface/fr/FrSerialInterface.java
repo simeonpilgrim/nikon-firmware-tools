@@ -2,7 +2,6 @@ package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
@@ -86,8 +85,8 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
 
 
-    public FrSerialInterface(int serialInterfaceNumber, Platform platform, Emulator emulator, boolean logSerialMessages) {
-        super(serialInterfaceNumber, platform, emulator, logSerialMessages);
+    public FrSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
+        super(serialInterfaceNumber, platform, logSerialMessages);
         // This is pure speculation but seems to work for interrupt 5 at least
         rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
         txInterruptNumber = FrInterruptController.SERIAL_IF_TX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
