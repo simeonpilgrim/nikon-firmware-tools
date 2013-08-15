@@ -3,7 +3,9 @@ package com.nikonhacker.emu;
 import com.nikonhacker.Constants;
 
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MasterClock implements Runnable {
@@ -55,7 +57,19 @@ public class MasterClock implements Runnable {
      */
     public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
-        entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
+        // Check if already present
+        boolean found = false;
+        for (ClockableEntry entry : entries) {
+            if (entry.clockable == clockable) {
+                // make sure it is enabled
+                entry.enabled = true;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
+        }
         requestIntervalComputing();
     }
 
@@ -87,9 +101,18 @@ public class MasterClock implements Runnable {
     private void computeIntervals() {
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
+
+        // Precompute all frequencies
+        Map<ClockableEntry,Integer> entryFrequencies = new HashMap<>();
         for (ClockableEntry entry : entries) {
-            if (entry.clockable.getFrequencyHz() > 0) {
-                leastCommonMultipleFrequency = lcm(entry.clockable.getFrequencyHz(), leastCommonMultipleFrequency);
+            entryFrequencies.put(entry, entry.clockable.getFrequencyHz());
+        }
+
+        // Compute least common multiple frequency
+        for (ClockableEntry entry : entries) {
+            int frequencyHz = entryFrequencies.get(entry);
+            if (frequencyHz > 0) {
+                leastCommonMultipleFrequency = lcm(frequencyHz, leastCommonMultipleFrequency);
                 entry.isFrequencyZero = false;
             }
             else {
@@ -100,7 +123,13 @@ public class MasterClock implements Runnable {
         // OK. Now set each counter threshold to the value of lcm/freq
         for (ClockableEntry entry : entries) {
             if (!entry.isFrequencyZero) {
-                entry.counterThreshold = (int) (leastCommonMultipleFrequency / entry.clockable.getFrequencyHz());
+                int newThreshold = (int) (leastCommonMultipleFrequency / entryFrequencies.get(entry));
+                if (entry.counterThreshold != 0) {
+                    // Adjust value according to new threshold
+                    entry.counterValue = entry.counterValue * newThreshold / entry.counterThreshold;
+                }
+                // Set new threshold
+                entry.counterThreshold = newThreshold;
             }
         }
 
@@ -108,7 +137,7 @@ public class MasterClock implements Runnable {
 /*
         System.err.println("MasterClock reconfigured with one tick=" + masterClockLoopDurationPs + "ps, with the following entries:");
         for (ClockableEntry entry : entries) {
-            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " @" + entry.clockable.getFrequencyHz() + "Hz, every " + entry.counterThreshold + " ticks");
+            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " @" + entryFrequencies.get(entry) + "Hz, every " + entry.counterThreshold + " ticks");
         }
         System.err.println("---------------------------------------");
 */
