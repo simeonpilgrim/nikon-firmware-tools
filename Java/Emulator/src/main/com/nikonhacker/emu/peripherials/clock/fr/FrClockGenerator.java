@@ -307,7 +307,7 @@ public class FrClockGenerator extends ClockGenerator {
         fTClkHz = isDivr1TstpSet() ? 0 : fBClkHz / getTClkClockDivisionRate();
         fPClkHz = fBClkHz / getPClkClockDivisionRate();
 
-        System.out.println("@PC=0x" + Format.asHex(platform.getCpuState().getPc(), 8) + ": CCLK is " + fCClkHz + "Hz and PCLK is " + fPClkHz + "Hz");
+//        System.out.println("@PC=0x" + Format.asHex(platform.getCpuState().getPc(), 8) + ": CCLK is " + fCClkHz + "Hz and PCLK is " + fPClkHz + "Hz");
 
         // TODO handle modes (STOP, MAIN_TIMER, SLEEP, DOZE, BUS_SLEEP)
 //        switch (((TxCPUState)platform.getCpuState()).getPowerMode()) {
