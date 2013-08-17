@@ -83,6 +83,8 @@ public class TxHSerialInterface extends TxSerialInterface {
         // Moreover, RIL is 5 bits, and the example at page 15-14, it says "HSC0TFC <5:0> = 00000" with 5 zeroes...
         // So let's consider it is 5 bits
         txInterruptFillLevel = tfc & 0b11111; // 5 bits, independent of Half/Full duplex
+        // TODO: Although, note that the updated japanese spec is fixed with "HSC0TFC <5:0> = 000000" with 6 zeroes, so I don't know...
+
         if (txInterruptFillLevel > 32) {
             throw new RuntimeException(getName() + " error : HSC0TFC<TIL5:1> is more than 32 (" + txInterruptFillLevel + ")");
         }
@@ -113,12 +115,12 @@ public class TxHSerialInterface extends TxSerialInterface {
     // See block diagram and details at section 15.2
 
     /**
-     * In fact, this is HSIOCLK in this case
-     * It has a few differences in comments compared to super.getSioClk()
-     * @return
+     * Compute frequency
+     * It has a few differences in comments compared to super.getFrequencyHz()
+     * @return HSIO_CLK
      */
     @Override
-    public int getSioClk() {
+    public int getFrequencyHz() {
         if (isIoMode()) {
             // I/O interface mode, clock is specified in the control register SC0CR
             if (isCrIocSet()) {

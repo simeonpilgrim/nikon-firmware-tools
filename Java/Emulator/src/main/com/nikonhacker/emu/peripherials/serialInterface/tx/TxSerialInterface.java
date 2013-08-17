@@ -65,6 +65,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected Queue<Integer> txFifo = new LinkedList<Integer>();
     protected int txInterruptFillLevel;
 
+    private int bitNumberBeingTransferred = 0;
+
     protected int en; // Enable register
     protected int cr; // Control register
     protected int mod0; // Mode control register 0
@@ -569,7 +571,12 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     // Clock computation
     // See block diagram and details at section 14.2
 
-    public int getSioClk() {
+    /**
+     * Compute frequency
+     * @return SIO_CLK
+     */
+    @Override
+    public int getFrequencyHz() {
         if (isIoMode()) {
             // I/O interface mode, clock is specified in the control register SC0CR
             if (isCrIocSet()) {
@@ -886,37 +893,35 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         return Constants.CHIP_TX;
     }
 
-    @Override
-    public int getFrequencyHz() {
-        // dataRate  = 1/time_for_one_data
-        //           = 1/(time_for_n_bits + interval)
-        //           = 1/(n * time_for_1_bit + interval)
-        //           = 1/(time_for_1_bit * (n + interval_in_SCLK))
-        //           = (1/time_for_1_bit) / (n + interval_in_SCLK))
-        //           = bitrate / (n + interval_in_SCLK))
-        return getSioClk() / (getNumBits() + getIntervalTimeInSclk());
-    }
-
-
     /**
      * The goal of this is to delay the actual transfer according to the currently selected baud rate
      */
     @Override
     public Object onClockTick() throws Exception {
-        Integer value = read();
-        if (value != null) {
-            super.valueReady(value);
-            // device may stop transmission automatically if FIFO was used and configured like this
-            if (!isMod1TxeSet()) {
-                // unregister
+        bitNumberBeingTransferred++;
+        if (bitNumberBeingTransferred == getNumBits() + getIntervalTimeInSclk() /* TODO + start/stop/parity if UART */) {
+            bitNumberBeingTransferred = 0;
+            Integer value = read();
+            if (value != null) {
+                super.valueReady(value);
+                // device may stop transmission automatically if FIFO was used and configured like this
+                if (!isMod1TxeSet()) {
+                    // unregister
+                    return "DONE";
+                }
+                else {
+                    // Remain registered
+                    return null;
+                }
+            }
+            else {
+                // End of transmission - unregister
                 return "DONE";
             }
         }
         else {
-            // End of transmission - unregister
-            return "DONE";
+            // Remain registered
+            return null;
         }
-        // Remain registered
-        return null;
     }
 }
