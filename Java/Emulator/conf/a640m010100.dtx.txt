@@ -1573,7 +1573,7 @@
 -s 0xBFC86F44=fetch_from_exposure_table
 -s 0xBFC86FA4=nonlinear_converting_2
 -s 0xBFC87014=get_divi
--s 0xBFC87064=ABS(a0_a1)
+-s 0xBFC87064=ABS($a0 [IN], $a1 [IN]$v0 [OUT absolute_value_a0_a1])
 -s 0xBFC87078=setup_TB4
 -s 0xBFC87224=HSC1_transmit_1byte
 -s 0xBFC8737C=HSC1_transreceive_1byte($a0 [IN byte_to_send], $v0 [OUT 4_bits_response])
