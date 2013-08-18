@@ -940,7 +940,7 @@
 -s 0xBFC8BB00=bad_battery
 -s 0xBFC8BB58=power_adapter_setting
 -s 0xBFC8BB9C=update_battery_level
--s 0xBFC8BC5C=battery_authentication
+-s 0xBFC8BC5C=battery_authentication_A
 -s 0xBFC8BE58=authentication
 -s 0xBFC8BE9C=update_battery_auc_counter
 -s 0xBFC8BEF8=battery_comm
@@ -963,7 +963,7 @@
 -s 0xBFC8C540=consuming_time_check
 -s 0xBFC8C584=battery_response_for_command12678
 -s 0xBFC8C5D8=get_battery_response4@FFFF95EE
--s 0xBFC8C654=battery_authentication
+-s 0xBFC8C654=battery_authentication_B
 -s 0xBFC8C6C8=get_power_deviceID
 -s 0xBFC8C6EC=update@FFFF407E_with@FFFF95EE
 -s 0xBFC8C714=update@FFFF407E
