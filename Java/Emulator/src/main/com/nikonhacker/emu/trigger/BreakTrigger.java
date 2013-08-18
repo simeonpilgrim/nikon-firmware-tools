@@ -218,7 +218,13 @@ public class BreakTrigger {
             msg +=") ";
         }
         else {
-            msg += name + " triggered at 0x" + Format.asHex(platform.getCpuState().pc, 8);
+            msg += name;
+        }
+
+        String addr = Format.asHex(platform.getCpuState().pc, 8);
+        if (!msg.toUpperCase().contains(addr)) {
+            // Address is not part of the name of the trigger. Add it.
+            msg +=  " triggered at 0x" + addr;
         }
 
         if (callStack != null) {
