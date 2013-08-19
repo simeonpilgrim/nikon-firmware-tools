@@ -216,7 +216,7 @@
 -s 0xBFC128A8=call_setup_RTC
 -s 0xBFC128B4=setup_RTC
 -s 0xBFC128F8=enable_WatchdogTimer
--s 0xBFC12924=disable_WatchDogTimer
+-s 0xBFC12924=disable_WatchdogTimer
 -s 0xBFC12944=clear_WatchdogTimer_conditional
 -s 0xBFC12994=clear_WatchdogTimer
 -s 0xBFC129A0=setup_WatchdogTimer($a0 [IN result_nmi])
