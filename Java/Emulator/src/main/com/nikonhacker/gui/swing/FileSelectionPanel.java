@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.swing;
 
+import com.nikonhacker.Format;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
@@ -48,23 +49,7 @@ public class FileSelectionPanel extends JPanel implements ActionListener {
      * @param description the text to be shown in the drop down, e.g. "Binary file (*.bin)"
      */
     public void setFileFilter(final String suffix, final String description) {
-        this.fileFilter = new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                if (f != null) {
-                    if (f.isDirectory()) {
-                        return true;
-                    }
-                    return f.getName().toLowerCase().endsWith(suffix);
-                }
-                return false;
-            }
-
-            @Override
-            public String getDescription() {
-                return description;
-            }
-        };
+        this.fileFilter = Format.createFilter(suffix, description);
     }
 
     /**

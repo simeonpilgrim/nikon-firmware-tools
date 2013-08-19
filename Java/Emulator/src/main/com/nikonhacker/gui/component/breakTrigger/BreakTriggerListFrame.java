@@ -9,6 +9,8 @@ import ca.odell.glazedlists.gui.WritableTableFormat;
 import ca.odell.glazedlists.swing.EventTableModel;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.Prefs;
+import com.nikonhacker.XStreamUtils;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -25,6 +27,10 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -32,21 +38,22 @@ import java.util.List;
 
 public class BreakTriggerListFrame extends DocumentFrame {
 
-    private static final int WINDOW_WIDTH = 250;
+    private static final int WINDOW_WIDTH  = 250;
     private static final int WINDOW_HEIGHT = 300;
+    private static final String TRIGGERS_EXTENSION = ".xtriggers";
 
-    private List<BreakTrigger> breakTriggers;
-    private Memory memory;
+    private       List<BreakTrigger>      breakTriggers;
+    private       Memory                  memory;
     private final EventList<BreakTrigger> triggerList;
-    private final JTable triggerTable;
-    private final Emulator emulator;
-    private boolean editable;
-    private final JButton addButton;
-    private final JButton editButton;
-    private final JButton deleteButton;
-    private final JButton addSyscallButton;
+    private final JTable                  triggerTable;
+    private final Emulator                emulator;
+    private       boolean                 editable;
+    private final JButton                 addButton;
+    private final JButton                 editButton;
+    private final JButton                 deleteButton;
+    private final JButton                 addSyscallButton;
 
-    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, List<BreakTrigger> breakTriggers, Memory memory) {
+    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, final List<BreakTrigger> breakTriggers, Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
@@ -142,6 +149,80 @@ public class BreakTriggerListFrame extends DocumentFrame {
             }
         });
         rightPanel.add(moveDownButton);
+
+        JButton exportButton = new JButton("Export selected");
+        exportButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        exportButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] selections = triggerTable.getSelectedRows();
+                if (selections.length == 0) {
+                    JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Please make a selection first (SHIFT and CTRL-click are supported)", "Nothing to export", JOptionPane.INFORMATION_MESSAGE);
+                }
+                else {
+                    final JFileChooser fc = new JFileChooser();
+
+                    fc.setDialogTitle("Select destination file");
+                    fc.setCurrentDirectory(new java.io.File("."));
+
+                    fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    fc.setFileFilter(Format.createFilter(TRIGGERS_EXTENSION, "Emulator break triggers (*" + TRIGGERS_EXTENSION + ")"));
+
+                    if (fc.showOpenDialog(BreakTriggerListFrame.this) == JFileChooser.APPROVE_OPTION) {
+                        File destinationFile = fc.getSelectedFile();
+                        if (!(destinationFile.getAbsolutePath().toLowerCase().endsWith(TRIGGERS_EXTENSION))) {
+                            destinationFile = new File(destinationFile.getAbsolutePath() + TRIGGERS_EXTENSION);
+                        }
+                        if (!destinationFile.exists() || JOptionPane.showConfirmDialog(BreakTriggerListFrame.this, "Are you sure you want to overwrite " + destinationFile.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                            List<BreakTrigger> selectedTriggers = new ArrayList<BreakTrigger>();
+                            for (int selection : selections) {
+                                selectedTriggers.add(triggerList.get(selection));
+                            }
+                            try {
+                                XStreamUtils.save(selectedTriggers, new FileOutputStream(destinationFile), Prefs.getPrefsXStream());
+                                JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Export complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                                triggerTable.clearSelection();
+                            } catch (FileNotFoundException e1) {
+                                JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Could not export to file '" + destinationFile.getAbsolutePath() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        rightPanel.add(exportButton);
+
+        JButton importButton = new JButton("Add from file");
+        importButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        importButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                final JFileChooser fc = new JFileChooser();
+
+                fc.setDialogTitle("Select destination file");
+                fc.setCurrentDirectory(new java.io.File("."));
+
+                fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fc.setFileFilter(Format.createFilter(TRIGGERS_EXTENSION, "Emulator break triggers (*" + TRIGGERS_EXTENSION + ")"));
+
+                if (fc.showOpenDialog(BreakTriggerListFrame.this) == JFileChooser.APPROVE_OPTION) {
+                    File destinationFile = fc.getSelectedFile();
+                    if (!destinationFile.exists()) {
+                        JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Could not find file '" + destinationFile.getAbsolutePath() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+                    else {
+                        try {
+                            List<BreakTrigger> importedTrigger = (List<BreakTrigger>) XStreamUtils.load(new FileInputStream(destinationFile), Prefs.getPrefsXStream());
+                            breakTriggers.addAll(importedTrigger);
+                            updateBreaktriggers();
+                            triggerTable.setRowSelectionInterval(breakTriggers.size() - importedTrigger.size(), breakTriggers.size() - 1);
+                            JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Import complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                        } catch (FileNotFoundException e1) {
+                            JOptionPane.showMessageDialog(BreakTriggerListFrame.this, "Could not import to file '" + destinationFile.getAbsolutePath() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+            }
+        });
+        rightPanel.add(importButton);
 
         editPanel.add(rightPanel, BorderLayout.EAST);
 
