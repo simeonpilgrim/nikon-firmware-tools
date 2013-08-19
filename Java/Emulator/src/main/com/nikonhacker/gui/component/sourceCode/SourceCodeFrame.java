@@ -16,6 +16,8 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
 import javax.swing.*;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
@@ -27,7 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SourceCodeFrame extends DocumentFrame implements ActionListener, KeyListener {
+public class SourceCodeFrame extends DocumentFrame implements ActionListener, KeyListener, PopupMenuListener {
     private static final int FRAME_WIDTH = 400;
     private static final int FRAME_HEIGHT = 500;
 
@@ -51,10 +53,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JTextField targetField;
     private int lastClickedTextPosition;
     private final JCheckBox followPcCheckBox;
+    private JMenuItem addBreakPointMenuItem;
+    private JMenuItem removeBreakPointMenuItem;
+    private JCheckBoxMenuItem breakCheckBoxMenuItem;
+    private JCheckBoxMenuItem logCheckBoxMenuItem;
     private JMenuItem runToHereMenuItem;
-    private JMenuItem toggleBreakPointMenuItem;
     private JMenuItem debugToHereMenuItem;
-    private boolean enabled;
+    private boolean enabled = true;
 
 
     public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
@@ -293,18 +298,102 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         newPopupMenu.addSeparator();
 
-        toggleBreakPointMenuItem = new JMenuItem(new ToggleBreakpointAction());
-        newPopupMenu.add(toggleBreakPointMenuItem);
+        addBreakPointMenuItem = new JMenuItem("Add trigger");
+        newPopupMenu.add(addBreakPointMenuItem);
+        addBreakPointMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    Integer address = getClickedAddress();
+                    if (address != null) {
+                        BreakTrigger matchedTrigger = getBreakTrigger(address);
+                        if (matchedTrigger == null) {
+                            // No match. Create a new one
+                            CPUState values;
+                            CPUState flags;
+                            if (chip == Constants.CHIP_FR) {
+                                values = new FrCPUState(address);
+                                flags = new FrCPUState();
+                                ((FrCPUState)flags).setILM(0, false);
+                                flags.setReg(FrCPUState.TBR, 0);
+                            }
+                            else {
+                                values = new TxCPUState(address);
+                                flags = new TxCPUState();
+                            }
+                            flags.pc = 1;
+
+                            String triggerName;
+                            if (codeStructure.isFunction(address)) {
+                                triggerName = codeStructure.getFunctionName(address) + "()";
+                            }
+                            else {
+                                triggerName = "Breakpoint at 0x" + Format.asHex(address, 8);
+                            }
+                            ui.getPrefs().getTriggers(chip).add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
+
+                            ui.onBreaktriggersChange(chip);
+                        }
+                    }
+                } catch (BadLocationException ble) {
+                    ble.printStackTrace();
+                }
+            }
+        });
+
+        removeBreakPointMenuItem = new JMenuItem("Delete trigger");
+        newPopupMenu.add(removeBreakPointMenuItem);
+        removeBreakPointMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BreakTrigger trigger = getClickedTrigger();
+                if (trigger != null) {
+                    if (JOptionPane.showConfirmDialog(null, "Are you sure you want to delete the trigger '" + trigger.getName() + "' ?", "Delete ?", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+                        ui.getPrefs().getTriggers(chip).remove(trigger);
+                        ui.onBreaktriggersChange(chip);
+                    }
+                }
+            }
+        });
+
+        newPopupMenu.addSeparator();
+
+        breakCheckBoxMenuItem = new JCheckBoxMenuItem("Break");
+        newPopupMenu.add(breakCheckBoxMenuItem);
+        breakCheckBoxMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BreakTrigger trigger = getClickedTrigger();
+                if (trigger != null) {
+                    trigger.setMustBreak(!trigger.mustBreak());
+                    ui.onBreaktriggersChange(chip);
+                }
+            }
+        });
+
+        logCheckBoxMenuItem = new JCheckBoxMenuItem("Log");
+        newPopupMenu.add(logCheckBoxMenuItem);
+        logCheckBoxMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BreakTrigger trigger = getClickedTrigger();
+                if (trigger != null) {
+                    trigger.setMustBeLogged(!trigger.mustBeLogged());
+                    ui.onBreaktriggersChange(chip);
+                }
+            }
+        });
 
         newPopupMenu.addSeparator();
 
         debugToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.DEBUG, true));
         newPopupMenu.add(debugToHereMenuItem);
 
-        newPopupMenu.addSeparator();
-
         runToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.RUN, false));
         newPopupMenu.add(runToHereMenuItem);
+
+
+        newPopupMenu.addPopupMenuListener(this);
 
         listingArea.setPopupMenu(newPopupMenu);
 
@@ -320,6 +409,18 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         gutter.setLineNumberColor(Color.LIGHT_GRAY);
 
         return scrollPane;
+    }
+
+    private BreakTrigger getClickedTrigger() {
+        try {
+            Integer address = getClickedAddress();
+            if (address != null) {
+                return getBreakTrigger(address);
+            }
+        } catch (BadLocationException ble) {
+            // noop
+        }
+        return null;
     }
 
 
@@ -346,9 +447,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
 
     public void setEditable(boolean enabled) {
-        toggleBreakPointMenuItem.setEnabled(enabled);
-        debugToHereMenuItem.setEnabled(enabled);
-        runToHereMenuItem.setEnabled(enabled);
+        this.enabled = enabled;
     }
 
     public void highlightPc() {
@@ -376,6 +475,46 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
 
 
+    @Override
+    public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        addBreakPointMenuItem.setVisible(false);
+        removeBreakPointMenuItem.setVisible(false);
+        breakCheckBoxMenuItem.setVisible(false);
+        logCheckBoxMenuItem.setVisible(false);
+        debugToHereMenuItem.setEnabled(false);
+        runToHereMenuItem.setEnabled(false);
+        if (enabled) {
+            try {
+                Integer address = getClickedAddress();
+                if (address != null) {
+                    BreakTrigger trigger = getBreakTrigger(address);
+                    if (trigger != null) {
+                        removeBreakPointMenuItem.setVisible(true);
+                        breakCheckBoxMenuItem.setVisible(true);
+                        breakCheckBoxMenuItem.setSelected(trigger.mustBreak());
+                        logCheckBoxMenuItem.setVisible(true);
+                        logCheckBoxMenuItem.setSelected(trigger.mustBeLogged());
+                    }
+                    else {
+                        addBreakPointMenuItem.setVisible(true);
+                    }
+
+                    debugToHereMenuItem.setEnabled(true);
+                    runToHereMenuItem.setEnabled(true);
+                }
+            } catch (BadLocationException ble) {
+                // noop
+            }
+        }
+    }
+
+    @Override
+    public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+
+    @Override
+    public void popupMenuCanceled(PopupMenuEvent e) {}
+
+
     /**
      * An action that gets the text at the current caret position and searches it
      */
@@ -389,31 +528,6 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-
-    /**
-     * An action that toggles breakpoint at clicked position
-     */
-    private class ToggleBreakpointAction extends TextAction {
-
-        public ToggleBreakpointAction() {
-            super("Toggle Breakpoint");
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            try {
-                JTextComponent textComponent = getTextComponent(e);
-                if (textComponent instanceof JTextArea) {
-                    JTextArea textArea = (JTextArea) textComponent;
-                    Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
-                    if (addressFromLine != null) {
-                        toggleBreakpoint(addressFromLine);
-                    }
-                }
-            } catch (BadLocationException ble) {
-                ble.printStackTrace();
-            }
-        }
-    }
 
     /**
      * An action that allows to run/debug code up to the click position
@@ -590,45 +704,18 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         return lineAddresses.get(line);
     }
 
+    private Integer getClickedAddress() throws BadLocationException {
+        return getAddressFromLine(listingArea.getLineOfOffset(lastClickedTextPosition));
+    }
 
-    private void toggleBreakpoint(int addressFromLine) {
-        BreakTrigger matchedTrigger = null;
+    private BreakTrigger getBreakTrigger(int addressFromLine) {
         for (BreakTrigger breakTrigger : ui.getPrefs().getTriggers(chip)) {
             if (breakTrigger.getCpuStateFlags().pc != 0) {
                 if (breakTrigger.getCpuStateValues().pc == addressFromLine) {
-                    // We found a matching breakpoint, toggle it
-                    breakTrigger.setMustBreak(!breakTrigger.mustBreak());
-                    matchedTrigger = breakTrigger;
-                    break;
+                    return breakTrigger;
                 }
             }
         }
-        if (matchedTrigger == null) {
-            // No match. Create a new one
-            CPUState values;
-            CPUState flags;
-            if (chip == Constants.CHIP_FR) {
-                values = new FrCPUState(addressFromLine);
-                flags = new FrCPUState();
-                ((FrCPUState)flags).setILM(0, false);
-                flags.setReg(FrCPUState.TBR, 0);
-            }
-            else {
-                values = new TxCPUState(addressFromLine);
-                flags = new TxCPUState();
-            }
-            flags.pc = 1;
-
-            String triggerName;
-            if (codeStructure.isFunction(addressFromLine)) {
-                triggerName = codeStructure.getFunctionName(addressFromLine) + "()";
-            }
-            else {
-                triggerName = "Breakpoint at 0x" + Format.asHex(addressFromLine, 8);
-            }
-            ui.getPrefs().getTriggers(chip).add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
-        }
-
-        ui.onBreaktriggersChange(chip);
+        return null;
     }
 }
