@@ -113,7 +113,7 @@ public class Prefs {
         }
     }
 
-    private static XStream getPrefsXStream() {
+    public static XStream getPrefsXStream() {
         XStream xStream = XStreamUtils.getBaseXStream();
         xStream.omitField(BreakTrigger.class, "function");
         xStream.alias("wpos", WindowPosition.class);

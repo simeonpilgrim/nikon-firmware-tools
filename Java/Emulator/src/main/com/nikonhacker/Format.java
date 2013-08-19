@@ -4,7 +4,9 @@ import com.nikonhacker.disassembly.ParsingException;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
+import java.io.File;
 
 public class Format {
 
@@ -286,5 +288,31 @@ public class Format {
             mask >>= 1;
         }
         return 32;
+    }
+
+    /**
+     * Create a file filter suitable for JFileChooser.setFileFilter()
+     * @param suffix String which all visible files will end with (must include the dot if you mean an extension)
+     * @param description The text accompanying the extension (must include the " (*.xxx)" at the end)
+     * @return the filter
+     */
+    public static FileFilter createFilter(final String suffix, final String description) {
+        return new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                if (f != null) {
+                    if (f.isDirectory()) {
+                        return true;
+                    }
+                    return f.getName().toLowerCase().endsWith(suffix);
+                }
+                return false;
+            }
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+        };
     }
 }
