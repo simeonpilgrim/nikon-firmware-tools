@@ -239,10 +239,10 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
         this.mod4 = mod4 & 0b11110011;
         // TODO: Hardware triggers
         if (isMod4Adhtg()) {
-            throw new RuntimeException(toString() + " Error: Hardware trigger not implemented");
+            System.err.println(toString() + " Error: Hardware trigger not implemented");
         }
         if (isMod4Hadhtg()) {
-            throw new RuntimeException(toString() + " Error: Top priority hardware trigger not implemented");
+            System.err.println(toString() + " Error: Top priority hardware trigger not implemented");
         }
     }
 
