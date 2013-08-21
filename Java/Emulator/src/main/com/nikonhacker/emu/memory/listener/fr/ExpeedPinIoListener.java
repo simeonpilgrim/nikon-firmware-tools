@@ -34,13 +34,13 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
     @Override
     public Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Loading 16b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
+        System.err.println("Loading 16b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
         return null;
     }
 
     @Override
     public Integer onLoadData32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Loading 32b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
+        System.err.println("Loading 32b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
         return null;
     }
 
@@ -53,11 +53,11 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
     @Override
     public void onStore16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Storing 16b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
+        System.err.println("Storing 16b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
     }
 
     @Override
     public void onStore32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Storing 32b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
+        System.err.println("Storing 32b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
     }
 }
