@@ -13,11 +13,8 @@ public class ExpeedPinIoListener extends IoActivityListener {
     public static final int NUM_PORT          = 16;
     public static final int PORT_ADDRESS_MASK = ~(NUM_PORT - 1);
 
-    private Platform platform;
-
     public ExpeedPinIoListener(Platform platform, boolean logRegisterMessages) {
-        this.platform = platform;
-        this.logRegisterMessages = logRegisterMessages;
+        super(platform, logRegisterMessages);
     }
 
     @Override
@@ -34,13 +31,13 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
     @Override
     public Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Loading 16b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        warn("Loading 16b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
         return null;
     }
 
     @Override
     public Integer onLoadData32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Loading 32b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        warn("Loading 32b data from Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
         return null;
     }
 
@@ -53,11 +50,11 @@ public class ExpeedPinIoListener extends IoActivityListener {
 
     @Override
     public void onStore16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Storing 16b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        warn("Storing 16b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
     }
 
     @Override
     public void onStore32(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
-        System.err.println("Storing 32b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        warn("Storing 32b data to Pin Port register 0x" + Format.asHex(address, 8) + " is not implemented");
     }
 }

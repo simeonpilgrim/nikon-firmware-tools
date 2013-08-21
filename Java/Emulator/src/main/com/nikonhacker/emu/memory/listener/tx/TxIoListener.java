@@ -216,11 +216,8 @@ public class TxIoListener extends IoActivityListener {
     private static final int REGISTER_ADACOMREG1  = 0xFF00_4D58; // register
 
 
-    private final Platform platform;
-
     public TxIoListener(Platform platform, boolean logRegisterMessages) {
-        this.platform = platform;
-        setLogRegisterMessages(logRegisterMessages);
+        super(platform, logRegisterMessages);
     }
 
     @Override
@@ -286,13 +283,13 @@ public class TxIoListener extends IoActivityListener {
                     return (byte) txTimer.getTbim();
                 case REGISTER_TB0UC + 2:
                 case REGISTER_TB0UC + 3:
-                    throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
+                    stop("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0 + 2:
                 case REGISTER_TB0RG0 + 3:
-                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
+                    stop("The TBnRG0 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0RG1 + 2:
                 case REGISTER_TB0RG1 + 3:
-                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
+                    stop("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0 + 3:
                     return (byte) txTimer.getTbcp0();
                 case REGISTER_TB0CP1 + 3:
@@ -423,7 +420,7 @@ public class TxIoListener extends IoActivityListener {
                     return (byte)channel.getDtcr();
 
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
@@ -449,7 +446,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_RESTR + 3:
                     return (byte)clock.getRestr();
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
@@ -475,7 +472,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         return (byte)keyCircuit.keys[keyNumber].getKWUPST();
                     }
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -489,7 +486,7 @@ public class TxIoListener extends IoActivityListener {
                     return (byte)unit.getReg(channelNumber);
                 }
                 else {
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -515,7 +512,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 3:
                         return (byte)(unit.getComReg1());
                     default:
-                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -556,7 +553,7 @@ public class TxIoListener extends IoActivityListener {
                 return (byte)((TxDmaController)platform.getDmaController()).getDhr();
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet");
 
         return null;
     }
@@ -578,7 +575,7 @@ public class TxIoListener extends IoActivityListener {
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
-            throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
+            stop("The I/O port registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
@@ -649,10 +646,10 @@ public class TxIoListener extends IoActivityListener {
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
-            throw new RuntimeException("The RTC registers cannot be accessed by 16-bit for now");
+            stop("The RTC registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
-            throw new RuntimeException("The KEY registers cannot be accessed by 16-bit for now");
+            stop("The KEY registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -689,7 +686,7 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
+            stop("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
             // AD unit configuration registers
@@ -702,7 +699,7 @@ public class TxIoListener extends IoActivityListener {
                     return unit.getReg(channelNumber) & 0xFFFF;
                 }
                 else {
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -728,20 +725,20 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 2:
                         return (unit.getComReg1()) & 0xFFFF;
                     default:
-                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
         else switch (addr){
             // Clock generator
             case REGISTER_SYSCR:
-                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+                stop("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_SYSCR + 2:
-                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+                stop("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_OSCCR:
-                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
+                stop("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_OSCCR + 2:
-                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
+                stop("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
                 return ((TxClockGenerator)platform.getClockGenerator()).getPllsel() & 0xFFFF;
             case REGISTER_NMIFLG + 2:
@@ -752,7 +749,7 @@ public class TxIoListener extends IoActivityListener {
                 return ((TxInterruptController)platform.getInterruptController()).getDreqflg() & 0xFFFF;
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet");
 
         return null;
     }
@@ -898,7 +895,7 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
+            stop("Serial register 0x" + Format.asHex(addr, 8) + " can only be read by 8 bits");
         }
         else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
             // DMA channel configuration registers
@@ -918,7 +915,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_DTCR0:
                     return channel.getDtcr();
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
@@ -934,7 +931,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_RESTR:
                     return clock.getRestr();
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
@@ -953,7 +950,7 @@ public class TxIoListener extends IoActivityListener {
                 default:
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT))
                         return keyCircuit.keys[keyNumber].getKWUPST();
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -967,7 +964,7 @@ public class TxIoListener extends IoActivityListener {
                     return unit.getReg(channelNumber);
                 }
                 else {
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -993,7 +990,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1:
                         return (unit.getComReg1());
                     default:
-                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -1026,7 +1023,7 @@ public class TxIoListener extends IoActivityListener {
                 return ((TxDmaController)platform.getDmaController()).getDhr();
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet");
 
         return null;
     }
@@ -1079,17 +1076,17 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_TB0IM + 3:
                     txTimer.setTbim(value); break;
                 case REGISTER_TB0UC + 3:
-                    throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
+                    stop("The TBnUC register cannot be accessed by 8-bit");
                 case REGISTER_TB0RG0 + 2:
                 case REGISTER_TB0RG0 + 3:
                     /* TODO To write data to the TB0RG0H/L and TB0RG1H/L timer registers, either a 2-byte data transfer
                      * TODO instruction or a 1-byte data transfer instruction written twice in the order of low-order
                      * TODO 8 bits followed by high-order 8 bits can be used.
                      */
-                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
+                    stop("The TBnRG0 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0RG1 + 2:
                 case REGISTER_TB0RG1 + 3:
-                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
+                    stop("The TBnRG1 register cannot be accessed by 8-bit for now");
                 case REGISTER_TB0CP0 + 3:
                     txTimer.setTbcp0(value); break;
                 case REGISTER_TB0CP1 + 3:
@@ -1110,7 +1107,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 3:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 3:
-                        if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
+                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1130,7 +1127,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0 + 3:
                         txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 3:
-                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
+                        stop("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
@@ -1227,7 +1224,7 @@ public class TxIoListener extends IoActivityListener {
                     channel.setDtcr(value); break;
 
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
@@ -1253,7 +1250,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_RESTR + 3:
                     clock.setRestr(value); break;
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT+4) {
@@ -1269,7 +1266,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         keyCircuit.keys[keyNumber].setKWUPST(value); break;
                     }
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1283,7 +1280,7 @@ public class TxIoListener extends IoActivityListener {
                     unit.setReg(channelNumber, value);
                 }
                 else {
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -1309,7 +1306,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 3:
                         unit.setComReg1(value); break;
                     default:
-                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -1339,7 +1336,7 @@ public class TxIoListener extends IoActivityListener {
                 ((TxClockGenerator)platform.getClockGenerator()).setRstflg(value); break;
             // Interrupt Controller
             case REGISTER_INTCLR + 3:
-                throw new RuntimeException("The INTCLR register can not be accessed by 8-bit");
+                stop("The INTCLR register can not be accessed by 8-bit");
             case REGISTER_DREQFLG + 3:
                 ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             // DMA controller
@@ -1350,7 +1347,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DHR + 3:
                 ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
         }
     }
 
@@ -1361,7 +1358,7 @@ public class TxIoListener extends IoActivityListener {
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
-            throw new RuntimeException("The I/O port registers cannot be accessed by 16-bit for now");
+            stop("The I/O port registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_TB0EN && addr < REGISTER_TB0EN + (NUM_16B_TIMER << TIMER_OFFSET_SHIFT)) {
             // Timer configuration registers
@@ -1408,7 +1405,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 2:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 2:
-                        if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
+                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1429,15 +1426,15 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0 + 2:
                         txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0 + 2:
-                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
+                        stop("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
-            throw new RuntimeException("The RTC registers cannot be written by 16-bit for now");
+            stop("The RTC registers cannot be written by 16-bit for now");
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
-            throw new RuntimeException("The KEY registers cannot be accessed by 16-bit for now");
+            stop("The KEY registers cannot be accessed by 16-bit for now");
         }
         else if (addr >= REGISTER_SC0EN && addr < REGISTER_SC0EN + (NUM_SERIAL_IF << SERIAL_OFFSET_SHIFT)) {
             // Serial Interface configuration registers
@@ -1475,16 +1472,16 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
+            stop("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
         }
         else switch (addr){
             // Clock generator
             case REGISTER_SYSCR:
             case REGISTER_SYSCR + 2:
-                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
+                stop("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_OSCCR:
             case REGISTER_OSCCR + 2:
-                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
+                stop("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
                 ((TxClockGenerator)platform.getClockGenerator()).setPllsel(value); break;
             case REGISTER_NMIFLG + 2:
@@ -1497,7 +1494,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DREQFLG + 2:
                 ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             default:
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
         }
     }
 
@@ -1574,7 +1571,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP:
-                        if (logRegisterMessages) System.err.println("Writing " + value + " to TBTRDCAP register !");
+                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1595,7 +1592,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_CAPCR0:
                         txInputCaptureTimer.setCapcr(captureChannel, value); break;
                     case REGISTER_TCCAP0:
-                        throw new RuntimeException("Cannot write to TCCAP register of channel " + captureChannel);
+                        stop("Cannot write to TCCAP register of channel " + captureChannel);
                 }
             }
         }
@@ -1635,7 +1632,7 @@ public class TxIoListener extends IoActivityListener {
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
-            throw new RuntimeException("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
+            stop("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
         }
         else if (addr >= REGISTER_CCR0 && addr < REGISTER_CCR0 + (NUM_DMA_CHANNEL << DMA_CHANNEL_OFFSET_SHIFT)) {
             // DMA channel configuration registers
@@ -1655,7 +1652,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_DTCR0:
                     channel.setDtcr(value); break;
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
@@ -1671,7 +1668,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_RESTR:
                     clock.setRestr(value); break;
                 default:
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
@@ -1687,7 +1684,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         keyCircuit.keys[keyNumber].setKWUPST(value); break;
                     }
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1701,7 +1698,7 @@ public class TxIoListener extends IoActivityListener {
                     unit.setReg(channelNumber, value);
                 }
                 else {
-                    throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -1727,7 +1724,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1:
                         unit.setComReg1(value); break;
                     default:
-                        throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -1762,7 +1759,7 @@ public class TxIoListener extends IoActivityListener {
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
     }
 }

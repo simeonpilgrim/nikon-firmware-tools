@@ -74,13 +74,8 @@ public class ExpeedIoListener extends IoActivityListener {
     // Interrupt controller
     public static final int REGISTER_ICR00 = 0x440;
 
-
-    private final Platform platform;
-    protected boolean logRegisterMessages;
-
     public ExpeedIoListener(Platform platform, boolean logRegisterMessages) {
-        this.platform = platform;
-        this.logRegisterMessages = logRegisterMessages;
+        super(platform, logRegisterMessages);
     }
 
     @Override
@@ -117,7 +112,7 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_ESCR_IBSR0:
                     return (byte)serialInterface.getEscrIbsr();
                 case REGISTER_RDR_TDR0:   // written by 16-bit
-                    throw new RuntimeException("Cannot read RDR register 8 bit at a time for now at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Cannot read RDR register 8 bit at a time for now");
                 case REGISTER_BGR10:      // read by 16-bit
                     return (byte)serialInterface.getBgr1();
                 case REGISTER_BGR00:
@@ -138,7 +133,7 @@ public class ExpeedIoListener extends IoActivityListener {
         }
         else if ((addr >= REGISTER_CPCLR0 && addr < (REGISTER_TCCS0 + 2)) || (addr >= REGISTER_CPCLR1 && addr < (REGISTER_TCCS1 + 2))) {
             // FreeRun timer
-            throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+            stop("The FreeRun timer registers cannot be accessed by 8-bit for now");
         }
         else if ((addr >= REGISTER_EIRR0) && (addr < (REGISTER_ELVR0 + 2))) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
@@ -173,7 +168,7 @@ public class ExpeedIoListener extends IoActivityListener {
             }
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet");
 
         return null;
     }
@@ -233,7 +228,7 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_TCCS0:
                     return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTccs();
                 default:
-                    throw new RuntimeException("Warning: ignoring attempt to read 16-bit register in FreeRun Timer at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to read 16-bit register in FreeRun Timer");
             }
         }
         else if (addr>=REGISTER_EIRR0 && addr<(REGISTER_ELVR0 + 2)) {
@@ -272,11 +267,11 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_DIVR0:
                 case REGISTER_DIVR1:
                 case REGISTER_DIVR2:
-                    throw new RuntimeException("Warning: reading DIVR registers by 16bit is not supported at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: reading DIVR registers by 16bit is not supported");
             }
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet");
 
         return null;
     }
@@ -309,7 +304,7 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_TCDT0:
                     return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt();
                 default:
-                    throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write 32-bit register in FreeRun Timer");
             }
         }
         else if (addr == REGISTER_EIRR0) {
@@ -321,11 +316,11 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_DIVR0:
                 case REGISTER_DIVR1:
                 case REGISTER_DIVR2:
-                    throw new RuntimeException("Warning: reading DIVR registers by 32bit is not supported at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: reading DIVR registers by 32bit is not supported");
             }
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet");
 
         return null;
     }
@@ -353,7 +348,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     serialInterface.setEscrIbsr(value & 0xFF);
                     break;
                 case REGISTER_RDR_TDR0:   // written by 16-bit
-                    throw new RuntimeException("Cannot write TDR register 8 bit at a time for now at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Cannot write TDR register 8 bit at a time for now");
                 case REGISTER_BGR10:      // written by 16-bit
                     serialInterface.setBgr1(value & 0xFF);
                     break;
@@ -382,7 +377,7 @@ public class ExpeedIoListener extends IoActivityListener {
         }
         else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
             // FreeRun timer
-            throw new RuntimeException("The FreeRun timer registers cannot be accessed by 8-bit for now at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+            stop("The FreeRun timer registers cannot be accessed by 8-bit for now");
         }
         else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
@@ -421,7 +416,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     break;
 
                 default:
-                    if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
             }
         }
     }
@@ -476,7 +471,7 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_TCCS0:
                     ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTccs(value); break;
                 default:
-                    throw new RuntimeException("Warning: ignoring attempt to write 16-bit register in FreeRun Timer at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write 16-bit register in FreeRun Timer");
             }
         }
         else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
@@ -499,7 +494,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     ((FrReloadTimer)platform.getProgrammableTimers()[0]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR0:
-                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer0 value at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write reloadTimer0 value");
                 case REGISTER_TMCSR0:
                     ((FrReloadTimer)platform.getProgrammableTimers()[0]).setTmcsr(value & 0xFFFF);
                     break;
@@ -508,7 +503,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     ((FrReloadTimer)platform.getProgrammableTimers()[1]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR1:
-                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer1 value 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write reloadTimer1 value 0x" + Format.asHex(platform.getCpuState().pc, 8));
                 case REGISTER_TMCSR1:
                     ((FrReloadTimer)platform.getProgrammableTimers()[1]).setTmcsr(value & 0xFFFF);
                     break;
@@ -517,7 +512,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     ((FrReloadTimer)platform.getProgrammableTimers()[2]).setTmrlra(value & 0xFFFF);
                     break;
                 case REGISTER_TMR2:
-                    throw new RuntimeException("Warning: ignoring attempt to write reloadTimer2 value at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write reloadTimer2 value");
                 case REGISTER_TMCSR2:
                     ((FrReloadTimer)platform.getProgrammableTimers()[2]).setTmcsr(value & 0xFFFF);
                     break;
@@ -525,10 +520,10 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_DIVR0:
                 case REGISTER_DIVR1:
                 case REGISTER_DIVR2:
-                    throw new RuntimeException("Warning: writing DIVR registers by 16bit is not supported at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: writing DIVR registers by 16bit is not supported");
 
                 default:
-                    if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
             }
         }
     }
@@ -551,7 +546,7 @@ public class ExpeedIoListener extends IoActivityListener {
                 case REGISTER_TCDT0:
                     ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTcdt(value); break;
                 default:
-                    throw new RuntimeException("Warning: ignoring attempt to write 32-bit register in FreeRun Timer at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                    stop("Warning: ignoring attempt to write 32-bit register in FreeRun Timer");
             }
         }
         else switch(addr) {
@@ -565,12 +560,13 @@ public class ExpeedIoListener extends IoActivityListener {
             case REGISTER_DIVR0:
             case REGISTER_DIVR1:
             case REGISTER_DIVR2:
-                throw new RuntimeException("Warning: writing DIVR registers by 32bit is not supported at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                stop("Warning: writing DIVR registers by 32bit is not supported");
 
             default:
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
+                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
     }
+
 }
 
 /*
