@@ -270,33 +270,32 @@ public class TxIoListener extends IoActivityListener {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
-                case REGISTER_TB0EN:
+                case REGISTER_TB0EN + 3:
                     return (byte) txTimer.getTben();
-                case REGISTER_TB0RUN:
+                case REGISTER_TB0RUN + 3:
                     return (byte) txTimer.getTbrun();
-                case REGISTER_TB0CR:
+                case REGISTER_TB0CR + 3:
                     return (byte) txTimer.getTbcr();
-                case REGISTER_TB0MOD:
+                case REGISTER_TB0MOD + 3:
                     return (byte) txTimer.getTbmod();
-                case REGISTER_TB0FFCR:
-                    throw new RuntimeException("The TBnFFCR register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0ST:
+                case REGISTER_TB0FFCR + 3:
+                    return (byte) txTimer.getTbffcr();
+                case REGISTER_TB0ST + 3:
                     return (byte) txTimer.getTbst();
-                case REGISTER_TB0IM:
+                case REGISTER_TB0IM + 3:
                     return (byte) txTimer.getTbim();
-                case REGISTER_TB0UC:
+                case REGISTER_TB0UC + 2:
+                case REGISTER_TB0UC + 3:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
-                case REGISTER_TB0RG0:
+                case REGISTER_TB0RG0 + 2:
+                case REGISTER_TB0RG0 + 3:
                     throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG0 + 1:
-                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG1:
+                case REGISTER_TB0RG1 + 2:
+                case REGISTER_TB0RG1 + 3:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG1 + 1:
-                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0CP0:
+                case REGISTER_TB0CP0 + 3:
                     return (byte) txTimer.getTbcp0();
-                case REGISTER_TB0CP1:
+                case REGISTER_TB0CP1 + 3:
                     return (byte) txTimer.getTbcp1();
             }
         }
@@ -374,7 +373,7 @@ public class TxIoListener extends IoActivityListener {
             int hserialInterfaceNr = (addr - REGISTER_HSC0BUF) >> HSERIAL_OFFSET_SHIFT;
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[NUM_SERIAL_IF + hserialInterfaceNr];
             switch (addr - (hserialInterfaceNr << HSERIAL_OFFSET_SHIFT)) {
-                case REGISTER_HSC0BUF:
+                case REGISTER_HSC0BUF: // No +3. These are all 8-bit register (even if hsc0buf leaves 3 blank addresses)
                     return (byte) txSerialInterface.getBuf();
                 case REGISTER_HBR0ADD:
                     return (byte) txSerialInterface.getBradd();
@@ -459,22 +458,23 @@ public class TxIoListener extends IoActivityListener {
             int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
             switch (addr) {
                 case REGISTER_PKEY:
-                case REGISTER_PKEY+1:
-                case REGISTER_PKEY+2:
-                case REGISTER_PKEY+3:
+                case REGISTER_PKEY + 1:
+                case REGISTER_PKEY + 2:
+                case REGISTER_PKEY + 3:
                     return (byte)(keyCircuit.getPKEY() >> ((3 - (addr & 0b11)) * 8));
-                case REGISTER_KWUPCNT:
+                case REGISTER_KWUPCNT + 3:
                     return (byte)keyCircuit.getKWUPCNT();
-                case REGISTER_KWUPCLR:
+                case REGISTER_KWUPCLR + 3:
                     return (byte)keyCircuit.getKWUPCLR();
                 case REGISTER_KWUPINT:
-                case REGISTER_KWUPINT+1:
-                case REGISTER_KWUPINT+2:
-                case REGISTER_KWUPINT+3:
-                    return keyCircuit.getKWUPINTn(addr&3);
+                case REGISTER_KWUPINT + 1:
+                case REGISTER_KWUPINT + 2:
+                case REGISTER_KWUPINT + 3:
+                    return keyCircuit.getKWUPINTn(addr & 0b11);
                 default:
-                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT))
+                    if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         return (byte)keyCircuit.keys[keyNumber].getKWUPST();
+                    }
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
@@ -543,8 +543,10 @@ public class TxIoListener extends IoActivityListener {
                 return (byte)((TxInterruptController)platform.getInterruptController()).readAndClearNmiFlag();
             case REGISTER_RSTFLG + 3:
                 return (byte)((TxClockGenerator)platform.getClockGenerator()).getRstflg();
+
             case REGISTER_DREQFLG + 3:
                 return (byte)((TxInterruptController)platform.getInterruptController()).getDreqflg();
+
             // DMA controller
             case REGISTER_DCR + 3:
                 return (byte)((TxDmaController)platform.getDmaController()).getDcr();
@@ -554,7 +556,7 @@ public class TxIoListener extends IoActivityListener {
                 return (byte)((TxDmaController)platform.getDmaController()).getDhr();
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet");
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load8 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
 
         return null;
     }
@@ -583,30 +585,30 @@ public class TxIoListener extends IoActivityListener {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
-                case REGISTER_TB0EN:
-                    return txTimer.getTben();
-                case REGISTER_TB0RUN:
-                    return txTimer.getTbrun();
-                case REGISTER_TB0CR:
-                    return txTimer.getTbcr();
-                case REGISTER_TB0MOD:
-                    return txTimer.getTbmod();
-                case REGISTER_TB0FFCR:
-                    return txTimer.getTbffcr();
-                case REGISTER_TB0ST:
-                    return txTimer.getTbst();
-                case REGISTER_TB0IM:
-                    return txTimer.getTbim();
-                case REGISTER_TB0UC:
-                    return txTimer.getTbuc();
-                case REGISTER_TB0RG0:
-                    return txTimer.getTbrg0();
-                case REGISTER_TB0RG1:
-                    return txTimer.getTbrg1();
-                case REGISTER_TB0CP0:
-                    return txTimer.getTbcp0();
-                case REGISTER_TB0CP1:
-                    return txTimer.getTbcp1();
+                case REGISTER_TB0EN + 2:
+                    return txTimer.getTben() & 0xFFFF;
+                case REGISTER_TB0RUN + 2:
+                    return txTimer.getTbrun() & 0xFFFF;
+                case REGISTER_TB0CR + 2:
+                    return txTimer.getTbcr() & 0xFFFF;
+                case REGISTER_TB0MOD + 2:
+                    return txTimer.getTbmod() & 0xFFFF;
+                case REGISTER_TB0FFCR + 2:
+                    return txTimer.getTbffcr() & 0xFFFF;
+                case REGISTER_TB0ST + 2:
+                    return txTimer.getTbst() & 0xFFFF;
+                case REGISTER_TB0IM + 2:
+                    return txTimer.getTbim() & 0xFFFF;
+                case REGISTER_TB0UC + 2:
+                    return txTimer.getTbuc() & 0xFFFF;
+                case REGISTER_TB0RG0 + 2:
+                    return txTimer.getTbrg0() & 0xFFFF;
+                case REGISTER_TB0RG1 + 2:
+                    return txTimer.getTbrg1() & 0xFFFF;
+                case REGISTER_TB0CP0 + 2:
+                    return txTimer.getTbcp0() & 0xFFFF;
+                case REGISTER_TB0CP1 + 2:
+                    return txTimer.getTbcp1() & 0xFFFF;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -615,24 +617,24 @@ public class TxIoListener extends IoActivityListener {
             if (addr < REGISTER_CMPCTL0) {
                 switch (addr) {
                     case REGISTER_TCEN + 2:
-                        return txInputCaptureTimer.getTcen();
+                        return txInputCaptureTimer.getTcen() & 0xFFFF;
                     case REGISTER_TBTRUN + 2:
-                        return txInputCaptureTimer.getTbtrun();
+                        return txInputCaptureTimer.getTbtrun() & 0xFFFF;
                     case REGISTER_TBTCR + 2:
-                        return txInputCaptureTimer.getTbtcr();
+                        return txInputCaptureTimer.getTbtcr() & 0xFFFF;
                     case REGISTER_TBTCAP + 2:
-                        return txInputCaptureTimer.getTbtcap();
+                        return txInputCaptureTimer.getTbtcap() & 0xFFFF;
                     case REGISTER_TBTRDCAP + 2:
-                        return txInputCaptureTimer.getCurrentValue();
+                        return txInputCaptureTimer.getCurrentValue() & 0xFFFF;
                 }
             }
             else if (addr < REGISTER_CAPCR0) {
                 int compareChannel = (addr - REGISTER_CMPCTL0) >> INPUT_COMPARE_OFFSET_SHIFT;
                 switch (addr - (compareChannel << INPUT_COMPARE_OFFSET_SHIFT)) {
                     case REGISTER_CMPCTL0 + 2:
-                        return  txInputCaptureTimer.getCmpctl(compareChannel);
+                        return  txInputCaptureTimer.getCmpctl(compareChannel) & 0xFFFF;
                     case REGISTER_TCCMP0 + 2:
-                        return  txInputCaptureTimer.getTccmp(compareChannel);
+                        return  txInputCaptureTimer.getTccmp(compareChannel) & 0xFFFF;
                 }
 
             }
@@ -640,9 +642,9 @@ public class TxIoListener extends IoActivityListener {
                 int captureChannel = (addr - REGISTER_CAPCR0) >> INPUT_CAPTURE_OFFSET_SHIFT;
                 switch (addr - (captureChannel << INPUT_CAPTURE_OFFSET_SHIFT)) {
                     case REGISTER_CAPCR0 + 2:
-                        return  txInputCaptureTimer.getCapcr(captureChannel);
+                        return  txInputCaptureTimer.getCapcr(captureChannel) & 0xFFFF;
                     case REGISTER_TCCAP0 + 2:
-                        return  txInputCaptureTimer.getTccap(captureChannel);
+                        return  txInputCaptureTimer.getTccap(captureChannel) & 0xFFFF;
                 }
             }
         }
@@ -658,31 +660,31 @@ public class TxIoListener extends IoActivityListener {
             TxSerialInterface txSerialInterface = (TxSerialInterface)platform.getSerialInterfaces()[serialInterfaceNr];
             switch (addr - (serialInterfaceNr << SERIAL_OFFSET_SHIFT)) {
                 case REGISTER_SC0EN + 2:
-                    return txSerialInterface.getEn();
+                    return txSerialInterface.getEn() & 0xFFFF;
                 case REGISTER_SC0BUF + 2:
-                    return txSerialInterface.getBuf();
+                    return txSerialInterface.getBuf() & 0xFFFF;
                 case REGISTER_SC0CR + 2:
-                    return txSerialInterface.getCr();
+                    return txSerialInterface.getCr() & 0xFFFF;
                 case REGISTER_SC0MOD0 + 2:
-                    return txSerialInterface.getMod0();
+                    return txSerialInterface.getMod0() & 0xFFFF;
                 case REGISTER_SC0MOD1 + 2:
-                    return txSerialInterface.getMod1();
+                    return txSerialInterface.getMod1() & 0xFFFF;
                 case REGISTER_SC0MOD2 + 2:
-                    return txSerialInterface.getMod2();
+                    return txSerialInterface.getMod2() & 0xFFFF;
                 case REGISTER_BR0CR + 2:
-                    return txSerialInterface.getBrcr();
+                    return txSerialInterface.getBrcr() & 0xFFFF;
                 case REGISTER_BR0ADD + 2:
-                    return txSerialInterface.getBradd();
+                    return txSerialInterface.getBradd() & 0xFFFF;
                 case REGISTER_SC0RFC + 2:
-                    return txSerialInterface.getRfc();
+                    return txSerialInterface.getRfc() & 0xFFFF;
                 case REGISTER_SC0TFC + 2:
-                    return txSerialInterface.getTfc();
+                    return txSerialInterface.getTfc() & 0xFFFF;
                 case REGISTER_SC0RST + 2:
-                    return txSerialInterface.getRst();
+                    return txSerialInterface.getRst() & 0xFFFF;
                 case REGISTER_SC0TST + 2:
-                    return txSerialInterface.getTst();
+                    return txSerialInterface.getTst() & 0xFFFF;
                 case REGISTER_SC0FCNF + 2:
-                    return txSerialInterface.getFcnf();
+                    return txSerialInterface.getFcnf() & 0xFFFF;
             }
         }
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
@@ -697,7 +699,7 @@ public class TxIoListener extends IoActivityListener {
             if (shiftedAddress >= REGISTER_ADAREG0 && shiftedAddress < REGISTER_ADAREG0 + 32 ) {
                 int channelNumber = (shiftedAddress - REGISTER_ADAREG0) / 4;
                 if (channelNumber < unit.getNumChannels()) {
-                    return unit.getReg(channelNumber);
+                    return unit.getReg(channelNumber) & 0xFFFF;
                 }
                 else {
                     throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
@@ -706,25 +708,25 @@ public class TxIoListener extends IoActivityListener {
             else {
                 switch (shiftedAddress) {
                     case REGISTER_ADACLK + 2:
-                        return unit.getClk();
+                        return unit.getClk() & 0xFFFF;
                     case REGISTER_ADAMOD0 + 2:
-                        return unit.getMod0();
+                        return unit.getMod0() & 0xFFFF;
                     case REGISTER_ADAMOD1 + 2:
-                        return unit.getMod1();
+                        return unit.getMod1() & 0xFFFF;
                     case REGISTER_ADAMOD2 + 2:
-                        return unit.getMod2();
+                        return unit.getMod2() & 0xFFFF;
                     case REGISTER_ADAMOD3 + 2:
-                        return unit.getMod3();
+                        return unit.getMod3() & 0xFFFF;
                     case REGISTER_ADAMOD4 + 2:
-                        return unit.getMod4();
+                        return unit.getMod4() & 0xFFFF;
                     case REGISTER_ADAMOD5 + 2:
-                        return unit.getMod5();
+                        return unit.getMod5() & 0xFFFF;
                     case REGISTER_ADAREGSP + 2:
-                        return (unit.getRegSp());
+                        return (unit.getRegSp()) & 0xFFFF;
                     case REGISTER_ADACOMREG0 + 2:
-                        return (unit.getComReg0());
+                        return (unit.getComReg0()) & 0xFFFF;
                     case REGISTER_ADACOMREG1 + 2:
-                        return (unit.getComReg1());
+                        return (unit.getComReg1()) & 0xFFFF;
                     default:
                         throw new RuntimeException("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
@@ -741,7 +743,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_OSCCR + 2:
                 throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
-                return ((TxClockGenerator)platform.getClockGenerator()).getPllsel();
+                return ((TxClockGenerator)platform.getClockGenerator()).getPllsel() & 0xFFFF;
             case REGISTER_NMIFLG + 2:
                 return ((TxInterruptController)platform.getInterruptController()).readAndClearNmiFlag() & 0xFFFF;
             case REGISTER_RSTFLG + 2:
@@ -750,7 +752,7 @@ public class TxIoListener extends IoActivityListener {
                 return ((TxInterruptController)platform.getInterruptController()).getDreqflg() & 0xFFFF;
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet");
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load16 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
 
         return null;
     }
@@ -1024,7 +1026,7 @@ public class TxIoListener extends IoActivityListener {
                 return ((TxDmaController)platform.getDmaController()).getDhr();
         }
 
-        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet");
+        if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Load32 is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
 
         return null;
     }
@@ -1062,37 +1064,35 @@ public class TxIoListener extends IoActivityListener {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
-                case REGISTER_TB0EN:
+                case REGISTER_TB0EN + 3:
                     txTimer.setTben(value); break;
-                case REGISTER_TB0RUN:
+                case REGISTER_TB0RUN + 3:
                     txTimer.setTbrun(value); break;
-                case REGISTER_TB0CR:
+                case REGISTER_TB0CR + 3:
                     txTimer.setTbcr(value); break;
-                case REGISTER_TB0MOD:
+                case REGISTER_TB0MOD + 3:
                     txTimer.setTbmod(value); break;
-                case REGISTER_TB0FFCR:
+                case REGISTER_TB0FFCR + 3:
                     txTimer.setTbffcr(value); break;
-                case REGISTER_TB0ST:
+                case REGISTER_TB0ST + 3:
                     txTimer.setTbst(value); break;
-                case REGISTER_TB0IM:
+                case REGISTER_TB0IM + 3:
                     txTimer.setTbim(value); break;
-                case REGISTER_TB0UC:
+                case REGISTER_TB0UC + 3:
                     throw new RuntimeException("The TBnUC register cannot be accessed by 8-bit");
-                case REGISTER_TB0RG0:
+                case REGISTER_TB0RG0 + 2:
+                case REGISTER_TB0RG0 + 3:
                     /* TODO To write data to the TB0RG0H/L and TB0RG1H/L timer registers, either a 2-byte data transfer
                      * TODO instruction or a 1-byte data transfer instruction written twice in the order of low-order
                      * TODO 8 bits followed by high-order 8 bits can be used.
                      */
                     throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG0 + 1:
-                    throw new RuntimeException("The TBnRG0 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG1:
+                case REGISTER_TB0RG1 + 2:
+                case REGISTER_TB0RG1 + 3:
                     throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0RG1 + 1:
-                    throw new RuntimeException("The TBnRG1 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0CP0:
+                case REGISTER_TB0CP0 + 3:
                     txTimer.setTbcp0(value); break;
-                case REGISTER_TB0CP1:
+                case REGISTER_TB0CP1 + 3:
                     txTimer.setTbcp1(value); break;
             }
         }
@@ -1261,9 +1261,9 @@ public class TxIoListener extends IoActivityListener {
             TxKeyCircuit keyCircuit = ((TxKeyCircuit)platform.getKeyCircuit());
             int keyNumber = (addr - REGISTER_KWUPST00) >> KEY_OFFSET_SHIFT;
             switch (addr) {
-                case REGISTER_KWUPCNT:
+                case REGISTER_KWUPCNT + 3:
                     keyCircuit.setKWUPCNT(value); break;
-                case REGISTER_KWUPCLR:
+                case REGISTER_KWUPCLR + 3:
                     keyCircuit.setKWUPCLR(value); break;
                 default:
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
@@ -1350,7 +1350,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DHR + 3:
                 ((TxDmaController)platform.getDmaController()).setDhr(value); break;
             default:
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
         }
     }
 
@@ -1368,29 +1368,29 @@ public class TxIoListener extends IoActivityListener {
             int timerNr = (addr - REGISTER_TB0EN) >> TIMER_OFFSET_SHIFT;
             TxTimer txTimer = (TxTimer)platform.getProgrammableTimers()[timerNr];
             switch (addr - (timerNr << TIMER_OFFSET_SHIFT)) {
-                case REGISTER_TB0EN:
+                case REGISTER_TB0EN + 2:
                     txTimer.setTben(value); break;
-                case REGISTER_TB0RUN:
+                case REGISTER_TB0RUN + 2:
                     txTimer.setTbrun(value); break;
-                case REGISTER_TB0CR:
+                case REGISTER_TB0CR + 2:
                     txTimer.setTbcr(value); break;
-                case REGISTER_TB0MOD:
+                case REGISTER_TB0MOD + 2:
                     txTimer.setTbmod(value); break;
-                case REGISTER_TB0FFCR:
+                case REGISTER_TB0FFCR + 2:
                     txTimer.setTbffcr(value); break;
-                case REGISTER_TB0ST:
+                case REGISTER_TB0ST + 2:
                     txTimer.setTbst(value); break;
-                case REGISTER_TB0IM:
+                case REGISTER_TB0IM + 2:
                     txTimer.setTbim(value); break;
-                case REGISTER_TB0UC:
+                case REGISTER_TB0UC + 2:
                     txTimer.setTbuc(value); break;
-                case REGISTER_TB0RG0:
+                case REGISTER_TB0RG0 + 2:
                     txTimer.setTbrg0(value); break;
-                case REGISTER_TB0RG1:
+                case REGISTER_TB0RG1 + 2:
                     txTimer.setTbrg1(value); break;
-                case REGISTER_TB0CP0:
+                case REGISTER_TB0CP0 + 2:
                     txTimer.setTbcp0(value); break;
-                case REGISTER_TB0CP1:
+                case REGISTER_TB0CP1 + 2:
                     txTimer.setTbcp1(value); break;
             }
         }
@@ -1480,11 +1480,9 @@ public class TxIoListener extends IoActivityListener {
         else switch (addr){
             // Clock generator
             case REGISTER_SYSCR:
-                throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_SYSCR + 2:
                 throw new RuntimeException("The SYSCR register can not be accessed by 16-bit for now");
             case REGISTER_OSCCR:
-                throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_OSCCR + 2:
                 throw new RuntimeException("The OSCCR register can not be accessed by 16-bit for now");
             case REGISTER_PLLSEL + 2:
@@ -1499,7 +1497,7 @@ public class TxIoListener extends IoActivityListener {
             case REGISTER_DREQFLG + 2:
                 ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             default:
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
         }
     }
 
@@ -1764,7 +1762,7 @@ public class TxIoListener extends IoActivityListener {
             default:
                 // TODO if one interrupt has its active state set to "L", this should trigger a hardware interrupt
                 // See section 6.5.1.2 , 3rd bullet
-                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
+                if (logRegisterMessages) System.err.println("Register 0x" + Format.asHex(addr, 8) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet at 0x" + Format.asHex(platform.getCpuState().pc, 8));
         }
     }
 }
