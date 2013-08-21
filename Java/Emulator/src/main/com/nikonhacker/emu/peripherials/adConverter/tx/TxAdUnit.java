@@ -223,12 +223,20 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
         return mod4 & 0b11110000;
     }
 
-    private boolean isMod4Adhtg() {
+    private boolean isMod4AdhtgSet() {
         return (mod4 & MOD4_ADHTG_MASK) != 0;
     }
 
-    private boolean isMod4Hadhtg() {
+    private boolean isMod4AdhsSet() {
+        return (mod4 & MOD4_ADHS_MASK) != 0;
+    }
+
+    private boolean isMod4HadhtgSet() {
         return (mod4 & MOD4_HADHTG_MASK) != 0;
+    }
+
+    private boolean isMod4HadhsSet() {
+        return (mod4 & MOD4_HADHS_MASK) != 0;
     }
 
     public void setMod4(int mod4) {
@@ -238,11 +246,11 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
         }
         this.mod4 = mod4 & 0b11110011;
         // TODO: Hardware triggers
-        if (isMod4Adhtg()) {
-            System.err.println(toString() + " Error: Hardware trigger not implemented");
+        if (isMod4AdhtgSet()) {
+            System.err.println(toString() + " Error: Hardware trigger by " + (isMod4AdhsSet()?"timer":"external TRG") + " not implemented");
         }
-        if (isMod4Hadhtg()) {
-            System.err.println(toString() + " Error: Top priority hardware trigger not implemented");
+        if (isMod4HadhtgSet()) {
+            System.err.println(toString() + " Error: Top priority hardware trigger by " + (isMod4HadhsSet()?"timer":"external TRG") + " not implemented");
         }
     }
 
