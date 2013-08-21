@@ -2148,7 +2148,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Unknown component 4006
-                memory.addActivityListener(new Expeed4006IoListener(prefs.isLogRegisterMessages(chip)));
+                memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
