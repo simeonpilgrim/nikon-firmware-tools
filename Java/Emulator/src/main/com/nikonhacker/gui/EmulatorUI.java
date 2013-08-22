@@ -3082,21 +3082,26 @@ public class EmulatorUI extends JFrame implements ActionListener {
         if (prefs.isSyncPlay()) {
             // Start the other one too
             int otherChip = 1 - chip;
-            setStatusText(otherChip, "Sync play...");
-            statusBar[otherChip].setBackground(STATUS_BGCOLOR_RUN);
-            RunMode altRunMode;
-            switch (runMode) {
-                case STEP:
-                    altRunMode = prefs.getAltModeForSyncedCpuUponStep(chip);
-                    break;
-                case DEBUG:
-                    altRunMode = prefs.getAltModeForSyncedCpuUponDebug(chip);
-                    break;
-                default:
-                    altRunMode = RunMode.RUN;
+            if (isImageLoaded[otherChip]) {
+                setStatusText(otherChip, "Sync play...");
+                statusBar[otherChip].setBackground(STATUS_BGCOLOR_RUN);
+                RunMode altRunMode;
+                switch (runMode) {
+                    case STEP:
+                        altRunMode = prefs.getAltModeForSyncedCpuUponStep(chip);
+                        break;
+                    case DEBUG:
+                        altRunMode = prefs.getAltModeForSyncedCpuUponDebug(chip);
+                        break;
+                    default:
+                        altRunMode = RunMode.RUN;
+                }
+                prepareBreakTriggers(otherChip, altRunMode, null);
+                prepareEmulation(otherChip);
             }
-            prepareBreakTriggers(otherChip, altRunMode, null);
-            prepareEmulation(otherChip);
+            else {
+                JOptionPane.showMessageDialog(this, "Cannot start " + Constants.CHIP_LABEL[otherChip] + " in sync because no image is loaded.\nOnly " + Constants.CHIP_LABEL[chip] + " will run.", "Warning", JOptionPane.WARNING_MESSAGE);
+            }
         }
         //System.err.println("Requesting clock start");
         masterClock.start();
