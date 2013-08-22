@@ -714,7 +714,7 @@ public class FrInstructionSet {
         fillInstructionMap( 0x6000, 0xF000, new FrInstruction(InstructionFormat.B, 0, 0, "LDUB",   "@(F&s),i",     "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
             public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned8(context.cpuState.getReg(14) + statement.imm));
+                context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned8(context.cpuState.getReg(14) + BinaryArithmetics.signExtend(8, statement.imm)));
                 /* No change to NZVC */
                 context.cpuState.pc += 2;
                 context.cycleIncrement = FrInstructionSet.CYCLES_B;
