@@ -430,8 +430,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // Comparator 0
             if (currentValue == tbrg0) {
                 // CP0 matches
+                tbst |= TBST_INTTBn0_MASK;
                 if (!isTbimTbimn0Set()) {
-                    tbst |= TBST_INTTBn0_MASK;
                     interruptCondition = true;
                 }
                 // Toggle if requested
@@ -447,8 +447,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // Comparator 1
             if (currentValue == tbrg1) {
                 // CP1 matches
+                tbst |= TBST_INTTBn1_MASK;
                 if (!isTbimTbimn1Set()) {
-                    tbst |= TBST_INTTBn1_MASK;
                     interruptCondition = true;
                 }
                 // Toggle if requested
@@ -469,8 +469,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
             // Detect overflow at 16bit
             if (currentValue > MAX_COUNTER_VALUE) {
                 // overflow
+                tbst |= TBST_INTTB0Fn_MASK;
                 if (!isTbimTbim0fnSet()) {
-                    tbst |= TBST_INTTB0Fn_MASK;
                     interruptCondition = true;
                 }
                 currentValue = 0;
