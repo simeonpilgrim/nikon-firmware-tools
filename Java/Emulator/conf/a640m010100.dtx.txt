@@ -726,7 +726,6 @@
 -s 0xBFC2F1DC=clear_lcd_driver_buffer
 -s 0xBFC2F1F8=setup@FFFF6F9D
 -s 0xBFC2F2E4=setup_TB8
-
 -s 0xBFC2F39C=call_change_IO_output
 -s 0xBFC2F46C=test_LCD_displaying
 -s 0xBFC2F5A4=call_change_IO_ports
