@@ -2206,7 +2206,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
 
                 dmaController = new TxDmaController(platform[chip], prefs);
-                realtimeClock = new TxRealtimeClock(platform[chip], prefs);
+                realtimeClock = new TxRealtimeClock(platform[chip]);
                 keyCircuit = new TxKeyCircuit(interruptController);
 
                 // Devices to be linked to the Tx chip

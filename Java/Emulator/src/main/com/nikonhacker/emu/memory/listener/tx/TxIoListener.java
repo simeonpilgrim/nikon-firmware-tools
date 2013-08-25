@@ -420,33 +420,37 @@ public class TxIoListener extends IoActivityListener {
                     return (byte)channel.getDtcr();
 
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             // RTC registers
-            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
-                case REGISTER_HOURR + 1:
-                    return (byte)(clock.getTimeReg()>>16);
-                case REGISTER_MINR:
-                    return (byte)(clock.getTimeReg()>>8);
                 case REGISTER_SECR:
-                    return (byte)clock.getTimeReg();
-                case REGISTER_YEARR:
-                    return (byte)(clock.getDateReg()>>24);
-                case REGISTER_MONTHR:
-                    return (byte)(clock.getDateReg()>>16);
-                case REGISTER_DATER:
-                    return (byte)(clock.getDateReg()>>8);
+                    return realtimeClock.getSecr();
+                case REGISTER_MINR:
+                    return realtimeClock.getMinr();
+                case REGISTER_HOURR + 1:
+                    return realtimeClock.getHourr();
+
                 case REGISTER_DAYR:
-                    return (byte)clock.getDateReg();
+                    return realtimeClock.getDayr();
+                case REGISTER_DATER:
+                    return realtimeClock.getDater();
+                case REGISTER_MONTHR:
+                    return realtimeClock.getMonthr();
+                case REGISTER_YEARR:
+                    return realtimeClock.getYearr();
+
                 case REGISTER_PAGER + 3:
-                    return (byte)clock.getPager();
+                    return (byte)realtimeClock.getPager();
+
                 case REGISTER_RESTR + 3:
-                    return (byte)clock.getRestr();
+                    return (byte)realtimeClock.getRestr();
+
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
@@ -472,7 +476,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         return (byte)keyCircuit.keys[keyNumber].getKWUPST();
                     }
-                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -486,7 +490,7 @@ public class TxIoListener extends IoActivityListener {
                     return (byte)unit.getReg(channelNumber);
                 }
                 else {
-                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -512,7 +516,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 3:
                         return (byte)(unit.getComReg1());
                     default:
-                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -699,7 +703,7 @@ public class TxIoListener extends IoActivityListener {
                     return unit.getReg(channelNumber) & 0xFFFF;
                 }
                 else {
-                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -725,7 +729,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 2:
                         return (unit.getComReg1()) & 0xFFFF;
                     default:
-                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -915,23 +919,23 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_DTCR0:
                     return channel.getDtcr();
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             // RTC registers
-            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
                 case REGISTER_HOURR:
-                    return clock.getTimeReg();
+                    return realtimeClock.getTimeReg32();
                 case REGISTER_YEARR:
-                    return clock.getDateReg();
+                    return realtimeClock.getDateReg32();
                 case REGISTER_PAGER:
-                    return clock.getPager();
+                    return realtimeClock.getPager();
                 case REGISTER_RESTR:
-                    return clock.getRestr();
+                    return realtimeClock.getRestr();
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT + 4) {
@@ -950,7 +954,7 @@ public class TxIoListener extends IoActivityListener {
                 default:
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT))
                         return keyCircuit.keys[keyNumber].getKWUPST();
-                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -964,7 +968,7 @@ public class TxIoListener extends IoActivityListener {
                     return unit.getReg(channelNumber);
                 }
                 else {
-                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -990,7 +994,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1:
                         return (unit.getComReg1());
                     default:
-                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -1224,33 +1228,36 @@ public class TxIoListener extends IoActivityListener {
                     channel.setDtcr(value); break;
 
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             // RTC registers
-            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
-                case REGISTER_HOURR + 1:
-                    clock.setHourr(value); break;
-                case REGISTER_MINR:
-                    clock.setMinr(value); break;
                 case REGISTER_SECR:
-                    clock.setSecr(value); break;
-                case REGISTER_YEARR:
-                    clock.setYearr(value); break;
-                case REGISTER_MONTHR:
-                    clock.setMonthr(value); break;
-                case REGISTER_DATER:
-                    clock.setDater(value); break;
+                    realtimeClock.setSecr(value); break;
+                case REGISTER_MINR:
+                    realtimeClock.setMinr(value); break;
+                case REGISTER_HOURR + 1:
+                    realtimeClock.setHourr(value); break;
+
                 case REGISTER_DAYR:
-                    clock.setDayr(value); break;
+                    realtimeClock.setDayr(value); break;
+                case REGISTER_DATER:
+                    realtimeClock.setDayr(value); break;
+                case REGISTER_MONTHR:
+                    realtimeClock.setMonthr(value); break;
+                case REGISTER_YEARR:
+                    realtimeClock.setYearr(value); break;
+
                 case REGISTER_PAGER + 3:
-                    clock.setPager(value); break;
+                    realtimeClock.setPager(value); break;
+
                 case REGISTER_RESTR + 3:
-                    clock.setRestr(value); break;
+                    realtimeClock.setRestr(value); break;
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a RTC register");
             }
         }
         else if (addr >= REGISTER_KWUPST00 && addr < REGISTER_KWUPINT+4) {
@@ -1266,7 +1273,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         keyCircuit.keys[keyNumber].setKWUPST(value); break;
                     }
-                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1280,7 +1287,7 @@ public class TxIoListener extends IoActivityListener {
                     unit.setReg(channelNumber, value);
                 }
                 else {
-                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -1306,7 +1313,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1 + 3:
                         unit.setComReg1(value); break;
                     default:
-                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
@@ -1652,21 +1659,21 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_DTCR0:
                     channel.setDtcr(value); break;
                 default:
-                    stop("Address " + Format.asHex(addr, 8) + " is not a DMA register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a DMA register");
             }
         }
         else if (addr >= REGISTER_HOURR && addr < REGISTER_RESTR + 4) {
             // RTC registers
-            TxRealtimeClock clock = ((TxRealtimeClock)platform.getRealtimeClock());
+            TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
                 case REGISTER_HOURR:
-                    clock.setTimeReg(value); break;
+                    realtimeClock.setTimeReg32(value); break;
                 case REGISTER_YEARR:
-                    clock.setDateReg(value); break;
+                    realtimeClock.setDateReg32(value); break;
                 case REGISTER_PAGER:
-                    clock.setPager(value); break;
+                    realtimeClock.setPager(value); break;
                 case REGISTER_RESTR:
-                    clock.setRestr(value); break;
+                    realtimeClock.setRestr(value); break;
                 default:
                     stop("Address " + Format.asHex(addr, 8) + " is not a RTC register");
             }
@@ -1684,7 +1691,7 @@ public class TxIoListener extends IoActivityListener {
                     if ((addr-REGISTER_KWUPST00) == (keyNumber << KEY_OFFSET_SHIFT)) {
                         keyCircuit.keys[keyNumber].setKWUPST(value); break;
                     }
-                    stop("Address " + Format.asHex(addr, 8) + " is not a KEY register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a KEY register");
             }
         }
         else if (addr >= REGISTER_ADACLK && addr < REGISTER_ADACLK + (NUM_AD_UNIT << AD_UNIT_OFFSET_SHIFT)) {
@@ -1698,7 +1705,7 @@ public class TxIoListener extends IoActivityListener {
                     unit.setReg(channelNumber, value);
                 }
                 else {
-                    stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter channel register");
+                    stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter channel register");
                 }
             }
             else {
@@ -1724,7 +1731,7 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_ADACOMREG1:
                         unit.setComReg1(value); break;
                     default:
-                        stop("Address " + Format.asHex(addr, 8) + " is not a A/D converter register");
+                        stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
         }
