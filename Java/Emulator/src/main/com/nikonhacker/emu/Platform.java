@@ -17,17 +17,20 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import java.util.List;
 
 /**
- * A platform represents a microcontroller hardware in a given state: CPU, memory, clock generator,
- * interrupt controller, timers, i/o ports, serial interfaces, etc.
- * It aso points to the devices depending on this microcontroller, like attached serial devices
+ * A platform represents a microcontroller hardware in a given state: CPU, memory, interrupt controller,
+ * clock generator, timers, i/o ports, serial interfaces, etc.
+ * It has a pointer to the master clock giving the frequency to this platform
+ * It also points to the devices depending on this microcontroller, like attached serial devices
  */
 public class Platform {
 
     private MasterClock         masterClock;
-    private CPUState            cpuState;
-    private DebuggableMemory    memory;
+
+    // The first 3 are so frequently used that we skip the getter and give them package access
+    CPUState            cpuState;
+    DebuggableMemory    memory;
+    InterruptController interruptController = new DummyInterruptController();
     private ClockGenerator      clockGenerator;
-    private InterruptController interruptController = new DummyInterruptController();
     private ProgrammableTimer[] programmableTimers;
     private IoPort[]            ioPorts;
     private SerialInterface[]   serialInterfaces;
