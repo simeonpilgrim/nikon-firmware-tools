@@ -19,22 +19,25 @@ import java.util.List;
 /**
  * A platform represents a microcontroller hardware in a given state: CPU, memory, clock generator,
  * interrupt controller, timers, i/o ports, serial interfaces, etc.
+ * It aso points to the devices depending on this microcontroller, like attached serial devices
  */
 public class Platform {
 
-    private MasterClock masterClock;
-    CPUState         cpuState;
-    DebuggableMemory memory;
-    private ClockGenerator clockGenerator;
-    InterruptController interruptController = new DummyInterruptController();
+    private MasterClock         masterClock;
+    private CPUState            cpuState;
+    private DebuggableMemory    memory;
+    private ClockGenerator      clockGenerator;
+    private InterruptController interruptController = new DummyInterruptController();
     private ProgrammableTimer[] programmableTimers;
     private IoPort[]            ioPorts;
     private SerialInterface[]   serialInterfaces;
-    private List<SerialDevice>  serialDevices;
     private DmaController       dmaController;
     private AdConverter         adConverter;
     private RealtimeClock       realtimeClock;
     private KeyCircuit          keyCircuit;
+
+    private List<SerialDevice>  serialDevices;
+
 
     public Platform(MasterClock masterClock) {
         this.masterClock = masterClock;
@@ -100,14 +103,6 @@ public class Platform {
         this.serialInterfaces = serialInterfaces;
     }
 
-    public List<SerialDevice> getSerialDevices() {
-        return serialDevices;
-    }
-
-    public void setSerialDevices(List<SerialDevice> serialDevices) {
-        this.serialDevices = serialDevices;
-    }
-
     public DmaController getDmaController() {
         return dmaController;
     }
@@ -138,5 +133,13 @@ public class Platform {
 
     public void setKeyCircuit(KeyCircuit keyCircuit) {
         this.keyCircuit = keyCircuit;
+    }
+
+    public List<SerialDevice> getSerialDevices() {
+        return serialDevices;
+    }
+
+    public void setSerialDevices(List<SerialDevice> serialDevices) {
+        this.serialDevices = serialDevices;
     }
 }
