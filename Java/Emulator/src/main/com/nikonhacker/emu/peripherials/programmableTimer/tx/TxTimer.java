@@ -457,7 +457,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 }
                 // Clear if requested (CP1 only)
                 if (isTbmodTbcleSet()) {
-                    // “1”: Clears up-counter if there is a match with timer register 1 (TBnRG1).
+                    // "1": Clears up-counter if there is a match with timer register 1 (TBnRG1).
                     currentValue = 0;
                 }
                 // Load buffered value if double buffering
