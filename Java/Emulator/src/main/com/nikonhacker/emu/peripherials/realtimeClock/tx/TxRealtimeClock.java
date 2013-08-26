@@ -1,5 +1,7 @@
 package com.nikonhacker.emu.peripherials.realtimeClock.tx;
 
+import com.nikonhacker.Format;
+import com.nikonhacker.emu.MasterClock;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 
@@ -287,10 +289,10 @@ public class TxRealtimeClock extends RealtimeClock {
     /**
      * Updates all RTC registers based on the emulator elapsed time and delta
      */
-    public void updateRegisters() {
+    private void updateRegisters() {
         // calendar = elapsed + delta
         Calendar c = Calendar.getInstance();
-        c.setTimeInMillis(platform.getMasterClock().getTotalElapsedTimePs() * 1_000_000_000 + deltaMs);
+        c.setTimeInMillis(platform.getMasterClock().getTotalElapsedTimePs() / MasterClock.PS_PER_MS + deltaMs);
 
         // Convert calendar to registers
         setRegistersFromCalendar(c);
@@ -299,20 +301,20 @@ public class TxRealtimeClock extends RealtimeClock {
     /**
      * Updates delta based on the emulator elapsed time and RTC registers
      */
-    public void updateDelta() {
+    private void updateDelta() {
         // Convert registers to calendar
         Calendar c = getCalendarFromRegisters();
 
         // delta = calendar - elapsed
-        deltaMs = c.getTimeInMillis() - platform.getMasterClock().getTotalElapsedTimePs() * 1_000_000_000;
+        deltaMs = c.getTimeInMillis() - platform.getMasterClock().getTotalElapsedTimePs() / MasterClock.PS_PER_MS;
     }
 
     private void setRegistersFromCalendar(Calendar c) {
-        yearr[0] = (byte) num2bcd(c.get(Calendar.YEAR) % 100);
+        yearr[0] = (byte) Format.numberToBcd(c.get(Calendar.YEAR) % 100);
         yearr[1] = getLeapStatus(c.get(Calendar.YEAR));
-        monthr[0] = (byte) num2bcd(c.get(Calendar.MONTH) + 1);
-        dater[0] = (byte) num2bcd(c.get(Calendar.DAY_OF_MONTH));
-        dayr[0] = (byte) num2bcd(c.get(Calendar.DAY_OF_WEEK) - 1);
+        monthr[0] = (byte) Format.numberToBcd(c.get(Calendar.MONTH) + 1);
+        dater[0] = (byte) Format.numberToBcd(c.get(Calendar.DAY_OF_MONTH));
+        dayr[0] = (byte) Format.numberToBcd(c.get(Calendar.DAY_OF_WEEK) - 1);
 
         int hour = c.get(Calendar.HOUR_OF_DAY);
         // Handle AM/PM mode
@@ -321,9 +323,9 @@ public class TxRealtimeClock extends RealtimeClock {
             hour = (hour % 12) + (hour >= 12 ? 20 : 0);
         }
 
-        hourr[0] = (byte) num2bcd(hour);
-        minr[0] = (byte) num2bcd(c.get(Calendar.MINUTE));
-        secr[0] = (byte) num2bcd(c.get(Calendar.SECOND));
+        hourr[0] = (byte) Format.numberToBcd(hour);
+        minr[0] = (byte) Format.numberToBcd(c.get(Calendar.MINUTE));
+        secr[0] = (byte) Format.numberToBcd(c.get(Calendar.SECOND));
     }
 
     private byte getLeapStatus(int year) {
@@ -340,18 +342,18 @@ public class TxRealtimeClock extends RealtimeClock {
     private Calendar getCalendarFromRegisters() {
         Calendar c = Calendar.getInstance();
 
-        int hour = bcd2num(hourr[0]);
+        int hour = Format.bcd2Number(hourr[0]);
         // Handle AM/PM mode
         if (!isMonthr1Mo0Set()) {
             // convert am/pm back
             hour = (hour % 20) + (hour >= 20 ? 12 : 0);
         }
-        c.set(2000 + bcd2num(yearr[0]),
-                bcd2num(monthr[0]) - 1,
-                bcd2num(dater[0]),
+        c.set(2000 + Format.bcd2Number(yearr[0]),
+                Format.bcd2Number(monthr[0]) - 1,
+                Format.bcd2Number(dater[0]),
                 hour,
-                bcd2num(minr[0]),
-                bcd2num(secr[0])
+                Format.bcd2Number(minr[0]),
+                Format.bcd2Number(secr[0])
         );
         return c;
     }
@@ -459,28 +461,4 @@ public class TxRealtimeClock extends RealtimeClock {
 //            updateDelta();
 //        }
 //    }
-
-    // Utility methods for BCD conversions
-
-    /**
-     * Convert number 0..99 to BCD byte
-     */
-    private static int num2bcd(int num) {
-        if (num > 99 || num < 0)
-            throw new RuntimeException("Number is too big for BCD");
-        return ((num / 10) << 4) | (num % 10);
-    }
-
-    /**
-     * Convert BCD byte to number 0..99
-     */
-    private static int bcd2num(int bcd) {
-        int loNibble = bcd & 0xF;
-        int hiNibble = (bcd >> 4);
-
-        if (loNibble > 9 || hiNibble > 9)
-            throw new RuntimeException("BCD number is invalid");
-        return hiNibble * 10 + loNibble;
-    }
-
 }
