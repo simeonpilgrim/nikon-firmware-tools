@@ -315,4 +315,25 @@ public class Format {
             }
         };
     }
+
+    /**
+     * Convert number 0..99 to BCD byte
+     */
+    public static int numberToBcd(int number) {
+        if (number > 99 || number < 0)
+            throw new RuntimeException("Number is too big for BCD");
+        return ((number / 10) << 4) | (number % 10);
+    }
+
+    /**
+     * Convert BCD byte to number 0..99
+     */
+    public static int bcd2Number(int bcd) {
+        int loNibble = bcd & 0xF;
+        int hiNibble = (bcd >> 4);
+
+        if (loNibble > 9 || hiNibble > 9)
+            throw new RuntimeException("BCD number is invalid");
+        return hiNibble * 10 + loNibble;
+    }
 }
