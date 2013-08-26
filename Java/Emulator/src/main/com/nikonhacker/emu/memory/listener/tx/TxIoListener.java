@@ -1247,7 +1247,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_MONTHR:
                     realtimeClock.setMonthr(value); break;
                 case REGISTER_DATER:
-                    realtimeClock.setDayr(value); break;
+                    realtimeClock.setDater(value); break;
                 case REGISTER_DAYR:
                     realtimeClock.setDayr(value); break;
 
