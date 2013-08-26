@@ -23,7 +23,9 @@ public class TxRealtimeClockTest extends TestCase {
         testRtcWrap(platform, true, 13,  2, 28, 23, 59, 59);
         testRtcWrap(platform, true, 16,  2, 28, 23, 59, 59);
 
-        testRtcWrap(platform, false, 13,  8, 26, 11, 59, 59);
+        testRtcWrap(platform, false,13,  8, 26, 11, 59, 59);
+
+        testRtcWrap(platform, true,  0,  1,  1,  0,  0,  1);
     }
 
     private void testRtcWrap(Platform platform, boolean mode24h, int year, int month, int date, int hour, int min, int sec) {
