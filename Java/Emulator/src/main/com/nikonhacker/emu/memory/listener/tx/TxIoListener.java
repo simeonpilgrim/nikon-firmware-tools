@@ -427,21 +427,21 @@ public class TxIoListener extends IoActivityListener {
             // RTC registers
             TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
-                case REGISTER_SECR:
-                    return realtimeClock.getSecr();
-                case REGISTER_MINR:
-                    return realtimeClock.getMinr();
                 case REGISTER_HOURR + 1:
                     return realtimeClock.getHourr();
+                case REGISTER_MINR:
+                    return realtimeClock.getMinr();
+                case REGISTER_SECR:
+                    return realtimeClock.getSecr();
 
-                case REGISTER_DAYR:
-                    return realtimeClock.getDayr();
-                case REGISTER_DATER:
-                    return realtimeClock.getDater();
-                case REGISTER_MONTHR:
-                    return realtimeClock.getMonthr();
                 case REGISTER_YEARR:
                     return realtimeClock.getYearr();
+                case REGISTER_MONTHR:
+                    return realtimeClock.getMonthr();
+                case REGISTER_DATER:
+                    return realtimeClock.getDater();
+                case REGISTER_DAYR:
+                    return realtimeClock.getDayr();
 
                 case REGISTER_PAGER + 3:
                     return (byte)realtimeClock.getPager();
@@ -1235,21 +1235,21 @@ public class TxIoListener extends IoActivityListener {
             // RTC registers
             TxRealtimeClock realtimeClock = ((TxRealtimeClock)platform.getRealtimeClock());
             switch (addr) {
-                case REGISTER_SECR:
-                    realtimeClock.setSecr(value); break;
-                case REGISTER_MINR:
-                    realtimeClock.setMinr(value); break;
                 case REGISTER_HOURR + 1:
                     realtimeClock.setHourr(value); break;
+                case REGISTER_MINR:
+                    realtimeClock.setMinr(value); break;
+                case REGISTER_SECR:
+                    realtimeClock.setSecr(value); break;
 
-                case REGISTER_DAYR:
-                    realtimeClock.setDayr(value); break;
-                case REGISTER_DATER:
-                    realtimeClock.setDayr(value); break;
-                case REGISTER_MONTHR:
-                    realtimeClock.setMonthr(value); break;
                 case REGISTER_YEARR:
                     realtimeClock.setYearr(value); break;
+                case REGISTER_MONTHR:
+                    realtimeClock.setMonthr(value); break;
+                case REGISTER_DATER:
+                    realtimeClock.setDayr(value); break;
+                case REGISTER_DAYR:
+                    realtimeClock.setDayr(value); break;
 
                 case REGISTER_PAGER + 3:
                     realtimeClock.setPager(value); break;
