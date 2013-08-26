@@ -10,6 +10,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MasterClock implements Runnable {
 
+    public static final long PS_PER_MS = 1_000_000_000;
+    public static final long PS_PER_SEC = 1_000_000_000_000L;
+
     private DecimalFormat milliSecondFormatter = new DecimalFormat("0000.000000000");
 
     /**
@@ -133,7 +136,7 @@ public class MasterClock implements Runnable {
             }
         }
 
-        masterClockLoopDurationPs = 1000000000000L/leastCommonMultipleFrequency;
+        masterClockLoopDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
 /*
         System.err.println("MasterClock reconfigured with one tick=" + masterClockLoopDurationPs + "ps, with the following entries:");
         for (ClockableEntry entry : entries) {
@@ -318,8 +321,16 @@ public class MasterClock implements Runnable {
         return totalElapsedTimePs;
     }
 
+    /**
+     * This is for tests only
+     * @param totalElapsedTimePs
+     */
+    public void setTotalElapsedTimePsForDebug(long totalElapsedTimePs) {
+        this.totalElapsedTimePs = totalElapsedTimePs;
+    }
+
     public String getFormatedTotalElapsedTimeMs() {
-        return milliSecondFormatter.format(totalElapsedTimePs/1000000000.0) + "ms";
+        return milliSecondFormatter.format(totalElapsedTimePs/(double)PS_PER_MS) + "ms";
     }
 
 
