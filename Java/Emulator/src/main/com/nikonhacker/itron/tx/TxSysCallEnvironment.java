@@ -90,7 +90,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                             int TCB = codeStructure.tblTCB + (objId-1) * 0x10;
                             // if it is current TCB, context may be not set yet
                             if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = syscallPlatform.getCpuState().getPc();
+                                nextPC = originalCPUState.getPc();
                             } else {
                                 addrContext = memory.load32(TCB+0xC);
 
@@ -217,7 +217,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
             }
             else {
                 // Create alternate cpuState
-                TxCPUState tmpCpuState = ((TxCPUState)syscallPlatform.getCpuState()).createCopy();
+                TxCPUState tmpCpuState = ((TxCPUState)originalCPUState).createCopy();
 
                 // Tweak alt cpuState
                 tmpCpuState.clearStatusIE(); // prevent interrupts
