@@ -80,7 +80,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
                             // if it is current TCB, context may be not set yet
                             if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = syscallPlatform.getCpuState().getPc();
+                                nextPC = originalCPUState.getPc();
                             }
                             else {
                                 int context = memory.load32(TCB+0x18);
@@ -168,7 +168,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
     private ErrorCode runSysCall(int syscallNumber, int r4, int r5) {
         // Create alternate cpuState
-        FrCPUState tmpCpuState = ((FrCPUState)syscallPlatform.getCpuState()).createCopy();
+        FrCPUState tmpCpuState = ((FrCPUState)originalCPUState).createCopy();
 
         // Tweak alt cpuState
         tmpCpuState.I = 0; // prevent interrupts

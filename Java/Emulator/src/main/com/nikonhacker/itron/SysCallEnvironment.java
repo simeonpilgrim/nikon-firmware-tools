@@ -1,6 +1,6 @@
 package com.nikonhacker.itron;
 
-import com.nikonhacker.emu.MasterClock;
+import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.emu.Platform;
 
 /**
@@ -9,11 +9,12 @@ import com.nikonhacker.emu.Platform;
 public abstract class SysCallEnvironment {
 
     protected final Platform syscallPlatform;
+    protected final CPUState originalCPUState;
 
     public SysCallEnvironment(Platform platform) {
-        // Using a separate platform, but sharing memory and interruptcontroller
-        MasterClock syscallMasterClock = platform.getMasterClock();
-        syscallPlatform = new Platform(syscallMasterClock);
+        originalCPUState = platform.getCpuState();
+        // Using a separate platform, but sharing memory and interruptController
+        syscallPlatform = new Platform(null);
         syscallPlatform.setCpuState(platform.getCpuState());
         syscallPlatform.setMemory(platform.getMemory());
         syscallPlatform.setInterruptController(platform.getInterruptController());
