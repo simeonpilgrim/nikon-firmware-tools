@@ -7,7 +7,7 @@ import junit.framework.TestCase;
 
 public class TxRealtimeClockTest extends TestCase {
 
-    public void testRunning() throws Exception {
+    public void testRun() throws Exception {
         MasterClock masterClock = new MasterClock();
         Platform platform = new Platform(masterClock);
         TxRealtimeClock rtc = new TxRealtimeClock(platform);
@@ -21,7 +21,7 @@ public class TxRealtimeClockTest extends TestCase {
         }
     }
 
-    private void testWrap() {
+    public void testWrap() {
         MasterClock masterClock = new MasterClock();
         Platform platform = new Platform(masterClock);
         TxRealtimeClock rtc = new TxRealtimeClock(platform);
