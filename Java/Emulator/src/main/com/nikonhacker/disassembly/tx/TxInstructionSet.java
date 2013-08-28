@@ -2162,7 +2162,7 @@ public class TxInstructionSet
                     }
                     else {
                         // set bit
-                        context.memory.store8(address, context.memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
+                        context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
                     }
                     context.cpuState.pc += statement.getNumBytes();
                 }
@@ -2181,7 +2181,7 @@ public class TxInstructionSet
                     }
                     else {
                         // set bit
-                        context.memory.store8(address, context.memory.loadUnsigned8(address) | (~(1 << statement.sa_cc)));
+                        context.memory.store8(address, context.memory.loadUnsigned8(address) | (1 << statement.sa_cc));
                     }
                     context.cpuState.pc += statement.getNumBytes();
                 }
