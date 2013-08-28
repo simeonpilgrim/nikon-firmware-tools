@@ -182,14 +182,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
     Still free : Ctrl+J
     */
 
-    private static final int[] KEY_CHIP_MODIFIER = new int[]{ActionEvent.CTRL_MASK, ActionEvent.SHIFT_MASK | ActionEvent.CTRL_MASK};
-    private static final int   KEY_EVENT_RUN     = KeyEvent.VK_1;
-    private static final int   KEY_EVENT_DEBUG   = KeyEvent.VK_2;
-    private static final int   KEY_EVENT_PAUSE   = KeyEvent.VK_3;
-    private static final int   KEY_EVENT_STEP    = KeyEvent.VK_4;
-    private static final int   KEY_EVENT_RESET   = KeyEvent.VK_5;
+    private static final int   KEY_EVENT_RUN[]     = {KeyEvent.VK_F5, KeyEvent.VK_F9};
+    private static final int   KEY_EVENT_DEBUG[]   = {KeyEvent.VK_F6, KeyEvent.VK_F10};
+    private static final int   KEY_EVENT_PAUSE[]   = {KeyEvent.VK_F7, KeyEvent.VK_F11};
+    private static final int   KEY_EVENT_STEP[]    = {KeyEvent.VK_F8, KeyEvent.VK_F12};
 
-    private static final int   KEY_EVENT_STEP_ALT[] = {KeyEvent.VK_F11, KeyEvent.VK_F12};
+    private static final int[] KEY_CHIP_MODIFIER = new int[]{ActionEvent.CTRL_MASK, ActionEvent.SHIFT_MASK | ActionEvent.CTRL_MASK};
 
     private static final int   KEY_EVENT_LOAD                 = KeyEvent.VK_L; // Standard
     private static final int   KEY_EVENT_QUIT                 = KeyEvent.VK_Q; // Standard
@@ -485,8 +483,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
 
-        addExtraKeyBindings();
-
         setIconImages(Arrays.asList(
                 Toolkit.getDefaultToolkit().getImage(EmulatorUI.class.getResource("images/nh_16x16.png")),
                 Toolkit.getDefaultToolkit().getImage(EmulatorUI.class.getResource("images/nh_20x20.png")),
@@ -526,45 +522,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 updateStatusBar(Constants.CHIP_TX);
             }
         }).start();
-    }
-
-    /**
-     * Add shortcuts :
-     * - F11 > step 1st  CPU
-     * - F12 > step 2nd CPU
-     */
-    private void addExtraKeyBindings() {
-        KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-
-            private Runnable doStep0 = new Runnable() {
-                @Override
-                public void run() {
-                    startEmulator(0, RunMode.STEP, null);
-                }
-            };
-            private Runnable doStep1 = new Runnable() {
-                @Override
-                public void run() {
-                    startEmulator(1, RunMode.STEP, null);
-                }
-            };
-
-            @Override
-            public boolean dispatchKeyEvent(KeyEvent e) {
-                if (!e.isConsumed() && e.getID() == KeyEvent.KEY_PRESSED && e.getModifiers() == 0) {
-                    if (e.getKeyCode() == KEY_EVENT_STEP_ALT[0]) {
-                        SwingUtilities.invokeLater(doStep0);
-                        return true;
-                    }
-                    if (e.getKeyCode() == KEY_EVENT_STEP_ALT[1]) {
-                        SwingUtilities.invokeLater(doStep1);
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
     }
 
 
@@ -961,35 +918,34 @@ public class EmulatorUI extends JFrame implements ActionListener {
         for (int chip = 0; chip < 2; chip++) {
             //emulator play
             playMenuItem[chip] = new JMenuItem("Start (or resume) " + Constants.CHIP_LABEL[chip] + " emulator");
-            playMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_RUN, KEY_CHIP_MODIFIER[chip]));
+            playMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_RUN[chip], ActionEvent.ALT_MASK));
             playMenuItem[chip].setActionCommand(COMMAND_EMULATOR_PLAY[chip]);
             playMenuItem[chip].addActionListener(this);
             runMenu.add(playMenuItem[chip]);
 
             //emulator debug
             debugMenuItem[chip] = new JMenuItem("Debug " + Constants.CHIP_LABEL[chip] + " emulator");
-            debugMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_DEBUG, KEY_CHIP_MODIFIER[chip]));
+            debugMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_DEBUG[chip], ActionEvent.ALT_MASK));
             debugMenuItem[chip].setActionCommand(COMMAND_EMULATOR_DEBUG[chip]);
             debugMenuItem[chip].addActionListener(this);
             runMenu.add(debugMenuItem[chip]);
 
             //emulator pause
             pauseMenuItem[chip] = new JMenuItem("Pause " + Constants.CHIP_LABEL[chip] + " emulator");
-            pauseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_PAUSE, KEY_CHIP_MODIFIER[chip]));
+            pauseMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_PAUSE[chip], ActionEvent.ALT_MASK));
             pauseMenuItem[chip].setActionCommand(COMMAND_EMULATOR_PAUSE[chip]);
             pauseMenuItem[chip].addActionListener(this);
             runMenu.add(pauseMenuItem[chip]);
 
             //emulator step
             stepMenuItem[chip] = new JMenuItem("Step " + Constants.CHIP_LABEL[chip] + " emulator");
-            stepMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_STEP, KEY_CHIP_MODIFIER[chip]));
+            stepMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_STEP[chip], ActionEvent.ALT_MASK));
             stepMenuItem[chip].setActionCommand(COMMAND_EMULATOR_STEP[chip]);
             stepMenuItem[chip].addActionListener(this);
             runMenu.add(stepMenuItem[chip]);
 
             //emulator stop
             stopMenuItem[chip] = new JMenuItem("Stop and reset " + Constants.CHIP_LABEL[chip] + " emulator");
-            stopMenuItem[chip].setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_RESET, KEY_CHIP_MODIFIER[chip]));
             stopMenuItem[chip].setActionCommand(COMMAND_EMULATOR_STOP[chip]);
             stopMenuItem[chip].addActionListener(this);
             runMenu.add(stopMenuItem[chip]);
