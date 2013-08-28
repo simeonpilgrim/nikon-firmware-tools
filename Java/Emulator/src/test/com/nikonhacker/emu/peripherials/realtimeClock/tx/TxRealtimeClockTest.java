@@ -7,9 +7,22 @@ import junit.framework.TestCase;
 
 public class TxRealtimeClockTest extends TestCase {
 
-    public void testRealtimeClock() throws Exception {
+    public void testRunning() throws Exception {
         MasterClock masterClock = new MasterClock();
+        Platform platform = new Platform(masterClock);
+        TxRealtimeClock rtc = new TxRealtimeClock(platform);
+        platform.setRealtimeClock(rtc);
 
+        setRtc(rtc, true, 0, 1, 1, 0, 0, 1);
+        for (int i = 0; i < 50; i++) {
+            platform.getMasterClock().setTotalElapsedTimePsForDebug(i * 100 * MasterClock.PS_PER_MS);
+            System.out.print(masterClock.getFormatedTotalElapsedTimeMs() + " - ");
+            dumpRtc(rtc);
+        }
+    }
+
+    private void testWrap() {
+        MasterClock masterClock = new MasterClock();
         Platform platform = new Platform(masterClock);
         TxRealtimeClock rtc = new TxRealtimeClock(platform);
         platform.setRealtimeClock(rtc);
