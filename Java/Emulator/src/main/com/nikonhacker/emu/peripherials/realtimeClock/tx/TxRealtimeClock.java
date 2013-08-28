@@ -341,6 +341,7 @@ public class TxRealtimeClock extends RealtimeClock {
 
     private Calendar getCalendarFromRegisters() {
         Calendar c = Calendar.getInstance();
+        c.clear(Calendar.MILLISECOND);
 
         int hour = Format.bcd2Number(hourr[0]);
         // Handle AM/PM mode
