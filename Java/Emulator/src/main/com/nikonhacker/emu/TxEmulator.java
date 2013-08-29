@@ -134,7 +134,7 @@ public class TxEmulator extends Emulator {
                             }
                             // TODO : We probably should not remove the request from queue automatically.
                             // TODO   This has to be done explicitely by writing to INTCLR register
-                            platform.interruptController.removeRequest(interruptRequest);
+                            platform.interruptController.removeEdgeTriggeredRequest(interruptRequest);
                             // TODO : Currently, interrupts are not checked in delay slots (see above).
                             // TODO   Permit that and use address of branch instruction instead of PC if in delay slot !
                             // Note : must use getPc() so that current ISA mode is stored and restored when returning from interrupt
