@@ -23,7 +23,23 @@ public class FrInterruptController extends AbstractInterruptController {
 
     public static final int INTERRUPT_NUMBER_EXTERNAL_IR_OFFSET = 0x10;
 
-    public static final int EXT_INTERRUPT_REQUEST_NR = 0x16;
+    public static final int EXT_INTERRUPT0_REQUEST_NR = 0x10;
+    public static final int EXT_INTERRUPT1_REQUEST_NR = 0x11;
+    public static final int EXT_INTERRUPT2_REQUEST_NR = 0x12; // speculation
+    public static final int EXT_INTERRUPT3_REQUEST_NR = 0x13; // speculation
+    public static final int EXT_INTERRUPT4_REQUEST_NR = 0x14; // speculation
+    public static final int EXT_INTERRUPT5_REQUEST_NR = 0x15;
+    public static final int EXT_INTERRUPT6_REQUEST_NR = 0x16;
+    public static final int EXT_INTERRUPT7_REQUEST_NR = 0x17;
+
+    public static final int EXT_INTERRUPT8_REQUEST_NR = 0x1F; // speculation
+    public static final int EXT_INTERRUPT9_REQUEST_NR = 0x20; // speculation
+    public static final int EXT_INTERRUPT10_REQUEST_NR = 0x21;
+    public static final int EXT_INTERRUPT11_REQUEST_NR = 0x22;
+    public static final int EXT_INTERRUPT12_REQUEST_NR = -1;  // unknown
+    public static final int EXT_INTERRUPT13_REQUEST_NR = 0x23;
+    public static final int EXT_INTERRUPT14_REQUEST_NR = 0x24;
+    public static final int EXT_INTERRUPT15_REQUEST_NR = -1;  // unknown
 
     public static final int RELOAD_TIMER0_INTERRUPT_REQUEST_NR = 0x18;
     public static final int RELOAD_TIMER1_INTERRUPT_REQUEST_NR = 0x19;
@@ -31,20 +47,46 @@ public class FrInterruptController extends AbstractInterruptController {
 
     public static final int SERIAL_IF_RX_REQUEST_NR = 0x1B;
 
-    public static final int SERIAL_IF_TX_REQUEST_NR = 0x1C;
+    public static final int SERIAL_IF_SHARED_RX_REQUEST_NR = 0x1C;
+    public static final int SERIAL_IF_SHARED_TX_REQUEST_NR = 0x1D;
+    public static final int SERIAL_IF_SHARED_ST_REQUEST_NR = 0x1E;
+
+    public static final int RELOAD_TIMER_32_INTERRUPT_REQUEST_NR = 0x2E;
 
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
-    public static final int NUM_EXT_INTERRUPT        = 8;
+    public static final int NUM_EXT_INTERRUPT        = 16;
+    public static final int NUM_EXT_UNIT             = (NUM_EXT_INTERRUPT >> 3);
+    
 
     public final static Map<Integer, String> interruptDescriptions = new HashMap<>();
 
     // external interrupt registers
-    public int eirr = 0;
-    public int elvr = 0;
-    public int enir = 0;
+    public int[] eirr = new int[NUM_EXT_UNIT];
+    public int[] elvr = new int[NUM_EXT_UNIT];
+    public int[] enir = new int[NUM_EXT_UNIT];
 
-    public int externalChannelValue[] = new int[NUM_EXT_INTERRUPT];
+    public int[][] externalChannelValue = new int[NUM_EXT_UNIT][NUM_EXT_INTERRUPT];
 
+    public static final int[][] externalInts = {
+        {EXT_INTERRUPT0_REQUEST_NR, /* for external block at 0x40  */
+         EXT_INTERRUPT1_REQUEST_NR,
+         EXT_INTERRUPT2_REQUEST_NR,
+         EXT_INTERRUPT3_REQUEST_NR,
+         EXT_INTERRUPT4_REQUEST_NR,
+         EXT_INTERRUPT5_REQUEST_NR,
+         EXT_INTERRUPT6_REQUEST_NR,
+         EXT_INTERRUPT7_REQUEST_NR},
+         
+        {EXT_INTERRUPT8_REQUEST_NR, /* for external block at 0xF0  */
+         EXT_INTERRUPT9_REQUEST_NR,
+         EXT_INTERRUPT10_REQUEST_NR,
+         EXT_INTERRUPT11_REQUEST_NR,
+         EXT_INTERRUPT12_REQUEST_NR,
+         EXT_INTERRUPT13_REQUEST_NR,
+         EXT_INTERRUPT14_REQUEST_NR,
+         EXT_INTERRUPT15_REQUEST_NR}
+    };
+    
     static {
         interruptDescriptions.put(0x10, "EXTERNAL0");
 
@@ -142,8 +184,18 @@ public class FrInterruptController extends AbstractInterruptController {
     0x2ABA     written to ELVR0(0x00000042)               (@0x00101518) => 0b0010_1010_1011_1010: trigger on LRRRRFRR
                 read from ELVR0(0x00000042) : 0x2ABA      (@0x00101522) => 0b0010_1010_1011_1010: trigger on LRRRRFRR
     0xAABA     written to ELVR0(0x00000042)               (@0x00101532) => 0b1010_1010_1011_1010: trigger on RRRRRFRR
+    ...
+                read from 0x000000F2 : 0x02EC      (@0x001015FC)
+    0x0AEC     written to 0x000000F2               (@0x0010160C)
+    
     0x00       written to EIRR0(0x00000040)               (@0x001017CE) => 0b0000_0000          : clear all channels
+    0x00       written to 0x000000F0               (@0x001017D0)
     0x41       written to ENIR0(0x00000041)               (@0x001017D4) => 0b0100_0001          : ch 6 and 0 enabled
+    0x00       written to 0x000000F1               (@0x001017D8)
+    
+                read from 0x000000F1 : 0x00        (@0x001F2196)
+    0x20       written to 0x000000F1               (@0x001F2196)
+
                 read from ENIR0(0x00000041) : 0x41        (@0x001A88AE) => 0b0100_0001          : ch 6 and 0 enabled
     0x01       written to ENIR0(0x00000041)               (@0x001A88AE) => 0b0000_0001          : only ch 0 enabled
                 read from ELVR0(0x00000042) : 0xAABA      (@0x001A88C0) => 0b1010_1010_1011_1010: trigger on RRRRRFRR
@@ -152,106 +204,125 @@ public class FrInterruptController extends AbstractInterruptController {
     */
 
     /** change state of external interrupt input */
-    public boolean setExternalInterruptChannelValue(int channel, int value) {
-        if (channel < 0 || channel >= NUM_EXT_INTERRUPT)
-            return false;
-        if (value != externalChannelValue[channel]) {
+    public boolean setExternalInterruptChannelValue(int num, int value) {
+        if (num < 0 && num >= NUM_EXT_INTERRUPT)
+            throw new RuntimeException("Unknown external interrupt channel " + num);
+
+        int unit = num >> 3;
+        int channel = num & 7;
+
+        if (externalInts[unit][channel]==-1)
+            throw new RuntimeException("Unknown external interrupt number for channel " + num);
+        
+        if (value != externalChannelValue[unit][channel]) {
             int mask = (1 << channel);
 
-            // check if condition match
-            switch ( (elvr >>(channel<<1)) & 0b0000_0011 ) {
-                case 0b00: // "L"
-                case 0b11: // falling edge
-                    if (value!=0) {
-                        mask = 0;
-                    }
-                    break;
-                case 0b01: // "H"
-                case 0b10: // rising edge
-                    if (value==0) {
-                        mask = 0;
-                    }
-                    break;
-            }
             synchronized(this) {
-                eirr |= mask;
+                // check if condition match
+                switch ( (elvr[unit] >>(channel<<1)) & 0b0000_0011 ) {
+                    case 0b00: // "L"
+                    case 0b11: // falling edge
+                        if (value!=0) {
+                            mask = 0;
+                        }
+                        break;
+                    case 0b01: // "H"
+                    case 0b10: // rising edge
+                        if (value==0) {
+                            mask = 0;
+                        }
+                        break;
+                }
+                eirr[unit] |= mask;
                 // save latched value
-                externalChannelValue[channel] = value;
-                if ((eirr & enir) != 0) {
-                    request(EXT_INTERRUPT_REQUEST_NR);
+                externalChannelValue[unit][channel] = value;
+                if ((enir[unit] & mask) != 0) {
+                    request(externalInts[unit][channel]);
                 }
             }
         }
         return true;
     }
 
-    public int getElvr() {
-        return elvr;
+    public int getElvr(int unit) {
+        return elvr[unit];
     }
 
     /** set detection condition register */
-    public void setElvr(int value) {
-        elvr = value & 0xFFFF;
+    public void setElvr(int unit,int value) {
+        elvr[unit] = value & 0xFFFF;
     }
 
     /** set low byte of detection condition register */
-    public void setElvrLo(int value) {
-        elvr = (elvr & 0xFF00) | value;
+    public void setElvrLo(int unit,int value) {
+        elvr[unit] = (elvr[unit] & 0xFF00) | value;
     }
 
     /** set high byte of detection condition register */
-    public void setElvrHi(int value) {
-        elvr = (elvr & 0x00FF) | (value<<8);
+    public void setElvrHi(int unit,int value) {
+        elvr[unit] = (elvr[unit] & 0x00FF) | (value<<8);
     }
 
-    public int getEirr() {
-        return eirr;
+    public int getEirr(int unit) {
+        return eirr[unit];
     }
 
     /** set external interrupt state register */
-    public void setEirr(int value) {
-        int condition = elvr;
+    public void setEirr(int unit, int value) {
+        int condition = elvr[unit];
         int mask = 1;
 
         synchronized(this) {
             // clear all possible inputs in EIRR register
-            for (int i=0; i<NUM_EXT_INTERRUPT; i++) {
+            for (int i=0; i<8; i++) {
+                // see if some interrupt must be cleared
                 if ((value & mask) == 0) {
                     // see if condition still present
-                    if (externalChannelValue[i] == 0 && (condition & 0b11)==0) {
+                    if (externalChannelValue[unit][i] == 0 && (condition & 0b11)==0) {
                         // still low level and "L" set - keep interrupt
                         value |= mask;
-                    } else if (externalChannelValue[i]!=0 && (condition & 0b11)==1) {
+                    } else if (externalChannelValue[unit][i]!=0 && (condition & 0b11)==1) {
                         // still high level and "H" set - keep interrupt
                         value |= mask;
+                    } else if ((enir[unit] & mask)!=0) {
+                        // remove request only it was enabled
+                        removeRequest(externalInts[unit][i]);
                     }
                 }
                 mask <<= 1;
                 condition >>= 2;
             }
-            eirr &= value;
-            if ((eirr & enir) == 0)
-                removeRequest(EXT_INTERRUPT_REQUEST_NR);
+            eirr[unit] &= value;
         }
     }
 
-    public int getEnir() {
-        return enir;
+    public int getEnir(int unit) {
+        return enir[unit];
     }
 
     /** set external interrupt enable register */
-    public void setEnir(int value) {
-        if (value != enir) {
+    public void setEnir(int unit, int value) {
+        if (value != enir[unit]) {
             synchronized (this) {
-                enir = value;
                 // from datasheet:
                 // Written value 0: The states of interrupt sources are maintained, but external interrupt requests are not output.
-                if ((eirr & enir)==0) {
-                    removeRequest(EXT_INTERRUPT_REQUEST_NR);
+                for (int i=0, mask = 1; i<8; i++, mask <<= 1) {
+                    if ((value & mask) != 0) {
+                        // if will be enabled
+                        if ((enir[unit] & mask) == 0) {
+                            if (externalInts[unit][i]==-1)
+                                throw new RuntimeException("Unknown external interrupt number for channel " + (i+unit*8));
+                            if ((eirr [unit] & mask)!=0)
+                                request(externalInts[unit][i]);
+                        }
+                    } else if ((enir[unit] & mask) != 0) {
+                        // was enabled, will be disabled
+                        if (externalInts[unit][i]==-1)
+                            throw new RuntimeException("Unknown external interrupt number for channel " + (i+unit*8));
+                        removeRequest(externalInts[unit][i]);
+                    }
                 }
-                else {
-                    request(EXT_INTERRUPT_REQUEST_NR);
-                }
+                enir[unit] = value;
             }
         }
     }
