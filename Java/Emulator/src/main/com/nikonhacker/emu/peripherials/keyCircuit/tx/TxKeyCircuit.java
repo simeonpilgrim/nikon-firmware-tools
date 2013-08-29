@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.keyCircuit.tx;
 
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 
 public class TxKeyCircuit implements KeyCircuit {
@@ -8,10 +9,14 @@ public class TxKeyCircuit implements KeyCircuit {
     public TxKey keys[] = new TxKey[32];
     private int kwupcnt;
     private int kwupclr;
+    
+    private InterruptController interruptController;
+    private int requestedInts;
 
     public TxKeyCircuit(InterruptController interruptController) {
-        for (int i=0; i<32; i++) {
-            keys[i] = new TxKey(interruptController);
+        this.interruptController = interruptController;
+        for (int i = 0; i < 32; i++) {
+            keys[i] = new TxKey(i, this);
         }
     }
 
@@ -78,8 +83,24 @@ public class TxKeyCircuit implements KeyCircuit {
     */
     public void setKWUPCLR(int value) {
         if (value == 0b1010) {
+            // reading KWPUINT clears also interrupt request if possible
             getKWUPINT();
-            // TODO clear interrupt request on interrupt controller
+        }
+    }
+    
+    public boolean requestInterrupt (int keyNum) {
+        synchronized (this) {
+            requestedInts |= (1<<keyNum);
+            return interruptController.request(TxInterruptController.KWUP);
+        }
+    }
+
+    public void removeInterrupt (int keyNum) {
+        synchronized (this) {
+            requestedInts &= (~(1<<keyNum));
+            if (requestedInts == 0) {
+                interruptController.removeRequest(TxInterruptController.KWUP);
+            }
         }
     }
 }
