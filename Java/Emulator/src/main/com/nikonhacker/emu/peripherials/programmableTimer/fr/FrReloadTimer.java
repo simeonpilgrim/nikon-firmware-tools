@@ -99,7 +99,7 @@ public class FrReloadTimer extends ProgrammableTimer {
         // Clear underflow status if requested (UF written as 0)
         if (!isTmcsrUfSet()) {
             isInUnderflowCondition = false;
-            platform.getInterruptController().removeRequest(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+            removeInterrupt();
         }
 
         // Reload value if requested
@@ -179,18 +179,20 @@ public class FrReloadTimer extends ProgrammableTimer {
     @Override
     public Object onClockTick() throws Exception {
         if (active) {
-            currentValue--;
-            if (currentValue < 0) {
+            if (currentValue==0) {
                 isInUnderflowCondition = true;
                 if (isTmcsrInteSet()) {
-                    platform.getInterruptController().request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+                    requestInterrupt();
                 }
                 if (isTmcsrReldSet()) {
-                    currentValue += tmrlra;
+                    // reload timer counts always (tmrlra+1) pulses according to datasheet
+                    currentValue = tmrlra;
                 } else {
                     enabled = false;
                     return "DONE";
                 }
+            } else {
+                currentValue--;
             }
         }
         return null;
@@ -209,6 +211,13 @@ public class FrReloadTimer extends ProgrammableTimer {
         return Constants.CHIP_LABEL[Constants.CHIP_FR] + " Reload timer #" + timerNumber;
     }
 
+    protected boolean requestInterrupt() {
+        return platform.getInterruptController().request(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+    }
+
+    protected void removeInterrupt() {
+        platform.getInterruptController().removeRequest(FrInterruptController.RELOAD_TIMER0_INTERRUPT_REQUEST_NR + timerNumber);
+    }
 //        if (enabled) {
 //            // It is a reconfiguration
 //            unregister();
