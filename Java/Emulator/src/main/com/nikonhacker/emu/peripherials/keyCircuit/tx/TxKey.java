@@ -1,16 +1,18 @@
 package com.nikonhacker.emu.peripherials.keyCircuit.tx;
 
-import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.keyCircuit.Key;
 
 public class TxKey implements Key {
+    private int keyNum;
+    
     private int kwupst = 0x20;
     private int state;
     private int latch;
-    private InterruptController interruptController;
+    private TxKeyCircuit  keyCircuit;
 
-    public TxKey(InterruptController interruptController) {
-        this.interruptController = interruptController;
+    public TxKey(int keyNum, TxKeyCircuit keyCircuit) {
+        this.keyNum = keyNum;
+        this.keyCircuit = keyCircuit;
     }
 
     /**
@@ -30,6 +32,13 @@ public class TxKey implements Key {
                 break;
             case 0x40: // both edges
                 latch = 1;
+        }
+        // notify always
+        if ((kwupst & 1) != 0) {
+            if (latch != 0)
+                keyCircuit.requestInterrupt(keyNum);
+            else
+                keyCircuit.removeInterrupt(keyNum);
         }
     }
 
@@ -70,6 +79,11 @@ public class TxKey implements Key {
                 default:
                     latch = 0;
             }
+            if ((kwupst & 1) != 0) {
+                // clear interrupt
+                if (oldLatch != latch)
+                    keyCircuit.removeInterrupt(keyNum);
+            }
             return oldLatch;
         }
     }
@@ -85,11 +99,11 @@ public class TxKey implements Key {
      * Set interrupt event type and update interrupt latch
      */
     public void setKWUPST(int value) {
-        if ((value&1)!=0) {
-            // TODO
-            throw new RuntimeException("KEY interrupt is not implemented");
+        if ((value & 1) == 0) {
+            // remove to be sure
+            keyCircuit.removeInterrupt(keyNum);
         }
-        if ((value&0x70)>0x40) {
+        if ((value & 0x70) > 0x40) {
             throw new RuntimeException("KEY invalid active state");
         }
         synchronized (this) {
