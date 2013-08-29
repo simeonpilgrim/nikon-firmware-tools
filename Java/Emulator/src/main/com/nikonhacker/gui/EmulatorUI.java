@@ -19,6 +19,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed6B00IoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
@@ -32,7 +33,9 @@ import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.fr.FrSharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
@@ -42,8 +45,8 @@ import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
-import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
@@ -219,12 +222,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String[] CPUSTATE_ENTRY_NAME = {"FrCPUState", "TxCPUState"};
     private static final String[] MEMORY_ENTRY_NAME   = {"FrMemory", "TxMemory"};
 
-    private static final String STATUS_DEFAULT_TEXT = "Ready";
+    private static final String STATUS_DEFAULT_TEXT   = "Ready";
 
-    public static final  Color STATUS_BGCOLOR_DEFAULT         = Color.LIGHT_GRAY;
-    public static final  Color STATUS_BGCOLOR_RUN             = Color.GREEN;
-    public static final  Color STATUS_BGCOLOR_DEBUG           = Color.ORANGE;
-    public static final  Color STATUS_BGCOLOR_BREAK           = new Color(255, 127, 127);
+    public static final Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
+    public static final Color STATUS_BGCOLOR_RUN     = Color.GREEN;
+    public static final Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
+    public static final Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
 
     /** Type of run */
     public static enum RunMode {
@@ -1127,7 +1130,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         //Set up the tools menu.
         JMenu toolsMenu = new JMenu("Tools");
-        toolsMenu.setMnemonic(KEY_EVENT_CPUSTATE);
+        toolsMenu.setMnemonic(KeyEvent.VK_T);
         menuBar.add(toolsMenu);
 
         for (int chip = 0; chip < 2; chip++) {
@@ -2141,6 +2144,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             DmaController dmaController = null;
             RealtimeClock realtimeClock = null;
             KeyCircuit keyCircuit = null;
+            SharedInterruptCircuit sharedInterruptCircuit = null;
             AdConverter adConverter = null;
 
             if (chip == Constants.CHIP_FR) {
@@ -2150,10 +2154,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 // so that timers can hook to the cpu passed via the platform (at least on TX)...
                 platform[chip].setCpuState(cpuState);
 
-                programmableTimers = new ProgrammableTimer[ExpeedIoListener.NUM_TIMER + ExpeedIoListener.NUM_FREERUN_TIMER];
+                programmableTimers = new ProgrammableTimer[ExpeedIoListener.NUM_TIMER + ExpeedIoListener.NUM_TIMER32];
                 serialInterfaces = new SerialInterface[ExpeedIoListener.NUM_SERIAL_IF];
                 clockGenerator = new FrClockGenerator();
                 interruptController = new FrInterruptController(platform[chip]);
+                sharedInterruptCircuit = new FrSharedInterruptCircuit(interruptController);
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
@@ -2161,13 +2166,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // 6B0000XX interrupt sharing macro in ASIC
+                memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
                     programmableTimers[i] = new FrReloadTimer(i, platform[chip]);
                 }
-                for (int i = 0; i < ExpeedIoListener.NUM_FREERUN_TIMER; i++) {
-                    programmableTimers[ExpeedIoListener.NUM_TIMER + i] = new FrFreeRunTimer(i, platform[chip]);
+                for (int i = 0; i < ExpeedIoListener.NUM_TIMER32; i++) {
+                    programmableTimers[ExpeedIoListener.NUM_TIMER + i] = new FrReloadTimer32(i, platform[chip]);
                 }
 
                 // I/O ports
@@ -2300,6 +2307,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             platform[chip].setKeyCircuit(keyCircuit);
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
+            platform[chip].setSharedInterruptCircuit(sharedInterruptCircuit);
 
             clockGenerator.setPlatform(platform[chip]);
 

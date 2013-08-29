@@ -6,8 +6,8 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
-import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrFreeRunTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
+import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 
 public class ExpeedIoListener extends IoActivityListener {
@@ -17,6 +17,9 @@ public class ExpeedIoListener extends IoActivityListener {
     private static final int REGISTER_ENIR0 = 0x41;
     private static final int REGISTER_ELVR0 = 0x42;
 
+    private static final int REGISTER_EIRR1 = 0xF0;
+    private static final int REGISTER_ENIR1 = 0xF1;
+    private static final int REGISTER_ELVR1 = 0xF2;
     // Delay interrupt
     private static final int REGISTER_DICR  = 0x44;
 
@@ -34,15 +37,12 @@ public class ExpeedIoListener extends IoActivityListener {
     private static final int REGISTER_TMR2    = REGISTER_TMR0 + 0x10;
     private static final int REGISTER_TMCSR2  = REGISTER_TMCSR0 + 0x10;
 
-    // 32-bit FreeRun Timer
-    public static final  int NUM_FREERUN_TIMER= 2;
-    private static final int REGISTER_CPCLR0  = 0x100;
-    private static final int REGISTER_TCDT0   = REGISTER_CPCLR0 + 0x8;
-    private static final int REGISTER_TCCS0   = REGISTER_CPCLR0 + 0xE;
-
-    private static final int REGISTER_CPCLR1  = REGISTER_CPCLR0 + 0x30;
-    private static final int REGISTER_TCDT1   = REGISTER_CPCLR1 + 0x8;
-    private static final int REGISTER_TCCS1   = REGISTER_CPCLR1 + 0xE;
+    // 32-bit Timer
+    public static final  int NUM_TIMER32 = 12;
+    private static final int TIMER32_OFFSET = 0x10;
+    private static final int REGISTER_TMRLRA0_32 = 0x100;
+    private static final int REGISTER_TMR0_32    = REGISTER_TMRLRA0_32 + 8;
+    private static final int REGISTER_TMCSR0_32  = REGISTER_TMRLRA0_32 + 0xE;
 
     private static final int REGISTER_DIVR0 = 0x488;
     private static final int REGISTER_DIVR1 = 0x489;
@@ -131,21 +131,28 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (byte)serialInterface.getFbyte1();
             }
         }
-        else if ((addr >= REGISTER_CPCLR0 && addr < (REGISTER_TCCS0 + 2)) || (addr >= REGISTER_CPCLR1 && addr < (REGISTER_TCCS1 + 2))) {
-            // FreeRun timer
-            stop("The FreeRun timer registers cannot be accessed by 8-bit for now");
+        else if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32+NUM_TIMER32*TIMER32_OFFSET)) {
+            // 32-bit timer
+            stop("32-bit timer registers cannot be accessed by 8-bit for now");
         }
-        else if ((addr >= REGISTER_EIRR0) && (addr < (REGISTER_ELVR0 + 2))) {
+        else if ( ((addr >= REGISTER_EIRR0) && (addr < (REGISTER_ELVR0 + 2))) ||
+                  ((addr >= REGISTER_EIRR1) && (addr < (REGISTER_ELVR1 + 2)))) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            int unit = 0;
+            
+            if (addr>=REGISTER_EIRR1) {
+                unit = 1;
+                addr -= (REGISTER_EIRR1-REGISTER_EIRR0);
+            }
             switch (addr) {
                 case REGISTER_EIRR0:
-                    return (byte)interruptController.getEirr();
+                    return (byte)interruptController.getEirr(unit);
                 case REGISTER_ENIR0:
-                    return (byte)interruptController.getEnir();
+                    return (byte)interruptController.getEnir(unit);
                 case REGISTER_ELVR0:
-                    return (byte)(interruptController.getElvr() >> 8);
+                    return (byte)(interruptController.getElvr(unit) >> 8);
                 case REGISTER_ELVR0+1:
-                    return (byte)(interruptController.getElvr() & 0xFF);
+                    return (byte)(interruptController.getElvr(unit) & 0xFF);
             }
         }
         else {
@@ -195,7 +202,7 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (serialInterface.getSsr() << 8) | serialInterface.getEscrIbsr();
                 case REGISTER_RDR_TDR0:
                     return serialInterface.getRdr();
-                case REGISTER_BGR00:
+                case REGISTER_BGR10:
                     return (serialInterface.getBgr1() << 8) | serialInterface.getBgr0();
                 case REGISTER_ISMK0:
                     return (serialInterface.getIsmk() << 8) | serialInterface.getIsba();
@@ -205,39 +212,44 @@ public class ExpeedIoListener extends IoActivityListener {
                     return (serialInterface.getFbyte2() << 8) | serialInterface.getFbyte1();
             }
         }
-        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
-            // FreeRun timer
+        else if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32 + NUM_TIMER32 * TIMER32_OFFSET)) {
+            // 32-bit timer
             int channel;
 
-            if (addr >= REGISTER_CPCLR1) {
-                channel = NUM_TIMER + 1;
-                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
-            }
-            else {
-                channel = NUM_TIMER;
-            }
+            channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
+            addr -= (channel * TIMER32_OFFSET);
+            
+            // correction because 32-bit timers are at the end of 16-bit timers
+            channel += NUM_TIMER;
             switch (addr) {
-                case REGISTER_CPCLR0:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr() >> 16);
-                case REGISTER_CPCLR0+2:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr() & 0xFFFF);
-                case REGISTER_TCDT0:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt() >> 16);
-                case REGISTER_TCDT0+2:
-                    return (((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt() & 0xFFFF);
-                case REGISTER_TCCS0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTccs();
+                case REGISTER_TMRLRA0_32:
+                    return (((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmrlra() >> 16);
+                case REGISTER_TMRLRA0_32 + 2:
+                    return (((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmrlra() & 0xFFFF);
+                case REGISTER_TMR0_32:
+                    return (((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmr() >> 16);
+                case REGISTER_TMR0_32 + 2:
+                    return (((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmr() & 0xFFFF);
+                case REGISTER_TMCSR0_32:
+                    return ((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmcsr();
                 default:
-                    stop("Warning: ignoring attempt to read 16-bit register in FreeRun Timer");
+                    stop("Warning: ignoring attempt to read 16-bit register in 32-bit Timer");
             }
         }
-        else if (addr>=REGISTER_EIRR0 && addr<(REGISTER_ELVR0 + 2)) {
+        else if ( (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) ||
+                  (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            int unit = 0;
+            
+            if (addr >= REGISTER_EIRR1) {
+                unit = 1;
+                addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
+            }
             switch (addr) {
                 case REGISTER_EIRR0:
-                    return ((interruptController.getEirr() << 8) | interruptController.getEnir());
+                    return ((interruptController.getEirr(unit) << 8) | interruptController.getEnir(unit));
                 case REGISTER_ELVR0:
-                    return interruptController.getElvr();
+                    return interruptController.getElvr(unit);
             }
         }
         else {
@@ -287,29 +299,28 @@ public class ExpeedIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onLoadData32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
-            // FreeRun timer
+        if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32 + NUM_TIMER32 * TIMER32_OFFSET)) {
+            // 32-bit timer
             int channel;
 
-            if (addr >= REGISTER_CPCLR1) {
-                channel = NUM_TIMER + 1;
-                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
-            }
-            else {
-                channel = NUM_TIMER;
-            }
+            channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
+            addr -= (channel * TIMER32_OFFSET);
+            
+            // correction because 32-bit timers are at the end of 16-bit timers
+            channel += NUM_TIMER;
             switch (addr) {
-                case REGISTER_CPCLR0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getCpclr();
-                case REGISTER_TCDT0:
-                    return ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).getTcdt();
+                case REGISTER_TMRLRA0_32:
+                    return ((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmrlra();
+                case REGISTER_TMR0_32:
+                    return ((FrReloadTimer32)platform.getProgrammableTimers()[channel]).getTmr();
                 default:
-                    stop("Warning: ignoring attempt to write 32-bit register in FreeRun Timer");
+                    stop("Warning: ignoring attempt to write 32-bit register in 32-bit Timer");
             }
         }
-        else if (addr == REGISTER_EIRR0) {
+        else if (addr == REGISTER_EIRR0 || addr == REGISTER_EIRR1) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
-            return ((interruptController.getEirr() << 24) | (interruptController.getEnir() << 16) | interruptController.getElvr());
+            int unit = (addr==REGISTER_EIRR1 ? 1 : 0);
+            return ((interruptController.getEirr(unit) << 24) | (interruptController.getEnir(unit) << 16) | interruptController.getElvr(unit));
         }
         else {
             switch (addr) {
@@ -375,21 +386,28 @@ public class ExpeedIoListener extends IoActivityListener {
                     break;
             }
         }
-        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
-            // FreeRun timer
-            stop("The FreeRun timer registers cannot be accessed by 8-bit for now");
+        else if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32 + NUM_TIMER32 * TIMER32_OFFSET)) {
+            // 32-bit timer
+            stop("32-bit timer registers cannot be accessed by 8-bit for now");
         }
-        else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
+        else if ( (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) ||
+                  (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            int unit = 0;
+            
+            if (addr >= REGISTER_EIRR1) {
+                unit = 1;
+                addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
+            }
             switch (addr) {
                 case REGISTER_EIRR0:
-                    interruptController.setEirr(value); break;
+                    interruptController.setEirr(unit, value); break;
                 case REGISTER_ENIR0:
-                    interruptController.setEnir(value); break;
+                    interruptController.setEnir(unit, value); break;
                 case REGISTER_ELVR0:
-                    interruptController.setElvrHi(value); break;
+                    interruptController.setElvrHi(unit, value); break;
                 case REGISTER_ELVR0+1:
-                    interruptController.setElvrLo(value); break;
+                    interruptController.setElvrLo(unit, value); break;
             }
         }
         else {
@@ -456,33 +474,38 @@ public class ExpeedIoListener extends IoActivityListener {
                     break;
             }
         }
-        else if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
-            // FreeRun timer
+        else if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32 + NUM_TIMER32 * TIMER32_OFFSET)) {
+            // 32-bit timer
             int channel;
 
-            if (addr >= REGISTER_CPCLR1) {
-                channel = NUM_TIMER + 1;
-                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
-            }
-            else {
-                channel = NUM_TIMER;
-            }
+            channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
+            addr -= (channel * TIMER32_OFFSET);
+            
+            // correction because 32-bit timers are at the end of 16-bit timers
+            channel += NUM_TIMER;
             switch (addr) {
-                case REGISTER_TCCS0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTccs(value); break;
+                case REGISTER_TMCSR0_32:
+                    ((FrReloadTimer32)platform.getProgrammableTimers()[channel]).setTmcsr(value & 0xFFFF); break;
                 default:
-                    stop("Warning: ignoring attempt to write 16-bit register in FreeRun Timer");
+                    stop("Warning: ignoring attempt to write 16-bit register in 32-bit Timer");
             }
         }
-        else if (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) {
+        else if ( (addr >= REGISTER_EIRR0 && addr < (REGISTER_ELVR0 + 2)) ||
+                  (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
+            int unit = 0;
+            
+            if (addr >= REGISTER_EIRR1) {
+                unit = 1;
+                addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
+            }
             switch (addr) {
                 case REGISTER_EIRR0:
-                    interruptController.setEirr(value >> 8);
-                    interruptController.setEnir(value & 0xFF);
+                    interruptController.setEirr(unit, value >> 8);
+                    interruptController.setEnir(unit, value & 0xFF);
                     break;
                 case REGISTER_ELVR0:
-                    interruptController.setElvr(value);
+                    interruptController.setElvr(unit, value);
                     break;
             }
         }
@@ -529,32 +552,31 @@ public class ExpeedIoListener extends IoActivityListener {
     }
 
     public void onStore32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if ((addr >= REGISTER_CPCLR0 && addr < REGISTER_TCCS0+2) || (addr >= REGISTER_CPCLR1 && addr < REGISTER_TCCS1+2)) {
-            // FreeRun timer
+        if (addr >= REGISTER_TMRLRA0_32 && addr < (REGISTER_TMRLRA0_32 + NUM_TIMER32 * TIMER32_OFFSET)) {
+            // 32-bit timer
             int channel;
 
-            if (addr >= REGISTER_CPCLR1) {
-                channel = NUM_TIMER + 1;
-                addr -= (REGISTER_CPCLR1-REGISTER_CPCLR0);
-            }
-            else {
-                channel = NUM_TIMER;
-            }
+            channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
+            addr -= (channel * TIMER32_OFFSET);
+            
+            // correction because 32-bit timers are at the end of 16-bit timers
+            channel += NUM_TIMER;
             switch (addr) {
-                case REGISTER_CPCLR0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setCpclr(value); break;
-                case REGISTER_TCDT0:
-                    ((FrFreeRunTimer)platform.getProgrammableTimers()[channel]).setTcdt(value); break;
+                case REGISTER_TMRLRA0_32:
+                    ((FrReloadTimer32)platform.getProgrammableTimers()[channel]).setTmrlra(value); break;
                 default:
-                    stop("Warning: ignoring attempt to write 32-bit register in FreeRun Timer");
+                    stop("Warning: ignoring attempt to write 32-bit register in 32-bit Timer");
             }
         }
         else switch(addr) {
             case REGISTER_EIRR0:
+            case REGISTER_EIRR1:
+                int unit = (addr == REGISTER_EIRR1 ? 1 : 0);
+
                 FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
-                interruptController.setEirr((value >> 24) & 0xFF);
-                interruptController.setEnir((value >> 16) & 0xFF);
-                interruptController.setElvr(value & 0xFFFF);
+                interruptController.setEirr(unit, (value >> 24) & 0xFF);
+                interruptController.setElvr(unit, value & 0xFFFF);
+                interruptController.setEnir(unit, (value >> 16) & 0xFF);
                 break;
 
             case REGISTER_DIVR0:
