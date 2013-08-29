@@ -82,16 +82,49 @@ public class FrSerialInterface extends SerialInterface {
 
     private int fifoIdleCounter = 0; // TODO implement counter increment and detection
 
-    private int rxInterruptNumber, txInterruptNumber;
+    private int rxInterruptNumber, txInterruptNumber, stInterruptNumber;
+    private int rxInterruptSource, txInterruptSource, stInterruptSource;
 
 
     public FrSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
         super(serialInterfaceNumber, platform, logSerialMessages);
-        // This is pure speculation but seems to work for interrupt 5 at least
-        rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
-        txInterruptNumber = FrInterruptController.SERIAL_IF_TX_REQUEST_NR /*+ this.serialInterfaceNumber * 3*/;
+        if (serialInterfaceNumber==5) {
+            rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR;
+            rxInterruptSource = -1;
+
+            txInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_TX_REQUEST_NR;
+            stInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_ST_REQUEST_NR;
+            txInterruptSource = stInterruptSource = 28; /* 0xB0 */
+        } else {
+            rxInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_RX_REQUEST_NR;
+            txInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_TX_REQUEST_NR;
+            stInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_ST_REQUEST_NR;
+            switch (serialInterfaceNumber) {
+                case 0: txInterruptSource = stInterruptSource = rxInterruptSource = 19; break; /* 0x60 */
+                case 1: txInterruptSource = stInterruptSource = rxInterruptSource = 21; break; /* 0x70 */
+                case 2: txInterruptSource = stInterruptSource = rxInterruptSource = 23; break; /* 0x80 speculations */
+                case 3: txInterruptSource = stInterruptSource = rxInterruptSource = 25; break; /* 0x90 speculations */
+                case 4: txInterruptSource = stInterruptSource = rxInterruptSource = 27; break; /* 0xA0 speculations */
+                case 6: txInterruptSource = stInterruptSource = rxInterruptSource = 30; break; /* 0xC0 speculations */
+            }
+        }
     }
 
+    protected boolean requestInterrupt(int intNum, int sourceNum) {
+        if (sourceNum==-1) {
+            // not shared
+            return platform.getInterruptController().request(intNum);
+        }
+        return platform.getSharedInterruptCircuit().request(intNum, sourceNum);
+    }
+
+    protected void removeInterrupt(int intNum, int sourceNum) {
+        if (sourceNum==-1) {
+            // not shared
+            platform.getInterruptController().removeRequest(intNum);
+        } else 
+            platform.getSharedInterruptCircuit().removeRequest(intNum, sourceNum);
+    }
 
     public int getScrIbcr() {
         return scrIbcr;
@@ -108,11 +141,11 @@ public class FrSerialInterface extends SerialInterface {
         synchronized (this) {
             // if TX interrupt (TIE or TBIE) becomes disabled, remove the current request, if any
             if (isTieOrTbieSetInScr(this.scrIbcr) && !isTieOrTbieSetInScr(scrIbcr)) {
-                platform.getInterruptController().removeRequest(txInterruptNumber);
+                removeInterrupt(txInterruptNumber,txInterruptSource);
             }
             // if RX interrupt (RIE) becomes disabled, remove the current request, if any
             if (isRieSetInScr(this.scrIbcr) && !isRieSetInScr(scrIbcr)) {
-                platform.getInterruptController().removeRequest(rxInterruptNumber);
+                removeInterrupt(rxInterruptNumber,rxInterruptSource);
             }
             this.scrIbcr = scrIbcr & 0b0111_1111;
         }
@@ -294,7 +327,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // If there is still an Tx interrupt being requested, remove it
         if (isTieOrTbieSetInScr(scrIbcr)) {
-            platform.getInterruptController().removeRequest(txInterruptNumber);
+            removeInterrupt(txInterruptNumber,txInterruptSource);
         }
 
         Queue<Integer> txFifo = isTxFifo1()?fifo1:fifo2;
@@ -372,7 +405,7 @@ public class FrSerialInterface extends SerialInterface {
 
             // Request TX interrupt if enabled for non-fifo (TIE)
             if (isScrTieSet()) {
-                platform.getInterruptController().request(txInterruptNumber);
+                requestInterrupt(txInterruptNumber,txInterruptSource);
             }
 
             signalBusIdle();
@@ -392,7 +425,7 @@ public class FrSerialInterface extends SerialInterface {
 
                 // Request TX interrupt if enabled for Fifo (FTIE)
                 if (isFcr1FtieSet()) {
-                    platform.getInterruptController().request(txInterruptNumber);
+                    requestInterrupt(txInterruptNumber,txInterruptSource);
                 }
 
                 signalBusIdle();
@@ -408,7 +441,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // Request Bus idle TX interrupt if enabled
         if (isScrTbieSet()) {
-            platform.getInterruptController().request(txInterruptNumber);
+            requestInterrupt(txInterruptNumber,txInterruptSource);
         }
     }
 
@@ -447,7 +480,7 @@ public class FrSerialInterface extends SerialInterface {
 
                         // Request RX interrupt, if enabled
                         if (isScrRieSet()) {
-                            platform.getInterruptController().request(rxInterruptNumber);
+                            requestInterrupt(rxInterruptNumber,rxInterruptSource);
                         }
                     }
                     else {
@@ -477,7 +510,7 @@ public class FrSerialInterface extends SerialInterface {
 
                         // "A reception interrupt request is output when the ORE and RIE bits are set to "1".
                         if (isScrRieSet()) {
-                            platform.getInterruptController().request(rxInterruptNumber);
+                            requestInterrupt(rxInterruptNumber,rxInterruptSource);
                         }
                     }
                     else  {
@@ -510,7 +543,7 @@ public class FrSerialInterface extends SerialInterface {
 
         // Request RX interrupt, if enabled
         if (isScrRieSet()) {
-            platform.getInterruptController().request(rxInterruptNumber);
+            requestInterrupt(rxInterruptNumber,rxInterruptSource);
         }
     }
 
@@ -544,7 +577,7 @@ public class FrSerialInterface extends SerialInterface {
                 }
             }
             if (((ssr & (SSR_ORE_MASK | SSR_RDRF_MASK)) == 0) && isScrRieSet()) {
-                platform.getInterruptController().removeRequest(rxInterruptNumber);
+                removeInterrupt(rxInterruptNumber,rxInterruptSource);
             }
         }
         return value;
