@@ -105,7 +105,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                 resizeTransform = new AffineTransform();
                 double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
                 double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
-                resizeTransform.scale(scaleX, scaleY);
+                double scale = Math.min(scaleX, scaleY);
+                resizeTransform.scale(scale, scale);
                 previousW = w;
                 previousH = h;
             }
