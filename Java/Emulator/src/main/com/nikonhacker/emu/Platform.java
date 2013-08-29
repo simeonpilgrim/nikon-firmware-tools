@@ -7,6 +7,7 @@ import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
@@ -38,6 +39,7 @@ public class Platform {
     private AdConverter         adConverter;
     private RealtimeClock       realtimeClock;
     private KeyCircuit          keyCircuit;
+    private SharedInterruptCircuit  sharedInterruptCircuit;
 
     private List<SerialDevice>  serialDevices;
 
@@ -144,5 +146,14 @@ public class Platform {
 
     public void setSerialDevices(List<SerialDevice> serialDevices) {
         this.serialDevices = serialDevices;
+    }
+
+    public SharedInterruptCircuit getSharedInterruptCircuit() {
+        return sharedInterruptCircuit;
+    }
+
+
+    public void setSharedInterruptCircuit(SharedInterruptCircuit sharedInterruptCircuit) {
+        this.sharedInterruptCircuit = sharedInterruptCircuit;
     }
 }
