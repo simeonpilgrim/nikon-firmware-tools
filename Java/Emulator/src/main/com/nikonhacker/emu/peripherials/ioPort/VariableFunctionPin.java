@@ -16,6 +16,9 @@ public class VariableFunctionPin extends Pin {
 
     public void setFunction(PinFunction function) {
         this.function = function;
+        if (function instanceof AbstractInputPinFunction && getConnectedPin() != null) {
+            ((AbstractInputPinFunction) function).setValue(getConnectedPin().getOutputValue());
+        }
     }
 
     /**
