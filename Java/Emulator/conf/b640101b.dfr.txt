@@ -1252,7 +1252,7 @@
 -s 0x40E1E=sys__TopLevel_sub2
 -s 0x40E4C=sys__sub_40E4C
 -s 0x40E98=sys__sub_40E98
--s 0x40EC8=sys__sub_40EC8
+-s 0x40EC8=sys__sub_40EC8(R4 [IN])
 -s 0x40F06=sys__sub_40F06
 -s 0x40F3C=int_3f_task_switch
 -s 0x410E8=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
