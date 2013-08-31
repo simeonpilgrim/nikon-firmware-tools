@@ -395,7 +395,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         }
 
         public int getColumnCount() {
-            return 5;
+            return 6;
         }
 
 
@@ -427,6 +427,19 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return baseObject;
                 case 4:
                     if ("".equals(editedValue)) {
+                        baseObject.setInterruptToWithdraw(null);
+                    }
+                    else {
+                        try {
+                            int interrupt = Format.parseUnsigned("0x" + editedValue);
+                            baseObject.setInterruptToWithdraw(interrupt);
+                        } catch (ParsingException e) {
+                            // ignore the change
+                        }
+                    }
+                    return baseObject;
+                case 5:
+                    if ("".equals(editedValue)) {
                         baseObject.setPcToSet(null);
                     }
                     else {
@@ -451,8 +464,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
                 case 2:
                     return "Log";
                 case 3:
-                    return "Interrupt";
+                    return "Interrupt On";
                 case 4:
+                    return "Interrupt Off";
+                case 5:
                     return "JMP to";
             }
             return null;
@@ -469,6 +484,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
                 case 3:
                     return baseObject.getInterruptToRequest()==null?"":Format.asHex(baseObject.getInterruptToRequest(), 2);
                 case 4:
+                    return baseObject.getInterruptToWithdraw()==null?"":Format.asHex(baseObject.getInterruptToWithdraw(), 2);
+                case 5:
                     return baseObject.getPcToSet()==null?"":Format.asHex(baseObject.getPcToSet(), 8);
             }
             return null;
@@ -485,6 +502,8 @@ public class BreakTriggerListFrame extends DocumentFrame {
                 case 3:
                     return String.class;
                 case 4:
+                    return String.class;
+                case 5:
                     return String.class;
             }
             return null;

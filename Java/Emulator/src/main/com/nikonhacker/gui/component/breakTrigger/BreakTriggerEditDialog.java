@@ -25,6 +25,7 @@ public class BreakTriggerEditDialog extends JDialog {
     private final JCheckBox enableLogCheckBox;
     private final JCheckBox enableBreakCheckBox;
     private final JTextField interruptToTriggerField;
+    private final JTextField interruptToWithdramField;
     private final JTextField pcToSetField;
 
     public BreakTriggerEditDialog(JDialog owner, int chip, final BreakTrigger trigger, String title) {
@@ -76,6 +77,13 @@ public class BreakTriggerEditDialog extends JDialog {
         }
         actionPanel.add(interruptToTriggerField, "wrap");
 
+        actionPanel.add(new JLabel("Withdraw interrupt  0x"));
+        interruptToWithdramField = new JTextField(10);
+        if (trigger.getInterruptToWithdraw() != null) {
+            interruptToWithdramField.setText(Format.asHex(trigger.getInterruptToWithdraw(), 2));
+        }
+        actionPanel.add(interruptToWithdramField, "wrap");
+
         actionPanel.add(new JLabel("Jump to address 0x"));
         pcToSetField = new JTextField(10);
         if (trigger.getPcToSet() != null) {
@@ -110,6 +118,7 @@ public class BreakTriggerEditDialog extends JDialog {
         trigger.setMustBeLogged(enableLogCheckBox.isSelected());
         trigger.setMustBreak(enableBreakCheckBox.isSelected());
         trigger.setInterruptToRequest(StringUtils.isBlank(interruptToTriggerField.getText())?null:Format.parseIntHexField(interruptToTriggerField));
+        trigger.setInterruptToWithdraw(StringUtils.isBlank(interruptToWithdramField.getText())?null:Format.parseIntHexField(interruptToWithdramField));
         trigger.setPcToSet(StringUtils.isBlank(pcToSetField.getText())?null:Format.parseIntHexField(pcToSetField));
         dispose();
     }

@@ -159,6 +159,9 @@ public class TxEmulator extends Emulator {
                                 if (trigger.getInterruptToRequest() != null) {
                                     platform.interruptController.request(trigger.getInterruptToRequest());
                                 }
+                                if (trigger.getInterruptToWithdraw() != null) {
+                                    platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
+                                }
                                 if (trigger.getPcToSet() != null) {
                                     platform.cpuState.pc = trigger.getPcToSet();
                                 }
