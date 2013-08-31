@@ -79,7 +79,7 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
                     memory.removeActivityListener(listener);
                     textArea.getPrintWriter().println("Stopping previous listener");
                 }
-                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSources, ui.getMasterClock());
+                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSources, ui.getFramework().getMasterClock());
                 memory.addActivityListener(listener);
                 listeners.put(minAddressField, listener);
                 textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));

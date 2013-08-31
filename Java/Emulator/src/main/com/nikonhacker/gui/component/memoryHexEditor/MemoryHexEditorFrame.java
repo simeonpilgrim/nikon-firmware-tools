@@ -223,7 +223,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
 
     private void refreshData() {
-        if (ui.isEmulatorPlaying(chip)) {
+        if (ui.getFramework().isEmulatorPlaying(chip)) {
             refreshMemoryPage();
             refreshMemoryWatcheValues();
         }

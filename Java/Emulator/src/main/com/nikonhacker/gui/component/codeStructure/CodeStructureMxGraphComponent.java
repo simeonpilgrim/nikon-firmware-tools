@@ -54,7 +54,8 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         final JMenuItem runMenuItem = new JMenuItem("Run then pause");
         runMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.playOneFunction(chip, currentlySelectedFunction.getAddress(), false);
+                ui.getFramework().playOneFunction(chip, currentlySelectedFunction.getAddress(), false);
+                ui.updateState(chip);
             }
         });
         popupMenu.add(runMenuItem);
@@ -62,7 +63,8 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
         final JMenuItem debugMenuItem = new JMenuItem("Debug then pause");
         debugMenuItem.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                ui.playOneFunction(chip, currentlySelectedFunction.getAddress(), true);
+                ui.getFramework().playOneFunction(chip, currentlySelectedFunction.getAddress(), true);
+                ui.updateState(chip);
             }
         });
         popupMenu.add(debugMenuItem);
@@ -110,7 +112,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                         Object value = ((mxCell) cell).getValue();
                         if (value instanceof Function) {
                             currentlySelectedFunction = (Function) value;
-                            boolean emulatorReady = ui.isEmulatorReady(chip);
+                            boolean emulatorReady = ui.getFramework().isEmulatorReady(chip);
                             runMenuItem.setEnabled(emulatorReady);
                             debugMenuItem.setEnabled(emulatorReady);
                             popupMenu.show(e.getComponent(), e.getX(), e.getY());

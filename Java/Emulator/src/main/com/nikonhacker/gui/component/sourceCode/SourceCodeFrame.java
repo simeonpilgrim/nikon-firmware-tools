@@ -5,6 +5,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
+import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
@@ -386,10 +387,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         newPopupMenu.addSeparator();
 
-        debugToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.DEBUG, true));
+        debugToHereMenuItem = new JMenuItem(new RunToHereAction(EmulationFramework.ExecutionMode.DEBUG, true));
         newPopupMenu.add(debugToHereMenuItem);
 
-        runToHereMenuItem = new JMenuItem(new RunToHereAction(EmulatorUI.RunMode.RUN, false));
+        runToHereMenuItem = new JMenuItem(new RunToHereAction(EmulationFramework.ExecutionMode.RUN, false));
         newPopupMenu.add(runToHereMenuItem);
 
 
@@ -534,12 +535,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      */
     private class RunToHereAction extends TextAction {
 
-        private EmulatorUI.RunMode runMode;
-        private boolean            debugMode;
+        private EmulationFramework.ExecutionMode executionMode;
+        private boolean                          debugMode;
 
-        public RunToHereAction(EmulatorUI.RunMode runMode, boolean debugMode) {
-            super(runMode.getLabel() + " to this line");
-            this.runMode = runMode;
+        public RunToHereAction(EmulationFramework.ExecutionMode executionMode, boolean debugMode) {
+            super(executionMode.getLabel() + " to this line");
+            this.executionMode = executionMode;
             this.debugMode = debugMode;
         }
 
@@ -550,7 +551,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     JTextArea textArea = (JTextArea) textComponent;
                     Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                     if (addressFromLine != null) {
-                        ui.playToAddress(chip, runMode, addressFromLine);
+                        ui.playToAddress(chip, executionMode, addressFromLine);
                     }
                 }
             } catch (BadLocationException ble) {
@@ -585,7 +586,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    public void keyTyped(KeyEvent e) {}
+    public void keyTyped(KeyEvent e) {
+    }
 
     public void keyPressed(KeyEvent e) {
         // CTRL-F
@@ -601,7 +603,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
     }
 
-    public void keyReleased(KeyEvent e) {}
+    public void keyReleased(KeyEvent e) {
+    }
 
 
     private void findSelectedText() {
@@ -679,7 +682,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 try {
                     Integer lineFromAddress = getLineFromAddress(breakTrigger.getCpuStateValues().pc);
                     if (lineFromAddress != null) {
-                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? (breakTrigger.mustBeLogged()?enabledBreakPointLogIcon:enabledBreakPointIcon) : (breakTrigger.mustBeLogged()?disabledBreakPointLogIcon:disabledBreakPointIcon));
+                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? (breakTrigger.mustBeLogged() ? enabledBreakPointLogIcon : enabledBreakPointIcon) : (breakTrigger.mustBeLogged() ? disabledBreakPointLogIcon : disabledBreakPointIcon));
                     }
                 } catch (BadLocationException e) {
                     e.printStackTrace();
@@ -691,7 +694,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
     public Integer getLineFromAddress(int address) {
         for (int i = 0; i < lineAddresses.size(); i++) {
-            if (lineAddresses.get(i) != null && lineAddresses.get(i) == address){
+            if (lineAddresses.get(i) != null && lineAddresses.get(i) == address) {
                 return i;
             }
         }
