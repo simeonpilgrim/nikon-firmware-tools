@@ -235,9 +235,9 @@ public class TxIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Byte onLoadData8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
-            return null;
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            return (byte)(((TxInterruptController)platform.getInterruptController()).getImc(addr-REGISTER_IMC00));
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
@@ -573,9 +573,11 @@ public class TxIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onLoadData16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
-            return null;
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            return ((intc.getImc(addr-REGISTER_IMC00)<<8) | intc.getImc(addr-REGISTER_IMC00+1));
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
@@ -769,9 +771,14 @@ public class TxIoListener extends IoActivityListener {
      * @return value to be returned, or null to return previously written value like normal memory
      */
     public Integer onLoadData32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
-            return null;
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            return ((intc.getImc(addr-REGISTER_IMC00)<<24) | 
+                    (intc.getImc(addr-REGISTER_IMC00+1)<<16) | 
+                    (intc.getImc(addr-REGISTER_IMC00+2)<<8) | 
+                     intc.getImc(addr-REGISTER_IMC00+3));
         }
         else if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
             // Port configuration registers
@@ -1033,8 +1040,9 @@ public class TxIoListener extends IoActivityListener {
     }
 
     public void onStore8(byte[] ioPage, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            ((TxInterruptController)platform.getInterruptController()).setImc(addr-REGISTER_IMC00,value);
             return;
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
@@ -1359,8 +1367,12 @@ public class TxIoListener extends IoActivityListener {
     }
 
     public void onStore16(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            intc.setImc(addr-REGISTER_IMC00,(value>>8)&0xFF);
+            intc.setImc(addr-REGISTER_IMC00+1,value&0xFF);
             return;
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
@@ -1506,8 +1518,14 @@ public class TxIoListener extends IoActivityListener {
     }
 
     public void onStore32(byte[] ioPage, int addr, int value, DebuggableMemory.AccessSource accessSource) {
-        if (addr >= REGISTER_IMC00 && addr < REGISTER_IVR) {
-            // IMC registers. Do nothing, just don't go further
+        if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
+            // IMC registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            intc.setImc(addr-REGISTER_IMC00,(value>>24)&0xFF);
+            intc.setImc(addr-REGISTER_IMC00+1,(value>>16)&0xFF);
+            intc.setImc(addr-REGISTER_IMC00+2,(value>>8)&0xFF);
+            intc.setImc(addr-REGISTER_IMC00+3,value&0xFF);
             return;
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {

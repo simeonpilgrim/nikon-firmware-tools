@@ -87,6 +87,12 @@ public class TxDmaChannel {
     }
 
     public void setCsr(int csr) {
+        // if at least one of non-settable bits is set to 0 and correspondent request is active
+        if ( ((csr & CSR_NC_MASK)==0 && (this.csr & CSR_NC_MASK)!=0) ||
+            ((csr & CSR_ABC_MASK)==0 && (this.csr & CSR_ABC_MASK)!=0) ) {
+            // "L" active    
+            ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).setInterruptChannelValue(TxInterruptController.INTDMA0 + channelNumber,1);
+        }
         // Set CSR, except for NC and AbC which can only be reset, not set
         this.csr = ((csr & ~CSR_NOT_SETTABLE_TO_ONE) | (csr & this.csr & CSR_NOT_SETTABLE_TO_ONE));
     }
@@ -472,7 +478,8 @@ public class TxDmaChannel {
         if (isCcrNormalInterruptEnable()) {
             // Spec says "The DMA transfer completion interrupt comes in two types: INTDMA0 for 0ch through 3ch and INTDMA1 for 4ch through 7ch."
             // (bottom of page 10-27). I guess that is obsolete...
-            txDmaController.getPlatform().getInterruptController().request(TxInterruptController.INTDMA0 + channelNumber);
+            // "L" active
+            ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).setInterruptChannelValue(TxInterruptController.INTDMA0 + channelNumber,0);
         }
     }
 
@@ -482,7 +489,8 @@ public class TxDmaChannel {
         if (isCcrAbnormalInterruptEnable() ) {
             // Spec says "The DMA transfer completion interrupt comes in two types: INTDMA0 for 0ch through 3ch and INTDMA1 for 4ch through 7ch."
             // (bottom of page 10-27). I guess that is obsolete...
-            txDmaController.getPlatform().getInterruptController().request(TxInterruptController.INTDMA0 + channelNumber);
+            // "L" active
+            ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).setInterruptChannelValue(TxInterruptController.INTDMA0 + channelNumber,0);
         }
     }
 

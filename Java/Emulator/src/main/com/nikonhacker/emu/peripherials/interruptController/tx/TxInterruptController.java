@@ -32,7 +32,7 @@ public class TxInterruptController extends AbstractInterruptController {
     public static final  int ACTIVE_LOW     = 0b00;
     public static final  int ACTIVE_HIGH    = 0b01;
     public static final  int ACTIVE_FALLING = 0b10;
-    public static final  int ACTIVE_RISING  = 0b00;
+    public static final  int ACTIVE_RISING  = 0b11;
 
     // Register fields
     // Ilev
@@ -45,9 +45,14 @@ public class TxInterruptController extends AbstractInterruptController {
     // and is in its address range. It seems much more logical to have it here though, as it's described in chapter 6
     private int nmiFlg;
 
+    // values for configurable interrupts
+    private int[] interruptChannelValue = new int[SOFT+1];
+    private boolean[] interruptPended = new boolean[SOFT+1];
+
+    private int[] imcBytes = new int[0x1A*4];
+
     private final static int Ilev_Mlev_pos   = 31;
     private final static int Ilev_Cmask_mask = 0b00000000_00000000_00000000_00000111;
-
 
     public final static  InterruptDescription[] hardwareInterruptDescription = new InterruptDescription[128];
 
@@ -291,6 +296,10 @@ public class TxInterruptController extends AbstractInterruptController {
 
     public TxInterruptController(Platform platform) {
         super(platform);
+        for (int i=INTDMA0; i<=INTDMA7; i++) {
+            // DMA interrupts are active Low
+            interruptChannelValue[i] = 1;
+        }
     }
 
     /**
@@ -375,15 +384,20 @@ public class TxInterruptController extends AbstractInterruptController {
     }
 
     public void removeEdgeTriggeredRequest(InterruptRequest interruptRequest) {
-        // TODO
-        // TX interrupt controller is different, having no external interrupts. After having problems with general solution, the implementation was split.
-        // Also I wanted to keep your code with call of interruptController.request(...) as much as possible the same. Then it is more sure to work correctly.
-        // All TX interrupts are in fact configurable level/edge/etc. So generic solution was not possible.
-        // Well, it is easy to test in parts and easy to do code review.
-        
-        // TEMPORARY WORKAROUND coderat
-        if (interruptRequest.getInterruptNumber() != KWUP)
-            removeRequest(interruptRequest);
+        int num = interruptRequest.getInterruptNumber();
+
+        // level interrupts
+        if (num==KWUP || (num>=INTDMA0 && num<=SOFT))
+            return;
+        // selectable active state interrupts
+        if ((num>=INT0 && num <= INTF) || (num>=INT10 && num<= INT1F)) {
+            switch (getImcEim(getRequestImcSection(num))) {
+                case ACTIVE_LOW: // "L"
+                case ACTIVE_HIGH: // "H"
+                    return;
+            }
+        } 
+        removeRequest(interruptRequest);
     }
 
     @Override
@@ -454,9 +468,101 @@ public class TxInterruptController extends AbstractInterruptController {
         return intClr;
     }
 
+    /**
+     return byte of IMC
+     pass as parameter offset from the begining of IMC block
+    */
+    public int getImc(int imcOffset) {
+        return imcBytes[imcOffset];
+    }
+
+    /**
+     set byte of IMC
+     pass as parameter offset from the begining of IMC block
+    */
+    public void setImc(int imcOffset, int value) {
+        if (imcBytes[imcOffset] != value) {
+            imcBytes[imcOffset] = value;
+            
+            int reg = TxIoListener.REGISTER_IMC00 + (imcOffset & (~3));
+            int section = 3 - (imcOffset & 3);
+            int num = 0;
+            
+            // find correspondent interrupt number
+            for ( ; num<= SOFT; num++) {
+                InterruptDescription desc = hardwareInterruptDescription[num];
+                if (desc.intcImcCtrlRegAddr==reg && desc.intcImcCtrlRegSection==section) {
+                    break;
+                }
+            }
+            if (num > SOFT)
+                throw new RuntimeException("Invalid IMC register " + reg + " section " + section);
+
+            // only Level capable interrupts
+            if ((num>=INT0 && num<= INT1F) || (num>=INTDMA0 && num<=SOFT)) {
+                synchronized (this) {
+                    boolean active=true;
+
+                    // check if new condition match
+                    switch (getImcEim(value)) {
+                        case ACTIVE_LOW: // "L"
+                            if (interruptChannelValue[num]!=0) {
+                                active = false;
+                                interruptPended[num] = false;
+                            } else 
+                                interruptPended[num] = true;
+                            break;
+                        case ACTIVE_HIGH: // "H"
+                            if (interruptChannelValue[num]==0) {
+                                active = false;
+                                interruptPended[num] = false;
+                            } else
+                                interruptPended[num] = true;
+                            break;
+                        default:
+                            // if there is pended then clear it
+                            interruptPended[num] = false;
+                            active = false;
+                    }
+                   /* coderat: important to retry in this way, because it can be disabled in meantime, like
+                      for example done for DMA6 completion interrupt. IMPORTANT: datasheets says that changing
+                      IMC do not clear requests that already held.
+                    */
+                    if (active)
+                        request(num);
+                }
+            }
+        }
+    }
+
     public void setIntClr(int intclr) {
         this.intClr = intclr & 0x1FF;
-        removeRequest(this.intClr);
+        
+        // This register contain IVR
+        int num = this.intClr >> 2;
+
+        synchronized (this) {
+            removeRequest(num);
+
+            boolean retry = false;
+            
+            // If predefined level-driven interrupt or selectable level-driven: check if interrupt is pended
+            if (num==KWUP || (num>=INTDMA0 && num<=SOFT)) {
+                retry = interruptPended[num];
+            } else if ((num>=INT0 && num <= INTF) || (num>=INT10 && num<= INT1F)) {
+                switch (getImcEim(getRequestImcSection(num))) {
+                    case ACTIVE_LOW: // "L"
+                    case ACTIVE_HIGH: // "H"
+                        retry = interruptPended[num];
+                }
+            }
+           /* coderat: important to retry in this way, because it can be disabled in meantime, like
+              for example done for DMA6 completion interrupt. 
+            */
+            if (retry) {
+                request(num);
+            }
+        }
     }
 
     public int getDreqflg() {
@@ -478,14 +584,58 @@ public class TxInterruptController extends AbstractInterruptController {
         return getImcIl(getRequestImcSection(interruptNumber));
     }
 
-    public int getRequestActiveState(int interruptNumber) {
-        return getImcEim(getRequestImcSection(interruptNumber));
+    /** change state of interrupt input */
+    public boolean setInterruptChannelValue(int num, int value) {
+        if (num<INT0 || (num>INT1F && num<INTDMA0) || (num>SOFT))
+            throw new RuntimeException("Interrupt input value can't be set for channel " + num);
+
+        if (value != interruptChannelValue[num]) {
+            synchronized (this) {
+                boolean active=true;
+    
+                // check if condition match
+                switch (getImcEim(getRequestImcSection(num))) {
+                    case ACTIVE_LOW: // "L"
+                        if (value!=0) {
+                            active = false;
+                            interruptPended[num] = false;
+                            // withdraw level interrupt
+                            removeRequest(num);
+                        } else 
+                            interruptPended[num] = true;
+                        break;
+                    case ACTIVE_FALLING: // falling edge
+                        if (value!=0) {
+                            active = false;
+                        }
+                        break;
+                    case ACTIVE_HIGH: // "H"
+                        if (value==0) {
+                            active = false;
+                            interruptPended[num] = false;
+                            // withdraw level interrupt
+                            removeRequest(num);
+                        } else
+                            interruptPended[num] = true;
+                        break;
+                    case ACTIVE_RISING: // rising edge
+                        if (value==0) {
+                            active = false;
+                        }
+                        break;
+                }
+                if (active)
+                    request(num);
+                // save latched value
+                interruptChannelValue[num] = value;
+            }
+        }
+        return true;
     }
 
     public int getRequestImcSection(int interruptNumber) {
         InterruptDescription description = hardwareInterruptDescription[interruptNumber];
-        int imc = platform.getMemory().load32(description.intcImcCtrlRegAddr, DebuggableMemory.AccessSource.INT);
-        return getSection(imc, description.intcImcCtrlRegSection);
+        return imcBytes[description.intcImcCtrlRegAddr-TxIoListener.REGISTER_IMC00+(3-description.intcImcCtrlRegSection)];
     }
 
     /**
