@@ -179,18 +179,20 @@ public class FrReloadTimer extends ProgrammableTimer {
     @Override
     public Object onClockTick() throws Exception {
         if (active) {
-            currentValue--;
             if (currentValue==0) {
                 isInUnderflowCondition = true;
                 if (isTmcsrInteSet()) {
                     requestInterrupt();
                 }
                 if (isTmcsrReldSet()) {
+                    // reload timer counts always (tmrlra+1) pulses according to datasheet
                     currentValue = tmrlra;
                 } else {
                     enabled = false;
                     return "DONE";
                 }
+            } else {
+                currentValue--;
             }
         }
         return null;
