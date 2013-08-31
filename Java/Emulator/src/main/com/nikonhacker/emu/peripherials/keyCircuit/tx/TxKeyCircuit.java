@@ -10,11 +10,11 @@ public class TxKeyCircuit implements KeyCircuit {
     private int kwupcnt;
     private int kwupclr;
     
-    private InterruptController interruptController;
+    private TxInterruptController interruptController;
     private int requestedInts;
 
     public TxKeyCircuit(InterruptController interruptController) {
-        this.interruptController = interruptController;
+        this.interruptController = (TxInterruptController)interruptController;
         for (int i = 0; i < 32; i++) {
             keys[i] = new TxKey(i, this);
         }
@@ -91,7 +91,8 @@ public class TxKeyCircuit implements KeyCircuit {
     public boolean requestInterrupt (int keyNum) {
         synchronized (this) {
             requestedInts |= (1<<keyNum);
-            return interruptController.request(TxInterruptController.KWUP);
+            // "H" active
+            return interruptController.setInterruptChannelValue(TxInterruptController.KWUP,1);
         }
     }
 
@@ -99,7 +100,8 @@ public class TxKeyCircuit implements KeyCircuit {
         synchronized (this) {
             requestedInts &= (~(1<<keyNum));
             if (requestedInts == 0) {
-                interruptController.removeRequest(TxInterruptController.KWUP);
+                // "H" active
+                interruptController.setInterruptChannelValue(TxInterruptController.KWUP,0);
             }
         }
     }
