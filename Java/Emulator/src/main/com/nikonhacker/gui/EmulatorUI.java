@@ -3063,7 +3063,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
         else {
             if (runMode == RunMode.DEBUG) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
-                    if (breakTrigger.mustBreak() || breakTrigger.mustBeLogged() || breakTrigger.getInterruptToRequest() != null || breakTrigger.getPcToSet() != null) {
+                    if (breakTrigger.mustBreak()
+                            || breakTrigger.mustBeLogged()
+                            || breakTrigger.getInterruptToRequest() != null
+                            || breakTrigger.getInterruptToWithdraw() != null
+                            || breakTrigger.getPcToSet() != null) {
                         // Arm memory change detection triggers
                         for (MemoryValueBreakCondition memoryValueBreakCondition : breakTrigger.getMemoryValueBreakConditions()) {
                             if (memoryValueBreakCondition.isChangeDetection()) {

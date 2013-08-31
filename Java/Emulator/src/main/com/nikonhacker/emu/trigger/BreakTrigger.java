@@ -35,6 +35,7 @@ public class BreakTrigger {
     private boolean mustBeLogged = false;
     private boolean mustBreak = true;
     private Integer interruptToRequest = null;
+    private Integer interruptToWithdraw = null;
     private Integer pcToSet = null;
     private Function function;
 
@@ -87,6 +88,14 @@ public class BreakTrigger {
 
     public void setInterruptToRequest(Integer interruptToRequest) {
         this.interruptToRequest = interruptToRequest;
+    }
+
+    public Integer getInterruptToWithdraw() {
+        return interruptToWithdraw;
+    }
+
+    public void setInterruptToWithdraw(Integer interruptToWithdraw) {
+        this.interruptToWithdraw = interruptToWithdraw;
     }
 
     public Integer getPcToSet() {
@@ -175,7 +184,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (pcToSet!=null?"jump ":"")).trim() + "]";
+        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"")).trim() + "]";
     }
 
     /**
