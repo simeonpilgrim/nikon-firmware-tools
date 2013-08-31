@@ -16,7 +16,11 @@ public class VariableFunctionPin extends Pin {
 
     public void setFunction(PinFunction function) {
         this.function = function;
-        if (function instanceof AbstractInputPinFunction && getConnectedPin() != null) {
+        // If we just assigned an input function to the pin
+        // and this pin is connected to something
+        // and this something has an output value (e.g. not just and I/O wire),
+        // then pass that value to the function
+        if (function instanceof AbstractInputPinFunction && getConnectedPin() != null && getConnectedPin().getOutputValue() != null) {
             ((AbstractInputPinFunction) function).setValue(getConnectedPin().getOutputValue());
         }
     }
