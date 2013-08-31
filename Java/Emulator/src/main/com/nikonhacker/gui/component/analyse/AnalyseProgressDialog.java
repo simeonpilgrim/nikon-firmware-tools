@@ -73,7 +73,7 @@ public class AnalyseProgressDialog extends JDialog {
                     disassembler.setMemory(memory);
                     disassembler.initialize();
                     debugPrintWriter.println("Starting disassembly...");
-                    emulatorUI.setCodeStructure(chip, disassembler.disassembleMemRanges());
+                    emulatorUI.getFramework().setCodeStructure(chip, disassembler.disassembleMemRanges());
                     disassembler.cleanup();
                     debugPrintWriter.println();
                     debugPrintWriter.println("Disassembly complete.");

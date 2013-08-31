@@ -6,6 +6,7 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.disassembly.WriteListenerRegister32;
 import com.nikonhacker.disassembly.tx.NullRegister32;
+import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryWatch;
@@ -60,7 +61,8 @@ public class Prefs {
     private int[] ioPortsFrameSelectedTab;
     private EmulatorUI.RunMode[] altModeForSyncedCpuUponStep;
     private EmulatorUI.RunMode[] altModeForSyncedCpuUponDebug;
-
+    private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
+    private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
 
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
@@ -97,9 +99,10 @@ public class Prefs {
     private static Prefs loadFile(File file, File backupTargetFile) throws IOException {
         if (file.exists()) {
             FileInputStream inputStream = new FileInputStream(file);
-            XStream prefsXStream = getPrefsXStream();
+            XStream prefsXStream = getPrefsXStreamIn();
             Prefs prefs = (Prefs) XStreamUtils.load(inputStream, prefsXStream);
             inputStream.close();
+            convertExecutionMode(prefs);
             if (backupTargetFile != null) {
                 // Parsing was OK. Back-up config
                 FileOutputStream outputStream = new FileOutputStream(backupTargetFile);
@@ -113,7 +116,39 @@ public class Prefs {
         }
     }
 
-    public static XStream getPrefsXStream() {
+    /** @deprecated this is a temporary migration process */
+    private static void convertExecutionMode(Prefs prefs) {
+        if (prefs.altExecutionModeForSyncedCpuUponDebug == null || prefs.altExecutionModeForSyncedCpuUponDebug.length != 2) {
+            if (prefs.altModeForSyncedCpuUponDebug != null && prefs.altModeForSyncedCpuUponDebug.length == 2) {
+                prefs.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{runModeToExecutionMode(prefs.altModeForSyncedCpuUponDebug[0]), runModeToExecutionMode(prefs.altModeForSyncedCpuUponDebug[1])};
+            }
+            else {
+                prefs.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+            }
+        }
+        if (prefs.altExecutionModeForSyncedCpuUponStep == null || prefs.altExecutionModeForSyncedCpuUponStep.length != 2) {
+            if (prefs.altModeForSyncedCpuUponStep != null && prefs.altModeForSyncedCpuUponStep.length == 2) {
+                prefs.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{runModeToExecutionMode(prefs.altModeForSyncedCpuUponStep[0]), runModeToExecutionMode(prefs.altModeForSyncedCpuUponStep[1])};
+            }
+            else {
+                prefs.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+            }
+        }
+    }
+
+    /** @deprecated this is a temporary migration process */
+    private static EmulationFramework.ExecutionMode runModeToExecutionMode(EmulatorUI.RunMode runMode) {
+        switch (runMode) {
+            case DEBUG:
+                return EmulationFramework.ExecutionMode.DEBUG;
+            case STEP:
+                return EmulationFramework.ExecutionMode.STEP;
+        }
+        return  EmulationFramework.ExecutionMode.RUN;
+    }
+
+
+    public static XStream getPrefsXStreamIn() {
         XStream xStream = XStreamUtils.getBaseXStream();
         xStream.omitField(BreakTrigger.class, "function");
         xStream.alias("wpos", WindowPosition.class);
@@ -123,6 +158,13 @@ public class Prefs {
         xStream.useAttributeFor(Register32.class, "value");
         xStream.aliasField("v", Register32.class, "value");
         xStream.aliasField("r", CPUState.class, "regValue");
+        return xStream;
+    }
+
+    public static XStream getPrefsXStream() {
+        XStream xStream = getPrefsXStreamIn();
+        xStream.omitField(Prefs.class, "altModeForSyncedCpuUponStep");
+        xStream.omitField(Prefs.class, "altModeForSyncedCpuUponDebug");
         return xStream;
     }
 
@@ -521,24 +563,33 @@ public class Prefs {
         this.syncPlay = syncPlay;
     }
 
-    public EmulatorUI.RunMode getAltModeForSyncedCpuUponDebug(int chip) {
-        if (this.altModeForSyncedCpuUponDebug == null || this.altModeForSyncedCpuUponDebug.length != 2) this.altModeForSyncedCpuUponDebug = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
-        return altModeForSyncedCpuUponDebug[chip];
+
+    public EmulationFramework.ExecutionMode getAltExecutionModeForSyncedCpuUponDebug(int chip) {
+        if (this.altExecutionModeForSyncedCpuUponDebug == null || this.altExecutionModeForSyncedCpuUponDebug.length != 2) {
+            this.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+        }
+        return altExecutionModeForSyncedCpuUponDebug[chip];
     }
 
-    public void setAltModeForSyncedCpuUponDebug(int chip, EmulatorUI.RunMode altModeForSyncedCpuUponDebug) {
-        if (this.altModeForSyncedCpuUponDebug == null || this.altModeForSyncedCpuUponDebug.length != 2) this.altModeForSyncedCpuUponDebug = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
-        this.altModeForSyncedCpuUponDebug[chip] = altModeForSyncedCpuUponDebug;
+    public void setAltExecutionModeForSyncedCpuUponDebug(int chip, EmulationFramework.ExecutionMode altExecutionModeForSyncedCpuUponDebug) {
+        if (this.altExecutionModeForSyncedCpuUponDebug == null || this.altExecutionModeForSyncedCpuUponDebug.length != 2) {
+            this.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+        }
+        this.altExecutionModeForSyncedCpuUponDebug[chip] = altExecutionModeForSyncedCpuUponDebug;
     }
 
-    public EmulatorUI.RunMode getAltModeForSyncedCpuUponStep(int chip) {
-        if (this.altModeForSyncedCpuUponStep == null || this.altModeForSyncedCpuUponStep.length != 2) this.altModeForSyncedCpuUponStep = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
-        return altModeForSyncedCpuUponStep[chip];
+    public EmulationFramework.ExecutionMode getAltExecutionModeForSyncedCpuUponStep(int chip) {
+        if (this.altExecutionModeForSyncedCpuUponStep == null || this.altExecutionModeForSyncedCpuUponStep.length != 2) {
+            this.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+        }
+        return altExecutionModeForSyncedCpuUponStep[chip];
     }
 
-    public void setAltModeForSyncedCpuUponStep(int chip, EmulatorUI.RunMode altModeForSyncedCpuUponStep) {
-        if (this.altModeForSyncedCpuUponStep == null || this.altModeForSyncedCpuUponStep.length != 2) this.altModeForSyncedCpuUponStep = new EmulatorUI.RunMode[]{EmulatorUI.RunMode.RUN, EmulatorUI.RunMode.RUN};
-        this.altModeForSyncedCpuUponStep[chip] = altModeForSyncedCpuUponStep;
+    public void setAltExecutionModeForSyncedCpuUponStep(int chip, EmulationFramework.ExecutionMode altExecutionModeForSyncedCpuUponStep) {
+        if (this.altExecutionModeForSyncedCpuUponStep == null || this.altExecutionModeForSyncedCpuUponStep.length != 2) {
+            this.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
+        }
+        this.altExecutionModeForSyncedCpuUponStep[chip] = altExecutionModeForSyncedCpuUponStep;
     }
 
     /**
