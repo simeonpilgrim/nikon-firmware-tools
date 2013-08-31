@@ -22,7 +22,7 @@ public class FrReloadTimer extends ProgrammableTimer {
     public static final int TMCSR_CSL_MASK  = 0b00001110_00000000;
 
     /** Reload Timer register TMRLRAn corresponds to the reloadValue */
-    private int tmrlra;
+    protected int tmrlra;
 
     /*  currentValue (in superclass) corresponds to the Reload Timer register TMRn */
 
@@ -30,7 +30,7 @@ public class FrReloadTimer extends ProgrammableTimer {
     private int tmcsr;
 
     /** indicates an underflow has occurred */
-    private boolean isInUnderflowCondition;
+    protected boolean isInUnderflowCondition;
 
     public FrReloadTimer(int timerNumber, Platform platform) {
         super(timerNumber, platform);
@@ -137,14 +137,14 @@ public class FrReloadTimer extends ProgrammableTimer {
     /**
      * @return true=must reload, false=one shot
      */
-    private boolean isTmcsrReldSet() {
+    protected boolean isTmcsrReldSet() {
         return (tmcsr & TMCSR_RELD_MASK) != 0;
     }
 
     /**
      * @return true if underflow interrupt is enabled
      */
-    private boolean isTmcsrInteSet() {
+    protected boolean isTmcsrInteSet() {
         return (tmcsr & TMCSR_INTE_MASK) != 0;
     }
 
@@ -179,20 +179,18 @@ public class FrReloadTimer extends ProgrammableTimer {
     @Override
     public Object onClockTick() throws Exception {
         if (active) {
+            currentValue--;
             if (currentValue==0) {
                 isInUnderflowCondition = true;
                 if (isTmcsrInteSet()) {
                     requestInterrupt();
                 }
                 if (isTmcsrReldSet()) {
-                    // reload timer counts always (tmrlra+1) pulses according to datasheet
                     currentValue = tmrlra;
                 } else {
                     enabled = false;
                     return "DONE";
                 }
-            } else {
-                currentValue--;
             }
         }
         return null;

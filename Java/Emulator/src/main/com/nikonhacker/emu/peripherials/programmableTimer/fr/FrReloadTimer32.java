@@ -41,4 +41,33 @@ public class FrReloadTimer32 extends FrReloadTimer {
     protected void removeInterrupt() {
         platform.getSharedInterruptCircuit().removeRequest(FrInterruptController.RELOAD_TIMER_32_INTERRUPT_REQUEST_NR, 20+timerNumber);
     }
+
+    /**
+     * Overridden because it seems there is a slight difference in count:
+     * - round numbers like 25000 are loaded to 0x48 timer or 0x58.
+     * - timers 0x100-0x150 are loaded with numbers like 999.
+     * it seems be the 32-bit reload timer always counts (tmrlra+1) pulses according to datasheet while the 16-bit reload timer counts exactly tmrlra...
+     */
+    @Override
+    public Object onClockTick() throws Exception {
+        if (active) {
+            if (currentValue==0) {
+                isInUnderflowCondition = true;
+                if (isTmcsrInteSet()) {
+                    requestInterrupt();
+                }
+                if (isTmcsrReldSet()) {
+                    // reload timer counts always (tmrlra+1) pulses according to datasheet
+                    currentValue = tmrlra;
+                } else {
+                    enabled = false;
+                    return "DONE";
+                }
+            } else {
+                currentValue--;
+            }
+        }
+        return null;
+    }
+
 }
