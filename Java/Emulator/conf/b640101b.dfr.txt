@@ -3390,8 +3390,16 @@
 -s 0x1E195C=Task08_SendMessage
 -s 0x1E1992=call_sub_1E199E
 -s 0x1E19FC=Tsk08_mbx_cb_func
--s 0x1E2FA6=setup_semaphore_x1C
+-s 0x1E2F32=Tsk08_Msg_2
+-s 0x1E2FA6=SetupSemaphore_x1C
 -s 0x1E2FD4=get_x4003_addr
+-s 0x1E338E=call_Tsk08_Func
+-s 0x1E33A8=WaitOnSemaphore_x1C
+-s 0x1E33BC=SignalSemaphore_x1C
+-s 0x1E375A=Tsk08_SubFunc00
+-s 0x1E3832=Tsk08_SubFunc01
+-s 0x1E3C06=Tsk08_SubFunc02
+-s 0x1E3C84=Tsk08_SubFunc03
 -s 0x1E612E=call_sub_1E602C
 -s 0x1E6720=PictureData0
 -s 0x1E67D4=start_task_x20
