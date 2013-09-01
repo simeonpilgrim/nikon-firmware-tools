@@ -102,7 +102,7 @@ namespace Nikon_Decode
             //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750103a.bin");
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
-            DumpMenusD800(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b630101a.bin");
+            DumpMenusD800(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\b630101a.bin");
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
 

@@ -253,7 +253,22 @@ namespace Nikon_Decode
                 DFR_file = @"";
 
                 MenuRootList = new long[] { 
-                    0x84F436B4
+                    0x84F436B4, 0x84F436D4, 0x84F436F4, 0x84F43714, 0x84F43734, 0x84F43754, 0x84F43774, 0x84F43794,
+                    0x84F437B4, 0x84F437D4, 0x84F437F4, 0x84F43814, 0x84F43834, 0x84F43854, 0x84F43874, 0x84F43894,
+                    0x84F438B4, 0x84F438D4, 0x84F438F4, 0x84F43914, 0x84F43954, 0x84F43994, 0x84F439E4, 0x84F43A04,
+                    0x84F43AE4, 0x84F43B04, 0x84F43C04, 0x84F43C54, 0x84F43C94, 0x84F43D04, 0x84F43D84, 0x84F43D34, 
+                    0x84F43F04, 0x84F43F34, 0x84F44494, 0x84F444C4, 0x84F44694, 0x84F44E94, 0x84F44EB4, 0x84F44EF4,
+                    0x84F44F54, 0x84F45094, 0x84F452B4, 0x84F45134, 0x84F450D4, 0x84F46E24, 0x84F49734, 0x84F51F44,
+                    0x84F51A94, 0x84F50644, 0x84F4E614, 0x84F4BFC4, 0x84F4C004, 0x84F4C024, 0x84F4C064,
+                    0x84F4C204, 0x84F49504, 0x84F494A4, 0x84F49474, 0x84F46E04, 0x84F46D24, 0x84F46BE4, 0x84F46A34,
+                    0x84F46944, 0x84F467C4, 0x84F46784, 0x84F46714, 0x84F46694, 0x84F46484, 0x84F463F4, 0x84F46654,
+                    0x84F46374, 0x84F462F4, 0x84F46284, 0x84F46204, 0x84F45F64, 0x84F45FC4, 0x84F45F24, 0x84F45EB4,
+                    0x84F45E34, 0x84F45DB4, 0x84F45C44, 0x84F45C14, 0x84F45C84, 0x84F45CC4, 0x84F45D44, 0x84F4C2A4,
+                    0x84F4C334, 0x84F4C474, 0x84F4C494, 0x84F4C6C4, 0x84F4CA54, 0x84F4CA94, 0x84F4DEC4, 0x84F4CC54,
+                    0x84F4CB44, 0x84F4CB64, 0x84F4CB84, 0x84F4CBA4, 0x84F4C964, 0x84F4CCA4, 0x84F4CCC4, 0x84F4DA84,
+                    0x84F4D5F4, 0x84F4D544, 0x84F4D474, 0x84F4D354, 0x84F4CD24, 0x84F4CCF4, 0x84F4CDC4, 0x84F4CFF4,
+                    0x84F4D024, 0x84F4D084, 0x84F4D134, 0x84F4D1B4, 0x84F4D154, 0x84F4D174, 0x84F50414, 0x84F50494
+
                 };
             }
         }
@@ -359,6 +374,7 @@ namespace Nikon_Decode
                 while (q.Count > 0)
                 {
                     var addr = q.Dequeue();
+                    var ss1 = string.Format("Addr 0x{0:X8}", addr);
 
                     var s6 = new Struct6(data, addr, addrOffset);
                     s6.ReadElements(data);
@@ -378,6 +394,7 @@ namespace Nikon_Decode
                             {
                                 int az = 0;
                             }
+                            var ss2 = string.Format("Menu 0x{0:X8} MenuEl 0x{1:X8} SubMenu 0x{2:X8}", addr, s14.mem_loc, s14.menu_ptr);
                             q.Enqueue(s14.menu_ptr);   
                         }
                     }
@@ -386,12 +403,29 @@ namespace Nikon_Decode
 
                 using (var sw = new StreamWriter(File.Open(fileName + ".menu.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
-                    using (var sw2 = new StreamWriter(File.Open(fileName + ".menu_sym.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
+                    using (var sw2 = new StreamWriter(File.Open(fileName + ".menu_sym.idc", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                     {
+                        sw2.WriteLine("#include <idc.idc>");
+                        sw2.WriteLine("static MakeMenu(ref, txt, type) {");
+	                    sw2.WriteLine("\tMakeNameEx(ref, txt, 0 );");
+	                    sw2.WriteLine("\tif( type == 0) {");
+		                sw2.WriteLine("\t\tMakeUnknown(ref, 0x20, 0 );");
+		                sw2.WriteLine("\t\tMakeStructEx(ref, 0x20, \"Menu\");");
+	                    sw2.WriteLine("\t} else {");
+                        sw2.WriteLine("\t\tMakeUnknown(ref, 0x10, 0 );");
+                        sw2.WriteLine("\t\tMakeStructEx(ref, 0x10, \"MenuEl\");");
+                        sw2.WriteLine("\t}");
+                        sw2.WriteLine("}");
+                        sw2.WriteLine("static main() {");
+                        sw2.WriteLine(" Message(\"Menu Name: Start\\n\");");
+
                         foreach (var l in firmConsts.MenuRootList)
                         {
                             MenuDump(sw, sw2, "", l);
                         }
+
+                        sw2.WriteLine("\tMessage(\"Menu Name: Done\\n\");");
+                        sw2.WriteLine("}");
                     }
                 }
                 
@@ -466,11 +500,14 @@ namespace Nikon_Decode
 
             public void ReadElements(byte[] data)
             {
-                for (int i = 0; i < field_A; i++)
+                if (field_1C != 0)
                 {
-                    var s14 = new Struct14(data, field_1C + (i * Struct14.size_of), addr_off);
+                    for (int i = 0; i < field_A; i++)
+                    {
+                        var s14 = new Struct14(data, field_1C + (i * Struct14.size_of), addr_off);
 
-                    menu_elements.Add(s14);
+                        menu_elements.Add(s14);
+                    }
                 }
             }
 
@@ -643,7 +680,7 @@ namespace Nikon_Decode
                 menu_ptr = ReadUint32(data, file_loc + 0x0C);
             }
 
-            long mem_loc;
+            public long mem_loc;
             long file_loc;
             //string txt_0;
             string txt_2;
@@ -822,16 +859,16 @@ namespace Nikon_Decode
             }
 
             long addr = baseAddr + (offset * 4);
-            addr -= firmConsts.File_offset((uint)addr);
+            long addr_a = addr - firmConsts.File_offset((uint)addr);
 
-            long saddr = ReadUint32(data, addr);
-            saddr -= firmConsts.File_offset((uint)saddr);
-            long eaddr = ReadUint32(data, addr + 4);
-            eaddr -= firmConsts.File_offset((uint)eaddr);
+            long saddr = ReadUint32(data, addr_a);
+            long saddr_a = saddr - firmConsts.File_offset((uint)saddr);
+            long eaddr = ReadUint32(data, addr_a + 4);
+            long eaddr_a = eaddr - firmConsts.File_offset((uint)eaddr);
 
             StringBuilder sb = new StringBuilder();
             int state = 0;
-            for (long i = saddr; i < eaddr; i++)
+            for (long i = saddr_a; i < eaddr_a; i++)
             {
                 //if (state == 0 && (data[i] < 0x20 || data[i] > 0x7F))
                 if (data[i] < 0x20 || data[i] > 0x7F)
