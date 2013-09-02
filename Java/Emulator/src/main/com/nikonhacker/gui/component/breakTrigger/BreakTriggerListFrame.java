@@ -381,7 +381,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
     private boolean isNameInUse(String name) {
         for (BreakTrigger breakTrigger : breakTriggers) {
-            if (breakTrigger.getName().equals(name)) {
+            if (name.equals(breakTrigger.getName())) {
                 return true;
             }
         }
