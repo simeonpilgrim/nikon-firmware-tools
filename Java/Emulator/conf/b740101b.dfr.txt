@@ -75,6 +75,7 @@
 -s 0x123B38=ptp_OC_FE34
 -s 0x124C8E=nullsub_16
 -s 0x1342E0=ptp_Responce_OK
+-s 0x14DF2C=debug_0
 -s 0x1510B8=nullsub_17
 -s 0x1510D2=nullsub_18
 -s 0x1510D4=nullsub_19
