@@ -4,12 +4,12 @@ import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.PrintWriter;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
@@ -45,9 +45,9 @@ public class CPUStateEditorFrame extends DocumentFrame {
         }
     }
 
-    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
+    public void setLogger(DisassemblyLogger logger) {
         if (cpuPanel != null) {
-            cpuPanel.setInstructionPrintWriter(instructionPrintWriter);
+            cpuPanel.setLogger(logger);
         }
     }
 

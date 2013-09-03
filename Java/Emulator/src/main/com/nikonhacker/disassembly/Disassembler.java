@@ -51,7 +51,7 @@ public abstract class Disassembler {
             writer.write("(" + Format.asHex(address - memoryFileOffset, 8) + ") ");
         }
 
-        writer.write(statement.toString(options));
+        writer.write(statement.toString(options) + System.lineSeparator());
     }
 
     protected void usage() {

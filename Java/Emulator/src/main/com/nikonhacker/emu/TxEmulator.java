@@ -2,7 +2,6 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.disassembly.tx.TxInstructionSet;
@@ -13,15 +12,15 @@ import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
 
-    TxStatement statement = new TxStatement();
-
     public TxEmulator(Platform platform) {
         super(platform);
+        statement = new TxStatement();
     }
 
     @Override
@@ -56,31 +55,20 @@ public class TxEmulator extends Emulator {
             statement.reset();
 
             if (((TxCPUState) platform.cpuState).is16bitIsaMode) {
-                statement.fill16bInstruction(platform.memory.loadInstruction16(platform.cpuState.pc), platform.cpuState.pc, platform.memory);
-                statement.decode16BitOperands(platform.cpuState.pc);
+                // FETCH
+                ((TxStatement)statement).fill16bInstruction(platform.memory.loadInstruction16(platform.cpuState.pc), platform.cpuState.pc, platform.memory);
+                // DECODE
+                ((TxStatement)statement).decode16BitOperands(platform.cpuState.pc);
             }
             else {
-                statement.fill32bInstruction(platform.memory.loadInstruction32(platform.cpuState.pc));
-                statement.decode32BitOperands();
+                // FETCH
+                ((TxStatement)statement).fill32bInstruction(platform.memory.loadInstruction32(platform.cpuState.pc));
+                // DECODE
+                ((TxStatement)statement).decode32BitOperands();
             }
 
-            if (printer != null) {
-                // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
-                IndentPrinter printer2 = printer;
-                if (printer2 != null) {
-                    // OK. copy is still not null
-                    statement.formatOperandsAndComment(context, false, outputOptions);
-                    printer2.print("0x" + Format.asHex(platform.cpuState.pc, 8) + " " + statement.toString(outputOptions));
-
-                    switch(statement.getInstruction().getFlowType()) {
-                        case CALL:
-                        case INT:
-                            printer2.indent(); break;
-                        case RET:
-                            printer2.outdent(); break;
-                    }
-                }
-            }
+            // LOG
+            logIfRequested(logger);
 
             // ACTUAL INSTRUCTION EXECUTION
             statement.getInstruction().getSimulationCode().simulate(statement, context);
@@ -125,10 +113,12 @@ public class TxEmulator extends Emulator {
                     //Double test because lack of synchronization means the status could have changed in between
                     if (interruptRequest != null) {
                         if (platform.cpuState.accepts(interruptRequest)){
-                            if (printer != null) {
-                                IndentPrinter printer2 = printer;
+                            if (logger != null) {
+                                DisassemblyLogger printer2 = logger;
                                 if (printer2 != null) {
-                                    printer2.printlnNonIndented("------------------------- Accepting " + interruptRequest);
+                                    if(printer2.isIncludeInterruptMarks()) {
+                                        printer2.println("------------------------- Accepting " + interruptRequest);
+                                    }
                                     printer2.indent();
                                 }
                             }
@@ -176,26 +166,7 @@ public class TxEmulator extends Emulator {
 
             /* Pause if requested */
             if (sleepIntervalMs != 0) {
-                exitSleepLoop = false;
-                if (sleepIntervalMs < 100) {
-                    try {
-                        Thread.sleep(sleepIntervalMs);
-                    } catch (InterruptedException e) {
-                        // noop
-                    }
-                }
-                else {
-                    for (int i = 0; i < sleepIntervalMs / 100; i++) {
-                        try {
-                            Thread.sleep(100);
-                            if (exitSleepLoop) {
-                                break;
-                            }
-                        } catch (InterruptedException e) {
-                            // noop
-                        }
-                    }
-                }
+                sleep();
             }
         }
         catch (Exception e) {
@@ -213,6 +184,5 @@ public class TxEmulator extends Emulator {
         }
         return null;
     }
-
 
 }

@@ -253,7 +253,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
             // Log changes to real-time disassembly window
-            if (instructionPrintWriter != null) {
+            if (logger != null) {
                 String msg = "";
                 if (pc != cpuState.pc) msg += changeString("PC", cpuState.pc, pc);
                 if (pcIsaMode16bCheckBox.isSelected() != cpuState.is16bitIsaMode) msg += changeString("PC ISA 16-bit", String.valueOf(cpuState.is16bitIsaMode) + " -> " + String.valueOf(pcIsaMode16bCheckBox.isSelected()));
@@ -269,7 +269,7 @@ public class TxCPUStateComponent extends CPUStateComponent {
                     if (regs[i] != cpuState.getReg(i)) msg += changeString(TxCPUState.registerLabels[i], cpuState.getReg(i), regs[i]);
                 }
                 if (msg.length() > 0) {
-                    instructionPrintWriter.print("=====> Manual CPU state change:\n" + msg);
+                    logger.println("=====> Manual CPU state change:\n" + msg);
                 }
             }
 

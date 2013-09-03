@@ -2,23 +2,23 @@ package com.nikonhacker.gui.component.cpu;
 
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
+import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.PrintWriter;
 
 public abstract class CPUStateComponent extends JComponent {
     public static final Color COLOR_UNCHANGED = Color.WHITE;
-    public static final Color COLOR_CHANGED = Color.CYAN;
+    public static final Color COLOR_CHANGED   = Color.CYAN;
 
     protected CPUState cpuState;
     protected CPUState cpuStateValidityFlags;
-    protected JButton saveButton;
+    protected JButton  saveButton;
     protected JButton cancelButton = new JButton("Cancel");
     protected JTextField[] regTextFields;
 
-    protected PrintWriter instructionPrintWriter;
+    protected DisassemblyLogger logger;
 
     protected void dumpFieldToRegister(JTextField textField, int registerNumber) {
         if (StringUtils.isBlank(textField.getText())) {
@@ -56,10 +56,9 @@ public abstract class CPUStateComponent extends JComponent {
         return "        " + label + ": " + text + "\n";
     }
 
-    public void setInstructionPrintWriter(PrintWriter instructionPrintWriter) {
-        this.instructionPrintWriter = instructionPrintWriter;
+    public void setLogger(DisassemblyLogger logger) {
+        this.logger = logger;
     }
-
 
     protected String maskValue(int value, int mask, int numChars) {
         String formattedValue = Format.asBinary(value, numChars);

@@ -2,7 +2,6 @@ package com.nikonhacker.emu;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.IndentPrinter;
 import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -14,10 +13,10 @@ import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Set;
 
 /**
@@ -28,10 +27,9 @@ import java.util.Set;
  */
 public class FrEmulator extends Emulator {
 
-    FrStatement statement = new FrStatement();
-
     public FrEmulator(Platform platform) {
         super(platform);
+        statement = new FrStatement();
     }
 
     @Override
@@ -69,29 +67,15 @@ public class FrEmulator extends Emulator {
         try {
             statement.reset();
 
-            statement.getNextStatement(platform.memory, platform.cpuState.pc);
+            // FETCH
+            ((FrStatement)statement).getNextStatement(platform.memory, platform.cpuState.pc);
 
-            statement.setInstruction(FrInstructionSet.instructionMap[statement.data[0]]);
+            // DECODE
+            statement.setInstruction(FrInstructionSet.instructionMap[((FrStatement)statement).data[0]]);
+            ((FrStatement)statement).decodeOperands(platform.cpuState.pc, platform.memory);
 
-            statement.decodeOperands(platform.cpuState.pc, platform.memory);
-
-            if (printer != null) {
-                // copying to make sure we keep a reference even if instructionPrintWriter gets set to null in between but still avoid costly synchronization
-                IndentPrinter printer2 = printer;
-                if (printer2 != null) {
-                    // OK. copy is still not null
-                    statement.formatOperandsAndComment(context, false, outputOptions);
-                    printer2.print("0x" + Format.asHex(platform.cpuState.pc, 8) + " " + statement.toString(outputOptions));
-
-                    switch(statement.getInstruction().getFlowType()) {
-                        case CALL:
-                        case INT:
-                            printer2.indent(); break;
-                        case RET:
-                            printer2.outdent(); break;
-                    }
-                }
-            }
+            // LOG
+            logIfRequested(logger);
 
             // ACTUAL INSTRUCTION EXECUTION
             statement.getInstruction().getSimulationCode().simulate(statement, context);
@@ -131,10 +115,12 @@ public class FrEmulator extends Emulator {
                     //Double test because lack of synchronization means the status could have changed in between
                     if (interruptRequest != null) {
                         if (platform.cpuState.accepts(interruptRequest)){
-                            if (printer != null) {
-                                IndentPrinter printer2 = printer;
+                            if (logger != null) {
+                                DisassemblyLogger printer2 = logger;
                                 if (printer2 != null) {
-                                    printer2.printlnNonIndented("------------------------- Accepting " + interruptRequest);
+                                    if(printer2.isIncludeInterruptMarks()) {
+                                        printer2.println("------------------------- Accepting " + interruptRequest);
+                                    }
                                     printer2.indent();
                                 }
                             }
@@ -178,26 +164,7 @@ public class FrEmulator extends Emulator {
 
             /* Pause if requested */
             if (sleepIntervalMs != 0) {
-                exitSleepLoop = false;
-                if (sleepIntervalMs < 100) {
-                    try {
-                        Thread.sleep(sleepIntervalMs);
-                    } catch (InterruptedException e) {
-                        // noop
-                    }
-                }
-                else {
-                    for (int i = 0; i < sleepIntervalMs /100; i++) {
-                        try {
-                            Thread.sleep(100);
-                            if (exitSleepLoop) {
-                                break;
-                            }
-                        } catch (InterruptedException e) {
-                            // noop
-                        }
-                    }
-                }
+                sleep();
             }
         }
         catch (Exception e) {
@@ -240,7 +207,7 @@ public class FrEmulator extends Emulator {
         FrEmulator emulator = new FrEmulator(platform);
 
         emulator.setContext(memory, cpuState, new FrInterruptController(platform));
-        emulator.setPrinter(new PrintWriter(System.out));
+        emulator.setDisassemblyLogger(new DisassemblyLogger(System.out));
 
         masterClock.add(new FrEmulator(platform), null, true);
     }

@@ -1,31 +1,32 @@
 package com.nikonhacker.emu;
 
 import com.nikonhacker.Constants;
-import com.nikonhacker.IndentPrinter;
-import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.disassembly.OutputOption;
-import com.nikonhacker.disassembly.StatementContext;
+import com.nikonhacker.Format;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
 import java.io.PrintWriter;
 import java.util.*;
 
 public abstract class Emulator implements Clockable {
-    protected long totalCycles;
-    protected IndentPrinter printer;
-    protected PrintWriter breakLogPrintWriter;
-    protected int sleepIntervalMs = 0;
+    protected long                       totalCycles;
+    protected DisassemblyLogger          logger;
+    protected PrintWriter                breakLogPrintWriter;
+    protected       int                  sleepIntervalMs = 0;
     protected final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
-    protected Set<OutputOption> outputOptions = EnumSet.noneOf(OutputOption.class);
-    protected boolean exitSleepLoop = false;
+    protected       Set<OutputOption>    outputOptions   = EnumSet.noneOf(OutputOption.class);
+    protected       boolean              exitSleepLoop   = false;
 
     StatementContext context = new StatementContext();
 
     protected Platform platform;
 
     protected final List<CycleCounterListener> cycleCounterListeners = new ArrayList<CycleCounterListener>();
+
+    protected Statement statement;
 
     /**
      * An Emulator must receive a platform.
@@ -37,13 +38,10 @@ public abstract class Emulator implements Clockable {
 
     /**
      * Provide an output to send disassembled form of executed instructions to
-     * @param printer
+     * @param logger
      */
-    public void setPrinter(PrintWriter printer) {
-        if (printer == null)
-            this.printer = null;
-        else
-            this.printer = new IndentPrinter(printer);
+    public void setDisassemblyLogger(DisassemblyLogger logger) {
+        this.logger = logger;
     }
 
     /**
@@ -87,7 +85,7 @@ public abstract class Emulator implements Clockable {
     }
 
     public void exitSleepLoop() {
-        this.exitSleepLoop = true;
+        exitSleepLoop = true;
     }
 
     // TODO shouldn't the context be filled in the constructor ? Are memory, etc. changed after Emulator construction ?
@@ -150,4 +148,53 @@ public abstract class Emulator implements Clockable {
         return Constants.CHIP_LABEL[getChip()] + " Emulator";
     }
 
+    protected void logIfRequested(DisassemblyLogger logger) throws DisassemblyException {
+        if (logger != null && logger.mustLog(platform.cpuState.pc)) {
+            StringBuilder msg = new StringBuilder();
+            if (logger.isIncludeTimestamp()) {
+                msg.append(platform.getMasterClock().getFormatedTotalElapsedTimeMs()).append(" ");
+            }
+            msg.append("0x").append(Format.asHex(platform.cpuState.pc, 8));
+
+            if (logger.isIncludeIndent()) {
+                msg.append(logger.getIndent());
+                switch(statement.getInstruction().getFlowType()) {
+                    case CALL:
+                    case INT:
+                        logger.indent();
+                    case RET:
+                        logger.outdent();
+                }
+            }
+
+            if (logger.isIncludeInstruction()) {
+                statement.formatOperandsAndComment(context, false, outputOptions);
+                msg.append(" ").append(statement.toString(outputOptions));
+            }
+            logger.println(msg.toString());
+        }
+    }
+
+    protected void sleep() {
+        exitSleepLoop = false;
+        if (sleepIntervalMs < 100) {
+            try {
+                Thread.sleep(sleepIntervalMs);
+            } catch (InterruptedException e) {
+                // noop
+            }
+        }
+        else {
+            for (int i = 0; i < sleepIntervalMs / 100; i++) {
+                try {
+                    Thread.sleep(100);
+                    if (exitSleepLoop) {
+                        break;
+                    }
+                } catch (InterruptedException e) {
+                    // noop
+                }
+            }
+        }
+    }
 }

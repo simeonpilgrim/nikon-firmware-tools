@@ -141,10 +141,8 @@ public abstract class Statement {
         if (StringUtils.isNotBlank(commentString)) {
             out += StringUtils.leftPad("; " + commentString, 22);
         }
-        out += "\n";
-
         if (mustInsertLineBreak) {
-            out += "\n";
+            out += System.lineSeparator();
         }
         return out;
     }
@@ -165,4 +163,6 @@ public abstract class Statement {
     public abstract void formatOperandsAndComment(StatementContext context, boolean updateRegisters, Set<OutputOption> outputOptions) throws DisassemblyException;
 
     public abstract boolean isPotentialStuffing();
+
+    public abstract void reset();
 }

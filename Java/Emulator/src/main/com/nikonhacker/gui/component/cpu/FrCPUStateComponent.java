@@ -289,7 +289,7 @@ public class FrCPUStateComponent extends CPUStateComponent {
             // If we are here, everything has been parsed correctly. Commit to actual cpuState.
 
             // Log changes to real-time disassembly window
-            if (instructionPrintWriter != null) {
+            if (logger != null) {
                 String msg = "";
                 if (pc != cpuState.getPc()) msg += changeString("PC", cpuState.getPc(), pc);
                 if (ilm != cpuState.getILM()) msg += changeString("ILM", cpuState.getILM(), ilm);
@@ -305,7 +305,7 @@ public class FrCPUStateComponent extends CPUStateComponent {
                     if (regs[i] != cpuState.getReg(i)) msg += changeString(FrCPUState.registerLabels[i], cpuState.getReg(i), regs[i]);
                 }
                 if (msg.length() > 0) {
-                    instructionPrintWriter.print("=====> Manual CPU state change:\n" + msg);
+                    logger.println("=====> Manual CPU state change:\n" + msg);
                 }
             }
 

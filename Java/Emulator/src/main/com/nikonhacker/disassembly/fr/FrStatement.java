@@ -131,6 +131,7 @@ public class FrStatement extends Statement {
         }
     }
 
+    @Override
     public void reset() {
         data[0] = data[1] = data[2] = 0xDEAD;
         numData = 0;
