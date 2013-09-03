@@ -6,6 +6,7 @@ import com.nikonhacker.disassembly.OutputOption;
 import com.nikonhacker.disassembly.Register32;
 import com.nikonhacker.disassembly.WriteListenerRegister32;
 import com.nikonhacker.disassembly.tx.NullRegister32;
+import com.nikonhacker.emu.AddressRange;
 import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
@@ -23,44 +24,45 @@ public class Prefs {
     private static final String KEY_WINDOW_MAIN = "MAIN";
 
     // Common
-    private String buttonSize = EmulatorUI.BUTTON_SIZE_SMALL;
+    private String  buttonSize            = EmulatorUI.BUTTON_SIZE_SMALL;
     private boolean closeAllWindowsOnStop = false;
     private HashMap<String, WindowPosition> windowPositionMap;
     private HashMap<String, WindowPosition> windowSizeMap;
-    private int dividerLocation;
-    private int lastDividerLocation;
-    private boolean dividerKeepHidden;
+    private int                             dividerLocation;
+    private int                             lastDividerLocation;
+    private boolean                         dividerKeepHidden;
 
     // Per chip
-    private List<BreakTrigger>[] triggers;
-    private List<MemoryWatch>[] memoryWatches;
-    private EnumSet<OutputOption>[] outputOptions;
-    private boolean[] autoUpdateITronObjectWindow;
-    private boolean[] callStackHideJumps;
-    private int[] sleepTick;
-    private boolean[] writeDisassemblyToFile;
-    private boolean[] sourceCodeFollowsPc;
-    private String[] codeStructureGraphOrientation;
-    private boolean[] firmwareWriteProtected;
-    private boolean[] dmaSynchronous;
-    private boolean[] autoEnableTimers;
-    private boolean[] logMemoryMessages;
-    private boolean[] logSerialMessages;
-    private boolean[] logPinMessages;
-    private boolean[] logRegisterMessages;
-    private boolean[] adValueFromList;
-    private Map<String,List<Integer>>[] adValueListMap;
-    private Map<String,Integer>[] adValueMap;
-    private EepromInitMode eepromInitMode;
-    private byte[] lastEepromContents;
-    private String lastEepromFileName;
-    private Map<String,Integer>[] ioValueOverrideMap;
+    private List<BreakTrigger>[]         triggers;
+    private List<AddressRange>[]         disassemblyAddressRanges;
+    private List<MemoryWatch>[]          memoryWatches;
+    private EnumSet<OutputOption>[]      outputOptions;
+    private boolean[]                    autoUpdateITronObjectWindow;
+    private boolean[]                    callStackHideJumps;
+    private int[]                        sleepTick;
+    private boolean[]                    writeDisassemblyToFile;
+    private boolean[]                    sourceCodeFollowsPc;
+    private String[]                     codeStructureGraphOrientation;
+    private boolean[]                    firmwareWriteProtected;
+    private boolean[]                    dmaSynchronous;
+    private boolean[]                    autoEnableTimers;
+    private boolean[]                    logMemoryMessages;
+    private boolean[]                    logSerialMessages;
+    private boolean[]                    logPinMessages;
+    private boolean[]                    logRegisterMessages;
+    private boolean[]                    adValueFromList;
+    private Map<String, List<Integer>>[] adValueListMap;
+    private Map<String, Integer>[]       adValueMap;
+    private EepromInitMode               eepromInitMode;
+    private byte[]                       lastEepromContents;
+    private String                       lastEepromFileName;
+    private Map<String, Integer>[]       ioValueOverrideMap;
     private boolean syncPlay = true;
-    private int[] serialInterfaceFrameSelectedTab;
-    private int[] genericSerialFrameSelectedTab;
-    private int[] ioPortsFrameSelectedTab;
-    private EmulatorUI.RunMode[] altModeForSyncedCpuUponStep;
-    private EmulatorUI.RunMode[] altModeForSyncedCpuUponDebug;
+    private int[]                              serialInterfaceFrameSelectedTab;
+    private int[]                              genericSerialFrameSelectedTab;
+    private int[]                              ioPortsFrameSelectedTab;
+    private EmulatorUI.RunMode[]               altModeForSyncedCpuUponStep;
+    private EmulatorUI.RunMode[]               altModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
 
@@ -242,6 +244,13 @@ public class Prefs {
         if (triggers == null) triggers = new List[2];
         if (triggers[chip] == null) triggers[chip] = new ArrayList<BreakTrigger>();
         return triggers[chip];
+    }
+
+    public List<AddressRange> getDisassemblyAddressRange(int chip) {
+        if (disassemblyAddressRanges == null) disassemblyAddressRanges = new List[2];
+        if (disassemblyAddressRanges[chip] == null) disassemblyAddressRanges[chip] = new ArrayList<AddressRange>();
+
+        return disassemblyAddressRanges[chip];
     }
 
     public List<MemoryWatch> getWatches(int chip) {

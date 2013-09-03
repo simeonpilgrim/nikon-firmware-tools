@@ -364,6 +364,7 @@ public class TxStatement extends Statement {
         }
     }
 
+    @Override
     public void reset() {
         immBitWidth = 0;
         c = 0;

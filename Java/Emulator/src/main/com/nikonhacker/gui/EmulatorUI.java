@@ -2243,13 +2243,13 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleDisassemblyLog(int chip) {
         if (disassemblyLogFrame[chip] == null) {
-            disassemblyLogFrame[chip] = new DisassemblyFrame("Real-time disassembly log", "disassembly_log", true, true, true, true, chip, this, framework.getEmulator(chip));
-            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(disassemblyLogFrame[chip].getInstructionPrintWriter());
+            disassemblyLogFrame[chip] = new DisassemblyFrame("Real-time disassembly log", "disassembly_log", true, true, true, true, chip, this, framework.getEmulator(chip), prefs.getDisassemblyAddressRange(chip));
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setLogger(disassemblyLogFrame[chip].getLogger());
             addDocumentFrame(chip, disassemblyLogFrame[chip]);
             disassemblyLogFrame[chip].display(true);
         }
         else {
-            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(null);
+            if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setLogger(null);
             disassemblyLogFrame[chip].dispose();
             disassemblyLogFrame[chip] = null;
         }
@@ -2260,7 +2260,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         if (cpuStateEditorFrame[chip] == null) {
             cpuStateEditorFrame[chip] = new CPUStateEditorFrame("CPU State", "cpu", true, true, false, true, chip, this, framework.getPlatform(chip).getCpuState());
             cpuStateEditorFrame[chip].setEnabled(!framework.isEmulatorPlaying(chip));
-            if (disassemblyLogFrame[chip] != null) cpuStateEditorFrame[chip].setInstructionPrintWriter(disassemblyLogFrame[chip].getInstructionPrintWriter());
+            if (disassemblyLogFrame[chip] != null) cpuStateEditorFrame[chip].setLogger(disassemblyLogFrame[chip].getLogger());
             addDocumentFrame(chip, cpuStateEditorFrame[chip]);
             cpuStateEditorFrame[chip].display(true);
         }
@@ -2684,6 +2684,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
             if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
+            if (disassemblyLogFrame[chip] != null) disassemblyLogFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
         }
         else {
             loadMenuItem[chip].setEnabled(true); loadButton[chip].setEnabled(true);
@@ -2701,6 +2702,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
             if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(true);
+            if (disassemblyLogFrame[chip] != null) disassemblyLogFrame[chip].setEditable(true);
         }
     }
 
