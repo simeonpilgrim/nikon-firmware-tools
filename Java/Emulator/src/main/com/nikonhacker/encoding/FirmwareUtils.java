@@ -283,14 +283,10 @@ public class FirmwareUtils {
             int computedChecksum = FirmwareUtils.fastComputeChecksum(buffer, start, totalLength - start, init, mask);
 
             if (compareChecksum == computedChecksum) {
-                System.out.println("");
-                System.out.println("============================================");
-                System.out.println("Found : start = 0x" + Integer.toHexString(start));
-                System.out.println("============================================");
-                f.write("\n");
-                f.write("============================================\n");
-                f.write("Found : start = 0x" + Integer.toHexString(start));
-                f.write("============================================\n");
+                printlnToWriterAndStdout(f, "");
+                printlnToWriterAndStdout(f, "============================================");
+                printlnToWriterAndStdout(f, "Found : start = 0x" + Integer.toHexString(start));
+                printlnToWriterAndStdout(f, "============================================");
             }
         }
         f.close();
@@ -302,34 +298,37 @@ public class FirmwareUtils {
         FileWriter f = new FileWriter(fileName, true);
         f.write(new Date().toString());
         for (int mask = startMask; mask < endMask; mask++) {
-            System.out.print("-------------------------------------- MASK 0x" + Integer.toHexString(mask) + " --------------------------------------");
-            f.write("-------------------------------------- MASK 0x" + Integer.toHexString(mask) + " --------------------------------------");
+            printToWriterAndStdout(f, "-------------------------------------- MASK 0x" + Integer.toHexString(mask) + " --------------------------------------");
             for (int init = startInit; init < endInit; init++) {
                 if (init % 0x100 == 0) {
                     f.close();
                     f = new FileWriter(fileName, true);
-                    System.out.println("");
-                    System.out.print(Integer.toHexString(init));
-                    f.write("\n");
-                    f.write(Integer.toHexString(init));
+                    printlnToWriterAndStdout(f, "");
+                    printToWriterAndStdout(f, Integer.toHexString(init));
                 }
                 System.out.print(".");
                 f.write(".");
                 int computedChecksum = FirmwareUtils.fastComputeChecksum(buffer, offset, length, init, mask);
 
                 if (compareChecksum == computedChecksum) {
-                    System.out.println("");
-                    System.out.println("============================================");
-                    System.out.println("Found : init = 0x" + Integer.toHexString(init) + " - mask = 0x" + Integer.toHexString(mask) + " on full file");
-                    System.out.println("============================================");
-                    f.write("\n");
-                    f.write("============================================\n");
-                    f.write("Found : init = 0x" + Integer.toHexString(init) + " - mask = 0x" + Integer.toHexString(mask) + " on full file\n");
-                    f.write("============================================\n");
+                    printlnToWriterAndStdout(f, "");
+                    printlnToWriterAndStdout(f, "============================================");
+                    printlnToWriterAndStdout(f, "Found : init = 0x" + Integer.toHexString(init) + " - mask = 0x" + Integer.toHexString(mask) + " on full file");
+                    printlnToWriterAndStdout(f, "============================================");
                 }
             }
         }
         f.close();
+    }
+
+    private static void printToWriterAndStdout(FileWriter f, String msg) throws IOException {
+        f.write(msg);
+        System.out.print(msg);
+    }
+
+    private static void printlnToWriterAndStdout(FileWriter f, String msg) throws IOException {
+        f.write(msg + System.lineSeparator());
+        System.out.println(msg);
     }
 
     private static void assertEquals(byte[] buffer, int start, int length, int[] ref) {
