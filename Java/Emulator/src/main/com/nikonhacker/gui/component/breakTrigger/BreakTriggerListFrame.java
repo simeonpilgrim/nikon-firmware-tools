@@ -70,11 +70,14 @@ public class BreakTriggerListFrame extends DocumentFrame {
 
         EventTableModel<BreakTrigger> etm = new EventTableModel<BreakTrigger>(triggerList, new BreakTriggerTableFormat());
         triggerTable = new JTable(etm);
-        triggerTable.getColumnModel().getColumn(0).setPreferredWidth(1000);
+        triggerTable.getColumnModel().getColumn(0).setPreferredWidth(500);
         triggerTable.getColumnModel().getColumn(1).setPreferredWidth(100);
         triggerTable.getColumnModel().getColumn(2).setPreferredWidth(100);
-        triggerTable.getColumnModel().getColumn(3).setPreferredWidth(200);
-        triggerTable.getColumnModel().getColumn(4).setPreferredWidth(200);
+        triggerTable.getColumnModel().getColumn(3).setPreferredWidth(150);
+        triggerTable.getColumnModel().getColumn(4).setPreferredWidth(150);
+        triggerTable.getColumnModel().getColumn(5).setPreferredWidth(200);
+        triggerTable.getColumnModel().getColumn(6).setPreferredWidth(100);
+        triggerTable.getColumnModel().getColumn(7).setPreferredWidth(100);
 
         JScrollPane listScroller = new JScrollPane(triggerTable);
         listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -395,7 +398,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         }
 
         public int getColumnCount() {
-            return 6;
+            return 8;
         }
 
 
@@ -451,6 +454,14 @@ public class BreakTriggerListFrame extends DocumentFrame {
                         }
                     }
                     return baseObject;
+                case 6:
+                    baseObject.setMustStartLogging((Boolean) editedValue);
+                    ui.onBreaktriggersChange(chip);
+                    return baseObject;
+                case 7:
+                    baseObject.setMustStopLogging((Boolean) editedValue);
+                    ui.onBreaktriggersChange(chip);
+                    return baseObject;
             }
             return baseObject;
         }
@@ -469,6 +480,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return "Interrupt Off";
                 case 5:
                     return "JMP to";
+                case 6:
+                    return "Start Log";
+                case 7:
+                    return "Stop Log";
             }
             return null;
         }
@@ -487,6 +502,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return baseObject.getInterruptToWithdraw()==null?"":Format.asHex(baseObject.getInterruptToWithdraw(), 2);
                 case 5:
                     return baseObject.getPcToSet()==null?"":Format.asHex(baseObject.getPcToSet(), 8);
+                case 6:
+                    return baseObject.getMustStartLogging();
+                case 7:
+                    return baseObject.getMustStopLogging();
             }
             return null;
         }
@@ -505,6 +524,10 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     return String.class;
                 case 5:
                     return String.class;
+                case 6:
+                    return Boolean.class;
+                case 7:
+                    return Boolean.class;
             }
             return null;
         }

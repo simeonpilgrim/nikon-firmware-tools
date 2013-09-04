@@ -5,6 +5,7 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
+import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
@@ -196,5 +197,37 @@ public abstract class Emulator implements Clockable {
                 }
             }
         }
+    }
+
+    protected BreakCondition processConditions(List<BreakCondition> breakConditions) {
+        for (BreakCondition breakCondition : breakConditions) {
+            if (breakCondition.matches(platform.cpuState, platform.memory)) {
+                BreakTrigger trigger = breakCondition.getBreakTrigger();
+                if (trigger != null) {
+                    if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
+                        trigger.log(breakLogPrintWriter, platform, context.callStack);
+                    }
+                    if (trigger.getInterruptToRequest() != null) {
+                        platform.interruptController.request(trigger.getInterruptToRequest());
+                    }
+                    if (trigger.getInterruptToWithdraw() != null) {
+                        platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
+                    }
+                    if (trigger.getPcToSet() != null) {
+                        platform.cpuState.pc = trigger.getPcToSet();
+                    }
+                    if (trigger.getMustStartLogging() && logger != null) {
+                        logger.setLogging(true);
+                    }
+                    if (trigger.getMustStopLogging() && logger != null) {
+                        logger.setLogging(false);
+                    }
+                }
+                if (trigger == null || trigger.mustBreak()) {
+                    return breakCondition;
+                }
+            }
+        }
+        return null;
     }
 }

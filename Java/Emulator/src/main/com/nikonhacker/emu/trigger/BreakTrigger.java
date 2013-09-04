@@ -37,6 +37,8 @@ public class BreakTrigger {
     private Integer interruptToRequest = null;
     private Integer interruptToWithdraw = null;
     private Integer pcToSet = null;
+    private boolean mustStartLogging = false;
+    private boolean mustStopLogging = false;
     private Function function;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
@@ -104,6 +106,22 @@ public class BreakTrigger {
 
     public void setPcToSet(Integer pcToSet) {
         this.pcToSet = pcToSet;
+    }
+
+    public boolean getMustStartLogging() {
+        return mustStartLogging;
+    }
+
+    public void setMustStartLogging(boolean mustStartLogging) {
+        this.mustStartLogging = mustStartLogging;
+    }
+
+    public boolean getMustStopLogging() {
+        return mustStopLogging;
+    }
+
+    public void setMustStopLogging(boolean mustStopLogging) {
+        this.mustStopLogging = mustStopLogging;
     }
 
     public void setCpuStateValues(CPUState cpuStateValues) {
@@ -184,7 +202,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"")).trim() + "]";
+        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"") + (getMustBeLogged()?"startlog ":"") + (getMustBeLogged()?"stoplog ":"")).trim() + "]";
     }
 
     /**
@@ -244,6 +262,15 @@ public class BreakTrigger {
         printWriter.print(msg + "\n");
     }
 
+        public boolean isActive() {
+        return     mustBeLogged
+                || mustBreak
+                || (interruptToRequest != null)
+                || (interruptToWithdraw != null)
+                || (pcToSet != null)
+                || mustStartLogging
+                || mustStopLogging;
+    }
 
 }
 

@@ -11,7 +11,6 @@ import com.nikonhacker.emu.interrupt.fr.FrInterruptRequest;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
-import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
@@ -133,31 +132,12 @@ public class FrEmulator extends Emulator {
                 }
             }
 
-            /* Break if requested */
+            // Process breakConditions
             if (!breakConditions.isEmpty()) {
-                //Double test to avoid useless synchronization if empty, at the cost of a double test when not empty (debug)
                 synchronized (breakConditions) {
-                    for (BreakCondition breakCondition : breakConditions) {
-                        if (breakCondition.matches(platform.cpuState, platform.memory)) {
-                            BreakTrigger trigger = breakCondition.getBreakTrigger();
-                            if (trigger != null) {
-                                if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                                    trigger.log(breakLogPrintWriter, platform, context.callStack);
-                                }
-                                if (trigger.getInterruptToRequest() != null) {
-                                    platform.interruptController.request(trigger.getInterruptToRequest());
-                                }
-                                if (trigger.getInterruptToWithdraw() != null) {
-                                    platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
-                                }
-                                if (trigger.getPcToSet() != null) {
-                                    platform.cpuState.pc = trigger.getPcToSet();
-                                }
-                            }
-                            if (trigger == null || trigger.mustBreak()) {
-                                return breakCondition;
-                            }
-                        }
+                    BreakCondition breakCondition = processConditions(breakConditions);
+                    if (breakCondition != null) {
+                        return breakCondition;
                     }
                 }
             }
@@ -174,8 +154,7 @@ public class FrEmulator extends Emulator {
             try {
                 statement.formatOperandsAndComment(context, false, outputOptions);
                 System.err.println("Offending instruction : " + statement);
-            }
-            catch(Exception e1) {
+            } catch (Exception e1) {
                 System.err.println("Cannot disassemble offending instruction :" + statement.getFormattedBinaryStatement());
             }
             System.err.println("(on or before PC=0x" + Format.asHex(platform.cpuState.pc, 8) + ")");
