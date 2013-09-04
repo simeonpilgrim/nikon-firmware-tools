@@ -24,7 +24,7 @@
 
 -m 0x000409B4-0x000427BD=CODE
 
-# µITRON RealOS version structure returned by "get_ver" system call
+# ÂµITRON RealOS version structure returned by "get_ver" system call
 -m 0x000427BE-0x000427D1=DATA
 
 -m 0x000427D2-0x000504E1=CODE
@@ -297,7 +297,7 @@
 # Unknown
 #-m 0x000DC304-0x000DC30F=DATA:L
 
-# Table defining µITRON Tasks (32b header + Table of 0x3C records of 0x1C bytes)
+# Table defining ÂµITRON Tasks (32b header + Table of 0x3C records of 0x1C bytes)
 #-m 0x000DC310-0x000DC9A3=DATA:L
 
 # Unknown
@@ -2539,6 +2539,8 @@
 -s 0x151DE0=start_task_x2A
 -s 0x151DFA=Tsk2A
 -s 0x154380=waitforflags_154380
+-s 0x154D1A=LED_On
+-s 0x154DD8=LED_Off
 -s 0x155FE2=video_155FE2
 -s 0x1562CA=movie_card_good_Xx
 -s 0x1563CA=ccall_checkMovieRecOrMovieData
@@ -2580,6 +2582,7 @@
 -s 0x15C7C8=set_8F86BF40
 -s 0x15FDA0=GetTotalImageCount
 -s 0x1632F2=buildFileOutputName_x1
+-s 0x164AC2=load_nikon001_dsc_file
 -s 0x164CBC=nullsub_177
 -s 0x164CBE=trace(R4 [IN szDebugString])
 -s 0x168596=stringSpaceExtend
@@ -2755,7 +2758,7 @@
 -s 0x170B3A=BuildFileAFirmStr
 -s 0x170B54=nullsub_209
 -s 0x170B56=Build_SFirmStr
--s 0x170B92=BuildLenDataVersionString
+-s 0x170B92=BuildLensDataVersionString
 -s 0x170BC6=build_baseOS_versionstr
 -s 0x170C00=FirmwareVer_xx
 -s 0x170D20=Decrypt_NKLD
@@ -2862,7 +2865,7 @@
 -s 0x1AA60E=NCP_CreateSaveData
 -s 0x1AA778=NCP_SaveFile
 -s 0x1AA8A0=NCP_1AA8A0
--s 0x1AAA44=NCP_1AAA44
+-s 0x1AAA44=NCP_LoadBlock
 -s 0x1AAB56=NCP_findemptyblock
 -s 0x1AAB82=NCP_Setup_Path
 -s 0x1AAD92=ncp_1AAD92
@@ -2870,7 +2873,7 @@
 -s 0x1AAFF8=SearchCustPicCtrl
 -s 0x1AB432=GetShootingModeData
 -s 0x1AC25C=start_task_x30
--s 0x1AC268=Tsk30
+-s 0x1AC268=Tsk30_LiveView?
 -s 0x1AC30C=start_task_x31
 -s 0x1AC318=Tsk31
 -s 0x1ACDF4=SavePicture
@@ -2907,8 +2910,8 @@
 -s 0x1B6CF8=eyefi_matchVolumeId
 -s 0x1B6FE4=Eyefi_stat
 -s 0x1B7006=Eyefi_mkdir
--s 0x1B701A=call_CF_remote
--s 0x1B702C=delayTask
+-s 0x1B701A=Eyefi_remove
+-s 0x1B702C=Eyefi_delayTask
 -s 0x1B7034=get_1B7034
 -s 0x1B703E=nullsub_46
 -s 0x1B7040=eyefi_1B7040
@@ -2931,6 +2934,7 @@
 -s 0x1BA0E2=nullsub_84
 -s 0x1BA0F4=nullsub_85
 -s 0x1BB2CA=clear_8F8A1750
+-s 0x1BB2DC=process_packed_firmwarefile
 -s 0x1BB548=XOR_Code
 -s 0x1BB5FC=set_r4_0x10
 -s 0x1BB61E=getVidMappedVal_xx
@@ -3147,8 +3151,8 @@
 -s 0x1D9794=WaitForEventFlagPolling
 -s 0x1D97C0=MsgPtr_SetPtr
 -s 0x1D97CA=SendMessage
--s 0x1D97EE=RecieveMessage
--s 0x1D982A=RecieveMessageTimeout
+-s 0x1D97EE=ReceiveMessage
+-s 0x1D982A=ReceiveMessageTimeout
 -s 0x1D9868=PollReceiveMessage
 -s 0x1D98A4=ReferenceMailboxStatus
 -s 0x1D98D8=WaitForMsg_CallFunc
@@ -3264,13 +3268,22 @@
 -s 0x1D9EAC=Setup_Tsk10_callback
 -s 0x1D9ECE=Tsk10_WaitForMsg
 -s 0x1D9EE6=Task10_SendMessage
--s 0x1D9F1C=call_sub_1D9F28
--s 0x1D9F86=Tsk10_MsgHandler
+-s 0x1D9F1C=call_Tsk10_Release
+-s 0x1D9F28=Tsk10_Release
+-s 0x1D9F86=Tsk10_OnMsg
+-s 0x1DA038=Tsk10_Msg_1
+-s 0x1DA062=Tsk10_Msg_3
+-s 0x1DA0D2=Tsk10_Msg_4
 -s 0x1DA142=Setup_Tsk0F_callback
 -s 0x1DA164=Tsk0F_WaitForMsg
 -s 0x1DA17C=Task0F_SendMessage
--s 0x1DA1B2=call_sub_1DA1BE
+-s 0x1DA1B2=call_Tsk0F_Release
+-s 0x1DA1BE=Tsk0F_Release
 -s 0x1DA21C=Tsk0F_OnMsg
+-s 0x1DA2F8=Tsk0F_Msg_1
+-s 0x1DA336=Tsk0F_Msg_2
+-s 0x1DA3F4=Tsk0F_Msg_3
+-s 0x1DA464=Tsk0F_Msg_4
 -s 0x1DA4D4=setup_semaphore_x17_x18
 -s 0x1DA51E=s4018_1DA51E
 -s 0x1DA6B6=s4018_1DA6B6
@@ -3284,20 +3297,59 @@
 -s 0x1DB7DE=Setup_Tsk0B_callback
 -s 0x1DB800=Tsk0B_WaitForMsg
 -s 0x1DB818=Task0B_SendMessage
--s 0x1DB8B8=Tsk0B_mbx_cb_func
+-s 0x1DB84E=call_Tsk0B_Release
+-s 0x1DB85A=Tsk0B_Release
+-s 0x1DB8B8=Tsk0B_OnMsg
+-s 0x1DBA2A=Tsk0B_Msg_1
+-s 0x1DBA54=Tsk0B_Msg_2
+-s 0x1DBC10=Tsk0B_Msg_3
+-s 0x1DBC1C=Tsk0B_Msg_4
+-s 0x1DBC46=Tsk0B_Msg_6
+-s 0x1DBC82=Tsk0B_Msg_5
+-s 0x1DBCAC=Tsk0B_Msg_8
 -s 0x1DBCD6=Setup_Tsk0C_callback
 -s 0x1DBCF8=Tsk0C_WaitForMsg
 -s 0x1DBD10=Task0C_SendMessage
--s 0x1DBD46=call_sub_1DBD52
--s 0x1DBDB0=Tsk0C_mbx_cb_func
+-s 0x1DBD46=call_Tsk0C_Release
+-s 0x1DBD52=Tsk0C_Release
+-s 0x1DBDB0=Tsk0C_OnMsg
+-s 0x1DBF22=Tsk0C_Msg_1
+-s 0x1DBF4C=Tsk0C_Msg_2
+-s 0x1DC108=Tsk0C_Msg_3
+-s 0x1DC114=Tsk0C_Msg_4
+-s 0x1DC13E=Tsk0C_Msg_6
+-s 0x1DC17A=Tsk0C_Msg_5
+-s 0x1DC1A4=Tsk0C_Msg_8
 -s 0x1DC1CE=Setup_Tsk0D_callback
 -s 0x1DC1F0=Tsk0D_WaitForMsg
 -s 0x1DC208=Task0D_SendMessage
--s 0x1DC2A8=Tsk0D_mbx_cb_func
+-s 0x1DC23E=call_Tsk0D_Release
+-s 0x1DC24A=Tsk0D_Release
+-s 0x1DC2A8=Tsk0D_OnMsg
+-s 0x1DC41A=Tsk0D_Msg_1
+-s 0x1DC444=Tsk0D_Msg_2
+-s 0x1DC600=Tsk0D_Msg_3
+-s 0x1DC60C=Tsk0D_Msg_4
+-s 0x1DC636=Tsk0D_Msg_6
+-s 0x1DC672=Tsk0D_Msg_5
+-s 0x1DC69C=Tsk0D_Msg_8
 -s 0x1DC6C6=Setup_Tsk0A_callback
 -s 0x1DC6E8=Tsk0A_WaitForMsg
 -s 0x1DC700=Task0A_SendMessage
--s 0x1DC7A0=Tsk0A_mbx_cb_func
+-s 0x1DC736=call_Tsk0A_Release
+-s 0x1DC742=Tsk0A_Release
+-s 0x1DC7A0=Tsk0A_OnMsg
+-s 0x1DC9F2=Tsk0A_Msg_1
+-s 0x1DCA14=Tsk0A_Msg_2
+-s 0x1DCA36=Tsk0A_Msg_3
+-s 0x1DCA58=Tsk0A_Msg_4
+-s 0x1DCA8E=Tsk0A_Msg_5
+-s 0x1DCAB0=Tsk0A_Msg_6
+-s 0x1DCAD2=Tsk0A_Msg_7
+-s 0x1DCAF4=Tsk0A_Msg_8
+-s 0x1DCB16=Tsk0A_Msg_9
+-s 0x1DCB4C=Tsk0A_Msg_A
+-s 0x1DCB82=Tsk0A_Msg_B
 -s 0x1DCBA4=setup_semaphore_x3B
 -s 0x1DDD2E=s4019_1DDD2E
 -s 0x1DDD44=s4019_1DDD44
@@ -3324,8 +3376,10 @@
 -s 0x1DE6F4=Setup_Tsk09_callback
 -s 0x1DE716=Tsk09_WaitForMsg
 -s 0x1DE72E=Task09_SendMessage
--s 0x1DE764=call_sub_1DE770
--s 0x1DE7CE=Tsk09_mbx_cb_func
+-s 0x1DE764=call_Tsk09_Release
+-s 0x1DE770=Tsk09_Release
+-s 0x1DE7CE=Tsk09_OnMsg
+-s 0x1DE82C=Tsk09_Msg_1
 -s 0x1DE84E=setup_semaphore_x14
 -s 0x1DE87C=s4012_get_addr
 -s 0x1DE884=s4012_get_x000_x0004
@@ -3359,21 +3413,29 @@
 -s 0x1DF36E=Setup_Tsk06_callback
 -s 0x1DF390=Tsk06_WaitForMsg
 -s 0x1DF3A8=Task06_SendMessage
--s 0x1DF3DE=call_sub_1DF3EA
--s 0x1DF448=Tsk06_mbx_cb_func
+-s 0x1DF3DE=call_Tsk06_Release
+-s 0x1DF3EA=Tsk06_Release
+-s 0x1DF448=Tsk06_OnMsg
+-s 0x1DF4A6=Tsk06_Msg_1
 -s 0x1E0932=setup_semaphore_x22
 -s 0x1E0D60=Setup_Tsk0E_callback
 -s 0x1E0D82=Tsk0E_WaitForMsg
 -s 0x1E0D9E=Task0E_SendMessage
--s 0x1E0DD4=call_sub_1E0DE0
--s 0x1E0E3E=Tsk0E_mbx_cb_func
+-s 0x1E0DD4=call_Tsk0E_Release
+-s 0x1E0DE0=Tsk0E_Release
+-s 0x1E0E3E=Tsk0E_OnMsg
+-s 0x1E0EC4=Tsk0E_Msg_1
+-s 0x1E102E=Tsk0E_Msg_3
 -s 0x1E12BE=Setup_Tsk07_callback
 -s 0x1E12E0=Tsk07_WaitForMsg
 -s 0x1E12F8=Task07_SendMessage
--s 0x1E132E=call_sub_1E133A
--s 0x1E1398=Tsk07_mbx_cb_func
--s 0x1E14EC=nullsub_28
--s 0x1E14EE=nullsub_29
+-s 0x1E132E=call_Tsk07_Release
+-s 0x1E133A=Tsk07_Release
+-s 0x1E1398=Tsk07_OnMsg
+-s 0x1E147C=Tsk07_Msg_1
+-s 0x1E14B4=Tsk07_Msg_2
+-s 0x1E14EC=Tsk07_Msg_3_Nullsib
+-s 0x1E14EE=Tsk07_Msg_4_Nullsib
 -s 0x1E14F0=Setup_Semaphore_x1D
 -s 0x1E151E=get_x4009_addr
 -s 0x1E1526=s4009_1E1526
@@ -3389,10 +3451,13 @@
 -s 0x1E1922=Setup_Tsk08_callback
 -s 0x1E1944=Tsk08_WaitForMsg
 -s 0x1E195C=Task08_SendMessage
--s 0x1E1992=call_sub_1E199E
--s 0x1E19FC=Tsk08_mbx_cb_func
+-s 0x1E1992=call_Tsk08_Release
+-s 0x1E199E=Tsk08_Release
+-s 0x1E19FC=Tsk08_OnMsg
+-s 0x1E1AAE=Tsk08_Msg_1
 -s 0x1E2F32=Tsk08_Msg_2
--s 0x1E2FA6=SetupSemaphore_x1C
+-s 0x1E2F6C=Tsk08_Msg_3?
+-s 0x1E2FA6=setup_semaphore_x1C
 -s 0x1E2FD4=get_x4003_addr
 -s 0x1E338E=call_Tsk08_Func
 -s 0x1E33A8=WaitOnSemaphore_x1C
@@ -3401,6 +3466,7 @@
 -s 0x1E3832=Tsk08_SubFunc01
 -s 0x1E3C06=Tsk08_SubFunc02
 -s 0x1E3C84=Tsk08_SubFunc03
+-s 0x1E602C=Send_Msg08_2
 -s 0x1E612E=call_sub_1E602C
 -s 0x1E6720=PictureData0
 -s 0x1E67D4=start_task_x20
@@ -3415,6 +3481,7 @@
 -s 0x1E6B1C=tsk20_body
 -s 0x1E700A=tsk21_body
 -s 0x1E7184=Tsk17
+-s 0x1E7B5E=Tsk17_Init
 -s 0x1E88B2=enable_1E88B2
 -s 0x1E88C6=disable_1E88B2
 -s 0x1E88DA=get_1E88DA
@@ -3564,8 +3631,8 @@
 -s 0x1EFEDE=get_ImageCommentEnable
 -s 0x1EFEEC=set_1EFEEC
 -s 0x1EFF02=get_1EFF02
--s 0x1EFF10=set_ImageRotation
--s 0x1EFF26=get_ImageRotation
+-s 0x1EFF10=setAutoImageRotation
+-s 0x1EFF26=getAutoImageRotation
 -s 0x1EFF34=setEyeFiUploadSlot1
 -s 0x1EFF4A=getEyeFiUploadSlot1
 -s 0x1EFF58=setEyeFiUploadSlot2
@@ -3627,15 +3694,15 @@
 -s 0x1F03A0=setWBCloudyBias_sb
 -s 0x1F03C0=getWBShadeBias_sb
 -s 0x1F03D0=setWBShadeBias_s42
--s 0x1F03F2=get_1F03F2_sb
--s 0x1F0402=set_1F0402_sb
+-s 0x1F03F2=get_s47_0x08
+-s 0x1F0402=set_s47_0x08
 -s 0x1F041C=getTuneColorTemp_sb
 -s 0x1F042E=setTuneColorTemp_sb
 -s 0x1F044E=getVideoResolution_sb
 -s 0x1F045C=setVideoResolution_sb
 -s 0x1F047C=getVideoFps_sb
 -s 0x1F0488=setVideoFps_sb
--s 0x1F0494=get_1F0494_sb
+-s 0x1F0494=get_s47_0x10_sb
 -s 0x1F04A4=get_1F04A4_sb
 -s 0x1F04B2=set_1F04B2_sb
 -s 0x1F04BE=getSlotSaveMode_sb
@@ -3818,9 +3885,10 @@
 -s 0x1FA32A=Setup_Tsk02_callback
 -s 0x1FA344=Tsk02_WaitForMsg
 -s 0x1FA35C=Task02_PostMessage
--s 0x1FA392=call_sub_1FA39E
+-s 0x1FA392=call_Tsk02_Release
+-s 0x1FA39E=Tsk02_Release
 -s 0x1FA3F8=Tsk02_OnMsg
--s 0x1FA448=s4012_DO_STUFF
+-s 0x1FA448=Tsk02_Msg_1_s4012_DO_STUFF
 -s 0x1FA47A=s4006_1FA47A
 -s 0x1FA4D4=s4006_check_field_A
 -s 0x1FA502=set_s4006_mode
@@ -3860,6 +3928,8 @@
 -s 0x201642=BFT339_s3
 -s 0x2016AE=BFT340_s3_2016AE
 -s 0x20196A=BFT336_s6_20196A
+-s 0x202234=call_sub_1B8068
+-s 0x202242=call_sub_1BB262
 -s 0x203DFE=I2C_send_recv
 -s 0x203F4E=Setup_Tskxx_callback
 -s 0x203F68=Tskxx_203F68
@@ -3927,7 +3997,10 @@
 -s 0x20B0B2=nullsub_58
 -s 0x20B0B4=nullsub_59
 -s 0x20B4AA=nullsub_184
+-s 0x20F16E=DMA_20F16E
+-s 0x20F618=setup_DMA1
 -s 0x20FB26=set_flg_35_1
+-s 0x20FB3C=start_DMA1_transfering
 -s 0x213C0C=set_@0x8F9DC9F4(R4 [IN value]  /* sets 8bits @0x8F9DC9F4 */)
 -s 0x213C16=get_@0x8F9DC9F4(R4 [OUT value] /* gets 8bits @0x8F9DC9F4 */)
 -s 0x213EEE=copy_MvDefectTable_to_ram
@@ -4391,10 +4464,11 @@
 -s 0x2E55D4=BFT167_s2_2E55D4
 -s 0x2E58B6=BFT167_s5_2E58B6
 -s 0x2E5AA2=BFT174_s1_FindFirmware
--s 0x2E5ADC=BFT174_s5_2E5ADC
--s 0x2E5AFE=BFT174_s4_2E5AFE
--s 0x2E5B06=BFT174_s6_2E5B06
+-s 0x2E5ADC=BFT174_s5
+-s 0x2E5AFE=BFT174_s4
+-s 0x2E5B06=BFT174_s6
 -s 0x2E5B58=BFT174_s7_2E5B58
+-s 0x2E5C82=BFT174_s4_body
 -s 0x2E5EC6=BFT174_s3_FindFirmware
 -s 0x2E5F3A=BFT175_s1_UpdateFirmware
 -s 0x2E5FC6=BFT175_s5_UpdateFirmware
@@ -5412,6 +5486,7 @@
 -s 0x348CCE=colorfill_5_5_72_26
 -s 0x348CF4=colorfill_0_43_255_170
 -s 0x34A626=Display_ImageCount
+-s 0x34B11A=draw_histogram
 -s 0x34C75C=BFT314_s2_34C75C
 -s 0x34C76A=BFT181_s2_34C76A
 -s 0x34C778=BFT184_s1_34C778
@@ -5500,6 +5575,7 @@
 -s 0x360DFE=Image_ShootData_2
 -s 0x3615F2=Image_ShootData_3
 -s 0x361B2A=Image_GPS_data
+-s 0x3621A0=RGB_Histogram
 -s 0x36246A=start_task_x2C
 -s 0x362482=WhiteBalanceModeOutput
 -s 0x36287E=Outut_xx
@@ -5713,6 +5789,7 @@
 -s 0x8F800792=Flash_ResetCommand
 -s 0x8F8007A8=reflash_NikonLensData
 -s 0x8F800A2C=Flash_memset
+-s 0x8F800A44=flashing_S5000
 -s 0x8F800A9A=nullsub_212
 
 ########## Global variables
