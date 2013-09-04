@@ -18,11 +18,16 @@ public class DisassemblyLogger {
     String  prefix                = "";
     private List<Writer> writers = new ArrayList<>();
     private List<AddressRange> ranges;
+    private List<LoggingStateChangeListener> listeners = new ArrayList<>();
 
     /**
      * Basic empty constructor
      */
     public DisassemblyLogger() {
+    }
+
+    public List<LoggingStateChangeListener> getListeners() {
+        return listeners;
     }
 
     /**
@@ -40,7 +45,12 @@ public class DisassemblyLogger {
     }
 
     public void setLogging(boolean logging) {
-        this.logging = logging;
+        if (this.logging != logging) {
+            for (LoggingStateChangeListener listener : listeners) {
+                listener.onBeforeLoggingStateChange(logging);
+            }
+            this.logging = logging;
+        }
     }
 
     public boolean isIncludeTimestamp() {
@@ -151,4 +161,5 @@ public class DisassemblyLogger {
     public List<AddressRange> getRanges() {
         return ranges;
     }
+
 }

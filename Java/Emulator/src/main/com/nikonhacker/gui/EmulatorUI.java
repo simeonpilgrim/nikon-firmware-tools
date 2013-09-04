@@ -183,10 +183,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private static final String STATUS_DEFAULT_TEXT = "Ready";
 
-    public static final Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
-    public static final Color STATUS_BGCOLOR_RUN     = Color.GREEN;
-    public static final Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
-    public static final Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
+    public static final  Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
+    public static final  Color STATUS_BGCOLOR_RUN     = Color.GREEN;
+    public static final  Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
+    public static final  Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
+    public static final  Color STATUS_BGCOLOR_ERROR   = Color.RED;
 
     private EmulationFramework framework;
 

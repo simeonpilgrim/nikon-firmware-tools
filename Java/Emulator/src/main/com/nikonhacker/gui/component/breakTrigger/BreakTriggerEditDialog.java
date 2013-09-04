@@ -27,6 +27,8 @@ public class BreakTriggerEditDialog extends JDialog {
     private final JTextField interruptToTriggerField;
     private final JTextField interruptToWithdramField;
     private final JTextField pcToSetField;
+    private final JCheckBox startLoggingCheckBox;
+    private final JCheckBox stopLoggingCheckBox;
 
     public BreakTriggerEditDialog(JDialog owner, int chip, final BreakTrigger trigger, String title) {
         super(owner, title, true);
@@ -91,6 +93,16 @@ public class BreakTriggerEditDialog extends JDialog {
         }
         actionPanel.add(pcToSetField, "wrap");
 
+        actionPanel.add(new JLabel("Start logging"));
+        startLoggingCheckBox = new JCheckBox();
+        startLoggingCheckBox.setSelected(trigger.getMustStartLogging());
+        actionPanel.add(startLoggingCheckBox, "wrap");
+
+        actionPanel.add(new JLabel("Stop logging"));
+        stopLoggingCheckBox = new JCheckBox();
+        stopLoggingCheckBox.setSelected(trigger.getMustStopLogging());
+        actionPanel.add(stopLoggingCheckBox, "wrap");
+
         tabbedPane.addTab("Actions", null, actionPanel);
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -120,6 +132,8 @@ public class BreakTriggerEditDialog extends JDialog {
         trigger.setInterruptToRequest(StringUtils.isBlank(interruptToTriggerField.getText())?null:Format.parseIntHexField(interruptToTriggerField));
         trigger.setInterruptToWithdraw(StringUtils.isBlank(interruptToWithdramField.getText())?null:Format.parseIntHexField(interruptToWithdramField));
         trigger.setPcToSet(StringUtils.isBlank(pcToSetField.getText())?null:Format.parseIntHexField(pcToSetField));
+        trigger.setMustStartLogging(startLoggingCheckBox.isSelected());
+        trigger.setMustStopLogging(stopLoggingCheckBox.isSelected());
         dispose();
     }
 

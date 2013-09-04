@@ -459,11 +459,7 @@ public class EmulationFramework {
         else {
             if (executionMode == ExecutionMode.DEBUG) {
                 for (BreakTrigger breakTrigger : prefs.getTriggers(chip)) {
-                    if (breakTrigger.mustBreak()
-                            || breakTrigger.mustBeLogged()
-                            || breakTrigger.getInterruptToRequest() != null
-                            || breakTrigger.getInterruptToWithdraw() != null
-                            || breakTrigger.getPcToSet() != null) {
+                    if (breakTrigger.isActive()) {
                         // Arm memory change detection triggers
                         for (MemoryValueBreakCondition memoryValueBreakCondition : breakTrigger.getMemoryValueBreakConditions()) {
                             if (memoryValueBreakCondition.isChangeDetection()) {

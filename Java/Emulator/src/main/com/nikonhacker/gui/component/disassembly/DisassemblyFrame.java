@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.List;
 
 
-public class DisassemblyFrame extends DocumentFrame {
+public class DisassemblyFrame extends DocumentFrame implements LoggingStateChangeListener {
 
     private static final int ROWS    = 50;
     private static final int COLUMNS = 100;
@@ -43,6 +43,7 @@ public class DisassemblyFrame extends DocumentFrame {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.addressRanges = addressRanges;
+        logger.getListeners().add(this);
 
         JPanel selectionPanelContainer = new JPanel();
 
@@ -174,40 +175,28 @@ public class DisassemblyFrame extends DocumentFrame {
 
     public void setEditable(boolean editable) {
         this.editable = editable;
-        updateControls();
+        updateControls(logger.isLogging());
     }
 
-    private void updateControls() {
-        timestampCheckbox.setEnabled(editable && !logger.isLogging());
-        indentCheckbox.setEnabled(editable && !logger.isLogging());
-        instructionCheckbox.setEnabled(editable && !logger.isLogging());
-        interruptMarksCheckbox.setEnabled(editable && !logger.isLogging());
-        destinationComboBox.setEnabled(editable && !logger.isLogging());
-        rangeButton.setEnabled(editable && !logger.isLogging());
+    private void updateControls(boolean isLogging) {
+        timestampCheckbox.setEnabled(editable && !isLogging);
+        indentCheckbox.setEnabled(editable && !isLogging);
+        instructionCheckbox.setEnabled(editable && !isLogging);
+        interruptMarksCheckbox.setEnabled(editable && !isLogging);
+        destinationComboBox.setEnabled(editable && !isLogging);
+        rangeButton.setEnabled(editable && !isLogging);
         startStopButton.setEnabled(editable);
     }
 
     private void toggleLogging() {
-        if (logger.isLogging()) {
-            startStopButton.setText("Start");
-            logger.println("---- Realtime logging stopped.");
-            logger.clearIndent();
-            logger.setLogging(false);
-        }
-        else {
-            startStopButton.setText("Stop");
-            logger.setRanges(addressRanges.isEmpty()?null:addressRanges);
-            logger.setLogging(true);
-            logger.println("");
-            logger.println("---- Starting realtime logging"  + (addressRanges.isEmpty()?"...":(", limiting PC to " + addressRanges.size() + " range(s)...")));
-        }
-        updateControls();
+        // Logger will call us back to change UI as we are a registered listener
+        logger.setLogging(!logger.isLogging());
     }
 
     @Override
     public void dispose() {
         if (logger.isLogging()) {
-            toggleLogging();
+            logger.setLogging(false);
             for (Writer writer : logger.getWriters()) {
                 try {
                     writer.close();
@@ -220,4 +209,19 @@ public class DisassemblyFrame extends DocumentFrame {
         super.dispose();
     }
 
+    @Override
+    public void onBeforeLoggingStateChange(boolean logging) {
+        if (logging) {
+            logger.setRanges(addressRanges.isEmpty() ? null : addressRanges);
+            logger.clearIndent();
+            logger.println("");
+            logger.println("---- Starting realtime logging" + (addressRanges.isEmpty() ? "..." : (", limiting PC to " + addressRanges.size() + " range(s)...")));
+            startStopButton.setText("Stop");
+        }
+        else {
+            logger.println("---- Realtime logging stopped.");
+            startStopButton.setText("Start");
+        }
+        updateControls(logging);
+    }
 }
