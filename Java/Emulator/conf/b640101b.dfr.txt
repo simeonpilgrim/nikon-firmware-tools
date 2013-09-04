@@ -24,7 +24,7 @@
 
 -m 0x000409B4-0x000427BD=CODE
 
-# ÂµITRON RealOS version structure returned by "get_ver" system call
+# µITRON RealOS version structure returned by "get_ver" system call
 -m 0x000427BE-0x000427D1=DATA
 
 -m 0x000427D2-0x000504E1=CODE
