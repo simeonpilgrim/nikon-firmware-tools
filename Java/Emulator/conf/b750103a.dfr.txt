@@ -1,10 +1,10 @@
-# The main part of this file describes the D5100 "B" firmware, ver 1.01
+# The main part of this file describes the D7000 "B" firmware, ver 1.03
 # Two special parts are also included but commented out :
 # - the ROM part at 0x000E0000
 # - the copy of code to 0x80080000 performed by the ROM bootup
 #
 
-############################### File map: D5100
+############################### File map: D7000
 -i 0x00040000-0x00BFFFFF=0x00000000
  
 ############################### Memory map:
