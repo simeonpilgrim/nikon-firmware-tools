@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="NikonEmulator"/>
-    <property name="app-version"      value="2.43beta8"/>
+    <property name="app-version"      value="2.43beta9"/>
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
     <property name="target-dir"       location="ant_build"/>
