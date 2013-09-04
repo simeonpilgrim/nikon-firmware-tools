@@ -3020,6 +3020,7 @@
 -s 0x1C969C=graphic_XX08
 -s 0x1C97BA=color_fill2(R4 [IN RECT*], R5 [IN p_color_tuple])
 -s 0x1C9DFE=hdmi_1C9DFE
+-s 0x1CA5CC=ShowJpegFromTable(R4 [IN ptr_in_JPEG_table], R5 [IN X], R6 [IN Y])
 -s 0x1CA946=graphic_XX11_uncalled?
 -s 0x1CAA1A=graphic_XX12_uncalled?
 -s 0x1CAAFA=Draw_Scaled_Char??
