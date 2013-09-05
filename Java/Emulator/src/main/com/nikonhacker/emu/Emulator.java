@@ -163,8 +163,10 @@ public abstract class Emulator implements Clockable {
                     case CALL:
                     case INT:
                         logger.indent();
+                        break;
                     case RET:
                         logger.outdent();
+                        break;
                 }
             }
 
