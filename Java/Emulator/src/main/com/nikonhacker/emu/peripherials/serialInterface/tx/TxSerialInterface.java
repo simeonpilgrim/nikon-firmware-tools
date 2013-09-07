@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.Clockable;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
@@ -12,7 +13,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 /**
- * Behaviour is Based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
+ * Behaviour is based on Toshiba documentation TMP19A44F10XBG_TMP19A44FEXBG_en_datasheet_100401.pdf
  */
 public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int SERIAL_RX_FIFO_SIZE = 4;
@@ -79,9 +80,11 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected int rst; // Receive FIFO status register
     protected int tst = 0b10000000; // Transmit FIFO status register
     protected int fcnf; // FIFO configuration register
+    private   Prefs prefs;
 
-    public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
+    public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
         super(serialInterfaceNumber, platform, logSerialMessages);
+        this.prefs = prefs;
     }
 
 
@@ -142,8 +145,17 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
                 // TODO signal if full ?
             }
             if (isMod1TxeSet()) {
-                // Insert delay of a few CPU cycles.
-                platform.getMasterClock().add(this);
+                // Buffer was just written, and TX is enabled
+                if (!prefs.isSerialTx19FixRequireRxeAndTxe()) {
+                    startTransfer();
+                }
+                else {
+                    // If RXE is also enabled (or we're not in full duplex)
+                    if (isMod0RxeSet() || !isFullDuplex()) {
+                        // Then start transfer
+                        startTransfer();
+                    }
+                }
             }
         }
         else {
@@ -176,7 +188,18 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
     public void setMod0(int mod0) {
 //        System.out.println(getName() + ".setMod0(0x" + Format.asHex(mod0, 8) + ")");
+        boolean previousRxEnabled = isMod0RxeSet();
         this.mod0 = mod0;
+        boolean currentRxEnabled = isMod0RxeSet();
+
+        if (prefs.isSerialTx19FixRequireRxeAndTxe()) {
+            // If RX has just been enabled, and TX was already enabled (and we're in full duplex, otherwise transfer will already have started)
+            if (currentRxEnabled && !previousRxEnabled && isMod1TxeSet() && isFullDuplex()) {
+                // Then start now.
+                startTransfer();
+            }
+        }
+
         if (getMod0Sm() != 0b00) {
             if (logSerialMessages) System.err.println(getName() + " is being configured as UART. Only I/O serial mode is supported for now");
         }
@@ -200,11 +223,38 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
         // Check if TXE was just enabled.
         if (currentTxEnabled && !previousTxEnabled) {
-            // Signal if there are values waiting
-            if (getNbTxValuesWaiting() > 0) {
-                // Insert delay of a few CPU cycles.
-                platform.getMasterClock().add(this);
+            if (!prefs.isSerialTx19FixRequireRxeAndTxe()) {
+                startTransfer();
             }
+            else {
+                // If TX has just been enabled, and RX was already enabled (and we're in full duplex, otherwise transfer will already have started)
+                if (isMod0RxeSet() || isFullDuplex()) {
+                    startTransfer();
+                }
+            }
+        }
+    }
+
+    private void startTransfer() {
+        // Signal if there are values waiting
+        if (getNbTxValuesWaiting() > 0) {
+            if (prefs.isSerialTx19FixInsertDelay()) {
+                /* TEMPORARY WORKAROUND
+                    coderat: found that interrupt_handler_INTTBF takes in 2.40 sometimes 1201 TX instructions
+                     happening between setting TXE=1 and RXE=1 will break serial communication. Reasons are unknown.
+                     BFC48198 65D9     move    r30, r17      ; 0xFF001806  HSC0MOD1
+                     BFC4819A FA80     bset    0x00(r30), 4  ; TXE enable                       ; start of danger zone
+                     BFC4819C 65DB     move    r30, r3       ; 0xFF00180D  HSC0MOD0
+                     BFC4819E FAA0     bset    0x00(r30), 5  ; RXE enable                       ; end of danger zone
+
+                     So add start delay of at least 1240 instruction @ 40 MHz = 31us
+                 */
+                int start_delay_bits = getNumBits() + getIntervalTimeInSclk() - ((31 * getFrequencyHz()) / 1000000);
+
+                bitNumberBeingTransferred = ( start_delay_bits < 0 ? start_delay_bits : 0 );
+            }
+            // Insert delay of a few CPU cycles.
+            platform.getMasterClock().add(this);
         }
     }
 

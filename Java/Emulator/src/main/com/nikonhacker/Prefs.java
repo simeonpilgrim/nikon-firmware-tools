@@ -66,6 +66,10 @@ public class Prefs {
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
 
+
+    private boolean serialTx19FixRequireRxeAndTxe;
+    private boolean serialTx19FixInsertDelay;
+
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
     }
@@ -600,6 +604,24 @@ public class Prefs {
         }
         this.altExecutionModeForSyncedCpuUponStep[chip] = altExecutionModeForSyncedCpuUponStep;
     }
+
+
+    public boolean isSerialTx19FixRequireRxeAndTxe() {
+        return serialTx19FixRequireRxeAndTxe;
+    }
+
+    public void setSerialTx19FixRequireRxeAndTxe(boolean serialTx19FixRequireRxeAndTxe) {
+        this.serialTx19FixRequireRxeAndTxe = serialTx19FixRequireRxeAndTxe;
+    }
+
+    public boolean isSerialTx19FixInsertDelay() {
+        return serialTx19FixInsertDelay;
+    }
+
+    public void setSerialTx19FixInsertDelay(boolean serialTx19FixInsertDelay) {
+        this.serialTx19FixInsertDelay = serialTx19FixInsertDelay;
+    }
+
 
     /**
      * This is basically just a structure with an X Y value.
