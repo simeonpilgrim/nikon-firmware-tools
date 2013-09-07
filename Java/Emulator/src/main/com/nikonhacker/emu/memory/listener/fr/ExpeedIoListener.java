@@ -51,10 +51,10 @@ public class ExpeedIoListener extends IoActivityListener {
     // Serial ports
     /**
      *  Three serial registers have been spotted, configured at 0x60, 0x70 and 0xB0
-     *  Let's assume the SerialInterface at 0x60 is the first in the Expeed, and that there are 6 serial interfaces
-     *  (60, 70, 80, 90, A0, B0). This is pure speculation of course.
+     *  According to default values of registers there are 7 serial interfaces
+     *  (60, 70, 80, 90, A0, B0, C0).
      */
-    public static final  int NUM_SERIAL_IF         = 6;
+    public static final  int NUM_SERIAL_IF         = 7;
     private static final int SERIAL_IF_OFFSET_BITS = 4;
     private static final int SERIAL_IF_OFFSET      = 1 << SERIAL_IF_OFFSET_BITS;
     private static final int REGISTER_SCR_IBRC0    = 0x60;
