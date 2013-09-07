@@ -1919,9 +1919,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Emulation Options", null, emulationOptionsPanel);
 
+        final JCheckBox serialTx19FixInsertDelayCheckBox = new JCheckBox("By adding a delay");
+        final JCheckBox serialTx19FixRequireRxeAndTxeCheckBox = new JCheckBox("By stopping SCLK until both RXE and TXE are set");
+
         if (chip == Constants.CHIP_TX) {
-            JPanel eepromOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
-            eepromOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
+            JPanel txSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+            txSpecificOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
 
             ActionListener eepromInitializationRadioActionListener = new ActionListener() {
                 @Override
@@ -1947,11 +1950,21 @@ public class EmulatorUI extends JFrame implements ActionListener {
             group.add(persistent);
             group.add(lastLoaded);
 
-            eepromOptionsPanel.add(blank);
-            eepromOptionsPanel.add(persistent);
-            eepromOptionsPanel.add(lastLoaded);
+            txSpecificOptionsPanel.add(blank);
+            txSpecificOptionsPanel.add(persistent);
+            txSpecificOptionsPanel.add(lastLoaded);
 
-            tabbedPane.addTab("Eeprom Options", null, eepromOptionsPanel);
+
+            txSpecificOptionsPanel.add(new JLabel("Serial fix:"));
+
+            serialTx19FixInsertDelayCheckBox.setSelected(prefs.isSerialTx19FixInsertDelay());
+            txSpecificOptionsPanel.add(serialTx19FixInsertDelayCheckBox);
+            serialTx19FixRequireRxeAndTxeCheckBox.setSelected(prefs.isSerialTx19FixRequireRxeAndTxe());
+            txSpecificOptionsPanel.add(serialTx19FixRequireRxeAndTxeCheckBox);
+
+            emulationOptionsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+
+            tabbedPane.addTab(Constants.CHIP_LABEL[Constants.CHIP_TX] + " specific options", null, txSpecificOptionsPanel);
         }
 
 
@@ -1981,6 +1994,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             prefs.setLogMemoryMessages(chip, logMemoryMessagesCheckBox.isSelected());
             prefs.setAltExecutionModeForSyncedCpuUponDebug(chip, (EmulationFramework.ExecutionMode) altModeForDebugCombo.getSelectedItem());
             prefs.setAltExecutionModeForSyncedCpuUponStep(chip, (EmulationFramework.ExecutionMode) altModeForStepCombo.getSelectedItem());
+
+            if (chip == Constants.CHIP_TX) {
+                prefs.setSerialTx19FixInsertDelay(serialTx19FixInsertDelayCheckBox.isSelected());
+                prefs.setSerialTx19FixRequireRxeAndTxe(serialTx19FixRequireRxeAndTxeCheckBox.isSelected());
+            }
         }
     }
 

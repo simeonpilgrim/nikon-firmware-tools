@@ -1,6 +1,7 @@
 package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Constants;
+import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
@@ -13,8 +14,8 @@ public class TxHSerialInterface extends TxSerialInterface {
      */
     private static final int BRCR_BRS_MASK        = 0b00111111;
 
-    public TxHSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
-        super(serialInterfaceNumber, platform, logSerialMessages);
+    public TxHSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
+        super(serialInterfaceNumber, platform, logSerialMessages, prefs);
     }
 
     @Override
