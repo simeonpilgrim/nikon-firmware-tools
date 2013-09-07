@@ -82,48 +82,39 @@ public class FrSerialInterface extends SerialInterface {
 
     private int fifoIdleCounter = 0; // TODO implement counter increment and detection
 
-    private int rxInterruptNumber, txInterruptNumber, stInterruptNumber;
-    private int rxInterruptSource, txInterruptSource, stInterruptSource;
+    private int rxInterruptNumber, txInterruptNumber;
+    private int rxInterruptSource, txInterruptSource;
 
 
     public FrSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
         super(serialInterfaceNumber, platform, logSerialMessages);
-        if (serialInterfaceNumber==5) {
-            rxInterruptNumber = FrInterruptController.SERIAL_IF_RX_REQUEST_NR;
-            rxInterruptSource = -1;
-
-            txInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_TX_REQUEST_NR;
-            stInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_ST_REQUEST_NR;
-            txInterruptSource = stInterruptSource = 28; /* 0xB0 */
-        } else {
-            rxInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_RX_REQUEST_NR;
-            txInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_TX_REQUEST_NR;
-            stInterruptNumber = FrInterruptController.SERIAL_IF_SHARED_ST_REQUEST_NR;
-            switch (serialInterfaceNumber) {
-                case 0: txInterruptSource = stInterruptSource = rxInterruptSource = 19; break; /* 0x60 */
-                case 1: txInterruptSource = stInterruptSource = rxInterruptSource = 21; break; /* 0x70 */
-                case 2: txInterruptSource = stInterruptSource = rxInterruptSource = 23; break; /* 0x80 speculations */
-                case 3: txInterruptSource = stInterruptSource = rxInterruptSource = 25; break; /* 0x90 speculations */
-                case 4: txInterruptSource = stInterruptSource = rxInterruptSource = 27; break; /* 0xA0 speculations */
-                case 6: txInterruptSource = stInterruptSource = rxInterruptSource = 30; break; /* 0xC0 speculations */
-            }
+        switch (serialInterfaceNumber) {
+            case 0: /* 0x60 */
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_1_SHARED_REQUEST_NR; 
+                break;
+            case 1: /* 0x70 */
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_2_SHARED_REQUEST_NR; 
+                break;
+            case 2: /* 0x80 speculations */
+            case 3: /* 0x90 speculations */
+            case 4: /* 0xA0 speculations */
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_3_SHARED_REQUEST_NR;
+                break;
+            case 5: /* 0xB0 */
+            case 6: /* 0xC0 speculations */
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_0_SHARED_REQUEST_NR; 
+                break;
         }
+        rxInterruptSource = 2 * serialInterfaceNumber + 18;
+        txInterruptSource = rxInterruptSource + 1;
     }
 
     protected boolean requestInterrupt(int intNum, int sourceNum) {
-        if (sourceNum==-1) {
-            // not shared
-            return platform.getInterruptController().request(intNum);
-        }
         return platform.getSharedInterruptCircuit().request(intNum, sourceNum);
     }
 
     protected void removeInterrupt(int intNum, int sourceNum) {
-        if (sourceNum==-1) {
-            // not shared
-            platform.getInterruptController().removeRequest(intNum);
-        } else 
-            platform.getSharedInterruptCircuit().removeRequest(intNum, sourceNum);
+        platform.getSharedInterruptCircuit().removeRequest(intNum, sourceNum);
     }
 
     public int getScrIbcr() {

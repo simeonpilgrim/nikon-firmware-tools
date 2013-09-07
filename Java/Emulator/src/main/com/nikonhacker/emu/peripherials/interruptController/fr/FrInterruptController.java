@@ -45,11 +45,10 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int RELOAD_TIMER1_INTERRUPT_REQUEST_NR = 0x19;
     public static final int RELOAD_TIMER2_INTERRUPT_REQUEST_NR = 0x1A;
 
-    public static final int SERIAL_IF_RX_REQUEST_NR = 0x1B;
-
-    public static final int SERIAL_IF_SHARED_RX_REQUEST_NR = 0x1C;
-    public static final int SERIAL_IF_SHARED_TX_REQUEST_NR = 0x1D;
-    public static final int SERIAL_IF_SHARED_ST_REQUEST_NR = 0x1E;
+    public static final int SERIAL_IF_0_SHARED_REQUEST_NR = 0x1B;
+    public static final int SERIAL_IF_1_SHARED_REQUEST_NR = 0x1C;
+    public static final int SERIAL_IF_2_SHARED_REQUEST_NR = 0x1D;
+    public static final int SERIAL_IF_3_SHARED_REQUEST_NR = 0x1E;
 
     public static final int RELOAD_TIMER_32_INTERRUPT_REQUEST_NR = 0x2E;
 
