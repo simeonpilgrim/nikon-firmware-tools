@@ -35,4 +35,9 @@ public abstract class AbstractSerialDevice implements SerialDevice {
     public void setSourceDevice(SerialDevice sourceDevice) {
         this.sourceDevice = sourceDevice;
     }
+
+    public static void interConnectSerialDevices(SerialDevice device1, SerialDevice device2) {
+        device1.connectTargetDevice(device2);
+        device2.connectTargetDevice(device1);
+    }
 }

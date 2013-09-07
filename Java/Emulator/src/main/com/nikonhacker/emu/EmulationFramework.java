@@ -41,10 +41,12 @@ import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
+import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
+import com.nikonhacker.emu.peripherials.serialInterface.flashCharger.Nhhs2;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
@@ -290,11 +292,20 @@ public class EmulationFramework {
                         break;
                 }
 
+                // Viewfinder LCD driver
                 LcdDriver lcdDriver = new LcdDriver("ViewFinder LCD");
+
+                // Flash charger
+                Nhhs2 nhhs2 = new Nhhs2("Flash charger");
+
+                // Store devices
                 serialDevices.add(eeprom);
                 serialDevices.add(lcdDriver);
+                serialDevices.add(nhhs2);
 
-                connectTxSerialDevices(serialInterfaces, ioPorts, serialDevices);
+                // Perform connection
+                connectTxHsc2SerialDevices(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2], eeprom, lcdDriver, ioPorts);
+                connectTxHsc1SerialDevice(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 1], nhhs2);
 
                 AdValueProvider provider = new TxAdPrefsValueProvider(prefs, Constants.CHIP_TX);
                 adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
@@ -394,25 +405,30 @@ public class EmulationFramework {
     }
 
     /**
-     * Connect Tx serial interface HSC2 with the flash eeprom and the lcd driver via a SPI bus
+     * Connect Tx serial interface HSC1 with the flash charge driver
      *
-     * @param txSerialInterfaces
-     * @param txIoPorts
-     * @param txSerialDevices
+     * @param serialInterface
+     * @param nhhs2
      */
-    @SuppressWarnings("PointlessArithmeticExpression")
-    private void connectTxSerialDevices(SerialInterface[] txSerialInterfaces, IoPort[] txIoPorts, List<SerialDevice> txSerialDevices) {
-        // get components
-        SerialInterface txSerialInterfaceH2 = txSerialInterfaces[TxIoListener.NUM_SERIAL_IF + 2]; // Master
-        final St950x0 eeprom = (St950x0) txSerialDevices.get(0); // Slave 1
-        final LcdDriver lcdDriver = (LcdDriver) txSerialDevices.get(1); // Slave 2
+    private void connectTxHsc1SerialDevice(SerialInterface serialInterface, Nhhs2 nhhs2) {
+        AbstractSerialDevice.interConnectSerialDevices(serialInterface, nhhs2);
+    }
 
+    /**
+     * Connect Tx serial interface HSC2 with the eeprom and the lcd driver via a SPI bus
+     *
+     * @param serialInterface
+     * @param eeprom
+     * @param lcdDriver
+     * @param txIoPorts
+     */
+    private void connectTxHsc2SerialDevices(SerialInterface serialInterface, St950x0 eeprom, LcdDriver lcdDriver, IoPort[] txIoPorts) {
         // Create a bus with the CPU as master
-        SpiBus bus = new SpiBus("bus", txSerialInterfaceH2) ;
+        SpiBus bus = new SpiBus("bus", serialInterface) ; // Master
 
         // Connect slaves
-        bus.addSlaveDevice(eeprom);
-        bus.addSlaveDevice(lcdDriver);
+        bus.addSlaveDevice(eeprom); // Slave 1
+        bus.addSlaveDevice(lcdDriver); // Slave 2
         bus.connect();
 
         // Connect CPU pins with eeprom and lcd driver ~SELECT pins

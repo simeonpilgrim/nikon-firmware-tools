@@ -24,6 +24,7 @@ public class SpiSlaveWire extends SpiSlaveDevice {
 
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
+        // Do nothing
     }
 
     public String getWireName() {
@@ -33,5 +34,20 @@ public class SpiSlaveWire extends SpiSlaveDevice {
     @Override
     public boolean isSelected() {
         return ((SpiSlaveDevice)targetDevice).isSelected();
+    }
+
+    @Override
+    public String toString() {
+        return getWireName();
+    }
+
+    /**
+     * This method removes this wire and reconnects the original source and target
+     */
+    public void remove() {
+        SerialDevice originalSource = getSourceDevice();
+        SerialDevice originalTarget = getTargetDevice();
+        originalSource.setTargetDevice(originalTarget);
+        originalTarget.setSourceDevice(originalSource);
     }
 }
