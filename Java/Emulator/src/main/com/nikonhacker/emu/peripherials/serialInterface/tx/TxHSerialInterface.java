@@ -9,10 +9,20 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 public class TxHSerialInterface extends TxSerialInterface {
     private static final int HSERIAL_RX_FIFO_SIZE = 32;
 
-    /**
-     * BRS is larger in HSIO than SIO
-     */
-    private static final int BRCR_BRS_MASK        = 0b00111111;
+    // Note: Most of the following registers are larger in HSIO than SIO
+
+    private static final int BRCR_BRS_MASK = 0b00111111;
+
+    private static final int RST_RLVL_MASK = 0b00111111;
+    private static final int RST_ROR_MASK  = 0b10000000;
+
+    private static final int TST_TLVL_MASK = 0b00000111;
+    private static final int TST_TUR_MASK  = 0b10000000;
+
+    private static final int RFC_RIL_MASK  = 0b00011111;
+
+    private static final int TFC_TIL_MASK  = 0b00011111;
+
 
     public TxHSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
         super(serialInterfaceNumber, platform, logSerialMessages, prefs);
@@ -22,10 +32,10 @@ public class TxHSerialInterface extends TxSerialInterface {
     public int getRst() {
         int rlvl;
         if (rxFifo.size() < 32) {
-            rlvl = rxFifo.size() & 0b0011_1111;// RLVL is on 6 bytes
+            rlvl = rxFifo.size() & RST_RLVL_MASK;// RLVL is on 6 bytes
         }
         else {
-            // but 32 is coded as 0b000000 (!). See 15.3.1.11
+            // but 32 is coded as 0b000000. See 15.3.1.11
             rlvl = 0;
         }
         return rst | rlvl;
@@ -64,7 +74,7 @@ public class TxHSerialInterface extends TxSerialInterface {
      */
     @Override
     protected void computeRxFillLevel() {
-        rxInterruptFillLevel = rfc & 0b11111; // RIL is on 5 bits, independent of Half/Full duplex
+        rxInterruptFillLevel = rfc & RFC_RIL_MASK; // in Hi-speed, RIL size is independent of Half/Full duplex
         if (rxInterruptFillLevel == 0) {
             // Special case
             rxInterruptFillLevel = 32;
@@ -78,12 +88,10 @@ public class TxHSerialInterface extends TxSerialInterface {
     @Override
     protected void computeTxFillLevel() {
         // According to the specification, TIL is on 6 bits, independent of Half/Full duplex
-        // txInterruptFillLevel = tfc & 0b111111; // 6 bits
-
         // However, the code writes 0xA0 to tfc for 2 bytes sent, which would mean 32 (not really meaningul).
         // Moreover, RIL is 5 bits, and the example at page 15-14, it says "HSC0TFC <5:0> = 00000" with 5 zeroes...
         // So let's consider it is 5 bits
-        txInterruptFillLevel = tfc & 0b11111; // 5 bits, independent of Half/Full duplex
+        txInterruptFillLevel = tfc & TFC_TIL_MASK; // in Hi-speed, TIL size is independent of Half/Full duplex
         // TODO: Although, note that the updated japanese spec is fixed with "HSC0TFC <5:0> = 000000" with 6 zeroes, so I don't know...
 
         if (txInterruptFillLevel > 32) {

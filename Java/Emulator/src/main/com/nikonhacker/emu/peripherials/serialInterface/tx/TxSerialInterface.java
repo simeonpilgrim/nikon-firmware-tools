@@ -42,7 +42,36 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int BRCR_BRCK_MASK   = 0b00110000;
     private static final int BRCR_BRADDE_MASK = 0b01000000;
 
-    private static final int BRADD_BRK_MASK   = 0b00001111;
+    private static final int BRADD_BRK_MASK = 0b00001111;
+
+    private static final int FCNF_CNFG_MASK    = 0b00000001;
+    private static final int FCNF_RXTXCNT_MASK = 0b00000010;
+    private static final int FCNF_RFIE_MASK    = 0b00000100;
+    private static final int FCNF_TFIE_MASK    = 0b00001000;
+    private static final int FCNF_RFST_MASK    = 0b00010000;
+
+    private static final int RFC_RIL0_MASK = 0b00000001;
+    private static final int RFC_RIL_MASK  = 0b00000011;
+    private static final int RFC_RFIS_MASK = 0b01000000;
+    private static final int RFC_RFCS_MASK = 0b10000000;
+
+    private static final int TFC_TIL0_MASK = 0b00000001;
+    private static final int TFC_TIL_MASK  = 0b00000011;
+    private static final int TFC_TFIS_MASK = 0b01000000;
+    private static final int TFC_TFCS_MASK = 0b10000000;
+
+    private static final int MOD2_SWRST_MASK = 0b00000011;
+    private static final int MOD2_TXRUN_MASK = 0b00100000;
+    private static final int MOD2_RBFLL_MASK = 0b01000000;
+    private static final int MOD2_TBEMP_MASK = 0b10000000;
+
+    private static final int RST_RLVL_MASK = 0b00000111;
+    private static final int RST_ROR_MASK  = 0b10000000;
+
+    private static final int TST_TLVL_MASK = 0b00000111;
+    private static final int TST_TUR_MASK  = 0b10000000;
+
+    private static final int BRnADD_BRnK_MASK = 0b00001111;
 
     /**
      * Rx buffer
@@ -72,14 +101,14 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected int cr; // Control register
     protected int mod0; // Mode control register 0
     protected int mod1; // Mode control register 1
-    protected int mod2 = 0b10000000; // Mode control register 2
+    protected int mod2 = MOD2_TBEMP_MASK; // Mode control register 2
     protected int brcr; // Baud rate generator control register
     protected int bradd; // Baud rate generator control register 2
     protected int rfc; // Receive FIFO control register
     protected int tfc; // Transmit FIFO control register
     protected int rst; // Receive FIFO status register
-    protected int tst = 0b10000000; // Transmit FIFO status register
-    protected int fcnf; // FIFO configuration register
+    protected int tst = TST_TUR_MASK; // Transmit FIFO status register
+    protected int   fcnf; // FIFO configuration register
     private   Prefs prefs;
 
     public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
@@ -267,7 +296,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 //        System.out.println(getName() + ".setMod2(0x" + Format.asHex(mod2, 8) + ")");
 
         // if SWRST goes from 10 to 01, perform a Software reset
-        if ((this.mod2 & 0b11) == 0b10 && (mod2 & 0b11)== 0b01) {
+        if ((this.mod2 & MOD2_SWRST_MASK) == 0b10 && (mod2 & MOD2_SWRST_MASK)== 0b01) {
             clearMod0Rxe();
             clearMod1Txe();
             clearMod2Tbemp();
@@ -299,7 +328,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
     public void setBradd(int bradd) {
 //        System.out.println(getName() + ".setBradd(0x" + Format.asHex(bradd, 8) + ")");
-        this.bradd = bradd & 0b00001111;
+        this.bradd = bradd & BRnADD_BRnK_MASK;
     }
 
     public int getRfc() {
@@ -307,7 +336,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setRfc(int rfc) {
-        if ((rfc & 0b10000000) != 0) { // RFCS
+        if ((rfc & RFC_RFCS_MASK) != 0) {
             rxFifo = new LinkedList<Integer>();
         }
         // TODO RFIS
@@ -316,44 +345,48 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     private boolean isRfcRfisSet() {
-        return (rfc & 0b01000000) != 0;
+        return (rfc & RFC_RFIS_MASK) != 0;
     }
 
 
     public int getTfc() {
-        return tfc & 0b01111111;
+        return tfc & ~TFC_TFCS_MASK;
     }
 
     public void setTfc(int tfc) {
         this.tfc = tfc;
-        if ((tfc & 0b10000000) != 0) { // TFCS
+        if (isTfcTfcsSet()) {
             txFifo = new LinkedList<Integer>();
         }
         // TODO TFIS
         computeTxFillLevel();
     }
 
+    private boolean isTfcTfcsSet() {
+        return (tfc & TFC_TFCS_MASK) != 0;
+    }
+
     private boolean isTfcTfisSet() {
-        return (tfc & 0b01000000) != 0;
+        return (tfc & TFC_TFIS_MASK) != 0;
     }
 
 
     public int getRst() {
-        return rst | (rxFifo.size() & 0b0000_0111);
+        return rst | (rxFifo.size() & RST_RLVL_MASK);
     }
 
     /**
      * Clear RST Reception OverRun flag
      */
     protected void clearRstRor() {
-        rst = rst & 0b0111_1111;
+        rst = rst & ~RST_ROR_MASK;
     }
 
     /**
      * Set RST Reception OverRun flag
      */
     protected void setRstRor() {
-        rst = rst | 0b1000_0000;
+        rst = rst | RST_ROR_MASK;
     }
 
 
@@ -519,63 +552,63 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
      * Check if MOD2 Transmit Buffer Empty flag is set
      */
     protected boolean isMod2TbempSet() {
-        return (mod2 & 0b10000000) != 0;
+        return (mod2 & MOD2_TBEMP_MASK) != 0;
     }
 
     /**
      * Set MOD2 Transmit Buffer Empty flag
      */
     protected void setMod2Tbemp() {
-        mod2 = mod2 | 0b10000000;
+        mod2 = mod2 | MOD2_TBEMP_MASK;
     }
 
     /**
      * Clear MOD2 Transmit Buffer Empty flag
      */
     protected void clearMod2Tbemp() {
-        mod2 = mod2 & 0b01111111;
+        mod2 = mod2 & ~MOD2_TBEMP_MASK;
     }
 
     /**
      * Check if MOD2 Receive Buffer Full flag is set
      */
     protected boolean isMod2RbfllSet() {
-        return (mod2 & 0b01000000) != 0;
+        return (mod2 & MOD2_RBFLL_MASK) != 0;
     }
 
     /**
      * Set MOD2 Receive Buffer Full flag
      */
     protected void setMod2Rbfll() {
-        mod2 = mod2 | 0b01000000;
+        mod2 = mod2 | MOD2_RBFLL_MASK;
     }
 
     /**
      * Clear MOD2 Receive Buffer Full flag
      */
     protected void clearMod2Rbfll() {
-        mod2 = mod2 & 0b10111111;
+        mod2 = mod2 & ~MOD2_RBFLL_MASK;
     }
 
     /**
      * Check if MOD2 Tx Run flag is set
      */
     protected boolean isMod2TxrunSet() {
-        return (mod2 & 0b00100000) != 0;
+        return (mod2 & MOD2_TXRUN_MASK) != 0;
     }
 
     /**
      * Set MOD2 Tx Run flag
      */
     protected void setMod2Txrun() {
-        mod2 = mod2 | 0b00100000;
+        mod2 = mod2 | MOD2_TXRUN_MASK;
     }
 
     /**
      * Clear MOD2 Tx Run flag
      */
     protected void clearMod2Txrun() {
-        mod2 = mod2 & 0b11011111;
+        mod2 = mod2 & ~MOD2_TXRUN_MASK;
     }
 
 
@@ -598,23 +631,23 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
 
     protected boolean isFcnfRfstSet() {
-        return (fcnf & 0b00010000) != 0;
+        return (fcnf & FCNF_RFST_MASK) != 0;
     }
 
     protected boolean isFcnfTfieSet() {
-        return (fcnf & 0b00001000) != 0;
+        return (fcnf & FCNF_TFIE_MASK) != 0;
     }
 
     protected boolean isFcnfRfieSet() {
-        return (fcnf & 0b00000100) != 0;
+        return (fcnf & FCNF_RFIE_MASK) != 0;
     }
 
     protected boolean isFcnfRxtxcntSet() {
-        return (fcnf & 0b00000010) != 0;
+        return (fcnf & FCNF_RXTXCNT_MASK) != 0;
     }
 
     protected boolean isFcnfCnfgSet() {
-        return (fcnf & 0b00000001) != 0;
+        return (fcnf & FCNF_CNFG_MASK) != 0;
     }
 
 
@@ -720,7 +753,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected void computeRxFillLevel() {
         if (isFullDuplex()) {
             // Full duplex
-            rxInterruptFillLevel = rfc & 0b1;
+            // "RIL1 is ignored if FDPX1:0=11 (full duplex)."
+            rxInterruptFillLevel = rfc & RFC_RIL0_MASK;
             if (rxInterruptFillLevel == 0) {
                 // Special case
                 rxInterruptFillLevel = 2;
@@ -728,7 +762,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         }
         else {
             // Half duplex
-            rxInterruptFillLevel = rfc & 0b11;
+            rxInterruptFillLevel = rfc & RFC_RIL_MASK;
             if (rxInterruptFillLevel == 0) {
                 // Special case
                 rxInterruptFillLevel = 4;
@@ -743,11 +777,12 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected void computeTxFillLevel() {
         if (isFullDuplex()) {
             // Full duplex
-            txInterruptFillLevel = tfc & 0b1;
+            // "TIL1 is ignored if FDPX1:0=11 (full duplex)."
+            txInterruptFillLevel = tfc & TFC_TIL0_MASK;
         }
         else {
             // Half duplex
-            txInterruptFillLevel = tfc & 0b11;
+            txInterruptFillLevel = tfc & TFC_TIL_MASK;
         }
     }
 
