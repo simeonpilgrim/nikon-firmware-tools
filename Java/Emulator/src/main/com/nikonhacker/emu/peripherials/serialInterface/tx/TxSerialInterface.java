@@ -395,7 +395,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public int getTst() {
-        return tst;
+        throw new RuntimeException(getName() + "(H)SC0TST updating is not implemented !");
+        //return tst;
     }
 
     public void setTst(int tst) {
