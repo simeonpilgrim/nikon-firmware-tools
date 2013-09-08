@@ -224,41 +224,44 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Make current line transparent so PC line highlight passes through
         listingArea.setCurrentLineHighlightColor(new Color(255,255,0,64));
 
+        // Register our assembly syntax highlighter
+        AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
         if (chip == Constants.CHIP_FR) {
-            // Register our FR assembly syntax highlighter
-            AbstractTokenMakerFactory atmf = (AbstractTokenMakerFactory) TokenMakerFactory.getDefaultInstance();
             atmf.putMapping("text/frasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerFrTokenMaker");
-            TokenMakerFactory.setDefaultInstance(atmf);
-
-            SyntaxScheme ss = listingArea.getSyntaxScheme();
-            Style functionStyle = ss.getStyle(Token.FUNCTION);
-
-            Style addressStyle = (Style) functionStyle.clone();
-            ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
-            addressStyle.foreground = Color.BLACK;
-
-            Style instructionStyle = (Style) functionStyle.clone();
-            ss.setStyle(Token.ANNOTATION, instructionStyle);
-            instructionStyle.foreground = Color.LIGHT_GRAY;
-
-            Style variableStyle = ss.getStyle(Token.VARIABLE);
-            variableStyle.foreground = new Color(155, 22, 188);
-
-            Style reservedWordStyle = ss.getStyle(Token.RESERVED_WORD);
-            reservedWordStyle.foreground = new Color(0, 0, 255);
-
-            Style reservedWord2Style = ss.getStyle(Token.RESERVED_WORD_2);
-            reservedWord2Style.foreground = new Color(0, 150, 150);
-
-
-            // Assign it to our area
-            listingArea.setSyntaxEditingStyle("text/frasm");
-            RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
-            listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
         }
         else {
-             // TODO
+            atmf.putMapping("text/txasm", "com.nikonhacker.gui.component.sourceCode.syntaxHighlighter.AssemblerTxTokenMaker");
         }
+        TokenMakerFactory.setDefaultInstance(atmf);
+
+        SyntaxScheme ss = listingArea.getSyntaxScheme();
+        Style functionStyle = ss.getStyle(Token.FUNCTION);
+
+        Style addressStyle = (Style) functionStyle.clone();
+        ss.setStyle(Token.LITERAL_NUMBER_HEXADECIMAL, addressStyle);
+        addressStyle.foreground = Color.BLACK;
+
+        Style instructionStyle = (Style) functionStyle.clone();
+        ss.setStyle(Token.ANNOTATION, instructionStyle);
+        instructionStyle.foreground = Color.LIGHT_GRAY;
+
+        Style variableStyle = ss.getStyle(Token.VARIABLE);
+        variableStyle.foreground = new Color(155, 22, 188);
+
+        Style reservedWordStyle = ss.getStyle(Token.RESERVED_WORD);
+        reservedWordStyle.foreground = new Color(0, 0, 255);
+
+        Style reservedWord2Style = ss.getStyle(Token.RESERVED_WORD_2);
+        reservedWord2Style.foreground = new Color(0, 150, 150);
+
+        // Assign it to our area
+        if (chip == Constants.CHIP_FR) {
+            listingArea.setSyntaxEditingStyle("text/frasm");
+        } else {
+            listingArea.setSyntaxEditingStyle("text/txasm");
+        }
+        RSyntaxTextAreaHighlighter rSyntaxTextAreaHighlighter = new RSyntaxTextAreaHighlighter();
+        listingArea.setHighlighter(rSyntaxTextAreaHighlighter);
     }
 
     /**
