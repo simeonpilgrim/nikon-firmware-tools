@@ -2751,8 +2751,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                         altExecutionMode = EmulationFramework.ExecutionMode.RUN;
                 }
                 framework.prepareBreakTriggers(otherChip, altExecutionMode, null);
-                setStatusText(otherChip, executionMode.getLabel() + " session in progress...");
-                statusBar[otherChip].setBackground(executionMode == EmulationFramework.ExecutionMode.DEBUG ? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
+                setStatusText(otherChip, altExecutionMode.getLabel() + " session in progress...");
+                statusBar[otherChip].setBackground(altExecutionMode == EmulationFramework.ExecutionMode.DEBUG ? STATUS_BGCOLOR_DEBUG : STATUS_BGCOLOR_RUN);
                 framework.prepareEmulation(otherChip);
                 updateState(otherChip);
             }
