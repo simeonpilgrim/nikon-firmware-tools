@@ -825,7 +825,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
             else {
                 Integer value = txFifo.poll();
                 if (isTfcTfisSet()?(txFifo.size() <= txInterruptFillLevel):(txFifo.size() == txInterruptFillLevel)) {
-                    if (isMod1FdpxTxSet()) {
+                    if (isFcnfTfieSet()) {
                         platform.getInterruptController().request(getTxInterruptNumber());
                     }
                     if (isFcnfRxtxcntSet()) {
@@ -951,6 +951,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         bitNumberBeingTransferred++;
         if (bitNumberBeingTransferred == getNumBits() + getIntervalTimeInSclk() /* TODO + start/stop/parity if UART */) {
             bitNumberBeingTransferred = 0;
+            // Transfer one byte
             Integer value = read();
             if (value != null) {
                 super.valueReady(value);
