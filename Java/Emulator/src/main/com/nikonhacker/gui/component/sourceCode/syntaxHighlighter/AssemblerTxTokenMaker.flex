@@ -232,7 +232,7 @@ HexDigit			= ({Digit}|[A-Fa-f])
 
 Address             = ({HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit}{HexDigit})
 Instruction         = ({HexDigit}{HexDigit}{HexDigit}{HexDigit})
-Identifier			= ({Letter}({Letter}|{Digit})[^ \t\f\n\,\.\+\-\*\/\%\[\]]+)
+Identifier			= ({Letter}(({Letter}|{Digit})+))
 
 UnclosedStringLiteral	= ([\"][^\"]*)
 StringLiteral			= ({UnclosedStringLiteral}[\"])
@@ -458,6 +458,7 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "CAUSE" |
 "EPC" |
 "FP" |
+"IER" |
 "PC" |
 "R0" |
 "R1" |
