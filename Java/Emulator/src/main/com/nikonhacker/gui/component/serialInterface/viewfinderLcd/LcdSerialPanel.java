@@ -6,6 +6,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.serialInterface.RxTxSerialPanel;
 import com.nikonhacker.gui.component.serialInterface.SerialDevicePanel;
+import com.nikonhacker.gui.swing.ImagePanel;
 import net.miginfocom.swing.MigLayout;
 
 import javax.imageio.ImageIO;
@@ -30,11 +31,11 @@ public class LcdSerialPanel extends SerialDevicePanel {
     public static final String VIEWFINDER_LCD_IMG_BASE_PATH = "images/viewfinder_lcd";
 
     private final RxTxSerialPanel rxTxSerialPanel;
-    private LcdDriver lcdDriver;
+    private       LcdDriver       lcdDriver;
     private final ImagePanel imagePanel = new ImagePanel();
     private final JTextField lcdValuesTextField;
     private final JTextField manualValuesTextField;
-    private final JPanel lcdPanel;
+    private final JPanel     lcdPanel;
 
     private byte[] lcdValues;
     private byte[] manualValues;
@@ -317,33 +318,6 @@ public class LcdSerialPanel extends SerialDevicePanel {
 
     public void dispose() {
         rxTxSerialPanel.dispose();
-    }
-
-
-    static class ImagePanel extends JPanel {
-        BufferedImage image;
-
-        ImagePanel() {
-        }
-
-        ImagePanel(BufferedImage image) {
-            this.image = image;
-        }
-
-        BufferedImage getImage() {
-            return image;
-        }
-
-        void setImage(BufferedImage image) {
-            this.image = image;
-        }
-
-        public void paintComponent(Graphics g){
-            super.paintComponent(g);
-            if(image != null){
-                g.drawImage(image, 0, 0, this);
-            }
-        }
     }
 
 }
