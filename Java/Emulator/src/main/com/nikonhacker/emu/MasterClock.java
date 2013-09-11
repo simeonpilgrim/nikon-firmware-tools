@@ -3,6 +3,7 @@ package com.nikonhacker.emu;
 import com.nikonhacker.Constants;
 
 import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -238,16 +239,17 @@ public class MasterClock implements Runnable {
 
                         if (entryToDisable != null) {
                             disableEntry(entryToDisable);
-                            // Clear entryToDisable
-                            entryToDisable = null;
 
                             // Check if all entries are disabled
                             if (allEntriesDisabled()) {
-                                // Zll entries are now disabled. Stop clock
+                                // All entries are now disabled. Stop clock
                                 // System.err.println("This was the last entry. Requesting clock stop");
                                 running = false;
                                 break;
                             }
+
+                            // Clear entryToDisable
+                            entryToDisable = null;
                         }
                     }
                 }
@@ -255,6 +257,20 @@ public class MasterClock implements Runnable {
             // Increment elapsed time
             totalElapsedTimePs += masterClockLoopDurationPs;
         }
+
+        // If we got here, one entry was just disabled and caused the clock to stop.
+        // Before we exit, let's rotate the list so that when the clock restarts, it resumes exactly where it left off
+        // To do so, the entry we just run will be rotated to the end
+        while (entries.get(entries.size() - 1) != entryToDisable) Collections.rotate(entries, 1);
+
+
+        System.err.println("MasterClock reordered:");
+        for (ClockableEntry entry : entries) {
+            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " every " + entry.counterThreshold + " ticks");
+        }
+        System.err.println("---------------------------------------");
+
+
         //System.err.println("Clock is stopped\r\n=======================================================");
     }
 
