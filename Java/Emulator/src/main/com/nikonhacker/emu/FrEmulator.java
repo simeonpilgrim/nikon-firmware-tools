@@ -118,7 +118,7 @@ public class FrEmulator extends Emulator {
                                 DisassemblyLogger printer2 = logger;
                                 if (printer2 != null) {
                                     if(printer2.isIncludeInterruptMarks()) {
-                                        printer2.println("------------------------- Accepting " + interruptRequest);
+                                        printer2.println(platform.getMasterClock().getFormatedTotalElapsedTimeMs() + " ------------------------- Accepting " + interruptRequest);
                                     }
                                     printer2.indent();
                                 }
