@@ -180,6 +180,7 @@ public class MasterClock implements Runnable {
      */
     public synchronized void start() {
         if (!running) {
+            running = true;
             new Thread(this).start();
         }
     }
