@@ -3,9 +3,8 @@ package com.nikonhacker.emu.peripherials.serialInterface.util;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class is a "bus" connector that allows several slaves devices to be connected to the same master SerialDevice
@@ -43,16 +42,16 @@ import java.util.TreeSet;
  * bus.connect();
  */
 public class SerialBus {
-    private String busName;
-    private SerialDevice masterDevice;
-    private Set<SerialDevice> slaveDevices;
-    private InternalMasterPartner internalMasterPartner;
-    protected Set<InternalSlavePartner> internalSlavePartners;
+    private   String                    busName;
+    private   SerialDevice              masterDevice;
+    private   List<SerialDevice>        slaveDevices;
+    private   InternalMasterPartner     internalMasterPartner;
+    protected List<InternalSlavePartner> internalSlavePartners;
 
     public SerialBus(String busName, SerialDevice masterDevice) {
         this.busName = busName;
         this.masterDevice = masterDevice;
-        this.slaveDevices = new HashSet<SerialDevice>();
+        this.slaveDevices = new ArrayList<>();
     }
 
     public void addSlaveDevice(SerialDevice slaveDevice) {
@@ -68,7 +67,7 @@ public class SerialBus {
         internalMasterPartner.connectTargetDevice(masterDevice);
         masterDevice.connectTargetDevice(internalMasterPartner);
 
-        this.internalSlavePartners = new TreeSet<InternalSlavePartner>();
+        this.internalSlavePartners = new ArrayList<InternalSlavePartner>();
         for (SerialDevice slaveDevice : slaveDevices) {
             InternalSlavePartner slavePartner = new InternalSlavePartner();
             slavePartner.connectTargetDevice(slaveDevice);
@@ -117,7 +116,7 @@ public class SerialBus {
     /**
      * In this implementation, targetDevice is the slave Device
      */
-    protected class InternalSlavePartner extends SpiSlaveDevice implements Comparable {
+    protected class InternalSlavePartner extends SpiSlaveDevice {
 
         public InternalSlavePartner() {
         }
@@ -138,11 +137,6 @@ public class SerialBus {
 
         public void reverseWrite(Integer value) {
             targetDevice.write(value);
-        }
-
-        @Override
-        public int compareTo(Object o) {
-            return ((InternalSlavePartner)o).getSourceDevice().getClass().getName().compareTo(this.getSourceDevice().getClass().getName());
         }
     }
 }
