@@ -5,6 +5,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SpiSlaveDevice;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * This class is a "bus" connector that allows several slaves devices to be connected to the same master SerialDevice
@@ -67,7 +68,7 @@ public class SerialBus {
         internalMasterPartner.connectTargetDevice(masterDevice);
         masterDevice.connectTargetDevice(internalMasterPartner);
 
-        this.internalSlavePartners = new HashSet<InternalSlavePartner>(slaveDevices.size());
+        this.internalSlavePartners = new TreeSet<InternalSlavePartner>();
         for (SerialDevice slaveDevice : slaveDevices) {
             InternalSlavePartner slavePartner = new InternalSlavePartner();
             slavePartner.connectTargetDevice(slaveDevice);
@@ -116,7 +117,7 @@ public class SerialBus {
     /**
      * In this implementation, targetDevice is the slave Device
      */
-    protected class InternalSlavePartner extends SpiSlaveDevice {
+    protected class InternalSlavePartner extends SpiSlaveDevice implements Comparable {
 
         public InternalSlavePartner() {
         }
@@ -137,6 +138,11 @@ public class SerialBus {
 
         public void reverseWrite(Integer value) {
             targetDevice.write(value);
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            return ((InternalSlavePartner)o).getSourceDevice().getClass().getName().compareTo(this.getSourceDevice().getClass().getName());
         }
     }
 }

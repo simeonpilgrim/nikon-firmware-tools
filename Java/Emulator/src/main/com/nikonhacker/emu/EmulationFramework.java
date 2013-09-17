@@ -3,9 +3,10 @@ package com.nikonhacker.emu;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
-import com.nikonhacker.disassembly.CPUState;
-import com.nikonhacker.disassembly.CodeStructure;
+import com.nikonhacker.XStreamUtils;
+import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
+import com.nikonhacker.disassembly.tx.NullRegister32;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
@@ -57,17 +58,23 @@ import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
 import com.nikonhacker.emu.trigger.condition.AndCondition;
 import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
+import com.thoughtworks.xstream.XStream;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 public class EmulationFramework {
 
     private static final int BASE_ADDRESS_FUNCTION_CALL[] = {0xFFFFFFF0, 0x10001000};
 
+    private static final String FRAMEWORK_ZIPENTRY_NAME = "Framework";
+    private static final String MEMORY_ZIPENTRY_NAME    = "Memory";
 
     /** Type of run */
     public static enum ExecutionMode {
@@ -104,6 +111,10 @@ public class EmulationFramework {
     private CodeStructure[] codeStructure = new CodeStructure[2];
 
     public EmulationFramework(Prefs prefs) {
+        this.prefs = prefs;
+    }
+
+    public void setPrefs(Prefs prefs) {
         this.prefs = prefs;
     }
 
@@ -565,10 +576,115 @@ public class EmulationFramework {
     }
 
 
-
     public void dispose() {
         if (eeprom != null) {
             prefs.setLastEepromContents(eeprom.getMemory());
         }
     }
+
+
+    public static XStream getFrameworkXStream() {
+        XStream xStream = XStreamUtils.getBaseXStream();
+
+        // Don't store memory via XStream
+        xStream.omitField(Platform.class, "memory");
+        xStream.omitField(StatementContext.class, "memory");
+
+        // Don't store prefs via XStream
+        xStream.omitField(EmulationFramework.class, "prefs");
+        xStream.omitField(TxSerialInterface.class, "prefs");
+        xStream.omitField(TxDmaController.class, "prefs");
+        xStream.omitField(TxAdPrefsValueProvider.class, "prefs");
+
+        // Don't store callback handler via XStream
+        xStream.omitField(MasterClock.ClockableEntry.class, "clockableCallbackHandler");
+
+
+        // Do we store the prefs
+
+        xStream.alias("r32", Register32.class);
+        xStream.alias("nr32", NullRegister32.class);
+        xStream.alias("wlr32", WriteListenerRegister32.class);
+        xStream.useAttributeFor(Register32.class, "value");
+        xStream.aliasField("v", Register32.class, "value");
+        xStream.aliasField("r", CPUState.class, "regValue");
+        return xStream;
+    }
+
+
+    public static void saveStateToFile(EmulationFramework framework, String destinationFilename) throws IOException {
+        FileOutputStream fileOutputStream = new FileOutputStream(new File(destinationFilename));
+        ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(fileOutputStream));
+
+        StringWriter writer = new StringWriter();
+//        new XStream(new StaxDriver()).toXML(framework, writer);
+        getFrameworkXStream().toXML(framework, writer);
+
+        byte[] bytes = writer.toString().getBytes("UTF-8");
+
+        ZipEntry zipEntry = new ZipEntry(FRAMEWORK_ZIPENTRY_NAME);
+        zipEntry.setSize(bytes.length);
+        zipOutputStream.putNextEntry(zipEntry);
+        IOUtils.write(bytes, zipOutputStream);
+
+        for (int chip = 0; chip < 2; chip++) {
+            DebuggableMemory memory = framework.getPlatform(chip).getMemory();
+            zipEntry = new ZipEntry(MEMORY_ZIPENTRY_NAME + chip);
+            zipEntry.setSize(memory.getNumPages() + memory.getNumUsedPages() * memory.getPageSize());
+            zipOutputStream.putNextEntry(zipEntry);
+            memory.saveAllToStream(zipOutputStream);
+        }
+
+        zipOutputStream.close();
+        fileOutputStream.close();
+    }
+
+
+    public static EmulationFramework load(String sourceFilename, Prefs prefs) throws IOException {
+        EmulationFramework framework = null;
+        FileInputStream fileInputStream = null;
+        ZipInputStream zipInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(new File(sourceFilename));
+            zipInputStream = new ZipInputStream(new BufferedInputStream(fileInputStream));
+
+            // Read CPU State
+            ZipEntry entry = zipInputStream.getNextEntry();
+            if (entry == null || !FRAMEWORK_ZIPENTRY_NAME.equals(entry.getName())) {
+                throw new IOException("Error loading state file\nFirst file not called " + FRAMEWORK_ZIPENTRY_NAME);
+            }
+            else {
+                framework = (EmulationFramework) XStreamUtils.load(zipInputStream);
+
+                /* Restore and relink memory */
+                for (int chip = 0; chip < 2; chip++) {
+                    // Read memory
+                    entry = zipInputStream.getNextEntry();
+                    String expectedEntry = MEMORY_ZIPENTRY_NAME + chip;
+                    if (entry == null || !expectedEntry.equals(entry.getName())) {
+                        throw new IOException("Error loading state file\nExpected a file called " + expectedEntry + " but got " + entry.getName());
+                    }
+                    else {
+                        // Restore memory to platform
+                        framework.getPlatform(chip).getMemory().loadAllFromStream(zipInputStream);
+                        // Also update its reference in framework
+                        framework.getEmulator(chip).context.memory = framework.getPlatform(chip).getMemory();
+                    }
+                }
+
+                /* Relink prefs */
+                framework.setPrefs(prefs);
+                // TODO: prefs should be removed from TxSerialHandler once it is fixed
+                // TODO: prefs should be removed from TxDMAController or injected here
+
+                /* TODO: should relink callback handler */
+            }
+        } finally {
+            if (zipInputStream != null) zipInputStream.close();
+            if (fileInputStream != null) fileInputStream.close();
+        }
+
+        return framework;
+    }
+
 }
