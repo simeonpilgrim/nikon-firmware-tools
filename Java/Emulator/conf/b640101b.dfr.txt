@@ -1149,7 +1149,9 @@
 
 # Area copied to 0x8F9C4E78 by the loop at 0x40574
 # -m 0x0037BDE4-0x00393CF7=DATA:L
-# 0x0038DF3C : Dispatch table copied to 0x8F9D6FD0 used by function_1d994a_ which is called by many interrupts
+
+# Dispatch table copied to 0x8F9D6FD0 used by function_1d994a_ which is called by many interrupts
+-m 0x0038DF3C-0x38E0BB=DATA:L
 
 -m 0x00393CF8-0x00394793=CODE
 
@@ -3141,14 +3143,14 @@
 -s 0x1D9618=WaitOnSemaphoreTimeout
 -s 0x1D963A=PollAndRequestSemaphore
 -s 0x1D965A=ReferenceSemaphoreStatus
--s 0x1D9688=EventPtr_SetPtr
+-s 0x1D9688=EventPtr_SetPtr(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN flag_id])
 -s 0x1D9692=EventPtr_SetFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN set_pattern])
--s 0x1D96B2=EventPtr_ClearFlag
--s 0x1D96D8=EventPtr_WaitFlag_OR
--s 0x1D9704=EventPtr_WaitFlag_AND
--s 0x1D9730=WaitForEventFlag
--s 0x1D9762=WaitForEventFlagTimeout
--s 0x1D9794=WaitForEventFlagPolling
+-s 0x1D96B2=EventPtr_ClearFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN clr_pattern])
+-s 0x1D96D8=EventPtr_WaitFlag_OR(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wai_pattern], R6 [IN ptr_out_pattern])
+-s 0x1D9704=EventPtr_WaitFlag_AND(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wai_pattern], R6 [IN ptr_out_pattern])
+-s 0x1D9730=EventPtr_WaitFlag_OR_Timeout(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern], R7 [IN timeout])
+-s 0x1D9762=EventPtr_WaitFlag_AND_Timeout(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern], R7 [IN timeout])
+-s 0x1D9794=EventPtr_PollFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern])
 -s 0x1D97C0=MsgPtr_SetPtr
 -s 0x1D97CA=SendMessage
 -s 0x1D97EE=ReceiveMessage
