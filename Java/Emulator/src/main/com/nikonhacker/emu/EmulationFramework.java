@@ -599,9 +599,7 @@ public class EmulationFramework {
         // Don't store callback handler via XStream
         xStream.omitField(MasterClock.ClockableEntry.class, "clockableCallbackHandler");
 
-
-        // Do we store the prefs
-
+        // Use some aliases
         xStream.alias("r32", Register32.class);
         xStream.alias("nr32", NullRegister32.class);
         xStream.alias("wlr32", WriteListenerRegister32.class);
