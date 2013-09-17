@@ -8,8 +8,14 @@ package com.nikonhacker.gui;
 /* TODO : track executions in non CODE area */
 /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
-import com.nikonhacker.*;
-import com.nikonhacker.disassembly.*;
+import com.nikonhacker.ApplicationInfo;
+import com.nikonhacker.Constants;
+import com.nikonhacker.Format;
+import com.nikonhacker.Prefs;
+import com.nikonhacker.disassembly.Disassembler;
+import com.nikonhacker.disassembly.Function;
+import com.nikonhacker.disassembly.OutputOption;
+import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.disassembly.fr.Dfr;
 import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.Dtx;
@@ -51,11 +57,8 @@ import com.nikonhacker.gui.component.serialInterface.SerialInterfaceFrame;
 import com.nikonhacker.gui.component.sourceCode.SourceCodeFrame;
 import com.nikonhacker.gui.component.timer.ProgrammableTimersFrame;
 import com.nikonhacker.gui.swing.*;
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.xml.StaxDriver;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
@@ -71,14 +74,14 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
 public class EmulatorUI extends JFrame implements ActionListener {
 
@@ -101,8 +104,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String[] COMMAND_TOGGLE_SERIAL_DEVICES              = {"FR_COMMAND_TOGGLE_SERIAL_DEVICES", "TX_COMMAND_TOGGLE_SERIAL_DEVICES"};
     private static final String[] COMMAND_TOGGLE_IO_PORTS_WINDOW             = {"FR_COMMAND_TOGGLE_IO_PORTS_WINDOW", "TX_COMMAND_TOGGLE_IO_PORTS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_AD_CONVERTER                = {"FR_COMMAND_TOGGLE_AD_CONVERTER", "TX_COMMAND_TOGGLE_AD_CONVERTER"};
-    private static final String[] COMMAND_LOAD_STATE                         = {"FR_LOAD_STATE", "TX_LOAD_STATE"};
-    private static final String[] COMMAND_SAVE_STATE                         = {"FR_SAVE_STATE", "TX_SAVE_STATE"};
     private static final String[] COMMAND_SAVE_LOAD_MEMORY                   = {"FR_SAVE_LOAD_MEMORY", "TX_SAVE_LOAD_MEMORY"};
     private static final String[] COMMAND_TOGGLE_CODE_STRUCTURE_WINDOW       = {"FR_TOGGLE_CODE_STRUCTURE_WINDOW", "TX_TOGGLE_CODE_STRUCTURE_WINDOW"};
     private static final String[] COMMAND_TOGGLE_SOURCE_CODE_WINDOW          = {"FR_TOGGLE_SOURCE_CODE_WINDOW", "TX_TOGGLE_SOURCE_CODE_WINDOW"};
@@ -117,6 +118,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String COMMAND_UI_OPTIONS                   = "UI_OPTIONS";
     private static final String COMMAND_DECODE                       = "DECODE";
     private static final String COMMAND_ENCODE                       = "ENCODE";
+    private static final String COMMAND_LOAD_STATE                   = "LOAD_STATE";
+    private static final String COMMAND_SAVE_STATE                   = "SAVE_STATE";
     private static final String COMMAND_QUIT                         = "QUIT";
     private static final String COMMAND_ABOUT                        = "ABOUT";
     private static final String COMMAND_TEST                         = "TEST";
@@ -178,16 +181,13 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final int CAMERA_SCREEN_WIDTH    = 640;
     private static final int CAMERA_SCREEN_HEIGHT   = 480;
 
-    private static final String[] CPUSTATE_ENTRY_NAME = {"FrCPUState", "TxCPUState"};
-    private static final String[] MEMORY_ENTRY_NAME   = {"FrMemory", "TxMemory"};
-
     private static final String STATUS_DEFAULT_TEXT = "Ready";
 
-    public static final  Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
-    public static final  Color STATUS_BGCOLOR_RUN     = Color.GREEN;
-    public static final  Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
-    public static final  Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
-    public static final  Color STATUS_BGCOLOR_ERROR   = Color.RED;
+    public static final Color STATUS_BGCOLOR_DEFAULT = Color.LIGHT_GRAY;
+    public static final Color STATUS_BGCOLOR_RUN     = Color.GREEN;
+    public static final Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
+    public static final Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
+    public static final Color STATUS_BGCOLOR_ERROR   = Color.RED;
 
     private EmulationFramework framework;
 
@@ -841,21 +841,19 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         fileMenu.add(new JSeparator());
 
-        for (int chip = 0; chip < 2; chip++) {
-            //Load state
-            tmpMenuItem = new JMenuItem("Load " + Constants.CHIP_LABEL[chip] + "  state");
-            tmpMenuItem.setActionCommand(COMMAND_LOAD_STATE[chip]);
-            tmpMenuItem.addActionListener(this);
-            fileMenu.add(tmpMenuItem);
+        //Save state
+        tmpMenuItem = new JMenuItem("Save state");
+        tmpMenuItem.setActionCommand(COMMAND_SAVE_STATE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
 
-            //Save state
-            tmpMenuItem = new JMenuItem("Save " + Constants.CHIP_LABEL[chip] + " state");
-            tmpMenuItem.setActionCommand(COMMAND_SAVE_STATE[chip]);
-            tmpMenuItem.addActionListener(this);
-            fileMenu.add(tmpMenuItem);
+//        //Load state
+//        tmpMenuItem = new JMenuItem("Load state");
+//        tmpMenuItem.setActionCommand(COMMAND_LOAD_STATE);
+//        tmpMenuItem.addActionListener(this);
+//        fileMenu.add(tmpMenuItem);
 
-            fileMenu.add(new JSeparator());
-        }
+        fileMenu.add(new JSeparator());
 
         //quit
         tmpMenuItem = new JMenuItem("Quit");
@@ -1205,12 +1203,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_ITRON_OBJECT_WINDOW)) != Constants.CHIP_NONE) {
             toggleITronObject(chip);
         }
-        else if ((chip = getChipCommandMatchingAction(e, COMMAND_LOAD_STATE)) != Constants.CHIP_NONE) {
-            loadState(chip);
-        }
-        else if ((chip = getChipCommandMatchingAction(e, COMMAND_SAVE_STATE)) != Constants.CHIP_NONE) {
-            saveState(chip);
-        }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_SAVE_LOAD_MEMORY)) != Constants.CHIP_NONE) {
             openSaveLoadMemoryDialog(chip);
         }
@@ -1249,6 +1241,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
+        }
+        else if (COMMAND_LOAD_STATE.equals(e.getActionCommand())) {
+            loadState();
+        }
+        else if (COMMAND_SAVE_STATE.equals(e.getActionCommand())) {
+            saveState();
         }
         else if (COMMAND_TOGGLE_SCREEN_EMULATOR.equals(e.getActionCommand())) {
             toggleScreenEmulator();
@@ -1346,7 +1344,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
     }
 
-    private void loadState(int chip) {
+    private void loadState() {
         JTextField sourceFile = new JTextField();
         final JComponent[] inputs = new JComponent[] {
                 new FileSelectionPanel("Source file", sourceFile, false),
@@ -1360,38 +1358,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             try {
-                FileInputStream fileInputStream = new FileInputStream(new File(sourceFile.getText()));
-                ZipInputStream zipInputStream = new ZipInputStream(new BufferedInputStream(fileInputStream));
-
-                // Read CPU State
-                ZipEntry entry = zipInputStream.getNextEntry();
-                if (entry == null || !CPUSTATE_ENTRY_NAME[chip].equals(entry.getName())) {
-                    JOptionPane.showMessageDialog(this, "Error loading state file\nFirst file not called " + CPUSTATE_ENTRY_NAME[chip], "Error", JOptionPane.ERROR_MESSAGE);
-                }
-                else {
-                    framework.getPlatform(chip).setCpuState((CPUState) XStreamUtils.load(zipInputStream));
-
-                    // Read memory
-                    entry = zipInputStream.getNextEntry();
-                    if (entry == null || !MEMORY_ENTRY_NAME[chip].equals(entry.getName())) {
-                        JOptionPane.showMessageDialog(this, "Error loading state file\nSecond file not called " + MEMORY_ENTRY_NAME[chip], "Error", JOptionPane.ERROR_MESSAGE);
-                    }
-                    else {
-                        framework.getPlatform(chip).getMemory().loadAllFromStream(zipInputStream);
-                        JOptionPane.showMessageDialog(this, "State loading complete", "Done", JOptionPane.INFORMATION_MESSAGE);
-                    }
-                }
-
-                zipInputStream.close();
-                fileInputStream.close();
+                framework = EmulationFramework.load(sourceFile.getText(), prefs);
             } catch (Exception e) {
                 e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error loading state file\n" + e.getClass().getName()+ "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, e.getMessage() + "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
 
-    private void saveState(int chip) {
+    private void saveState() {
         JTextField destinationFile = new JTextField();
         final JComponent[] inputs = new JComponent[] {
                 new FileSelectionPanel("Destination file", destinationFile, false),
@@ -1405,28 +1380,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 null,
                 JOptionPane.DEFAULT_OPTION)) {
             try {
-                FileOutputStream fileOutputStream = new FileOutputStream(new File(destinationFile.getText()));
-                ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(fileOutputStream));
-
-                StringWriter writer = new StringWriter();
-                XStream xStream = new XStream(new StaxDriver());
-                xStream.toXML(framework.getPlatform(chip).getCpuState(), writer);
-                byte[] bytes = writer.toString().getBytes("UTF-8");
-
-                ZipEntry zipEntry = new ZipEntry(CPUSTATE_ENTRY_NAME[chip]);
-                zipEntry.setSize(bytes.length);
-                zipOutputStream.putNextEntry(zipEntry);
-                IOUtils.write(bytes, zipOutputStream);
-
-                DebuggableMemory memory = framework.getPlatform(chip).getMemory();
-                zipEntry = new ZipEntry(MEMORY_ENTRY_NAME[chip]);
-                zipEntry.setSize(memory.getNumPages() + memory.getNumUsedPages() * memory.getPageSize());
-                zipOutputStream.putNextEntry(zipEntry);
-                memory.saveAllToStream(zipOutputStream);
-
-                zipOutputStream.close();
-                fileOutputStream.close();
-
+                EmulationFramework.saveStateToFile(framework, destinationFile.getText());
                 JOptionPane.showMessageDialog(this, "State saving complete", "Done", JOptionPane.INFORMATION_MESSAGE);
             } catch (Exception e) {
                 e.printStackTrace();
