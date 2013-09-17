@@ -256,8 +256,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
                 startTransfer();
             }
             else {
-                // If TX has just been enabled, and RX was already enabled (and we're in full duplex, otherwise transfer will already have started)
-                if (isMod0RxeSet() || isFullDuplex()) {
+                // If TX has just been enabled, and either we're in half duplex or we're in full duplex and RX was already enabled
+                if (isMod0RxeSet() || !isFullDuplex()) {
                     startTransfer();
                 }
             }
