@@ -29,11 +29,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Inter. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -51,11 +51,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -73,11 +73,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -96,11 +96,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -117,11 +117,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -138,11 +138,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -160,11 +160,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -181,11 +181,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {
@@ -202,11 +202,11 @@ public abstract class AbstractAccessLoggerActivityListener implements MemoryActi
                 case CODE:
                     msg += "(@0x" + Format.asHex(cpuState.pc, 8) + ")";
                     break;
-                case INT:
-                    msg += "(Int. ctrlr)";
-                    break;
                 case DMA:
                     msg += "(DMA ctrlr)";
+                    break;
+                case IMGA:
+                    msg += "(IMGA ctrlr)";
                     break;
             }
             if (masterClock != null) {

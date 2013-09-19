@@ -50,6 +50,9 @@ public class FrInterruptController extends AbstractInterruptController {
     public static final int SERIAL_IF_2_SHARED_REQUEST_NR = 0x1D;
     public static final int SERIAL_IF_3_SHARED_REQUEST_NR = 0x1E;
 
+    public static final int IMAGE_28_SHARED_REQUEST_NR = 0x28;
+    public static final int IMAGE_29_SHARED_REQUEST_NR = 0x29;
+
     public static final int RELOAD_TIMER_32_INTERRUPT_REQUEST_NR = 0x2E;
 
     public static final int DELAY_INTERRUPT_REQUEST_NR = 0x3F;
@@ -129,7 +132,7 @@ public class FrInterruptController extends AbstractInterruptController {
             int icrAddress = irNumber + ExpeedIoListener.REGISTER_ICR00;
             // only the 5 LSB are significant, but bit4 is always 1
             // (see hm91660-cm71-10146-3e.pdf, page 257, sect. 10.3.1)
-            icr = platform.getMemory().loadUnsigned8(icrAddress, DebuggableMemory.AccessSource.INT) & 0x1F | 0x10;
+            icr = platform.getMemory().loadUnsigned8(icrAddress, null) & 0x1F | 0x10;
         }
         else {
             throw new InterruptControllerException("Cannot determine ICR value for interrupt 0x" + Format.asHex(interruptNumber, 2));

@@ -679,7 +679,7 @@ public class TxInterruptController extends AbstractInterruptController {
             throw new RuntimeException("No IMCGxx register found for interrupt #" + interruptNumber);
         }
 
-        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr, DebuggableMemory.AccessSource.INT);
+        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr, null);
         return getSection(registerValue, description.cgCtrlRegSection);
     }
 

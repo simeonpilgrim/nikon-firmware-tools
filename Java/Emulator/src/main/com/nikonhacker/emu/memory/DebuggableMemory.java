@@ -31,12 +31,12 @@ public class DebuggableMemory extends AbstractMemory implements Memory {
     public enum AccessSource{
         /** Access due to code reading/writing to memory */
         CODE,
-        /** Access done by interrupt controller */
-        INT,
         /** Access done by DMA controller */
-        DMA;
+        DMA,
+        /** Access done by IMAGE transfer of FR */
+        IMGA;
 
-        public static EnumSet<AccessSource> selectableAccessSource = EnumSet.of(CODE, INT, DMA);
+        public static EnumSet<AccessSource> selectableAccessSource = EnumSet.of(CODE, DMA, IMGA);
     }
 
 

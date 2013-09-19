@@ -11,6 +11,8 @@ import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
 import com.nikonhacker.emu.memory.listener.fr.Expeed6B00IoListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed40X3IoListener;
+import com.nikonhacker.emu.memory.listener.fr.Expeed4002IoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
 import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
@@ -33,8 +35,13 @@ import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.ioPort.fr.FrIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
+import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
+import com.nikonhacker.emu.peripherials.jpegCodec.fr.FrJpegCodec;
+import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
+import com.nikonhacker.emu.peripherials.resolutionConverter.fr.FrResolutionConverter;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
+import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
@@ -188,6 +195,8 @@ public class EmulationFramework {
             KeyCircuit keyCircuit = null;
             SharedInterruptCircuit sharedInterruptCircuit = null;
             AdConverter adConverter = null;
+            JpegCodec[] jpegCodec = null;
+            ResolutionConverter[] resolutionConverter = null;
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -201,15 +210,21 @@ public class EmulationFramework {
                 clockGenerator = new FrClockGenerator();
                 interruptController = new FrInterruptController(platform[chip]);
                 sharedInterruptCircuit = new FrSharedInterruptCircuit(interruptController);
+                jpegCodec = new FrJpegCodec[Expeed40X3IoListener.NUM_JPEG_CODEC];
+                resolutionConverter = new FrResolutionConverter[Expeed4002IoListener.NUM_IMAGE_TRANSFER_CIRCUIT];
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Unknown component 4006
+                // Unknown component 0x4006
                 memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // 6B0000XX interrupt sharing macro in ASIC
                 memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // JPEG codec 0x40X3
+                memory.addActivityListener(new Expeed40X3IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // Image Transfer 0x40XF and 0x4002
+                memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
@@ -225,6 +240,14 @@ public class EmulationFramework {
                 // Serial interfaces
                 for (int i = 0; i < serialInterfaces.length; i++) {
                     serialInterfaces[i] = new FrSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
+                }
+
+                for (int i = 0; i<jpegCodec.length; i++) {
+                    jpegCodec[i] = new FrJpegCodec(i,platform[chip]);
+                }
+                
+                for (int i = 0; i<resolutionConverter.length; i++) {
+                    resolutionConverter[i] = new FrResolutionConverter(i,platform[chip]);
                 }
             }
             else {
@@ -359,6 +382,8 @@ public class EmulationFramework {
             platform[chip].setAdConverter(adConverter);
             platform[chip].setSerialDevices(serialDevices);
             platform[chip].setSharedInterruptCircuit(sharedInterruptCircuit);
+            platform[chip].setJpegCodec(jpegCodec);
+            platform[chip].setResolutionConverter(resolutionConverter);
 
             clockGenerator.setPlatform(platform[chip]);
 
