@@ -11,6 +11,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener {
 
@@ -85,7 +86,6 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     }
 
     private class ScreenEmulatorComponent extends JComponent {
-        Object pixel = null;
 
         private ScreenEmulatorComponent() {
             super();
@@ -111,30 +111,42 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                 previousH = h;
             }
 
-            int yOffset, uvOffset;
+            int yOffset=0, uAddr=uStart, vAddr=vStart;
+            int[] pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
+            final int halfWidth = screenWidth>>1;
 
-            for (int yPos = 0; yPos < 480; yPos++) {
-                for (int xPos = 0; xPos < screenWidth/2; xPos++) {
-                    yOffset = yPos * screenWidth + xPos * 2;
-                    uvOffset = yPos * screenWidth + xPos;
-
-                    int u = memory.loadUnsigned8(uStart + uvOffset, null);
-                    int v = memory.loadUnsigned8(vStart + uvOffset, null);
-
-                    setPixelFromYUV(xPos * 2, yPos, memory.loadUnsigned8(yStart + yOffset, null) - 128, u - 128, v - 128);
-                    setPixelFromYUV(xPos * 2 + 1, yPos, memory.loadUnsigned8(yStart + yOffset + 1, null) - 128, u - 128, v - 128);
+            // optimisation for buffered image TYPE_INT_RGB
+            // coderat: this optimized code is 2x faster as before
+            for (int yPos = 0; yPos < screenHeight; yPos++) {
+                for (int xPos = 0; xPos < halfWidth; xPos++,yOffset+=2) {
+                    final int y = memory.loadUnsigned16(yStart+yOffset, null);
+                    setPixelsFromYCbCr422(pixels, yOffset, 
+                                          y>>8,
+                                          y&0xFF, 
+                                          memory.loadUnsigned8(uAddr++, null), 
+                                          memory.loadUnsigned8(vAddr++, null));
                 }
+                uAddr += halfWidth;
+                vAddr += halfWidth;
             }
 
             g2d.drawImage(img, resizeTransform, null);
         }
 
-        private void setPixelFromYUV(int xPos, int yPos, int y, int u, int v) {
-            int r = Math.max(0, Math.min(255, (int) (128 + y + 1.13983 * v)));
-            int g = Math.max(0, Math.min(255, (int) (128 + y - 0.39465 * u - 0.58060 * v)));
-            int b = Math.max(0, Math.min(255, (int) (128 + y + 2.03211 * u)));
+        private final int clamp(int x) {
+            return (x<=255 ? (x>=0 ? x : 0 ) : 255);
+        }
 
-            img.getRaster().setDataElements(xPos, yPos, img.getColorModel().getDataElements(r << 16 | g << 8 | b, pixel));
+        private final void setPixelsFromYCbCr422(int[] pixels,int pos, int y, int y1, int u, int v) {
+            // full range YCbCr to RGB conversion
+            final int factorR = Math.round(1.4f * (v-128) );
+            final int factorG = Math.round(-0.343f * (u-128) - 0.711f * (v-128));
+            final int factorB = Math.round(1.765f * (u-128) );
+            
+            // coderat: conversion YCbCr->RGB clamp is needed, because RGB do not include complete YCbCr space
+            pixels[pos]   = (clamp(y+factorR) << 16) | (clamp(y+factorG) << 8) | clamp(y+factorB);
+            pixels[pos+1] = (clamp(y1+factorR) << 16) | (clamp(y1+factorG) << 8) | clamp(y1+factorB);
         }
     }
+
 }

@@ -9,6 +9,8 @@ import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptContro
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
+import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
@@ -40,6 +42,8 @@ public class Platform {
     private RealtimeClock       realtimeClock;
     private KeyCircuit          keyCircuit;
     private SharedInterruptCircuit  sharedInterruptCircuit;
+    private JpegCodec[]         jpegCodec;
+    private ResolutionConverter[]  resolutionConverter;
 
     private List<SerialDevice>  serialDevices;
 
@@ -152,8 +156,22 @@ public class Platform {
         return sharedInterruptCircuit;
     }
 
-
     public void setSharedInterruptCircuit(SharedInterruptCircuit sharedInterruptCircuit) {
         this.sharedInterruptCircuit = sharedInterruptCircuit;
+    }
+    public JpegCodec[] getJpegCodec() {
+        return jpegCodec;
+    }
+
+    public void setJpegCodec(JpegCodec[] jpegCodec) {
+        this.jpegCodec = jpegCodec;
+    }
+
+    public ResolutionConverter[] getResolutionConverter() {
+        return resolutionConverter;
+    }
+
+    public void setResolutionConverter(ResolutionConverter[] resolutionConverter) {
+        this.resolutionConverter = resolutionConverter;
     }
 }

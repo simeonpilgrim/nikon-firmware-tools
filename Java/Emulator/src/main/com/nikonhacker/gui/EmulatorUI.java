@@ -27,6 +27,7 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
+import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.encoding.FirmwareDecoder;
@@ -174,12 +175,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String BUTTON_PROPERTY_KEY_ICON = "icon";
 
     // Business constants
-
-    private static final int CAMERA_SCREEN_MEMORY_Y = 0xCE57DC60;
-    private static final int CAMERA_SCREEN_MEMORY_U = CAMERA_SCREEN_MEMORY_Y + 0x64000;
-    private static final int CAMERA_SCREEN_MEMORY_V = CAMERA_SCREEN_MEMORY_Y + 2 * 0x64000;
-    private static final int CAMERA_SCREEN_WIDTH    = 640;
-    private static final int CAMERA_SCREEN_HEIGHT   = 480;
 
     private static final String STATUS_DEFAULT_TEXT = "Ready";
 
@@ -2272,7 +2267,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, framework.getPlatform(Constants.CHIP_FR).getMemory(), CAMERA_SCREEN_MEMORY_Y, CAMERA_SCREEN_MEMORY_U, CAMERA_SCREEN_MEMORY_V, CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT);
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, framework.getPlatform(Constants.CHIP_FR).getMemory(), FrLcd.CAMERA_SCREEN_MEMORY_Y, FrLcd.CAMERA_SCREEN_MEMORY_U, FrLcd.CAMERA_SCREEN_MEMORY_V, FrLcd.CAMERA_SCREEN_WIDTH, FrLcd.CAMERA_SCREEN_HEIGHT);
             addDocumentFrame(Constants.CHIP_FR, screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
