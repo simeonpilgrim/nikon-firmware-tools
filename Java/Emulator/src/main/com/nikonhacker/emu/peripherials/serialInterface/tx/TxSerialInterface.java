@@ -994,21 +994,14 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
                 // device may stop transmission automatically if FIFO was used and configured like this
                 if (!isMod1TxeSet()) {
                     // unregister
-                    return "DONE";
-                }
-                else {
-                    // Remain registered
-                    return null;
+                    platform.getMasterClock().remove(this);
                 }
             }
             else {
                 // End of transmission - unregister
-                return "DONE";
+                platform.getMasterClock().remove(this);
             }
         }
-        else {
-            // Remain registered
-            return null;
-        }
+        return null;
     }
 }

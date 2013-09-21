@@ -189,7 +189,7 @@ public class FrReloadTimer extends ProgrammableTimer {
                     currentValue = tmrlra;
                 } else {
                     enabled = false;
-                    return "DONE";
+                    unRegister();
                 }
             }
         }
