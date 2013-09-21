@@ -61,7 +61,7 @@ public class FrReloadTimer32 extends FrReloadTimer {
                     currentValue = tmrlra;
                 } else {
                     enabled = false;
-                    return "DONE";
+                    unRegister();
                 }
             } else {
                 currentValue--;
