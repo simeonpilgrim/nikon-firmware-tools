@@ -265,11 +265,11 @@ public class MasterClock implements Runnable {
         while (entries.get(entries.size() - 1) != entryToDisable) Collections.rotate(entries, 1);
 
 
-        System.err.println("MasterClock reordered:");
-        for (ClockableEntry entry : entries) {
-            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " every " + entry.counterThreshold + " ticks");
-        }
-        System.err.println("---------------------------------------");
+//        System.err.println("MasterClock reordered:");
+//        for (ClockableEntry entry : entries) {
+//            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " every " + entry.counterThreshold + " ticks");
+//        }
+//        System.err.println("---------------------------------------");
 
 
         //System.err.println("Clock is stopped\r\n=======================================================");
