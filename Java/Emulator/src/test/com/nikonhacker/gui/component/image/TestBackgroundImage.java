@@ -1,5 +1,7 @@
 package com.nikonhacker.gui.component.image;
 
+import com.nikonhacker.gui.swing.BackgroundImagePanel;
+
 import javax.swing.*;
 import java.awt.*;
 

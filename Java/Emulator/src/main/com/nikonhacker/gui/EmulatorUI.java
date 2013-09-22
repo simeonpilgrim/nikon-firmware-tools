@@ -41,7 +41,6 @@ import com.nikonhacker.gui.component.callStack.CallStackFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
-import com.nikonhacker.gui.component.image.BackgroundImagePanel;
 import com.nikonhacker.gui.component.interruptController.FrInterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.InterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.TxInterruptControllerFrame;
