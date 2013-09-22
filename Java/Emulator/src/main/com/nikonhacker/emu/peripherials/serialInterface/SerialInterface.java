@@ -6,8 +6,8 @@ import com.nikonhacker.emu.Platform;
  * This class is the base class for emulation of the serial interface of a microcontroller.
  *
  * Note: the names are misleading compared to Java Object model terminology, but here it is:
- * - SerialDevice is a java "Interface"
- * - SerialInterface is one java "Class" implementing the SerialDevice interface
+ * - SerialDevice is an abstract java class
+ * - SerialInterface is a java class extending the SerialDevice abstract class. It's not a java interface!
  *
  * Serial interfaces are emulated at the value level (byte or group of 5-9 bits), not at the electric (bit) level.
  * Consequently, all information regarding clocks and edges is ignored.
@@ -23,7 +23,7 @@ import com.nikonhacker.emu.Platform;
  * microcontroller (via interrupt) that new data is available. That microcontroller will then read the
  * serial interface registers and act accordingly.
  */
-public abstract class SerialInterface extends AbstractSerialDevice {
+public abstract class SerialInterface extends SerialDevice {
     protected final Platform platform;
     protected final int      serialInterfaceNumber;
 
@@ -78,7 +78,6 @@ public abstract class SerialInterface extends AbstractSerialDevice {
         return this.getClass().getSimpleName() + " #" + serialInterfaceNumber;
     }
 
-    @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         if (getNumBits() != numBits) {
             if (logSerialMessages) System.err.println(toString() + ": Serial device (" + serialDevice + ") tries to switch to " + numBits + " while this device is in " + getNumBits() + " bits...");

@@ -1,10 +1,9 @@
 package com.nikonhacker.emu.peripherials.serialInterface.eeprom;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
-public class St950x0TesterDevice extends AbstractSerialDevice {
+public class St950x0TesterDevice extends SerialDevice {
     private final String       deviceName;
 
     public St950x0TesterDevice(String deviceName) {

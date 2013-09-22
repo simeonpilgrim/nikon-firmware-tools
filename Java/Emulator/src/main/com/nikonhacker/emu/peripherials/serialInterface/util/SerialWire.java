@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.peripherials.serialInterface.util;
 
-import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 
 /**
@@ -9,7 +8,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
  *
  * This class should be used as a base class or template for more creative uses
  */
-public class SerialWire extends AbstractSerialDevice {
+public class SerialWire extends SerialDevice {
     private String wireName;
 
     public SerialWire(String wireName, SerialDevice realTargetDevice) {

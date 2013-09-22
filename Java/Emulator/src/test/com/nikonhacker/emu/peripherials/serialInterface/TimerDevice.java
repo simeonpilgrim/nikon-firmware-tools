@@ -5,7 +5,7 @@ import com.nikonhacker.Format;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class TimerDevice extends AbstractSerialDevice {
+public class TimerDevice extends SerialDevice {
     private int i = 0;
     private String deviceName;
 
