@@ -196,7 +196,6 @@ public class MasterClock implements Runnable {
      */
     public void run() {
         //System.err.println("Clock is starting");
-        running = true;
         ClockableEntry entryToDisable = null;
         // Infinite loop
         while (running) {
