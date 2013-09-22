@@ -1,6 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface;
 
-public class DummySerialDevice extends AbstractSerialDevice {
+public class DummySerialDevice extends SerialDevice {
     @Override
     public void write(Integer value) {
         // ignore

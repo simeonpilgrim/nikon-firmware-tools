@@ -5,7 +5,7 @@ import com.nikonhacker.Format;
 /**
  * Generic serial test device
  */
-public class TestDevice extends AbstractSerialDevice {
+public class TestDevice extends SerialDevice {
     private final String deviceName;
 
     public TestDevice(String deviceName) {

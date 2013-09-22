@@ -9,12 +9,7 @@ import com.nikonhacker.disassembly.fr.FrCPUState;
 import com.nikonhacker.disassembly.tx.NullRegister32;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.DebuggableMemory;
-import com.nikonhacker.emu.memory.listener.fr.Expeed4006IoListener;
-import com.nikonhacker.emu.memory.listener.fr.Expeed6B00IoListener;
-import com.nikonhacker.emu.memory.listener.fr.Expeed40X3IoListener;
-import com.nikonhacker.emu.memory.listener.fr.Expeed4002IoListener;
-import com.nikonhacker.emu.memory.listener.fr.ExpeedIoListener;
-import com.nikonhacker.emu.memory.listener.fr.ExpeedPinIoListener;
+import com.nikonhacker.emu.memory.listener.fr.*;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
@@ -37,11 +32,8 @@ import com.nikonhacker.emu.peripherials.ioPort.tx.TxIoPort;
 import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
 import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
 import com.nikonhacker.emu.peripherials.jpegCodec.fr.FrJpegCodec;
-import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
-import com.nikonhacker.emu.peripherials.resolutionConverter.fr.FrResolutionConverter;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
-import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
@@ -49,7 +41,8 @@ import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxInputCaptureTimer
 import com.nikonhacker.emu.peripherials.programmableTimer.tx.TxTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
-import com.nikonhacker.emu.peripherials.serialInterface.AbstractSerialDevice;
+import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
+import com.nikonhacker.emu.peripherials.resolutionConverter.fr.FrResolutionConverter;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
@@ -447,7 +440,7 @@ public class EmulationFramework {
      * @param nhhs2
      */
     private void connectTxHsc1SerialDevice(SerialInterface serialInterface, Nhhs2 nhhs2) {
-        AbstractSerialDevice.interConnectSerialDevices(serialInterface, nhhs2);
+        SerialDevice.interConnectSerialDevices(serialInterface, nhhs2);
     }
 
     /**

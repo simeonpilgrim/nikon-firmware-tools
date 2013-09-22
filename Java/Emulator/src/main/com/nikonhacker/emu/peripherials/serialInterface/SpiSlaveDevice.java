@@ -2,7 +2,7 @@ package com.nikonhacker.emu.peripherials.serialInterface;
 
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 
-public abstract class SpiSlaveDevice extends AbstractSerialDevice {
+public abstract class SpiSlaveDevice extends SerialDevice {
 
     protected boolean selected = false;
     private Pin selectPin;
