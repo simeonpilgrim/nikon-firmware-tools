@@ -30,13 +30,6 @@ public class FrontPanelFrame extends DocumentFrame {
 
             panel.setImage(background);
 
-              // TODO add this help to Background image
-//            System.out.println("Help:");
-//            System.out.println("Standard buttons: left mouse button = click (or release already pressed), right mouse button = toggle");
-//            System.out.println("Off/On buttons: any mouse button = toggle");
-//            System.out.println("Dials: left mouse button = rotate clockwise, right mouse button = rotate anticlockwise");
-//            System.out.println("Shutter: left mouse button = none > half > full, right mouse button = none < half < full");
-
             for (String key : frontPanel.getButtons().keySet()) {
                 addButton(panel, IMG_DIR, bgWidth, bgHeight, frontPanel.getButtons().get(key));
             }
