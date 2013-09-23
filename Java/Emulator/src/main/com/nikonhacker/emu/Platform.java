@@ -5,15 +5,16 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
+import com.nikonhacker.emu.peripherials.frontPanel.FrontPanel;
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
-import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
+import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -27,25 +28,26 @@ import java.util.List;
  */
 public class Platform {
 
-    private MasterClock         masterClock;
+    private MasterClock masterClock;
 
     // The first 3 are so frequently used that we skip the getter and give them package access
-    CPUState            cpuState;
-    DebuggableMemory    memory;
+    CPUState         cpuState;
+    DebuggableMemory memory;
     InterruptController interruptController = new DummyInterruptController();
-    private ClockGenerator      clockGenerator;
-    private ProgrammableTimer[] programmableTimers;
-    private IoPort[]            ioPorts;
-    private SerialInterface[]   serialInterfaces;
-    private DmaController       dmaController;
-    private AdConverter         adConverter;
-    private RealtimeClock       realtimeClock;
-    private KeyCircuit          keyCircuit;
-    private SharedInterruptCircuit  sharedInterruptCircuit;
-    private JpegCodec[]         jpegCodec;
+    private ClockGenerator         clockGenerator;
+    private ProgrammableTimer[]    programmableTimers;
+    private IoPort[]               ioPorts;
+    private SerialInterface[]      serialInterfaces;
+    private DmaController          dmaController;
+    private AdConverter            adConverter;
+    private RealtimeClock          realtimeClock;
+    private KeyCircuit             keyCircuit;
+    private SharedInterruptCircuit sharedInterruptCircuit;
+    private JpegCodec[]            jpegCodec;
     private ResolutionConverter[]  resolutionConverter;
+    private FrontPanel             frontPanel;
 
-    private List<SerialDevice>  serialDevices;
+    private List<SerialDevice> serialDevices;
 
 
     public Platform(MasterClock masterClock) {
@@ -173,5 +175,13 @@ public class Platform {
 
     public void setResolutionConverter(ResolutionConverter[] resolutionConverter) {
         this.resolutionConverter = resolutionConverter;
+    }
+
+    public FrontPanel getFrontPanel() {
+        return frontPanel;
+    }
+
+    public void setFrontPanel(FrontPanel frontPanel) {
+        this.frontPanel = frontPanel;
     }
 }

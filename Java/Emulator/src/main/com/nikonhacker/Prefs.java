@@ -65,7 +65,7 @@ public class Prefs {
     private EmulatorUI.RunMode[]               altModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
-
+    private Map<String, Integer>               buttonsValue;
 
     private boolean serialTx19FixRequireRxeAndTxe;
     private boolean serialTx19FixInsertDelay;
@@ -604,6 +604,17 @@ public class Prefs {
         }
         this.altExecutionModeForSyncedCpuUponStep[chip] = altExecutionModeForSyncedCpuUponStep;
     }
+
+    public void setButtonValue(String key, Integer value) {
+        if (buttonsValue == null) buttonsValue = new HashMap<>();
+        buttonsValue.put(key, value);
+    }
+
+    public Integer getButtonValue(String key) {
+        if (buttonsValue == null) buttonsValue = new HashMap<>();
+        return buttonsValue.get(key);
+    }
+
 
 
     public boolean isSerialTx19FixRequireRxeAndTxe() {
