@@ -212,6 +212,7 @@ public abstract class CodeStructure {
             writer.write("\n; ************************************************************************\n");
             writer.write("; " + function.getTitleLine() + "\n");
             writer.write("; ************************************************************************\n");
+            writer.write(function.getName() + ":\n");
         }
 
         // label
