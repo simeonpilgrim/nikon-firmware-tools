@@ -453,7 +453,7 @@ public abstract class Disassembler {
             debugPrintWriter.println("  " + codeStructure.getNumReturns() + " returns");
             debugPrintWriter.println();
 
-            // Filling task-related sybmols
+            // Filling task-related symbols
             codeStructure.tblTaskData = findSymbolAddressByName("tblTaskData");
             codeStructure.pCurrentTCB = findSymbolAddressByName("pCurrentTCB");
             codeStructure.tblTCB = findSymbolAddressByName("tblTCB");
