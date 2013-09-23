@@ -41,6 +41,7 @@ import com.nikonhacker.gui.component.callStack.CallStackFrame;
 import com.nikonhacker.gui.component.codeStructure.CodeStructureFrame;
 import com.nikonhacker.gui.component.cpu.CPUStateEditorFrame;
 import com.nikonhacker.gui.component.disassembly.DisassemblyFrame;
+import com.nikonhacker.gui.component.frontPanel.FrontPanelFrame;
 import com.nikonhacker.gui.component.interruptController.FrInterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.InterruptControllerFrame;
 import com.nikonhacker.gui.component.interruptController.TxInterruptControllerFrame;
@@ -115,6 +116,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String COMMAND_GENERATE_SYS_SYMBOLS         = "GENERATE_SYS_SYMBOLS";
     private static final String COMMAND_TOGGLE_COMPONENT_4006_WINDOW = "TOGGLE_COMPONENT_4006_WINDOW";
     private static final String COMMAND_TOGGLE_SCREEN_EMULATOR       = "TOGGLE_SCREEN_EMULATOR";
+    private static final String COMMAND_TOGGLE_FRONT_PANEL           = "TOGGLE_FRONT_PANEL";
     private static final String COMMAND_UI_OPTIONS                   = "UI_OPTIONS";
     private static final String COMMAND_DECODE                       = "DECODE";
     private static final String COMMAND_ENCODE                       = "ENCODE";
@@ -238,6 +240,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private JCheckBoxMenuItem component4006MenuItem;
     private JCheckBoxMenuItem screenEmulatorMenuItem;
 
+    private JCheckBoxMenuItem frontPanelMenuItem;
+
     private JCheckBoxMenuItem[] disassemblyMenuItem             = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] memoryActivityViewerMenuItem    = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] customMemoryRangeLoggerMenuItem = new JCheckBoxMenuItem[2];
@@ -281,6 +285,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private JButton component4006Button;
     private JButton screenEmulatorButton;
 
+    private JButton frontPanelButton;
+
     private JButton[] analyseButton        = new JButton[2];
     private JButton[] saveLoadMemoryButton = new JButton[2];
     private JButton[] chipOptionsButton    = new JButton[2];
@@ -304,6 +310,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private Component4006Frame component4006Frame;
     private DocumentFrame      screenEmulatorFrame;
+
+    private FrontPanelFrame frontPanelFrame;
 
     private ITronObjectFrame[] ITronObjectFrame = new ITronObjectFrame[2];
 
@@ -683,6 +691,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             bar.add(serialDevicesButton[Constants.CHIP_TX]);
             adConverterButton[Constants.CHIP_TX] = makeButton("ad_converter", COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX], Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter", "A/D converter");
             bar.add(adConverterButton[Constants.CHIP_TX]);
+            frontPanelButton = makeButton("front_panel", COMMAND_TOGGLE_FRONT_PANEL, "Front Panel", "Front Panel");
+            bar.add(frontPanelButton);
         }
 
         bar.add(Box.createRigidArea(new Dimension(10, 0)));
@@ -961,7 +971,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             componentsMenu.add(new JSeparator());
         }
 
-        //screen emulator
+        //screen emulator: FR80 only
         screenEmulatorMenuItem = new JCheckBoxMenuItem("Screen emulator (FR only)");
         screenEmulatorMenuItem.setMnemonic(KEY_EVENT_SCREEN);
         screenEmulatorMenuItem.setAccelerator(KeyStroke.getKeyStroke(KEY_EVENT_SCREEN, ActionEvent.ALT_MASK));
@@ -969,7 +979,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         screenEmulatorMenuItem.addActionListener(this);
         componentsMenu.add(screenEmulatorMenuItem);
 
-        //Component 4006
+        //Component 4006: FR80 only
         component4006MenuItem = new JCheckBoxMenuItem("Component 4006 window (FR only)");
         component4006MenuItem.setMnemonic(KeyEvent.VK_4);
         component4006MenuItem.setActionCommand(COMMAND_TOGGLE_COMPONENT_4006_WINDOW);
@@ -978,17 +988,23 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         componentsMenu.add(new JSeparator());
 
-        //Serial devices : TX only for now
+        //Serial devices: TX19 only for now
         serialDevicesMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices (TX only)");
         serialDevicesMenuItem[Constants.CHIP_TX].setActionCommand(COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX]);
         serialDevicesMenuItem[Constants.CHIP_TX].addActionListener(this);
         componentsMenu.add(serialDevicesMenuItem[Constants.CHIP_TX]);
 
-        //A/D converter : TX only for now
+        //A/D converter: TX19 only for now
         adConverterMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter (TX only)");
         adConverterMenuItem[Constants.CHIP_TX].setActionCommand(COMMAND_TOGGLE_AD_CONVERTER[Constants.CHIP_TX]);
         adConverterMenuItem[Constants.CHIP_TX].addActionListener(this);
         componentsMenu.add(adConverterMenuItem[Constants.CHIP_TX]);
+
+        //Front panel: TX19 only
+        frontPanelMenuItem = new JCheckBoxMenuItem("Front panel (TX only)");
+        frontPanelMenuItem.setActionCommand(COMMAND_TOGGLE_FRONT_PANEL);
+        frontPanelMenuItem.addActionListener(this);
+        componentsMenu.add(frontPanelMenuItem);
 
         //Set up the trace menu.
         JMenu traceMenu = new JMenu("Trace");
@@ -1247,6 +1263,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
         else if (COMMAND_TOGGLE_COMPONENT_4006_WINDOW.equals(e.getActionCommand())) {
             toggleComponent4006();
+        }
+
+        else if (COMMAND_TOGGLE_FRONT_PANEL.equals(e.getActionCommand())) {
+            toggleFrontPanel();
         }
 
         else if (COMMAND_QUIT.equals(e.getActionCommand())) {
@@ -2116,6 +2136,14 @@ public class EmulatorUI extends JFrame implements ActionListener {
             }
         }
 
+        if (chip == Constants.CHIP_TX) {
+            if (frontPanelFrame != null) {
+                frontPanelFrame.dispose();
+                frontPanelFrame = null;
+                if (mustReOpen) toggleFrontPanel();
+            }
+        }
+
         if (cpuStateEditorFrame[chip] != null) {
             cpuStateEditorFrame[chip].dispose();
             cpuStateEditorFrame[chip] = null;
@@ -2290,6 +2318,20 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
         updateState(Constants.CHIP_FR);
     }
+
+    private void toggleFrontPanel() {
+        if (frontPanelFrame == null) {
+            frontPanelFrame = new FrontPanelFrame("Front Panel", "front_panel", true, true, true, true, Constants.CHIP_TX, this, framework.getPlatform(Constants.CHIP_TX).getFrontPanel());
+            addDocumentFrame(Constants.CHIP_TX, frontPanelFrame);
+            frontPanelFrame.display(true);
+        }
+        else {
+            frontPanelFrame.dispose();
+            frontPanelFrame = null;
+        }
+        updateState(Constants.CHIP_FR);
+    }
+
 
     private void toggleCustomMemoryRangeLoggerComponentFrame(int chip) {
         if (customMemoryRangeLoggerFrame[chip] == null) {
@@ -2504,6 +2546,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         else if (frame == screenEmulatorFrame) {
             toggleScreenEmulator(); return;
         }
+        else if (frame == frontPanelFrame) {
+            toggleFrontPanel(); return;
+        }
         else for (int chip = 0; chip < 2; chip++) {
                 if (frame == cpuStateEditorFrame[chip]) {
                     toggleCPUState(chip); return;
@@ -2573,6 +2618,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
             screenEmulatorButton.setEnabled(framework.isImageLoaded(Constants.CHIP_FR));
 
             generateSysSymbolsMenuItem.setEnabled(framework.isImageLoaded(Constants.CHIP_FR));
+        }
+
+        if (chip == Constants.CHIP_FR) {
+            frontPanelMenuItem.setSelected(frontPanelFrame != null);
+
+            frontPanelMenuItem.setEnabled(framework.isImageLoaded(Constants.CHIP_TX));
         }
 
         // Menus and buttons enabled or not

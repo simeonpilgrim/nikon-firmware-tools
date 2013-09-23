@@ -55,9 +55,8 @@ public class Pin {
     }
 
     /**
-     * To be called by CPU code
-     * Else returns the output value of the connected pin, if any
-     * Otherwise, returns null and logs the problem.
+     * To be called by the device this pin belongs to.
+     * @return the output value of the connected pin, if any. Otherwise, returns null and logs the problem.
      */
     public Integer getInputValue() {
         if (connectedPin != null) {
@@ -68,22 +67,22 @@ public class Pin {
     }
 
     /**
-     * To be called by external component
+     * To be called by the external component connected to this pin
      */
     public void setInputValue(int value) {
         // Default implementation does nothing
     }
 
     /**
-     * To be called by external component
+     * To be called by the external component connected to this pin
      */
     public Integer getOutputValue() {
         return outputValue;
     }
 
     /**
-     * To be called by CPU code
-     * This pin forwards the value to to the attached pin, if any
+     * To be called by the device this pin belongs to.
+     * This pin forwards the value to to the connected pin, if any
      */
     public void setOutputValue(int value) {
         // remember the output value
