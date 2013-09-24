@@ -7,14 +7,20 @@ public class ButtonOutputPin extends Pin {
     private String key;
     private Prefs prefs;
 
-    public ButtonOutputPin(String key, Prefs prefs) {
+    public ButtonOutputPin(String key, Prefs prefs, boolean isReversed) {
         super(key + " button");
         this.key = key;
         this.prefs = prefs;
-        Integer buttonValue = prefs.getButtonValue(key);
+
         // Initialize with last stored value
+        Integer buttonValue = prefs.getButtonValue(key);
         // Note: as no pin is connected yet, avoid calling setOutputValue() which would log a warning...
-        outputValue = (buttonValue==null ? 0 : buttonValue);
+        if (buttonValue==null) {
+            outputValue = isReversed?1:0;
+        }
+        else {
+            outputValue = buttonValue;
+        }
     }
 
     @Override

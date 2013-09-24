@@ -29,7 +29,7 @@ public class CameraButton {
         this.imageSuffixes = imageSuffixes;
         leftClickTemp = isLeftClickTemp;
         reversed = isReversed;
-        buttonPin = new ButtonOutputPin(key, prefs);
+        buttonPin = new ButtonOutputPin(key, prefs, isReversed);
     }
 
     public String getKey() {
