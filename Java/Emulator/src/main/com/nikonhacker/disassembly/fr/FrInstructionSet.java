@@ -855,9 +855,9 @@ public class FrInstructionSet {
         /* LDM1 (reglist) */
         fillInstructionMap( 0x8D00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "LDM1",   "y",            "Sw"       , Instruction.FlowType.NONE, false, false, ldm1SimulationCode));
         /* STM0 (reglist) */
-        fillInstructionMap( 0x8E00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM0",   "xz",           "Sw"       , Instruction.FlowType.NONE, false, false, stm0SimulationCode));
+        fillInstructionMap( 0x8E00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM0",   "z",           "Sw"       , Instruction.FlowType.NONE, false, false, stm0SimulationCode));
         /* STM1 (reglist) */
-        fillInstructionMap( 0x8F00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM1",   "xy",           "Sw"       , Instruction.FlowType.NONE, false, false, stm1SimulationCode));
+        fillInstructionMap( 0x8F00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM1",   "y",           "Sw"       , Instruction.FlowType.NONE, false, false, stm1SimulationCode));
         /* BORL #u4, @Ri (u4: 0 to 0FH) */
         fillInstructionMap( 0x9000, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "BORL",   "#u,@i;Iu",     ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
