@@ -136,7 +136,7 @@ public class CodeStructureMxGraphComponent extends mxGraphComponent {
                             //JOptionPane.showMessageDialog(null, "Dbl Click inside " + vertex.getValue(), "Done", JOptionPane.INFORMATION_MESSAGE);
                             Object value = vertex.getValue();
                             if (value instanceof Function) {
-                                ((CodeStructureMxGraph)graph).expandFunction((Function) value, codeStructure, true, true);
+                                ((CodeStructureMxGraph)graph).expandFunction((Function) value, codeStructure, false, true);
                             }
                         }
                     }
