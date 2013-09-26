@@ -9,8 +9,10 @@ import com.nikonhacker.emu.peripherials.frontPanel.FrontPanel;
 import com.nikonhacker.emu.peripherials.interruptController.DummyInterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
+import com.nikonhacker.emu.peripherials.imageTransferCircuit.ImageTransferCircuit;
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
+import com.nikonhacker.emu.peripherials.lcd.Lcd;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
@@ -46,6 +48,8 @@ public class Platform {
     private JpegCodec[]            jpegCodec;
     private ResolutionConverter[]  resolutionConverter;
     private FrontPanel             frontPanel;
+    private ImageTransferCircuit   imageTransferCircuit;
+    private Lcd                    lcd;
 
     private List<SerialDevice> serialDevices;
 
@@ -183,5 +187,21 @@ public class Platform {
 
     public void setFrontPanel(FrontPanel frontPanel) {
         this.frontPanel = frontPanel;
+    }
+
+    public ImageTransferCircuit getImageTransferCircuit() {
+        return imageTransferCircuit;
+    }
+
+    public void setImageTransferCircuit(ImageTransferCircuit imageTransferCircuit) {
+        this.imageTransferCircuit = imageTransferCircuit;
+    }
+
+    public Lcd getLcd() {
+        return lcd;
+    }
+
+    public void setLcd(Lcd lcd) {
+        this.lcd = lcd;
     }
 }

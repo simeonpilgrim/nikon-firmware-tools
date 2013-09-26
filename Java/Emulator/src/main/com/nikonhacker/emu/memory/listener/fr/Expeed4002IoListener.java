@@ -15,7 +15,7 @@ public class Expeed4002IoListener extends IoActivityListener {
     public static final int BASE_ADDRESS2 = 0x400F_0000;
     public static final int ADDRESS_MASK2 = 0xFFEF_F000;
 
-    public static final int NUM_IMAGE_TRANSFER_CIRCUIT = 3;
+    public static final int NUM_RESOLUTION_CONVERTER = 3;
     
     public Expeed4002IoListener(Platform platform, boolean logRegisterMessages) {
         super(platform, logRegisterMessages);
