@@ -230,7 +230,7 @@ public class EmulationFramework {
                 // Resolution converter 0x40XF and 0x4002
                 memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Image Transfer 0x4018
-                memory.addActivityListener(new Expeed4018IoListener(platform[chip], true /* prefs.isLogRegisterMessages(chip)*/));
+                memory.addActivityListener(new Expeed4018IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
