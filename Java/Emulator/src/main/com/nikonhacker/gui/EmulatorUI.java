@@ -2673,6 +2673,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         if (chip == Constants.CHIP_TX) {
             serialDevicesMenuItem[chip].setEnabled(framework.isImageLoaded(chip)); serialDevicesButton[chip].setEnabled(framework.isImageLoaded(chip));
             adConverterMenuItem[chip].setEnabled(framework.isImageLoaded(chip)); adConverterButton[chip].setEnabled(framework.isImageLoaded(chip));
+            frontPanelMenuItem.setEnabled(framework.isImageLoaded(chip)); frontPanelButton.setEnabled(framework.isImageLoaded(chip));
         }
         callStackMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
         callStackButton[chip].setEnabled(framework.isImageLoaded(chip));
