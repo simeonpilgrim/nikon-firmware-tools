@@ -306,7 +306,8 @@ public abstract class CodeStructure {
                                         text+= getRegisterLabels()[parameter.getRegister()];
                                     }
                                 }
-                                else if (parameter.getOutVariableName() != null) {
+                                // register could be both: input AND output
+                                if (parameter.getOutVariableName() != null) {
                                     if (prefix.length() > 0) {
                                         prefix += ",";
                                     }
