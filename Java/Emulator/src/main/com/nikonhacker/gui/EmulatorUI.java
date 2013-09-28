@@ -703,7 +703,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         bar.add(memoryActivityViewerButton[chip]);
         customMemoryRangeLoggerButton[chip] = makeButton("custom_logger", COMMAND_TOGGLE_CUSTOM_LOGGER_WINDOW[chip], "Custom " + Constants.CHIP_LABEL[chip] + " logger", "Custom logger");
         bar.add(customMemoryRangeLoggerButton[chip]);
-        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " call stack window", "CallStack");
+        callStackButton[chip] = makeButton("call_stack", COMMAND_TOGGLE_CALL_STACK_WINDOW[chip], Constants.CHIP_LABEL[chip] + " call stack logger window", "CallStack");
         bar.add(callStackButton[chip]);
         iTronObjectButton[chip] = makeButton("os", COMMAND_TOGGLE_ITRON_OBJECT_WINDOW[chip], Constants.CHIP_LABEL[chip] + " µITRON object window", "µITRON Object");
         bar.add(iTronObjectButton[chip]);
@@ -1032,8 +1032,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
             customMemoryRangeLoggerMenuItem[chip].addActionListener(this);
             traceMenu.add(customMemoryRangeLoggerMenuItem[chip]);
 
-            //Call Stack
-            callStackMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " Call stack");
+            //Call Stack logger
+            callStackMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " Call stack logger");
             callStackMenuItem[chip].setActionCommand(COMMAND_TOGGLE_CALL_STACK_WINDOW[chip]);
             callStackMenuItem[chip].addActionListener(this);
             traceMenu.add(callStackMenuItem[chip]);
@@ -2469,7 +2469,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleCallStack(int chip) {
         if (callStackFrame[chip] == null) {
-            callStackFrame[chip] = new CallStackFrame("Call Stack", "call_stack", true, true, false, true, chip, this, framework.getEmulator(chip), framework.getPlatform(chip).getCpuState(), framework.getCodeStructure(chip));
+            callStackFrame[chip] = new CallStackFrame("Call Stack logger", "call_stack", true, true, false, true, chip, this, framework.getEmulator(chip), framework.getPlatform(chip).getCpuState(), framework.getCodeStructure(chip));
             callStackFrame[chip].setAutoRefresh(framework.isEmulatorPlaying(chip));
             addDocumentFrame(chip, callStackFrame[chip]);
             callStackFrame[chip].display(true);
