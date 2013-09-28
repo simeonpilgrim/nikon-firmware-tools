@@ -24,6 +24,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int CR_FERR_MASK = 0b00000100;
     private static final int CR_PERR_MASK = 0b00001000;
     private static final int CR_OERR_MASK = 0b00010000;
+    private static final int CR_ENABLE_PARITY_MASK = 0b00100000;
+    private static final int CR_PARITY_MODE_MASK = 0b01000000;
 
     private static final int MOD0_SC_MASK   = 0b00000011;
     private static final int MOD0_SM_MASK   = 0b00001100;
@@ -61,6 +63,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int TFC_TFCS_MASK = 0b10000000;
 
     private static final int MOD2_SWRST_MASK = 0b00000011;
+    private static final int MOD2_ENDIAN_MASK= 0b00001000;
+    private static final int MOD2_STOP_MASK  = 0b00010000;
     private static final int MOD2_TXRUN_MASK = 0b00100000;
     private static final int MOD2_RBFLL_MASK = 0b01000000;
     private static final int MOD2_TBEMP_MASK = 0b10000000;
@@ -961,7 +965,46 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
     @Override
     public int getNumBits() {
-        return 8;  //TODO if UART
+        switch (getMod0Sm()) {
+            case 1: return 7;   // 7-bit UART
+            case 3: return 9;   // 9-bit UART
+        }
+        // 8-bit UART
+        // I/O interface mode
+        return 8;
+    }
+
+    /* return serial port parameters as string */
+    public String getSerialParameters () {
+        if (!isEnSet())
+            return "disabled";
+        boolean modeUART = (getMod0Sm()!=0);
+        char stopBits = '-';
+        char parity = '-';
+        boolean flowCtrl = false;
+        
+        if (modeUART) {
+            stopBits = ((mod2&MOD2_STOP_MASK)!=0 ? '2':'1');
+            if ((cr&CR_ENABLE_PARITY_MASK)==0) {
+                parity = 'N';
+            } else {
+                parity = ((cr&CR_PARITY_MODE_MASK)!=0 ? 'E':'O');
+            }
+            flowCtrl = ((mod0&MOD0_CTSE_MASK)!=0);
+        }
+
+        int baud = getFrequencyHz ();
+        String baudStr;
+        switch (baud) {
+            case 0:
+                baudStr = "external clock"; break;
+            case -1:
+                baudStr = "?"; break;
+            default:
+                baudStr = "" + baud; break;
+        }
+        return (modeUART ? "UART " : "I/O ") + baudStr + ", " + getNumBits() + ", " + stopBits + 
+                (flowCtrl ? ", CTS":", -")+ ", " + parity + ((mod2 & MOD2_ENDIAN_MASK)!=0 ? ", MSB":", LSB");
     }
 
     public String getName() {
