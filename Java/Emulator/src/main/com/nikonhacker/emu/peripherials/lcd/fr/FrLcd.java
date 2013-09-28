@@ -23,10 +23,17 @@ public class FrLcd implements Lcd {
     /**    create default screen image object of defualt size
            @return Initialised image object with deault LCD screen "width" and "height"
      */
-    public final static BufferedImage getScreenImage() {
+    public final static BufferedImage getImage() {
         return new BufferedImage(CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
     }
     
+    public final static BufferedImage getImage(int width, int height) {
+        // alignment
+        if ((width&1)!=0)
+            return null;
+        return new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+    }
+
     private static final int clamp(int x) {
         return (x<=255 ? (x>=0 ? x : 0 ) : 255);
     }
@@ -49,28 +56,35 @@ public class FrLcd implements Lcd {
          @param uStart start of Cb buffer
          @param vStart start of Cr buffer
      */
-    public final void updateImage(BufferedImage img, int yStart, int uStart, int vStart) {
-        final int screenWidth = img.getWidth();
-        final int screenHeight = img.getHeight();
-        int yOffset=0, uAddr=uStart, vAddr=vStart;
+    public final void updateImage(BufferedImage img, int yAddr, int cbAddr, int crAddr, int align) {
+        final int imageWidth = img.getWidth();
+        final int imageHeight = img.getHeight();
+
+        if ((imageWidth&0x1)!=0 || (align&1)!=0) {
+            throw new RuntimeException("Lcd: image width must be aligned to 32!");
+        }
+
         int[] pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
-        final int halfWidth = screenWidth>>1;
-        
         DebuggableMemory memory = platform.getMemory();
+
+        // calculate addition factor for alignment
+        final int addY = ((imageWidth % align) != 0 ? (align-(imageWidth % align)) : 0);
+        final int addCbCr = (((imageWidth>>1) % align) != 0 ? (align-((imageWidth>>1) % align)) : 0);
 
         // optimisation for buffered image TYPE_INT_RGB
         // coderat: this optimized code is 2x faster as before
-        for (int yPos = 0; yPos < screenHeight; yPos++) {
-            for (int xPos = 0; xPos < halfWidth; xPos++,yOffset+=2) {
-                final int y = memory.loadUnsigned16(yStart+yOffset, null);
-                setPixelsFromYCbCr422(pixels, yOffset, 
+        for (int yPos = 0, pixelPos=0; yPos < imageHeight; yPos++) {
+            for (int xPos = 0; xPos < imageWidth; xPos+=2, yAddr+=2, pixelPos+=2) {
+                final int y = memory.loadUnsigned16(yAddr, null);
+                setPixelsFromYCbCr422(pixels, pixelPos, 
                                       y>>8,
                                       y&0xFF, 
-                                      memory.loadUnsigned8(uAddr++, null), 
-                                      memory.loadUnsigned8(vAddr++, null));
+                                      memory.loadUnsigned8(cbAddr++, null), 
+                                      memory.loadUnsigned8(crAddr++, null));
             }
-            uAddr += halfWidth;
-            vAddr += halfWidth;
+            yAddr += addY;
+            cbAddr += addCbCr;
+            crAddr += addCbCr;
         }
     }
 }
