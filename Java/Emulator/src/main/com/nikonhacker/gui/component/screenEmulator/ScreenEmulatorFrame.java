@@ -15,7 +15,18 @@ import java.awt.image.BufferedImage;
 
 public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener {
 
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
+    /*
+     coderat: screen update timer is based on PC clock and not related to emulated time.
+              So in reality it must something like 10fps of emulated time. Emulator is at 
+              least 20 times slowlier as real hardware, so this timer interval should be 
+              enough, for getting more performance.
+              
+              If you want slow motion effect, just add some "sleep time" with sleep-bar
+              or
+              a new configuration option should be add to emulator doing this setting,
+              interval: 50ms...5s
+     */
+    private static final int UPDATE_INTERVAL_MS = 700;
 
     private AffineTransform resizeTransform;
     private int previousW, previousH;
@@ -120,6 +131,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         } else {
             this.yuvAlign = align;
         }
+        repaint();
     }
 
     private class ScreenEmulatorComponent extends JComponent {
