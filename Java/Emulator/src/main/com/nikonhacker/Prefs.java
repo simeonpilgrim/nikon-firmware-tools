@@ -69,9 +69,6 @@ public class Prefs {
 
     private int screenEmulatorRefreshIntervalMs = 1000;
 
-    private boolean serialTx19FixRequireRxeAndTxe;
-    private boolean serialTx19FixInsertDelay;
-
     private String frontPanelName;
 
     private static File getPreferenceFile() {
@@ -626,23 +623,6 @@ public class Prefs {
     public void setScreenEmulatorRefreshIntervalMs(int screenEmulatorRefreshIntervalMs) {
         this.screenEmulatorRefreshIntervalMs = screenEmulatorRefreshIntervalMs;
     }
-
-    public boolean isSerialTx19FixRequireRxeAndTxe() {
-        return serialTx19FixRequireRxeAndTxe;
-    }
-
-    public void setSerialTx19FixRequireRxeAndTxe(boolean serialTx19FixRequireRxeAndTxe) {
-        this.serialTx19FixRequireRxeAndTxe = serialTx19FixRequireRxeAndTxe;
-    }
-
-    public boolean isSerialTx19FixInsertDelay() {
-        return serialTx19FixInsertDelay;
-    }
-
-    public void setSerialTx19FixInsertDelay(boolean serialTx19FixInsertDelay) {
-        this.serialTx19FixInsertDelay = serialTx19FixInsertDelay;
-    }
-
 
     public String getFrontPanelName() {
         return frontPanelName;
