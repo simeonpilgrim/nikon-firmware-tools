@@ -123,13 +123,11 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
          BFC4819C 65DB     move    r30, r3       ; 0xFF00180D  HSC0MOD0
          BFC4819E FAA0     bset    0x00(r30), 5  ; RXE enable                       ; end of danger zone
 
-         So we expect it to be undocumented behavoiur of FullDuplex communication:
+         So we expect it to be undocumented behaviour of FullDuplex communication:
          - transmission with TX19 as master in this case starts only after both RX and TX are enabled
          
          This will be used always until one knows better.
      */
-    private final static boolean fullduplexRequiresRxeAndTxe = true;
-
     public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
         super(serialInterfaceNumber, platform, logSerialMessages);
     }
@@ -193,15 +191,10 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
             }
             if (isMod1TxeSet()) {
                 // Buffer was just written, and TX is enabled
-                if (!fullduplexRequiresRxeAndTxe) {
+                // If RXE is also enabled (or we're not in full duplex)
+                if (isMod0RxeSet() || !isFullDuplex()) {
+                    // Then start transfer
                     startTransfer();
-                }
-                else {
-                    // If RXE is also enabled (or we're not in full duplex)
-                    if (isMod0RxeSet() || !isFullDuplex()) {
-                        // Then start transfer
-                        startTransfer();
-                    }
                 }
             }
         }
@@ -239,12 +232,10 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         this.mod0 = mod0;
         boolean currentRxEnabled = isMod0RxeSet();
 
-        if (fullduplexRequiresRxeAndTxe) {
-            // If RX has just been enabled, and TX was already enabled (and we're in full duplex, otherwise transfer will already have started)
-            if (currentRxEnabled && !previousRxEnabled && isMod1TxeSet() && isFullDuplex()) {
-                // Then start now.
-                startTransfer();
-            }
+        // If RX has just been enabled, and TX was already enabled (and we're in full duplex, otherwise transfer will already have started)
+        if (currentRxEnabled && !previousRxEnabled && isMod1TxeSet() && isFullDuplex()) {
+            // Then start now.
+            startTransfer();
         }
 
         if (getMod0Sm() != 0b00) {
@@ -270,14 +261,9 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
         // Check if TXE was just enabled.
         if (currentTxEnabled && !previousTxEnabled) {
-            if (!fullduplexRequiresRxeAndTxe) {
+            // If TX has just been enabled, and either we're in half duplex or we're in full duplex and RX was already enabled
+            if (isMod0RxeSet() || !isFullDuplex()) {
                 startTransfer();
-            }
-            else {
-                // If TX has just been enabled, and either we're in half duplex or we're in full duplex and RX was already enabled
-                if (isMod0RxeSet() || !isFullDuplex()) {
-                    startTransfer();
-                }
             }
         }
     }

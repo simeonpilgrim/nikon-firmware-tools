@@ -1887,9 +1887,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Emulation Options", null, emulationOptionsPanel);
 
-        final JCheckBox serialTx19FixInsertDelayCheckBox = new JCheckBox("By adding a delay");
-        final JCheckBox serialTx19FixRequireRxeAndTxeCheckBox = new JCheckBox("By stopping SCLK until both RXE and TXE are set");
-
         final JTextField screenEmulatorRefreshIntervalField = new JTextField(5);
         JPanel chipSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
         if (chip == Constants.CHIP_FR) {
@@ -1927,13 +1924,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             chipSpecificOptionsPanel.add(blank);
             chipSpecificOptionsPanel.add(persistent);
             chipSpecificOptionsPanel.add(lastLoaded);
-
-
-            chipSpecificOptionsPanel.add(new JLabel("Serial fix:"));
-            serialTx19FixInsertDelayCheckBox.setSelected(prefs.isSerialTx19FixInsertDelay());
-            chipSpecificOptionsPanel.add(serialTx19FixInsertDelayCheckBox);
-            serialTx19FixRequireRxeAndTxeCheckBox.setSelected(prefs.isSerialTx19FixRequireRxeAndTxe());
-            chipSpecificOptionsPanel.add(serialTx19FixRequireRxeAndTxeCheckBox);
 
 
             chipSpecificOptionsPanel.add(new JLabel("Front panel type:"));
@@ -1991,10 +1981,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 }
                 screenEmulatorRefreshIntervalMs = Math.max(Math.min(screenEmulatorRefreshIntervalMs, 10000), 10);
                 prefs.setScreenEmulatorRefreshIntervalMs(screenEmulatorRefreshIntervalMs);
-            }
-            else {
-                prefs.setSerialTx19FixInsertDelay(serialTx19FixInsertDelayCheckBox.isSelected());
-                prefs.setSerialTx19FixRequireRxeAndTxe(serialTx19FixRequireRxeAndTxeCheckBox.isSelected());
             }
         }
     }
