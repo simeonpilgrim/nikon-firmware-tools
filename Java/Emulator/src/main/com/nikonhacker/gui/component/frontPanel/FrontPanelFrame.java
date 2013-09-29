@@ -14,15 +14,19 @@ import java.io.IOException;
 
 public class FrontPanelFrame extends DocumentFrame {
     // TODO make this base path dynamic according to model
-    public static final String IMG_DIR = "images/D5100buttons";
+    public String imageDir;
 
-    public FrontPanelFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final FrontPanel frontPanel) {
+    public FrontPanelFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final FrontPanel frontPanel, String imageSetName) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         ImagePanel panel = new ImagePanel();
 
+        if (imageSetName == null) imageSetName = "D5100_large"; // temp until a "null" version is available
+
+        imageDir = "images/buttons/" + imageSetName;
+
         try {
-            BufferedImage background = ImageIO.read(EmulatorUI.class.getResource(IMG_DIR + "/background.png"));
+            BufferedImage background = ImageIO.read(EmulatorUI.class.getResource(imageDir + "/background.png"));
             int bgWidth = background.getWidth();
             int bgHeight = background.getHeight();
 
@@ -31,7 +35,7 @@ public class FrontPanelFrame extends DocumentFrame {
             panel.setImage(background);
 
             for (String key : frontPanel.getButtons().keySet()) {
-                addButton(panel, IMG_DIR, bgWidth, bgHeight, frontPanel.getButtons().get(key));
+                addButton(panel, imageDir, bgWidth, bgHeight, frontPanel.getButtons().get(key));
             }
         } catch (IOException e) {
             throw new RuntimeException("Cannot find front panel's background image");
