@@ -70,6 +70,8 @@ public class Prefs {
     private boolean serialTx19FixRequireRxeAndTxe;
     private boolean serialTx19FixInsertDelay;
 
+    private String frontPanelName;
+
     private static File getPreferenceFile() {
         return new File(System.getProperty("user.home") + File.separator + "." + ApplicationInfo.getName());
     }
@@ -631,6 +633,15 @@ public class Prefs {
 
     public void setSerialTx19FixInsertDelay(boolean serialTx19FixInsertDelay) {
         this.serialTx19FixInsertDelay = serialTx19FixInsertDelay;
+    }
+
+
+    public String getFrontPanelName() {
+        return frontPanelName;
+    }
+
+    public void setFrontPanelName(String frontPanelName) {
+        this.frontPanelName = frontPanelName;
     }
 
 
