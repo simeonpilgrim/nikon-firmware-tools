@@ -1890,9 +1890,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
         final JCheckBox serialTx19FixInsertDelayCheckBox = new JCheckBox("By adding a delay");
         final JCheckBox serialTx19FixRequireRxeAndTxeCheckBox = new JCheckBox("By stopping SCLK until both RXE and TXE are set");
 
-        if (chip == Constants.CHIP_TX) {
-            JPanel txSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
-            txSpecificOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
+        final JTextField screenEmulatorRefreshIntervalField = new JTextField(5);
+        JPanel chipSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+        if (chip == Constants.CHIP_FR) {
+            chipSpecificOptionsPanel.add(new JLabel("Screen emulator refresh interval (milliseconds):"));
+            screenEmulatorRefreshIntervalField.setText("" + prefs.getScreenEmulatorRefreshIntervalMs());
+            chipSpecificOptionsPanel.add(screenEmulatorRefreshIntervalField);
+        }
+        else {
+            chipSpecificOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
 
             ActionListener eepromInitializationRadioActionListener = new ActionListener() {
                 @Override
@@ -1918,19 +1924,19 @@ public class EmulatorUI extends JFrame implements ActionListener {
             group.add(persistent);
             group.add(lastLoaded);
 
-            txSpecificOptionsPanel.add(blank);
-            txSpecificOptionsPanel.add(persistent);
-            txSpecificOptionsPanel.add(lastLoaded);
+            chipSpecificOptionsPanel.add(blank);
+            chipSpecificOptionsPanel.add(persistent);
+            chipSpecificOptionsPanel.add(lastLoaded);
 
 
-            txSpecificOptionsPanel.add(new JLabel("Serial fix:"));
+            chipSpecificOptionsPanel.add(new JLabel("Serial fix:"));
             serialTx19FixInsertDelayCheckBox.setSelected(prefs.isSerialTx19FixInsertDelay());
-            txSpecificOptionsPanel.add(serialTx19FixInsertDelayCheckBox);
+            chipSpecificOptionsPanel.add(serialTx19FixInsertDelayCheckBox);
             serialTx19FixRequireRxeAndTxeCheckBox.setSelected(prefs.isSerialTx19FixRequireRxeAndTxe());
-            txSpecificOptionsPanel.add(serialTx19FixRequireRxeAndTxeCheckBox);
+            chipSpecificOptionsPanel.add(serialTx19FixRequireRxeAndTxeCheckBox);
 
 
-            txSpecificOptionsPanel.add(new JLabel("Front panel type:"));
+            chipSpecificOptionsPanel.add(new JLabel("Front panel type:"));
             final JComboBox frontPanelNameCombo = new JComboBox(new String[]{"D5100_small", "D5100_large"});
             if (prefs.getFrontPanelName() != null) {
                 frontPanelNameCombo.setSelectedItem(prefs.getFrontPanelName());
@@ -1941,13 +1947,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
                     prefs.setFrontPanelName((String) frontPanelNameCombo.getSelectedItem());
                 }
             });
-            txSpecificOptionsPanel.add(frontPanelNameCombo);
-
+            chipSpecificOptionsPanel.add(frontPanelNameCombo);
 
             emulationOptionsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
-
-            tabbedPane.addTab(Constants.CHIP_LABEL[Constants.CHIP_TX] + " specific options", null, txSpecificOptionsPanel);
         }
+
+        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " specific options", null, chipSpecificOptionsPanel);
 
 
         // ------------------------ Show it
@@ -1977,7 +1982,17 @@ public class EmulatorUI extends JFrame implements ActionListener {
             prefs.setAltExecutionModeForSyncedCpuUponDebug(chip, (EmulationFramework.ExecutionMode) altModeForDebugCombo.getSelectedItem());
             prefs.setAltExecutionModeForSyncedCpuUponStep(chip, (EmulationFramework.ExecutionMode) altModeForStepCombo.getSelectedItem());
 
-            if (chip == Constants.CHIP_TX) {
+            if (chip == Constants.CHIP_FR) {
+                int screenEmulatorRefreshIntervalMs = 0;
+                try {
+                    screenEmulatorRefreshIntervalMs = Integer.parseInt(screenEmulatorRefreshIntervalField.getText());
+                } catch (NumberFormatException e) {
+                    // noop
+                }
+                screenEmulatorRefreshIntervalMs = Math.max(Math.min(screenEmulatorRefreshIntervalMs, 10000), 10);
+                prefs.setScreenEmulatorRefreshIntervalMs(screenEmulatorRefreshIntervalMs);
+            }
+            else {
                 prefs.setSerialTx19FixInsertDelay(serialTx19FixInsertDelayCheckBox.isSelected());
                 prefs.setSerialTx19FixRequireRxeAndTxe(serialTx19FixRequireRxeAndTxeCheckBox.isSelected());
             }
@@ -2308,7 +2323,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, ((FrLcd)framework.getPlatform(Constants.CHIP_FR).getLcd()), FrLcd.CAMERA_SCREEN_MEMORY_Y, FrLcd.CAMERA_SCREEN_MEMORY_U, FrLcd.CAMERA_SCREEN_MEMORY_V, FrLcd.CAMERA_SCREEN_WIDTH, FrLcd.CAMERA_SCREEN_HEIGHT);
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, ((FrLcd)framework.getPlatform(Constants.CHIP_FR).getLcd()), FrLcd.CAMERA_SCREEN_MEMORY_Y, FrLcd.CAMERA_SCREEN_MEMORY_U, FrLcd.CAMERA_SCREEN_MEMORY_V, FrLcd.CAMERA_SCREEN_WIDTH, FrLcd.CAMERA_SCREEN_HEIGHT, prefs.getScreenEmulatorRefreshIntervalMs());
             addDocumentFrame(Constants.CHIP_FR, screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
