@@ -24,6 +24,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int CR_FERR_MASK = 0b00000100;
     private static final int CR_PERR_MASK = 0b00001000;
     private static final int CR_OERR_MASK = 0b00010000;
+    private static final int CR_ENABLE_PARITY_MASK = 0b00100000;
+    private static final int CR_PARITY_MODE_MASK = 0b01000000;
 
     private static final int MOD0_SC_MASK   = 0b00000011;
     private static final int MOD0_SM_MASK   = 0b00001100;
@@ -61,6 +63,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int TFC_TFCS_MASK = 0b10000000;
 
     private static final int MOD2_SWRST_MASK = 0b00000011;
+    private static final int MOD2_ENDIAN_MASK= 0b00001000;
+    private static final int MOD2_STOP_MASK  = 0b00010000;
     private static final int MOD2_TXRUN_MASK = 0b00100000;
     private static final int MOD2_RBFLL_MASK = 0b01000000;
     private static final int MOD2_TBEMP_MASK = 0b10000000;
@@ -109,11 +113,25 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected int rst; // Receive FIFO status register
     protected int tst = TST_TUR_MASK; // Transmit FIFO status register
     protected int   fcnf; // FIFO configuration register
-    private   Prefs prefs;
+    
+    /*   Interrupt_handler_INTTBF takes in emu 2.40 sometimes 1201 TX instructions. 
+         If serial communication starts immediately after setting TXE=1 and such INTTBF happens just
+         before setting RXE=1 then communication will break, because received bytes will be lost:
+
+         BFC48198 65D9     move    r30, r17      ; 0xFF001806  HSC0MOD1
+         BFC4819A FA80     bset    0x00(r30), 4  ; TXE enable                       ; start of danger zone
+         BFC4819C 65DB     move    r30, r3       ; 0xFF00180D  HSC0MOD0
+         BFC4819E FAA0     bset    0x00(r30), 5  ; RXE enable                       ; end of danger zone
+
+         So we expect it to be undocumented behavoiur of FullDuplex communication:
+         - transmission with TX19 as master in this case starts only after both RX and TX are enabled
+         
+         This will be used always until one knows better.
+     */
+    private final static boolean fullduplexRequiresRxeAndTxe = true;
 
     public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
         super(serialInterfaceNumber, platform, logSerialMessages);
-        this.prefs = prefs;
     }
 
 
@@ -175,7 +193,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
             }
             if (isMod1TxeSet()) {
                 // Buffer was just written, and TX is enabled
-                if (!prefs.isSerialTx19FixRequireRxeAndTxe()) {
+                if (!fullduplexRequiresRxeAndTxe) {
                     startTransfer();
                 }
                 else {
@@ -221,7 +239,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         this.mod0 = mod0;
         boolean currentRxEnabled = isMod0RxeSet();
 
-        if (prefs.isSerialTx19FixRequireRxeAndTxe()) {
+        if (fullduplexRequiresRxeAndTxe) {
             // If RX has just been enabled, and TX was already enabled (and we're in full duplex, otherwise transfer will already have started)
             if (currentRxEnabled && !previousRxEnabled && isMod1TxeSet() && isFullDuplex()) {
                 // Then start now.
@@ -252,7 +270,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
         // Check if TXE was just enabled.
         if (currentTxEnabled && !previousTxEnabled) {
-            if (!prefs.isSerialTx19FixRequireRxeAndTxe()) {
+            if (!fullduplexRequiresRxeAndTxe) {
                 startTransfer();
             }
             else {
@@ -267,21 +285,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private void startTransfer() {
         // Signal if there are values waiting
         if (getNbTxValuesWaiting() > 0) {
-            if (prefs.isSerialTx19FixInsertDelay()) {
-                /* TEMPORARY WORKAROUND
-                    coderat: found that interrupt_handler_INTTBF takes in 2.40 sometimes 1201 TX instructions
-                     happening between setting TXE=1 and RXE=1 will break serial communication. Reasons are unknown.
-                     BFC48198 65D9     move    r30, r17      ; 0xFF001806  HSC0MOD1
-                     BFC4819A FA80     bset    0x00(r30), 4  ; TXE enable                       ; start of danger zone
-                     BFC4819C 65DB     move    r30, r3       ; 0xFF00180D  HSC0MOD0
-                     BFC4819E FAA0     bset    0x00(r30), 5  ; RXE enable                       ; end of danger zone
-
-                     So add start delay of at least 1240 instruction @ 40 MHz = 31us
-                 */
-                int start_delay_bits = getNumBits() + getIntervalTimeInSclk() - ((31 * getFrequencyHz()) / 1000000);
-
-                bitNumberBeingTransferred = ( start_delay_bits < 0 ? start_delay_bits : 0 );
-            }
             // Insert delay of a few CPU cycles.
             platform.getMasterClock().add(this);
         }
@@ -962,7 +965,46 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
     @Override
     public int getNumBits() {
-        return 8;  //TODO if UART
+        switch (getMod0Sm()) {
+            case 1: return 7;   // 7-bit UART
+            case 3: return 9;   // 9-bit UART
+        }
+        // 8-bit UART
+        // I/O interface mode
+        return 8;
+    }
+
+    /* return serial port parameters as string */
+    public String getSerialParameters () {
+        if (!isEnSet())
+            return "disabled";
+        boolean modeUART = (getMod0Sm()!=0);
+        char stopBits = '-';
+        char parity = '-';
+        boolean flowCtrl = false;
+        
+        if (modeUART) {
+            stopBits = ((mod2&MOD2_STOP_MASK)!=0 ? '2':'1');
+            if ((cr&CR_ENABLE_PARITY_MASK)==0) {
+                parity = 'N';
+            } else {
+                parity = ((cr&CR_PARITY_MODE_MASK)!=0 ? 'E':'O');
+            }
+            flowCtrl = ((mod0&MOD0_CTSE_MASK)!=0);
+        }
+
+        int baud = getFrequencyHz ();
+        String baudStr;
+        switch (baud) {
+            case 0:
+                baudStr = "external clock"; break;
+            case -1:
+                baudStr = "?"; break;
+            default:
+                baudStr = "" + baud; break;
+        }
+        return (modeUART ? "UART " : "I/O ") + baudStr + ", " + getNumBits() + ", " + stopBits + 
+                (flowCtrl ? ", CTS":", -")+ ", " + parity + ((mod2 & MOD2_ENDIAN_MASK)!=0 ? ", MSB":", LSB");
     }
 
     public String getName() {
