@@ -118,7 +118,7 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
         }
         catch (ArrayIndexOutOfBoundsException ex){
             // out of the image. Ignore
-            return true;
+            return false;
         }
     }
 
