@@ -1924,11 +1924,25 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
 
             txSpecificOptionsPanel.add(new JLabel("Serial fix:"));
-
             serialTx19FixInsertDelayCheckBox.setSelected(prefs.isSerialTx19FixInsertDelay());
             txSpecificOptionsPanel.add(serialTx19FixInsertDelayCheckBox);
             serialTx19FixRequireRxeAndTxeCheckBox.setSelected(prefs.isSerialTx19FixRequireRxeAndTxe());
             txSpecificOptionsPanel.add(serialTx19FixRequireRxeAndTxeCheckBox);
+
+
+            txSpecificOptionsPanel.add(new JLabel("Front panel type:"));
+            final JComboBox frontPanelNameCombo = new JComboBox(new String[]{"D5100_large", "D5100_small"});
+            if (prefs.getFrontPanelName() != null) {
+                frontPanelNameCombo.setSelectedItem(prefs.getFrontPanelName());
+            }
+            frontPanelNameCombo.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    prefs.setFrontPanelName((String) frontPanelNameCombo.getSelectedItem());
+                }
+            });
+            txSpecificOptionsPanel.add(frontPanelNameCombo);
+
 
             emulationOptionsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
 
@@ -2321,7 +2335,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleFrontPanel() {
         if (frontPanelFrame == null) {
-            frontPanelFrame = new FrontPanelFrame("Front Panel", "front_panel", true, true, true, true, Constants.CHIP_TX, this, framework.getPlatform(Constants.CHIP_TX).getFrontPanel());
+            frontPanelFrame = new FrontPanelFrame("Front Panel", "front_panel", true, true, true, true, Constants.CHIP_TX, this, framework.getPlatform(Constants.CHIP_TX).getFrontPanel(), prefs.getFrontPanelName());
             addDocumentFrame(Constants.CHIP_TX, frontPanelFrame);
             frontPanelFrame.display(true);
         }
