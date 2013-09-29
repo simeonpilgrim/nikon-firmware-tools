@@ -21,7 +21,7 @@ public class FrontPanelFrame extends DocumentFrame {
 
         ImagePanel panel = new ImagePanel();
 
-        if (imageSetName == null) imageSetName = "D5100_large"; // temp until a "null" version is available
+        if (imageSetName == null) imageSetName = "D5100_small"; // temp until a "null" version is available
 
         imageDir = "images/buttons/" + imageSetName;
 
