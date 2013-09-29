@@ -8,7 +8,6 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.interrupt.InterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.TxInterruptRequest;
 import com.nikonhacker.emu.interrupt.tx.Type;
-import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.interruptController.AbstractInterruptController;
@@ -50,6 +49,8 @@ public class TxInterruptController extends AbstractInterruptController {
     private boolean[] interruptPended = new boolean[SOFT+1];
 
     private int[] imcBytes = new int[0x1A*4];
+
+    private int[] imcgBytes = new int[8*4];
 
     private final static int Ilev_Mlev_pos   = 31;
     private final static int Ilev_Cmask_mask = 0b00000000_00000000_00000000_00000111;
@@ -300,6 +301,9 @@ public class TxInterruptController extends AbstractInterruptController {
             // DMA interrupts are active Low
             interruptChannelValue[i] = 1;
         }
+        for (int i=0; i<imcgBytes.length; i++) {
+            imcgBytes[i] = 0x20;
+        }
     }
 
     /**
@@ -468,6 +472,21 @@ public class TxInterruptController extends AbstractInterruptController {
         return intClr;
     }
 
+    /**
+     return byte of IMCG
+     pass as parameter offset from the begining of IMCG block
+    */
+    public int getImcg(int imcgOffset) {
+        return imcgBytes[imcgOffset];
+    }
+    
+    /**
+     set byte of IMCG
+     pass as parameter offset from the begining of IMCG block
+    */
+    public void setImcg(int imcgOffset, int value) {
+        imcgBytes[imcgOffset] = value;
+    }
     /**
      return byte of IMC
      pass as parameter offset from the begining of IMC block
@@ -678,9 +697,8 @@ public class TxInterruptController extends AbstractInterruptController {
         if (description.cgCtrlRegAddr == NULL_REGISTER) {
             throw new RuntimeException("No IMCGxx register found for interrupt #" + interruptNumber);
         }
-
-        int registerValue = platform.getMemory().load32(description.cgCtrlRegAddr, null);
-        return getSection(registerValue, description.cgCtrlRegSection);
+        
+        return imcgBytes[description.cgCtrlRegAddr-TxIoListener.REGISTER_IMCGA+(3-description.cgCtrlRegSection)];
     }
 
     /**

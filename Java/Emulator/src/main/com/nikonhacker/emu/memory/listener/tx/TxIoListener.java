@@ -519,6 +519,9 @@ public class TxIoListener extends IoActivityListener {
                         stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
+        } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            return (byte)(((TxInterruptController)platform.getInterruptController()).getImcg(addr-REGISTER_IMCGA));
         }
         else switch (addr) {
             // Clock generator
@@ -734,6 +737,11 @@ public class TxIoListener extends IoActivityListener {
                         stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
+        } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            return ((intc.getImcg(addr-REGISTER_IMCGA)<<8) | intc.getImcg(addr-REGISTER_IMCGA+1));
         }
         else switch (addr){
             // Clock generator
@@ -1004,6 +1012,14 @@ public class TxIoListener extends IoActivityListener {
                         stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
+        } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            return ((intc.getImcg(addr-REGISTER_IMCGA)<<24) | 
+                    (intc.getImcg(addr-REGISTER_IMCGA+1)<<16) | 
+                    (intc.getImcg(addr-REGISTER_IMCGA+2)<<8) | 
+                     intc.getImcg(addr-REGISTER_IMCGA+3));
         }
         switch (addr) {
             // Clock generator
@@ -1324,6 +1340,10 @@ public class TxIoListener extends IoActivityListener {
                         stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
+        } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            ((TxInterruptController)platform.getInterruptController()).setImcg(addr-REGISTER_IMCGA,value);
+            return;
         }
         else switch (addr) {
             // Clock generator
@@ -1492,6 +1512,14 @@ public class TxIoListener extends IoActivityListener {
         else if (addr >= REGISTER_HSC0BUF && addr < REGISTER_HSC0BUF + (NUM_HSERIAL_IF << HSERIAL_OFFSET_SHIFT)) {
             // Hi-speed Serial Interface configuration registers
             stop("Serial register 0x" + Format.asHex(addr, 8) + " can only be written by 8 bits");
+        }
+        else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            intc.setImcg(addr-REGISTER_IMCGA,(value>>8)&0xFF);
+            intc.setImcg(addr-REGISTER_IMCGA+1,value&0xFF);
+            return;
         }
         else switch (addr){
             // Clock generator
@@ -1752,6 +1780,15 @@ public class TxIoListener extends IoActivityListener {
                         stop("Address 0x" + Format.asHex(addr, 8) + " is not a A/D converter register");
                 }
             }
+        } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
+            // IMCG registers.
+            TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
+            
+            intc.setImcg(addr-REGISTER_IMCGA,(value>>24)&0xFF);
+            intc.setImcg(addr-REGISTER_IMCGA+1,(value>>16)&0xFF);
+            intc.setImcg(addr-REGISTER_IMCGA+2,(value>>8)&0xFF);
+            intc.setImcg(addr-REGISTER_IMCGA+3,value&0xFF);
+            return;
         }
         else switch(addr) {
             // Clock generator

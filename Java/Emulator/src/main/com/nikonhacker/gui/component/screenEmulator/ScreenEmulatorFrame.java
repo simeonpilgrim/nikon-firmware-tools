@@ -1,7 +1,8 @@
 package com.nikonhacker.gui.component.screenEmulator;
 
 import com.nikonhacker.Format;
-import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.disassembly.ParsingException;
+import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 
@@ -11,50 +12,75 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
 
 public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener {
 
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
+    /*
+     coderat: screen update timer is based on PC clock and not related to emulated time.
+              So in reality it must something like 10fps of emulated time. Emulator is at 
+              least 20 times slowlier as real hardware, so this timer interval should be 
+              enough, for getting more performance.
+              
+              If you want slow motion effect, just add some "sleep time" with sleep-bar
+              or
+              a new configuration option should be add to emulator doing this setting,
+              interval: 50ms...5s
+     */
+    private static final int UPDATE_INTERVAL_MS = 700;
 
     private AffineTransform resizeTransform;
     private int previousW, previousH;
 
-    private DebuggableMemory memory;
-    private int yStart, uStart, vStart;
+    private int yStart, uStart, vStart, yuvAlign, previousYuvAlign;
     private int screenHeight, screenWidth;
 
     private BufferedImage img;
+    
+    private FrLcd lcd;
 
     private Timer refreshTimer;
-    private final JTextField yAddressField, uAddressField, vAddressField;
+    private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
 
-    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, DebuggableMemory memory, int yStart, int uStart, int vStart, int screenWidth, int screenHeight) {
+    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yStart, int uStart, int vStart, int screenWidth, int screenHeight) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
-        this.memory = memory;
         this.yStart = yStart;
         this.uStart = uStart;
         this.vStart = vStart;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
+        this.yuvAlign = screenWidth;
+        this.lcd = lcd;
 
-        img = new BufferedImage(screenWidth, screenHeight, BufferedImage.TYPE_INT_RGB);
-        
         JPanel selectionPanel = new JPanel();
-        selectionPanel.add(new JLabel("Start addresses:    Y = 0x"));
+        selectionPanel.add(new JLabel("Y = 0x"));
         yAddressField = new JTextField(Format.asHex(yStart, 8), 8);
-        selectionPanel.add(yAddressField);
+        selectionPanel.add(yAddressField,BorderLayout.WEST);
         yAddressField.addActionListener(this);
 
-        selectionPanel.add(new JLabel("  U = 0x"));
+        selectionPanel.add(new JLabel(" U = 0x"));
         uAddressField = new JTextField(Format.asHex(uStart, 8), 8);
         selectionPanel.add(uAddressField);
         uAddressField.addActionListener(this);
 
-        selectionPanel.add(new JLabel("  V = 0x"));
+        selectionPanel.add(new JLabel(" V = 0x"));
         vAddressField = new JTextField(Format.asHex(vStart, 8), 8);
         selectionPanel.add(vAddressField);
         vAddressField.addActionListener(this);
+
+        selectionPanel.add(new JLabel(" Width = "));
+        widthField = new JTextField(String.format("%04d",screenWidth), 4);
+        selectionPanel.add(widthField);
+        widthField.addActionListener(this);
+
+        selectionPanel.add(new JLabel(" Height = "));
+        heightField = new JTextField(String.format("%04d", screenHeight), 4);
+        selectionPanel.add(heightField);
+        heightField.addActionListener(this);
+
+        selectionPanel.add(new JLabel(" Align = "));
+        yuvAlignField = new JTextField(String.format("%04d", yuvAlign), 4);
+        selectionPanel.add(yuvAlignField);
+        yuvAlignField.addActionListener(this);
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(selectionPanel, BorderLayout.NORTH);
@@ -80,9 +106,32 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     }
 
     public void actionPerformed(ActionEvent e) {
+        int width,align;
+        
         this.yStart = Format.parseIntHexField(yAddressField);
         this.uStart = Format.parseIntHexField(uAddressField);
         this.vStart = Format.parseIntHexField(vAddressField);
+        try {
+            width = Format.parseUnsignedField(widthField);
+            align = Format.parseUnsignedField(yuvAlignField);
+            this.screenHeight = Format.parseUnsignedField(heightField);
+        } catch(ParsingException excp) {
+            throw new NumberFormatException("Wrong number format");
+        }
+        // width and alignment must be always even
+        if ((width&0x1)!=0) {
+            widthField.setBackground(Color.RED);
+            throw new NumberFormatException("Image width must be even");
+        } else {
+            this.screenWidth = width;
+        }
+        if ((align&0x1)!=0) {
+            yuvAlignField.setBackground(Color.RED);
+            throw new NumberFormatException("Image alignment must be even");
+        } else {
+            this.yuvAlign = align;
+        }
+        repaint();
     }
 
     private class ScreenEmulatorComponent extends JComponent {
@@ -96,57 +145,35 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         public void paintComponent(Graphics graphics) {
             Graphics2D g2d = (Graphics2D) graphics;
 
-            // Get size of JScrollPane
-            int w = getParent().getWidth();
-            int h = getParent().getHeight();
-
-            // Create the resizing transform upon first call or resize
-            if (resizeTransform == null || previousW != w || previousH != h) {
-                resizeTransform = new AffineTransform();
-                double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
-                double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
-                double scale = Math.min(scaleX, scaleY);
-                resizeTransform.scale(scale, scale);
-                previousW = w;
-                previousH = h;
-            }
-
-            int yOffset=0, uAddr=uStart, vAddr=vStart;
-            int[] pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();
-            final int halfWidth = screenWidth>>1;
-
-            // optimisation for buffered image TYPE_INT_RGB
-            // coderat: this optimized code is 2x faster as before
-            for (int yPos = 0; yPos < screenHeight; yPos++) {
-                for (int xPos = 0; xPos < halfWidth; xPos++,yOffset+=2) {
-                    final int y = memory.loadUnsigned16(yStart+yOffset, null);
-                    setPixelsFromYCbCr422(pixels, yOffset, 
-                                          y>>8,
-                                          y&0xFF, 
-                                          memory.loadUnsigned8(uAddr++, null), 
-                                          memory.loadUnsigned8(vAddr++, null));
+            if (img!=null) {
+                if (img.getWidth()!=screenWidth || img.getHeight()!=screenHeight || yuvAlign != previousYuvAlign) {
+                    img.flush();
+                    img=null;
+                    previousYuvAlign = yuvAlign;
                 }
-                uAddr += halfWidth;
-                vAddr += halfWidth;
             }
-
-            g2d.drawImage(img, resizeTransform, null);
-        }
-
-        private final int clamp(int x) {
-            return (x<=255 ? (x>=0 ? x : 0 ) : 255);
-        }
-
-        private final void setPixelsFromYCbCr422(int[] pixels,int pos, int y, int y1, int u, int v) {
-            // full range YCbCr to RGB conversion
-            final int factorR = Math.round(1.4f * (v-128) );
-            final int factorG = Math.round(-0.343f * (u-128) - 0.711f * (v-128));
-            final int factorB = Math.round(1.765f * (u-128) );
-            
-            // coderat: conversion YCbCr->RGB clamp is needed, because RGB do not include complete YCbCr space
-            pixels[pos]   = (clamp(y+factorR) << 16) | (clamp(y+factorG) << 8) | clamp(y+factorB);
-            pixels[pos+1] = (clamp(y1+factorR) << 16) | (clamp(y1+factorG) << 8) | clamp(y1+factorB);
+            if (img==null)
+                img = lcd.getImage(screenWidth, screenHeight);
+            if (img!=null) {
+                // Get size of JScrollPane
+                int w = getParent().getWidth();
+                int h = getParent().getHeight();
+    
+                // Create the resizing transform upon first call or resize
+                if (resizeTransform == null || previousW != w || previousH != h) {
+                    resizeTransform = new AffineTransform();
+                    double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
+                    double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
+                    double scale = Math.min(scaleX, scaleY);
+                    resizeTransform.scale(scale, scale);
+                    previousW = w;
+                    previousH = h;
+                }
+    
+                lcd.updateImage(img, yStart, uStart, vStart, yuvAlign);
+    
+                g2d.drawImage(img, resizeTransform, null);
+            }
         }
     }
-
 }

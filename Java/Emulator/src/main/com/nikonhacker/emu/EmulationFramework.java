@@ -22,6 +22,8 @@ import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
 import com.nikonhacker.emu.peripherials.frontPanel.FrontPanel;
 import com.nikonhacker.emu.peripherials.frontPanel.tx.D5100FrontPanel;
+import com.nikonhacker.emu.peripherials.imageTransferCircuit.ImageTransferCircuit;
+import com.nikonhacker.emu.peripherials.imageTransferCircuit.fr.FrImageTransferCircuit;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.peripherials.interruptController.SharedInterruptCircuit;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
@@ -36,6 +38,8 @@ import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
 import com.nikonhacker.emu.peripherials.jpegCodec.fr.FrJpegCodec;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
+import com.nikonhacker.emu.peripherials.lcd.Lcd;
+import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
@@ -193,6 +197,8 @@ public class EmulationFramework {
             JpegCodec[] jpegCodec = null;
             ResolutionConverter[] resolutionConverter = null;
             FrontPanel frontPanel = null;
+            ImageTransferCircuit imageTransferCircuit = null;
+            Lcd lcd = null;
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -207,7 +213,9 @@ public class EmulationFramework {
                 interruptController = new FrInterruptController(platform[chip]);
                 sharedInterruptCircuit = new FrSharedInterruptCircuit(interruptController);
                 jpegCodec = new FrJpegCodec[Expeed40X3IoListener.NUM_JPEG_CODEC];
-                resolutionConverter = new FrResolutionConverter[Expeed4002IoListener.NUM_IMAGE_TRANSFER_CIRCUIT];
+                resolutionConverter = new FrResolutionConverter[Expeed4002IoListener.NUM_RESOLUTION_CONVERTER];
+                imageTransferCircuit = new FrImageTransferCircuit(platform[chip]);
+                lcd = new FrLcd(platform[chip]);
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
@@ -219,8 +227,10 @@ public class EmulationFramework {
                 memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // JPEG codec 0x40X3
                 memory.addActivityListener(new Expeed40X3IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Image Transfer 0x40XF and 0x4002
+                // Resolution converter 0x40XF and 0x4002
                 memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // Image Transfer 0x4018
+                memory.addActivityListener(new Expeed4018IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
@@ -385,6 +395,8 @@ public class EmulationFramework {
             platform[chip].setJpegCodec(jpegCodec);
             platform[chip].setResolutionConverter(resolutionConverter);
             platform[chip].setFrontPanel(frontPanel);
+            platform[chip].setImageTransferCircuit(imageTransferCircuit);
+            platform[chip].setLcd(lcd);
 
             clockGenerator.setPlatform(platform[chip]);
 
