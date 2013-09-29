@@ -1,19 +1,20 @@
 package com.nikonhacker.gui.swing;
 
 import com.nikonhacker.gui.EmulatorUI;
-import com.nikonhacker.gui.component.frontPanel.FrontPanelFrame;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.image.BufferedImage;
 
 public class BitmapToggleButtonTest {
+    private static final String IMG_DIR = "images/buttons/D5100_large";
+
     public static void main(String[] args) throws Exception {
-        javax.swing.JFrame frame=new javax.swing.JFrame("Custom Shape Button");
+        javax.swing.JFrame frame = new javax.swing.JFrame("Custom Shape Button");
         frame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
 
         ImagePanel panel = new ImagePanel();
-        BufferedImage background = ImageIO.read(EmulatorUI.class.getResource(FrontPanelFrame.IMG_DIR + "/background.png"));
+        BufferedImage background = ImageIO.read(EmulatorUI.class.getResource(IMG_DIR + "/background.png"));
         int bgWidth = background.getWidth();
         int bgHeight = background.getHeight();
 
@@ -61,7 +62,7 @@ public class BitmapToggleButtonTest {
     }
 
     private static void addButton(JComponent parent, String imgPrefix, int width, int height, String[][] imageSuffixes, boolean isLeftClickTemp) {
-        BitmapToggleButton button = new BitmapToggleButton(parent, FrontPanelFrame.IMG_DIR, imgPrefix, width, height, imageSuffixes, isLeftClickTemp);
+        BitmapToggleButton button = new BitmapToggleButton(parent, IMG_DIR, imgPrefix, width, height, imageSuffixes, isLeftClickTemp);
         parent.add(button);
         button.setBounds(0, 0, width, height);
     }
