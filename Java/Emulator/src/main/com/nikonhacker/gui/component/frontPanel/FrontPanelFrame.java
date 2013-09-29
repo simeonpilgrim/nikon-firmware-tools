@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 public class FrontPanelFrame extends DocumentFrame {
-    // TODO make this base path dynamic according to model
     public String imageDir;
 
     public FrontPanelFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final FrontPanel frontPanel, String imageSetName) {
