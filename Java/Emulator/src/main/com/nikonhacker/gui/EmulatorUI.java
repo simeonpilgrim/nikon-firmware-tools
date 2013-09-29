@@ -1931,7 +1931,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
 
             txSpecificOptionsPanel.add(new JLabel("Front panel type:"));
-            final JComboBox frontPanelNameCombo = new JComboBox(new String[]{"D5100_large", "D5100_small"});
+            final JComboBox frontPanelNameCombo = new JComboBox(new String[]{"D5100_small", "D5100_large"});
             if (prefs.getFrontPanelName() != null) {
                 frontPanelNameCombo.setSelectedItem(prefs.getFrontPanelName());
             }
