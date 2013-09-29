@@ -67,6 +67,8 @@ public class Prefs {
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
     private Map<String, Integer>               buttonsValue;
 
+    private int screenEmulatorRefreshIntervalMs = 1000;
+
     private boolean serialTx19FixRequireRxeAndTxe;
     private boolean serialTx19FixInsertDelay;
 
@@ -617,7 +619,13 @@ public class Prefs {
         return buttonsValue.get(key);
     }
 
+    public int getScreenEmulatorRefreshIntervalMs() {
+        return screenEmulatorRefreshIntervalMs;
+    }
 
+    public void setScreenEmulatorRefreshIntervalMs(int screenEmulatorRefreshIntervalMs) {
+        this.screenEmulatorRefreshIntervalMs = screenEmulatorRefreshIntervalMs;
+    }
 
     public boolean isSerialTx19FixRequireRxeAndTxe() {
         return serialTx19FixRequireRxeAndTxe;

@@ -15,19 +15,6 @@ import java.awt.image.BufferedImage;
 
 public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener {
 
-    /*
-     coderat: screen update timer is based on PC clock and not related to emulated time.
-              So in reality it must something like 10fps of emulated time. Emulator is at 
-              least 20 times slowlier as real hardware, so this timer interval should be 
-              enough, for getting more performance.
-              
-              If you want slow motion effect, just add some "sleep time" with sleep-bar
-              or
-              a new configuration option should be add to emulator doing this setting,
-              interval: 50ms...5s
-     */
-    private static final int UPDATE_INTERVAL_MS = 700;
-
     private AffineTransform resizeTransform;
     private int previousW, previousH;
 
@@ -41,7 +28,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private Timer refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
 
-    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yStart, int uStart, int vStart, int screenWidth, int screenHeight) {
+    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yStart, int uStart, int vStart, int screenWidth, int screenHeight, int refreshInterval) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.yStart = yStart;
         this.uStart = uStart;
@@ -91,7 +78,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         setPreferredSize(new Dimension(screenWidth, 600));
 
         // Start update timer
-        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(refreshInterval, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 repaint();
             }
