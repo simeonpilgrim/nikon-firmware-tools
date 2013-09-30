@@ -1,0 +1,32 @@
+Model,Year,nModel,proc_a,proc_b,asic,Sensor,px,py,x,y,type,sm,ISOlow,ISOhigh,gps,firewire,autofocus,DCD
+D1,1998,VAA10902,,,,,2012,1324,23.7,15.5,ccd,breakdown of subsystems; great block diagram; schematics,,,,,,
+D1H,2001,VAA10912,,,,,2012,1324,23.7,15.5,ccd,,,,,,,
+D1x,2001,VAA10922,,,,,3008,1960,23.7,15.6,ccd,block diagram; schematics,125,800,yes,yes,,
+D100,2002,VBA10201,,,,,3008,2000,23.7,15.6,ccd,eeprom data table!; good block diagrams,200,1600,,,,
+D2H,2003,VBA10301,,,,,2464,1632,23.7,15.5,ccd,,,,,,,
+D70,2004,VBA10401,,,,,3008,2000,23.7,15.6,ccd,wiring diagram,200,1600,,,CAM900,
+D2X,2004,VBA10501,,,,Sony IMX038,4288,2848,23.7,15.7,cmos,,100,800,,,,
+D2Hs,2005,VBA10601,,,,,2464,1632,23.3,15.5,ccd,board images; wiring diagrams,200,1600,,,CAM2000,
+D70s,2005,VBA11001,,,,,3008,2000,23.7,15.6,ccd,wiring diagram; flash ram descriptions,200,1600,,,CAM900,
+D50,2005,VBA12001,,,,,3008,2000,23.7,15.6,ccd,wiring diagram,200,1600,,,,
+D200,2005,VBA13001,,,,,3872,2592,23.6,15.8,ccd,wiring diagram (jp),100,1600,,,CAM2000,
+D40,2006,VBA15001,,,,,3008,2000,23.7,15.6,ccd,wiring diagram,200,1600,,,CAM530,
+D2Xs,2006,VBA16001,,,,Sony IMX007AQ ,4288,2848,23.7,15.7,cmos,wiring diagram,100,800,,,,
+D80,2006,VBA14001,,,,,3872,2592,23.6,15.8,ccd,,,,,,CAM1000,
+D300,2007,VBA20001,,,,Sony IMX038,4288,2848,23.6,15.8,cmos,board images; wiring diagram,,,,,,
+D3,2007,VBA18001,,,,Nikon NC81338L,4256,2832,36,23.9,cmos,,,,,,,
+D40X,2007,VBA17001,,,,,3872,2592,23.7,15.6,ccd,,,,,,,
+D3x,2008,VBA19001,,,,,6048,4032,35.9,24,cmos,,,,,,,
+D60,2008,VBA21001,,,,,3872,2592,23.6,15.8,ccd,wiring diagram,,,,,,
+D700,2008,VBA22001,,,,Nikon NC81338L,4256,2832,36,24,cmos,board images; eeprom table,,,,,,
+D90,2008,VBA23001,,MB91F637,,Sony IMX038,4288,2848,23.6,15.8,cmos,wiring diagram; block diagram; board images (jp),,,,,CAM1000,yes
+D3s,2009,VBA27001,,,,Nikon NC81361A,4256,2832,36,23.9,cmos,,,,,,,
+D300s,2009,VBA26001,,,,Sony IMX038,4288,2848,23.6,15.8,cmos,,,,,,,
+D3000,2009,VBA25001,,,,,3872,2592,23.6,15.8,ccd,,,,,,,
+D5000,2009,VBA24001,,,,,4288,2848,23.6,15.8,cmos,,,,,,,yes
+D3100,2010,VBA28001,,,,Nikon NC81362A,4608,3072,23.1,15.4,cmos,,,,,,,
+D7000,2010,VBA29001,TMP19A44FEXBG,,EL-154,Sony IMX071,4928,3264,23.6,15.7,cmos,,,,,,,yes
+D5100,2011,VBA31001,TMP19A44FEXBG,,EL-154,Sony IMX071,4928,3264,23.6,15.7,cmos,,,,,,,yes
+D4,2012,,,,,,4928,3280,36,23.9,cmos,,,,,,,
+D800,2012,,,,,,7360,4912,35.9,24,cmos,,,,,,,
+D800E,2012,,,,,,7360,4912,35.9,24,cmos,,,,,,,
