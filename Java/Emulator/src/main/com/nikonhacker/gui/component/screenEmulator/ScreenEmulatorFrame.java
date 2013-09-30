@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
@@ -126,6 +127,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         private ScreenEmulatorComponent() {
             super();
             setPreferredSize(new Dimension(screenWidth, screenHeight));
+            ToolTipManager.sharedInstance().registerComponent(this);
         }
 
         // This method is called whenever the contents needs to be painted
@@ -161,6 +163,12 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     
                 g2d.drawImage(img, resizeTransform, null);
             }
+        }
+        
+        @Override
+        public String getToolTipText(MouseEvent event) {
+            Point mousePos = getMousePosition();
+            return ""+mousePos.x+","+mousePos.y;
         }
     }
 }
