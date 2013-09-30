@@ -140,11 +140,16 @@ public class FrImageTransferChannel implements ImageTransferChannel {
         if ((value&0x4000)!=0) {
             // start
             switch (value&0xF00) {
-                case 0x700: //fill destination image
+                case 0x700: //fill destination image, TODO parameters ?
                     fill(value&0xFF);
                     imageTransferCircuit.requestInterrupt(channelNumber);
                     break;
-                case 0x600: //copy image
+                case 0x600: //copy image or combine it with destination area, TODO parameters meaning ?
+                    copy();
+                    imageTransferCircuit.requestInterrupt(channelNumber);
+                    break;
+                case 0x000: //copy image
+                    copy();
                     imageTransferCircuit.requestInterrupt(channelNumber);
                     break;
                 default:
