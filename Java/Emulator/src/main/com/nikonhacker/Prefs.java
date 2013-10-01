@@ -67,7 +67,7 @@ public class Prefs {
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
     private Map<String, Integer>               buttonsValue;
 
-    private int screenEmulatorRefreshIntervalMs = 1000;
+    private int screenEmulatorRefreshIntervalMs;
 
     private String frontPanelName;
 
@@ -617,6 +617,9 @@ public class Prefs {
     }
 
     public int getScreenEmulatorRefreshIntervalMs() {
+        if (screenEmulatorRefreshIntervalMs < 10 || screenEmulatorRefreshIntervalMs > 10000) {
+            screenEmulatorRefreshIntervalMs = 1000;
+        }
         return screenEmulatorRefreshIntervalMs;
     }
 
