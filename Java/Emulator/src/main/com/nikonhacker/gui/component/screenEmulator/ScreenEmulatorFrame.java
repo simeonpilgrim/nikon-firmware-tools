@@ -28,6 +28,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
     private Timer refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
+    private ScreenEmulatorComponent screenEmulator;
 
     public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yStart, int uStart, int vStart, int screenWidth, int screenHeight, int refreshInterval) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -72,7 +73,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
         JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.add(selectionPanel, BorderLayout.NORTH);
-        contentPanel.add(new JScrollPane(new ScreenEmulatorComponent(), JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
+        screenEmulator = new ScreenEmulatorComponent();
+        contentPanel.add(new JScrollPane(screenEmulator, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
         
         getContentPane().add(contentPanel);
 
@@ -90,6 +92,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     public void dispose() {
         refreshTimer.stop();
         refreshTimer = null;
+        screenEmulator.dispose();
+        screenEmulator = null;
         super.dispose();
     }
 
@@ -169,6 +173,10 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         public String getToolTipText(MouseEvent event) {
             Point mousePos = getMousePosition();
             return ""+mousePos.x+","+mousePos.y;
+        }
+
+        public void dispose() {
+            ToolTipManager.sharedInstance().unregisterComponent(this);
         }
     }
 }
