@@ -172,6 +172,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         @Override
         public String getToolTipText(MouseEvent event) {
             Point mousePos = getMousePosition();
+            if (mousePos==null)
+                return "";
             return ""+mousePos.x+","+mousePos.y;
         }
 
