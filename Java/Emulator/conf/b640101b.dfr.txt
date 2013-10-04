@@ -2834,8 +2834,10 @@
 -s 0x17E4D4=YesNo_xx
 -s 0x1815A0=graphics_1815A0
 -s 0x181A5E=nullsub_91
+-s 0x182690=Tsk0B_PostMsg_6_1
 -s 0x18376C=scale_data_24C4C4
 -s 0x1860BA=nullsub_92
+-s 0x18A270=Tsk0B_PostMsg_6
 -s 0x18B1DC=Len_supports_distortion_correction
 -s 0x195B6A=call_sub_20B6CA
 -s 0x197F80=Seek_GRD_UIGRD
@@ -3328,7 +3330,8 @@
 -s 0x1DAA3A=ClearEventFlag_E_F_10
 -s 0x1DAA86=SetEventFlag_E_F_10
 -s 0x1DAAD2=WaitOnEventFlag_E_F_10
--s 0x1DB672=call_sub_1DA9F6
+-s 0x1DB660=call_WaitOnSemaphore_1E_1F_20
+-s 0x1DB672=call_SignalSemaphore_1E_1F_20
 -s 0x1DB736=SetEventFlag_x0E
 -s 0x1DB752=SetEventFlag_x0F
 -s 0x1DB76E=SetEventFlag_x10
@@ -3389,6 +3392,8 @@
 -s 0x1DCB4C=Tsk0A_Msg_A
 -s 0x1DCB82=Tsk0A_Msg_B
 -s 0x1DCBA4=setup_semaphore_x3B
+-s 0x1DCF62=WaitOnSemaphore_x3B
+-s 0x1DCF76=SignalSemaphore_x3B
 -s 0x1DDD2E=s4019_1DDD2E
 -s 0x1DDD44=s4019_1DDD44
 -s 0x1DDD5A=s4019_1DDD5A
@@ -3402,6 +3407,8 @@
 -s 0x1DE054=set_40190082
 -s 0x1DE064=set_40190084
 -s 0x1DE43C=setup_semaphore_x47
+-s 0x1DE520=WaitOnSemaphore_x47
+-s 0x1DE534=SignalSemaphore_x47
 -s 0x1DE60E=set_400B0008
 -s 0x1DE61E=set_400B000A
 -s 0x1DE62E=set_400B0010
@@ -3457,6 +3464,8 @@
 -s 0x1DF448=Tsk06_OnMsg
 -s 0x1DF4A6=Tsk06_Msg_1
 -s 0x1E0932=setup_semaphore_x22
+-s 0x1E098C=WaitOnSemaphore_x22
+-s 0x1E09A0=SignalSemaphore_x22
 -s 0x1E0D60=Setup_Tsk0E_callback
 -s 0x1E0D82=Tsk0E_WaitForMsg
 -s 0x1E0D9E=Task0E_SendMessage
@@ -3524,6 +3533,7 @@
 -s 0x1E6B1C=tsk20_body
 -s 0x1E700A=tsk21_body
 -s 0x1E7184=Tsk17
+-s 0x1E7B46=push_byte_8F964EA5
 -s 0x1E7B5E=Tsk17_Init
 -s 0x1E88B2=enable_1E88B2
 -s 0x1E88C6=disable_1E88B2
@@ -3932,10 +3942,10 @@
 -s 0x1FA39E=Tsk02_Release
 -s 0x1FA3F8=Tsk02_OnMsg
 -s 0x1FA448=Tsk02_Msg_1_s4012_DO_STUFF
--s 0x1FA47A=s4006_1FA47A
+-s 0x1FA47A=s4006_Setup
 -s 0x1FA4D4=s4006_check_field_A
 -s 0x1FA502=set_s4006_mode
--s 0x1FA6EC=s4006_1FA6EC
+-s 0x1FA6EC=s4006_load_address
 -s 0x1FA7DE=s4006_Setup_A
 -s 0x1FB022=s4006_Setup_B
 -s 0x1FB488=s4006_Setup_C
@@ -3947,8 +3957,10 @@
 -s 0x1FD710=s4006_Setup_J
 -s 0x1FE1A0=s4006_SetReady?
 -s 0x1FE1DC=s4006_WaiFlg_Clr_8000
--s 0x1FE2D6=s4006_1FE2D6
--s 0x1FE494=XXX00_1FE494
+-s 0x1FE20C=s4006_1FE20C
+-s 0x1FE270=s4006_ptr_type
+-s 0x1FE2D6=s4006_ptr_type_reg_set
+-s 0x1FE494=s4006_1x0_x000
 -s 0x1FE572=s4006_Wait_x10_x1000
 -s 0x1FE594=clear_struc_228_0
 -s 0x1FE5AE=init_struc_228
@@ -4045,6 +4057,12 @@
 -s 0x20F618=setup_DMA1
 -s 0x20FB26=set_flg_35_1
 -s 0x20FB3C=start_DMA1_transfering
+-s 0x210C3C=Tsk0B_FlagHandler
+-s 0x2137C8=Tsk0B_PostMsg_1_1
+-s 0x213898=Tsk0B_PostMsg_1_2
+-s 0x213990=Tsk0B_PostMsg_1_3
+-s 0x213A90=Tsk0B_PostMsg_5
+-s 0x213B66=Tsk0B_PostMsg_4
 -s 0x213C0C=set_@0x8F9DC9F4(R4 [IN value]  /* sets 8bits @0x8F9DC9F4 */)
 -s 0x213C16=get_@0x8F9DC9F4(R4 [OUT value] /* gets 8bits @0x8F9DC9F4 */)
 -s 0x213EEE=copy_MvDefectTable_to_ram
@@ -4072,7 +4090,10 @@
 -s 0x215BC4=xml_output_s
 -s 0x215BD6=xml_output_e
 -s 0x215BF8=xml_CallFunc_XX
+-s 0x216DA8=set_r4_byte_ptr_zero
 -s 0x219694=fs_delete
+-s 0x2196E6=fs_delete_sub_A
+-s 0x219840=fs_delete_sub_B
 -s 0x219A46=OpenFile
 -s 0x219D7A=ReadDataBlock
 -s 0x219E22=WriteDataBlock
@@ -4102,6 +4123,7 @@
 -s 0x2251DA=set_r4_to_zero_1
 -s 0x2251DE=nullsub_5
 -s 0x225222=find_drive_idx
+-s 0x225266=File_FindDriveName
 -s 0x228D46=Load_SoftGyro_txt
 -s 0x22DEF8=nullsub_23
 -s 0x232F42=nullsub_69
@@ -4125,9 +4147,11 @@
 -s 0x234D64=OR_unit64
 -s 0x234DBE=SUB_uint64
 -s 0x234DC4=DIV_uint(R4 [IN dividend; OUT quotient], R5 [IN divisor])
+-s 0x234E0C=DIV_int64
 -s 0x234E3A=longToDouble
 -s 0x234ED6=uint32_to_int64
 -s 0x234EDC=MOD_uint(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x234F24=MOD_int64
 -s 0x234F5E=ABS
 -s 0x23514E=ceil
 -s 0x235234=floor
@@ -5461,8 +5485,8 @@
 -s 0x319A18=renderInfoScreenFull
 -s 0x319B1E=renderInfoBackground
 -s 0x319D08=renderInfoRemainingPicsBackground
--s 0x31A48A=renderInfoShutterSpeed
 -s 0x31A216=renderInfoPASMMode
+-s 0x31A48A=renderInfoShutterSpeed
 -s 0x31AF1C=renderInfoApertureValue
 -s 0x31BA2E=renderInfoRemainingPics
 -s 0x31C5CE=renderInfoAFAreaIndicatorFrame
