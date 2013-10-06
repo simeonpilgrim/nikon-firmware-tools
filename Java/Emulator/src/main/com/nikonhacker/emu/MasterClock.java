@@ -3,10 +3,7 @@ package com.nikonhacker.emu;
 import com.nikonhacker.Constants;
 
 import java.text.DecimalFormat;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MasterClock implements Runnable {
@@ -33,25 +30,26 @@ public class MasterClock implements Runnable {
     private long totalElapsedTimePs;
 
     /**
-     * The duration represented by one MasterClock loop, in picoseconds (e-12)
+     * The duration represented by one MasterClock "tick", in picoseconds (1e-12 seconds)
      */
-    private long masterClockLoopDurationPs;
+    private long masterClockTickDurationPs;
 
     /**
      * A temp flag to indicate that the computing of intervals based on frequencies must be performed again
      * (due to a change in the list of Clockable, or a frequency change)
      */
-    private boolean intervalComputingRequested;
+    private boolean rescheduleRequested;
+
+    /**
+     * Optimized list of steps to execute
+     */
+    private List<ClockExecutionStep> steps;
 
     public MasterClock() {
     }
 
-    public boolean isRunning() {
-        return running;
-    }
-
-    public void requestIntervalComputing() {
-        intervalComputingRequested = true;
+    public void requestResheduling() {
+        rescheduleRequested = true;
     }
 
     /**
@@ -74,7 +72,7 @@ public class MasterClock implements Runnable {
         if (!found) {
             entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
         }
-        requestIntervalComputing();
+        requestResheduling();
     }
 
     /**
@@ -99,10 +97,13 @@ public class MasterClock implements Runnable {
                 break;
             }
         }
-        requestIntervalComputing();
+        requestResheduling();
     }
 
-    private void computeIntervals() {
+    private void prepareSchedule() {
+        // Reset indicator, if set
+        rescheduleRequested = false;
+
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
 
@@ -116,7 +117,7 @@ public class MasterClock implements Runnable {
         for (ClockableEntry entry : entries) {
             int frequencyHz = entryFrequencies.get(entry);
             if (frequencyHz > 0) {
-                leastCommonMultipleFrequency = lcm(frequencyHz, leastCommonMultipleFrequency);
+                leastCommonMultipleFrequency = longLCM(frequencyHz, leastCommonMultipleFrequency);
                 entry.isFrequencyZero = false;
             }
             else {
@@ -125,6 +126,7 @@ public class MasterClock implements Runnable {
         }
 
         // OK. Now set each counter threshold to the value of lcm/freq
+        int leastCommonCounterThreshold = 1;
         for (ClockableEntry entry : entries) {
             if (!entry.isFrequencyZero) {
                 int newThreshold = (int) (leastCommonMultipleFrequency / entryFrequencies.get(entry));
@@ -134,40 +136,59 @@ public class MasterClock implements Runnable {
                 }
                 // Set new threshold
                 entry.counterThreshold = newThreshold;
+                leastCommonCounterThreshold = intLCM(newThreshold, leastCommonCounterThreshold);
             }
         }
 
-        masterClockLoopDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
-/*
-        System.err.println("MasterClock reconfigured with one tick=" + masterClockLoopDurationPs + "ps, with the following entries:");
-        for (ClockableEntry entry : entries) {
-            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " @" + entryFrequencies.get(entry) + "Hz, every " + entry.counterThreshold + " ticks");
-        }
-        System.err.println("---------------------------------------");
-*/
-    }
+        masterClockTickDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
 
-    public void setEnabled(Clockable clockable, boolean enabled) {
-        for (ClockableEntry candidateEntry : entries) {
-            if (candidateEntry.clockable == clockable) {
-                //System.err.println(enabled?"Enabling ":"Disabling " + candidateEntry.clockable.getClass().getSimpleName());
-                if (!enabled && candidateEntry.clockableCallbackHandler != null) {
-                    //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
-                    candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to stopping of " + clockable.toString());
+        // DEBUG
+//        System.err.println("MasterClock reconfigured with one tick=" + masterClockTickDurationPs + "ps, with the following entries:");
+//        for (ClockableEntry entry : entries) {
+//            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " @" + entryFrequencies.get(entry) + "Hz, every " + entry.counterThreshold + " ticks");
+//            System.err.print("  Pattern: ");
+//            for(int stepNumber = 0; stepNumber < leastCommonCounterThreshold; stepNumber++) {
+//                if (stepNumber % entry.counterThreshold == 0) {
+//                    System.err.print("X");
+//                }
+//                else {
+//                    System.err.print("-");
+//                }
+//            }
+//            System.err.println();
+//        }
+//        System.err.println("---------------------------------------");
+
+        // This is the start of the new "optimized" structure
+        // This one gets rid of the entries that don't have to run at each step, and of the useless steps
+        steps = new ArrayList<>();
+        for(int stepNumber = 0; stepNumber < leastCommonCounterThreshold; stepNumber++) {
+            ClockExecutionStep step = new ClockExecutionStep();
+            // Collect all entries that should run at this step
+            for (ClockableEntry entry : entries) {
+                if (stepNumber % entry.counterThreshold == 0) {
+                    step.entriesToRunAtThisStep.add(entry);
                 }
-                candidateEntry.enabled = enabled;
-                if (candidateEntry.clockable instanceof Emulator) {
-                    setLinkedEntriesEnabled(candidateEntry.clockable.getChip(), enabled);
-                }
-                break;
+            }
+            if (step.entriesToRunAtThisStep.isEmpty()) {
+                // Nothing has to run here, so drop this step, but add one "tick" to the previous step's duration
+                steps.get(steps.size() - 1).stepDurationPs += masterClockTickDurationPs;
+            }
+            else {
+                // Some entries have to run at this step, so keep it and give it the duration of one "tick"
+                step.stepDurationPs = masterClockTickDurationPs;
+                steps.add(step);
             }
         }
-        if (!enabled) {
-            // Check if all entries are disabled
-            if (allEntriesDisabled()) {
-                running = false;
-            }
-        }
+
+        // DEBUG
+//        System.err.println("List of the steps:");
+//        for (ClockExecutionStep step : steps) {
+//            System.err.println("During " + step.stepDurationPs + "ps:");
+//            for (ClockableEntry clockableEntry : step.entriesToRunAtThisStep) {
+//                System.err.println("  " + clockableEntry.clockable.toString());
+//            }
+//        }
     }
 
     public void setSyncPlay(boolean syncPlay) {
@@ -185,23 +206,17 @@ public class MasterClock implements Runnable {
         }
     }
 
-    public synchronized void stop() {
-        //System.err.println("Requesting clock stop");
-        running = false;
-    }
-
     /**
      * This is the way to run the clock synchronously. Normally only called internally.
      * Use start() instead to start the clock.
+     * Note: this is the non-optimized version that goes through each step and and each entry
      */
-    public void run() {
-        //System.err.println("Clock is starting");
+    public void oldrun() {
         ClockableEntry entryToDisable = null;
         // Infinite loop
         while (running) {
-            if (intervalComputingRequested) {
-                intervalComputingRequested = false;
-                computeIntervals();
+            if (rescheduleRequested) {
+                prepareSchedule();
             }
             // At each loop turn, check to see if an entry has reached its counter threshold
             for (ClockableEntry currentEntry : entries) {
@@ -209,19 +224,16 @@ public class MasterClock implements Runnable {
                 currentEntry.counterValue++;
                 if (currentEntry.counterValue >= currentEntry.counterThreshold) {
                     // Threshold reached for this entry
-                    // System.err.println("Threshold matched for " + currentEntry.clockable.getClass().getSimpleName() + ", which is " + (currentEntry.enabled?"enabled":"disabled"));
                     // Reset Counter
                     currentEntry.counterValue = 0;
                     if (currentEntry.enabled && !currentEntry.isFrequencyZero) {
                         // If it's enabled. Call its onClockTick() method
                         try {
                             Object result = currentEntry.clockable.onClockTick();
-                            //System.err.println(currentEntry.clockable.getClass().getSimpleName() + ".onClockTick() returned " + result);
                             if (result != null) {
                                 // A non-null result means this entry shouldn't run anymore
                                 entryToDisable = currentEntry;
                                 // Warn the callback method
-                                //System.err.println("Calling onNormalExit() on callback for " + currentEntry.clockable.getClass().getSimpleName());
                                 if (currentEntry.clockableCallbackHandler != null) {
                                     currentEntry.clockableCallbackHandler.onNormalExit(result);
                                 }
@@ -231,7 +243,6 @@ public class MasterClock implements Runnable {
                             // In case of exception this entry shouldn't run anymore
                             entryToDisable = currentEntry;
                             // Warn the callback method
-                            //System.err.println("Calling onException() on callback for " + currentEntry.clockable.getClass().getSimpleName());
                             if (currentEntry.clockableCallbackHandler != null) {
                                 currentEntry.clockableCallbackHandler.onException(e);
                             }
@@ -243,7 +254,6 @@ public class MasterClock implements Runnable {
                             // Check if all entries are disabled
                             if (allEntriesDisabled()) {
                                 // All entries are now disabled. Stop clock
-                                // System.err.println("This was the last entry. Requesting clock stop");
                                 running = false;
                                 break;
                             }
@@ -255,14 +265,13 @@ public class MasterClock implements Runnable {
                 }
             }
             // Increment elapsed time
-            totalElapsedTimePs += masterClockLoopDurationPs;
+            totalElapsedTimePs += masterClockTickDurationPs;
         }
 
         // If we got here, one entry was just disabled and caused the clock to stop.
         // Before we exit, let's rotate the list so that when the clock restarts, it resumes exactly where it left off
         // To do so, the entry we just run will be rotated to the end
         while (entries.get(entries.size() - 1) != entryToDisable) Collections.rotate(entries, 1);
-
 
 //        System.err.println("MasterClock reordered:");
 //        for (ClockableEntry entry : entries) {
@@ -272,6 +281,93 @@ public class MasterClock implements Runnable {
 
 
         //System.err.println("Clock is stopped\r\n=======================================================");
+    }
+
+    /**
+     * This is the way to run the clock synchronously. Normally only called internally.
+     * Use start() instead to start the clock.
+     * Note: this is the optimized version that only executes useful entries of useful steps
+     */
+    public void run() {
+        List<ClockableEntry> entriesToDisable = new ArrayList<>();
+        int stepNumber = 0;
+        ClockExecutionStep step;
+        // Infinite loop
+        while (running) {
+            if (rescheduleRequested) {
+                prepareSchedule();
+            }
+            // Iterate on all steps
+            for (stepNumber = 0; stepNumber < steps.size(); stepNumber++) {
+                step = steps.get(stepNumber);
+                // For each step, execute all entries that should run at this step
+                for (ClockableEntry currentEntry : step.entriesToRunAtThisStep) {
+                    // TODO get rid of the isFrequencyZero by recomputing useful steps at each frequency change
+                    if (currentEntry.enabled && !currentEntry.isFrequencyZero) {
+                        // If it's enabled. Call its onClockTick() method
+                        try {
+                            Object result = currentEntry.clockable.onClockTick();
+                            if (result != null) {
+                                // A non-null result means this entry shouldn't run anymore
+                                entriesToDisable.add(currentEntry);
+                                // Warn the callback method
+                                if (currentEntry.clockableCallbackHandler != null) {
+                                    currentEntry.clockableCallbackHandler.onNormalExit(result);
+                                }
+                            }
+                        }
+                        catch (Exception e) {
+                            // In case of exception this entry shouldn't run anymore
+                            entriesToDisable.add(currentEntry);
+                            // Warn the callback method
+                            if (currentEntry.clockableCallbackHandler != null) {
+                                currentEntry.clockableCallbackHandler.onException(e);
+                            }
+                        }
+
+                    }
+                }
+                // Check if some entries need to be disabled
+                if (!entriesToDisable.isEmpty()) {
+                    for (ClockableEntry entryToDisable : entriesToDisable) {
+                        disableEntry(entryToDisable);
+                    }
+                    entriesToDisable.clear();
+
+                    // Check if all entries are disabled
+                    if (allEntriesDisabled()) {
+                        // All entries are now disabled. Stop clock
+                        running = false;
+                        break;
+                    }
+                }
+                // Increment elapsed time
+                totalElapsedTimePs += step.stepDurationPs;
+
+                if (rescheduleRequested) {
+                    // To perform reschedule, we need to exit the loop on steps
+                    // Note that this is not really transparent as it will "reset" the count of the steps...
+                    break;
+                }
+            }
+        }
+
+        // If we got here, one entry at least was just disabled and caused the clock to stop.
+        // Before we exit, let's rotate the list so that when the clock restarts, it resumes exactly where it left off
+        // To do so, the next entry to run will be rotated to the start
+        Collections.rotate(steps, -1 - stepNumber);
+    }
+
+    public void enableClockable(Clockable clockable) {
+        for (ClockableEntry candidateEntry : entries) {
+            if (candidateEntry.clockable == clockable) {
+                candidateEntry.enabled = true;
+                if (candidateEntry.clockable instanceof Emulator) {
+                    setLinkedEntriesEnabled(candidateEntry.clockable.getChip(), true);
+                }
+                break;
+            }
+        }
     }
 
     /**
@@ -356,12 +452,12 @@ public class MasterClock implements Runnable {
     //
 
     /**
-     * Greatest common divider
+     * Greatest common divider (long)
      * @param a
      * @param b
      * @return
      */
-    private static long gcd(long a, long b) {
+    private static long longGCD(long a, long b) {
         while (b > 0) {
             long temp = b;
             b = a % b; // % is remainder
@@ -371,12 +467,36 @@ public class MasterClock implements Runnable {
     }
 
     /**
-     * Least common multiple
+     * Greatest common divider (int)
+     * @param a
+     * @param b
+     * @return
+     */
+    private static int intGCD(int a, int b) {
+        while (b > 0) {
+            int temp = b;
+            b = a % b; // % is remainder
+            a = temp;
+        }
+        return a;
+    }
+
+    /**
+     * Least common multiple (long)
      * A little trickier, but probably the best approach is reduction by the GCD,
      * which can be similarly iterated:
      */
-    private static long lcm(long a, long b) {
-        return a * (b / gcd(a, b));
+    private static long longLCM(long a, long b) {
+        return a * (b / longGCD(a, b));
+    }
+
+    /**
+     * Least common multiple (int)
+     * A little trickier, but probably the best approach is reduction by the GCD,
+     * which can be similarly iterated:
+     */
+    private static int intLCM(int a, int b) {
+        return a * (b / intGCD(a, b));
     }
 
 
@@ -399,5 +519,10 @@ public class MasterClock implements Runnable {
         public String toString() {
             return "ClockableEntry (" + (enabled ?"ON":"OFF") +") for " + clockable + '}';
         }
+    }
+
+    static class ClockExecutionStep {
+        long stepDurationPs;
+        List<ClockableEntry> entriesToRunAtThisStep = new ArrayList<>();
     }
 }

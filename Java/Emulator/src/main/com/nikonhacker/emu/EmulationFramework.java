@@ -456,49 +456,61 @@ public class EmulationFramework {
     private void connectFrontPanel(FrontPanel frontPanel, IoPort[] txIoPorts) {
         // TODO: this is D5100 specific. Make it generic
         // Connect CPU pins with front panel
-        //A8	PE1/KEY09	"+/-"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(1), frontPanel.getButton("+-").getPin());
-        //B8	PE2/KEY10	"Timer / Fn"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(2), frontPanel.getButton("timer").getPin());
-        //B12	PA1/INT1/PHC0IN1	 "up"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(1), frontPanel.getButton("up").getPin());
-        //B13	PA0/INT0/PHC0IN0	Power "On"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(0), frontPanel.getButton("power").getPin());
-        //C8	PE3/KEY11	"flash"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(3), frontPanel.getButton("flash").getPin());
-        //C12	PA2/INT2/PHC1IN0	 "down"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(2), frontPanel.getButton("down").getPin());
-        //D12	PA3/INT3/PHC1IN1	"left"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(3), frontPanel.getButton("left").getPin());
-        //E7	PF2/KEY18/DREQ4	"record"
-        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(2), frontPanel.getButton("rec").getPin());
-        //J14	PG7/KEY07	 "del"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton("delete").getPin());
-        //J15	PG6/KEY06	 "info"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(6), frontPanel.getButton("info").getPin());
-        //J16	PG5/KEY05	 LiveView
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(5), frontPanel.getButton("liveview").getPin());
-        //K14	PG4/KEY04	 "play"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(4), frontPanel.getButton("play").getPin());
-        //K15	PG3/KEY03	 "menu"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(3), frontPanel.getButton("menu").getPin());
-        //K16	PG2/KEY02	"-"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(2), frontPanel.getButton("zoomout").getPin());
-        //K17	PG1/KEY01	"+"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(1), frontPanel.getButton("zoomin").getPin());
-        //L14	PG0/KEY00	 "ok"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(0), frontPanel.getButton("ok").getPin());
-        //M1	PC0/TBTIN/KEY30	 "i"
-        Pin.interconnect(txIoPorts[IoPort.PORT_C].getPin(0), frontPanel.getButton("i").getPin());
+
         //R9	P23/A19/A3/TB2IN1	"right"
         Pin.interconnect(txIoPorts[IoPort.PORT_2].getPin(3), frontPanel.getButton("right").getPin());
         //U11	P40/CS0/KEY24	 "AE/AF" Lock
         Pin.interconnect(txIoPorts[IoPort.PORT_4].getPin(0), frontPanel.getButton("aelafl").getPin());
+        //B13	PA0/INT0/PHC0IN0	Power "On"
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(0), frontPanel.getButton("power").getPin());
+        //B12	PA1/INT1/PHC0IN1	 "up"
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(1), frontPanel.getButton("up").getPin());
+        //C12	PA2/INT2/PHC1IN0	 "down"
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(2), frontPanel.getButton("down").getPin());
+        //D12	PA3/INT3/PHC1IN1	"left"
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(3), frontPanel.getButton("left").getPin());
+        //M1	PC0/TBTIN/KEY30	 "i"
+        Pin.interconnect(txIoPorts[IoPort.PORT_C].getPin(0), frontPanel.getButton("i").getPin());
+        //A8	PE1/KEY09	"+/-"
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(1), frontPanel.getButton("+-").getPin());
+        //B8	PE2/KEY10	"Timer / Fn"
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(2), frontPanel.getButton("timer").getPin());
+        //C8	PE3/KEY11	"flash"
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(3), frontPanel.getButton("flash").getPin());
+        //E7	PF2/KEY18/DREQ4	"record"
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(2), frontPanel.getButton("rec").getPin());
+        //L14	PG0/KEY00	 "ok"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(0), frontPanel.getButton("ok").getPin());
+        //K17	PG1/KEY01	"+"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(1), frontPanel.getButton("zoomin").getPin());
+        //K16	PG2/KEY02	"-"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(2), frontPanel.getButton("zoomout").getPin());
+        //K15	PG3/KEY03	 "menu"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(3), frontPanel.getButton("menu").getPin());
+        //K14	PG4/KEY04	 "play"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(4), frontPanel.getButton("play").getPin());
+        //J16	PG5/KEY05	 LiveView
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(5), frontPanel.getButton("liveview").getPin());
+        //J15	PG6/KEY06	 "info"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(6), frontPanel.getButton("info").getPin());
+        //J14	PG7/KEY07	 "del"
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton("delete").getPin());
 
         //L17	PJ5/INT17	Shutter "half-pressed"
         //U16	P56/A6/TB2OUT/KEY28	Shutter
         // TODO
+
         //G15	PI3/PHC5IN1	lens "release"
+        // TODO
+
+        // From http://nikonhacker.com/viewtopic.php?f=6&t=731&hilit=sd+card&start=20#p4353
+        // P57 and P56 might be scroll wheel
+        // TODO
+
+        // SENSOR - Flash Open = PH3 : is the flash unit open ?
+        // TODO
+
+        //SD card: P53 (set present, clear empty) - TBC
         // TODO
     }
 
@@ -605,7 +617,7 @@ public class EmulationFramework {
         //System.err.println("Preparing emulation of " + Constants.CHIP_LABEL[chip]);
         isEmulatorPlaying[chip] = true;
         emulator[chip].setOutputOptions(prefs.getOutputOptions(chip));
-        masterClock.setEnabled(emulator[chip], true);
+        masterClock.enableClockable(emulator[chip]);
         // TODO what's the use of this here ?
         platform[chip].getCpuState().setAllRegistersDefined();
     }
