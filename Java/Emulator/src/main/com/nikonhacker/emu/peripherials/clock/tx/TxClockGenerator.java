@@ -291,7 +291,7 @@ public class TxClockGenerator extends ClockGenerator {
                 break;
         }
 
-        platform.getMasterClock().requestIntervalComputing();
+        platform.getMasterClock().requestResheduling();
         // System.out.println(toString());
     }
 

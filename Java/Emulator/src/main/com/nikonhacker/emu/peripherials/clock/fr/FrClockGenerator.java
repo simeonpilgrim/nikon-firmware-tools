@@ -324,7 +324,7 @@ public class FrClockGenerator extends ClockGenerator {
 //                break;
 //        }
 
-        platform.getMasterClock().requestIntervalComputing();
+        platform.getMasterClock().requestResheduling();
     }
 
     // TODO is Main timer used outside of stabilization period ?
