@@ -24,7 +24,7 @@ public class MasterClockTest  extends TestCase {
         masterClock.add(d2, d2, false);
         new Thread(masterClock).start();
         Thread.sleep(100);
-        masterClock.setEnabled(d2, true);
+        masterClock.enableClockable(d2);
         Thread.sleep(5000);
     }
 
