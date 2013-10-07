@@ -60,8 +60,8 @@ public class FrLcd implements Lcd {
         final int imageWidth = img.getWidth();
         final int imageHeight = img.getHeight();
 
-        if ((imageWidth&0x1)!=0 || (align&1)!=0) {
-            throw new RuntimeException("Lcd: image width must be aligned to 32!");
+        if ((imageWidth&0x1)!=0 || (align&1)!=0 || align<imageWidth) {
+            throw new RuntimeException("Lcd: image width/align invalid !");
         }
 
         int[] pixels = ((DataBufferInt) img.getRaster().getDataBuffer()).getData();

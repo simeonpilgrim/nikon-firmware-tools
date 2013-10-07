@@ -117,9 +117,9 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         } else {
             this.screenWidth = width;
         }
-        if ((align&0x1)!=0) {
+        if ((align&0x1)!=0 || align<this.screenWidth) {
             yuvAlignField.setBackground(Color.RED);
-            throw new NumberFormatException("Image alignment must be even");
+            throw new NumberFormatException("Image alignment must be even and more than width");
         } else {
             this.yuvAlign = align;
         }
