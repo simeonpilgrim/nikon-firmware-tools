@@ -510,8 +510,6 @@ public class EmulationFramework {
         // SENSOR - Flash Open = PH3 : is the flash unit open ?
         // TODO
 
-        //SD card: P53 (set present, clear empty) - TBC
-        // TODO
     }
 
     /**
