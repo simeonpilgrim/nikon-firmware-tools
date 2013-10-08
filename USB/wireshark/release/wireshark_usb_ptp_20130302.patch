@@ -1,0 +1,3600 @@
+diff --git epan/CMakeLists.txt epan/CMakeLists.txt
+index 0b45a89..e359184 100644
+--- epan/CMakeLists.txt
++++ epan/CMakeLists.txt
+@@ -1209,6 +1209,7 @@ set(DISSECTOR_SRC
+ 	dissectors/packet-usb-hid.c
+ 	dissectors/packet-usb-hub.c
+ 	dissectors/packet-usb-masstorage.c
++	dissectors/packet-usb-ptp.c
+ 	dissectors/packet-usb.c
+ 	dissectors/packet-user_encap.c
+ 	dissectors/packet-uts.c
+diff --git epan/dissectors/Makefile.common epan/dissectors/Makefile.common
+index e792703..f48eceb 100644
+--- epan/dissectors/Makefile.common
++++ epan/dissectors/Makefile.common
+@@ -1130,6 +1130,7 @@ DISSECTOR_SRC = \
+ 	packet-usb-hid.c	\
+ 	packet-usb-hub.c	\
+ 	packet-usb-masstorage.c	\
++	packet-usb-ptp.c	\
+ 	packet-usb.c		\
+ 	packet-user_encap.c	\
+ 	packet-uts.c		\
+@@ -1546,6 +1547,7 @@ DISSECTOR_INCLUDES =	\
+ 	packet-umts_mac.h	\
+ 	packet-usb.h	\
+ 	packet-usb-hid.h	\
++	packet-usb-ptp.h	\
+ 	packet-vines.h	\
+ 	packet-vlan.h	\
+ 	packet-wap.h	\
+diff --git epan/dissectors/packet-usb-ptp.c epan/dissectors/packet-usb-ptp.c
+new file mode 100644
+index 0000000..b565037
+--- /dev/null
++++ epan/dissectors/packet-usb-ptp.c
+@@ -0,0 +1,661 @@
++/* packet-usb-ptp.c
++ *
++ * $Id$
++ *
++ * USB Packet Dissector :
++ *     - Picture Transfer Protocol (PTP)
++ *     - Media   Transfer Protocol (MTP)
++ *
++ * (c)2013 Max Baker <max@warped.org>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * Notes:
++ * 
++ *      [1] http://www.usb.org/developers/devclass_docs/usb_still_img10.pdf for protocol definition
++ * 
++ * Formatting help by : http://www.vim.org/scripts/script.php?script_id=294
++ *
++ * TODO:
++ *      - Any and all further decode of returned objects.   Requires adding more sub-dissectors for MTP and PTP objects. 
++ *          Example : dissect_usb_ptp_get_device_info
++ *        There is extensive support in libgphoto2 for these objects that can be ported over here if people want these.
++ */
++
++#include "config.h"
++
++#include <glib.h>
++#include <epan/conversation.h>
++#include <epan/emem.h>
++#include <epan/expert.h>
++#include <epan/packet.h>
++#include <epan/reassemble.h>
++#include "packet-usb.h"
++#include "packet-usb-ptp.h"
++
++/* Handlers */
++static gint proto_usb_ptp                      = -1;
++static gint ett_usb_ptp                        = -1;
++static gint ett_usb_ptp_device_info            = -1;
++static gint ett_usb_ptp_object_array           = -1;
++static gint ett_usb_ptp_parameters             = -1;
++
++/* Header Fields */
++static gint hf_container_length                = -1;
++static gint hf_container_type                  = -1;
++static gint hf_operation_code                  = -1;
++static gint hf_response_code                   = -1;
++static gint hf_event_code                      = -1;
++static gint hf_transaction_id                  = -1;
++static gint hf_payload                         = -1;
++/* Device Info */
++static gint hf_devinfo_standardversion         = -1;
++static gint hf_devinfo_vendorextensionid       = -1;
++static gint hf_devinfo_vendorextensionversion  = -1;
++static gint hf_devinfo_vendorextensiondesc     = -1;
++static gint hf_devinfo_functionalmode          = -1;
++static gint hf_devinfo_operationsupported      = -1;
++static gint hf_devinfo_eventsupported          = -1;
++static gint hf_devinfo_devicepropertysupported = -1;
++static gint hf_devinfo_captureformat           = -1;
++static gint hf_devinfo_imageformat             = -1;
++static gint hf_devinfo_manufacturer            = -1;
++static gint hf_devinfo_model                   = -1;
++static gint hf_devinfo_deviceversion           = -1;
++static gint hf_devinfo_serialnumber            = -1;
++static gint hf_storageid                       = -1;
++/* Parameters */
++static gint hf_cmd_parameter                   = -1;
++static gint hf_response_parameter              = -1;
++static gint hf_event_parameter                 = -1;
++/* Commands */
++static gint hf_cmd_devicepropvalue             = -1;
++static gint hf_cmd_devicepropdesc              = -1;
++static gint hf_cmd_objformatcode               = -1;
++static gint hf_cmd_objpropcode                 = -1;
++static gint hf_objhandle                       = -1;
++
++/* Determine which classes this device lives in */
++guint32
++usb_ptp_flavor(packet_info *pinfo)
++{
++    guint32              flavor;
++    usb_conv_info_t     *usb_conv_info = NULL;
++
++    /* Put camera into different classes depending on vendor id, etc 
++     * Based on libgphoto/camlibs/ptp2/library.c:fixup_cached_deviceinfo()
++     */
++    flavor = USB_PTP_FLAVOR_ALL;
++    usb_conv_info=pinfo->usb_conv_info;
++
++    if (!usb_conv_info)
++        return flavor;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_NIKON)
++        flavor |= USB_PTP_FLAVOR_NIKON;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_CANON)
++        flavor |= USB_PTP_FLAVOR_CANON;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_FUJI)
++        flavor |= USB_PTP_FLAVOR_FUJI;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_OLYMPUS)
++        flavor |= USB_PTP_FLAVOR_OLYMPUS;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_CASIO)
++        flavor |= USB_PTP_FLAVOR_CASIO;
++
++    if (usb_conv_info->deviceVendor==USB_PTP_VENDOR_KODAK)
++        flavor |= USB_PTP_FLAVOR_KODAK;
++
++    /* TODO: ANDROID */
++
++    return flavor;
++}
++
++const value_string_masked_t *
++table_value_from_mask(guint32 valmask, guint32 val, const value_string_masked_t *table)
++{
++    gint i = 0;
++    guint32 mask;
++
++    if (!table) 
++        return NULL;
++
++    /* Two-pass approach here -- first we check w/out MTP mask bit set, then with
++     * the idea being that vendor codes will take precedence over MTP codes in the case of a conflict
++     * */
++
++    mask = valmask & ~USB_PTP_FLAVOR_MTP;
++    while (table[i].strptr)
++    {
++        /* Check that the value matches and the mask matches on any bit*/
++        if ( (table[i].value == val) && (table[i].mask&mask) )
++        { 
++            return &table[i];
++        }
++        i++;
++    }
++
++    /* 2nd Pass - try this w/ MTP if set */
++    mask = valmask;
++    if (mask & USB_PTP_FLAVOR_MTP)
++    {
++        i=0;
++        while (table[i].strptr)
++        {
++            /* Check that the value matches and the mask matches on any bit*/
++            if ( (table[i].value == val) && (table[i].mask&mask) )
++            { 
++                return &table[i];
++            }
++            i++;
++        }
++    }
++
++    /* No Match */
++    return NULL;
++}
++
++/* Add a value from a 16-bit masked value table */
++static void
++proto_tree_add_item_mask(packet_info *pinfo,proto_tree *tree, gint hf, 
++        tvbuff_t *tvb, const gint length, const gint offset, const gint add_info)
++{
++    const value_string_masked_t *vsm               = NULL;
++    usb_conv_info_t             *usb_conv_info     = NULL;
++    usb_ptp_conv_info_t         *usb_ptp_conv_info = NULL;
++    guint16                      val;
++    header_field_info           *hfinfo;
++    const gchar                 *desc              = "";
++    value_string_masked_t       *vals;
++
++    /* If we're parsing a command paramter the paramter field is 32-bits, but we're only using 16-bits for these tables.
++     * MSBs are silently dropped  */
++    val = tvb_get_letohs(tvb,offset);
++
++	/* Lookup our vals used by this header field */
++    hfinfo = proto_registrar_get_nth(hf);
++    vals = (value_string_masked_t *) hfinfo->strings;
++
++    usb_conv_info=pinfo->usb_conv_info;
++    usb_ptp_conv_info=usb_conv_info->class_data;
++
++    /* May not have the packet annotated, and may not have any value table for this header field */
++    if (vals && usb_ptp_conv_info)
++        vsm=table_value_from_mask(usb_ptp_conv_info->flavor,val,vals);
++
++    /* Add this string onto the info column value if wanted */
++    if (add_info && vsm)
++    {
++        col_append_fstr(pinfo->cinfo, COL_INFO, " %s",vsm->strptr);
++    }
++
++    desc = vsm ? vsm->strptr : "Unknown";
++    proto_tree_add_uint_format_value(tree, hf,tvb,offset,length,val,"%s (0x%04x)",desc,val);
++}
++
++/* Add a PTP-style unicode string*/
++static gint
++usb_ptp_add_uint_string(proto_tree *tree, gint hf, tvbuff_t *tvb, gint offset, gchar* save_to)
++{
++    guint8 length;
++    gchar   *str;
++
++    /* First byte is the number of characters in UCS-2, including the terminating NULL */
++	length = tvb_get_guint8(tvb, offset) * 2;
++    offset += 1;
++    str = tvb_get_ephemeral_unicode_string(tvb, offset, length, ENC_LITTLE_ENDIAN);
++    proto_tree_add_string(tree, hf, tvb, offset, length, str);
++    offset += length;
++
++    /* Save to data structure (optional) */
++    if (save_to)
++        save_to = ep_strdup(str);
++
++    return offset;
++}
++
++/* Add Indexed array of 32-bit objects (not masked) */
++static gint
++usb_ptp_add_array_il(packet_info *pinfo _U_,proto_tree *parent_tree, gint hf,  tvbuff_t *tvb, gint offset, const char *str)
++{
++    guint32                      length;
++    guint32                      i;
++    proto_tree                  *tree              = NULL;
++    proto_item                  *ti                = NULL;
++
++    /* First 32-bits is the count of 16-bit objects in array */
++	length = tvb_get_letohl(tvb, offset);
++
++    // Create Device Info Tree
++    if (parent_tree)
++    {
++        ti = proto_tree_add_text(parent_tree, tvb, offset, ( (4*length)+4), "Objects");
++        tree = proto_item_add_subtree(ti, ett_usb_ptp_object_array);
++    }
++
++    if (ti)
++        proto_item_set_text(ti,"%s (%d)",str,length);
++    offset += 4;
++
++    if (!length)
++        return offset;
++
++    for (i=0; i<length; i++)
++    {
++        proto_tree_add_item(tree,hf,tvb,offset,4,ENC_LITTLE_ENDIAN);
++        offset+=4;
++    }
++
++    return offset;
++}
++
++/* Add Indexed array of 16-bit objects (masked)*/
++static gint
++usb_ptp_add_array_is(packet_info *pinfo,proto_tree *parent_tree, gint hf,  tvbuff_t *tvb, gint offset, const char *str)
++{
++    guint32                      length;
++    guint32                      i;
++    proto_tree                  *tree              = NULL;
++    proto_item                  *ti                = NULL;
++
++    /* First 32-bits is the count of 16-bit objects in array */
++	length = tvb_get_letohl(tvb, offset);
++
++    // Create Device Info Tree
++    if (parent_tree)
++    {
++        ti = proto_tree_add_text(parent_tree, tvb, offset, ( (2*length)+4), "Objects");
++        tree = proto_item_add_subtree(ti, ett_usb_ptp_object_array);
++    }
++
++    if (ti)
++        proto_item_set_text(ti,"%s (%d)",str,length);
++    offset += 4;
++
++    if (!length)
++        return offset;
++
++    for (i=0; i<length; i++)
++    {
++        proto_tree_add_item_mask(pinfo,tree,hf,tvb,2,offset,0);
++        offset+=2;
++    }
++
++    return offset;
++}
++
++static void
++dissect_usb_ptp_get_device_info(tvbuff_t *tvb, packet_info *pinfo, proto_tree *parent_tree, gint offset)
++{
++    proto_tree *tree = NULL;
++    usb_conv_info_t       *usb_conv_info;
++    usb_ptp_conv_info_t   *usb_ptp_conv_info;
++    usb_ptp_device_info_t *usb_ptp_device_info;
++    //guint32 val_u32;
++    guint16 vendor_extension_id;
++
++    /* Create device info struct if not there already and attach it */
++    usb_conv_info       = pinfo->usb_conv_info;
++    usb_ptp_conv_info   = usb_conv_info->class_data;
++    usb_ptp_device_info = usb_ptp_conv_info->device_info;
++    if (!usb_ptp_device_info)
++    {
++        usb_ptp_device_info = se_alloc(sizeof(usb_ptp_device_info_t));
++    }
++
++    /* Create Device Info Tree */
++    if (parent_tree)
++    {
++        proto_item *ti = NULL;
++        ti = proto_tree_add_text(parent_tree, tvb, offset, -1, "DEVICE INFORMATION");
++        tree = proto_item_add_subtree(ti, ett_usb_ptp_device_info);
++    }
++
++    /* Add Elements to struct and gui */
++	usb_ptp_device_info->StandardVersion = tvb_get_letohs(tvb, offset);
++    proto_tree_add_item(tree,hf_devinfo_standardversion              ,tvb,offset,2,  ENC_LITTLE_ENDIAN); offset+=2;
++	usb_ptp_device_info->VendorExtensionID = tvb_get_letohl(tvb, offset);
++	vendor_extension_id = tvb_get_letohs(tvb, offset);
++    proto_tree_add_item(tree,hf_devinfo_vendorextensionid            ,tvb,offset,4,  ENC_LITTLE_ENDIAN); offset+=4;
++	usb_ptp_device_info->VendorExtensionVersion = tvb_get_letohs(tvb, offset);
++    proto_tree_add_item(tree,hf_devinfo_vendorextensionversion       ,tvb,offset,2,  ENC_LITTLE_ENDIAN); offset+=2;
++    offset=usb_ptp_add_uint_string(tree, hf_devinfo_vendorextensiondesc,tvb,offset,usb_ptp_device_info->VendorExtensionDesc);
++    proto_tree_add_item(tree,hf_devinfo_functionalmode               ,tvb,offset,2,  ENC_LITTLE_ENDIAN); offset+=2;
++    /* TODO: Store array values in dev_info struct */
++    offset=usb_ptp_add_array_is(pinfo,tree,hf_devinfo_operationsupported     ,tvb,offset,"OPERATIONS SUPPORTED");
++    offset=usb_ptp_add_array_is(pinfo,tree,hf_devinfo_eventsupported         ,tvb,offset,"EVENTS SUPPORTED");
++    offset=usb_ptp_add_array_is(pinfo,tree,hf_devinfo_devicepropertysupported,tvb,offset,"DEVICE PROPERTIES SUPPORTED");
++    offset=usb_ptp_add_array_is(pinfo,tree,hf_devinfo_captureformat          ,tvb,offset,"CAPTURE FORMATS SUPPORTED");
++    offset=usb_ptp_add_array_is(pinfo,tree,hf_devinfo_imageformat            ,tvb,offset,"IMAGE FORMATS SUPPORTED");
++    offset=usb_ptp_add_uint_string(tree,hf_devinfo_manufacturer      ,tvb,offset,usb_ptp_device_info->Manufacturer);
++    offset=usb_ptp_add_uint_string(tree,hf_devinfo_model             ,tvb,offset,usb_ptp_device_info->Model);
++    offset=usb_ptp_add_uint_string(tree,hf_devinfo_deviceversion     ,tvb,offset,usb_ptp_device_info->DeviceVersion);
++    offset=usb_ptp_add_uint_string(tree,hf_devinfo_serialnumber      ,tvb,offset,usb_ptp_device_info->SerialNumber);
++
++    /* Post Proc of this table */
++
++    /* Enable/Disable MTP Extensions */
++    if (vendor_extension_id == USB_PTP_VENDOR_EXT_MTP) 
++    {
++        usb_ptp_conv_info->flavor |= USB_PTP_FLAVOR_MTP;
++    } else
++    {
++        usb_ptp_conv_info->flavor = usb_ptp_conv_info->flavor & ~USB_PTP_FLAVOR_MTP;
++    }
++}
++
++static void
++dissect_usb_ptp_params(tvbuff_t *tvb, packet_info *pinfo _U_, proto_tree *parent_tree, gint offset,gint hf)
++{
++    guint length_tvb;
++    guint32 remaining;
++    proto_tree *tree = NULL;
++
++    length_tvb = tvb_length(tvb);
++    remaining = length_tvb-offset;
++
++    if (!remaining)
++        return;
++
++    if (parent_tree)
++    {
++        proto_item *ti = NULL;
++        ti = proto_tree_add_text(parent_tree, tvb, offset, remaining, "PARAMETERS");
++        tree = proto_item_add_subtree(ti, ett_usb_ptp_parameters);
++    }
++
++    while (remaining && remaining >= 4)
++    {
++        proto_tree_add_item(tree,hf,tvb,offset,4,ENC_LITTLE_ENDIAN);
++        offset+=4;
++        remaining-=4;
++    }
++}
++
++static void
++dissect_usb_ptp_payload(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, guint16 ptp_type,
++        guint16 ptp_code, const value_string_masked_t *vsm _U_, gint offset)
++{
++    guint length_payload;
++
++    switch(ptp_type)
++    {
++        case USB_PTP_TYPE_DATA:
++            switch (ptp_code)
++            {
++                case USB_PTP_OC_GETDEVICEINFO:
++                    dissect_usb_ptp_get_device_info(tvb,pinfo,tree,offset);
++                    return;
++                case USB_PTP_OC_GETSTORAGEIDS:
++                    offset=usb_ptp_add_array_il(pinfo,tree,hf_storageid,tvb,offset,"STORAGE IDS");
++                    break;
++                case USB_PTP_OC_GETOBJECTHANDLES:
++                    offset=usb_ptp_add_array_il(pinfo,tree,hf_objhandle,tvb,offset,"OBJECT HANDLES");
++                    break;
++                //case USB_PTP_OC_SETDEVICEPROPVALUE: TODO
++                //    return dissect_usb_ptp_set_device_prop_value(tvb,pinfo,tree,offset);
++                case USB_PTP_OC_GETOBJECTPROPSSUPPORTED:
++                    offset=usb_ptp_add_array_is(pinfo,tree,hf_cmd_objpropcode,tvb,offset,"OBJECT PROPERTY CODES");
++                    return; 
++                default:
++                    break;
++            }
++            break;
++        case USB_PTP_TYPE_CMD:
++            switch (ptp_code)
++            {
++                case USB_PTP_OC_SETDEVICEPROPVALUE:
++                    proto_tree_add_item_mask(pinfo,tree,hf_cmd_devicepropvalue,tvb,4,offset,1); offset+=4;
++                    break;
++                case USB_PTP_OC_GETDEVICEPROPDESC:
++                    proto_tree_add_item_mask(pinfo,tree,hf_cmd_devicepropdesc,tvb,4,offset,1); offset+=4;
++                    break;
++                case USB_PTP_OC_GETOBJECTPROPSSUPPORTED:
++                    proto_tree_add_item_mask(pinfo,tree,hf_cmd_objformatcode,tvb,4,offset,1); offset+=4;
++                    break;
++                case USB_PTP_OC_GETOBJECTPROPDESC:
++                    proto_tree_add_item_mask(pinfo,tree,hf_cmd_objpropcode  ,tvb,4,offset,1); offset+=4;
++                    proto_tree_add_item_mask(pinfo,tree,hf_cmd_objformatcode,tvb,4,offset,1); offset+=4;
++                    break;
++                default:
++                    dissect_usb_ptp_params(tvb,pinfo,tree,offset,hf_cmd_parameter);
++                    return;
++                    break;
++            }
++        case USB_PTP_TYPE_RESPONSE:
++            dissect_usb_ptp_params(tvb,pinfo,tree,offset,hf_response_parameter);
++            return;
++        case USB_PTP_TYPE_EVENT:
++            dissect_usb_ptp_params(tvb,pinfo,tree,offset,hf_event_parameter);
++            return;
++        default:
++            break;
++    }
++    /* Default is to just label generic bytes */
++    length_payload = tvb_length(tvb) - offset;
++    if ( !length_payload )
++        return;
++
++    // TODO: Auto-detect strings -- look for string length + null char match
++
++    proto_tree_add_item(tree, hf_payload,tvb, offset, length_payload, ENC_NA );
++}
++
++static void
++dissect_usb_ptp(tvbuff_t *tvb, packet_info *pinfo, proto_tree *parent_tree)
++{
++    usb_conv_info_t *usb_conv_info;
++    proto_tree *tree = NULL;
++    guint length_tvb;
++    guint16 ptp_type;
++    guint16 ptp_code;
++    guint32 ptp_tid;
++    guint32 ptp_length _U_;
++    gint offset = 0;
++    const gchar *ptp_code_desc = "";
++    gchar col_class;
++    usb_ptp_conv_info_t *usb_ptp_conv_info;
++    const value_string_masked_t *vsm;
++
++    length_tvb = tvb_length(tvb);
++    col_set_str(pinfo->cinfo, COL_PROTOCOL, "USB-PTP");
++
++    /* Add our own class information to usb_conv_info */
++    usb_conv_info=pinfo->usb_conv_info;
++    usb_ptp_conv_info=usb_conv_info->class_data;
++    if(!usb_ptp_conv_info)
++    {
++        usb_ptp_conv_info = se_alloc(sizeof(usb_ptp_conv_info_t));
++        usb_conv_info->class_data = usb_ptp_conv_info;
++        usb_ptp_conv_info->flavor = usb_ptp_flavor(pinfo);
++    }
++
++    if (parent_tree)
++    {
++        proto_item *ti = NULL;
++        ti = proto_tree_add_protocol_format(parent_tree, proto_usb_ptp, tvb, 0, -1, "USB-PTP");
++        tree = proto_item_add_subtree(ti, ett_usb_ptp);
++    }
++
++    /* PTP Is defined as Class=6, SubClass=1, Protocol=1 */ 
++    if (!(   (usb_conv_info->interfaceSubclass == IF_CLASS_IMAGE_SUBCLASS_PTP)
++          && (usb_conv_info->interfaceProtocol == IF_CLASS_IMAGE_PROTOCOL_PTP) ))
++    {
++        expert_add_undecoded_item(tvb, pinfo, tree, 0, length_tvb, PI_WARN);
++        return;
++    }
++
++    proto_tree_add_item(tree, hf_container_length, tvb, offset, 4, ENC_LITTLE_ENDIAN);
++    ptp_length = tvb_get_letohl(tvb,offset);  offset+=4;
++    proto_tree_add_item(tree, hf_container_type,   tvb, offset, 2, ENC_LITTLE_ENDIAN);
++    ptp_type = tvb_get_letohs(tvb,offset);  offset+=2;
++    ptp_code = tvb_get_letohs(tvb,offset);
++
++    switch(ptp_type)
++    {
++        case USB_PTP_TYPE_DATA:
++            col_class = 'D';
++            /* "The Data Block will use the OperationCode from the Command Block" [1] 7.1.1 */
++            vsm=table_value_from_mask(usb_ptp_conv_info->flavor,ptp_code,usb_ptp_oc_vals);
++            ptp_code_desc = vsm ? vsm->strptr : "UNKNOWN";
++            proto_tree_add_uint_format_value(tree, hf_operation_code,tvb, offset, 2, ptp_code, 
++                    "%s (0x%04x)",ptp_code_desc,ptp_code);
++            break;
++        case USB_PTP_TYPE_CMD:
++            col_class = 'C';
++            vsm=table_value_from_mask(usb_ptp_conv_info->flavor,ptp_code,usb_ptp_oc_vals);
++            ptp_code_desc = vsm ? vsm->strptr : "UNKNOWN";
++            proto_tree_add_uint_format_value(tree, hf_operation_code,tvb, offset, 2, ptp_code, 
++                    "%s (0x%04x)",ptp_code_desc,ptp_code);
++            break;
++        case USB_PTP_TYPE_RESPONSE:
++            col_class = 'R';
++            vsm=table_value_from_mask(usb_ptp_conv_info->flavor,ptp_code,usb_ptp_rc_vals);
++            ptp_code_desc = vsm ? vsm->strptr : "UNKNOWN";
++            proto_tree_add_uint_format_value(tree, hf_response_code,tvb, offset, 2, ptp_code, 
++                    "%s (0x%04x)",ptp_code_desc,ptp_code);
++            break;
++        case USB_PTP_TYPE_EVENT:
++            col_class = 'E';
++            vsm=table_value_from_mask(usb_ptp_conv_info->flavor,ptp_code,usb_ptp_ec_vals);
++            ptp_code_desc = vsm ? vsm->strptr : "UNKNOWN";
++            proto_tree_add_uint_format_value(tree, hf_event_code,tvb, offset, 2, ptp_code, 
++                    "%s (0x%04x)",ptp_code_desc,ptp_code);
++            break;
++        default:
++            col_class = '?';
++            expert_add_undecoded_item(tvb, pinfo, tree, offset, 2, PI_WARN);
++            break;
++    }
++    offset +=2;
++
++    proto_tree_add_item(tree, hf_transaction_id, tvb, offset, 4, ENC_LITTLE_ENDIAN);
++    ptp_tid = tvb_get_letohl(tvb,offset);  offset+=4;
++
++    col_add_fstr(pinfo->cinfo, COL_INFO, "%c %08x (%04x) %s", 
++            col_class, ptp_tid, ptp_code, ptp_code_desc );
++
++    /* Pass along if we have a payload */
++    if ( (length_tvb-offset) > 0 )
++    {
++        dissect_usb_ptp_payload(tvb,pinfo,tree,ptp_type,ptp_code,vsm,offset);
++    }
++}
++
++void
++proto_register_usb_ptp(void)
++{
++    /* header field array
++    * struct header_field_info {
++    *     const char      *name;
++    *     const char      *abbrev;
++    *     enum ftenum     type;
++    *     int             display;
++    *     const void      *strings;
++    *     guint32         bitmask;
++    *     const char      *blurb;
++    *     .....
++    * };
++    */
++
++    /* NOTE: Some of the strings arguments given are value_string_masked_t[] instead of the normal value_string_t[]
++     *       These can't be used by proto_tree_add_item() directly and instead are used by proto_tree_add_item_mask etc
++     *       */
++    static hf_register_info hf[] = {
++        { &hf_container_length               ,
++        { "Container Length"                 ,"usb-ptp.container.length"             ,FT_UINT32,BASE_DEC ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_container_type                 ,
++        { "Container Type"                   ,"usb-ptp.container.type"               ,FT_UINT16,BASE_HEX ,&hf_container_type_vals           ,0x0,NULL,HFILL}},
++        { &hf_operation_code                 ,
++        { "Operation Code"                   ,"usb-ptp.operation.code"               ,FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_event_code                     ,
++        { "Event Code"                       ,"usb-ptp.event.code"                   ,FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_transaction_id                 ,
++        { "Transaction ID"                   ,"usb-ptp.transaction.id"               ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_payload                        ,
++        { "Payload"                          ,"usb-ptp.payload"                      ,FT_BYTES ,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_cmd_parameter                  ,
++        { "Parameter"                        ,"usb-ptp.command.parameter"            ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_response_code                  ,
++        { "Response Code"                    ,"usb-ptp.response.code"                ,FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_response_parameter             ,
++        { "Parameter"                        ,"usb-ptp.response.parameter"           ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_event_parameter                ,
++        { "Parameter"                        ,"usb-ptp.event.parameter"              ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_standardversion        ,
++        { "Standard Version"                 ,"usb-ptp.device.standardversion"       ,FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_vendorextensionid      ,
++        { "Vendor Extension ID"              ,"usb-ptp.device.vendorextensionid"     ,FT_UINT32,BASE_HEX ,&hf_devinfo_vendorextensionid_vals,0x0,NULL,HFILL}},
++        { &hf_devinfo_vendorextensionversion ,
++        { "Vendor Extension Version"         ,"usb-ptp.device.vendorextensionversion",FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_vendorextensiondesc    ,
++        { "Vendor Extension Description"     ,"usb-ptp.device.vendorextensiondesc"   ,FT_STRING,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_functionalmode         ,
++        { "Functional Mode"                  ,"usb-ptp.device.functionalmode"        ,FT_UINT16,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_operationsupported     ,
++        { "Operation Supported"              ,"usb-ptp.device.operationssupported"   ,FT_UINT16,BASE_HEX ,&usb_ptp_oc_vals                  ,0x0,NULL,HFILL}},
++        { &hf_devinfo_eventsupported         ,
++        { "Event Supported"                  ,"usb-ptp.device.eventsupported"        ,FT_UINT16,BASE_HEX ,&usb_ptp_ec_vals                  ,0x0,NULL,HFILL}},
++        { &hf_devinfo_devicepropertysupported,
++        { "Device Property"                  ,"usb-ptp.device.propertysupported"     ,FT_UINT16,BASE_HEX ,&usb_ptp_dpc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_devinfo_captureformat          ,
++        { "Capture Format"                   ,"usb-ptp.device.captureformat"         ,FT_UINT16,BASE_HEX ,&usb_ptp_ofc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_devinfo_imageformat            ,
++        { "Image Format"                     ,"usb-ptp.device.imageformat"           ,FT_UINT16,BASE_HEX ,&usb_ptp_ofc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_devinfo_manufacturer           ,
++        { "Manufacturer"                     ,"usb-ptp.device.manufacturer"          ,FT_STRING,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_model                  ,
++        { "Model"                            ,"usb-ptp.device.model"                 ,FT_STRING,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_deviceversion          ,
++        { "Device Version"                   ,"usb-ptp.device.deviceversion"         ,FT_STRING,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_devinfo_serialnumber           ,
++        { "Serial Number"                    ,"usb-ptp.device.serialnumber"          ,FT_STRING,BASE_NONE,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_cmd_devicepropvalue            ,
++        { "Device Property"                  ,"usb-ptp.device.property"              ,FT_UINT16,BASE_HEX ,&usb_ptp_dpc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_cmd_devicepropdesc             ,
++        { "Device Property"                  ,"usb-ptp.device.propertydesc"          ,FT_UINT16,BASE_HEX ,&usb_ptp_dpc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_storageid                      ,
++        { "Storage ID"                       ,"usb-ptp.device.storageid"             ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}},
++        { &hf_cmd_objformatcode              ,
++        { "Object Format Code"               ,"usb-ptp.object.format"                ,FT_UINT16,BASE_HEX ,&usb_ptp_ofc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_cmd_objpropcode                ,
++        { "Object Prop Code"                 ,"usb-ptp.object.code"                  ,FT_UINT16,BASE_HEX ,&usb_ptp_opc_vals                 ,0x0,NULL,HFILL}},
++        { &hf_objhandle                      ,
++        { "Object Handle"                    ,"usb-ptp.object.handle"                ,FT_UINT32,BASE_HEX ,NULL                              ,0x0,NULL,HFILL}}
++    };
++
++    static gint *usb_ptp_subtrees[] = {
++        &ett_usb_ptp,
++        &ett_usb_ptp_device_info,
++        &ett_usb_ptp_object_array,
++        &ett_usb_ptp_parameters
++    };
++
++    proto_usb_ptp = proto_register_protocol("USB Picture Transfer Protocol", "USB-PTP", "usb-ptp");
++    proto_register_field_array(proto_usb_ptp, hf, array_length(hf));
++    proto_register_subtree_array(usb_ptp_subtrees, array_length(usb_ptp_subtrees));
++    register_dissector("usb-ptp", dissect_usb_ptp, proto_usb_ptp);
++}
++
++void
++proto_reg_handoff_usb_ptp(void) 
++{
++    dissector_handle_t usb_ptp_dissector_handle;
++    usb_ptp_dissector_handle = find_dissector("usb-ptp");
++    dissector_add_uint("usb.bulk", IF_CLASS_IMAGE, usb_ptp_dissector_handle);
++}
+diff --git epan/dissectors/packet-usb-ptp.h epan/dissectors/packet-usb-ptp.h
+new file mode 100644
+index 0000000..e634ff3
+--- /dev/null
++++ epan/dissectors/packet-usb-ptp.h
+@@ -0,0 +1,1520 @@
++/* packet-usb-ptp.h
++ *
++ * $Id$
++ *
++ * usb image picture transfer protocol dissector
++ * (c)2013 Max Baker <max@warped.org>
++ *
++ * Much of this adapted from libghoto2/libgphoto2/camlibs/ptp2/
++ *
++ * Copyright (C) 2001 Mariusz Woloszyn <emsi@ipartners.pl>
++ * Copyright (C) 2003-2012 Marcus Meissner <marcus@jet.franken.de>
++ * Copyright (C) 2006-2008 Linus Walleij <triad@df.lth.se>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version 2
++ * of the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ *
++ * [1] http://www.usb.org/developers/devclass_docs/usb_still_img10.pdf for protocol definition
++ *
++ */
++
++#define IF_CLASS_IMAGE_SUBCLASS_PTP 0x01
++#define IF_CLASS_IMAGE_PROTOCOL_PTP 0x01
++
++/* 7.1.1 [1] */
++#define USB_PTP_TYPE_CMD        0x1
++#define USB_PTP_TYPE_DATA       0x2
++#define USB_PTP_TYPE_RESPONSE   0x3
++#define USB_PTP_TYPE_EVENT      0x4
++
++#define USB_PTP_VENDOR_EXT_MTP 0x00000006
++
++#define USB_PTP_VENDOR_CANON   0x04a9
++#define USB_PTP_VENDOR_CASIO   0x07cf
++#define USB_PTP_VENDOR_NIKON   0x04b0
++#define USB_PTP_VENDOR_FUJI    0x04cb
++#define USB_PTP_VENDOR_OLYMPUS 0x07b4
++#define USB_PTP_VENDOR_KODAK   0x040a
++
++typedef struct _value_string_masked {
++    guint32       mask;
++    guint32       value;
++    const gchar   *strptr;
++} value_string_masked_t;
++
++#define USB_PTP_OC_GETDEVICEINFO           0x1001
++#define USB_PTP_OC_GETSTORAGEIDS           0x1004
++#define USB_PTP_OC_GETOBJECTHANDLES        0x1007
++#define USB_PTP_OC_GETDEVICEPROPDESC       0x1014
++#define USB_PTP_OC_SETDEVICEPROPVALUE      0x1016
++#define USB_PTP_OC_GETOBJECTPROPSSUPPORTED 0x9801
++#define USB_PTP_OC_GETOBJECTPROPDESC       0x9802
++
++/* PTP device info structure (returned by GetDevInfo) */
++typedef struct _usb_ptp_device_info_t {
++    guint16       StandardVersion;
++    guint32       VendorExtensionID;
++    guint16       VendorExtensionVersion;
++    gchar        *VendorExtensionDesc;
++    guint16       FunctionalMode;
++    value_string *OperationsSupported;
++    value_string *EventsSupported;
++    value_string *DevicePropertiesSupported;
++    value_string *CaptureFormats;
++    value_string *ImageFormats;
++    gchar        *Manufacturer;
++    gchar        *Model;
++    gchar        *DeviceVersion;
++    gchar        *SerialNumber;
++} usb_ptp_device_info_t;
++
++/* Struct stored into usb_conv that keeps track of decoded device information 
++ *      Gets attached to *class_data in usb_conv */
++typedef struct _usb_ptp_conv_info_t {
++    guint32                flavor;
++    usb_ptp_device_info_t *device_info;
++    /*usb_ptp_object_info_t *object_info; NOT Implemened yet*/
++} usb_ptp_conv_info_t;
++
++/* Mask Definition for Value Strings */
++#define USB_PTP_FLAVOR_ALL       0x001
++#define USB_PTP_FLAVOR_ANDROID   0x002
++#define USB_PTP_FLAVOR_CANON     0x004
++#define USB_PTP_FLAVOR_CASIO     0x008
++#define USB_PTP_FLAVOR_KODAK     0x010
++#define USB_PTP_FLAVOR_FUJI      0x020
++#define USB_PTP_FLAVOR_MTP       0x040
++#define USB_PTP_FLAVOR_NIKON     0x080
++#define USB_PTP_FLAVOR_OLYMPUS   0x100
++
++
++static const value_string hf_container_type_vals[] = {
++    {USB_PTP_TYPE_CMD,      "Command Block"},
++    {USB_PTP_TYPE_DATA,     "Data Block"},
++    {USB_PTP_TYPE_RESPONSE, "Response Block"},
++    {USB_PTP_TYPE_EVENT,    "Event Block"},
++    {0, NULL}
++};
++
++/* PTP_AC StorageInfo Access Capability */
++static const value_string_masked_t usb_ptp_ac_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "ReadWrite"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "ReadOnly"},
++    {USB_PTP_FLAVOR_ALL       , 0x0002, "ReadOnly_with_Object_Deletion"}
++};
++/* PTP_AT Association Types */
++static const value_string_masked_t usb_ptp_at_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "GenericFolder"},
++    {USB_PTP_FLAVOR_ALL       , 0x0002, "Album"},
++    {USB_PTP_FLAVOR_ALL       , 0x0003, "TimeSequence"},
++    {USB_PTP_FLAVOR_ALL       , 0x0004, "HorizontalPanoramic"},
++    {USB_PTP_FLAVOR_ALL       , 0x0005, "VerticalPanoramic"},
++    {USB_PTP_FLAVOR_ALL       , 0x0006, "2DPanoramic"},
++    {USB_PTP_FLAVOR_ALL       , 0x0007, "AncillaryData"}
++};
++/* PTP_DPC Device Properties Codes */
++static const value_string_masked_t usb_ptp_dpc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x5000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x5001, "BatteryLevel"},
++    {USB_PTP_FLAVOR_ALL       , 0x5002, "FunctionalMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x5003, "ImageSize"},
++    {USB_PTP_FLAVOR_ALL       , 0x5004, "CompressionSetting"},
++    {USB_PTP_FLAVOR_ALL       , 0x5005, "WhiteBalance"},
++    {USB_PTP_FLAVOR_ALL       , 0x5006, "RGBGain"},
++    {USB_PTP_FLAVOR_ALL       , 0x5007, "FNumber"},
++    {USB_PTP_FLAVOR_ALL       , 0x5008, "FocalLength"},
++    {USB_PTP_FLAVOR_ALL       , 0x5009, "FocusDistance"},
++    {USB_PTP_FLAVOR_ALL       , 0x500a, "FocusMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x500b, "ExposureMeteringMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x500c, "FlashMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x500d, "ExposureTime"},
++    {USB_PTP_FLAVOR_ALL       , 0x500e, "ExposureProgramMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x500f, "ExposureIndex"},
++    {USB_PTP_FLAVOR_ALL       , 0x5010, "ExposureBiasCompensation"},
++    {USB_PTP_FLAVOR_ALL       , 0x5011, "DateTime"},
++    {USB_PTP_FLAVOR_ALL       , 0x5012, "CaptureDelay"},
++    {USB_PTP_FLAVOR_ALL       , 0x5013, "StillCaptureMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x5014, "Contrast"},
++    {USB_PTP_FLAVOR_ALL       , 0x5015, "Sharpness"},
++    {USB_PTP_FLAVOR_ALL       , 0x5016, "DigitalZoom"},
++    {USB_PTP_FLAVOR_ALL       , 0x5017, "EffectMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x5018, "BurstNumber"},
++    {USB_PTP_FLAVOR_ALL       , 0x5019, "BurstInterval"},
++    {USB_PTP_FLAVOR_ALL       , 0x501a, "TimelapseNumber"},
++    {USB_PTP_FLAVOR_ALL       , 0x501b, "TimelapseInterval"},
++    {USB_PTP_FLAVOR_ALL       , 0x501c, "FocusMeteringMode"},
++    {USB_PTP_FLAVOR_ALL       , 0x501d, "UploadURL"},
++    {USB_PTP_FLAVOR_ALL       , 0x501e, "Artist"},
++    {USB_PTP_FLAVOR_ALL       , 0x501f, "CopyrightInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x5020, "SupportedStreams"},
++    {USB_PTP_FLAVOR_ALL       , 0x5021, "EnabledStreams"},
++    {USB_PTP_FLAVOR_ALL       , 0x5022, "VideoFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0x5023, "VideoResolution"},
++    {USB_PTP_FLAVOR_ALL       , 0x5024, "VideoQuality"},
++    {USB_PTP_FLAVOR_ALL       , 0x5025, "VideoFrameRate"},
++    {USB_PTP_FLAVOR_ALL       , 0x5026, "VideoContrast"},
++    {USB_PTP_FLAVOR_ALL       , 0x5027, "VideoBrightness"},
++    {USB_PTP_FLAVOR_ALL       , 0x5028, "AudioFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0x5029, "AudioBitrate"},
++    {USB_PTP_FLAVOR_ALL       , 0x502a, "AudioSamplingRate"},
++    {USB_PTP_FLAVOR_ALL       , 0x502b, "AudioBitPerSample"},
++    {USB_PTP_FLAVOR_ALL       , 0x502c, "AudioVolume"},
++    {USB_PTP_FLAVOR_ALL       , 0xd000, "EXTENSION"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd001, "ColorTemperature"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd001, "MONITOR"},
++    {USB_PTP_FLAVOR_CANON     , 0xd001, "BeepMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd002, "STORAGE"},
++    {USB_PTP_FLAVOR_CANON     , 0xd002, "BatteryKind"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd002, "DateTimeStampFormat"},
++    {USB_PTP_FLAVOR_CANON     , 0xd003, "BatteryStatus"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd003, "BeepMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd004, "UNKNOWN_1"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd004, "VideoOut"},
++    {USB_PTP_FLAVOR_CANON     , 0xd004, "UILockType"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd005, "UNKNOWN_2"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd005, "PowerSaving"},
++    {USB_PTP_FLAVOR_CANON     , 0xd005, "CameraMode"},
++    {USB_PTP_FLAVOR_KODAK     , 0xd006, "UI_Language"},
++    {USB_PTP_FLAVOR_CANON     , 0xd006, "ImageQuality"},
++    {USB_PTP_FLAVOR_CANON     , 0xd007, "FullViewFileFormat"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd007, "UNKNOWN_3"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd008, "RECORD_LIGHT"},
++    {USB_PTP_FLAVOR_CANON     , 0xd008, "ImageSize"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd009, "UNKNOWN_4"},
++    {USB_PTP_FLAVOR_CANON     , 0xd009, "SelfTime"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00a, "FlashMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd00a, "UNKNOWN_5"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd00b, "MOVIE_MODE"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00b, "Beep"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00c, "ShootingMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd00c, "HD_SETTING"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd00d, "HS_SETTING"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00d, "ImageMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00e, "DriveMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd00f, "CS_HIGH_SPEED"},
++    {USB_PTP_FLAVOR_CANON     , 0xd00f, "EZoom"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd010, "ShootingBank"},
++    {USB_PTP_FLAVOR_CANON     , 0xd010, "MeteringMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd010, "CS_UPPER_LIMIT"},
++    {USB_PTP_FLAVOR_CANON     , 0xd011, "AFDistance"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd011, "ShootingBankNameA"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd011, "CS_SHOT"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd012, "UNKNOWN_6"},
++    {USB_PTP_FLAVOR_CANON     , 0xd012, "FocusingPoint"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd012, "ShootingBankNameB"},
++    {USB_PTP_FLAVOR_CANON     , 0xd013, "WhiteBalance"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd013, "ShootingBankNameC"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd013, "UNKNOWN_7"},
++    {USB_PTP_FLAVOR_CANON     , 0xd014, "SlowShutterSetting"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd014, "ShootingBankNameD"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd015, "UNKNOWN_8"},
++    {USB_PTP_FLAVOR_CANON     , 0xd015, "AFMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd015, "ResetBank0"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd016, "RawCompression"},
++    {USB_PTP_FLAVOR_CANON     , 0xd016, "ImageStabilization"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd017, "ColorTemperature"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd017, "UNKNOWN_9"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd017, "WhiteBalanceAutoBias"},
++    {USB_PTP_FLAVOR_CANON     , 0xd017, "Contrast"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd018, "Quality"},
++    {USB_PTP_FLAVOR_CANON     , 0xd018, "ColorGain"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd018, "WhiteBalanceTungstenBias"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd018, "UNKNOWN_10"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd019, "UNKNOWN_11"},
++    {USB_PTP_FLAVOR_CANON     , 0xd019, "Sharpness"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd019, "WhiteBalanceFluorescentBias"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01a, "Sensitivity"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01a, "WhiteBalanceDaylightBias"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd01a, "UNKNOWN_12"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd01b, "UNKNOWN_13"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01b, "ParameterSet"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01b, "WhiteBalanceFlashBias"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01c, "WhiteBalanceCloudyBias"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01c, "ISOSpeed"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd01c, "UNKNOWN_14"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01d, "WhiteBalanceShadeBias"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01d, "Aperture"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd01d, "UNKNOWN_15"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01e, "ShutterSpeed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01e, "WhiteBalanceColorTemperature"},
++    {USB_PTP_FLAVOR_CANON     , 0xd01f, "ExpCompensation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd01f, "WhiteBalancePresetNo"},
++    {USB_PTP_FLAVOR_CANON     , 0xd020, "FlashCompensation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd020, "WhiteBalancePresetName0"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd020, "UNKNOWN_16"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd021, "WhiteBalancePresetName1"},
++    {USB_PTP_FLAVOR_CANON     , 0xd021, "AEBExposureCompensation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd022, "WhiteBalancePresetName2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd023, "AvOpen"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd023, "WhiteBalancePresetName3"},
++    {USB_PTP_FLAVOR_CANON     , 0xd024, "AvMax"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd024, "WhiteBalancePresetName4"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd025, "WhiteBalancePresetVal0"},
++    {USB_PTP_FLAVOR_CANON     , 0xd025, "FocalLength"},
++    {USB_PTP_FLAVOR_CANON     , 0xd026, "FocalLengthTele"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd026, "WhiteBalancePresetVal1"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd027, "WhiteBalancePresetVal2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd027, "FocalLengthWide"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd028, "WhiteBalancePresetVal3"},
++    {USB_PTP_FLAVOR_CANON     , 0xd028, "FocalLengthDenominator"},
++    {USB_PTP_FLAVOR_CANON     , 0xd029, "CaptureTransferMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd029, "WhiteBalancePresetVal4"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02a, "Zoom"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02a, "ImageSharpening"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02b, "ToneCompensation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02b, "NamePrefix"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02c, "ColorModel"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02c, "SizeQualityMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02d, "SupportedThumbSize"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02d, "HueAdjustment"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02e, "SizeOfOutputDataFromCamera"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02e, "NonCPULensDataFocalLength"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd02f, "NonCPULensDataMaximumAperture"},
++    {USB_PTP_FLAVOR_CANON     , 0xd02f, "SizeOfInputDataToCamera"},
++    {USB_PTP_FLAVOR_CANON     , 0xd030, "RemoteAPIVersion"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd030, "UNKNOWN_17"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd030, "ShootingMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd031, "JPEG_Compression_Policy"},
++    {USB_PTP_FLAVOR_CANON     , 0xd031, "FirmwareVersion"},
++    {USB_PTP_FLAVOR_CANON     , 0xd032, "CameraModel"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd032, "ColorSpace"},
++    {USB_PTP_FLAVOR_CANON     , 0xd033, "CameraOwner"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd033, "AutoDXCrop"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd034, "FlickerReduction"},
++    {USB_PTP_FLAVOR_CANON     , 0xd034, "UnixTime"},
++    {USB_PTP_FLAVOR_CANON     , 0xd035, "CameraBodyID"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd035, "RemoteMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd036, "CameraOutput"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd036, "VideoMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd037, "EffectMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd037, "DispAv"},
++    {USB_PTP_FLAVOR_CANON     , 0xd038, "AvOpenApex"},
++    {USB_PTP_FLAVOR_CANON     , 0xd039, "DZoomMagnification"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03a, "MlSpotPos"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03b, "DispAvMax"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03c, "AvMaxApex"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03d, "EZoomStartPosition"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03e, "FocalLengthOfTele"},
++    {USB_PTP_FLAVOR_CANON     , 0xd03f, "EZoomSizeOfTele"},
++    {USB_PTP_FLAVOR_CANON     , 0xd040, "PhotoEffect"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd040, "CSMMenuBankSelect"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd041, "MenuBankNameA"},
++    {USB_PTP_FLAVOR_CANON     , 0xd041, "AssistLight"},
++    {USB_PTP_FLAVOR_CANON     , 0xd042, "FlashQuantityCount"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd042, "MenuBankNameB"},
++    {USB_PTP_FLAVOR_CANON     , 0xd043, "RotationAngle"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd043, "MenuBankNameC"},
++    {USB_PTP_FLAVOR_CANON     , 0xd044, "RotationScene"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd044, "MenuBankNameD"},
++    {USB_PTP_FLAVOR_CANON     , 0xd045, "EventEmulateMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd045, "ResetBank"},
++    {USB_PTP_FLAVOR_CANON     , 0xd046, "DPOFVersion"},
++    {USB_PTP_FLAVOR_CANON     , 0xd047, "TypeOfSupportedSlideShow"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd048, "A1AFCModePriority"},
++    {USB_PTP_FLAVOR_CANON     , 0xd048, "AverageFilesizes"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd049, "A2AFSModePriority"},
++    {USB_PTP_FLAVOR_CANON     , 0xd049, "ModelID"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04a, "A3GroupDynamicAF"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04b, "A4AFActivation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04c, "FocusAreaIllumManualFocus"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04d, "FocusAreaIllumContinuous"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04e, "FocusAreaIllumWhenSelected"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd04f, "FocusAreaWrap"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd050, "VerticalAFON"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd051, "AFLockOn"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd052, "FocusAreaZone"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd053, "EnableCopyright"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd054, "ISOAuto"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd055, "EVISOStep"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd056, "EVStep"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd057, "EVStepExposureComp"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd058, "ExposureCompensation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd059, "CenterWeightArea"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05a, "ExposureBaseMatrix"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05b, "ExposureBaseCenter"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05c, "ExposureBaseSpot"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05d, "LiveViewAFArea"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05e, "AELockMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd05f, "AELAFLMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd061, "LiveViewAFFocus"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd062, "MeterOff"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd063, "SelfTimer"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd064, "MonitorOff"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd065, "ImgConfTime"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd066, "AutoOffTimers"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd067, "AngleLevel"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd068, "D1ShootingSpeed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd069, "D2MaximumShots"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06a, "ExposureDelayMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06b, "LongExposureNoiseReduction"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06c, "FileNumberSequence"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06d, "ControlPanelFinderRearControl"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06e, "ControlPanelFinderViewfinder"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd06f, "D7Illumination"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd070, "NrHighISO"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd071, "SHSET_CH_GUID_DISP"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd072, "ArtistName"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd073, "CopyrightInfo"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd074, "FlashSyncSpeed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd075, "FlashShutterSpeed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd076, "E3AAFlashMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd077, "E4ModelingFlash"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd078, "BracketSet"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd079, "E6ManualModeBracketing"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd07a, "BracketOrder"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd07b, "E8AutoBracketSelection"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd07c, "BracketingSet"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd080, "F1CenterButtonShootingMode"},
++    {USB_PTP_FLAVOR_CASIO     , 0xd080, "UNKNOWN_18"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd081, "CenterButtonPlaybackMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd082, "F2Multiselector"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd083, "F3PhotoInfoPlayback"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd084, "F4AssignFuncButton"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd085, "F5CustomizeCommDials"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd086, "ReverseCommandDial"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd087, "ApertureSetting"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd088, "MenusAndPlayback"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd089, "F6ButtonsAndDials"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08a, "NoCFCard"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08b, "CenterButtonZoomRatio"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08c, "FunctionButton2"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08d, "AFAreaPoint"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08e, "NormalAFOn"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd08f, "CleanImageSensor"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd090, "ImageCommentString"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd091, "ImageCommentEnable"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd092, "ImageRotation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd093, "ManualSetLensNo"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0a0, "MovScreenSize"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0a1, "MovVoice"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0a2, "MovMicrophone"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0a3, "MovFileSlot"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0a6, "ManualMovieSetting"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0b3, "MonitorOffDelay"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c0, "Bracketing"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c1, "AutoExposureBracketStep"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c2, "AutoExposureBracketProgram"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c3, "AutoExposureBracketCount"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c4, "WhiteBalanceBracketStep"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0c5, "WhiteBalanceBracketProgram"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e0, "LensID"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e1, "LensSort"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e2, "LensType"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e3, "FocalLengthMin"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e4, "FocalLengthMax"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e5, "MaxApAtMinFocalLength"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0e6, "MaxApAtMaxFocalLength"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f0, "FinderISODisp"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f2, "AutoOffPhoto"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f3, "AutoOffMenu"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f4, "AutoOffInfo"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f5, "SelfTimerShootNum"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f7, "VignetteCtrl"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f8, "AutoDistortionControl"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd0f9, "SceneMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd100, "ExposureTime"},
++    {USB_PTP_FLAVOR_MTP       , 0xd101, "SecureTime"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd101, "ACPower"},
++    {USB_PTP_FLAVOR_CANON     , 0xd101, "Aperture"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd102, "ResolutionMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd102, "ShutterSpeed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd102, "WarningStatus"},
++    {USB_PTP_FLAVOR_MTP       , 0xd102, "DeviceCertificate"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd103, "MaximumShots"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd103, "FocusPriority"},
++    {USB_PTP_FLAVOR_MTP       , 0xd103, "RevocationInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0xd103, "ISOSpeed"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd104, "DriveMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd104, "AFLockStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd104, "ExpCompensation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd105, "AutoExposureMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd105, "AELockStatus"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd105, "DateTimeFormat"},
++    {USB_PTP_FLAVOR_CANON     , 0xd106, "DriveMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd106, "ExposureBiasStep"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd106, "FVLockStatus"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd107, "WBMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd107, "AutofocusLCDTopMode2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd107, "MeteringMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd108, "AutofocusArea"},
++    {USB_PTP_FLAVOR_CANON     , 0xd108, "FocusMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd108, "OneTouchWB"},
++    {USB_PTP_FLAVOR_CANON     , 0xd109, "WhiteBalance"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd109, "ManualWB"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd109, "FlexibleProgram"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10a, "ManualWBRBBias"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10a, "LightMeter"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10a, "ColorTemperature"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10b, "CustomWB"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10b, "WhiteBalanceAdjustA"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10b, "RecordingMedia"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10c, "WhiteBalanceAdjustB"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10c, "CustomWBValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10c, "USBSpeed"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10d, "WhiteBalanceXA"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10d, "CCDNumber"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10d, "ExposureTimeEx"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10e, "BulbMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10e, "WhiteBalanceXB"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10e, "CameraOrientation"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd10f, "AntiMirrorMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd10f, "ColorSpace"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd10f, "GroupPtnType"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd110, "AEBracketingFrame"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd110, "FNumberLock"},
++    {USB_PTP_FLAVOR_CANON     , 0xd110, "PictureStyle"},
++    {USB_PTP_FLAVOR_CANON     , 0xd111, "BatteryPower"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd111, "ExposureApertureLock"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd111, "AEBracketingStep"},
++    {USB_PTP_FLAVOR_CANON     , 0xd112, "BatterySelect"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd112, "WBBracketingFrame"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd112, "TVLockSetting"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd112, "WBBracketingRBFrame"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd113, "AVLockSetting"},
++    {USB_PTP_FLAVOR_CANON     , 0xd113, "CameraTime"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd113, "WBBracketingRBRange"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd114, "IllumSetting"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd114, "WBBracketingGMFrame"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd115, "FocusPointBright"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd115, "WBBracketingGMRange"},
++    {USB_PTP_FLAVOR_CANON     , 0xd115, "Owner"},
++    {USB_PTP_FLAVOR_CANON     , 0xd116, "ModelID"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd118, "FLBracketingFrame"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd119, "FLBracketingStep"},
++    {USB_PTP_FLAVOR_CANON     , 0xd119, "PTPExtensionVersion"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11a, "DPOFVersion"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd11a, "FlashBiasCompensation"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd11b, "ManualFocusMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11b, "AvailableShots"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11c, "CaptureDestination"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd11d, "RawSaveMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11d, "BracketMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11e, "CurrentStorage"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd11e, "AUXLightMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd11f, "LensSinkMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd11f, "CurrentFolder"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd120, "ExternalFlashAttached"},
++    {USB_PTP_FLAVOR_CANON     , 0xd120, "ImageFormat"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd120, "BeepStatus"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd121, "ExternalFlashStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd121, "ImageFormatCF"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd122, "ColorSpace"},
++    {USB_PTP_FLAVOR_CANON     , 0xd122, "ImageFormatSD"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd122, "ExternalFlashSort"},
++    {USB_PTP_FLAVOR_CANON     , 0xd123, "ImageFormatExtHD"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd123, "ExternalFlashMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd123, "ColorMatching"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd124, "Saturation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd124, "ExternalFlashCompensation"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd125, "NewExternalFlashMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd126, "NoiseReductionPattern"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd126, "FlashExposureCompensation"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd127, "NoiseReductionRandom"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd129, "ShadingMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12a, "ISOBoostMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12b, "ExposureIndexBiasStep"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12c, "FilterEffect"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12d, "ColorTune"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12e, "Language"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd12f, "LanguageCode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd130, "HDRMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd130, "RecviewMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd130, "CompressionS"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd131, "HDRHighDynamic"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd131, "SleepTime"},
++    {USB_PTP_FLAVOR_MTP       , 0xd131, "PlaysForSureID"},
++    {USB_PTP_FLAVOR_CANON     , 0xd131, "CompressionM1"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd132, "HDRSmoothing"},
++    {USB_PTP_FLAVOR_MTP       , 0xd132, "ZUNE_UNKNOWN2"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd132, "ManualWBGMBias"},
++    {USB_PTP_FLAVOR_CANON     , 0xd132, "CompressionM2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd133, "CompressionL"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd135, "AELAFLMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd136, "AELButtonStatus"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd137, "CompressionSettingEx"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd139, "ToneMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd13a, "GradationMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd13b, "DevelopMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd13c, "ExtendInnerFlashMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd13d, "OutputDeviceMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd13e, "LiveViewMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd140, "OptimizeImage"},
++    {USB_PTP_FLAVOR_CANON     , 0xd140, "PCWhiteBalance1"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd140, "LCDBacklight"},
++    {USB_PTP_FLAVOR_CANON     , 0xd141, "PCWhiteBalance2"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd141, "CustomDevelop"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd142, "GradationAutoBias"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd142, "Saturation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd142, "PCWhiteBalance3"},
++    {USB_PTP_FLAVOR_CANON     , 0xd143, "PCWhiteBalance4"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd143, "BW_FillerEffect"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd143, "FlashRCMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd144, "BW_Sharpness"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd144, "FlashRCGroupValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd144, "PCWhiteBalance5"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd145, "FlashRCChannelValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd145, "BW_Contrast"},
++    {USB_PTP_FLAVOR_CANON     , 0xd145, "MWhiteBalance"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd146, "BW_Setting_Type"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd146, "FlashRCFPMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd147, "FlashRCPhotoChromicMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd148, "FlashRCPhotoChromicBias"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd148, "Slot2SaveMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd149, "RawBitMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd149, "FlashRCPhotoChromicManualBias"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14a, "FlashRCQuantityLightLevel"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14b, "FocusMeteringValue"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14c, "ISOBracketingFrame"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14d, "ISOBracketingStep"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14e, "BulbMFMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd14e, "ISOAutoTime"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd14f, "BurstFPSValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd14f, "FlourescentType"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd150, "TuneColourTemperature"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd150, "ISOAutoBaseValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd150, "PictureStyleStandard"},
++    {USB_PTP_FLAVOR_CANON     , 0xd151, "PictureStylePortrait"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd151, "TunePreset0"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd151, "ISOAutoMaxValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd152, "TunePreset1"},
++    {USB_PTP_FLAVOR_CANON     , 0xd152, "PictureStyleLandscape"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd152, "BulbLimiterValue"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd153, "DPIMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd153, "PictureStyleNeutral"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd153, "TunePreset2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd154, "PictureStyleFaithful"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd154, "DPICustomValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd154, "TunePreset3"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd155, "ResolutionValueSetting"},
++    {USB_PTP_FLAVOR_CANON     , 0xd155, "PictureStyleBlackWhite"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd155, "TunePreset4"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd157, "AFTargetSize"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd158, "LightSensorMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd159, "AEBracket"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd15a, "WBRBBracket"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd15b, "WBGMBracket"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd15c, "FlashBracket"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd15d, "ISOBracket"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xd15e, "MyModeStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd160, "PictureStyleUserSet1"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd160, "BeepOff"},
++    {USB_PTP_FLAVOR_CANON     , 0xd161, "PictureStyleUserSet2"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd161, "AutofocusMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd162, "PictureStyleUserSet3"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd163, "AFAssist"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd164, "PADVPMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd165, "ImageReview"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd166, "AFAreaIllumination"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd167, "FlashMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd168, "FlashCommanderMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd169, "FlashSign"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16a, "ISO_Auto"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16b, "RemoteTimeout"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16c, "GridDisplay"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16d, "FlashModeManualPower"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16e, "FlashModeCommanderPower"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd16f, "AutoFP"},
++    {USB_PTP_FLAVOR_CANON     , 0xd170, "PictureStyleParam1"},
++    {USB_PTP_FLAVOR_CANON     , 0xd171, "PictureStyleParam2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd172, "PictureStyleParam3"},
++    {USB_PTP_FLAVOR_CANON     , 0xd17f, "FlavorLUTParams"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd180, "CSMMenu"},
++    {USB_PTP_FLAVOR_CANON     , 0xd180, "CustomFunc1"},
++    {USB_PTP_FLAVOR_MTP       , 0xd181, "ZUNE_UNKNOWN1"},
++    {USB_PTP_FLAVOR_MTP       , 0xd181, "Zune_UnknownVersion"},
++    {USB_PTP_FLAVOR_CANON     , 0xd181, "CustomFunc2"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd181, "WarningDisplay"},
++    {USB_PTP_FLAVOR_CANON     , 0xd182, "CustomFunc3"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd182, "BatteryCellKind"},
++    {USB_PTP_FLAVOR_CANON     , 0xd183, "CustomFunc4"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd183, "ISOAutoHiLimit"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd184, "DynamicAFArea"},
++    {USB_PTP_FLAVOR_CANON     , 0xd184, "CustomFunc5"},
++    {USB_PTP_FLAVOR_CANON     , 0xd185, "CustomFunc6"},
++    {USB_PTP_FLAVOR_CANON     , 0xd186, "CustomFunc7"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd186, "ContinuousSpeedHigh"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd187, "InfoDispSetting"},
++    {USB_PTP_FLAVOR_CANON     , 0xd187, "CustomFunc8"},
++    {USB_PTP_FLAVOR_CANON     , 0xd188, "CustomFunc9"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd189, "PreviewButton"},
++    {USB_PTP_FLAVOR_CANON     , 0xd189, "CustomFunc10"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18a, "CustomFunc11"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd18a, "PreviewButton2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18b, "CustomFunc12"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd18b, "AEAFLockButton2"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18c, "CustomFunc13"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd18d, "IndicatorDisp"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18d, "CustomFunc14"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18e, "CustomFunc15"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd18e, "CellKindPriority"},
++    {USB_PTP_FLAVOR_CANON     , 0xd18f, "CustomFunc16"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd190, "BracketingFramesAndSteps"},
++    {USB_PTP_FLAVOR_CANON     , 0xd190, "CustomFunc17"},
++    {USB_PTP_FLAVOR_CANON     , 0xd191, "CustomFunc18"},
++    {USB_PTP_FLAVOR_CANON     , 0xd192, "CustomFunc19"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1a0, "LiveViewMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a0, "CustomFuncEx"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1a1, "LiveViewDriveMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a1, "MyMenu"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a2, "MyMenuList"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1a2, "LiveViewStatus"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1a3, "LiveViewImageZoomRatio"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a3, "WftStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a4, "WftInputTransmission"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1a4, "LiveViewProhibitCondition"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a5, "HDDirectoryStructure"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a6, "BatteryInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a7, "AdapterInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a8, "LensStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1a9, "QuickReviewTime"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1aa, "CardExtension"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1ab, "TempStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1ac, "ShutterCounter"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1ad, "SpecialOption"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1ae, "PhotoStudioMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1af, "SerialNumber"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1b0, "ExposureDisplayStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b0, "EVFOutputDevice"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1b1, "ExposureIndicateStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b1, "EVFMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1b2, "InfoDispErrStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b2, "DepthOfFieldPreview"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1b3, "ExposureIndicateLightup"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b3, "EVFSharpness"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b4, "EVFWBMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b5, "EVFClickWBCoeffs"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b6, "EVFColorTemp"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b7, "ExposureSimMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1b8, "EVFRecordStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1ba, "LvAfSystem"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1bb, "MovSize"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1bc, "LvViewTypeSelect"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1c0, "FlashOpen"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1c1, "FlashCharged"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d0, "FlashMRepeatValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d0, "Artist"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d1, "FlashMRepeatCount"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d1, "Copyright"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d2, "BracketValue"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d2, "FlashMRepeatInterval"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d3, "FocusInfoEx"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d3, "FlashCommandChannel"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d4, "DepthOfField"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d4, "FlashCommandSelfMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d5, "FlashCommandSelfCompensation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d5, "Brightness"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d6, "FlashCommandSelfValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d6, "LensAdjustParams"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d7, "EFComp"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d7, "FlashCommandAMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d8, "FlashCommandACompensation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d8, "LensName"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1d9, "FlashCommandAValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1d9, "AEB"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1da, "FlashCommandBMode"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1da, "StroboSetting"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1db, "StroboWirelessSetting"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1db, "FlashCommandBCompensation"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1dc, "StroboFiring"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd1dc, "FlashCommandBValue"},
++    {USB_PTP_FLAVOR_CANON     , 0xd1dd, "LensID"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd200, "ActivePicCtrlItem"},
++    {USB_PTP_FLAVOR_NIKON     , 0xd201, "ChangePicCtrlItem"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd201, "ReleaseMode"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd206, "FocusAreas"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd213, "AELock"},
++    {USB_PTP_FLAVOR_MTP       , 0xd215, "ZUNE_UNKNOWN3"},
++    {USB_PTP_FLAVOR_MTP       , 0xd216, "ZUNE_UNKNOWN4"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd218, "Aperture"},
++    {USB_PTP_FLAVOR_FUJI      , 0xd219, "ShutterSpeed"},
++    {USB_PTP_FLAVOR_MTP       , 0xd401, "SynchronizationPartner"},
++    {USB_PTP_FLAVOR_MTP       , 0xd402, "DeviceFriendlyName"},
++    {USB_PTP_FLAVOR_MTP       , 0xd403, "VolumeLevel"},
++    {USB_PTP_FLAVOR_MTP       , 0xd405, "DeviceIcon"},
++    {USB_PTP_FLAVOR_MTP       , 0xd406, "SessionInitiatorInfo"},
++    {USB_PTP_FLAVOR_MTP       , 0xd407, "PerceivedDeviceType"},
++    {USB_PTP_FLAVOR_MTP       , 0xd410, "PlaybackRate"},
++    {USB_PTP_FLAVOR_MTP       , 0xd411, "PlaybackObject"},
++    {USB_PTP_FLAVOR_MTP       , 0xd412, "PlaybackContainerIndex"},
++    {USB_PTP_FLAVOR_MTP       , 0xd413, "PlaybackPosition"},
++    {USB_PTP_FLAVOR_ALL       , 0xf000, "EXTENSION_MASK"}
++};
++/* PTP_DPFF Device Property Form Flag */
++static const value_string_masked_t usb_ptp_dpff_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x00, "None"},
++    {USB_PTP_FLAVOR_ALL       , 0x01, "Range"},
++    {USB_PTP_FLAVOR_ALL       , 0x02, "Enumeration"}
++};
++/* PTP_DPGS Device Property GetSet type */
++static const value_string_masked_t usb_ptp_dpgs_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x00, "Get"},
++    {USB_PTP_FLAVOR_ALL       , 0x01, "GetSet"}
++};
++/* PTP_DTC Data Type Codes */
++static const value_string_masked_t usb_ptp_dtc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "UNDEF"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "INT8"},
++    {USB_PTP_FLAVOR_ALL       , 0x0002, "UINT8"},
++    {USB_PTP_FLAVOR_ALL       , 0x0003, "INT16"},
++    {USB_PTP_FLAVOR_ALL       , 0x0004, "UINT16"},
++    {USB_PTP_FLAVOR_ALL       , 0x0005, "INT32"},
++    {USB_PTP_FLAVOR_ALL       , 0x0006, "UINT32"},
++    {USB_PTP_FLAVOR_ALL       , 0x0007, "INT64"},
++    {USB_PTP_FLAVOR_ALL       , 0x0008, "UINT64"},
++    {USB_PTP_FLAVOR_ALL       , 0x0009, "INT128"},
++    {USB_PTP_FLAVOR_ALL       , 0x000a, "UINT128"},
++    {USB_PTP_FLAVOR_ALL       , 0x4001, "AINT8"},
++    {USB_PTP_FLAVOR_ALL       , 0x4002, "AUINT8"},
++    {USB_PTP_FLAVOR_ALL       , 0x4003, "AINT16"},
++    {USB_PTP_FLAVOR_ALL       , 0x4004, "AUINT16"},
++    {USB_PTP_FLAVOR_ALL       , 0x4005, "AINT32"},
++    {USB_PTP_FLAVOR_ALL       , 0x4006, "AUINT32"},
++    {USB_PTP_FLAVOR_ALL       , 0x4007, "AINT64"},
++    {USB_PTP_FLAVOR_ALL       , 0x4008, "AUINT64"},
++    {USB_PTP_FLAVOR_ALL       , 0x4009, "AINT128"},
++    {USB_PTP_FLAVOR_ALL       , 0x400a, "AUINT128"},
++    {USB_PTP_FLAVOR_ALL       , 0xffff, "STR"}
++};
++/* PTP_EC Event Codes */
++static const value_string_masked_t usb_ptp_ec_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x4000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x4001, "CancelTransaction"},
++    {USB_PTP_FLAVOR_ALL       , 0x4002, "ObjectAdded"},
++    {USB_PTP_FLAVOR_ALL       , 0x4003, "ObjectRemoved"},
++    {USB_PTP_FLAVOR_ALL       , 0x4004, "StoreAdded"},
++    {USB_PTP_FLAVOR_ALL       , 0x4005, "StoreRemoved"},
++    {USB_PTP_FLAVOR_ALL       , 0x4006, "DevicePropChanged"},
++    {USB_PTP_FLAVOR_ALL       , 0x4007, "ObjectInfoChanged"},
++    {USB_PTP_FLAVOR_ALL       , 0x4008, "DeviceInfoChanged"},
++    {USB_PTP_FLAVOR_ALL       , 0x4009, "RequestObjectTransfer"},
++    {USB_PTP_FLAVOR_ALL       , 0x400a, "StoreFull"},
++    {USB_PTP_FLAVOR_ALL       , 0x400b, "DeviceReset"},
++    {USB_PTP_FLAVOR_ALL       , 0x400c, "StorageInfoChanged"},
++    {USB_PTP_FLAVOR_ALL       , 0x400d, "CaptureComplete"},
++    {USB_PTP_FLAVOR_ALL       , 0x400e, "UnreportedStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xc005, "ExtendedErrorcode"},
++    {USB_PTP_FLAVOR_CANON     , 0xc008, "ObjectInfoChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc009, "RequestObjectTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0xc00b, "ShutterButtonPressed0"},
++    {USB_PTP_FLAVOR_CANON     , 0xc00c, "CameraModeChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc00e, "ShutterButtonPressed1"},
++    {USB_PTP_FLAVOR_CANON     , 0xc011, "StartDirectTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0xc013, "StopDirectTransfer"},
++    {USB_PTP_FLAVOR_NIKON     , 0xc101, "ObjectAddedInSDRAM"},
++    {USB_PTP_FLAVOR_CANON     , 0xc101, "RequestGetEvent"},
++    {USB_PTP_FLAVOR_NIKON     , 0xc102, "CaptureCompleteRecInSdram"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xc102, "PropertyChanged"},
++    {USB_PTP_FLAVOR_NIKON     , 0xc103, "AdvancedTransfer"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0xc103, "CaptureComplete"},
++    {USB_PTP_FLAVOR_NIKON     , 0xc104, "PreviewImageAdded"},
++    {USB_PTP_FLAVOR_CANON     , 0xc181, "ObjectAddedEx"},
++    {USB_PTP_FLAVOR_CANON     , 0xc182, "ObjectRemoved"},
++    {USB_PTP_FLAVOR_CANON     , 0xc183, "RequestGetObjectInfoEx"},
++    {USB_PTP_FLAVOR_CANON     , 0xc184, "StorageStatusChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc185, "StorageInfoChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc186, "RequestObjectTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0xc187, "ObjectInfoChangedEx"},
++    {USB_PTP_FLAVOR_CANON     , 0xc188, "ObjectContentChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc189, "PropValueChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc18a, "AvailListChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc18b, "CameraStatusChanged"},
++    {USB_PTP_FLAVOR_CANON     , 0xc18d, "WillSoonShutdown"},
++    {USB_PTP_FLAVOR_CANON     , 0xc18e, "ShutdownTimerUpdated"},
++    {USB_PTP_FLAVOR_CANON     , 0xc18f, "RequestCancelTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0xc190, "RequestObjectTransferDT"},
++    {USB_PTP_FLAVOR_CANON     , 0xc191, "RequestCancelTransferDT"},
++    {USB_PTP_FLAVOR_CANON     , 0xc192, "StoreAdded"},
++    {USB_PTP_FLAVOR_CANON     , 0xc193, "StoreRemoved"},
++    {USB_PTP_FLAVOR_CANON     , 0xc194, "BulbExposureTime"},
++    {USB_PTP_FLAVOR_CANON     , 0xc195, "RecordingTime"},
++    {USB_PTP_FLAVOR_CANON     , 0xc1a2, "RequestObjectTransferTS"},
++    {USB_PTP_FLAVOR_CANON     , 0xc1a3, "AfResult"},
++    {USB_PTP_FLAVOR_MTP       , 0xc801, "ObjectPropChanged"},
++    {USB_PTP_FLAVOR_MTP       , 0xc802, "ObjectPropDescChanged"},
++    {USB_PTP_FLAVOR_MTP       , 0xc803, "ObjectReferencesChanged"}
++};
++
++/* PTP_VENDOR Vendor IDs */
++static const value_string hf_devinfo_vendorextensionid_vals[] = {
++    {0x00000001,"EASTMAN_KODAK"},
++    {0x00000002,"SEIKO_EPSON"},
++    {0x00000003,"AGILENT"},
++    {0x00000004,"POLAROID"},
++    {0x00000005,"AGFA_GEVAERT"},
++    {0x00000006,"MTP"}, /* MICROSOFT */
++    {0x00000007,"EQUINOX"},
++    {0x00000008,"VIEWQUEST"},
++    {0x00000009,"STMICROELECTRONICS"},
++    {0x0000000A,"NIKON"},
++    {0x0000000B,"CANON"},
++    {0x0000000C,"FOTONATION"},
++    {0x0000000D,"PENTAX"},
++    {0x0000000E,"FUJI"},
++    {0xffffffff,"MTP"}
++};
++
++/* PTP_FST FilesystemType Values */
++static const value_string_masked_t usb_ptp_fst_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "GenericFlat"},
++    {USB_PTP_FLAVOR_ALL       , 0x0002, "GenericHierarchical"},
++    {USB_PTP_FLAVOR_ALL       , 0x0003, "DCF"}
++};
++/* PTP_GOH GetObjectHandles */
++static const value_string_masked_t usb_ptp_goh_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x00000000, "ALL_ASSOCS"},
++    {USB_PTP_FLAVOR_ALL       , 0x00000000, "ALL_FORMATS"},
++    {USB_PTP_FLAVOR_ALL       , 0xffffffff, "ROOT_PARENT"},
++    {USB_PTP_FLAVOR_ALL       , 0xffffffff, "ALL_STORAGE"}
++};
++/* PTP_OC Operation Codes */
++static const value_string_masked_t usb_ptp_oc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x1000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x1001, "GetDeviceInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x1002, "OpenSession"},
++    {USB_PTP_FLAVOR_ALL       , 0x1004, "GetStorageIDs"},
++    {USB_PTP_FLAVOR_ALL       , 0x1005, "GetStorageInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x1006, "GetNumObjects"},
++    {USB_PTP_FLAVOR_ALL       , 0x1007, "GetObjectHandles"},
++    {USB_PTP_FLAVOR_ALL       , 0x1008, "GetObjectInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x1009, "GetObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x100a, "GetThumb"},
++    {USB_PTP_FLAVOR_ALL       , 0x100b, "DeleteObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x100c, "SendObjectInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x100d, "SendObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x100e, "InitiateCapture"},
++    {USB_PTP_FLAVOR_ALL       , 0x100f, "FormatStore"},
++    {USB_PTP_FLAVOR_ALL       , 0x1010, "ResetDevice"},
++    {USB_PTP_FLAVOR_ALL       , 0x1011, "SelfTest"},
++    {USB_PTP_FLAVOR_ALL       , 0x1012, "SetObjectProtection"},
++    {USB_PTP_FLAVOR_ALL       , 0x1013, "PowerDown"},
++    {USB_PTP_FLAVOR_ALL       , 0x1014, "GetDevicePropDesc"},
++    {USB_PTP_FLAVOR_ALL       , 0x1015, "GetDevicePropValue"},
++    {USB_PTP_FLAVOR_ALL       , 0x1016, "SetDevicePropValue"},
++    {USB_PTP_FLAVOR_ALL       , 0x1017, "ResetDevicePropValue"},
++    {USB_PTP_FLAVOR_ALL       , 0x1018, "TerminateOpenCapture"},
++    {USB_PTP_FLAVOR_ALL       , 0x1019, "MoveObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x101a, "CopyObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x101b, "GetPartialObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x101c, "InitiateOpenCapture"},
++    {USB_PTP_FLAVOR_ALL       , 0x101d, "StartEnumHandles"},
++    {USB_PTP_FLAVOR_ALL       , 0x101e, "EnumHandles"},
++    {USB_PTP_FLAVOR_ALL       , 0x101f, "StopEnumHandles"},
++    {USB_PTP_FLAVOR_ALL       , 0x1020, "GetVendorExtensionMaps"},
++    {USB_PTP_FLAVOR_ALL       , 0x1021, "GetVendorDeviceInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x1022, "GetResizedImageObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x1023, "GetFilesystemManifest"},
++    {USB_PTP_FLAVOR_ALL       , 0x1024, "GetStreamInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x1025, "GetStream"},
++    {USB_PTP_FLAVOR_ALL       , 0x9000, "EXTENSION"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9001, "STILL_START"},
++    {USB_PTP_FLAVOR_CANON     , 0x9001, "GetPartialObjectInfo"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9002, "STILL_STOP"},
++    {USB_PTP_FLAVOR_CANON     , 0x9002, "SetObjectArchive"},
++    {USB_PTP_FLAVOR_KODAK     , 0x9003, "GetSerial"},
++    {USB_PTP_FLAVOR_CANON     , 0x9003, "KeepDeviceOn"},
++    {USB_PTP_FLAVOR_KODAK     , 0x9004, "SetSerial"},
++    {USB_PTP_FLAVOR_CANON     , 0x9004, "LockDeviceUI"},
++    {USB_PTP_FLAVOR_CANON     , 0x9005, "UnlockDeviceUI"},
++    {USB_PTP_FLAVOR_KODAK     , 0x9005, "SendFileObjectInfo"},
++    {USB_PTP_FLAVOR_KODAK     , 0x9006, "SendFileObject"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9006, "GetProfileAllData"},
++    {USB_PTP_FLAVOR_CANON     , 0x9006, "GetObjectHandleByName"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9007, "FOCUS"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9007, "SendProfileData"},
++    {USB_PTP_FLAVOR_KODAK     , 0x9008, "SetText"},
++    {USB_PTP_FLAVOR_CANON     , 0x9008, "InitiateReleaseControl"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9008, "DeleteProfile"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9009, "SetProfileData"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9009, "CF_PRESS"},
++    {USB_PTP_FLAVOR_CANON     , 0x9009, "TerminateReleaseControl"},
++    {USB_PTP_FLAVOR_CASIO     , 0x900a, "CF_RELEASE"},
++    {USB_PTP_FLAVOR_CANON     , 0x900a, "TerminatePlaybackMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x900b, "ViewfinderOn"},
++    {USB_PTP_FLAVOR_CANON     , 0x900c, "ViewfinderOff"},
++    {USB_PTP_FLAVOR_CASIO     , 0x900c, "GET_OBJECT_INFO"},
++    {USB_PTP_FLAVOR_CANON     , 0x900d, "DoAeAfAwb"},
++    {USB_PTP_FLAVOR_CANON     , 0x900e, "GetCustomizeSpec"},
++    {USB_PTP_FLAVOR_CANON     , 0x900f, "GetCustomizeItemInfo"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9010, "AdvancedTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0x9010, "GetCustomizeData"},
++    {USB_PTP_FLAVOR_CANON     , 0x9011, "SetCustomizeData"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9011, "GetFileInfoInBlock"},
++    {USB_PTP_FLAVOR_CANON     , 0x9012, "GetCaptureStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0x9013, "CheckEvent"},
++    {USB_PTP_FLAVOR_CANON     , 0x9014, "FocusLock"},
++    {USB_PTP_FLAVOR_CANON     , 0x9015, "FocusUnlock"},
++    {USB_PTP_FLAVOR_CANON     , 0x9016, "GetLocalReleaseParam"},
++    {USB_PTP_FLAVOR_CANON     , 0x9017, "SetLocalReleaseParam"},
++    {USB_PTP_FLAVOR_CANON     , 0x9018, "AskAboutPcEvf"},
++    {USB_PTP_FLAVOR_CANON     , 0x9019, "SendPartialObject"},
++    {USB_PTP_FLAVOR_CANON     , 0x901a, "InitiateCaptureInMemory"},
++    {USB_PTP_FLAVOR_CANON     , 0x901b, "GetPartialObjectEx"},
++    {USB_PTP_FLAVOR_CANON     , 0x901c, "SetObjectTime"},
++    {USB_PTP_FLAVOR_CANON     , 0x901d, "GetViewfinderImage"},
++    {USB_PTP_FLAVOR_CANON     , 0x901e, "GetObjectAttributes"},
++    {USB_PTP_FLAVOR_CANON     , 0x901f, "ChangeUSBProtocol"},
++    {USB_PTP_FLAVOR_CANON     , 0x9020, "GetChanges"},
++    {USB_PTP_FLAVOR_CANON     , 0x9021, "GetObjectInfoEx"},
++    {USB_PTP_FLAVOR_CANON     , 0x9022, "InitiateDirectTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0x9023, "TerminateDirectTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0x9024, "SendObjectInfoByPath"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9024, "SHUTTER"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9025, "GET_OBJECT"},
++    {USB_PTP_FLAVOR_CANON     , 0x9025, "SendObjectByPath"},
++    {USB_PTP_FLAVOR_CANON     , 0x9026, "InitiateDirectTansferEx"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9026, "GET_THUMBNAIL"},
++    {USB_PTP_FLAVOR_CANON     , 0x9027, "GetAncillaryObjectHandles"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9027, "GET_STILL_HANDLES"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9028, "STILL_RESET"},
++    {USB_PTP_FLAVOR_CANON     , 0x9028, "GetTreeInfo"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9029, "HALF_PRESS"},
++    {USB_PTP_FLAVOR_CANON     , 0x9029, "GetTreeSize"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902a, "HALF_RELEASE"},
++    {USB_PTP_FLAVOR_CANON     , 0x902a, "NotifyProgress"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902b, "CS_PRESS"},
++    {USB_PTP_FLAVOR_CANON     , 0x902b, "NotifyCancelAccepted"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902c, "CS_RELEASE"},
++    {USB_PTP_FLAVOR_CANON     , 0x902c, "902C"},
++    {USB_PTP_FLAVOR_CANON     , 0x902d, "GetDirectory"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902d, "ZOOM"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902e, "CZ_PRESS"},
++    {USB_PTP_FLAVOR_CASIO     , 0x902f, "CZ_RELEASE"},
++    {USB_PTP_FLAVOR_CANON     , 0x9030, "SetPairingInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0x9031, "GetPairingInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0x9032, "DeletePairingInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0x9033, "GetMACAddress"},
++    {USB_PTP_FLAVOR_CANON     , 0x9034, "SetDisplayMonitor"},
++    {USB_PTP_FLAVOR_CANON     , 0x9035, "PairingComplete"},
++    {USB_PTP_FLAVOR_CANON     , 0x9036, "GetWirelessMAXChannel"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9041, "MOVIE_START"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9042, "MOVIE_STOP"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9043, "MOVIE_PRESS"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9044, "MOVIE_RELEASE"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9045, "GET_MOVIE_HANDLES"},
++    {USB_PTP_FLAVOR_CASIO     , 0x9046, "MOVIE_RESET"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c0, "Capture"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c1, "AfDrive"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c2, "SetControlMode"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c3, "DelImageSDRAM"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c4, "GetLargeThumb"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c5, "CurveDownload"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c6, "CurveUpload"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c7, "CheckEvent"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c8, "DeviceReady"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90c9, "SetPreWBData"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90ca, "GetVendorPropCodes"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90cb, "AfCaptureSDRAM"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90cc, "GetPictCtrlData"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90cd, "SetPictCtrlData"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90ce, "DelCstPicCtrl"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90cf, "GetPicCtrlCapability"},
++    {USB_PTP_FLAVOR_NIKON     , 0x90e0, "GetDevicePTPIPInfo"},
++    {USB_PTP_FLAVOR_CANON     , 0x9101, "GetStorageIDs"},
++    {USB_PTP_FLAVOR_MTP       , 0x9101, "WMDRMPD_GetSecureTimeChallenge"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9101, "Capture"},
++    {USB_PTP_FLAVOR_MTP       , 0x9102, "WMDRMPD_GetSecureTimeResponse"},
++    {USB_PTP_FLAVOR_CANON     , 0x9102, "GetStorageInfo"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9103, "SelfCleaning"},
++    {USB_PTP_FLAVOR_MTP       , 0x9103, "WMDRMPD_SetLicenseResponse"},
++    {USB_PTP_FLAVOR_CANON     , 0x9103, "GetObjectInfo"},
++    {USB_PTP_FLAVOR_MTP       , 0x9104, "WMDRMPD_GetSyncList"},
++    {USB_PTP_FLAVOR_CANON     , 0x9104, "GetObject"},
++    {USB_PTP_FLAVOR_MTP       , 0x9105, "WMDRMPD_SendMeterChallengeQuery"},
++    {USB_PTP_FLAVOR_CANON     , 0x9105, "DeleteObject"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9106, "SetRGBGain"},
++    {USB_PTP_FLAVOR_MTP       , 0x9106, "WMDRMPD_GetMeterChallenge"},
++    {USB_PTP_FLAVOR_CANON     , 0x9106, "FormatStore"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9107, "SetPresetMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x9107, "GetPartialObject"},
++    {USB_PTP_FLAVOR_MTP       , 0x9107, "WMDRMPD_SetMeterResponse"},
++    {USB_PTP_FLAVOR_MTP       , 0x9108, "WMDRMPD_CleanDataStore"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9108, "SetWBBiasAll"},
++    {USB_PTP_FLAVOR_CANON     , 0x9108, "GetDeviceInfoEx"},
++    {USB_PTP_FLAVOR_CANON     , 0x9109, "GetObjectInfoEx"},
++    {USB_PTP_FLAVOR_MTP       , 0x9109, "WMDRMPD_GetLicenseState"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x910a, "GetCameraControlMode"},
++    {USB_PTP_FLAVOR_MTP       , 0x910a, "WMDRMPD_SendWMDRMPDCommand"},
++    {USB_PTP_FLAVOR_CANON     , 0x910a, "GetThumbEx"},
++    {USB_PTP_FLAVOR_MTP       , 0x910b, "WMDRMPD_SendWMDRMPDRequest"},
++    {USB_PTP_FLAVOR_CANON     , 0x910b, "SendPartialObject"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x910b, "SetCameraControlMode"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x910c, "SetWBRGBGain"},
++    {USB_PTP_FLAVOR_CANON     , 0x910c, "SetObjectAttributes"},
++    {USB_PTP_FLAVOR_CANON     , 0x910d, "GetObjectTime"},
++    {USB_PTP_FLAVOR_CANON     , 0x910e, "SetObjectTime"},
++    {USB_PTP_FLAVOR_CANON     , 0x910f, "RemoteRelease"},
++    {USB_PTP_FLAVOR_CANON     , 0x9110, "SetDevicePropValueEx"},
++    {USB_PTP_FLAVOR_CANON     , 0x9113, "GetRemoteMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x9114, "SetRemoteMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x9115, "SetEventMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x9116, "GetEvent"},
++    {USB_PTP_FLAVOR_CANON     , 0x9117, "TransferComplete"},
++    {USB_PTP_FLAVOR_CANON     , 0x9118, "CancelTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0x9119, "ResetTransfer"},
++    {USB_PTP_FLAVOR_CANON     , 0x911a, "PCHDDCapacity"},
++    {USB_PTP_FLAVOR_CANON     , 0x911b, "SetUILock"},
++    {USB_PTP_FLAVOR_CANON     , 0x911c, "ResetUILock"},
++    {USB_PTP_FLAVOR_CANON     , 0x911d, "KeepDeviceOn"},
++    {USB_PTP_FLAVOR_CANON     , 0x911e, "SetNullPacketMode"},
++    {USB_PTP_FLAVOR_CANON     , 0x911f, "UpdateFirmware"},
++    {USB_PTP_FLAVOR_CANON     , 0x9120, "TransferCompleteDT"},
++    {USB_PTP_FLAVOR_CANON     , 0x9121, "CancelTransferDT"},
++    {USB_PTP_FLAVOR_CANON     , 0x9122, "SetWftProfile"},
++    {USB_PTP_FLAVOR_MTP       , 0x9122, "WPDWCN_ProcessWFCObject"},
++    {USB_PTP_FLAVOR_CANON     , 0x9122, "GetWftProfile"},
++    {USB_PTP_FLAVOR_CANON     , 0x9124, "SetProfileToWft"},
++    {USB_PTP_FLAVOR_CANON     , 0x9125, "BulbStart"},
++    {USB_PTP_FLAVOR_CANON     , 0x9126, "BulbEnd"},
++    {USB_PTP_FLAVOR_CANON     , 0x9127, "RequestDevicePropValue"},
++    {USB_PTP_FLAVOR_CANON     , 0x9128, "RemoteReleaseOn"},
++    {USB_PTP_FLAVOR_CANON     , 0x9129, "RemoteReleaseOff"},
++    {USB_PTP_FLAVOR_CANON     , 0x9151, "InitiateViewfinder"},
++    {USB_PTP_FLAVOR_CANON     , 0x9152, "TerminateViewfinder"},
++    {USB_PTP_FLAVOR_CANON     , 0x9153, "GetViewFinderData"},
++    {USB_PTP_FLAVOR_CANON     , 0x9154, "DoAf"},
++    {USB_PTP_FLAVOR_CANON     , 0x9155, "DriveLens"},
++    {USB_PTP_FLAVOR_CANON     , 0x9156, "DepthOfFieldPreview"},
++    {USB_PTP_FLAVOR_CANON     , 0x9157, "ClickWB"},
++    {USB_PTP_FLAVOR_CANON     , 0x9158, "Zoom"},
++    {USB_PTP_FLAVOR_CANON     , 0x9159, "ZoomPosition"},
++    {USB_PTP_FLAVOR_CANON     , 0x915a, "SetLiveAfFrame"},
++    {USB_PTP_FLAVOR_CANON     , 0x9160, "AfCancel"},
++    {USB_PTP_FLAVOR_MTP       , 0x9170, "AAVT_OpenMediaSession"},
++    {USB_PTP_FLAVOR_MTP       , 0x9171, "AAVT_CloseMediaSession"},
++    {USB_PTP_FLAVOR_MTP       , 0x9172, "AAVT_GetNextDataBlock"},
++    {USB_PTP_FLAVOR_MTP       , 0x9173, "AAVT_SetCurrentTimePosition"},
++    {USB_PTP_FLAVOR_MTP       , 0x9180, "WMDRMND_SendRegistrationRequest"},
++    {USB_PTP_FLAVOR_MTP       , 0x9181, "WMDRMND_GetRegistrationResponse"},
++    {USB_PTP_FLAVOR_MTP       , 0x9182, "WMDRMND_GetProximityChallenge"},
++    {USB_PTP_FLAVOR_MTP       , 0x9183, "WMDRMND_SendProximityResponse"},
++    {USB_PTP_FLAVOR_MTP       , 0x9184, "WMDRMND_SendWMDRMNDLicenseRequest"},
++    {USB_PTP_FLAVOR_MTP       , 0x9185, "WMDRMND_GetWMDRMNDLicenseResponse"},
++    {USB_PTP_FLAVOR_CANON     , 0x91fe, "FAPIMessageTX"},
++    {USB_PTP_FLAVOR_CANON     , 0x91ff, "FAPIMessageRX"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9200, "GetPreviewImg"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9201, "StartLiveView"},
++    {USB_PTP_FLAVOR_MTP       , 0x9201, "WMPPD_ReportAddedDeletedItems"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9202, "EndLiveView"},
++    {USB_PTP_FLAVOR_MTP       , 0x9202, "WMPPD_ReportAcquiredItems"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9203, "GetLiveViewImg"},
++    {USB_PTP_FLAVOR_MTP       , 0x9203, "WMPPD_PlaylistObjectPref"},
++    {USB_PTP_FLAVOR_MTP       , 0x9204, "ZUNE_GETUNDEFINED001"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9204, "MfDrive"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9205, "ChangeAfArea"},
++    {USB_PTP_FLAVOR_NIKON     , 0x9206, "AfDriveCancel"},
++    {USB_PTP_FLAVOR_MTP       , 0x9212, "WMDRMPD_SendWMDRMPDAppRequest"},
++    {USB_PTP_FLAVOR_MTP       , 0x9213, "WMDRMPD_GetWMDRMPDAppResponse"},
++    {USB_PTP_FLAVOR_MTP       , 0x9214, "WMDRMPD_EnableTrustedFilesOperations"},
++    {USB_PTP_FLAVOR_MTP       , 0x9215, "WMDRMPD_DisableTrustedFilesOperations"},
++    {USB_PTP_FLAVOR_MTP       , 0x9216, "WMDRMPD_EndTrustedAppSession"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9301, "GetDeviceInfo"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9302, "Init1"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9402, "SetDateTime"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9482, "GetDateTime"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9501, "SetCameraID"},
++    {USB_PTP_FLAVOR_OLYMPUS   , 0x9581, "GetCameraID"},
++    {USB_PTP_FLAVOR_ANDROID   , 0x95c1, "GetPartialObject64"},
++    {USB_PTP_FLAVOR_ANDROID   , 0x95c2, "SendPartialObject"},
++    {USB_PTP_FLAVOR_ANDROID   , 0x95c3, "TruncateObject"},
++    {USB_PTP_FLAVOR_ANDROID   , 0x95c4, "BeginEditObject"},
++    {USB_PTP_FLAVOR_ANDROID   , 0x95c5, "EndEditObject"},
++    {USB_PTP_FLAVOR_MTP       , 0x9801, "GetObjectPropsSupported"},
++    {USB_PTP_FLAVOR_MTP       , 0x9802, "GetObjectPropDesc"},
++    {USB_PTP_FLAVOR_MTP       , 0x9803, "GetObjectPropValue"},
++    {USB_PTP_FLAVOR_MTP       , 0x9804, "SetObjectPropValue"},
++    {USB_PTP_FLAVOR_MTP       , 0x9805, "GetObjPropList"},
++    {USB_PTP_FLAVOR_MTP       , 0x9806, "SetObjPropList"},
++    {USB_PTP_FLAVOR_MTP       , 0x9807, "GetInterdependendPropdesc"},
++    {USB_PTP_FLAVOR_MTP       , 0x9808, "SendObjectPropList"},
++    {USB_PTP_FLAVOR_MTP       , 0x9810, "GetObjectReferences"},
++    {USB_PTP_FLAVOR_MTP       , 0x9811, "SetObjectReferences"},
++    {USB_PTP_FLAVOR_MTP       , 0x9812, "UpdateDeviceFirmware"},
++    {USB_PTP_FLAVOR_MTP       , 0x9820, "Skip"},
++    {USB_PTP_FLAVOR_CANON     , 0x9999, "CHDK"},
++    {USB_PTP_FLAVOR_ALL       , 0x1003, "CloseSession"},
++    {USB_PTP_FLAVOR_ALL       , 0xf000, "EXTENSION_MASK"},
++    {USB_PTP_FLAVOR_NIKON     , 0xfc01, "ServiceModeStart"},
++    {USB_PTP_FLAVOR_NIKON     , 0xfc02, "ServiceModeStop"}
++};
++/* PTP_OFC Object Format Codes */
++static const value_string_masked_t usb_ptp_ofc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x3000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x3001, "Association"},
++    {USB_PTP_FLAVOR_ALL       , 0x3002, "Script"},
++    {USB_PTP_FLAVOR_ALL       , 0x3003, "Executable"},
++    {USB_PTP_FLAVOR_ALL       , 0x3004, "Text"},
++    {USB_PTP_FLAVOR_ALL       , 0x3005, "HTML"},
++    {USB_PTP_FLAVOR_ALL       , 0x3006, "DPOF"},
++    {USB_PTP_FLAVOR_ALL       , 0x3007, "AIFF"},
++    {USB_PTP_FLAVOR_ALL       , 0x3008, "WAV"},
++    {USB_PTP_FLAVOR_ALL       , 0x3009, "MP3"},
++    {USB_PTP_FLAVOR_ALL       , 0x300a, "AVI"},
++    {USB_PTP_FLAVOR_ALL       , 0x300b, "MPEG"},
++    {USB_PTP_FLAVOR_ALL       , 0x300c, "ASF"},
++    {USB_PTP_FLAVOR_ALL       , 0x300d, "MOV"},
++    {USB_PTP_FLAVOR_ALL       , 0x3800, "UnknownImage"},
++    {USB_PTP_FLAVOR_ALL       , 0x3801, "EXIF_JPEG"},
++    {USB_PTP_FLAVOR_ALL       , 0x3802, "TIFF_EP"},
++    {USB_PTP_FLAVOR_ALL       , 0x3803, "FlashPix"},
++    {USB_PTP_FLAVOR_ALL       , 0x3804, "BMP"},
++    {USB_PTP_FLAVOR_ALL       , 0x3805, "CIFF"},
++    {USB_PTP_FLAVOR_ALL       , 0x3807, "GIF"},
++    {USB_PTP_FLAVOR_ALL       , 0x3808, "JFIF"},
++    {USB_PTP_FLAVOR_ALL       , 0x3809, "PCD"},
++    {USB_PTP_FLAVOR_ALL       , 0x380a, "PICT"},
++    {USB_PTP_FLAVOR_ALL       , 0x380b, "PNG"},
++    {USB_PTP_FLAVOR_ALL       , 0x380d, "TIFF"},
++    {USB_PTP_FLAVOR_ALL       , 0x380e, "TIFF_IT"},
++    {USB_PTP_FLAVOR_ALL       , 0x380f, "JP2"},
++    {USB_PTP_FLAVOR_ALL       , 0x3810, "JPX"},
++    {USB_PTP_FLAVOR_ALL       , 0x3811, "DNG"},
++    {USB_PTP_FLAVOR_KODAK     , 0xb002, "M3U"},
++    {USB_PTP_FLAVOR_CANON     , 0xb101, "CRW"},
++    {USB_PTP_FLAVOR_CANON     , 0xb103, "CRW3"},
++    {USB_PTP_FLAVOR_CANON     , 0xb104, "MOV"},
++    {USB_PTP_FLAVOR_CANON     , 0xb105, "MOV2"},
++    {USB_PTP_FLAVOR_CANON     , 0xb1ff, "CHDK_CRW"},
++    {USB_PTP_FLAVOR_MTP       , 0xb211, "MediaCard"},
++    {USB_PTP_FLAVOR_MTP       , 0xb212, "MediaCardGroup"},
++    {USB_PTP_FLAVOR_MTP       , 0xb213, "Encounter"},
++    {USB_PTP_FLAVOR_MTP       , 0xb214, "EncounterBox"},
++    {USB_PTP_FLAVOR_MTP       , 0xb215, "M4A"},
++    {USB_PTP_FLAVOR_MTP       , 0xb217, "ZUNEUNDEFINED"},
++    {USB_PTP_FLAVOR_MTP       , 0xb802, "Firmware"},
++    {USB_PTP_FLAVOR_MTP       , 0xb881, "WindowsImageFormat"},
++    {USB_PTP_FLAVOR_MTP       , 0xb900, "UndefinedAudio"},
++    {USB_PTP_FLAVOR_MTP       , 0xb901, "WMA"},
++    {USB_PTP_FLAVOR_MTP       , 0xb902, "OGG"},
++    {USB_PTP_FLAVOR_MTP       , 0xb903, "AAC"},
++    {USB_PTP_FLAVOR_MTP       , 0xb904, "AudibleCodec"},
++    {USB_PTP_FLAVOR_MTP       , 0xb906, "FLAC"},
++    {USB_PTP_FLAVOR_MTP       , 0xb980, "UndefinedVideo"},
++    {USB_PTP_FLAVOR_MTP       , 0xb909, "SamsungPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xb981, "WMV"},
++    {USB_PTP_FLAVOR_MTP       , 0xb982, "MP4"},
++    {USB_PTP_FLAVOR_MTP       , 0xb983, "MP2"},
++    {USB_PTP_FLAVOR_MTP       , 0xb984, "3GP"},
++    {USB_PTP_FLAVOR_MTP       , 0xba00, "UndefinedCollection"},
++    {USB_PTP_FLAVOR_MTP       , 0xba01, "AbstractMultimediaAlbum"},
++    {USB_PTP_FLAVOR_MTP       , 0xba02, "AbstractImageAlbum"},
++    {USB_PTP_FLAVOR_MTP       , 0xba03, "AbstractAudioAlbum"},
++    {USB_PTP_FLAVOR_MTP       , 0xba04, "AbstractVideoAlbum"},
++    {USB_PTP_FLAVOR_MTP       , 0xba05, "AbstractAudioVideoPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba06, "AbstractContactGroup"},
++    {USB_PTP_FLAVOR_MTP       , 0xba07, "AbstractMessageFolder"},
++    {USB_PTP_FLAVOR_MTP       , 0xba08, "AbstractChapteredProduction"},
++    {USB_PTP_FLAVOR_MTP       , 0xba09, "AbstractAudioPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba0a, "AbstractVideoPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba0b, "AbstractMediacast"},
++    {USB_PTP_FLAVOR_MTP       , 0xba10, "WPLPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba11, "M3UPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba12, "MPLPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba13, "ASXPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba14, "PLSPlaylist"},
++    {USB_PTP_FLAVOR_MTP       , 0xba80, "UndefinedDocument"},
++    {USB_PTP_FLAVOR_MTP       , 0xba81, "AbstractDocument"},
++    {USB_PTP_FLAVOR_MTP       , 0xba82, "XMLDocument"},
++    {USB_PTP_FLAVOR_MTP       , 0xba83, "MSWordDocument"},
++    {USB_PTP_FLAVOR_MTP       , 0xba84, "MHTCompiledHTMLDocument"},
++    {USB_PTP_FLAVOR_MTP       , 0xba85, "MSExcelSpreadsheetXLS"},
++    {USB_PTP_FLAVOR_MTP       , 0xba86, "MSPowerpointPresentationPPT"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb00, "UndefinedMessage"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb01, "AbstractMessage"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb80, "UndefinedContact"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb81, "AbstractContact"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb82, "vCard2"},
++    {USB_PTP_FLAVOR_MTP       , 0xbb83, "vCard3"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe00, "UndefinedCalendarItem"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe01, "AbstractCalendarItem"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe02, "vCalendar1"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe03, "vCalendar2"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe80, "UndefinedWindowsExecutable"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe81, "MediaCast"},
++    {USB_PTP_FLAVOR_MTP       , 0xbe82, "Section"}
++};
++/* PTP_OPC MTP Object Properties */
++static const value_string_masked_t usb_ptp_opc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0xb104, "WirelessConfigurationFile"},
++    {USB_PTP_FLAVOR_ALL       , 0xd901, "BuyFlag"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc01, "StorageID"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc02, "ObjectFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc03, "ProtectionStatus"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc04, "ObjectSize"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc05, "AssociationType"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc06, "AssociationDesc"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc07, "ObjectFileName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc08, "DateCreated"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc09, "DateModified"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc0a, "Keywords"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc0b, "ParentObject"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc0c, "AllowedFolderContents"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc0d, "Hidden"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc0e, "SystemObject"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc41, "PersistantUniqueObjectIdentifier"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc42, "SyncID"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc43, "PropertyBag"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc44, "Name"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc45, "CreatedBy"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc46, "Artist"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc47, "DateAuthored"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc48, "Description"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc49, "URLReference"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4a, "LanguageLocale"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4b, "CopyrightInformation"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4c, "Source"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4d, "OriginLocation"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4e, "DateAdded"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc4f, "NonConsumable"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc50, "CorruptOrUnplayable"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc51, "ProducerSerialNumber"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc81, "RepresentativeSampleFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc82, "RepresentativeSampleSize"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc83, "RepresentativeSampleHeight"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc84, "RepresentativeSampleWidth"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc85, "RepresentativeSampleDuration"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc86, "RepresentativeSampleData"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc87, "Width"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc88, "Height"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc89, "Duration"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8a, "Rating"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8b, "Track"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8c, "Genre"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8d, "Credits"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8e, "Lyrics"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc8f, "SubscriptionContentID"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc90, "ProducedBy"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc91, "UseCount"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc92, "SkipCount"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc93, "LastAccessed"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc94, "ParentalRating"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc95, "MetaGenre"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc96, "Composer"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc97, "EffectiveRating"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc98, "Subtitle"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc99, "OriginalReleaseDate"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc9a, "AlbumName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc9b, "AlbumArtist"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc9c, "Mood"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc9d, "DRMStatus"},
++    {USB_PTP_FLAVOR_ALL       , 0xdc9e, "SubDescription"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd1, "IsCropped"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd2, "IsColorCorrected"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd3, "ImageBitDepth"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd4, "Fnumber"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd5, "ExposureTime"},
++    {USB_PTP_FLAVOR_ALL       , 0xdcd6, "ExposureIndex"},
++    {USB_PTP_FLAVOR_ALL       , 0xdce0, "DisplayName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdce1, "BodyText"},
++    {USB_PTP_FLAVOR_ALL       , 0xdce2, "Subject"},
++    {USB_PTP_FLAVOR_ALL       , 0xdce3, "Priority"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd00, "GivenName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd01, "MiddleNames"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd02, "FamilyName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd03, "Prefix"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd04, "Suffix"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd05, "PhoneticGivenName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd06, "PhoneticFamilyName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd07, "EmailPrimary"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd08, "EmailPersonal1"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd09, "EmailPersonal2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0a, "EmailBusiness1"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0b, "EmailBusiness2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0c, "EmailOthers"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0d, "PhoneNumberPrimary"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0e, "PhoneNumberPersonal"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd0f, "PhoneNumberPersonal2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd10, "PhoneNumberBusiness"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd11, "PhoneNumberBusiness2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd12, "PhoneNumberMobile"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd13, "PhoneNumberMobile2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd14, "FaxNumberPrimary"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd15, "FaxNumberPersonal"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd16, "FaxNumberBusiness"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd17, "PagerNumber"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd18, "PhoneNumberOthers"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd19, "PrimaryWebAddress"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1a, "PersonalWebAddress"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1b, "BusinessWebAddress"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1c, "InstantMessengerAddress"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1d, "InstantMessengerAddress2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1e, "InstantMessengerAddress3"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd1f, "PostalAddressPersonalFull"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd20, "PostalAddressPersonalFullLine1"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd21, "PostalAddressPersonalFullLine2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd22, "PostalAddressPersonalFullCity"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd23, "PostalAddressPersonalFullRegion"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd24, "PostalAddressPersonalFullPostalCode"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd25, "PostalAddressPersonalFullCountry"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd26, "PostalAddressBusinessFull"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd27, "PostalAddressBusinessLine1"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd28, "PostalAddressBusinessLine2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd29, "PostalAddressBusinessCity"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2a, "PostalAddressBusinessRegion"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2b, "PostalAddressBusinessPostalCode"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2c, "PostalAddressBusinessCountry"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2d, "PostalAddressOtherFull"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2e, "PostalAddressOtherLine1"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd2f, "PostalAddressOtherLine2"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd30, "PostalAddressOtherCity"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd31, "PostalAddressOtherRegion"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd32, "PostalAddressOtherPostalCode"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd33, "PostalAddressOtherCountry"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd34, "OrganizationName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd35, "PhoneticOrganizationName"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd36, "Role"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd37, "Birthdate"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd40, "MessageTo"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd41, "MessageCC"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd42, "MessageBCC"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd43, "MessageRead"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd44, "MessageReceivedTime"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd45, "MessageSender"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd50, "ActivityBeginTime"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd51, "ActivityEndTime"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd52, "ActivityLocation"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd54, "ActivityRequiredAttendees"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd55, "ActivityOptionalAttendees"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd56, "ActivityResources"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd57, "ActivityAccepted"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd5d, "Owner"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd5e, "Editor"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd5f, "Webmaster"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd60, "URLSource"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd61, "URLDestination"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd62, "TimeBookmark"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd63, "ObjectBookmark"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd64, "ByteBookmark"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd70, "LastBuildDate"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd71, "TimetoLive"},
++    {USB_PTP_FLAVOR_ALL       , 0xdd72, "MediaGUID"},
++    {USB_PTP_FLAVOR_ALL       , 0xde91, "TotalBitRate"},
++    {USB_PTP_FLAVOR_ALL       , 0xde92, "BitRateType"},
++    {USB_PTP_FLAVOR_ALL       , 0xde93, "SampleRate"},
++    {USB_PTP_FLAVOR_ALL       , 0xde94, "NumberOfChannels"},
++    {USB_PTP_FLAVOR_ALL       , 0xde95, "AudioBitDepth"},
++    {USB_PTP_FLAVOR_ALL       , 0xde97, "ScanDepth"},
++    {USB_PTP_FLAVOR_ALL       , 0xde99, "AudioWAVECodec"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9a, "AudioBitRate"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9b, "VideoFourCCCodec"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9c, "VideoBitRate"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9d, "FramesPerThousandSeconds"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9e, "KeyFrameDistance"},
++    {USB_PTP_FLAVOR_ALL       , 0xde9f, "BufferSize"},
++    {USB_PTP_FLAVOR_ALL       , 0xdea0, "EncodingQuality"},
++    {USB_PTP_FLAVOR_ALL       , 0xdea1, "EncodingProfile"}
++};
++/* PTP_OPFF MTP Device Property Codes */
++static const value_string_masked_t usb_ptp_opff_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x00, "None"},
++    {USB_PTP_FLAVOR_ALL       , 0x01, "Range"},
++    {USB_PTP_FLAVOR_ALL       , 0x02, "Enumeration"},
++    {USB_PTP_FLAVOR_ALL       , 0x03, "DateTime"},
++    {USB_PTP_FLAVOR_ALL       , 0x04, "FixedLengthArray"},
++    {USB_PTP_FLAVOR_ALL       , 0x05, "RegularExpression"},
++    {USB_PTP_FLAVOR_ALL       , 0x06, "ByteArray"},
++    {USB_PTP_FLAVOR_ALL       , 0xff, "LongString"}
++};
++/* PTP_PS Protection Status */
++static const value_string_masked_t usb_ptp_ps_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "NoProtection"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "ReadOnly"},
++    {USB_PTP_FLAVOR_MTP       , 0x8002, "ReadOnlyData"},
++    {USB_PTP_FLAVOR_MTP       , 0x8003, "NonTransferableData"}
++};
++/* PTP_RC Response Codes */
++static const value_string_masked_t usb_ptp_rc_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x2000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x2001, "OK"},
++    {USB_PTP_FLAVOR_ALL       , 0x2002, "GeneralError"},
++    {USB_PTP_FLAVOR_ALL       , 0x2003, "SessionNotOpen"},
++    {USB_PTP_FLAVOR_ALL       , 0x2004, "InvalidTransactionID"},
++    {USB_PTP_FLAVOR_ALL       , 0x2005, "OperationNotSupported"},
++    {USB_PTP_FLAVOR_ALL       , 0x2006, "ParameterNotSupported"},
++    {USB_PTP_FLAVOR_ALL       , 0x2007, "IncompleteTransfer"},
++    {USB_PTP_FLAVOR_ALL       , 0x2008, "InvalidStorageId"},
++    {USB_PTP_FLAVOR_ALL       , 0x2009, "InvalidObjectHandle"},
++    {USB_PTP_FLAVOR_ALL       , 0x200a, "DevicePropNotSupported"},
++    {USB_PTP_FLAVOR_ALL       , 0x200b, "InvalidObjectFormatCode"},
++    {USB_PTP_FLAVOR_ALL       , 0x200c, "StoreFull"},
++    {USB_PTP_FLAVOR_ALL       , 0x200d, "ObjectWriteProtected"},
++    {USB_PTP_FLAVOR_ALL       , 0x200e, "StoreReadOnly"},
++    {USB_PTP_FLAVOR_ALL       , 0x200f, "AccessDenied"},
++    {USB_PTP_FLAVOR_ALL       , 0x2010, "NoThumbnailPresent"},
++    {USB_PTP_FLAVOR_ALL       , 0x2011, "SelfTestFailed"},
++    {USB_PTP_FLAVOR_ALL       , 0x2012, "PartialDeletion"},
++    {USB_PTP_FLAVOR_ALL       , 0x2013, "StoreNotAvailable"},
++    {USB_PTP_FLAVOR_ALL       , 0x2014, "SpecificationByFormatUnsupported"},
++    {USB_PTP_FLAVOR_ALL       , 0x2015, "NoValidObjectInfo"},
++    {USB_PTP_FLAVOR_ALL       , 0x2016, "InvalidCodeFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0x2017, "UnknownVendorCode"},
++    {USB_PTP_FLAVOR_ALL       , 0x2018, "CaptureAlreadyTerminated"},
++    {USB_PTP_FLAVOR_ALL       , 0x2019, "DeviceBusy"},
++    {USB_PTP_FLAVOR_ALL       , 0x201a, "InvalidParentObject"},
++    {USB_PTP_FLAVOR_ALL       , 0x201b, "InvalidDevicePropFormat"},
++    {USB_PTP_FLAVOR_ALL       , 0x201c, "InvalidDevicePropValue"},
++    {USB_PTP_FLAVOR_ALL       , 0x201d, "InvalidParameter"},
++    {USB_PTP_FLAVOR_ALL       , 0x201e, "SessionAlreadyOpened"},
++    {USB_PTP_FLAVOR_ALL       , 0x201f, "TransactionCanceled"},
++    {USB_PTP_FLAVOR_ALL       , 0x2020, "SpecificationOfDestinationUnsupported"},
++    {USB_PTP_FLAVOR_ALL       , 0x2021, "InvalidEnumHandle"},
++    {USB_PTP_FLAVOR_ALL       , 0x2022, "NoStreamEnabled"},
++    {USB_PTP_FLAVOR_ALL       , 0x2023, "InvalidDataSet"},
++    {USB_PTP_FLAVOR_CANON     , 0xa001, "UNKNOWN_COMMAND"},
++    {USB_PTP_FLAVOR_KODAK     , 0xa001, "FilenameRequired"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa001, "HardwareError"},
++    {USB_PTP_FLAVOR_KODAK     , 0xa002, "FilenameConflicts"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa002, "OutOfFocus"},
++    {USB_PTP_FLAVOR_KODAK     , 0xa003, "FilenameInvalid"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa003, "ChangeCameraModeFailed"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa004, "InvalidStatus"},
++    {USB_PTP_FLAVOR_CANON     , 0xa005, "OPERATION_REFUSED"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa005, "SetPropertyNotSupported"},
++    {USB_PTP_FLAVOR_CANON     , 0xa006, "LENS_COVER"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa006, "WbResetError"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa007, "DustReferenceError"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa008, "ShutterSpeedBulb"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa009, "MirrorUpSequence"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa00a, "CameraModeNotAdjustFNumber"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa00b, "NotLiveView"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa00c, "MfDriveStepEnd"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa00e, "MfDriveStepInsufficiency"},
++    {USB_PTP_FLAVOR_CANON     , 0xa101, "BATTERY_LOW"},
++    {USB_PTP_FLAVOR_CANON     , 0xa102, "NOT_READY"},
++    {USB_PTP_FLAVOR_MTP       , 0xa121, "Invalid_WFC_Syntax"},
++    {USB_PTP_FLAVOR_MTP       , 0xa122, "WFC_Version_Not_Supported"},
++    {USB_PTP_FLAVOR_MTP       , 0xa170, "Invalid_Media_Session_ID"},
++    {USB_PTP_FLAVOR_MTP       , 0xa171, "Media_Session_Limit_Reached"},
++    {USB_PTP_FLAVOR_MTP       , 0xa172, "No_More_Data"},
++    {USB_PTP_FLAVOR_MTP       , 0xa800, "Undefined"},
++    {USB_PTP_FLAVOR_MTP       , 0xa801, "Invalid_ObjectPropCode"},
++    {USB_PTP_FLAVOR_MTP       , 0xa802, "Invalid_ObjectProp_Format"},
++    {USB_PTP_FLAVOR_MTP       , 0xa803, "Invalid_ObjectProp_Value"},
++    {USB_PTP_FLAVOR_MTP       , 0xa804, "Invalid_ObjectReference"},
++    {USB_PTP_FLAVOR_MTP       , 0xa806, "Invalid_Dataset"},
++    {USB_PTP_FLAVOR_MTP       , 0xa807, "Specification_By_Group_Unsupported"},
++    {USB_PTP_FLAVOR_MTP       , 0xa808, "Specification_By_Depth_Unsupported"},
++    {USB_PTP_FLAVOR_MTP       , 0xa809, "Object_Too_Large"},
++    {USB_PTP_FLAVOR_MTP       , 0xa80a, "ObjectProp_Not_Supported"},
++    {USB_PTP_FLAVOR_NIKON     , 0xa022, "AdvancedTransferCancel"}
++};
++/* PTP_ST Storage Types */
++static const value_string_masked_t usb_ptp_st_vals[] = {
++    {USB_PTP_FLAVOR_ALL       , 0x0000, "Undefined"},
++    {USB_PTP_FLAVOR_ALL       , 0x0001, "FixedROM"},
++    {USB_PTP_FLAVOR_ALL       , 0x0002, "RemovableROM"},
++    {USB_PTP_FLAVOR_ALL       , 0x0003, "FixedRAM"},
++    {USB_PTP_FLAVOR_ALL       , 0x0004, "RemovableRAM"}
++};
+diff --git epan/dissectors/packet-usb.c epan/dissectors/packet-usb.c
+index e068704..c35dfa3 100644
+--- epan/dissectors/packet-usb.c
++++ epan/dissectors/packet-usb.c
+@@ -827,8 +827,11 @@ get_usb_conv_info(conversation_t *conversation)
+     if (!usb_conv_info) {
+         /* no not yet so create some */
+         usb_conv_info = se_alloc0(sizeof(usb_conv_info_t));
+-        usb_conv_info->interfaceClass = IF_CLASS_UNKNOWN;
++        usb_conv_info->interfaceClass    = IF_CLASS_UNKNOWN;
+         usb_conv_info->interfaceSubclass = IF_SUBCLASS_UNKNOWN;
++        usb_conv_info->interfaceProtocol = IF_PROTOCOL_UNKNOWN;
++        usb_conv_info->deviceVendor      = DEV_VENDOR_UNKNOWN;
++        usb_conv_info->deviceProduct     = DEV_PRODUCT_UNKNOWN;
+         usb_conv_info->transactions = se_tree_create_non_persistent(EMEM_TREE_TYPE_RED_BLACK, "usb transactions");
+ 
+         conversation_add_proto_data(conversation, proto_usb, usb_conv_info);
+@@ -1038,10 +1041,9 @@ dissect_usb_device_qualifier_descriptor(packet_info *pinfo _U_, proto_tree *pare
+ 
+ /* 9.6.1 */
+ static int
+-dissect_usb_device_descriptor(packet_info *pinfo _U_, proto_tree *parent_tree,
++dissect_usb_device_descriptor(packet_info *pinfo, proto_tree *parent_tree,
+                               tvbuff_t *tvb, int offset,
+                               usb_trans_info_t *usb_trans_info _U_,
+-                              usb_conv_info_t  *usb_conv_info _U_,
+                               guint bus_id, guint device_address)
+ {
+     proto_item      *item       = NULL;
+@@ -1053,12 +1055,15 @@ dissect_usb_device_descriptor(packet_info *pinfo _U_, proto_tree *parent_tree,
+     guint16          vendor_id;
+     guint32          product;
+     guint16          product_id;
++    usb_conv_info_t  *usb_conv_info;
+ 
+     if (parent_tree) {
+         item = proto_tree_add_text(parent_tree, tvb, offset, -1, "DEVICE DESCRIPTOR");
+         tree = proto_item_add_subtree(item, ett_descriptor_device);
+     }
+ 
++    usb_conv_info=pinfo->usb_conv_info;
++
+     dissect_usb_descriptor_header(tree, tvb, offset);
+     offset += 2;
+ 
+@@ -1090,11 +1095,13 @@ dissect_usb_device_descriptor(packet_info *pinfo _U_, proto_tree *parent_tree,
+     /* idVendor */
+     proto_tree_add_item(tree, hf_usb_idVendor, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+     vendor_id = tvb_get_letohs(tvb, offset);
++    usb_conv_info->deviceVendor = vendor_id;
+     offset += 2;
+ 
+     /* idProduct */
+     nitem = proto_tree_add_item(tree, hf_usb_idProduct, tvb, offset, 2, ENC_LITTLE_ENDIAN);
+     product_id = tvb_get_letohs(tvb, offset);
++    usb_conv_info->deviceProduct = product_id;
+     product = vendor_id << 16 | product_id;
+     proto_item_set_text(nitem, "idProduct: %s (0x%04x)",
+             val_to_str_ext_const(product, &ext_usb_products_vals, "Unknown"),
+@@ -1286,6 +1293,11 @@ dissect_usb_interface_descriptor(packet_info *pinfo, proto_tree *parent_tree,
+         usb_trans_info->interface_info->interfaceClass = tvb_get_guint8(tvb, offset);
+         /* save the subclass so we can access it later in class-specific descriptors */
+         usb_trans_info->interface_info->interfaceSubclass = tvb_get_guint8(tvb, offset+1);
++        usb_trans_info->interface_info->interfaceProtocol = tvb_get_guint8(tvb, offset+2);
++        /* Save older info not from this packet */
++        usb_trans_info->interface_info->deviceVendor  = usb_conv_info->deviceVendor;
++        usb_trans_info->interface_info->deviceProduct = usb_conv_info->deviceProduct;
++
+         usb_trans_info->interface_info->transactions = se_tree_create_non_persistent(EMEM_TREE_TYPE_RED_BLACK, "usb transactions");
+ 
+         /* Register conversation for this interface in case CONTROL messages are sent to it */
+@@ -1303,6 +1315,7 @@ dissect_usb_interface_descriptor(packet_info *pinfo, proto_tree *parent_tree,
+ 
+     /* bInterfaceProtocol */
+     proto_tree_add_item(tree, hf_usb_bInterfaceProtocol, tvb, offset, 1, ENC_LITTLE_ENDIAN);
++    usb_conv_info->interfaceProtocol = tvb_get_guint8(tvb, offset);
+     offset += 1;
+ 
+     /* iInterface */
+@@ -1556,6 +1569,7 @@ dissect_usb_configuration_descriptor(packet_info *pinfo _U_, proto_tree *parent_
+ 
+     usb_conv_info->interfaceClass    = IF_CLASS_UNKNOWN;
+     usb_conv_info->interfaceSubclass = IF_SUBCLASS_UNKNOWN;
++    usb_conv_info->interfaceProtocol = IF_PROTOCOL_UNKNOWN;
+ 
+     if (parent_tree) {
+         item = proto_tree_add_text(parent_tree, tvb, offset, -1, "CONFIGURATION DESCRIPTOR");
+@@ -1673,6 +1687,7 @@ dissect_usb_configuration_descriptor(packet_info *pinfo _U_, proto_tree *parent_
+      */
+     usb_conv_info->interfaceClass    = IF_CLASS_UNKNOWN;
+     usb_conv_info->interfaceSubclass = IF_SUBCLASS_UNKNOWN;
++    usb_conv_info->interfaceProtocol = IF_PROTOCOL_UNKNOWN;
+ 
+     return offset;
+ }
+@@ -1724,7 +1739,7 @@ dissect_usb_setup_get_descriptor_response(packet_info *pinfo, proto_tree *tree,
+     }
+     switch(usb_trans_info->u.get_descriptor.type) {
+     case USB_DT_DEVICE:
+-        offset = dissect_usb_device_descriptor(pinfo, tree, tvb, offset, usb_trans_info, usb_conv_info, bus_id, device_address);
++        offset = dissect_usb_device_descriptor(pinfo, tree, tvb, offset, usb_trans_info, bus_id, device_address);
+         break;
+     case USB_DT_CONFIG:
+         offset = dissect_usb_configuration_descriptor(pinfo, tree, tvb, offset, usb_trans_info, usb_conv_info);
+diff --git epan/dissectors/packet-usb.h epan/dissectors/packet-usb.h
+index 549ebac..5b2bfee 100644
+--- epan/dissectors/packet-usb.h
++++ epan/dissectors/packet-usb.h
+@@ -73,10 +73,14 @@ typedef struct _usb_trans_info_t {
+     usb_conv_info_t *interface_info;
+ } usb_trans_info_t;
+ 
+-/* there is one such structure for each device/endpoint conversation */
++/* Conversation Structure 
++ * there is one such structure for each device/endpoint conversation */
+ struct _usb_conv_info_t {
+-    guint16 interfaceClass;		/* class for this conversation */
+-    guint16 interfaceSubclass;	/* Most recent interface descriptor subclass */
++    guint16 interfaceClass;		/* Interface Descriptor - class          */
++    guint16 interfaceSubclass;	/* Interface Descriptor - subclass       */
++    guint16 interfaceProtocol;  /* Interface Descriptor - protocol       */
++    guint16 deviceVendor;       /* Device    Descriptor - USB Vendor  ID */
++    guint16 deviceProduct;      /* Device    Descriptor - USB Product ID */
+     emem_tree_t *transactions;
+     usb_trans_info_t *usb_trans_info; /* pointer to the current transaction */
+     void *class_data;	/* private class/id decode data */
+@@ -149,6 +153,9 @@ typedef struct _usb_data_t {
+ 
+ #define IF_CLASS_UNKNOWN              0xffff
+ #define IF_SUBCLASS_UNKNOWN           0xffff
++#define IF_PROTOCOL_UNKNOWN           0xffff
++#define DEV_VENDOR_UNKNOWN            0x0000  /* this id is unassigned */
++#define DEV_PRODUCT_UNKNOWN           0x0000  /* 0x0000 and 0xffff are used values by vendors */
+ 
+ /* bmRequestType values */
+ #define USB_DIR_OUT                     0               /* to device */
+diff --git epan/dissectors/usb.c epan/dissectors/usb.c
+index 4764f14..05d965a 100644
+--- epan/dissectors/usb.c
++++ epan/dissectors/usb.c
+@@ -5,6 +5,17 @@
+  *
+  * Copyright 2012, Michal Labedzki for Tieto Corporation
+  *
++ * Other values imported from libghoto2/camlibs/ptp2/library.c, music-players.h
++ *
++ * Copyright (C) 2001-2005 Mariusz Woloszyn <emsi@ipartners.pl>
++ * Copyright (C) 2003-2013 Marcus Meissner <marcus@jet.franken.de>
++ * Copyright (C) 2005 Hubert Figuiere <hfiguiere@teaser.fr>
++ * Copyright (C) 2009 Axel Waggershauser <awagger@web.de>
++ * Copyright (C) 2005-2007 Richard A. Low <richard@wentnet.com>
++ * Copyright (C) 2005-2012 Linus Walleij <triad@df.lth.se>
++ * Copyright (C) 2007 Ted Bullock
++ * Copyright (C) 2012 Sony Mobile Communications AB
++ *
+  * $Id$
+  *
+  * Wireshark - Network traffic analyzer
+@@ -16081,6 +16092,971 @@ static const value_string usb_products_vals[] = {
+     { 0xeb1ae355, "KWorld DVB-T 355U Digital TV Dongle" },
+     { 0xf0036002, "PhotoSmart C500" },
+     { 0xf4ecee38, "Digital Storage Oscilloscope" },
++    /* From libgphoto2 */
++    { 0x03f04002, "HP PhotoSmart ..." },
++    { 0x03f04202, "HP PhotoSmart 812" },
++    { 0x03f04302, "HP PhotoSmart 850" },
++    { 0x03f04402, "HP PhotoSmart 935" },
++    { 0x03f04502, "HP PhotoSmart 945" },
++    { 0x03f06002, "HP PhotoSmart C500" },
++    { 0x03f06302, "HP PhotoSmart 612" },
++    { 0x03f06402, "HP PhotoSmart 715" },
++    { 0x03f06502, "HP PhotoSmart 120" },
++    { 0x03f06602, "HP PhotoSmart 320" },
++    { 0x03f06702, "HP PhotoSmart 720" },
++    { 0x03f06802, "HP PhotoSmart 620" },
++    { 0x03f06a02, "HP PhotoSmart 735" },
++    { 0x03f06b02, "HP PhotoSmart 707" },
++    { 0x03f06c02, "HP PhotoSmart 733" },
++    { 0x03f06d02, "HP PhotoSmart 607" },
++    { 0x03f06e02, "HP PhotoSmart 507" },
++    { 0x03f07102, "HP PhotoSmart 635" },
++    { 0x03f07202, "HP PhotoSmart 43x" },
++    { 0x03f07302, "HP PhotoSmart M307" },
++    { 0x03f07402, "HP PhotoSmart 407" },
++    { 0x03f07502, "HP PhotoSmart M22" },
++    { 0x03f07602, "HP PhotoSmart 717" },
++    { 0x03f07702, "HP PhotoSmart 817" },
++    { 0x03f07802, "HP PhotoSmart 417" },
++    { 0x03f07902, "HP PhotoSmart 517" },
++    { 0x03f07a02, "HP PhotoSmart M415" },
++    { 0x03f07b02, "HP PhotoSmart M23" },
++    { 0x03f07c02, "HP PhotoSmart 217" },
++    { 0x03f07d02, "HP PhotoSmart 317" },
++    { 0x03f07e02, "HP PhotoSmart 818" },
++    { 0x03f08002, "HP PhotoSmart M425" },
++    { 0x03f08102, "HP PhotoSmart M525" },
++    { 0x03f08202, "HP PhotoSmart M527" },
++    { 0x03f08402, "HP PhotoSmart M725" },
++    { 0x03f08502, "HP PhotoSmart M727" },
++    { 0x03f08702, "HP PhotoSmart R927" },
++    { 0x03f08802, "HP PhotoSmart R967" },
++    { 0x03f08b02, "HP PhotoSmart E327" },
++    { 0x03f08c02, "HP PhotoSmart E427" },
++    { 0x03f09602, "HP PhotoSmart M737" },
++    { 0x03f09702, "HP PhotoSmart R742" },
++    { 0x03f09b02, "HP PhotoSmart M547" },
++    { 0x04020611, "TrekStor i.Beat Sweez FM" },
++    { 0x04025668, "Nextar MA715A-8R" },
++    { 0x0408b009, "Medion MD99000 (P9514)/Olivetti Olipad 110" },
++    { 0x0408b00a, "Medion Lifetab P9514" },
++    { 0x04090242, "NEC FOMA N01A" },
++    { 0x040a0121, "Kodak DC240" },
++    { 0x040a0160, "Kodak DC4800" },
++    { 0x040a0170, "Kodak DX3900" },
++    { 0x040a0400, "Kodak MC3" },
++    { 0x040a0403, "Kodak Z7590" },
++    { 0x040a0500, "Kodak DX3500" },
++    { 0x040a0510, "Kodak DX3600" },
++    { 0x040a0525, "Kodak DX3215" },
++    { 0x040a0530, "Kodak DX3700" },
++    { 0x040a0535, "Kodak CX4230" },
++    { 0x040a0540, "Kodak LS420" },
++    { 0x040a0550, "Kodak DX4900" },
++    { 0x040a0555, "Kodak DX4330" },
++    { 0x040a0560, "Kodak CX4210" },
++    { 0x040a0565, "Kodak LS743" },
++    { 0x040a0566, "Kodak CX4310" },
++    { 0x040a0567, "Kodak LS753" },
++    { 0x040a0568, "Kodak LS443" },
++    { 0x040a0569, "Kodak LS663" },
++    { 0x040a0570, "Kodak DX6340" },
++    { 0x040a0571, "Kodak CX6330" },
++    { 0x040a0572, "Kodak DX6440" },
++    { 0x040a0573, "Kodak CX6230" },
++    { 0x040a0574, "Kodak CX6200" },
++    { 0x040a0575, "Kodak DX6490" },
++    { 0x040a0576, "Kodak DX4530" },
++    { 0x040a0577, "Kodak DX7630" },
++    { 0x040a0578, "Kodak CX7310" },
++    { 0x040a0579, "Kodak CX7220" },
++    { 0x040a057a, "Kodak CX7330" },
++    { 0x040a057b, "Kodak CX7430" },
++    { 0x040a057c, "Kodak CX7530" },
++    { 0x040a057d, "Kodak DX7440" },
++    { 0x040a057e, "Kodak C300" },
++    { 0x040a057f, "Kodak DX7590" },
++    { 0x040a0580, "Kodak Z730" },
++    { 0x040a0584, "Kodak CX6445" },
++    { 0x040a0585, "Kodak M893 IS" },
++    { 0x040a0586, "Kodak CX7525" },
++    { 0x040a0587, "Kodak Z700" },
++    { 0x040a0588, "Kodak Z740" },
++    { 0x040a0589, "Kodak C360" },
++    { 0x040a058a, "Kodak C310" },
++    { 0x040a058c, "Kodak C330" },
++    { 0x040a058d, "Kodak C340" },
++    { 0x040a058e, "Kodak V530" },
++    { 0x040a058f, "Kodak V550" },
++    { 0x040a0591, "Kodak V570" },
++    { 0x040a0592, "Kodak P850" },
++    { 0x040a0593, "Kodak P880" },
++    { 0x040a059a, "Kodak C530" },
++    { 0x040a059c, "Kodak CD33" },
++    { 0x040a059d, "Kodak Z612" },
++    { 0x040a059e, "Kodak Z650" },
++    { 0x040a059f, "Kodak M753" },
++    { 0x040a05a0, "Kodak V603" },
++    { 0x040a05a2, "Kodak C533" },
++    { 0x040a05a7, "Kodak C643" },
++    { 0x040a05a9, "Kodak C875" },
++    { 0x040a05aa, "Kodak C433" },
++    { 0x040a05ab, "Kodak V705" },
++    { 0x040a05ac, "Kodak V610" },
++    { 0x040a05ad, "Kodak M883" },
++    { 0x040a05ae, "Kodak C743" },
++    { 0x040a05af, "Kodak C653" },
++    { 0x040a05b3, "Kodak Z710" },
++    { 0x040a05b4, "Kodak Z712 IS" },
++    { 0x040a05b5, "Kodak Z812 IS" },
++    { 0x040a05b7, "Kodak C613" },
++    { 0x040a05b8, "Kodak V803" },
++    { 0x040a05ba, "Kodak C633" },
++    { 0x040a05c0, "Kodak ZD710" },
++    { 0x040a05c1, "Kodak M863" },
++    { 0x040a05c3, "Kodak C813" },
++    { 0x040a05c6, "Kodak C913" },
++    { 0x040a05cd, "Kodak Z950" },
++    { 0x040a05ce, "Kodak M1063" },
++    { 0x040a05cf, "Kodak Z915" },
++    { 0x040a060b, "Kodak C183" },
++    { 0x040a0617, "Kodak C1530" },
++    { 0x041e411f, "Creative ZEN Vision" },
++    { 0x041e4123, "Creative Portable Media Center" },
++    { 0x041e4128, "Creative ZEN Xtra (MTP mode)" },
++    { 0x041e412f, "Dell DJ (2nd generation)" },
++    { 0x041e4130, "Creative ZEN Micro (MTP mode)" },
++    { 0x041e4131, "Creative ZEN Touch (MTP mode)" },
++    { 0x041e4132, "Dell Dell Pocket DJ (MTP mode)" },
++    { 0x041e4133, "Creative ZEN MicroPhoto (alternate version)" },
++    { 0x041e4137, "Creative ZEN Sleek (MTP mode)" },
++    { 0x041e413c, "Creative ZEN MicroPhoto" },
++    { 0x041e413d, "Creative ZEN Sleek Photo" },
++    { 0x041e413e, "Creative ZEN Vision:M" },
++    { 0x041e4150, "Creative ZEN V" },
++    { 0x041e4151, "Creative ZEN Vision:M (DVP-HD0004)" },
++    { 0x041e4152, "Creative ZEN V Plus" },
++    { 0x041e4153, "Creative ZEN Vision W" },
++    { 0x041e4157, "Creative ZEN" },
++    { 0x041e4158, "Creative ZEN V 2GB" },
++    { 0x041e4161, "Creative ZEN Mozaic" },
++    { 0x041e4162, "Creative ZEN X-Fi" },
++    { 0x041e4169, "Creative ZEN X-Fi 3" },
++    { 0x041e6000, "ZiiLABS Zii EGG" },
++    { 0x0421000a, "Nokia N81 Mobile Phone" },
++    { 0x0421002e, "Nokia 6120c Classic Mobile Phone" },
++    { 0x04210039, "Nokia N96 Mobile Phone" },
++    { 0x0421003c, "Nokia 6500c Classic Mobile Phone" },
++    { 0x0421005f, "Nokia 3110c Mobile Phone" },
++    { 0x04210065, "Nokia 3109c Mobile Phone" },
++    { 0x0421006c, "Nokia 5310 XpressMusic" },
++    { 0x0421006e, "Nokia N95 Mobile Phone 8GB" },
++    { 0x04210074, "Nokia N82 Mobile Phone" },
++    { 0x04210079, "Nokia N78 Mobile Phone" },
++    { 0x0421008d, "Nokia 6220 Classic" },
++    { 0x04210092, "Nokia N85 Mobile Phone" },
++    { 0x04210098, "Nokia 6210 Navigator" },
++    { 0x042100e4, "Nokia E71" },
++    { 0x042100e5, "Nokia E66" },
++    { 0x042100ea, "Nokia 5320 XpressMusic" },
++    { 0x04210154, "Nokia 5800 XpressMusic" },
++    { 0x04210155, "Nokia 5800 XpressMusic v2" },
++    { 0x04210159, "Nokia 5800 XpressMusic v3" },
++    { 0x04210179, "Nokia E63" },
++    { 0x04210186, "Nokia N79" },
++    { 0x042101a1, "Nokia E71x" },
++    { 0x042101cf, "Nokia E52" },
++    { 0x042101ee, "Nokia 3710" },
++    { 0x042101f4, "Nokia N97-1" },
++    { 0x042101f5, "Nokia N97" },
++    { 0x04210209, "Nokia 5130 XpressMusic" },
++    { 0x04210221, "Nokia E72" },
++    { 0x04210229, "Nokia 5530" },
++    { 0x0421026b, "Nokia N97 mini" },
++    { 0x04210274, "Nokia X6" },
++    { 0x04210297, "Nokia 6600i" },
++    { 0x042102c1, "Nokia 2710" },
++    { 0x042102e2, "Nokia 5230" },
++    { 0x042102fe, "Nokia N8" },
++    { 0x04210302, "Nokia N8 (Ovi mode)" },
++    { 0x04210334, "Nokia E7" },
++    { 0x04210335, "Nokia E7 (Ovi mode)" },
++    { 0x042103c1, "Nokia C7" },
++    { 0x042103cd, "Nokia C7 (ID2)" },
++    { 0x042103d2, "Nokia N950" },
++    { 0x04210462, "Nokia 3250 Mobile Phone" },
++    { 0x04210478, "Nokia N93 Mobile Phone" },
++    { 0x0421047e, "Nokia 5500 Sport Mobile Phone" },
++    { 0x04210485, "Nokia N91 Mobile Phone" },
++    { 0x04210488, "Nokia N73" },
++    { 0x042104b4, "Nokia 5700 XpressMusic Mobile Phone" },
++    { 0x042104ba, "Nokia 5300 Mobile Phone" },
++    { 0x042104be, "Nokia 5200 Mobile Phone" },
++    { 0x042104d1, "Nokia N73 Mobile Phone" },
++    { 0x042104e1, "Nokia N75 Mobile Phone" },
++    { 0x042104e5, "Nokia N93i Mobile Phone" },
++    { 0x042104ef, "Nokia N95 Mobile Phone" },
++    { 0x042104f1, "Nokia N80 Internet Edition (Media Player)" },
++    { 0x0421051a, "Nokia N9" },
++    { 0x043e7040, "LG Electronics Inc. T54" },
++    { 0x043e70b1, "LG Electronics Inc. UP3" },
++    { 0x045e00c9, "Microsoft/Intel Bandon Portable Media Center" },
++    { 0x045e04ec, "Microsoft Windows Phone" },
++    { 0x045e0622, "Microsoft Windows MTP Simulator" },
++    { 0x045e063e, "Microsoft Zune HD" },
++    { 0x045e0640, "Microsoft Kin 1" },
++    { 0x045e0641, "Microsoft/Sharp/nVidia Kin TwoM" },
++    { 0x045e0710, "Microsoft Zune" },
++    { 0x0471014b, "Philips HDD6320/00 or HDD6330/17" },
++    { 0x0471014c, "Philips HDD14XX,HDD1620 or HDD1630/17" },
++    { 0x0471014d, "Philips HDD085/00 or HDD082/17" },
++    { 0x0471014f, "Philips GoGear SA9200" },
++    { 0x04710164, "Philips SA1115/55" },
++    { 0x04710165, "Philips GoGear Audio" },
++    { 0x04710172, "Philips Shoqbox" },
++    { 0x04710181, "Philips PSA610" },
++    { 0x047101eb, "Philips HDD6320" },
++    { 0x0471084e, "Philips GoGear SA6014/SA6015/SA6024/SA6025/SA6044/SA6045" },
++    { 0x04710857, "Philips GoGear SA5145" },
++    { 0x04712002, "Philips GoGear SA6125/SA6145/SA6185" },
++    { 0x04712004, "Philips GoGear SA3345" },
++    { 0x04712022, "Philips SA5285" },
++    { 0x04712075, "Philips GoGear ViBE SA1VBE04" },
++    { 0x04712077, "Philips GoGear Muse" },
++    { 0x0471207b, "Philips GoGear ViBE SA1VBE04/08" },
++    { 0x0471207c, "Philips GoGear Aria" },
++    { 0x0471208e, "Philips GoGear SA1VBE08KX/78" },
++    { 0x047120b7, "Philips GoGear VIBE SA2VBE[08|16]K/02" },
++    { 0x047120b9, "Philips GoGear Ariaz" },
++    { 0x047120e5, "Philips GoGear Vibe/02" },
++    { 0x04717e01, "Philips PSA235" },
++    { 0x04740230, "Sanyo VPC-C5" },
++    { 0x0489e040, "Vizio VTAB1008" },
++    { 0x04a9306d, "Canon PowerShot S45" },
++    { 0x04a9306f, "Canon PowerShot G3" },
++    { 0x04a93071, "Canon Digital IXUS v3" },
++    { 0x04a93072, "Canon PowerShot SD100" },
++    { 0x04a93073, "Canon PowerShot A70" },
++    { 0x04a93074, "Canon PowerShot A60" },
++    { 0x04a93075, "Canon PowerShot S400" },
++    { 0x04a93076, "Canon PowerShot A300" },
++    { 0x04a93077, "Canon PowerShot S50" },
++    { 0x04a93085, "Canon PowerShot G5" },
++    { 0x04a93087, "Canon Elura 50" },
++    { 0x04a9308d, "Canon MVX3i" },
++    { 0x04a93099, "Canon EOS Kiss Digital" },
++    { 0x04a9309a, "Canon PowerShot A80" },
++    { 0x04a9309b, "Canon Digital IXUS i" },
++    { 0x04a9309c, "Canon PowerShot S1 IS" },
++    { 0x04a930a0, "Canon MV750i" },
++    { 0x04a930a5, "Canon Elura 65" },
++    { 0x04a930b1, "Canon Powershot S70" },
++    { 0x04a930b2, "Canon Powershot S60" },
++    { 0x04a930b3, "Canon Powershot G6" },
++    { 0x04a930b4, "Canon PowerShot S500" },
++    { 0x04a930b5, "Canon PowerShot A75" },
++    { 0x04a930b6, "Canon Digital IXUS IIs" },
++    { 0x04a930b7, "Canon PowerShot A400" },
++    { 0x04a930b8, "Canon PowerShot A310" },
++    { 0x04a930b9, "Canon PowerShot A85" },
++    { 0x04a930ba, "Canon PowerShot S410" },
++    { 0x04a930bb, "Canon PowerShot A95" },
++    { 0x04a930bc, "Canon EOS 10D" },
++    { 0x04a930bf, "Canon Digital IXUS 40" },
++    { 0x04a930c0, "Canon Digital IXUS 30" },
++    { 0x04a930c1, "Canon PowerShot A520" },
++    { 0x04a930c2, "Canon PowerShot A510" },
++    { 0x04a930ea, "Canon EOS 1D Mark II" },
++    { 0x04a930ec, "Canon EOS 20D" },
++    { 0x04a930ee, "Canon EOS 350D" },
++    { 0x04a930ef, "Canon EOS 350D" },
++    { 0x04a930f0, "Canon PowerShot S2 IS" },
++    { 0x04a930f1, "Canon Digital IXUS Wireless" },
++    { 0x04a930f2, "Canon PowerShot SD500" },
++    { 0x04a930f4, "Canon Digital IXUS iZ" },
++    { 0x04a930f8, "Canon PowerShot A430" },
++    { 0x04a930f9, "Canon PowerShot A410" },
++    { 0x04a930fa, "Canon PowerShot S80" },
++    { 0x04a930fc, "Canon PowerShot A620" },
++    { 0x04a930fd, "Canon PowerShot A610" },
++    { 0x04a930fe, "Canon Digital IXUS 65" },
++    { 0x04a930ff, "Canon PowerShot SD450" },
++    { 0x04a93102, "Canon EOS 5D" },
++    { 0x04a93105, "Canon Optura 600" },
++    { 0x04a9310e, "Canon Digital IXUS 50" },
++    { 0x04a9310f, "Canon PowerShot A420" },
++    { 0x04a93110, "Canon EOS Kiss Digital X" },
++    { 0x04a93113, "Canon EOS 30D" },
++    { 0x04a93115, "Canon PowerShot SD900" },
++    { 0x04a93116, "Canon Digital IXUS 750" },
++    { 0x04a93117, "Canon PowerShot A700" },
++    { 0x04a93119, "Canon Digital IXUS 800" },
++    { 0x04a9311a, "Canon PowerShot S3 IS" },
++    { 0x04a9311b, "Canon PowerShot A540" },
++    { 0x04a9311c, "Canon PowerShot SD600" },
++    { 0x04a93125, "Canon PowerShot G7" },
++    { 0x04a93126, "Canon PowerShot A530" },
++    { 0x04a93136, "Canon Digital IXUS 850 IS" },
++    { 0x04a93137, "Canon PowerShot SD40" },
++    { 0x04a93138, "Canon PowerShot A710 IS" },
++    { 0x04a93139, "Canon PowerShot A640" },
++    { 0x04a9313a, "Canon PowerShot A630" },
++    { 0x04a93145, "Canon EOS Kiss X2" },
++    { 0x04a93146, "Canon EOS 40D" },
++    { 0x04a93147, "Canon EOS 1D Mark III" },
++    { 0x04a93148, "Canon PowerShot S5 IS" },
++    { 0x04a93149, "Canon PowerShot A460" },
++    { 0x04a9314b, "Canon PowerShot SD850" },
++    { 0x04a9314c, "Canon PowerShot A570 IS" },
++    { 0x04a9314d, "Canon PowerShot A560" },
++    { 0x04a9314e, "Canon PowerShot SD750" },
++    { 0x04a9314f, "Canon PowerShot SD1000" },
++    { 0x04a93150, "Canon PowerShot A550" },
++    { 0x04a93155, "Canon PowerShot A450" },
++    { 0x04a9315a, "Canon PowerShot G9" },
++    { 0x04a9315b, "Canon PowerShot A650IS" },
++    { 0x04a9315d, "Canon PowerShot A720 IS" },
++    { 0x04a9315e, "Canon Powershot SX100 IS" },
++    { 0x04a9315f, "Canon Digital IXUS 960 IS" },
++    { 0x04a93160, "Canon Digital IXUS 860 IS" },
++    { 0x04a93173, "Canon Digital IXUS 970 IS" },
++    { 0x04a93174, "Canon Digital IXUS 85 IS" },
++    { 0x04a93175, "Canon PowerShot SD770 IS" },
++    { 0x04a93176, "Canon PowerShot A590 IS" },
++    { 0x04a93177, "Canon PowerShot A580" },
++    { 0x04a9317a, "Canon PowerShot A740" },
++    { 0x04a9317b, "Canon EOS 1000D" },
++    { 0x04a93184, "Canon Powershot SD1100 IS" },
++    { 0x04a9318d, "Canon PowerShot SX10 IS" },
++    { 0x04a9318f, "Canon PowerShot G10" },
++    { 0x04a93191, "Canon PowerShot A2000 IS" },
++    { 0x04a93192, "Canon PowerShot SX110 IS" },
++    { 0x04a93193, "Canon IXY 3000 IS" },
++    { 0x04a93196, "Canon PowerShot SD880 IS" },
++    { 0x04a93199, "Canon EOS 5D Mark II" },
++    { 0x04a9319a, "Canon EOS 7D" },
++    { 0x04a9319b, "Canon EOS 50D" },
++    { 0x04a931bc, "Canon PowerShot D10" },
++    { 0x04a931bd, "Canon Digital IXUS 110 IS" },
++    { 0x04a931be, "Canon PowerShot A2100 IS" },
++    { 0x04a931bf, "Canon PowerShot A480" },
++    { 0x04a931c0, "Canon PowerShot SX200 IS" },
++    { 0x04a931c1, "Canon PowerShot SD970 IS" },
++    { 0x04a931c2, "Canon PowerShot SD780 IS" },
++    { 0x04a931c3, "Canon PowerShot A1100 IS" },
++    { 0x04a931c4, "Canon Digital IXUS 95 IS" },
++    { 0x04a931cf, "Canon EOS Kiss X3" },
++    { 0x04a931d0, "Canon EOS 1D Mark IV" },
++    { 0x04a931df, "Canon PowerShot G11" },
++    { 0x04a931e0, "Canon PowerShot SX120 IS" },
++    { 0x04a931e4, "Canon PowerShot SX20 IS" },
++    { 0x04a931e6, "Canon PowerShot SD940 IS" },
++    { 0x04a931ea, "Canon Rebel T2i" },
++    { 0x04a931f1, "Canon PowerShot A3100 IS" },
++    { 0x04a931f2, "Canon PowerShot A3000 IS" },
++    { 0x04a931f3, "Canon Digital IXUS 130" },
++    { 0x04a931f4, "Canon PowerShot SD1300 IS" },
++    { 0x04a931f6, "Canon PowerShot SX210 IS" },
++    { 0x04a93211, "Canon PowerShot SX130 IS" },
++    { 0x04a93215, "Canon EOS 60D" },
++    { 0x04a93217, "Canon EOS 1100D" },
++    { 0x04a93218, "Canon EOS 600D" },
++    { 0x04a93225, "Canon IXUS 310IS" },
++    { 0x04a93226, "Canon PowerShot A800" },
++    { 0x04a93228, "Canon PowerShot SX230HS" },
++    { 0x04a9322c, "Canon PowerShot SX220HS" },
++    { 0x04a93233, "Canon PowerShot G1 X" },
++    { 0x04a93238, "Canon PowerShot SX40HS" },
++    { 0x04a9323a, "Canon EOS 5D Mark III" },
++    { 0x04a9323b, "Canon Rebel T4i" },
++    { 0x04a9323d, "Canon EOS M" },
++    { 0x04a93243, "Canon PowerShot A4000IS" },
++    { 0x04a93245, "Canon PowerShot SX240HS" },
++    { 0x04a93249, "Canon PowerShot A2400IS" },
++    { 0x04a93250, "Canon EOS 6D" },
++    { 0x04a9325b, "Canon PowerShot S110" },
++    { 0x04a9325c, "Canon PowerShot SX500IS" },
++    { 0x04b00109, "Nikon Coolpix 2500" },
++    { 0x04b0010b, "Nikon Coolpix 4500" },
++    { 0x04b0010d, "Nikon Coolpix 5700" },
++    { 0x04b0010f, "Nikon Coolpix 4300" },
++    { 0x04b00111, "Nikon Coolpix 3500" },
++    { 0x04b00112, "Nikon Coolpix 885" },
++    { 0x04b00113, "Nikon Coolpix 5000" },
++    { 0x04b00115, "Nikon Coolpix 3100" },
++    { 0x04b00117, "Nikon Coolpix 2100" },
++    { 0x04b00119, "Nikon Coolpix 5400" },
++    { 0x04b0011d, "Nikon Coolpix 3700" },
++    { 0x04b0011f, "Nikon Coolpix 8700" },
++    { 0x04b00121, "Nikon Coolpix 3200" },
++    { 0x04b00122, "Nikon Coolpix 2200" },
++    { 0x04b00127, "Nikon Coolpix 8800" },
++    { 0x04b00129, "Nikon Coolpix 4800" },
++    { 0x04b0012d, "Nikon Coolpix 4100" },
++    { 0x04b0012e, "Nikon Coolpix 5600" },
++    { 0x04b00130, "Nikon Coolpix 4600" },
++    { 0x04b00131, "Nikon Coolpix 4600a" },
++    { 0x04b00135, "Nikon Coolpix 5900" },
++    { 0x04b00137, "Nikon Coolpix 7900" },
++    { 0x04b00139, "Nikon Coolpix 7600" },
++    { 0x04b00140, "Nikon Coolpix P1" },
++    { 0x04b00142, "Nikon Coolpix P2" },
++    { 0x04b00144, "Nikon Coolpix S4" },
++    { 0x04b0014e, "Nikon Coolpix S6" },
++    { 0x04b00157, "Nikon Coolpix S7c" },
++    { 0x04b0015b, "Nikon Coolpix P5000" },
++    { 0x04b0015d, "Nikon Coolpix S500" },
++    { 0x04b0015f, "Nikon Coolpix L12" },
++    { 0x04b00161, "Nikon Coolpix S200" },
++    { 0x04b00163, "Nikon Coolpix P5100" },
++    { 0x04b00169, "Nikon Coolpix P50" },
++    { 0x04b0016b, "Nikon Coolpix P80" },
++    { 0x04b0016f, "Nikon Coolpix P6000" },
++    { 0x04b00171, "Nikon Coolpix S60" },
++    { 0x04b00173, "Nikon Coolpix P90" },
++    { 0x04b00177, "Nikon Coolpix S220" },
++    { 0x04b00178, "Nikon Coolpix S225" },
++    { 0x04b0017d, "Nikon Coolpix P100" },
++    { 0x04b0017e, "Nikon Coolpix L110" },
++    { 0x04b0017f, "Nikon Coolpix P7000" },
++    { 0x04b00184, "Nikon Coolpix P500" },
++    { 0x04b00185, "Nikon Coolpix L120" },
++    { 0x04b00186, "Nikon Coolpix S9100" },
++    { 0x04b00188, "Nikon Coolpix AW100" },
++    { 0x04b0018b, "Nikon Coolpix P7100" },
++    { 0x04b00202, "Nikon Coolpix SQ" },
++    { 0x04b00204, "Nikon Coolpix 4200" },
++    { 0x04b00206, "Nikon Coolpix 5200" },
++    { 0x04b00208, "Nikon Coolpix L1" },
++    { 0x04b0020c, "Nikon Coolpix P4" },
++    { 0x04b0021e, "Nikon Coolpix S6000" },
++    { 0x04b0021f, "Nikon Coolpix S8000" },
++    { 0x04b00220, "Nikon Coolpix S5100" },
++    { 0x04b00221, "Nikon Coolpix P300" },
++    { 0x04b00222, "Nikon Coolpix S8200" },
++    { 0x04b00223, "Nikon Coolpix P510" },
++    { 0x04b00225, "Nikon Coolpix P7700" },
++    { 0x04b00302, "Nikon Coolpix 2000" },
++    { 0x04b00305, "Nikon Coolpix L4" },
++    { 0x04b00309, "Nikon Coolpix L11" },
++    { 0x04b0030b, "Nikon Coolpix L10" },
++    { 0x04b00311, "Nikon Coolpix P60" },
++    { 0x04b00315, "Nikon Coolpix L16" },
++    { 0x04b00317, "Nikon Coolpix L20" },
++    { 0x04b00318, "Nikon Coolpix L19" },
++    { 0x04b0031b, "Nikon Coolpix S3000" },
++    { 0x04b00320, "Nikon Coolpix S3100" },
++    { 0x04b00324, "Nikon Coolpix L23" },
++    { 0x04b0032a, "Nikon Coolpix S3300" },
++    { 0x04b0032d, "Nikon Coolpix S2600" },
++    { 0x04b00337, "Nikon Coolpix S01" },
++    { 0x04b00402, "Nikon DSC D100" },
++    { 0x04b00404, "Nikon D2H SLR" },
++    { 0x04b00406, "Nikon DSC D70" },
++    { 0x04b00408, "Nikon D2X SLR" },
++    { 0x04b0040a, "Nikon D50" },
++    { 0x04b0040c, "Nikon D2Hs" },
++    { 0x04b0040e, "Nikon DSC D70s" },
++    { 0x04b00410, "Nikon DSC D200" },
++    { 0x04b00412, "Nikon DSC D80" },
++    { 0x04b00414, "Nikon DSC D40" },
++    { 0x04b00416, "Nikon DSC D2Xs" },
++    { 0x04b00418, "Nikon DSC D40x" },
++    { 0x04b0041a, "Nikon DSC D300" },
++    { 0x04b0041c, "Nikon D3" },
++    { 0x04b0041e, "Nikon DSC D60" },
++    { 0x04b00421, "Nikon DSC D90" },
++    { 0x04b00422, "Nikon DSC D700" },
++    { 0x04b00423, "Nikon DSC D5000" },
++    { 0x04b00424, "Nikon DSC D3000" },
++    { 0x04b00425, "Nikon DSC D300s" },
++    { 0x04b00426, "Nikon DSC D3s" },
++    { 0x04b00427, "Nikon DSC D3100" },
++    { 0x04b00428, "Nikon DSC D7000" },
++    { 0x04b00429, "Nikon DSC D5100" },
++    { 0x04b0042a, "Nikon DSC D800" },
++    { 0x04b0042b, "Nikon DSC D4" },
++    { 0x04b0042d, "Nikon DSC D600" },
++    { 0x04b0042e, "Nikon DSC D800E" },
++    { 0x04b0042f, "Nikon DSC D5200" },
++    { 0x04b00601, "Nikon V1" },
++    { 0x04b00602, "Nikon J1" },
++    { 0x04c51140, "FOMA F903iX HIGH-SPEED" },
++    { 0x04cb0142, "Fuji FinePix S7000" },
++    { 0x04cb014a, "Fuji FinePix A330" },
++    { 0x04cb018f, "Fuji FinePix S9500" },
++    { 0x04cb0193, "Fuji FinePix E900" },
++    { 0x04cb019b, "Fuji FinePix F30" },
++    { 0x04cb01bf, "Fuji FinePix S6500fd" },
++    { 0x04cb01c0, "Fuji FinePix F20" },
++    { 0x04cb01c1, "Fuji FinePix F31fd" },
++    { 0x04cb01c3, "Fuji S5 Pro" },
++    { 0x04cb01c4, "Fuji FinePix S5700" },
++    { 0x04cb01c5, "Fuji FinePix F40fd" },
++    { 0x04cb01c6, "Fuji FinePix A820" },
++    { 0x04cb01d2, "Fuji FinePix A800" },
++    { 0x04cb01d3, "Fuji FinePix A920" },
++    { 0x04cb01d4, "Fuji FinePix F50fd" },
++    { 0x04cb01d7, "Fuji FinePix S5800" },
++    { 0x04cb01d8, "Fuji FinePix Z100fd" },
++    { 0x04cb01db, "Fuji FinePix S100fs" },
++    { 0x04cb01dd, "Fuji FinePix S1000fd" },
++    { 0x04cb01e0, "Fuji FinePix F100fd" },
++    { 0x04cb01e4, "Fuji FinePix F200 EXR" },
++    { 0x04cb01e6, "Fuji FinePix F60fd" },
++    { 0x04cb01e8, "Fuji FinePix S2000HD" },
++    { 0x04cb01ef, "Fuji FinePix S1500" },
++    { 0x04cb01fa, "Fuji FinePix F70 EXR" },
++    { 0x04cb01fe, "Fuji Fujifilm A220" },
++    { 0x04cb0200, "Fuji FinePix S1800" },
++    { 0x04cb0201, "Fuji FinePix Z35" },
++    { 0x04cb0209, "Fuji FinePix S2500HD" },
++    { 0x04cb020d, "Fuji FinePix Z700EXR" },
++    { 0x04cb020e, "Fuji FinePix F80EXR" },
++    { 0x04cb0240, "Fuji FinePix S2950" },
++    { 0x04cb0263, "Fuji FinePix X10" },
++    { 0x04cb0265, "Fuji FinePix S4300" },
++    { 0x04cb026e, "Fuji FinePix X-S1" },
++    { 0x04cb0271, "Fuji FinePix HS30EXR" },
++    { 0x04cb0288, "Fuji FinePix XF1" },
++    { 0x04da2145, "Panasonic P905i" },
++    { 0x04da2158, "Panasonic P906i" },
++    { 0x04da2372, "Panasonic Lumix FZ5" },
++    { 0x04da2374, "Panasonic DMC-GF1" },
++    { 0x04da2375, "Leica D-LUX 2" },
++    { 0x04e80409, "Samsung YP-900" },
++    { 0x04e804a4, "Samsung I550W Phone" },
++    { 0x04e84f1f, "Samsung Jet S8000" },
++    { 0x04e8501d, "Samsung YH-920 (501d)" },
++    { 0x04e85022, "Samsung YH-920 (5022)" },
++    { 0x04e85024, "Samsung YH-925GS" },
++    { 0x04e8502e, "Samsung YH-820" },
++    { 0x04e8502f, "Samsung YH-925(-GS)" },
++    { 0x04e85033, "Samsung YH-J70J" },
++    { 0x04e8503c, "Samsung YP-Z5" },
++    { 0x04e85047, "Samsung YP-T7J" },
++    { 0x04e85054, "Samsung YP-U2J (YP-U2JXB/XAA)" },
++    { 0x04e85057, "Samsung YP-F2J" },
++    { 0x04e8505a, "Samsung YP-K5" },
++    { 0x04e8507d, "Samsung YP-U3" },
++    { 0x04e8507f, "Samsung YP-T9" },
++    { 0x04e85081, "Samsung YP-K3" },
++    { 0x04e85083, "Samsung YP-P2" },
++    { 0x04e8508a, "Samsung YP-T10" },
++    { 0x04e8508b, "Samsung YP-S5" },
++    { 0x04e85091, "Samsung YP-S3" },
++    { 0x04e85093, "Samsung YP-U4" },
++    { 0x04e8510f, "Samsung YP-R1" },
++    { 0x04e85115, "Samsung YP-Q1" },
++    { 0x04e85118, "Samsung YP-M1" },
++    { 0x04e8511a, "Samsung YP-P3" },
++    { 0x04e8511d, "Samsung YP-Q2" },
++    { 0x04e85121, "Samsung YP-U5" },
++    { 0x04e85125, "Samsung YP-R0" },
++    { 0x04e85130, "Samsung YP-Q3" },
++    { 0x04e85137, "Samsung YP-Z3" },
++    { 0x04e86642, "Samsung M7600 Beat/GT-S8300T/SGH-F490/S8300" },
++    { 0x04e86702, "Samsung X830 Mobile Phone" },
++    { 0x04e86709, "Samsung U600 Mobile Phone" },
++    { 0x04e86727, "Samsung F250 Mobile Phone" },
++    { 0x04e86734, "Samsung Juke (SCH-U470)" },
++    { 0x04e86752, "Samsung GT-B2700" },
++    { 0x04e86763, "Samsung SAMSUNG Trance" },
++    { 0x04e86819, "Samsung GT-S8500" },
++    { 0x04e8684a, "Samsung S5620" },
++    { 0x04e8685e, "Samsung Galaxy Y" },
++    { 0x04e86877, "Samsung Galaxy models Kies mode" },
++    { 0x04e868a9, "Samsung Vibrant SGH-T959/Captivate/Media player mode" },
++    { 0x04e868af, "Samsung GT-B2710/Xcover 271" },
++    { 0x04e8e20c, "Samsung GT-S5230" },
++    { 0x04f16105, "JVC Alneo XA-HD500" },
++    { 0x05023325, "Acer Iconia TAB A500 (ID1)" },
++    { 0x05023341, "Acer Iconia TAB A500 (ID2)" },
++    { 0x05023344, "Acer Iconia TAB A501" },
++    { 0x05023348, "Acer Iconia TAB A100 (ID1)" },
++    { 0x05023349, "Acer Iconia TAB A100 (ID2)" },
++    { 0x05023378, "Acer Iconia TAB A700" },
++    { 0x0502337c, "Acer Iconia TAB A200 (ID1)" },
++    { 0x0502337d, "Acer Iconia TAB A200 (ID2)" },
++    { 0x0502338a, "Acer Iconia TAB A510" },
++    { 0x050233c3, "Acer E350 Liquid Gallant Duo" },
++    { 0x05462035, "Polaroid Freescape/MPU-433158" },
++    { 0x054c004e, "Sony DSC-U10" },
++    { 0x054c0296, "Sony DSC-S730" },
++    { 0x054c02c0, "Sony DSC-A100" },
++    { 0x054c02f8, "Sony DSC-W200" },
++    { 0x054c0325, "Sony Walkman NWZ-A815/NWZ-A818" },
++    { 0x054c0326, "Sony Walkman NWZ-S516" },
++    { 0x054c0327, "Sony Walkman NWZ-S615F/NWZ-S616F/NWZ-S618F" },
++    { 0x054c0343, "Sony DSC-W130" },
++    { 0x054c035a, "Sony Walkman NWZ-S716F" },
++    { 0x054c035b, "Sony Walkman NWZ-A826/NWZ-A828/NWZ-A829" },
++    { 0x054c035c, "Sony Walkman NWZ-A726/NWZ-A728/NWZ-A768" },
++    { 0x054c036e, "Sony Walkman NWZ-B135" },
++    { 0x054c0385, "Sony Walkman NWZ-E436F" },
++    { 0x054c0388, "Sony Walkman NWZ-W202" },
++    { 0x054c038c, "Sony Walkman NWZ-S739F" },
++    { 0x054c038e, "Sony Walkman NWZ-S638F" },
++    { 0x054c0398, "Sony Walkman NWZ-X1051/NWZ-X1061" },
++    { 0x054c03d8, "Sony Walkman NWZ-B142F" },
++    { 0x054c03fc, "Sony Walkman NWZ-E344" },
++    { 0x054c03fd, "Sony Walkman NWZ-E445" },
++    { 0x054c03fe, "Sony Walkman NWZ-S545" },
++    { 0x054c0404, "Sony Walkman NWZ-A845" },
++    { 0x054c04a3, "Sony SLT-A55" },
++    { 0x054c04a7, "Sony SLT-A35" },
++    { 0x054c04bb, "Sony Walkman NWZ-W252B" },
++    { 0x054c04be, "Sony Walkman NWZ-B153F" },
++    { 0x054c04cb, "Sony Walkman NWZ-E354" },
++    { 0x054c04cc, "Sony Walkman NWZ-S754" },
++    { 0x054c04d1, "Sony Sony Tablet P1" },
++    { 0x054c052a, "Sony DSC-RX100" },
++    { 0x054c052b, "Sony DSC-RX1" },
++    { 0x054c0543, "Sony DSC-HX100V" },
++    { 0x054c0574, "Sony SLT-A65V" },
++    { 0x054c059a, "Sony NWZ-B163F" },
++    { 0x054c05a6, "Sony Walkman NWZ-E464" },
++    { 0x054c05a8, "Sony NWZ-S765" },
++    { 0x054c05b3, "Sony Sony Tablet S" },
++    { 0x054c05b4, "Sony Sony Tablet S1" },
++    { 0x054c061f, "Sony DSC-HX200V" },
++    { 0x054c1294, "Sony DCR-SR75" },
++    { 0x05ac1290, "Apple iPhone" },
++    { 0x05ac1291, "Apple iPod Touch" },
++    { 0x05ac1292, "Apple iPhone 3G" },
++    { 0x05ac1293, "Apple iPod Touch 2G" },
++    { 0x05ac1294, "Apple iPhone 3GS" },
++    { 0x05ac1297, "Apple iPhone 4" },
++    { 0x05ac1299, "Apple iPod Touch 3rd Gen" },
++    { 0x05ac129a, "Apple iPad" },
++    { 0x05ac12a0, "Apple iPhone 4S" },
++    { 0x05c60229, "Nokia 5530 Xpressmusic" },
++    { 0x05c63196, "Nokia/Verizon 6205 Balboa/Verizon Music Phone" },
++    { 0x05ca0110, "Ricoh Caplio R5" },
++    { 0x05ca0325, "Ricoh Caplio GX" },
++    { 0x05ca0327, "Sea & Sea 5000G" },
++    { 0x05ca032b, "Ricoh Caplio R1v" },
++    { 0x05ca032d, "Ricoh Caplio GX 8" },
++    { 0x05ca032f, "Ricoh Caplio R3" },
++    { 0x05ca033d, "Ricoh Caplio RR750" },
++    { 0x05ca0353, "Sea & Sea 2G" },
++    { 0x05ca220f, "Rollei dr5" },
++    { 0x066f842a, "TrekStor Vibez 8/12GB" },
++    { 0x066f846c, "Maxfield G-Flash NG 1GB" },
++    { 0x066f8550, "Medion MD8333" },
++    { 0x066f8588, "Medion MD8333" },
++    { 0x066fa010, "SigmaTel Inc. MTPMSCN Audio Player" },
++    { 0x069b0774, "Thomson EM28 Series" },
++    { 0x069b0777, "Thomson / RCA Opal / Lyra MC4002" },
++    { 0x069b077c, "Thomson Lyra MC5104B (M51 Series)" },
++    { 0x069b301a, "Thomson RCA H106" },
++    { 0x069b3028, "Thomson scenium E308" },
++    { 0x069b3035, "Thomson / RCA Lyra HC308A" },
++    { 0x06d321ba, "FOMA D905i" },
++    { 0x07817400, "SanDisk Sansa m230/m240" },
++    { 0x07817401, "SanDisk Sansa m200-tcc (MTP mode)" },
++    { 0x07817410, "SanDisk Sansa c150" },
++    { 0x07817420, "SanDisk Sansa e200/e250/e260/e270/e280" },
++    { 0x07817422, "SanDisk Sansa e260/e280 v2" },
++    { 0x07817430, "SanDisk Sansa m240/m250" },
++    { 0x07817432, "SanDisk Sansa Clip" },
++    { 0x07817434, "SanDisk Sansa Clip v2" },
++    { 0x07817450, "SanDisk Sansa c240/c250" },
++    { 0x07817452, "SanDisk Sansa c250 v2" },
++    { 0x07817460, "SanDisk Sansa Express" },
++    { 0x07817480, "SanDisk Sansa Connect" },
++    { 0x078174b0, "SanDisk Sansa View" },
++    { 0x078174c0, "SanDisk Sansa Fuze" },
++    { 0x078174c2, "SanDisk Sansa Fuze v2" },
++    { 0x078174d0, "SanDisk Sansa Clip+" },
++    { 0x078174e0, "SanDisk Sansa Fuze+" },
++    { 0x078174e4, "SanDisk Sansa Clip Zip" },
++    { 0x07b40102, "Olympus E-1" },
++    { 0x07b40109, "Olympus X-925" },
++    { 0x07b40110, "Olympus E-410" },
++    { 0x07b40113, "Olympus mju 500" },
++    { 0x07b40114, "Olympus IR-300" },
++    { 0x07b40116, "Olympus X925" },
++    { 0x07b40118, "Olympus E-410" },
++    { 0x07b4012f, "Olympus E-PL5" },
++    { 0x07cf1042, "Casio EX-Z120" },
++    { 0x07cf1049, "Casio EX-S770" },
++    { 0x07cf104c, "Casio EX-Z700" },
++    { 0x07cf104d, "Casio EX-Z65" },
++    { 0x08e40142, "Pioneer DVR-LX60D" },
++    { 0x08e40148, "Pioneer XMP3" },
++    { 0x09300009, "Toshiba Gigabeat MEGF-40" },
++    { 0x0930000c, "Toshiba Gigabeat" },
++    { 0x0930000f, "Toshiba Gigabeat P20" },
++    { 0x09300010, "Toshiba Gigabeat S" },
++    { 0x09300011, "Toshiba Gigabeat P10" },
++    { 0x09300014, "Toshiba Gigabeat V30" },
++    { 0x09300016, "Toshiba Gigabeat U" },
++    { 0x09300018, "Toshiba Gigabeat MEU202" },
++    { 0x09300019, "Toshiba Gigabeat T" },
++    { 0x0930001a, "Toshiba Gigabeat MEU201" },
++    { 0x0930001d, "Toshiba Gigabeat MET401" },
++    { 0x09300963, "Toshiba Excite AT300" },
++    { 0x09307100, "Toshiba Thrive AT100/AT105" },
++    { 0x095570a9, "nVidia CM9-Adam" },
++    { 0x0a17000d, "Pentax Optio 43WR" },
++    { 0x0a1700f7, "Pentax Optio W90" },
++    { 0x0aa63011, "Tevion MD 81488" },
++    { 0x0aa66021, "Disney MixMax" },
++    { 0x0aa69601, "MyMusix PD-6070" },
++    { 0x0aa69702, "Perception Digital, Ltd Gigaware GX400" },
++    { 0x0b054c80, "Asus TF300 Transformer" },
++    { 0x0b054c81, "Asus TF300 Transformer (USB debug mode)" },
++    { 0x0b054c90, "Asus TF700 Transformer" },
++    { 0x0b054d00, "Asus TF201 Transformer Prime (keyboard dock)" },
++    { 0x0b054d01, "Asus TF201 Transformer Prime (tablet only)" },
++    { 0x0b054d04, "Asus TFXXX Transformer Prime (unknown version)" },
++    { 0x0b054e01, "Asus TF101 Eeepad Slider" },
++    { 0x0b054e0f, "Asus TF101 Eeepad Transformer" },
++    { 0x0b054e1f, "Asus TF101 Eeepad Transformer (debug mode)" },
++    { 0x0b20ddee, "Isabella Her Prototype" },
++    { 0x0b28100c, "Kenwood Media Keg HD10GB7 Sport Player" },
++    { 0x0bb40c02, "HTC Zopo ZP100 (ID1)" },
++    { 0x0bb40c93, "HTC EVO 4G LTE" },
++    { 0x0bb40ca8, "HTC EVO 4G LTE (second ID)" },
++    { 0x0bb42008, "HTC Zopo ZP100 (ID2)" },
++    { 0x0bb4685c, "Hewlett-Packard HP Touchpad" },
++    { 0x0db05572, "Micro-Star International P610/Model MS-5557" },
++    { 0x0e210701, "Cowon iAudio U3 (MTP mode)" },
++    { 0x0e210711, "Cowon iAudio 6 (MTP mode)" },
++    { 0x0e210751, "Cowon iAudio 7 (MTP mode)" },
++    { 0x0e210761, "Cowon iAudio U5 (MTP mode)" },
++    { 0x0e210801, "Cowon iAudio D2 (MTP mode)" },
++    { 0x0e210861, "Cowon iAudio D2+ FW 2.x (MTP mode)" },
++    { 0x0e210871, "Cowon iAudio D2+ DAB FW 4.x (MTP mode)" },
++    { 0x0e210881, "Cowon iAudio D2+ FW 3.x (MTP mode)" },
++    { 0x0e210891, "Cowon iAudio D2+ DMB FW 1.x (MTP mode)" },
++    { 0x0e210901, "Cowon iAudio S9 (MTP mode)" },
++    { 0x0e210911, "Cowon iAudio 9 (MTP mode)" },
++    { 0x0e210921, "Cowon iAudio J3 (MTP mode)" },
++    { 0x0e210931, "Cowon iAudio X7 (MTP mode)" },
++    { 0x0e210941, "Cowon iAudio C2 (MTP mode)" },
++    { 0x0e210952, "Cowon iAudio 10 (MTP mode)" },
++    { 0x0e791207, "Archos Gmini XS100" },
++    { 0x0e791208, "Archos XS202 (MTP mode)" },
++    { 0x0e79120a, "Archos 104 (MTP mode)" },
++    { 0x0e79120c, "Archos 204 (MTP mode)" },
++    { 0x0e791301, "Archos 404 (MTP mode)" },
++    { 0x0e791303, "Archos 404CAM (MTP mode)" },
++    { 0x0e791307, "Archos 504 (MTP mode)" },
++    { 0x0e791309, "Archos 604 (MTP mode)" },
++    { 0x0e79130b, "Archos 604WIFI (MTP mode)" },
++    { 0x0e79130d, "Archos 704 mobile dvr" },
++    { 0x0e79130f, "Archos 704TV (MTP mode)" },
++    { 0x0e791311, "Archos 405 (MTP mode)" },
++    { 0x0e791313, "Archos 605 (MTP mode)" },
++    { 0x0e791315, "Archos 605F (MTP mode)" },
++    { 0x0e791319, "Archos 705 (MTP mode)" },
++    { 0x0e79131b, "Archos TV+ (MTP mode)" },
++    { 0x0e79131d, "Archos 105 (MTP mode)" },
++    { 0x0e791321, "Archos 405HDD (MTP mode)" },
++    { 0x0e791331, "Archos 5 (MTP mode)" },
++    { 0x0e791333, "Archos 5 (MTP mode)" },
++    { 0x0e791335, "Archos 7 (MTP mode)" },
++    { 0x0e791341, "Archos SPOD (MTP mode)" },
++    { 0x0e791351, "Archos 5S IT (MTP mode)" },
++    { 0x0e791357, "Archos 5H IT (MTP mode)" },
++    { 0x0e791458, "Archos Arnova Childpad" },
++    { 0x0e791508, "Archos 8o G9 (MTP mode)" },
++    { 0x0e791509, "Archos 8o G9 Turbo (MTP mode)" },
++    { 0x0e791518, "Archos 80G9" },
++    { 0x0e791528, "Archos 101 G9" },
++    { 0x0e791529, "Archos 101 G9 (v2)" },
++    { 0x0e791538, "Archos 101 G9 Turbo 250 HD" },
++    { 0x0e791539, "Archos 101 G9 Turbo" },
++    { 0x0e791568, "Archos 70it2 (mode 1)" },
++    { 0x0e791569, "Archos 70it2 (mode 2)" },
++    { 0x0fca8007, "RIM BlackBerry Storm/9650" },
++    { 0x0fce0075, "SonyEricsson K850i" },
++    { 0x0fce0076, "SonyEricsson W910" },
++    { 0x0fce00b3, "SonyEricsson W890i" },
++    { 0x0fce00c6, "SonyEricsson W760i" },
++    { 0x0fce00d4, "SonyEricsson C902" },
++    { 0x0fce00d9, "SonyEricsson C702" },
++    { 0x0fce00da, "SonyEricsson W980" },
++    { 0x0fce00ef, "SonyEricsson C905" },
++    { 0x0fce00f3, "SonyEricsson W595" },
++    { 0x0fce00f5, "SonyEricsson W902" },
++    { 0x0fce00fb, "SonyEricsson T700" },
++    { 0x0fce0105, "SonyEricsson W705/W715" },
++    { 0x0fce0112, "SonyEricsson W995" },
++    { 0x0fce0133, "SonyEricsson U5" },
++    { 0x0fce013a, "SonyEricsson U8i" },
++    { 0x0fce0144, "SonyEricsson j10i2 (Elm)" },
++    { 0x0fce014e, "SonyEricsson j108i (Cedar)" },
++    { 0x0fce014f, "SonyEricsson LT15i Xperia arc S MTP" },
++    { 0x0fce0156, "SonyEricsson MT11i Xperia Neo MTP" },
++    { 0x0fce015a, "SonyEricsson MK16i Xperia MTP" },
++    { 0x0fce0161, "SonyEricsson ST18a Xperia Ray MTP" },
++    { 0x0fce0166, "SonyEricsson SK17i Xperia Mini Pro MTP" },
++    { 0x0fce0167, "SonyEricsson ST15i Xperia Mini MTP" },
++    { 0x0fce0168, "SonyEricsson ST17i Xperia Active MTP" },
++    { 0x0fce0169, "SONY LT26i Xperia S MTP" },
++    { 0x0fce016d, "SONY WT19i Live Walkman MTP" },
++    { 0x0fce0170, "SONY ST21i Xperia Tipo MTP" },
++    { 0x0fce0171, "SONY ST15i Xperia U MTP" },
++    { 0x0fce0172, "SONY LT22i Xperia P MTP" },
++    { 0x0fce0173, "SONY MT27i Xperia Sola MTP" },
++    { 0x0fce0175, "SONY LT26w Xperia Acro HD IS12S MTP" },
++    { 0x0fce0176, "SONY LT26w Xperia Acro HD SO-03D MTP" },
++    { 0x0fce0177, "SONY LT28at Xperia Ion MTP" },
++    { 0x0fce0178, "SONY LT29i Xperia GX MTP" },
++    { 0x0fce017e, "SONY ST27i/ST27a Xperia go MTP" },
++    { 0x0fce0181, "SONY SO-05D Xperia SX MTP" },
++    { 0x0fce0182, "SONY LT30p Xperia T MTP" },
++    { 0x0fce0186, "SONY LT25i Xperia V MTP" },
++    { 0x0fce10c8, "SonyEricsson W302" },
++    { 0x0fce4168, "SonyEricsson ST17i Xperia Active MTP+CDROM" },
++    { 0x0fce4169, "SONY LT26i Xperia S MTP+CDROM" },
++    { 0x0fce4170, "SONY ST21i Xperia Tipo MTP+CDROM" },
++    { 0x0fce4171, "SONY ST25i Xperia U MTP+CDROM" },
++    { 0x0fce4172, "SONY LT22i Xperia P MTP+CDROM" },
++    { 0x0fce4173, "SONY MT27i Xperia Sola MTP+CDROM" },
++    { 0x0fce4175, "SONY LT26w Xperia Acro HD IS12S MTP+CDROM" },
++    { 0x0fce4176, "SONY LT26w Xperia Acro HD SO-03D MTP+CDROM" },
++    { 0x0fce4177, "SONY LT28at Xperia Ion MTP+CDROM" },
++    { 0x0fce4178, "SONY LT29i Xperia GX MTP+CDROM" },
++    { 0x0fce417e, "SONY ST27i/ST27a Xperia go MTP+CDROM" },
++    { 0x0fce4181, "SONY SO-05D Xperia SX MTP+CDROM" },
++    { 0x0fce4182, "SONY LT30p Xperia T MTP+CDROM" },
++    { 0x0fce4186, "SONY LT25i Xperia V MTP+CDROM" },
++    { 0x0fce514f, "SonyEricsson LT15i Xperia Arc MTP+ADB" },
++    { 0x0fce5156, "SonyEricsson MT11i Xperia Neo MTP+ADB" },
++    { 0x0fce515a, "SonyEricsson MK16i Xperia MTP+ADB" },
++    { 0x0fce5161, "SonyEricsson ST18i Xperia Ray MTP+ADB" },
++    { 0x0fce5166, "SonyEricsson SK17i Xperia Mini Pro MTP+ADB" },
++    { 0x0fce5167, "SonyEricsson ST15i Xperia Mini MTP+ADB" },
++    { 0x0fce5168, "SonyEricsson ST17i Xperia Active MTP+ADB" },
++    { 0x0fce5169, "SonyEricsson LT26i Xperia S MTP+ADB" },
++    { 0x0fce516d, "SonyEricsson SK17i Xperia Mini Pro MTP+ADB" },
++    { 0x0fce5170, "SONY ST21i Xperia Tipo MTP+ADB" },
++    { 0x0fce5171, "SONY ST25i Xperia U MTP+ADB" },
++    { 0x0fce5172, "SONY LT22i Xperia P MTP+ADB" },
++    { 0x0fce5173, "SONY MT27i Xperia Sola MTP+ADB" },
++    { 0x0fce5175, "SONY IS12S Xperia Acro HD MTP+ADB" },
++    { 0x0fce5176, "SONY SO-03D Xperia Acro HD MTP+ADB" },
++    { 0x0fce5177, "SONY LT28at Xperia Ion MTP+ADB" },
++    { 0x0fce5178, "SONY LT29i Xperia GX MTP+ADB" },
++    { 0x0fce517e, "SONY ST27i/ST27a Xperia go MTP+ADB" },
++    { 0x0fce5181, "SONY SO-05D Xperia SX MTP+ADB" },
++    { 0x0fce5182, "SONY LT30p Xperia T MTP+ADB" },
++    { 0x0fce5186, "SONY LT25i Xperia V MTP+ADB" },
++    { 0x0fcea173, "SONY MT27i Xperia Sola MTP+UMS" },
++    { 0x0fcea175, "SONY IS12S Xperia Acro HD MTP+UMS" },
++    { 0x0fcea176, "SONY SO-03D Xperia Acro HD MTP+UMS" },
++    { 0x0fcea177, "SONY LT28at Xperia Ion MTP+UMS" },
++    { 0x0fcea17e, "SONY ST27i/ST27a Xperia go MTP+UMS" },
++    { 0x0fceb173, "SONY MT27i Xperia Sola MTP+UMS+ADB" },
++    { 0x0fceb175, "SONY IS12S Xperia Acro MTP+UMS+ADB" },
++    { 0x0fceb176, "SONY SO-03D Xperia Acro MTP+UMS+ADB" },
++    { 0x0fceb177, "SONY LT28at Xperia Ion MTP+UMS+ADB" },
++    { 0x0fceb17e, "SONY ST27i/ST27a Xperia go MTP+UMS+ADB" },
++    { 0x0fced144, "SonyEricsson j10i (Elm)" },
++    { 0x0fcee000, "SonyEricsson K550i" },
++    { 0x10046010, "LG Electronics Inc. VX8550 V CAST Mobile Phone" },
++    { 0x1004608f, "LG Electronics Inc. KC910 Renoir Mobile Phone" },
++    { 0x1004611b, "LG Electronics Inc. GR-500 Music Player" },
++    { 0x10046132, "LG Electronics Inc. KM900" },
++    { 0x1004619a, "LG Electronics Inc. LG8575" },
++    { 0x100461f9, "LG Electronics Inc. V909 G-Slate" },
++    { 0x1004631c, "LG Electronics Inc. LG-E617G/P700" },
++    { 0x10063004, "iRiver H300 Series MTP" },
++    { 0x10064002, "iRiver Portable Media Center" },
++    { 0x10064003, "iRiver Portable Media Center" },
++    { 0x10421143, "iRiver T7 Volcano" },
++    { 0x106cf003, "Pantech Crux" },
++    { 0x10d62200, "Dunlop MP3 player 1GB / EGOMAN MD223AFD" },
++    { 0x10d62300, "Memorex or iRiver MMP 8585/8586 or iRiver E200" },
++    { 0x12d11051, "Huawei Honor U8860" },
++    { 0x12d1360f, "Huawei Mediapad (mode 0)" },
++    { 0x12d1361f, "Huawei Mediapad (mode 1)" },
++    { 0x13021016, "Haier Ibiza Rhapsody" },
++    { 0x13021017, "Haier Ibiza Rhapsody" },
++    { 0x132b0001, "Konica-Minolta DiMAGE A2" },
++    { 0x132b0007, "Konica-Minolta DiMAGE Z2" },
++    { 0x132b0009, "Konica-Minolta DiMAGE X21" },
++    { 0x132b0018, "Konica-Minolta DiMAGE Z3" },
++    { 0x132b0019, "Konica-Minolta DiMAGE A200" },
++    { 0x132b0022, "Konica-Minolta DiMAGE Z5" },
++    { 0x13d17002, "Logik LOG DAX MP3 and DAB Player" },
++    { 0x13d17017, "Technika MP-709" },
++    { 0x17030001, "NormSoft, Inc. Pocket Tunes" },
++    { 0x17030002, "NormSoft, Inc. Pocket Tunes 4" },
++    { 0x17ef740a, "Lenovo K1" },
++    { 0x17ef741c, "Lenovo ThinkPad Tablet" },
++    { 0x17ef7497, "Lenovo P700" },
++    { 0x17ef74cc, "Lenovo Lifetab S9512" },
++    { 0x18d105b3, "Google Inc (for Sony) S1" },
++    { 0x18d12d02, "Google Inc (for Barnes & Noble) Nook Color" },
++    { 0x18d14e0f, "Google Inc (for Asus) TF101 Transformer" },
++    { 0x18d14e21, "Google Inc (for Samsung) Nexus S" },
++    { 0x18d14e41, "Google Inc (for Asus) Nexus 7 (MTP)" },
++    { 0x18d14e42, "Google Inc (for Asus) Nexus 7 (MTP+ADB)" },
++    { 0x18d170a8, "Google Inc (for Motorola) Xoom (MZ604)" },
++    { 0x18d17102, "Google Inc (for Toshiba) Thrive 7/AT105" },
++    { 0x18d1740a, "Google Inc (for Lenovo) Ideapad K1" },
++    { 0x18d1b00a, "Google Inc (for Medion) MD99000 (P9514)" },
++    { 0x18d1d10a, "Google Inc (for LG Electronics) P990/Optimus" },
++    { 0x18f60102, "Sirius Stiletto" },
++    { 0x18f60110, "Sirius Stiletto 2" },
++    { 0x19d20244, "ZTE V55 ID 1" },
++    { 0x19d20245, "ZTE V55 ID 2" },
++    { 0x19ff0303, "Insignia NS-DV45" },
++    { 0x19ff0307, "Insignia Sport Player" },
++    { 0x19ff0309, "Insignia Pilot 4GB" },
++    { 0x1bdcfabf, "Slacker Inc. Slacker Portable Media Player" },
++    { 0x1e530005, "Conceptronic CMTD2" },
++    { 0x1e530006, "O2 Sistemas ZoltarTV" },
++    { 0x1e530007, "Wyplay Wyplayer" },
++    { 0x1e680002, "TrekStor i.Beat Organix 2.0" },
++    { 0x1e746512, "Coby COBY MP705" },
++    { 0x22070001, "Various Viewpia DR/bq Kepler" },
++    { 0x22b82a65, "Motorola V3m/V750 verizon" },
++    { 0x22b841cf, "Motorola Xoom 2 Media Edition (ID2)" },
++    { 0x22b841d6, "Motorola Droid X/MB525 (Defy)" },
++    { 0x22b841dc, "Motorola Milestone / Verizon Droid" },
++    { 0x22b842a7, "Motorola DROID2" },
++    { 0x22b84311, "Motorola Xoom 2 Media Edition" },
++    { 0x22b84362, "Motorola XT912/XT928" },
++    { 0x22b8437f, "Motorola DROID4" },
++    { 0x22b84811, "Motorola IdeaPad K1" },
++    { 0x22b860ca, "Motorola A1200" },
++    { 0x22b86413, "Motorola MTP Test Command Interface" },
++    { 0x22b86415, "Motorola RAZR2 V8/U9/Z6" },
++    { 0x22b870a3, "Motorola Xoom (Factory test)" },
++    { 0x22b870a8, "Motorola Xoom (MTP)" },
++    { 0x22b870a9, "Motorola Xoom (MTP+ADB)" },
++    { 0x22b870ca, "Motorola Milestone X2" },
++    { 0x41021008, "iRiver iFP-880" },
++    { 0x41021113, "iRiver T10" },
++    { 0x41021114, "iRiver T20 FM" },
++    { 0x41021115, "iRiver T20" },
++    { 0x41021116, "iRiver U10" },
++    { 0x41021117, "iRiver T10a" },
++    { 0x41021118, "iRiver T20" },
++    { 0x41021119, "iRiver T30" },
++    { 0x41021120, "iRiver T10 2GB" },
++    { 0x41021122, "iRiver N12" },
++    { 0x41021126, "iRiver Clix2" },
++    { 0x4102112a, "iRiver Clix" },
++    { 0x41021132, "iRiver X20" },
++    { 0x41021134, "iRiver T60" },
++    { 0x41021141, "iRiver E100" },
++    { 0x41021142, "iRiver E100 v2/Lplayer" },
++    { 0x41021147, "iRiver Spinn" },
++    { 0x41021151, "iRiver E50" },
++    { 0x41021153, "iRiver T5" },
++    { 0x41021167, "iRiver E30" },
++    { 0x41022101, "iRiver H10 20GB" },
++    { 0x41022102, "iRiver H10 5GB" },
++    { 0x41022105, "iRiver H10 5.6GB" },
++    { 0x413c4500, "Dell, Inc DJ Itty" },
++    { 0x413cb10b, "Dell, Inc Dell Streak 7" },
+     { 0, NULL }
+ };
+ value_string_ext ext_usb_products_vals = VALUE_STRING_EXT_INIT(usb_products_vals);
+diff --git tools/usb-ptp-extract-models.pl tools/usb-ptp-extract-models.pl
+new file mode 100755
+index 0000000..bce8253
+--- /dev/null
++++ tools/usb-ptp-extract-models.pl
+@@ -0,0 +1,110 @@
++#!/usr/bin/perl -w
++# 
++# $Id$
++# 
++# USB PTP Dissector
++#    Extracts USB devices from libgphoto2
++#  This is then hand-merged into usb.c
++# 
++# (c)2013 Max Baker <max@warped.org>
++# 
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License
++# as published by the Free Software Foundation; either version 2
++# of the License, or (at your option) any later version.
++# 
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++# 
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++$re_hex = '0x[0-9a-f]+';
++
++parse_file('library.c',1);
++parse_file('music-players.h',0);
++
++foreach my $vendor (sort {hex($a) <=> hex($b)} keys %devices) {
++    my $p = $devices{$vendor};
++    foreach my $product (sort {hex($a) <=> hex($b)} keys %$p) {
++        # { 0xeb1ae355, "KWorld DVB-T 355U Digital TV Dongle" },
++        #printf "%s %s %s\n", $vendor, $product, $p->{$product};
++        my $v = $vendor; $v =~ s/^0x//i;
++        my $pd = $product; $pd =~ s/^0x//i;
++        printf "    { 0x%s%s, \"%s\" },\n",$v, $pd, $p->{$product};
++    }
++}
++
++exit;
++
++sub parse_file {
++    my $file = shift;
++    my $detect = shift;
++
++    my $start = !$detect;
++
++    open (H,"<$file") or die;
++    while (<H>) {
++        chomp;
++
++        # Look for models[] line as start
++        if (/\bmodels\[\]/) {
++            $start = 1;
++            next;
++        }
++
++        # Look for }; as the end
++        $start = 0 if /^\s*};/;
++
++        next unless $start;
++        # Skip comment lines
++
++        # Remove comments
++        s,/\*.*\*/,,g;
++
++        s,^\s*,,;
++        s,\s*$,,;
++
++        # Skip blank lines
++        next if /^$/;
++        next if m,^\s*/?\*,;
++
++        my $line = $_;
++
++        my ($model, $vendor, $product, $manif);
++
++        # {"Nikon:DSC D90 (PTP mode)",  0x04b0, 0x0421, PTP_CAP|PTP_CAP_PREVIEW},
++        if($line =~ m/^\{
++            "([^"]+)",\s*
++            ($re_hex),\s*
++            ($re_hex),\s*
++            /xi) {
++
++            ($model, $vendor, $product) = ($1,$2,$3);
++            $model =~ s/:/ /;
++            $model =~ s/\(.*\)//;
++        }
++        # { "Creative", 0x041e, "ZEN X-Fi 3", 0x4169,
++        # { "TrekStor", 0x0402, "i.Beat Sweez FM", 0x0611,
++        if($line=~ m/^\{\s*
++            "([^"]+)",\s*
++            ($re_hex),\s*
++            "([^"]+)",\s*
++            ($re_hex),\s*
++            /xi) {
++            ($manif, $vendor, $model, $product) = ($1,$2,$3,$4);
++            $model = "$manif $model";
++        }
++        
++        next unless defined $vendor;
++
++        $model =~ s/\s+/ /g;
++        $model =~ s/\s*$//;
++
++        #print "$vendor $product $model\n";
++        $devices{$vendor}->{$product}=$model;
++    }
++}
+diff --git tools/usb-ptp-extract-tables.pl tools/usb-ptp-extract-tables.pl
+new file mode 100755
+index 0000000..9af86c7
+--- /dev/null
++++ tools/usb-ptp-extract-tables.pl
+@@ -0,0 +1,123 @@
++#!/usr/bin/perl -w
++# 
++# $Id$
++# 
++# USB PTP Dissector
++#    Extracts PTP response codes from libgphoto2
++#  This is then hand-merged into packet-usb-ptp.h
++# 
++# (c)2013 Max Baker <max@warped.org>
++# 
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License
++# as published by the Free Software Foundation; either version 2
++# of the License, or (at your option) any later version.
++# 
++# This program is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++# 
++# You should have received a copy of the GNU General Public License
++# along with this program; if not, write to the Free Software
++# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++
++$file = shift @ARGV || 'ptp.h';
++
++%tables = (
++'PTP_AC' => 'StorageInfo Access Capability',
++'PTP_AT' => 'Association Types',
++'PTP_DPC' => 'Device Properties Codes',
++'PTP_DPFF' => 'Device Property Form Flag',
++'PTP_DPGS' => 'Device Property GetSet type',
++'PTP_DTC' => 'Data Type Codes',
++'PTP_EC' => 'Event Codes',
++'PTP_FST' => 'FilesystemType Values',
++'PTP_GOH' => 'GetObjectHandles',
++'PTP_OC' => 'Operation Codes',
++'PTP_OFC' => 'Object Format Codes',
++'PTP_OPC' => 'MTP Object Properties',
++'PTP_OPFF' => 'MTP Device Property Codes',
++'PTP_PS' => 'Protection Status',
++'PTP_RC' => 'Response Codes',
++'PTP_ST' => 'Storage Types',
++'PTP_FLAVOR' => 'Vendor IDs',
++);
++
++%Flavors = qw/
++ANDROID     USB_PTP_FLAVOR_ANDROID
++CANON       USB_PTP_FLAVOR_CANON
++CANON_EOS   USB_PTP_FLAVOR_CANON
++CASIO       USB_PTP_FLAVOR_CASIO
++EK          USB_PTP_FLAVOR_KODAK
++FUJI        USB_PTP_FLAVOR_FUJI
++MTP         USB_PTP_FLAVOR_MTP
++NIKON       USB_PTP_FLAVOR_NIKON
++OLYMPUS     USB_PTP_FLAVOR_OLYMPUS
++/;
++
++$re_hex = '0x[0-9a-f]+';
++
++open (H,"<$file") or die;
++while (<H>) {
++    chomp;
++
++    next unless /^\s*#define\s+(\S+)\s+(.*)$/;
++    
++    my ($define,$val) = ($1,$2);
++    # strip c-style comment
++    $val =~ s,/\*.*\*/,,;
++    $val =~ s,//.*,,;
++    $val =~ s/^\s*//g;
++    $val =~ s/\s*$//g;
++
++    #print "$define=$val\n";
++    $D{$define}=$val;
++}
++
++close H;
++
++# Output tables
++foreach my $table (sort keys %tables) {
++    output_table($table, $tables{$table});
++}
++
++sub output_table {
++    my ($table,$desc) = @_;
++
++    my $id = lc($table);
++    $id =~ s/^PTP_//i;
++
++    print "/* $table $desc */\n";
++    print "static const value_string_masked usb_ptp_${id}_vals\[\] = {\n";
++    my @vals;
++    DEFINE:
++    foreach my $define (sort sort_D keys %D) {
++        next unless $define =~ /^${table}_(.*)/i;
++        my $subdefine = $1;
++
++        my $type = 'USB_PTP_FLAVOR_ALL';
++        foreach my $flavor (sort {length($b) <=> length($a)} keys %Flavors) {
++            next unless $subdefine =~ s/^${flavor}_//i;
++            $type = $Flavors{$flavor}
++        }
++
++        # Ok, not a subflavor
++        push @vals, sprintf("    {%-25s, %s, \"%s\"}",$type,lc($D{$define}),$subdefine);
++    }
++    print join(",\n",@vals),"\n";
++    print "};\n";
++}
++
++
++sub sort_D {
++    my $aa = $D{$a};
++    $aa = hex($aa) if $aa=~/^${re_hex}$/i;
++    $bb = $D{$b} || $b;
++    $bb = hex($bb) if $bb=~/^${re_hex}$/i;
++
++    if ($aa =~ /^\d+$/ and $bb=~/^\d+$/) {
++        return $aa <=> $bb;
++    }
++    return $aa cmp $bb;
++}
