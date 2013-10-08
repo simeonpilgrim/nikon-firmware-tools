@@ -65,7 +65,7 @@ public class Prefs {
     private EmulatorUI.RunMode[]               altModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
-    private Map<String, Integer>               buttonsValue;
+    private Map<String, Integer>               buttonsState;
 
     private int screenEmulatorRefreshIntervalMs;
 
@@ -606,14 +606,14 @@ public class Prefs {
         this.altExecutionModeForSyncedCpuUponStep[chip] = altExecutionModeForSyncedCpuUponStep;
     }
 
-    public void setButtonValue(String key, Integer value) {
-        if (buttonsValue == null) buttonsValue = new HashMap<>();
-        buttonsValue.put(key, value);
+    public void setButtonState(String key, Integer state) {
+        if (buttonsState == null) buttonsState = new HashMap<>();
+        buttonsState.put(key, state);
     }
 
-    public Integer getButtonValue(String key) {
-        if (buttonsValue == null) buttonsValue = new HashMap<>();
-        return buttonsValue.get(key);
+    public Integer getButtonState(String key) {
+        if (buttonsState == null) buttonsState = new HashMap<>();
+        return buttonsState.get(key);
     }
 
     public int getScreenEmulatorRefreshIntervalMs() {
