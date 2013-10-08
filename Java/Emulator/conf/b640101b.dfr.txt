@@ -1680,7 +1680,7 @@
 -s 0xBFC1E=setup_timer_190
 -s 0xBFC80=clearTimer_190
 -s 0xBFC90=set_flg_31_1
--s 0xC0CC8=s40x7_C0CC8
+-s 0xC0CC8=wait_for_s40x7
 -s 0xC0D72=nullsub_41
 -s 0xC0D74=ccall_funptr_8F9DCCA8
 -s 0xC0D82=nullsub_42
@@ -1999,6 +1999,7 @@
 -s 0x105CA8=tsk30_lv_sub1
 -s 0x105DD8=Tsk31_getItemFromDlist_x22
 -s 0x106270=set_flg_20_10000260
+-s 0x106316=set_flag_x16_xA60
 -s 0x1074F2=dlist_init(R4 [IN ptr_to_list] /*creates sentinel node at the beginning*/)
 -s 0x1074FA=dlist_is_empty(R4 [IN ptr_to_element; OUT is_empty] /*if R4->prev == R4, only the sentinel node remains*/)
 -s 0x107506=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
@@ -2220,6 +2221,7 @@
 -s 0x12B38A=inttab_4d_call_sub_1E404C
 -s 0x12B504=setflag_1F_40000000
 -s 0x12BD64=Tsk27
+-s 0x12C638=Tsk1D_body_B
 -s 0x12E0DC=start_task_x1C
 -s 0x12E0E8=Tsk1C
 -s 0x12E828=task1C_timer_200ms
@@ -2255,7 +2257,7 @@
 -s 0x12FA84=ptp_OPC_VideoFourCCCodec
 -s 0x12FB8E=ptp_OPC_VideoBitRate
 -s 0x13122C=FillOutStruct_149
--s 0x13159C=Tsk1D_body
+-s 0x13159C=Tsk1D_body_A
 -s 0x1318DA=ptp_OC_GetDeviceInfo
 -s 0x131AA4=ptp_OC_OpenSession
 -s 0x131B72=ptp_OC_CloseSession
@@ -2914,6 +2916,10 @@
 -s 0x1ADFB0=Div_RoundDown
 -s 0x1AE07C=diskPartition_xxx
 -s 0x1B0822=call_time
+-s 0x1B09AC=call_sub_1B2242
+-s 0x1B4F78=waitFlag_x17_N
+-s 0x1B4FA2=clearFlag_x17_N
+-s 0x1B4FBE=setFlag_x17_N
 -s 0x1B56B2=inttab_3B_body
 -s 0x1B604A=int_34_body
 -s 0x1B6088=int_35_body
@@ -3452,7 +3458,7 @@
 -s 0x1DEB8C=signal_semaphore_x14
 -s 0x1DEBA0=inttab_3A_body
 -s 0x1DEBC4=setup_semaphore_x1B
--s 0x1DEBF2=val_40130000
+-s 0x1DEBF2=get_4013xxxx_addr
 -s 0x1DEC6C=s4013_1DEC6C
 -s 0x1DEF92=WaitOn_semaphore_8F96105C
 -s 0x1DEFA6=Signal_semaphore_8F96105C
@@ -5485,13 +5491,22 @@
 -s 0x319A18=renderInfoScreenFull
 -s 0x319B1E=renderInfoBackground
 -s 0x319D08=renderInfoRemainingPicsBackground
+-s 0x31A04E=renderInfo_31A04E
 -s 0x31A216=renderInfoPASMMode
 -s 0x31A48A=renderInfoShutterSpeed
 -s 0x31AF1C=renderInfoApertureValue
+-s 0x31B578=renderInfo_31B578
+-s 0x31B90C=renderInfo_31B90C
 -s 0x31BA2E=renderInfoRemainingPics
+-s 0x31C2D8=renderInfo_31C2D8
 -s 0x31C5CE=renderInfoAFAreaIndicatorFrame
+-s 0x31CA8E=renderInfo_31CA8E
+-s 0x31CD3E=renderInfo_31CD3E
 -s 0x31CF82=renderInfoBeep
+-s 0x31D186=renderInfo_31D186
 -s 0x31D378=renderInfoBattery
+-s 0x31D6AE=renderInfo_31D6AE
+-s 0x31D88E=renderInfo_31D88E
 -s 0x31DA30=renderInfoImageQuality
 -s 0x31DDB0=PicFrmtMenu_xx2
 -s 0x31DF30=JpgSizeMenu_xx2
@@ -5526,7 +5541,10 @@
 -s 0x323B60=renderInfoAEBKTStatus
 -s 0x324154=renderInfoPictureControl
 -s 0x3241CC=PictureCtrlMenu_xx2
+-s 0x324354=renderInfo_324354
+-s 0x324552=renderInfo_324552
 -s 0x32475A=SW_123_On_Off
+-s 0x32480A=renderInfo_32480A
 -s 0x326C48=MainUI_ProcessLoop
 -s 0x327510=RotateMenuIdx
 -s 0x327550=MainUI_CanChangeSetting
