@@ -2855,6 +2855,7 @@
 -s 0x1A54C6=Avi_headers_xx
 -s 0x1A8128=call_sub_1A2C62
 -s 0x1A879A=disableSerial5
+-s 0x1A87A6=setP05_aka_serial_sync
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19
 -s 0x1A87C2=Tsk19_loop
