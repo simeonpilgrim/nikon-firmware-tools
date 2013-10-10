@@ -1207,6 +1207,7 @@ public class TxInstructionSet
                 }
             });
     private static final TxInstruction breakInstruction = new TxInstruction("break", "u", "", "", "", "break 100",
+            /* e.g. 0xBFC52FA6 E8E5     break   0x07 */
             "Break execution with code: Terminate program execution with specified exception code",
             InstructionFormat32.BREAK, InstructionFormat16.BREAK,
             Instruction.FlowType.INT, false, Instruction.DelaySlotType.NONE,
