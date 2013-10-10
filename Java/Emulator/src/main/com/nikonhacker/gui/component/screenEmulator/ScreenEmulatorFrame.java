@@ -127,6 +127,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     }
 
     private class ScreenEmulatorComponent extends JComponent {
+        private double currentScale = 1;
 
         private ScreenEmulatorComponent() {
             super();
@@ -157,8 +158,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     resizeTransform = new AffineTransform();
                     double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
                     double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
-                    double scale = Math.min(scaleX, scaleY);
-                    resizeTransform.scale(scale, scale);
+                    currentScale = Math.min(scaleX, scaleY);
+                    resizeTransform.scale(currentScale, currentScale);
                     previousW = w;
                     previousH = h;
                 }
@@ -173,8 +174,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     g2d.setFont(new Font("Arial", Font.PLAIN, 50));
                     g2d.setColor(Color.gray);
                     // Center using actual width horizontally, and max char height vertically
-                    double x = (screenWidth * resizeTransform.getScaleX() - g2d.getFontMetrics().getStringBounds(s, g2d).getWidth()) / 2;
-                    double y = (screenHeight * resizeTransform.getScaleY() + g2d.getFontMetrics().getMaxAscent()) / 2;
+                    double x = (screenWidth * currentScale - g2d.getFontMetrics().getStringBounds(s, g2d).getWidth()) / 2;
+                    double y = (screenHeight * currentScale + g2d.getFontMetrics().getMaxAscent()) / 2;
                     g2d.drawString(s, (int) x, (int) (y));
                 }
             }
@@ -183,9 +184,9 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         @Override
         public String getToolTipText(MouseEvent event) {
             Point mousePos = getMousePosition();
-            if (mousePos==null)
+            if (mousePos==null || currentScale==0)
                 return "";
-            return ""+mousePos.x+","+mousePos.y;
+            return ""+(int)(mousePos.x/currentScale)+","+(int)(mousePos.y/currentScale);
         }
 
         public void dispose() {
