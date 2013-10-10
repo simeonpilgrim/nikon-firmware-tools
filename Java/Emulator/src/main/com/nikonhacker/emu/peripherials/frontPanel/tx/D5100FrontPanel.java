@@ -33,16 +33,18 @@ public class D5100FrontPanel extends FrontPanel {
 
         addCameraButton(KEY_SHUTTER, new String[][]{{null, "half", "on"}, {"highlight", "highlight_half", "on"}}, false, new int[][]{{0, 1, 1}, {0, 0, 1}});
 
-        addCameraButton(KEY_DIAL, new String[][]{{null, null}, {"highlight", "highlight"}}, true, new int[][]{{1, 0}});
+        addCameraButton(KEY_DIAL, new String[][]{{null, null, null, null}, {"highlight", "highlight", "highlight", "highlight"}}, false, new int[][]{{0, 1, 1, 0}, {0, 0, 1, 1}});
+
+        // TEMPORARY TEST: pretend mode dial has 16 positions so that all 4-bits combinations can be tested
         addCameraButton(KEY_MODEDIAL, new String[][]{
-                {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
-                {"0_highlight", "1_highlight", "2_highlight", "3_highlight", "4_highlight", "5_highlight", "6_highlight", "7_highlight", "8_highlight", "9_highlight", "10_highlight", "11_highlight", "12_highlight"}},
-                false, new int[][]{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12}});
+                {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "11", "10", "9"},
+                {"0_highlight", "1_highlight", "2_highlight", "3_highlight", "4_highlight", "5_highlight", "6_highlight", "7_highlight", "8_highlight", "9_highlight", "10_highlight", "11_highlight", "12_highlight", "11_highlight", "10_highlight", "9_highlight"}},
+                false, new int[][]{{0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1},
+                                   {0,0,0,0,1,1,1,1,0,0,0,0,1,1,1,1},
+                                   {0,0,1,1,0,0,1,1,0,0,1,1,0,0,1,1},
+                                   {0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1}});
 
         // addLed(panel, "led", bgWidth, bgHeight);
-
-        // TODO initialize values from ui.getPrefs();
-        // TODO when do we save values ?
     }
 
 }

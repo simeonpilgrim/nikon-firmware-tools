@@ -497,14 +497,21 @@ public class EmulationFramework {
         Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton(FrontPanel.KEY_DELETE).getPin(0));
 
         //L17	PJ5/INT17	Shutter "half-pressed"
+        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0));
         //U16	P56/A6/TB2OUT/KEY28	Shutter
-//        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0));
-//        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
+//        TODO Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
 
         // From http://nikonhacker.com/viewtopic.php?f=6&t=731&hilit=sd+card&start=20#p4353
         // P57 and P56 might be scroll wheel
-//        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(0));
-//        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(7), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(1));
+        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(0));
+        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(7), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(1));
+
+        // ?? MODE DIAL
+        // PKEY20,21,22,23 (PF4, PF5, PF6, PF7)
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(4), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(0));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(5), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(1));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(6), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(2));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(7), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(3));
 
         // PI3/PHC5IN1	lens release button
         // TODO
