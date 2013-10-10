@@ -61,7 +61,7 @@ public class CameraButton {
 
         // Create pins, initialized according to stored state
         for (int i = 0; i < numberPins; i++) {
-            buttonPins[i] = new ButtonOutputPin(key + " button" + (numberPins==1?"":(""+i)), statePinValues[i][state]);
+            buttonPins[i] = new ButtonOutputPin(key + " button" + (numberPins==1?"":(" pin"+i)), statePinValues[i][state]);
         }
     }
 
