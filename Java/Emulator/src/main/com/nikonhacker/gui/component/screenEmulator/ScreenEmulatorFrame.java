@@ -127,6 +127,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     }
 
     private class ScreenEmulatorComponent extends JComponent {
+        private double currentScale = 1;
 
         private ScreenEmulatorComponent() {
             super();
@@ -137,7 +138,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         // This method is called whenever the contents needs to be painted
         public void paintComponent(Graphics graphics) {
             Graphics2D g2d = (Graphics2D) graphics;
-
+            
             if (img!=null) {
                 if (img.getWidth()!=screenWidth || img.getHeight()!=screenHeight || yuvAlign != previousYuvAlign) {
                     img.flush();
@@ -157,8 +158,8 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     resizeTransform = new AffineTransform();
                     double scaleX = Math.max(0.5, (2 * w / screenWidth) / 2.0);
                     double scaleY = Math.max(0.5, (2 * h / screenHeight) / 2.0);
-                    double scale = Math.min(scaleX, scaleY);
-                    resizeTransform.scale(scale, scale);
+                    currentScale = Math.min(scaleX, scaleY);
+                    resizeTransform.scale(currentScale, currentScale);
                     previousW = w;
                     previousH = h;
                 }
@@ -172,9 +173,9 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         @Override
         public String getToolTipText(MouseEvent event) {
             Point mousePos = getMousePosition();
-            if (mousePos==null)
+            if (mousePos==null || currentScale==0)
                 return "";
-            return ""+mousePos.x+","+mousePos.y;
+            return ""+(int)(mousePos.x/currentScale)+","+(int)(mousePos.y/currentScale);
         }
 
         public void dispose() {
