@@ -19,22 +19,22 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private AffineTransform resizeTransform;
     private int previousW, previousH;
 
-    private int yStart, uStart, vStart, yuvAlign, previousYuvAlign;
+    private int yAddr, cbAddr, crAddr, yuvAlign, previousYuvAlign;
     private int screenHeight, screenWidth;
 
     private BufferedImage img;
-    
+
     private FrLcd lcd;
 
-    private Timer refreshTimer;
+    private       Timer      refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
     private ScreenEmulatorComponent screenEmulator;
 
-    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yStart, int uStart, int vStart, int screenWidth, int screenHeight, int refreshInterval) {
+    public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yAddr, int cbAddr, int crAddr, int screenWidth, int screenHeight, int refreshInterval) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
-        this.yStart = yStart;
-        this.uStart = uStart;
-        this.vStart = vStart;
+        this.yAddr = yAddr;
+        this.cbAddr = cbAddr;
+        this.crAddr = crAddr;
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         this.yuvAlign = screenWidth;
@@ -42,17 +42,17 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
         JPanel selectionPanel = new JPanel();
         selectionPanel.add(new JLabel("Y = 0x"));
-        yAddressField = new JTextField(Format.asHex(yStart, 8), 8);
+        yAddressField = new JTextField(Format.asHex(yAddr, 8), 8);
         selectionPanel.add(yAddressField,BorderLayout.WEST);
         yAddressField.addActionListener(this);
 
         selectionPanel.add(new JLabel(" U = 0x"));
-        uAddressField = new JTextField(Format.asHex(uStart, 8), 8);
+        uAddressField = new JTextField(Format.asHex(cbAddr, 8), 8);
         selectionPanel.add(uAddressField);
         uAddressField.addActionListener(this);
 
         selectionPanel.add(new JLabel(" V = 0x"));
-        vAddressField = new JTextField(Format.asHex(vStart, 8), 8);
+        vAddressField = new JTextField(Format.asHex(crAddr, 8), 8);
         selectionPanel.add(vAddressField);
         vAddressField.addActionListener(this);
 
@@ -100,9 +100,9 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     public void actionPerformed(ActionEvent e) {
         int width,align;
         
-        this.yStart = Format.parseIntHexField(yAddressField);
-        this.uStart = Format.parseIntHexField(uAddressField);
-        this.vStart = Format.parseIntHexField(vAddressField);
+        this.yAddr = Format.parseIntHexField(yAddressField);
+        this.cbAddr = Format.parseIntHexField(uAddressField);
+        this.crAddr = Format.parseIntHexField(vAddressField);
         try {
             width = Format.parseUnsignedField(widthField);
             align = Format.parseUnsignedField(yuvAlignField);
@@ -163,9 +163,20 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     previousH = h;
                 }
     
-                lcd.updateImage(img, yStart, uStart, vStart, yuvAlign);
-    
+                lcd.updateImage(img, yAddr, cbAddr, crAddr, yuvAlign);
+
                 g2d.drawImage(img, resizeTransform, null);
+
+                // Overlay "off" if powered off
+                if (!lcd.isPoweredOn()) {
+                    String s = "OFF";
+                    g2d.setFont(new Font("Arial", Font.PLAIN, 50));
+                    g2d.setColor(Color.gray);
+                    // Center using actual width horizontally, and max char height vertically
+                    double x = (screenWidth * resizeTransform.getScaleX() - g2d.getFontMetrics().getStringBounds(s, g2d).getWidth()) / 2;
+                    double y = (screenHeight * resizeTransform.getScaleY() + g2d.getFontMetrics().getMaxAscent()) / 2;
+                    g2d.drawString(s, (int) x, (int) (y));
+                }
             }
         }
         

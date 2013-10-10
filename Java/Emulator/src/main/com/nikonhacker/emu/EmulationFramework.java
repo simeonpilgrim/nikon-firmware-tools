@@ -255,6 +255,8 @@ public class EmulationFramework {
                 for (int i = 0; i<resolutionConverter.length; i++) {
                     resolutionConverter[i] = new FrResolutionConverter(i,platform[chip]);
                 }
+
+                connectLcdScreenRelatedPins(ioPorts, (FrLcd) lcd);
             }
             else {
                 cpuState = new TxCPUState();
@@ -451,6 +453,13 @@ public class EmulationFramework {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void connectLcdScreenRelatedPins(IoPort[] frIoPorts, FrLcd lcd) {
+        // Output pin to power LCD screen
+        Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(7), lcd.getPowerPin());
+        // Input pin to indicate rotation (upside down)
+        // Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(3), /*button*/);
     }
 
     private void connectFrontPanel(FrontPanel frontPanel, IoPort[] txIoPorts) {
