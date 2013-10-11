@@ -138,7 +138,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         // This method is called whenever the contents needs to be painted
         public void paintComponent(Graphics graphics) {
             Graphics2D g2d = (Graphics2D) graphics;
-
+            
             if (img!=null) {
                 if (img.getWidth()!=screenWidth || img.getHeight()!=screenHeight || yuvAlign != previousYuvAlign) {
                     img.flush();
