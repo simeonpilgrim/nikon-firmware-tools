@@ -255,6 +255,8 @@ public class EmulationFramework {
                 for (int i = 0; i<resolutionConverter.length; i++) {
                     resolutionConverter[i] = new FrResolutionConverter(i,platform[chip]);
                 }
+
+                connectLcdScreenRelatedPins(ioPorts, (FrLcd) lcd);
             }
             else {
                 cpuState = new TxCPUState();
@@ -453,63 +455,81 @@ public class EmulationFramework {
         }
     }
 
+    private void connectLcdScreenRelatedPins(IoPort[] frIoPorts, FrLcd lcd) {
+        // Output pin to power LCD screen
+        Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(7), lcd.getPowerPin());
+        // Input pin to indicate rotation (upside down)
+        // Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(3), /*button*/);
+    }
+
     private void connectFrontPanel(FrontPanel frontPanel, IoPort[] txIoPorts) {
         // TODO: this is D5100 specific. Make it generic
         // Connect CPU pins with front panel
 
         //R9	P23/A19/A3/TB2IN1	"right"
-        Pin.interconnect(txIoPorts[IoPort.PORT_2].getPin(3), frontPanel.getButton("right").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_2].getPin(3), frontPanel.getButton(FrontPanel.KEY_RIGHT).getPin(0));
         //U11	P40/CS0/KEY24	 "AE/AF" Lock
-        Pin.interconnect(txIoPorts[IoPort.PORT_4].getPin(0), frontPanel.getButton("aelafl").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_4].getPin(0), frontPanel.getButton(FrontPanel.KEY_AEL_AFL).getPin(0));
         //B13	PA0/INT0/PHC0IN0	Power "On"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(0), frontPanel.getButton("power").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(0), frontPanel.getButton(FrontPanel.KEY_POWER).getPin(0));
         //B12	PA1/INT1/PHC0IN1	 "up"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(1), frontPanel.getButton("up").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(1), frontPanel.getButton(FrontPanel.KEY_UP).getPin(0));
         //C12	PA2/INT2/PHC1IN0	 "down"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(2), frontPanel.getButton("down").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(2), frontPanel.getButton(FrontPanel.KEY_DOWN).getPin(0));
         //D12	PA3/INT3/PHC1IN1	"left"
-        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(3), frontPanel.getButton("left").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(3), frontPanel.getButton(FrontPanel.KEY_LEFT).getPin(0));
         //M1	PC0/TBTIN/KEY30	 "i"
-        Pin.interconnect(txIoPorts[IoPort.PORT_C].getPin(0), frontPanel.getButton("i").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_C].getPin(0), frontPanel.getButton(FrontPanel.KEY_I).getPin(0));
         //A8	PE1/KEY09	"+/-"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(1), frontPanel.getButton("+-").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(1), frontPanel.getButton(FrontPanel.KEY_PLUS_MINUS).getPin(0));
         //B8	PE2/KEY10	"Timer / Fn"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(2), frontPanel.getButton("timer").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(2), frontPanel.getButton(FrontPanel.KEY_TIMER).getPin(0));
         //C8	PE3/KEY11	"flash"
-        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(3), frontPanel.getButton("flash").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_E].getPin(3), frontPanel.getButton(FrontPanel.KEY_FLASH).getPin(0));
         //E7	PF2/KEY18/DREQ4	"record"
-        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(2), frontPanel.getButton("rec").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(2), frontPanel.getButton(FrontPanel.KEY_REC).getPin(0));
         //L14	PG0/KEY00	 "ok"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(0), frontPanel.getButton("ok").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(0), frontPanel.getButton(FrontPanel.KEY_OK).getPin(0));
         //K17	PG1/KEY01	"+"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(1), frontPanel.getButton("zoomin").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(1), frontPanel.getButton(FrontPanel.KEY_ZOOM_IN).getPin(0));
         //K16	PG2/KEY02	"-"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(2), frontPanel.getButton("zoomout").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(2), frontPanel.getButton(FrontPanel.KEY_ZOOM_OUT).getPin(0));
         //K15	PG3/KEY03	 "menu"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(3), frontPanel.getButton("menu").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(3), frontPanel.getButton(FrontPanel.KEY_MENU).getPin(0));
         //K14	PG4/KEY04	 "play"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(4), frontPanel.getButton("play").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(4), frontPanel.getButton(FrontPanel.KEY_PLAY).getPin(0));
         //J16	PG5/KEY05	 LiveView
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(5), frontPanel.getButton("liveview").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(5), frontPanel.getButton(FrontPanel.KEY_LIVEVIEW).getPin(0));
         //J15	PG6/KEY06	 "info"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(6), frontPanel.getButton("info").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(6), frontPanel.getButton(FrontPanel.KEY_INFO).getPin(0));
         //J14	PG7/KEY07	 "del"
-        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton("delete").getPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton(FrontPanel.KEY_DELETE).getPin(0));
 
         //L17	PJ5/INT17	Shutter "half-pressed"
+        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0));
         //U16	P56/A6/TB2OUT/KEY28	Shutter
-        // TODO
-
-        //G15	PI3/PHC5IN1	lens "release"
-        // TODO
+//        TODO Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
 
         // From http://nikonhacker.com/viewtopic.php?f=6&t=731&hilit=sd+card&start=20#p4353
         // P57 and P56 might be scroll wheel
+        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(0));
+        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(7), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(1));
+
+        // ?? MODE DIAL
+        // PKEY20,21,22,23 (PF4, PF5, PF6, PF7)
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(4), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(0));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(5), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(1));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(6), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(2));
+        Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(7), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(3));
+
+        // PI3/PHC5IN1	lens release button
         // TODO
 
-        // SENSOR - Flash Open = PH3 : is the flash unit open ?
+        // Flash Open sensor = PH3 : is the flash unit open ?
         // TODO
 
+        // SD card: P53 (set present, clear empty) - TBC
+        // TODO
     }
 
     /**

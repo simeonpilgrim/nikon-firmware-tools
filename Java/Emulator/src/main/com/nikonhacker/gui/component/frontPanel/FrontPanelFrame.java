@@ -12,6 +12,9 @@ import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
+/**
+ * This is a generic camera front panel UI that renders a FrontPanel model
+ */
 public class FrontPanelFrame extends DocumentFrame {
     public String imageDir;
 
@@ -20,7 +23,8 @@ public class FrontPanelFrame extends DocumentFrame {
 
         ImagePanel panel = new ImagePanel();
 
-        if (imageSetName == null) imageSetName = "D5100_small"; // temp until a "null" version is available
+        // default to "D5100_small" until a "default" version (with standard JButtons) is available
+        if (imageSetName == null) imageSetName = "D5100_small";
 
         imageDir = "images/buttons/" + imageSetName;
 
@@ -34,7 +38,7 @@ public class FrontPanelFrame extends DocumentFrame {
             panel.setImage(background);
 
             for (String key : frontPanel.getButtons().keySet()) {
-                addButton(panel, imageDir, bgWidth, bgHeight, frontPanel.getButtons().get(key));
+                addBitmapButton(panel, imageDir, bgWidth, bgHeight, frontPanel.getButtons().get(key));
             }
         } catch (IOException e) {
             throw new RuntimeException("Cannot find front panel's background image");
@@ -43,27 +47,15 @@ public class FrontPanelFrame extends DocumentFrame {
         getContentPane().add(panel);
     }
 
-    private void addButton(final JComponent panel, String imgDir, int width, int height, final CameraButton cameraButton) {
-        BitmapToggleButton button = new BitmapToggleButton(panel, imgDir, cameraButton.getKey(), width, height, cameraButton.getImageSuffixes(), cameraButton.isLeftClickTemp());
+    private void addBitmapButton(final JComponent panel, String imgDir, int width, int height, final CameraButton cameraButton) {
+        BitmapToggleButton button = new BitmapToggleButton(panel, imgDir, cameraButton.getKey(), width, height, cameraButton.getImageSuffixes(), cameraButton.isLeftClickTemp(), cameraButton.getState());
         button.setBounds(0, 0, width, height);
-        if (cameraButton.isReversed()) {
-            button.setState(1 - cameraButton.getPin().getOutputValue(), false);
-            button.addStateChangeListener(new StateChangeAdapter() {
-                @Override
-                public void onStateChange(int state) {
-                    cameraButton.getPin().setOutputValue(1 - state);
-                }
-            });
-        }
-        else {
-            button.setState(cameraButton.getPin().getOutputValue(), false);
-            button.addStateChangeListener(new StateChangeAdapter() {
-                @Override
-                public void onStateChange(int state) {
-                    cameraButton.getPin().setOutputValue(state);
-                }
-            });
-        }
+        button.addStateChangeListener(new StateChangeAdapter() {
+            @Override
+            public void onStateChange(int state) {
+                cameraButton.setState(state);
+            }
+        });
         panel.add(button);
     }
 }

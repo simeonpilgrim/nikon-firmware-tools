@@ -20,19 +20,19 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
     /**
      * The required dimension for all images
      */
-    private final Dimension     dimension;
-
-    private final int           numberStates;
-    private final BufferedImage mask;
-
-    private BufferedImage currentImage = null;
-
-    private String            imgDir;
-    private String            imgPrefix;
-    private String[][]        imageSuffixes;
-    private BufferedImage[][] images;
-    private int state = 0;
+    private final Dimension dimension;
+    private final int  numberStates;
+    private int        stateNumber;
+    private String     imgDir;
+    private String     imgPrefix;
+    private String[][] imageSuffixes;
     private boolean isLeftClickTemp;
+
+    private final BufferedImage mask;
+    // image cache, filled on first request
+    private BufferedImage[][] imageCache;
+
+    private BufferedImage currentImage;
 
     private List<StateChangeListener> stateChangeListeners = new ArrayList<>();
 
@@ -45,8 +45,9 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
      * @param requiredHeight required image height
      * @param imageSuffixes an array[2][n] image suffixes. The first array is the "non-hover", the second one is the "hover". n is the number of states the button can be in.
      * @param isLeftClickTemp if true, a single left click presses and releases the button. If not, the left click toggles the button
+     * @param initialStateNumber the state the button should be in upon creation
      */
-    public BitmapToggleButton(JComponent component, String imgDir, String imgPrefix, int requiredWidth, int requiredHeight, String[][] imageSuffixes, boolean isLeftClickTemp) {
+    public BitmapToggleButton(JComponent component, String imgDir, String imgPrefix, int requiredWidth, int requiredHeight, String[][] imageSuffixes, boolean isLeftClickTemp, int initialStateNumber) {
         super();
         this.imgDir = imgDir;
         this.imgPrefix = imgPrefix;
@@ -57,12 +58,9 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
         setOpaque(false);
 
         numberStates = imageSuffixes[0].length;
-        if (numberStates != imageSuffixes[1].length) {
-            throw new RuntimeException("Could not initialize create BitmapToggleButton: inconsistent array sizes : " + numberStates + " vs " + imageSuffixes[1].length);
-        }
-        // Prepare images
-        images = new BufferedImage[2][numberStates];
-        // Actual loading is delayed. Will be done on demand.
+
+        // Prepare image cache. Actual loading is delayed. Will be done on demand.
+        imageCache = new BufferedImage[2][numberStates];
 
         mask = getImage(1, 0);
         if (mask == null) {
@@ -71,45 +69,45 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
 
         component.addMouseMotionListener(this);
         component.addMouseListener(this);
+
+        // Set state and refresh
+        stateNumber = initialStateNumber;
+        updateCurrentImage(false);
     }
 
     /**
      * Returns the image for the given state, or null if no image is to be overlayed in this state.
      * This uses lazy loading.
      * @param hover 0 for non-hover, 1 for hover
-     * @param state the button state
+     * @param stateNumber the button state
      * @return
      */
-    private BufferedImage getImage(int hover, int state) {
-        if (images[hover][state] == null) {
+    private BufferedImage getImage(int hover, int stateNumber) {
+        if (imageCache[hover][stateNumber] == null) {
             // see if one should be loaded
-            if (imageSuffixes[hover][state] != null) {
+            if (imageSuffixes[hover][stateNumber] != null) {
                 try {
-                    images[hover][state] = getBufferedImage(imgDir + "/" + imgPrefix + "_" + imageSuffixes[hover][state] + ".png");
+                    imageCache[hover][stateNumber] = getBufferedImage(imgDir + "/" + imgPrefix + "_" + imageSuffixes[hover][stateNumber] + ".png");
                 } catch (IOException e) {
-                    System.err.println("Error initializing images #" + state + " for BitmapToggleButton: " + imgPrefix);
+                    System.err.println("Error initializing images #" + stateNumber + " for BitmapToggleButton: " + imgPrefix);
                     e.printStackTrace();
                 }
             }
         }
-        return images[hover][state];
+        return imageCache[hover][stateNumber];
     }
 
     private void updateCurrentImage(boolean isHover) {
-        currentImage = getImage(isHover?1:0, state);
+        currentImage = getImage(isHover?1:0, stateNumber);
         repaint();
     }
 
-    public void setState(int state, boolean isHover) {
-        this.state = state;
+    public void setState(int stateNumber, boolean isHover) {
+        this.stateNumber = stateNumber;
         for (StateChangeListener stateChangeListener : stateChangeListeners) {
-            stateChangeListener.onStateChange(state);
+            stateChangeListener.onStateChange(stateNumber);
         }
         updateCurrentImage(isHover);
-    }
-
-    public int getState() {
-        return state;
     }
 
     private boolean isOnOpaquePixel(MouseEvent e) {
@@ -165,8 +163,8 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
         if (isOnOpaquePixel(e)) {
             if (SwingUtilities.isLeftMouseButton(e)) {
                 // state = 1;
-                if (state < numberStates - 1) {
-                    setState(state + 1, true);
+                if (stateNumber < numberStates - 1) {
+                    setState(stateNumber + 1, true);
                 }
                 else {
                     setState(0, true);
@@ -177,8 +175,8 @@ public class BitmapToggleButton extends JComponent implements MouseMotionListene
             }
             else if (SwingUtilities.isRightMouseButton(e)) {
                 // state = 1 - state;
-                if (state > 0) {
-                    setState(state - 1, true);
+                if (stateNumber > 0) {
+                    setState(stateNumber - 1, true);
                 }
                 else {
                     setState(numberStates - 1, true);

@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.lcd.fr;
 
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.DebuggableMemory;
+import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.lcd.Lcd;
 
 import java.awt.image.BufferedImage;
@@ -15,13 +16,17 @@ public class FrLcd implements Lcd {
     public static final int CAMERA_SCREEN_HEIGHT   = 480;
 
     private Platform platform;
-    
+
+    private PowerPin powerPin;
+    private boolean isPoweredOn = false;
+
     public FrLcd(Platform platform) {
         this.platform = platform;
+        powerPin = new PowerPin("Main lcd power");
     }
 
-    /**    create default screen image object of defualt size
-           @return Initialised image object with deault LCD screen "width" and "height"
+    /** create default screen image object of default size
+     * @return Initialised image object with default LCD screen "width" and "height"
      */
     public final static BufferedImage getImage() {
         return new BufferedImage(CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -52,9 +57,9 @@ public class FrLcd implements Lcd {
     /**    this method can be used to show any screen or picture buffer in YCbCr 4:2:2 format
     
          @param img Initialised image object with "width" and "height" of image to be displayed
-         @param yStart start of Y buffer
-         @param uStart start of Cb buffer
-         @param vStart start of Cr buffer
+         @param yAddr start of Y buffer
+         @param cbAddr start of Cb buffer
+         @param crAddr start of Cr buffer
      */
     public final void updateImage(BufferedImage img, int yAddr, int cbAddr, int crAddr, int align) {
         final int imageWidth = img.getWidth();
@@ -86,5 +91,24 @@ public class FrLcd implements Lcd {
             cbAddr += addCbCr;
             crAddr += addCbCr;
         }
+    }
+
+    public Pin getPowerPin() {
+        return powerPin;
+    }
+
+    private class PowerPin extends Pin {
+        public PowerPin(String name) {
+            super(name);
+        }
+
+        @Override
+        public void setInputValue(int value) {
+            isPoweredOn = (value == 1);
+        }
+    }
+
+    public boolean isPoweredOn() {
+        return isPoweredOn;
     }
 }

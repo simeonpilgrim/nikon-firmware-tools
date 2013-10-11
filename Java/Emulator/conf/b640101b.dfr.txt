@@ -24,7 +24,7 @@
 
 -m 0x000409B4-0x000427BD=CODE
 
-# µITRON RealOS version structure returned by "get_ver" system call
+# uITRON RealOS version structure returned by "get_ver" system call
 -m 0x000427BE-0x000427D1=DATA
 
 -m 0x000427D2-0x000504E1=CODE
@@ -297,7 +297,7 @@
 # Unknown
 #-m 0x000DC304-0x000DC30F=DATA:L
 
-# Table defining ÂµITRON Tasks (32b header + Table of 0x3C records of 0x1C bytes)
+# Table defining uITRON Tasks (32b header + Table of 0x3C records of 0x1C bytes)
 #-m 0x000DC310-0x000DC9A3=DATA:L
 
 # Unknown
@@ -2857,6 +2857,7 @@
 -s 0x1A54C6=Avi_headers_xx
 -s 0x1A8128=call_sub_1A2C62
 -s 0x1A879A=disableSerial5
+-s 0x1A87A6=setP05_aka_serial_sync
 -s 0x1A87B0=start_task_x19
 -s 0x1A87BC=Tsk19
 -s 0x1A87C2=Tsk19_loop
