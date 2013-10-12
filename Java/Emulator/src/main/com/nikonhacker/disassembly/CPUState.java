@@ -18,7 +18,9 @@ public abstract class CPUState {
      */
     protected Register32[] regValue;
 
-    /** Used for disassembly formatting */
+    /** Used for disassembly formatting
+     *  TODO could be replaced by another CPUState instance, like the "flags" logic used in triggers
+     */
     protected long regValidityBitmap = 0;
 
     /**
@@ -89,4 +91,8 @@ public abstract class CPUState {
     public abstract boolean accepts(InterruptRequest interruptRequest);
 
     public abstract int getResetAddress();
+
+    public abstract void applyRegisterChanges(CPUState newCpuStateValues, CPUState newCpuStateFlags);
+
+    public abstract boolean hasAllRegistersZero();
 }

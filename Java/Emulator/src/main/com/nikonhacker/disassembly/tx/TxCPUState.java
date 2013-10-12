@@ -354,6 +354,30 @@ public class TxCPUState extends CPUState {
         return RESET_ADDRESS;
     }
 
+    @Override
+    public void applyRegisterChanges(CPUState newCpuStateValues, CPUState newCpuStateFlags) {
+        if (newCpuStateFlags.pc != 0) {
+            pc = newCpuStateValues.pc;
+        }
+        for (int i = 0; i < TxCPUState.Status; i++) {
+            if (newCpuStateFlags.getReg(i) != 0) {
+                setReg(i, newCpuStateValues.getReg(i));
+            }
+        }
+    }
+
+    @Override
+    public boolean hasAllRegistersZero() {
+        if (pc != 0) return false;
+        for (int i = 0; i <= TxCPUState.Status; i++) {
+            if (getReg(i) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+
     /**
      * Retrieves the PC value as defined by the specification, including the ISA mode as LSB.
      * Technically, this combines the pc (address) int field and the is16bitIsaMode boolean field
