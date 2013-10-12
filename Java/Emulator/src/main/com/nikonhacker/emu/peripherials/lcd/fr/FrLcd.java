@@ -25,13 +25,6 @@ public class FrLcd implements Lcd {
         powerPin = new PowerPin("Main lcd power");
     }
 
-    /** create default screen image object of default size
-     * @return Initialised image object with default LCD screen "width" and "height"
-     */
-    public final static BufferedImage getImage() {
-        return new BufferedImage(CAMERA_SCREEN_WIDTH, CAMERA_SCREEN_HEIGHT, BufferedImage.TYPE_INT_RGB);
-    }
-    
     public final static BufferedImage getImage(int width, int height) {
         // alignment
         if ((width&1)!=0)
