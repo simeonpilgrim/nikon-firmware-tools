@@ -130,6 +130,38 @@ public class FrCPUState extends CPUState {
         return RESET_ADDRESS;
     }
 
+    @Override
+    public void applyRegisterChanges(CPUState newCpuStateValues, CPUState newCpuStateFlags) {
+        if (newCpuStateFlags.pc != 0) {
+            pc = newCpuStateValues.pc;
+        }
+        for (int i = 0; i <= FrCPUState.MDL; i++) {
+            if (newCpuStateFlags.getReg(i) != 0) {
+                setReg(i, newCpuStateValues.getReg(i));
+            }
+        }
+        if (((FrCPUState)newCpuStateFlags).getCCR() != 0) {
+            setCCR((getCCR() & ~((FrCPUState) newCpuStateFlags).getCCR()) | (((FrCPUState) newCpuStateValues).getCCR() & ((FrCPUState) newCpuStateFlags).getCCR()));
+        }
+        if (((FrCPUState)newCpuStateFlags).getSCR() != 0) {
+            setSCR((getSCR() & ~((FrCPUState) newCpuStateFlags).getSCR()) | (((FrCPUState) newCpuStateValues).getSCR() & ((FrCPUState) newCpuStateFlags).getSCR()));
+        }
+        if (((FrCPUState)newCpuStateFlags).getILM() != 0) {
+            setILM((getILM() & ~((FrCPUState) newCpuStateFlags).getILM()) | (((FrCPUState) newCpuStateValues).getILM() & ((FrCPUState) newCpuStateFlags).getILM()), false);
+        }
+    }
+
+    @Override
+    public boolean hasAllRegistersZero() {
+        if (pc != 0) return false;
+        for (int i = 0; i <= FrCPUState.MDL; i++) {
+            if (getReg(i) != 0) {
+                return false;
+            }
+        }
+        return getCCR() == 0 && getSCR() == 0 && getILM() == 0;
+    }
+
     /**
      * Returns CCR part of the PS register (built from individual bits)
      * @return CCR

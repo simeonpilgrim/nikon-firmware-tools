@@ -27,9 +27,9 @@ public class BreakTriggerEditDialog extends JDialog {
     private final JCheckBox enableBreakCheckBox;
     private final JTextField interruptToTriggerField;
     private final JTextField interruptToWithdramField;
-    private final JTextField pcToSetField;
     private final JCheckBox startLoggingCheckBox;
     private final JCheckBox stopLoggingCheckBox;
+    private final CPUStateComponent newCpuStateComponent;
 
     public BreakTriggerEditDialog(JDialog owner, int chip, final BreakTrigger trigger, String title) {
         super(owner, title, true);
@@ -60,7 +60,17 @@ public class BreakTriggerEditDialog extends JDialog {
             cpuStateComponent = new TxCPUStateComponent((TxCPUState)trigger.getCpuStateValues(), (TxCPUState)trigger.getCpuStateFlags(), true);
         }
         cpuStateComponent.refresh();
-        tabbedPane.addTab("CPU conditions", null, cpuStateComponent);
+        tabbedPane.addTab("Register conditions", null, cpuStateComponent);
+
+        // CPU modifications
+        if (chip == Constants.CHIP_FR) {
+            newCpuStateComponent = new FrCPUStateComponent((FrCPUState)trigger.getNewCpuStateValues(), (FrCPUState)trigger.getNewCpuStateFlags(), true);
+        }
+        else {
+            newCpuStateComponent = new TxCPUStateComponent((TxCPUState)trigger.getNewCpuStateValues(), (TxCPUState)trigger.getNewCpuStateFlags(), true);
+        }
+        newCpuStateComponent.refresh();
+        tabbedPane.addTab("Register modifications", null, newCpuStateComponent);
 
         // Memory conditions
         tabbedPane.addTab("Memory conditions", null, new MemoryConditionListComponent());
@@ -91,13 +101,6 @@ public class BreakTriggerEditDialog extends JDialog {
             interruptToWithdramField.setText(Format.asHex(trigger.getInterruptToWithdraw(), 2));
         }
         actionPanel.add(interruptToWithdramField, "wrap");
-
-        actionPanel.add(new JLabel("Jump to address 0x"));
-        pcToSetField = new JTextField(10);
-        if (trigger.getPcToSet() != null) {
-            pcToSetField.setText(Format.asHex(trigger.getPcToSet(), 8));
-        }
-        actionPanel.add(pcToSetField, "wrap");
 
         actionPanel.add(new JLabel("Start logging"));
         startLoggingCheckBox = new JCheckBox();
@@ -138,9 +141,9 @@ public class BreakTriggerEditDialog extends JDialog {
         trigger.setMustBreak(enableBreakCheckBox.isSelected());
         trigger.setInterruptToRequest(StringUtils.isBlank(interruptToTriggerField.getText())?null:Format.parseIntHexField(interruptToTriggerField));
         trigger.setInterruptToWithdraw(StringUtils.isBlank(interruptToWithdramField.getText())?null:Format.parseIntHexField(interruptToWithdramField));
-        trigger.setPcToSet(StringUtils.isBlank(pcToSetField.getText())?null:Format.parseIntHexField(pcToSetField));
         trigger.setMustStartLogging(startLoggingCheckBox.isSelected());
         trigger.setMustStopLogging(stopLoggingCheckBox.isSelected());
+        newCpuStateComponent.saveValuesAndFlags();
         dispose();
     }
 

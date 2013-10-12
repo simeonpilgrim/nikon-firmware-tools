@@ -30,16 +30,24 @@ import java.util.Map;
 public class BreakTrigger {
     private String name;
     private Boolean enabled = true;
-    private CPUState cpuStateValues;
-    private CPUState cpuStateFlags;
+
+    private CPUState                        cpuStateValues;
+    private CPUState                        cpuStateFlags;
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
-    private boolean mustBeLogged = false;
-    private boolean mustBreak = true;
-    private Integer interruptToRequest = null;
+
+    private boolean mustBeLogged        = false;
+    private boolean mustBreak           = true;
+    private Integer interruptToRequest  = null;
     private Integer interruptToWithdraw = null;
-    private Integer pcToSet = null;
-    private boolean mustStartLogging = false;
-    private boolean mustStopLogging = false;
+    /**
+     * @deprecated should be removed once prefs have all migrated to newCpuStateFlags
+     */
+    private Integer pcToSet             = null;
+    private boolean mustStartLogging    = false;
+    private boolean mustStopLogging     = false;
+    private CPUState newCpuStateValues;
+    private CPUState newCpuStateFlags;
+
     private Function function;
 
     public BreakTrigger(String name, CPUState cpuStateValues, CPUState cpuStateFlags, List<MemoryValueBreakCondition> memoryValueBreakConditions) {
@@ -110,11 +118,21 @@ public class BreakTrigger {
     }
 
     public Integer getPcToSet() {
-        return pcToSet;
+        if (getNewCpuStateFlags().pc == 0)
+            return null;
+        else {
+            return getNewCpuStateValues().getPc();
+        }
     }
 
     public void setPcToSet(Integer pcToSet) {
-        this.pcToSet = pcToSet;
+        if (pcToSet == null) {
+            getNewCpuStateFlags().pc = 0;
+        }
+        else {
+            getNewCpuStateFlags().pc = 1;
+            getNewCpuStateFlags().setPc(pcToSet);
+        }
     }
 
     public boolean getMustStartLogging() {
@@ -143,6 +161,22 @@ public class BreakTrigger {
 
     public void setCpuStateFlags(CPUState cpuStateFlags) {
         this.cpuStateFlags = cpuStateFlags;
+    }
+
+    public CPUState getNewCpuStateValues() {
+        if (newCpuStateValues == null) {
+            newCpuStateValues = (cpuStateValues instanceof FrCPUState)?(new FrCPUState()) : (new TxCPUState());
+        }
+        return newCpuStateValues;
+    }
+
+    public CPUState getNewCpuStateFlags() {
+        if (newCpuStateFlags == null) {
+            newCpuStateFlags = (cpuStateFlags instanceof FrCPUState)?(new FrCPUState()) : (new TxCPUState());
+            newCpuStateFlags.clear();
+            newCpuStateFlags.pc = 0;
+        }
+        return newCpuStateFlags;
     }
 
     public List<MemoryValueBreakCondition> getMemoryValueBreakConditions() {
@@ -211,7 +245,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return (enabled?"ON:  ":"OFF: ") + name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"") + (getMustBeLogged()?"startlog ":"") + (getMustBeLogged()?"stoplog ":"")).trim() + "]";
+        return (enabled?"ON:  ":"OFF: ") + name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (getPcToSet()!=null?"jump ":"") + (getMustBeLogged()?"startlog ":"") + (getMustBeLogged()?"stoplog ":"")).trim() + "]";
     }
 
     /**
@@ -277,7 +311,7 @@ public class BreakTrigger {
                 || mustBreak
                 || (interruptToRequest != null)
                 || (interruptToWithdraw != null)
-                || (pcToSet != null)
+                || !newCpuStateFlags.hasAllRegistersZero()
                 || mustStartLogging
                 || mustStopLogging
                 );
@@ -286,10 +320,13 @@ public class BreakTrigger {
     /**
      * This method makes sure loading prefs from an old file (without enabled field)
      * initializes that field to true
-     * @return
      */
     private Object readResolve() {
         if (enabled == null) enabled = true;
+        if (pcToSet != null && newCpuStateFlags == null) {
+            getNewCpuStateFlags().pc=1;
+            getNewCpuStateValues().setPc(pcToSet);
+        }
         return this;
     }
 }

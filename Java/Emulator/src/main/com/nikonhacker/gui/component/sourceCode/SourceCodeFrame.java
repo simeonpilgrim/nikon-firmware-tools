@@ -24,11 +24,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorConvertOp;
-import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -40,7 +37,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private static final int FRAME_HEIGHT = 500;
 
     private final RSyntaxTextArea listingArea;
-    private final ImageIcon icons[][][][][][][][] = new ImageIcon[2][2][2][2][2][2][2][2];
+    private final ImageIcon icons[][][][][][][][][] = new ImageIcon[2][2][2][2][2][2][2][2][2];
 
     private Gutter gutter;
     private Object pcHighlightTag = null;
@@ -75,9 +72,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private BufferedImage jumpImg;
     private BufferedImage interruptImg;
     private BufferedImage noInterruptImg;
-
-    RescaleOp      rescaleOp   = new RescaleOp(0f, 128, null);
-    ColorConvertOp greyScaleOp = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
+    private BufferedImage registerImg;
 
     public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -92,6 +87,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             jumpImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerJump.png"));
             interruptImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerInterrupt.png"));
             noInterruptImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerNoInterrupt.png"));
+            registerImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerRegister.png"));
         } catch (IOException e) {
             System.err.println("Error initializing source code break trigger icons");
             e.printStackTrace();
@@ -749,6 +745,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 [breakTrigger.getPcToSet()!=null?1:0]
                 [breakTrigger.getInterruptToRequest()!=null?1:0]
                 [breakTrigger.getInterruptToWithdraw()!=null?1:0]
+                [!breakTrigger.getNewCpuStateFlags().hasAllRegistersZero()?1:0]
                 [breakTrigger.isEnabled()?1:0];
 
         if (icon == null) {
@@ -761,6 +758,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             if (breakTrigger.getPcToSet()!=null) g.drawImage(jumpImg, 0, 0, null);
             if (breakTrigger.getInterruptToRequest()!=null) g.drawImage(interruptImg, 0, 0, null);
             if (breakTrigger.getInterruptToWithdraw()!=null) g.drawImage(noInterruptImg, 0, 0, null);
+            if (!breakTrigger.getNewCpuStateFlags().hasAllRegistersZero()) g.drawImage(registerImg, 0, 0, null);
             if (!breakTrigger.isEnabled()) {
                 img = GrayFilter.createDisabledImage(img);
             }
@@ -773,6 +771,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     [breakTrigger.getPcToSet()!=null?1:0]
                     [breakTrigger.getInterruptToRequest()!=null?1:0]
                     [breakTrigger.getInterruptToWithdraw()!=null?1:0]
+                    [!breakTrigger.getNewCpuStateFlags().hasAllRegistersZero()?1:0]
                     [breakTrigger.isEnabled()?1:0] = icon;
         }
         return icon;

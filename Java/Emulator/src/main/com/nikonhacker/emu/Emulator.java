@@ -215,9 +215,7 @@ public abstract class Emulator implements Clockable {
                     if (trigger.getInterruptToWithdraw() != null) {
                         platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
                     }
-                    if (trigger.getPcToSet() != null) {
-                        platform.cpuState.pc = trigger.getPcToSet();
-                    }
+                    platform.cpuState.applyRegisterChanges(trigger.getNewCpuStateValues(), trigger.getNewCpuStateFlags());
                     if (trigger.getMustStartLogging() && logger != null) {
                         logger.setLogging(true);
                     }
