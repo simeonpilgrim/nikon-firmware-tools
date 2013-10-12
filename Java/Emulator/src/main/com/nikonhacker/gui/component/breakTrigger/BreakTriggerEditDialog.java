@@ -22,6 +22,7 @@ public class BreakTriggerEditDialog extends JDialog {
     private final CPUStateComponent cpuStateComponent;
     private final BreakTrigger trigger;
     private final JTextField nameField;
+    private final JCheckBox enabledCheckBox;
     private final JCheckBox enableLogCheckBox;
     private final JCheckBox enableBreakCheckBox;
     private final JTextField interruptToTriggerField;
@@ -37,10 +38,15 @@ public class BreakTriggerEditDialog extends JDialog {
         JPanel mainPanel = new JPanel(new BorderLayout());
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        topPanel.add(new JLabel("Name : "));
+        topPanel.add(new JLabel("Name: "));
         nameField = new JTextField(20);
         nameField.setText(trigger.getName());
         topPanel.add(nameField);
+
+        topPanel.add(new JLabel("Enabled: "));
+        enabledCheckBox = new JCheckBox();
+        enabledCheckBox.setSelected(trigger.isEnabled());
+        topPanel.add(enabledCheckBox);
 
         mainPanel.add(topPanel, BorderLayout.NORTH);
 
@@ -126,6 +132,7 @@ public class BreakTriggerEditDialog extends JDialog {
 
     private void save() {
         trigger.setName(nameField.getText());
+        trigger.setEnabled(enabledCheckBox.isSelected());
         cpuStateComponent.saveValuesAndFlags();
         trigger.setMustBeLogged(enableLogCheckBox.isSelected());
         trigger.setMustBreak(enableBreakCheckBox.isSelected());

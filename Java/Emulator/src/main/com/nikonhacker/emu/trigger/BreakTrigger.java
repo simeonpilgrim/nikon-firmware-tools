@@ -29,6 +29,7 @@ import java.util.Map;
  */
 public class BreakTrigger {
     private String name;
+    private Boolean enabled = true;
     private CPUState cpuStateValues;
     private CPUState cpuStateFlags;
     private List<MemoryValueBreakCondition> memoryValueBreakConditions;
@@ -54,6 +55,14 @@ public class BreakTrigger {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public CPUState getCpuStateValues() {
@@ -202,7 +211,7 @@ public class BreakTrigger {
 
     @Override
     public String toString() {
-        return name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"") + (getMustBeLogged()?"startlog ":"") + (getMustBeLogged()?"stoplog ":"")).trim() + "]";
+        return (enabled?"ON:  ":"OFF: ") + name + "[" + ((getMustBreak()?"break ":"") + (getMustBeLogged()?"log ":"") + (interruptToRequest!=null?"interrupt ":"") + (interruptToWithdraw!=null?"nointerrupt ":"") + (pcToSet!=null?"jump ":"") + (getMustBeLogged()?"startlog ":"") + (getMustBeLogged()?"stoplog ":"")).trim() + "]";
     }
 
     /**
@@ -263,14 +272,25 @@ public class BreakTrigger {
     }
 
         public boolean isActive() {
-        return     mustBeLogged
+        return  enabled &&
+                (mustBeLogged
                 || mustBreak
                 || (interruptToRequest != null)
                 || (interruptToWithdraw != null)
                 || (pcToSet != null)
                 || mustStartLogging
-                || mustStopLogging;
+                || mustStopLogging
+                );
     }
 
+    /**
+     * This method makes sure loading prefs from an old file (without enabled field)
+     * initializes that field to true
+     * @return
+     */
+    private Object readResolve() {
+        if (enabled == null) enabled = true;
+        return this;
+    }
 }
 

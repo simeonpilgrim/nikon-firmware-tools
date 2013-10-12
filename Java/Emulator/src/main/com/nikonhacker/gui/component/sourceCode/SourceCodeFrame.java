@@ -16,6 +16,7 @@ import org.fife.ui.rtextarea.RTextScrollPane;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -23,7 +24,11 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import java.awt.*;
+import java.awt.color.ColorSpace;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorConvertOp;
+import java.awt.image.RescaleOp;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -31,40 +36,66 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SourceCodeFrame extends DocumentFrame implements ActionListener, KeyListener, PopupMenuListener {
-    private static final int FRAME_WIDTH = 400;
+    private static final int FRAME_WIDTH  = 400;
     private static final int FRAME_HEIGHT = 500;
 
     private final RSyntaxTextArea listingArea;
-    private final ImageIcon enabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointIcon.png"));
-    private final ImageIcon disabledBreakPointIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointIcon.png"));
-    private final ImageIcon enabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/enabledBreakpointLogIcon.png"));
-    private final ImageIcon disabledBreakPointLogIcon = new ImageIcon(EmulatorUI.class.getResource("images/disabledBreakpointLogIcon.png"));
-//    private final ImageIcon bookmarkIcon = new ImageIcon(EmulatorUI.class.getResource("images/bookmarkIcon.png"));
+    private final ImageIcon icons[][][][][][][][] = new ImageIcon[2][2][2][2][2][2][2][2];
 
     private Gutter gutter;
     private Object pcHighlightTag = null;
     private final JTextField searchField;
-    private JCheckBox regexCB;
-    private JCheckBox matchCaseCB;
+    private       JCheckBox  regexCB;
+    private       JCheckBox  matchCaseCB;
 
-    private CPUState cpuState;
+    private CPUState      cpuState;
     private CodeStructure codeStructure;
+
     /** Contains, for each line number, the address of the instruction it contains, or null if it's not an instruction */
     private List<Integer> lineAddresses = new ArrayList<Integer>();
-    private final JTextField targetField;
-    private int lastClickedTextPosition;
-    private final JCheckBox followPcCheckBox;
-    private JMenuItem addBreakPointMenuItem;
-    private JMenuItem removeBreakPointMenuItem;
-    private JCheckBoxMenuItem breakCheckBoxMenuItem;
-    private JCheckBoxMenuItem logCheckBoxMenuItem;
-    private JMenuItem runToHereMenuItem;
-    private JMenuItem debugToHereMenuItem;
+
+    private final JTextField        targetField;
+    private       int               lastClickedTextPosition;
+    private final JCheckBox         followPcCheckBox;
+    private       JMenuItem         addBreakPointMenuItem;
+    private       JMenuItem         removeBreakPointMenuItem;
+    private       JMenuItem         toggleBreakPointMenuItem;
+    private       JCheckBoxMenuItem breakCheckBoxMenuItem;
+    private       JCheckBoxMenuItem logCheckBoxMenuItem;
+    private       JMenuItem         runToHereMenuItem;
+    private       JMenuItem         debugToHereMenuItem;
+
     private boolean enabled = true;
 
+    private BufferedImage stopImg;
+    private BufferedImage noStopImg;
+    private BufferedImage logImg;
+    private BufferedImage startLogImg;
+    private BufferedImage endLogImg;
+    private BufferedImage jumpImg;
+    private BufferedImage interruptImg;
+    private BufferedImage noInterruptImg;
+
+    RescaleOp      rescaleOp   = new RescaleOp(0f, 128, null);
+    ColorConvertOp greyScaleOp = new ColorConvertOp(ColorSpace.getInstance(ColorSpace.CS_GRAY), null);
 
     public SourceCodeFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, final CPUState cpuState, final CodeStructure codeStructure) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
+
+        // Load icons
+        try {
+            stopImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerStop.png"));
+            noStopImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerNoStop.png"));
+            logImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerLog.png"));
+            startLogImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerStartLog.png"));
+            endLogImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerEndLog.png"));
+            jumpImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerJump.png"));
+            interruptImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerInterrupt.png"));
+            noInterruptImg = ImageIO.read(EmulatorUI.class.getResource("images/triggerNoInterrupt.png"));
+        } catch (IOException e) {
+            System.err.println("Error initializing source code break trigger icons");
+            e.printStackTrace();
+        }
 
         this.cpuState = cpuState;
         this.codeStructure = codeStructure;
@@ -360,6 +391,19 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
         });
 
+        toggleBreakPointMenuItem = new JMenuItem("Toggle trigger");
+        newPopupMenu.add(toggleBreakPointMenuItem);
+        toggleBreakPointMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BreakTrigger trigger = getClickedTrigger();
+                if (trigger != null) {
+                    trigger.setEnabled(!trigger.isEnabled());
+                    ui.onBreaktriggersChange(chip);
+                }
+            }
+        });
+
         newPopupMenu.addSeparator();
 
         breakCheckBoxMenuItem = new JCheckBoxMenuItem("Break");
@@ -487,6 +531,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         logCheckBoxMenuItem.setVisible(false);
         debugToHereMenuItem.setEnabled(false);
         runToHereMenuItem.setEnabled(false);
+        toggleBreakPointMenuItem.setVisible(false);
         if (enabled) {
             try {
                 Integer address = getClickedAddress();
@@ -494,6 +539,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     BreakTrigger trigger = getBreakTrigger(address);
                     if (trigger != null) {
                         removeBreakPointMenuItem.setVisible(true);
+                        toggleBreakPointMenuItem.setVisible(true);
+                        toggleBreakPointMenuItem.setText(trigger.isEnabled() ? "Disable trigger" : "EnableTrigger");
                         breakCheckBoxMenuItem.setVisible(true);
                         breakCheckBoxMenuItem.setSelected(trigger.mustBreak());
                         logCheckBoxMenuItem.setVisible(true);
@@ -685,13 +732,50 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 try {
                     Integer lineFromAddress = getLineFromAddress(breakTrigger.getCpuStateValues().pc);
                     if (lineFromAddress != null) {
-                        gutter.addLineTrackingIcon(lineFromAddress, breakTrigger.mustBreak() ? (breakTrigger.mustBeLogged() ? enabledBreakPointLogIcon : enabledBreakPointIcon) : (breakTrigger.mustBeLogged() ? disabledBreakPointLogIcon : disabledBreakPointIcon));
+                        gutter.addLineTrackingIcon(lineFromAddress, getIcon(breakTrigger));
                     }
                 } catch (BadLocationException e) {
                     e.printStackTrace();
                 }
             }
         }
+    }
+
+    private ImageIcon getIcon(BreakTrigger breakTrigger) {
+        ImageIcon icon = icons[breakTrigger.mustBreak()?1:0]
+                [breakTrigger.mustBeLogged()?1:0]
+                [breakTrigger.getMustStartLogging()?1:0]
+                [breakTrigger.getMustStopLogging()?1:0]
+                [breakTrigger.getPcToSet()!=null?1:0]
+                [breakTrigger.getInterruptToRequest()!=null?1:0]
+                [breakTrigger.getInterruptToWithdraw()!=null?1:0]
+                [breakTrigger.isEnabled()?1:0];
+
+        if (icon == null) {
+            Image img = new BufferedImage(stopImg.getWidth(), stopImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g = ((BufferedImage)img).createGraphics();
+            g.drawImage(breakTrigger.mustBreak() ? stopImg : noStopImg, 0, 0, null);
+            if (breakTrigger.mustBeLogged()) g.drawImage(logImg, 0, 0, null);
+            if (breakTrigger.getMustStartLogging()) g.drawImage(startLogImg, 0, 0, null);
+            if (breakTrigger.getMustStopLogging()) g.drawImage(endLogImg, 0, 0, null);
+            if (breakTrigger.getPcToSet()!=null) g.drawImage(jumpImg, 0, 0, null);
+            if (breakTrigger.getInterruptToRequest()!=null) g.drawImage(interruptImg, 0, 0, null);
+            if (breakTrigger.getInterruptToWithdraw()!=null) g.drawImage(noInterruptImg, 0, 0, null);
+            if (!breakTrigger.isEnabled()) {
+                img = GrayFilter.createDisabledImage(img);
+            }
+            icon = new ImageIcon(img);
+
+            icons[breakTrigger.mustBreak()?1:0]
+                    [breakTrigger.mustBeLogged()?1:0]
+                    [breakTrigger.getMustStartLogging()?1:0]
+                    [breakTrigger.getMustStopLogging()?1:0]
+                    [breakTrigger.getPcToSet()!=null?1:0]
+                    [breakTrigger.getInterruptToRequest()!=null?1:0]
+                    [breakTrigger.getInterruptToWithdraw()!=null?1:0]
+                    [breakTrigger.isEnabled()?1:0] = icon;
+        }
+        return icon;
     }
 
 
