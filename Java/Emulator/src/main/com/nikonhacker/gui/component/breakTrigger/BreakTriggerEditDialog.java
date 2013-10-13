@@ -125,8 +125,15 @@ public class BreakTriggerEditDialog extends JDialog {
         });
         bottomPanel.add(okButton);
 
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+            }
+        });
+        bottomPanel.add(cancelButton);
 
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
         setContentPane(mainPanel);
         pack();
