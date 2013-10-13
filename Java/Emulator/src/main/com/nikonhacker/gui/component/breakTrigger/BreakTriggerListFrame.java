@@ -380,7 +380,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void editTrigger(BreakTrigger trigger) {
-        new BreakTriggerEditDialog(null, chip, trigger, "Edit trigger conditions").setVisible(true);
+        new BreakTriggerEditDialog(null, chip, trigger, "Edit trigger").setVisible(true);
         ui.onBreaktriggersChange(chip);
     }
 
