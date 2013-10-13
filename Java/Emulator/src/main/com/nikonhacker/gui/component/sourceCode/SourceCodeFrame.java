@@ -9,6 +9,7 @@ import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
+import com.nikonhacker.gui.component.breakTrigger.BreakTriggerEditDialog;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.Gutter;
@@ -56,6 +57,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private final JCheckBox         followPcCheckBox;
     private       JMenuItem         addBreakPointMenuItem;
     private       JMenuItem         removeBreakPointMenuItem;
+    private       JMenuItem         editBreakPointMenuItem;
     private       JMenuItem         toggleBreakPointMenuItem;
     private       JCheckBoxMenuItem breakCheckBoxMenuItem;
     private       JCheckBoxMenuItem logCheckBoxMenuItem;
@@ -372,6 +374,19 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
         });
 
+        editBreakPointMenuItem = new JMenuItem("Edit trigger");
+        newPopupMenu.add(editBreakPointMenuItem);
+        editBreakPointMenuItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                BreakTrigger trigger = getClickedTrigger();
+                if (trigger != null) {
+                    new BreakTriggerEditDialog(null, chip, trigger, "Edit trigger").setVisible(true);
+                    ui.onBreaktriggersChange(chip);
+                }
+            }
+        });
+
         removeBreakPointMenuItem = new JMenuItem("Delete trigger");
         newPopupMenu.add(removeBreakPointMenuItem);
         removeBreakPointMenuItem.addActionListener(new ActionListener() {
@@ -522,6 +537,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     @Override
     public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
         addBreakPointMenuItem.setVisible(false);
+        editBreakPointMenuItem.setVisible(false);
         removeBreakPointMenuItem.setVisible(false);
         breakCheckBoxMenuItem.setVisible(false);
         logCheckBoxMenuItem.setVisible(false);
@@ -534,6 +550,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 if (address != null) {
                     BreakTrigger trigger = getBreakTrigger(address);
                     if (trigger != null) {
+                        editBreakPointMenuItem.setVisible(true);
                         removeBreakPointMenuItem.setVisible(true);
                         toggleBreakPointMenuItem.setVisible(true);
                         toggleBreakPointMenuItem.setText(trigger.isEnabled() ? "Disable trigger" : "EnableTrigger");
