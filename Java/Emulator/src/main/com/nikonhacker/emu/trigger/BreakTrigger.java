@@ -214,12 +214,15 @@ public class BreakTrigger {
             }
             conditions.add(new BreakPointCondition(cpuStateValues.pc, this));
         }
-        if (cpuStateFlags instanceof FrCPUState) {
-            for (int i = 0; i <= FrCPUState.MDL; i++) {
-                if (cpuStateFlags.getReg(i) != 0) {
-                    conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
-                }
+
+        for (int i = 0; i <= cpuStateFlags.getNumStdRegisters(); i++) {
+            if (cpuStateFlags.getReg(i) != 0) {
+                conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
             }
+        }
+        // Handle specific FR bit-registers
+        // TODO why not use PS register and consider it standard ???
+        if (cpuStateFlags instanceof FrCPUState) {
             if (((FrCPUState)cpuStateFlags).getCCR() != 0) {
                 conditions.add(new CCRBreakCondition(((FrCPUState)cpuStateValues).getCCR(), ((FrCPUState)cpuStateFlags).getCCR(), this));
             }
@@ -228,13 +231,6 @@ public class BreakTrigger {
             }
             if (((FrCPUState)cpuStateFlags).getILM() != 0) {
                 conditions.add(new ILMBreakCondition(((FrCPUState)cpuStateValues).getILM(), ((FrCPUState)cpuStateFlags).getILM(), this));
-            }
-        }
-        else {
-            for (int i = 0; i < TxCPUState.Status; i++) {
-                if (cpuStateFlags.getReg(i) != 0) {
-                    conditions.add(new RegisterEqualityBreakCondition(i, cpuStateValues.getReg(i), this));
-                }
             }
         }
 

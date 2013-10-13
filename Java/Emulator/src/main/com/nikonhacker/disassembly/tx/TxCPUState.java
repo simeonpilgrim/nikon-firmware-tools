@@ -137,6 +137,9 @@ public class TxCPUState extends CPUState {
     public final static int Count = 39;
     public final static int Compare = 40;
     public final static int Status = 41;
+
+    public final static int NUM_STD_REGISTERS = Status + 1;
+
     public final static int Cause = 42;
     public final static int EPC = 43;
     public final static int ErrorEPC = 44;
@@ -375,6 +378,11 @@ public class TxCPUState extends CPUState {
             }
         }
         return true;
+    }
+
+    @Override
+    public int getNumStdRegisters() {
+        return NUM_STD_REGISTERS;
     }
 
 

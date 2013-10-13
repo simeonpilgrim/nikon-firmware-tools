@@ -95,4 +95,6 @@ public abstract class CPUState {
     public abstract void applyRegisterChanges(CPUState newCpuStateValues, CPUState newCpuStateFlags);
 
     public abstract boolean hasAllRegistersZero();
+
+    public abstract int getNumStdRegisters();
 }

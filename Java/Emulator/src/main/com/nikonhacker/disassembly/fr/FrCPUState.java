@@ -66,6 +66,8 @@ public class FrCPUState extends CPUState {
     public final static int MDH = 20;
     public final static int MDL = 21;
 
+    public final static int NUM_STD_REGISTERS = MDL + 1;
+
     public final static int PS = 48;
     public final static int CCR = 49;
 
@@ -135,7 +137,7 @@ public class FrCPUState extends CPUState {
         if (newCpuStateFlags.pc != 0) {
             pc = newCpuStateValues.pc;
         }
-        for (int i = 0; i <= FrCPUState.MDL; i++) {
+        for (int i = 0; i <= FrCPUState.NUM_STD_REGISTERS; i++) {
             if (newCpuStateFlags.getReg(i) != 0) {
                 setReg(i, newCpuStateValues.getReg(i));
             }
@@ -154,12 +156,17 @@ public class FrCPUState extends CPUState {
     @Override
     public boolean hasAllRegistersZero() {
         if (pc != 0) return false;
-        for (int i = 0; i <= FrCPUState.MDL; i++) {
+        for (int i = 0; i <= FrCPUState.NUM_STD_REGISTERS; i++) {
             if (getReg(i) != 0) {
                 return false;
             }
         }
         return getCCR() == 0 && getSCR() == 0 && getILM() == 0;
+    }
+
+    @Override
+    public int getNumStdRegisters() {
+        return NUM_STD_REGISTERS;
     }
 
     /**
