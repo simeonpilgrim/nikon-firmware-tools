@@ -689,6 +689,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
 
     public void writeFunction(Function function) {
+
+        // Workaround because of class MarkOccurencesSupport asynchron Timer can happend and produce NullPointerException
+        listingArea.setMarkOccurrences(false);
+
         listingArea.setText("");
         lineAddresses.clear();
         List<CodeSegment> segments = function.getCodeSegments();
@@ -728,6 +732,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
         }
         listingArea.setCaretPosition(0);
+
+        // Workaround because of class MarkOccurencesSupport asynchron Timer can happend and produce NullPointerException
+        listingArea.setMarkOccurrences(true);
+
         highlightPc();
         updateBreakTriggers();
     }
