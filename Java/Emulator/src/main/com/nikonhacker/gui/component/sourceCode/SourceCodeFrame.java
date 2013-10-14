@@ -470,6 +470,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         RTextScrollPane scrollPane = new RTextScrollPane(listingArea);
         scrollPane.setIconRowHeaderEnabled(true);
         scrollPane.setFoldIndicatorEnabled(false);
+        scrollPane.setLineNumbersEnabled(false);
 
         gutter = scrollPane.getGutter();
         // disabling bookmark for now, because it is easier to clear all icons when updating bookmarks
