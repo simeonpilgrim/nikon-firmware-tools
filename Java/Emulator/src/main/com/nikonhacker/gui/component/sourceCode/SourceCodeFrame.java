@@ -125,7 +125,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 }
                 else {
                     targetField.setBackground(Color.WHITE);
-                    if (!safeExploreAddress(address)) {
+                    if (!exploreAddress(address)) {
                         JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found matching address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -135,7 +135,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!safeExploreAddress(cpuState.pc)) {
+                if (!exploreAddress(cpuState.pc)) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(cpuState.pc, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -207,18 +207,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      * @param address
      * @return
      */
-    public void exploreAddress(final int address, final EmulatorUI ui) {
-        Runnable  runnable = new Runnable() {
-            public void run(){
-                if (!safeExploreAddress(address)) {
-                    JOptionPane.showMessageDialog(ui, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        };
-        SwingUtilities.invokeLater(runnable);
-    }
-
-    private boolean safeExploreAddress(int address) {
+    public boolean exploreAddress(int address) {
         address = address & 0xFFFFFFFE; // ignore LSB (error in FR, ISA mode in TX)
         targetField.setText(Format.asHex(address, 8));
         Function function = codeStructure.getFunction(address);
@@ -226,7 +215,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             function = codeStructure.findFunctionIncluding(address);
         }
         if (function != null) {
-            safeWriteFunction(function);
+            writeFunction(function);
             Integer line = getLineFromAddress(address);
             if (line != null) {
                 try {
@@ -504,7 +493,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             if (lineFromAddress == null) {
                 // PC is not found in current function. Try to find the correct function
                 // ExploreAddress will take care of calling this function to highlight PC
-                safeExploreAddress(cpuState.pc);
+                exploreAddress(cpuState.pc);
             }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
@@ -521,7 +510,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         this.enabled = enabled;
     }
 
-    private void highlightPc() {
+    public void highlightPc() {
         if (pcHighlightTag != null) {
             listingArea.removeLineHighlight(pcHighlightTag);
         }
@@ -537,17 +526,12 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
 
     public void onEmulatorStop() {
-        Runnable  runnable = new Runnable() {
-            public void run(){
-                if (followPcCheckBox.isSelected()) {
-                    reachAndHighlightPc();
-                }
-                else {
-                    highlightPc();
-                }
-            }
-        };
-        SwingUtilities.invokeLater(runnable);
+        if (followPcCheckBox.isSelected()) {
+            reachAndHighlightPc();
+        }
+        else {
+            highlightPc();
+        }
     }
 
 
@@ -704,16 +688,8 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
     // Real source code handling methods
 
-    public void writeFunction(final Function function) {
-        Runnable  runnable = new Runnable() {
-            public void run(){
-                safeWriteFunction(function);
-            }
-        };
-        SwingUtilities.invokeLater(runnable);
-    }
 
-    private void safeWriteFunction(Function function) {
+    public void writeFunction(Function function) {
         listingArea.setText("");
         lineAddresses.clear();
         List<CodeSegment> segments = function.getCodeSegments();

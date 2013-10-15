@@ -1572,38 +1572,48 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         framework.initialize(chip, imageFile[chip], new ClockableCallbackHandler() {
             @Override
-            public void onNormalExit(Object o) {
-                try {
-                    signalEmulatorStopped(chip);
-                    if (o instanceof BreakCondition) {
-                        if (((BreakCondition) o).getBreakTrigger() != null) {
-
-                            setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
-                            statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
+            public void onNormalExit(final Object o) {
+                Runnable  runnable = new Runnable() {
+                    public void run(){
+                        try {
+                            signalEmulatorStopped(chip);
+                            if (o instanceof BreakCondition) {
+                                if (((BreakCondition) o).getBreakTrigger() != null) {
+        
+                                    setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
+                                    statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
+                                }
+                                else {
+                                    setStatusText(chip, "Emulation complete");
+                                    statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                                }
+                            }
+                            else {
+                                setStatusText(chip, "Emulation complete" + ((o == null) ? "" : (": " + o.toString())));
+                                statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
-                        else {
-                            setStatusText(chip, "Emulation complete");
-                            statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-                        }
+                        updateState(chip);
                     }
-                    else {
-                        setStatusText(chip, "Emulation complete" + ((o == null) ? "" : (": " + o.toString())));
-                        statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                updateState(chip);
+                };
+                SwingUtilities.invokeLater(runnable);
             }
 
             @Override
-            public void onException(Exception e) {
-                signalEmulatorStopped(chip);
-                String message = e.getMessage();
-                if (StringUtils.isEmpty(message)) {
-                    message = e.getClass().getName();
-                }
-                JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", Constants.CHIP_LABEL[chip] + " Emulator error", JOptionPane.ERROR_MESSAGE);
+            public void onException(final Exception e) {
+                Runnable  runnable = new Runnable() {
+                    public void run(){
+                        signalEmulatorStopped(chip);
+                        String message = e.getMessage();
+                        if (StringUtils.isEmpty(message)) {
+                            message = e.getClass().getName();
+                        }
+                        JOptionPane.showMessageDialog(EmulatorUI.this, message + "\nSee console for more info", Constants.CHIP_LABEL[chip] + " Emulator error", JOptionPane.ERROR_MESSAGE);
+                    }
+                };
+                SwingUtilities.invokeLater(runnable);
             }
         });
 
@@ -2836,7 +2846,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (sourceCodeFrame[chip] == null) {
                 toggleSourceCodeWindow(chip);
             }
-            sourceCodeFrame[chip].exploreAddress(address,this);
+            if (!sourceCodeFrame[chip].exploreAddress(address)) {
+                JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
