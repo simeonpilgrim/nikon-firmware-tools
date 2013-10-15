@@ -13,9 +13,13 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
+import java.util.EnumSet;
 import java.util.Set;
 
 public class TxEmulator extends Emulator {
+
+    private Set<OutputOption> lastOutputOptions;
+    private boolean lastOutputOptionsValid = false;
 
     public TxEmulator(Platform platform) {
         super(platform);
@@ -24,10 +28,16 @@ public class TxEmulator extends Emulator {
 
     @Override
     public void setOutputOptions(Set<OutputOption> outputOptions) {
-        super.setOutputOptions(outputOptions);
-        TxInstructionSet.init(outputOptions);
-        TxStatement.initFormatChars(outputOptions);
-        TxCPUState.initRegisterLabels(outputOptions);
+        // coderat: optimisation, because it is called on each "step" of emulator and init of all instruction maps takes too long
+        if ( !lastOutputOptionsValid || !lastOutputOptions.equals(outputOptions)) {
+            lastOutputOptions = EnumSet.copyOf(outputOptions);
+            lastOutputOptionsValid = true;
+        
+            super.setOutputOptions(outputOptions);
+            TxInstructionSet.init(outputOptions);
+            TxStatement.initFormatChars(outputOptions);
+            TxCPUState.initRegisterLabels(outputOptions);
+        }
     }
 
 
