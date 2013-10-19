@@ -301,7 +301,7 @@ public class BreakTrigger {
         printWriter.print(msg + "\n");
     }
 
-        public boolean isActive() {
+    public boolean isActive() {
         return  enabled &&
                 (mustBeLogged
                 || mustBreak
