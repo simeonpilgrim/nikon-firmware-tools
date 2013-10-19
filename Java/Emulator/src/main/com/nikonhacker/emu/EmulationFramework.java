@@ -507,8 +507,8 @@ public class EmulationFramework {
 
         //L17	PJ5/INT17	Shutter "half-pressed"
         Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0));
-        //U16	P56/A6/TB2OUT/KEY28	Shutter
-//        TODO Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
+        // From http://nikonhacker.com/viewtopic.php?f=6&t=731&p=8340#p8339
+        Pin.interconnect(txIoPorts[IoPort.PORT_8].getPin(4), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
 
         // From http://nikonhacker.com/viewtopic.php?f=6&t=731&hilit=sd+card&start=20#p4353
         // P57 and P56 might be scroll wheel
