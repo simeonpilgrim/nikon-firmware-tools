@@ -13,15 +13,13 @@ import java.awt.event.ActionListener;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
-    private static final int UPDATE_INTERVAL_MS = 1000;
-
     private Timer refreshTimer;
 
     private final CPUStateComponent cpuPanel;
 
     private boolean editable = false;
 
-    public CPUStateEditorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final CPUState cpuState) {
+    public CPUStateEditorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, final CPUState cpuState, int refreshInterval) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
 
         if (cpuState instanceof FrCPUState) {
@@ -34,7 +32,7 @@ public class CPUStateEditorFrame extends DocumentFrame {
         getContentPane().add(cpuPanel);
 
         // Prepare refresh timer
-        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(refreshInterval, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 cpuPanel.refresh();
             }
