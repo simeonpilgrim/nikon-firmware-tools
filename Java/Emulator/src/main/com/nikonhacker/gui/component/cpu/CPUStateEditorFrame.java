@@ -13,7 +13,7 @@ import java.awt.event.ActionListener;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
+    private static final int UPDATE_INTERVAL_MS = 1000;
 
     private Timer refreshTimer;
 
@@ -53,12 +53,12 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
     public void setEditable(boolean editable) {
         this.editable = editable;
-        cpuPanel.refresh();
         cpuPanel.setEditable(editable);
         if (editable) {
             if (refreshTimer.isRunning()) {
                 refreshTimer.stop();
             }
+            cpuPanel.refresh();
         }
         else {
             if (!refreshTimer.isRunning()) {
