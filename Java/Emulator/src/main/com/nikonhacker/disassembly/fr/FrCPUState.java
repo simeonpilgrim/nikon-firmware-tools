@@ -315,6 +315,7 @@ public class FrCPUState extends CPUState {
 
     @Override
     public void clear() {
+        pc = 0;
         for (int i = 0; i < regValue.length; i++) {
             regValue[i] = new Register32(0);
         }

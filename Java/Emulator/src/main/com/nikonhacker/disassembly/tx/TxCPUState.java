@@ -522,6 +522,7 @@ public class TxCPUState extends CPUState {
 
     @Override
     public void clear() {
+        setPc(0);
         for (int registerSet = 0; registerSet < 8; registerSet++) {
             regValue = shadowRegisterSets[registerSet];
             for (int i = 0; i < regValue.length; i++) {
