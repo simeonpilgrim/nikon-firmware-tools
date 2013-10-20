@@ -131,7 +131,7 @@ public class BreakTrigger {
         }
         else {
             getNewCpuStateFlags().pc = 1;
-            getNewCpuStateFlags().setPc(pcToSet);
+            getNewCpuStateValues().setPc(pcToSet);
         }
     }
 
