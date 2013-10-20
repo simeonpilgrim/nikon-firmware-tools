@@ -37,7 +37,7 @@ public class FrCPUStateComponent extends CPUStateComponent {
     }
 
     public FrCPUStateComponent(final FrCPUState cpuState, FrCPUState cpuStateValidityFlags, boolean filterMode) {
-        this.regTextFields = new JTextField[32];
+        this.regTextFields = new JTextField[FrCPUState.NUM_STD_REGISTERS];
 
         init(cpuState, cpuStateValidityFlags, filterMode);
     }
@@ -203,6 +203,14 @@ public class FrCPUStateComponent extends CPUStateComponent {
             add(buttonPanel, BorderLayout.SOUTH);
         }
 
+        pcTextField.setEditable(true);
+        ilmTextField.setEditable(true);
+        scrTextField.setEditable(true);
+        ccrTextField.setEditable(true);
+        for (JTextField regTextField : regTextFields) {
+            regTextField.setEditable(true);
+        }
+
         // Force a refresh, so that the one that will be triggered by the timer will leave a white background
         refresh();
     }
@@ -334,16 +342,7 @@ public class FrCPUStateComponent extends CPUStateComponent {
 
     }
 
-
     public void setEditable(boolean editable) {
-        pcTextField.setEditable(editable);
-        ilmTextField.setEditable(editable);
-        scrTextField.setEditable(editable);
-        ccrTextField.setEditable(editable);
-        for (JTextField regTextField : regTextFields) {
-            regTextField.setEditable(editable);
-        }
-
         saveButton.setEnabled(editable);
         cancelButton.setEnabled(editable);
     }

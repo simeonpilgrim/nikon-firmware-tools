@@ -181,6 +181,20 @@ public class TxCPUStateComponent extends CPUStateComponent {
             add(buttonPanel, BorderLayout.SOUTH);
         }
 
+        pcTextField.setEditable(true);
+        pcIsaMode16bCheckBox.setEnabled(true);
+        hiTextField.setEditable(true);
+        loTextField.setEditable(true);
+        statusTextField.setEditable(true);
+        causeTextField.setEditable(true);
+        epcTextField.setEditable(true);
+        errorEpcTextField.setEditable(true);
+        for (JTextField regTextField : regTextFields) {
+            regTextField.setEditable(true);
+        }
+        badVAddrTextField.setEditable(true);
+        sscrTextField.setEditable(true);
+
         // Force a refresh, so that the one that will be triggered by the timer will leave a white background
         refresh();
     }
@@ -328,20 +342,6 @@ public class TxCPUStateComponent extends CPUStateComponent {
 
 
     public void setEditable(boolean editable) {
-        pcTextField.setEditable(editable);
-        pcIsaMode16bCheckBox.setEnabled(editable);
-        hiTextField.setEditable(editable);
-        loTextField.setEditable(editable);
-        statusTextField.setEditable(editable);
-        causeTextField.setEditable(editable);
-        epcTextField.setEditable(editable);
-        errorEpcTextField.setEditable(editable);
-        for (JTextField regTextField : regTextFields) {
-            regTextField.setEditable(editable);
-        }
-        badVAddrTextField.setEditable(editable);
-        sscrTextField.setEditable(editable);
-
         saveButton.setEnabled(editable);
         cancelButton.setEnabled(editable);
     }
