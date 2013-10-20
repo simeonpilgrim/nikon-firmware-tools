@@ -3,11 +3,8 @@ package com.nikonhacker.gui.component.sourceCode;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
-import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
-import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerEditDialog;
 import com.nikonhacker.gui.swing.DocumentFrame;
@@ -342,20 +339,6 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         BreakTrigger matchedTrigger = getBreakTrigger(address);
                         if (matchedTrigger == null) {
                             // No match. Create a new one
-                            CPUState values;
-                            CPUState flags;
-                            if (chip == Constants.CHIP_FR) {
-                                values = new FrCPUState(address);
-                                flags = new FrCPUState();
-                                ((FrCPUState)flags).setILM(0, false);
-                                flags.setReg(FrCPUState.TBR, 0);
-                            }
-                            else {
-                                values = new TxCPUState(address);
-                                flags = new TxCPUState();
-                            }
-                            flags.pc = 1;
-
                             String triggerName;
                             if (codeStructure.isFunction(address)) {
                                 triggerName = codeStructure.getFunctionName(address) + "()";
@@ -363,7 +346,10 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                             else {
                                 triggerName = "Breakpoint at 0x" + Format.asHex(address, 8);
                             }
-                            ui.getPrefs().getTriggers(chip).add(new BreakTrigger(triggerName, values, flags, new ArrayList<MemoryValueBreakCondition>()));
+                            BreakTrigger breakTrigger = new BreakTrigger(chip, triggerName);
+                            breakTrigger.getCpuStateValues().setPc(address);
+                            breakTrigger.getCpuStateFlags().pc = 1;
+                            ui.getPrefs().getTriggers(chip).add(breakTrigger);
 
                             ui.onBreaktriggersChange(chip);
                         }

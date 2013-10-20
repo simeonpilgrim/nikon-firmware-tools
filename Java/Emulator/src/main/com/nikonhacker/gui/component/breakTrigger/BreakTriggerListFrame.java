@@ -11,14 +11,10 @@ import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.Prefs;
 import com.nikonhacker.XStreamUtils;
-import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.ParsingException;
-import com.nikonhacker.disassembly.fr.FrCPUState;
-import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.Emulator;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.trigger.BreakTrigger;
-import com.nikonhacker.emu.trigger.condition.MemoryValueBreakCondition;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.gui.swing.PrintWriterArea;
@@ -181,6 +177,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
                     fc.setCurrentDirectory(new java.io.File("."));
 
                     fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    /* TODO add chip name to triggers extension */
                     fc.setFileFilter(Format.createFilter(TRIGGERS_EXTENSION, "Emulator break triggers (*" + TRIGGERS_EXTENSION + ")"));
 
                     if (fc.showOpenDialog(BreakTriggerListFrame.this) == JFileChooser.APPROVE_OPTION) {
@@ -318,24 +315,15 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void addTrigger() {
-        CPUState cpuStateFlags;
-        CPUState cpuStateValues;
-        if (chip == Constants.CHIP_FR) {
-            cpuStateFlags = new FrCPUState();
-            cpuStateValues = new FrCPUState();
-        }
-        else {
-            cpuStateFlags = new TxCPUState();
-            cpuStateValues = new TxCPUState();
-        }
-        cpuStateFlags.clear();
-        cpuStateFlags.pc = 0;
-        BreakTrigger trigger = new BreakTrigger(findNewName(), cpuStateValues, cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
+        // Create new
+        BreakTrigger trigger = new BreakTrigger(chip, findNewName());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange(chip);
 
+        // Edit it
         editTrigger(trigger);
 
+        // Select it
         setSelectedIndex(breakTriggers.size() - 1);
     }
 
@@ -367,15 +355,16 @@ public class BreakTriggerListFrame extends DocumentFrame {
     }
 
     private void addSyscallTrigger() {
-        FrCPUState cpuStateFlags = new FrCPUState();
-        cpuStateFlags.clear();
-        BreakTrigger trigger = new BreakTrigger(findNewName(), new FrCPUState(), cpuStateFlags, new ArrayList<MemoryValueBreakCondition>());
+        // Create blank
+        BreakTrigger trigger = new BreakTrigger(chip, findNewName());
         breakTriggers.add(trigger);
         ui.onBreaktriggersChange(chip);
 
+        // Open edit dialog
         new SyscallBreakTriggerCreateDialog(null, trigger, "Add syscall trigger", memory).setVisible(true);
         ui.onBreaktriggersChange(chip);
 
+        // Select
         setSelectedIndex(breakTriggers.size() - 1);
     }
 
