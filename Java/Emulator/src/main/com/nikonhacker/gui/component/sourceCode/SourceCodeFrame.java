@@ -22,6 +22,10 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.ClipboardOwner;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -61,6 +65,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private       JMenuItem         runToHereMenuItem;
     private       JMenuItem         debugToHereMenuItem;
     private       JMenuItem         jumpHereMenuItem;
+    private       JMenuItem         copyAddressMenuItem;
 
     private boolean enabled = true;
 
@@ -462,6 +467,30 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         });
         newPopupMenu.add(jumpHereMenuItem);
 
+        copyAddressMenuItem = new JMenuItem(new TextAction("Copy address to clipboard") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    JTextComponent textComponent = getTextComponent(e);
+                    if (textComponent instanceof JTextArea) {
+                        JTextArea textArea = (JTextArea) textComponent;
+                        Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
+                        if (addressFromLine != null) {
+                            StringSelection stringSelection = new StringSelection(Format.asHex(addressFromLine, 8));
+                            Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                            clipboard.setContents(stringSelection, new ClipboardOwner() {
+                                @Override
+                                public void lostOwnership(Clipboard clipboard, Transferable contents) {}
+                            });
+                        }
+                    }
+                } catch (BadLocationException ble) {
+                    ble.printStackTrace();
+                }
+            }
+        });
+        newPopupMenu.add(copyAddressMenuItem);
+
 
         newPopupMenu.addPopupMenuListener(this);
 
@@ -571,12 +600,13 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         addBreakPointMenuItem.setVisible(false);
         editBreakPointMenuItem.setVisible(false);
         removeBreakPointMenuItem.setVisible(false);
+        toggleBreakPointMenuItem.setVisible(false);
         breakCheckBoxMenuItem.setVisible(false);
         logCheckBoxMenuItem.setVisible(false);
         debugToHereMenuItem.setEnabled(false);
         runToHereMenuItem.setEnabled(false);
         jumpHereMenuItem.setEnabled(false);
-        toggleBreakPointMenuItem.setVisible(false);
+        copyAddressMenuItem.setEnabled(false);
         if (enabled) {
             try {
                 Integer address = getClickedAddress();
@@ -599,6 +629,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                     debugToHereMenuItem.setEnabled(true);
                     runToHereMenuItem.setEnabled(true);
                     jumpHereMenuItem.setEnabled(true);
+                    copyAddressMenuItem.setEnabled(true);
                 }
             } catch (BadLocationException ble) {
                 // noop
