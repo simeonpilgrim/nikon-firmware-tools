@@ -1,5 +1,6 @@
 package com.nikonhacker.emu.trigger;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.disassembly.fr.FrCPUState;
@@ -55,6 +56,22 @@ public class BreakTrigger {
         this.cpuStateValues = cpuStateValues;
         this.cpuStateFlags = cpuStateFlags;
         this.memoryValueBreakConditions = memoryValueBreakConditions;
+    }
+
+    public BreakTrigger(int chip, String name) {
+        this.name = name;
+        // Create a blank one
+        if (chip == Constants.CHIP_FR) {
+            cpuStateValues = new FrCPUState();
+            cpuStateFlags = new FrCPUState();
+        }
+        else {
+            cpuStateValues = new TxCPUState();
+            cpuStateFlags = new TxCPUState();
+        }
+        cpuStateFlags.clear();
+
+        memoryValueBreakConditions = new ArrayList<>();
     }
 
     public String getName() {
@@ -174,7 +191,6 @@ public class BreakTrigger {
         if (newCpuStateFlags == null) {
             newCpuStateFlags = (cpuStateFlags instanceof FrCPUState)?(new FrCPUState()) : (new TxCPUState());
             newCpuStateFlags.clear();
-            newCpuStateFlags.pc = 0;
         }
         return newCpuStateFlags;
     }
@@ -320,8 +336,13 @@ public class BreakTrigger {
     private Object readResolve() {
         if (enabled == null) enabled = true;
         if (pcToSet != null && newCpuStateFlags == null) {
-            getNewCpuStateFlags().pc=1;
+            getNewCpuStateFlags().pc = 1;
             getNewCpuStateValues().setPc(pcToSet);
+        }
+        else {
+            // just make sure new flags and value are instantiated by reading them
+            getNewCpuStateFlags();
+            getNewCpuStateValues();
         }
         return this;
     }

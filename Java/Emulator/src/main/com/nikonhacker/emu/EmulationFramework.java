@@ -617,15 +617,9 @@ public class EmulationFramework {
             }
             if (endAddress != null) {
                 // Set a temporary break condition at given endAddress
-                CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState(endAddress):new TxCPUState(endAddress);
-                CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
-                flags.pc = 1;
-                // TODO adapt this for Tx
-                if (chip==Constants.CHIP_FR) {
-                    ((FrCPUState)flags).setILM(0, false);
-                    flags.setReg(FrCPUState.TBR, 0);
-                }
-                BreakTrigger breakTrigger = new BreakTrigger("Run to cursor at 0x" + Format.asHex(endAddress, 8), values, flags, new ArrayList<MemoryValueBreakCondition>());
+                BreakTrigger breakTrigger = new BreakTrigger(chip, "Run to cursor at 0x" + Format.asHex(endAddress, 8));
+                breakTrigger.getCpuStateValues().setPc(endAddress);
+                breakTrigger.getCpuStateFlags().pc = 1;
                 emulator[chip].addBreakCondition(new BreakPointCondition(endAddress, breakTrigger));
             }
         }

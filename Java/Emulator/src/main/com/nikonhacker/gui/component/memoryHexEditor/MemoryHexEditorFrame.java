@@ -24,14 +24,15 @@ import org.fife.ui.hex.event.HexEditorListener;
 import org.fife.ui.hex.swing.HexEditor;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
     private static final int UPDATE_INTERVAL_MS = 100; // 10fps
@@ -168,27 +169,18 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     private void convertWatchToTrigger(int index) {
         if (index != -1) {
             MemoryWatch watch = ui.getPrefs().getWatches(chip).get(index);
-            List<MemoryValueBreakCondition> memoryValueBreakConditions = new ArrayList<MemoryValueBreakCondition>();
             int currentValue = memory.load32(watch.getAddress());
             String triggerName = watch.getName() + " changes";
 
-            CPUState values = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
-            CPUState flags = (chip==Constants.CHIP_FR)?new FrCPUState():new TxCPUState();
-            flags.setPc(0);
-            if (chip==Constants.CHIP_FR) {
-                ((FrCPUState)flags).setILM(0, false);
-                flags.setReg(FrCPUState.TBR, 0);
-            }
-            else {
-                flags.setReg(TxCPUState.Status, 0);
-            }
-            BreakTrigger trigger = new BreakTrigger(triggerName, values, flags, memoryValueBreakConditions);
+            BreakTrigger trigger = new BreakTrigger(chip, triggerName);
+            List<MemoryValueBreakCondition> memoryValueBreakConditions = trigger.getMemoryValueBreakConditions();
 
             MemoryValueBreakCondition condition = new MemoryValueBreakCondition(trigger);
             condition.setAddress(watch.getAddress());
             condition.setMask(0xFFFFFFFF);
             condition.setValue(currentValue);
             memoryValueBreakConditions.add(condition);
+
             ui.getPrefs().getTriggers(chip).add(trigger);
             ui.onBreaktriggersChange(chip);
             JOptionPane.showMessageDialog(this, "Added trigger '" + triggerName + "'", "Trigger created", JOptionPane.INFORMATION_MESSAGE);
