@@ -154,11 +154,11 @@ public class TxCPUState extends CPUState {
 
     public final static int CP1_F0 = 51;
 
-    public final static int FIR = 67;
-    public final static int FCCR = 68;
-    public final static int FEXR = 69;
-    public final static int FENR = 70;
-    public final static int FCSR = 71;
+    public final static int FIR = 83;
+    public final static int FCCR = 84;
+    public final static int FEXR = 85;
+    public final static int FENR = 86;
+    public final static int FCSR = 87;
 
 
     // CP0 register fields
