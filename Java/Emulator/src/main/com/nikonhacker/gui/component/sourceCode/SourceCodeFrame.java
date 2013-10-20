@@ -216,13 +216,14 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         }
         if (function != null) {
             writeFunction(function);
-            Integer line = getLineFromAddress(address);
+            final Integer line = getLineFromAddress(address);
             if (line != null) {
-                try {
-                    listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
-                } catch (BadLocationException e1) {
-                    e1.printStackTrace();
-                }
+                // must be called after repaint that is not done yet
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        setLineContextVisible(line);
+                    }
+                });
             }
             return true;
         }
@@ -497,13 +498,33 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
-                // Force scrolling by putting caret on same line
-                listingArea.setCaretPosition(listingArea.getLineStartOffset(lineFromAddress));
+                setLineContextVisible(lineFromAddress);
             }
         } catch (BadLocationException e) {
             pcHighlightTag = null;
             e.printStackTrace();
         }
+    }
+
+    /**
+       check if line to be displayed is visible and make it visible if not
+       coderat: any standard call trigger reparsing of the text, so do optimized work.
+       @param line   line number to be shown
+     */
+    private final void setLineContextVisible(int line) {
+        Rectangle visibleRect = listingArea.getVisibleRect();
+
+        int lineHeight = listingArea.getFontMetrics(listingArea.getFont()).getHeight();
+        
+        int firstLine = (int) Math.ceil((double) visibleRect.y / lineHeight);
+        int lastLine = (int) Math.floor((double) (visibleRect.y + visibleRect.height) / lineHeight);
+
+        // do nothing if inside visible area
+        if (firstLine<=line && line<lastLine)
+            return;
+        // scroll to position where line gets visible
+        visibleRect.y = lineHeight * (line>0 ? line-1 : 0);
+        listingArea.scrollRectToVisible(visibleRect);
     }
 
     public void setEditable(boolean enabled) {
