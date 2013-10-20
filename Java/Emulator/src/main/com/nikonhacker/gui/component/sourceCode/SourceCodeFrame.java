@@ -60,6 +60,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     private       JCheckBoxMenuItem logCheckBoxMenuItem;
     private       JMenuItem         runToHereMenuItem;
     private       JMenuItem         debugToHereMenuItem;
+    private       JMenuItem         jumpHereMenuItem;
 
     private boolean enabled = true;
 
@@ -438,6 +439,29 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         runToHereMenuItem = new JMenuItem(new RunToHereAction(EmulationFramework.ExecutionMode.RUN, false));
         newPopupMenu.add(runToHereMenuItem);
 
+        newPopupMenu.addSeparator();
+
+        jumpHereMenuItem = new JMenuItem(new TextAction("Jump here") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    JTextComponent textComponent = getTextComponent(e);
+                    if (textComponent instanceof JTextArea) {
+                        JTextArea textArea = (JTextArea) textComponent;
+                        Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
+                        if (addressFromLine != null) {
+                            cpuState.setPc(addressFromLine);
+                            ui.updateState(chip);
+                            exploreAddress(cpuState.pc);
+                        }
+                    }
+                } catch (BadLocationException ble) {
+                    ble.printStackTrace();
+                }
+            }
+        });
+        newPopupMenu.add(jumpHereMenuItem);
+
 
         newPopupMenu.addPopupMenuListener(this);
 
@@ -551,6 +575,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         logCheckBoxMenuItem.setVisible(false);
         debugToHereMenuItem.setEnabled(false);
         runToHereMenuItem.setEnabled(false);
+        jumpHereMenuItem.setEnabled(false);
         toggleBreakPointMenuItem.setVisible(false);
         if (enabled) {
             try {
@@ -573,6 +598,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
                     debugToHereMenuItem.setEnabled(true);
                     runToHereMenuItem.setEnabled(true);
+                    jumpHereMenuItem.setEnabled(true);
                 }
             } catch (BadLocationException ble) {
                 // noop
