@@ -1312,53 +1312,6 @@ public class FrInstructionSet {
                 context.cycleIncrement = 1;
             }
         }));
-        /* COPOP #u4, #CC, CRj, CRi */  // not in FR80/FR81
-        fillInstructionMap( 0x9FC0, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 1, "COPOP",  "#u,#c,l,k",    ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE coprocessor operation */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(context.cpuState.pc - 2, 8));
-                /* No change to NZVC */
-                context.cpuState.pc += 4;
-                context.cycleIncrement = 2 + FrInstructionSet.CYCLES_A;
-            }
-        }));
-        /* COPLD #u4, #CC, Rj, CRi */ // not in FR80/FR81
-        fillInstructionMap( 0x9FD0, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 1, "COPLD",  "#u,#c,j,k",    ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE coprocessor operation */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(context.cpuState.pc-2,8));
-                /* context.cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + i) = context.cpuState.getReg(j); */
-                /* No change to NZVC */
-                context.cpuState.pc += 4;
-                context.cycleIncrement = 1 + 2 * FrInstructionSet.CYCLES_A;
-            }
-        }));
-        /* COPST #u4, #CC, CRj, Ri */ // not in FR80/FR81
-        fillInstructionMap( 0x9FE0, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 1, "COPST",  "#u,#c,l,i",    "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE coprocessor operation */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(context.cpuState.pc-2,8));
-                /* context.cpuState.getReg(i) = context.cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j); */
-                /* No change to NZVC */
-                context.cpuState.pc += 4;
-                context.cycleIncrement = 1 + 2 * FrInstructionSet.CYCLES_A;
-            }
-        }));
-        /* COPSV #u4, #CC, CRj, Ri */ // not in FR80/FR81
-        fillInstructionMap( 0x9FF0, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 1, "COPSV",  "#u,#c,l,i",    "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE coprocessor operation */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (coprocessor) at PC=0x" + Format.asHex(context.cpuState.pc-2,8));
-                /* context.cpuState.getReg(i) = context.cpuState.getReg(CPUState.COPROCESSOR_REG_OFFSET + j);*/
-                /* No change to NZVC */
-                context.cpuState.pc += 4;
-                context.cycleIncrement = 1 + 2 * FrInstructionSet.CYCLES_A;
-            }
-        }));
         /* ADDN #i4, Ri */
         fillInstructionMap( 0xA000, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "ADDN",   "#u,i",         "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
@@ -1710,32 +1663,6 @@ public class FrInstructionSet {
                 ((FrCPUState)context.cpuState).Z = (result32 == 0) ? 1 : 0;
                 context.cpuState.pc += 2;
                 context.cycleIncrement = 3;
-            }
-        }));
-        /* LDRES @Ri+, #u4 */ // not in FR80/FR81
-        fillInstructionMap( 0xBC00, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "LDRES",  "@i+,#u;Iu",    ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (resource) at PC=0x" + Format.asHex(context.cpuState.pc-2,8));
-                /*sentToResource(x, memory.load32(context.cpuState.getReg(i)));
-                context.cpuState.getReg(i) + = 4;*/
-
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_A;
-            }
-        }));
-        /* STRES #u4, @Ri+ */ // not in FR80/FR81
-        fillInstructionMap( 0xBD00, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "STRES",  "#u,@i+;Iu",    ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                /* TODO FUTURE */
-                System.err.println(statement.getInstruction().toString() + " is not implemented (resource) at PC=0x" + Format.asHex(context.cpuState.pc-2,8));
-                /* memory.store32(context.cpuState.getReg(i), getFromResource(x); context.cpuState.getReg(i) + = 4;*/
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_A;
             }
         }));
         /* MULH Rj, Ri */
