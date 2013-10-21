@@ -67,6 +67,7 @@ public class Prefs {
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
     private Map<String, Integer>               buttonsState;
 
+    // Note: that field has a name that does not reflect its current use but it's kept for prefs backwards compatibility
     private int screenEmulatorRefreshIntervalMs;
 
     private String frontPanelName;
@@ -616,15 +617,17 @@ public class Prefs {
         return buttonsState.get(key);
     }
 
-    public int getScreenEmulatorRefreshIntervalMs() {
+    public int getRefreshIntervalMs() {
+        // Note: that field has a name that does not reflect its current use but it's kept for prefs backwards compatibility
         if (screenEmulatorRefreshIntervalMs < 10 || screenEmulatorRefreshIntervalMs > 10000) {
             screenEmulatorRefreshIntervalMs = 1000;
         }
         return screenEmulatorRefreshIntervalMs;
     }
 
-    public void setScreenEmulatorRefreshIntervalMs(int screenEmulatorRefreshIntervalMs) {
-        this.screenEmulatorRefreshIntervalMs = screenEmulatorRefreshIntervalMs;
+    public void setRefreshIntervalMs(int refreshIntervalMs) {
+        // Note: that field has a name that does not reflect its current use but it's kept for prefs backwards compatibility
+        this.screenEmulatorRefreshIntervalMs = refreshIntervalMs;
     }
 
     public String getFrontPanelName() {
