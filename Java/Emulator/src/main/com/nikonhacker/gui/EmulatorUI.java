@@ -1657,12 +1657,21 @@ public class EmulatorUI extends JFrame implements ActionListener {
         final JCheckBox closeAllWindowsOnStopCheckBox = new JCheckBox("Close all windows on Stop");
         closeAllWindowsOnStopCheckBox.setSelected(prefs.isCloseAllWindowsOnStop());
 
+        // Refresh interval
+        JPanel refreshIntervalPanel = new JPanel();
+        final JTextField refreshIntervalField = new JTextField(5);
+        refreshIntervalPanel.add(new JLabel("Refresh interval for cpu, screen, etc. (ms):"));
+
+        refreshIntervalField.setText("" + prefs.getRefreshIntervalMs());
+        refreshIntervalPanel.add(refreshIntervalField);
+
         // Setup panel
         options.add(new JLabel("Button size :"));
         options.add(small);
         options.add(medium);
         options.add(large);
         options.add(closeAllWindowsOnStopCheckBox);
+        options.add(refreshIntervalPanel);
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 options,
@@ -1676,6 +1685,14 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // save
             prefs.setButtonSize(group.getSelection().getActionCommand());
             prefs.setCloseAllWindowsOnStop(closeAllWindowsOnStopCheckBox.isSelected());
+            int refreshIntervalMs = 0;
+            try {
+                refreshIntervalMs = Integer.parseInt(refreshIntervalField.getText());
+            } catch (NumberFormatException e) {
+                // noop
+            }
+            refreshIntervalMs = Math.max(Math.min(refreshIntervalMs, 10000), 10);
+            prefs.setRefreshIntervalMs(refreshIntervalMs);
             applyPrefsToUI();
         }
     }
@@ -1897,14 +1914,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Disassembly Options", null, disassemblyOptionsPanel);
         tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " Emulation Options", null, emulationOptionsPanel);
 
-        final JTextField screenEmulatorRefreshIntervalField = new JTextField(5);
-        JPanel chipSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
-        if (chip == Constants.CHIP_FR) {
-            chipSpecificOptionsPanel.add(new JLabel("Screen emulator refresh interval (milliseconds):"));
-            screenEmulatorRefreshIntervalField.setText("" + prefs.getScreenEmulatorRefreshIntervalMs());
-            chipSpecificOptionsPanel.add(screenEmulatorRefreshIntervalField);
-        }
-        else {
+        if (chip == Constants.CHIP_TX) {
+            JPanel chipSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
+
             chipSpecificOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
 
             ActionListener eepromInitializationRadioActionListener = new ActionListener() {
@@ -1950,10 +1962,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
             chipSpecificOptionsPanel.add(frontPanelNameCombo);
 
             emulationOptionsPanel.add(new JSeparator(JSeparator.HORIZONTAL));
+
+            tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " specific options", null, chipSpecificOptionsPanel);
         }
-
-        tabbedPane.addTab(Constants.CHIP_LABEL[chip] + " specific options", null, chipSpecificOptionsPanel);
-
 
         // ------------------------ Show it
 
@@ -1982,16 +1993,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
             prefs.setAltExecutionModeForSyncedCpuUponDebug(chip, (EmulationFramework.ExecutionMode) altModeForDebugCombo.getSelectedItem());
             prefs.setAltExecutionModeForSyncedCpuUponStep(chip, (EmulationFramework.ExecutionMode) altModeForStepCombo.getSelectedItem());
 
-            if (chip == Constants.CHIP_FR) {
-                int screenEmulatorRefreshIntervalMs = 0;
-                try {
-                    screenEmulatorRefreshIntervalMs = Integer.parseInt(screenEmulatorRefreshIntervalField.getText());
-                } catch (NumberFormatException e) {
-                    // noop
-                }
-                screenEmulatorRefreshIntervalMs = Math.max(Math.min(screenEmulatorRefreshIntervalMs, 10000), 10);
-                prefs.setScreenEmulatorRefreshIntervalMs(screenEmulatorRefreshIntervalMs);
-            }
         }
     }
 
@@ -2278,7 +2279,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleCPUState(int chip) {
         if (cpuStateEditorFrame[chip] == null) {
-            cpuStateEditorFrame[chip] = new CPUStateEditorFrame("CPU State", "cpu", true, true, false, true, chip, this, framework.getPlatform(chip).getCpuState(), prefs.getScreenEmulatorRefreshIntervalMs());
+            cpuStateEditorFrame[chip] = new CPUStateEditorFrame("CPU State", "cpu", true, true, false, true, chip, this, framework.getPlatform(chip).getCpuState(), prefs.getRefreshIntervalMs());
             cpuStateEditorFrame[chip].setEnabled(!framework.isEmulatorPlaying(chip));
             if (disassemblyLogFrame[chip] != null) cpuStateEditorFrame[chip].setLogger(disassemblyLogFrame[chip].getLogger());
             addDocumentFrame(chip, cpuStateEditorFrame[chip]);
@@ -2319,7 +2320,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void toggleScreenEmulator() {
         if (screenEmulatorFrame == null) {
-            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, ((FrLcd)framework.getPlatform(Constants.CHIP_FR).getLcd()), FrLcd.CAMERA_SCREEN_MEMORY_Y, FrLcd.CAMERA_SCREEN_MEMORY_U, FrLcd.CAMERA_SCREEN_MEMORY_V, FrLcd.CAMERA_SCREEN_WIDTH, FrLcd.CAMERA_SCREEN_HEIGHT, prefs.getScreenEmulatorRefreshIntervalMs());
+            screenEmulatorFrame = new ScreenEmulatorFrame("Screen emulator", "screen", true, true, true, true, Constants.CHIP_FR, this, ((FrLcd)framework.getPlatform(Constants.CHIP_FR).getLcd()), FrLcd.CAMERA_SCREEN_MEMORY_Y, FrLcd.CAMERA_SCREEN_MEMORY_U, FrLcd.CAMERA_SCREEN_MEMORY_V, FrLcd.CAMERA_SCREEN_WIDTH, FrLcd.CAMERA_SCREEN_HEIGHT, prefs.getRefreshIntervalMs());
             addDocumentFrame(Constants.CHIP_FR, screenEmulatorFrame);
             screenEmulatorFrame.display(true);
         }
