@@ -5,8 +5,8 @@
  */
 package com.nikonhacker.gui.component.sourceCode.syntaxHighlighter;
 
-import java.io.*;
 import javax.swing.text.Segment;
+import java.io.IOException;
 
 import org.fife.ui.rsyntaxtextarea.*;
 
@@ -275,10 +275,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "BTSTL" |
 "CMP" |
 "CMP2" |
-"COPLD" |
-"COPOP" |
-"COPST" |
-"COPSV" |
 "DIV0S" |
 "DIV0U" |
 "DIV1" |
@@ -305,7 +301,6 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "LDI:8" |
 "LDM0" |
 "LDM1" |
-"LDRES" |
 "LDUB" |
 "LDUH" |
 "LEAVE" |
@@ -325,13 +320,15 @@ Operator				= ("+"|"-"|"*"|"/"|"%"|"^"|"|"|"&"|"~"|"!"|"="|"<"|">")
 "ORH" |
 "POP" |
 "PUSH" |
+"SRCH0" |
+"SRCH1" |
+"SRCHC" |
 "ST" |
 "STB" |
 "STH" |
 "STILM" |
 "STM0" |
 "STM1" |
-"STRES" |
 "STUB" |
 "STUH" |
 "SUB" |
