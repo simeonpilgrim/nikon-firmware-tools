@@ -100,3 +100,14 @@ diff -rup --strip-trailing-cr /c/gcc-3.4.5-20060117-2/gcc/config/fr30/t-fr30 /sr
 +
 +LIBGCC = stmp-multilib
 +INSTALL_LIBGCC = install-multilib
+diff -rup --strip-trailing-cr /c/gcc-3.4.5-20060117-2/gcc/fixinc/mkfixinc.sh /src/gcc-3.4.5-20060117-2/gcc/fixinc/mkfixinc.sh
+--- /c/gcc-3.4.5-20060117-2/gcc/fixinc/mkfixinc.sh	2003-10-24 19:47:51 +0200
++++ /src/gcc-3.4.5-20060117-2/gcc/fixinc/mkfixinc.sh	2013-10-17 04:05:09 +0200
+@@ -45,6 +45,7 @@ case $machine in
+     i?86-*-pe | \
+     i?86-*-cygwin* | \
+     i?86-*-mingw32* | \
++    fr30-*-elf* | \
+     i?86-*-uwin* | \
+     i?86-*-interix* | \
+     powerpc-*-eabiaix* | \
