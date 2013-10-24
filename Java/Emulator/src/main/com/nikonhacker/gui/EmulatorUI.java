@@ -1047,7 +1047,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             traceMenu.add(new JSeparator());
         }
 
-        //Set up the tools menu.
+        //Set up the source menu.
         JMenu sourceMenu = new JMenu("Source");
         sourceMenu.setMnemonic(KEY_EVENT_SCREEN);
         menuBar.add(sourceMenu);
