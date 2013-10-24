@@ -1,0 +1,91 @@
+I got an excellent response from Joseph Wisniewski:
+
+The five contact interface is actually 7 contacts wide, with a 2 contact gap. 
+2 contacts are power and ground, three more are a serial data interface (clock, 
+data, and read/write). They do pretty much what Bjorn said, communicate lens 
+data back to the camera, and communicate commands like "start VR" to the lens.
+-
+The gap is because Nikon originally designed an entirely different AF system for 
+the F3-AF. This system had 7 contacts, and a motor in the lens, and the camera 
+would drive the lens motor through two high power contacts: "near to far" and 
+"far to near". There was no serial communication, just power and limit switches. 
+When Nikon made the new "screwdriver" system for the N2020 camera, they avoided 
+using those two contacts, to keep old F3-AF cameras from frying the new "digital 
+interface" lenses. Nikon F4 (aside from being the ugliest Nikon ever designed) 
+actually had the circuitry to drive either the F3-AF lenses or the new AF Nikkors.
+-
+AF-S and AF-I lenses need 8 contacts to function properly. They add an additional 
+high power line so that the lens motor could suck power directly from the camera 
+battery. A pair of additional motion detection lines allow the camera to track 
+the direction and speed of lens movement. Nikon "recycled" the contacts from the 
+"gap" in the second AF system. This tracking function is only used by high end 
+bodies like D2X, D3, F100, F5, so those bodies have 8 contacts. Lesser bodies like 
+D100 or N80 have 7 contacts. I don't know about some of the newer low end bodies.
+-
+Although cameras have 7 or 8 contacts, Nikon AF-S (and older AF-I) lenses have 10 
+contacts. Two of these are for use with teleconverters. AF-S teleconverters have 10 
+contacts on the front (lens side), and 8 on the camera side. The two contacts let 
+the converter send a "hi, I'm a 1.4x teleconverter" message to the lens. This 
+allows the lens to send a "I'm not really a 105mm f2.8 macro, I'm really a 147mm 
+f4 macro" to the camera. Even AF-S lenses that aren't normally used with teleconverters, 
+like the 12-24mm f4 DX, have 10 pins, and often work properly on Kenko teleconverters.
+-
+I'm not sure why a lens would have 7 contacts, unless it's a low end AF-S lens designed 
+only to exploit the features of a low end body, leaving off the motion detection. Which 
+lenses have you seen with 7 contacts.
+
+The contacts are identified in Nikon service manuals (and on the circuit boards of 
+cameras and lenses) as "A" through "J". "A" is the leftmost contact as you gaze lovingly 
+into the lens mount of the camera. The names of the contacts vary depending on what 
+manual you read. E and F are the "gap" contacts in older cameras.The first F3-AF interface:
+-
+number
+F3AF
+A: VCC
+B: Limit switch
+C: Near to Far
+D: Far to Near
+E: 
+F: Relative Distance
+G: GND
+-
+The second AF interface, as used in 5 contact screwdriver lenses:
+number
+N50
+patent
+A: VCC,  LCVV
+B: RW1,  RW1
+C: SCK,  LCK
+D: SIO,  LIO
+E:
+F:
+G: DGND, PGND
+-
+The third AF interface, as used in cameras that support AF-S lenses:
+number
+N90, N70
+F5
+patent
+A: LCVV, VCC,  LCVV
+B: RW1,  R/W1, RW1
+C: LCK,  SCK,  LCK
+D: LIO,  SI/O, LIO
+E: RW2,  R/W2, RW2
+F: LBAT, LBAT, LBAT
+G: PGND, GND,  PGND
+-
+The full 10 pins from the 300mm f2.8 AF-I service manual:
+number
+300mm
+protection
+A: VCC, cap to PGND
+B: R/W1, pull up and series
+C: Clock, series
+D: DATA, pull up
+E: Hotline, Pulse, pull up and series
+F: Power for Motor
+G: Motor GND
+H: Hotline, Pulse, pull up and series
+I: Reserve
+J: Reserve
+Mount: GND

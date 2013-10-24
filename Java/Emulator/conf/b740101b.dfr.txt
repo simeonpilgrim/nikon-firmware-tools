@@ -1,0 +1,146 @@
+# The main part of this file describes the D3100 "B" firmware, ver 1.01
+# Two special parts are also included but commented out :
+# - the ROM part at 0x000E0000
+# - the copy of code to 0x80080000 performed by the ROM bootup
+#
+
+############################### File map: D3100
+-i 0x00040000-0x00BFFFFF=0x00000000
+ 
+############################### Memory map:
+
+-m 0x00040000-0x000407BD=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x000407BE-0x0004091D=DATA:W
+
+
+-m 0x0004091E-0x000409FB=CODE
+
+# Softune RTOS Copyright :
+#-m 0x000409FC-0x00040A67=DATA:L
+
+
+-m 0x00040A68-0x000427D1=CODE
+
+
+-m 0x000427D2-0x000504E1=CODE
+
+
+# Code for sure (meaningful calls)
+-m 0x000ABB3A-0x000DAA29=CODE
+
+
+
+# Interrupt vector table.
+-t 0x000EFC00
+#-m 0x000dfc00-0x000dffff=DATA:L
+
+
+#-m 0x00100000-0x00??????=CODE
+
+
+
+############################### Symbols
+
+-s 0x40000=__start
+-s 0x40670=int_18
+-s 0x409B0=Setup_OS
+-s 0x40D02=UpdateClock_ms
+-s 0x50018=nullsub_2
+-s 0x100D0E=nullsub_3
+-s 0x102E6C=nullsub_4
+-s 0x1047DA=nullsub_5
+-s 0x11AC34=nullsub_63
+-s 0x11CFFA=nullsub_6
+-s 0x11E1EE=nullsub_64
+-s 0x11E3DC=nullsub_65
+-s 0x11E7AE=nullsub_7
+-s 0x11E7B0=nullsub_8
+-s 0x11E7B2=nullsub_66
+-s 0x11E7B6=nullsub_9
+-s 0x11E7B8=nullsub_10
+-s 0x11E7BA=nullsub_11
+-s 0x11E7BC=nullsub_12
+-s 0x11E7BE=nullsub_13
+-s 0x11E7C0=nullsub_14
+-s 0x11E7C2=nullsub_67
+-s 0x11EEBE=AudioBuff_InitCircular
+-s 0x11F25A=nullsub_15
+-s 0x11FAA0=ptp_SendData
+-s 0x1213D2=ptp_OC_FC01
+-s 0x121510=ptp_OC_FE01
+-s 0x123A68=ptp_OC_FE63
+-s 0x123B38=ptp_OC_FE34
+-s 0x124C8E=nullsub_16
+-s 0x1342E0=ptp_Responce_OK
+-s 0x14DF2C=debug_0
+-s 0x1510B8=nullsub_17
+-s 0x1510D2=nullsub_18
+-s 0x1510D4=nullsub_19
+-s 0x1510DA=nullsub_20
+-s 0x1510DC=nullsub_21
+-s 0x1510E6=nullsub_22
+-s 0x15110C=nullsub_23
+-s 0x151110=nullsub_24
+-s 0x151114=nullsub_25
+-s 0x15111A=nullsub_26
+-s 0x15112A=nullsub_27
+-s 0x15114E=nullsub_28
+-s 0x17D3C4=nullsub_29
+-s 0x193260=nullsub_1
+-s 0x19F0DE=nullsub_30
+-s 0x19FCAA=nullsub_31
+-s 0x1B76E4=nullsub_32
+-s 0x1B76F0=nullsub_33
+-s 0x1B77D0=nullsub_34
+-s 0x1B77E2=nullsub_35
+-s 0x1BCEAE=nullsub_36
+-s 0x1BD92E=nullsub_37
+-s 0x1BDD8E=nullsub_38
+-s 0x1BDE72=nullsub_39
+-s 0x1C61F4=nullsub_40
+-s 0x1C61F6=nullsub_41
+-s 0x1C654C=nullsub_60
+-s 0x1C8E84=nullsub_42
+-s 0x1CC006=nullsub_43
+-s 0x1CC008=nullsub_44
+-s 0x1D1CAA=nullsub_45
+-s 0x1D5AFA=debug_audio
+-s 0x1E3F0E=nullsub_46
+-s 0x1FA850=nullsub_47
+-s 0x1FE68A=ADD_uint64
+-s 0x1FE690=AND_uni64
+-s 0x267888=nullsub_48
+-s 0x273C5A=nullsub_49
+-s 0x27559E=nullsub_50
+-s 0x2755E2=nullsub_51
+-s 0x288C62=nullsub_52
+-s 0x28B260=nullsub_53
+-s 0x2A3C5C=nullsub_54
+-s 0x2AEB96=nullsub_55
+-s 0x2F2A0E=nullsub_56
+-s 0x2F3DB6=setJpegImageSize
+-s 0x2F3DD0=getJpegImageSize
+-s 0x2F3DDE=setImageQualityMode
+-s 0x2F3DF8=getImageQualityMode
+-s 0x2F3E06=setActiveDLighting
+-s 0x2F3E20=getActiveDLighting
+-s 0x350D5A=nullsub_62
+-s 0x885C5E=nullsub_58
+-s 0x8863FA=nullsub_59
+-s 0x88D0C8=check_600000
+-s 0x8FA00000=Sum_RAM
+-s 0x8FA00022=Sum_MainRom
+-s 0x8FA00042=Flash_AutoSelect
+-s 0x8FA00076=reg_138_xx
+-s 0x8FA0008E=flash_firmware_xx
+-s 0x8FA0042C=EmbeddedFlashClear_xx
+-s 0x8FA00518=EmbeddedFlashWrite
+-s 0x8FA005CC=Flash_SignleByteProgram_0
+-s 0x8FA00700=Flash_ClearSector
+-s 0x8FA00776=Flash_SignleByteProgram
+-s 0x8FA007EC=Flash_Poll_DQ3_xx
+-s 0x8FA00828=Flash_ResetCommand
+-s 0x8FA00AE2=nullsub_61
