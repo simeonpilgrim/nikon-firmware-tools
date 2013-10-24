@@ -41,7 +41,6 @@ public class D5100FrontPanel extends FrontPanel {
                 {0, 0, 1, 1} /*pin1 values for each of the 4 states*/
         });
 
-        // TEMPORARY TEST: pretend mode dial has 16 positions so that all 4-bits combinations can be tested
         addCameraButton(KEY_MODEDIAL, new String[][]{
                 {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
                 {"0_highlight", "1_highlight", "2_highlight", "3_highlight", "4_highlight", "5_highlight", "6_highlight", "7_highlight", "8_highlight", "9_highlight", "10_highlight", "11_highlight", "12_highlight"}},
