@@ -1,12 +1,11 @@
 package com.nikonhacker.gui;
 
 /*
+ * Main Emulator class
+ *
  * MDI Layout inspired by InternalFrameDemo from the Java Tutorial -
  * http://docs.oracle.com/javase/tutorial/uiswing/components/internalframe.html
  */
-
-/* TODO : track executions in non CODE area */
-/* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
 
 import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Constants;
