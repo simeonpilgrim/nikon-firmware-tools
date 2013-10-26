@@ -106,22 +106,22 @@ public abstract class IoPort {
     /**
      * Port pin direction mask - 0=Input 1=Output
      */
-    public byte getDirection() {
-        byte direction = 0;
+    public byte getDirectionOutput() {
+        byte directionOutput = 0;
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
             if (!getPin(bitNumber).isInput()) {
-                direction |= (1 << bitNumber);
+                directionOutput |= (1 << bitNumber);
             }
         }
-        return direction;
+        return directionOutput;
     }
 
     /**
      * Port pin direction mask - 0=Input 1=Output
      */
-    public void setDirection(byte direction) {
+    public void setDirectionOutput(byte directionOutput) {
         for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
-            getPin(bitNumber).setIsInput((direction & (1 << bitNumber)) == 0);
+            getPin(bitNumber).setIsInput((directionOutput & (1 << bitNumber)) == 0);
         }
         for (IoPortConfigListener ioPortConfigListener : ioPortConfigListeners) {
             ioPortConfigListener.onConfigChange(portNumber);
