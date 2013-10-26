@@ -86,7 +86,7 @@ public class TxIoPort extends IoPort {
      * @return mask: 0=Input 1=Output
      */
     public byte getControlRegister() {
-        return getDirection();
+        return getDirectionOutput();
     }
 
     /**
@@ -95,7 +95,7 @@ public class TxIoPort extends IoPort {
      * @param controlRegister mask: 0=Input 1=Output
      */
     public void setControlRegister(byte controlRegister) {
-        setDirection(controlRegister);
+        setDirectionOutput(controlRegister);
     }
 
     public byte getFunctionRegister1() {
