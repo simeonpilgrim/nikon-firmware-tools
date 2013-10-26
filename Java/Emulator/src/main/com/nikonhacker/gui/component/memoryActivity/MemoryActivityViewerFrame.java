@@ -19,6 +19,8 @@ import java.util.List;
 
 public class MemoryActivityViewerFrame extends DocumentFrame {
 
+    /* TODO : memory viewer : add checkbox to toggle rotation, button to clear, ... */
+
     private static final int UPDATE_INTERVAL_MS = 100; // 25fps
     private static final int MAP_WIDTH = 256;
     private static final int MAP_HEIGHT = 256;
