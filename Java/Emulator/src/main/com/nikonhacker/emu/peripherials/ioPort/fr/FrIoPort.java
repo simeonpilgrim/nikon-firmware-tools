@@ -59,8 +59,10 @@ public class FrIoPort extends IoPort {
         ioPorts[IoPort.PORT_7].getPin(6).setFunction(new FrIoPinInterruptFunction(interruptController, 6));
 
         // P84 = LCD closed (0 when closed)
-        // When the LCD turns off => P05 and PD1 go to 0, and PC3 goes to 1
-
+        ioPorts[IoPort.PORT_8].setInputEnabled((byte) 0xFF);
+        // Does not work When the LCD turns off => P05 and PD1 go to 0, and PC3 goes to 1
+        ioPorts[IoPort.PORT_C].setDirectionOutput((byte) 0xFF);
+        ioPorts[IoPort.PORT_D].setDirectionOutput((byte) 0xFF);
         return ioPorts;
     }
 }
