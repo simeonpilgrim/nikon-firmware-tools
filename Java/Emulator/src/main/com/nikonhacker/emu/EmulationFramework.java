@@ -255,8 +255,6 @@ public class EmulationFramework {
                 for (int i = 0; i<resolutionConverter.length; i++) {
                     resolutionConverter[i] = new FrResolutionConverter(i,platform[chip]);
                 }
-
-                connectLcdScreenRelatedPins(ioPorts, (FrLcd) lcd);
             }
             else {
                 cpuState = new TxCPUState();
@@ -422,6 +420,8 @@ public class EmulationFramework {
                 interconnectChipSerialPorts(platform[Constants.CHIP_FR].getSerialInterfaces(), platform[Constants.CHIP_TX].getSerialInterfaces());
                 // Perform serial interconnection
                 interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
+                // Perform LCD screen connection
+                connectLcdScreenRelatedPins(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts(), (FrLcd) platform[Constants.CHIP_FR].getLcd());
             }
 
             // 3. RESTORE
@@ -455,8 +455,9 @@ public class EmulationFramework {
         }
     }
 
-    private void connectLcdScreenRelatedPins(IoPort[] frIoPorts, FrLcd lcd) {
-        // Output pin to power LCD screen
+    private void connectLcdScreenRelatedPins(IoPort[] frIoPorts, IoPort[] txIoPorts, FrLcd lcd) {
+        // Output pin to power LCD screen (does not seem right as P05, PD1 and PC3 don't behave as seen in dumps)
+        // Also tried with TX P93
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(7), lcd.getPowerPin());
         // Input pin to indicate rotation (upside down)
         // Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(3), /*button*/);
@@ -505,13 +506,15 @@ public class EmulationFramework {
         //J14	PG7/KEY07	 "del"
         Pin.interconnect(txIoPorts[IoPort.PORT_G].getPin(7), frontPanel.getButton(FrontPanel.KEY_DELETE).getPin(0));
 
-        //L17	PJ5/INT17	Shutter "half-pressed"
-        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0));
         // From http://nikonhacker.com/viewtopic.php?f=6&t=731&p=8340#p8339
-        Pin.interconnect(txIoPorts[IoPort.PORT_8].getPin(4), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1));
+        // - P84 and PJ5 set to low = shutter full press
+        // - PJ5 set to low and P84 set to high = shutter half press.
+        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(5), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(0)); // 1 - 0 - 0 - 0
+        Pin.interconnect(txIoPorts[IoPort.PORT_8].getPin(4), frontPanel.getButton(FrontPanel.KEY_SHUTTER).getPin(1)); // 1 - 1 - 0 - 1
 
         // From http://nikonhacker.com/viewtopic.php?f=6&t=731&hilit=sd+card&start=20#p4353
         // P57 and P56 might be scroll wheel
+        // TODO: one "click" should step through 4 steps
         Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(6), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(0));
         Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(7), frontPanel.getButton(FrontPanel.KEY_DIAL).getPin(1));
 
