@@ -50,10 +50,10 @@ public class NkldDecoder {
                     else {
                         throw new FirmwareFormatException(msg);
                     }
-                    NkldUtils.decrypt(source, nkldHeader.dataOffset, nkldHeader.dataLength);
-                
-                    NkldUtils.dumpFile(new File(unpackFileName), source, 0, nkldHeader.totalLength);
                 }
+
+                NkldUtils.decrypt(source, nkldHeader.dataOffset, nkldHeader.dataLength);
+                NkldUtils.dumpFile(new File(unpackFileName), source, 0, nkldHeader.totalLength);
             } catch (Exception e) {
                 throw new FirmwareFormatException(e);
             }
