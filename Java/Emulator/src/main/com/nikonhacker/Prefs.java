@@ -66,6 +66,7 @@ public class Prefs {
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
     private Map<String, Integer>               buttonsState;
+    private String[]                           firmwareFilename;
 
     // Note: that field has a name that does not reflect its current use but it's kept for prefs backwards compatibility
     private int screenEmulatorRefreshIntervalMs;
@@ -615,6 +616,16 @@ public class Prefs {
     public Integer getButtonState(String key) {
         if (buttonsState == null) buttonsState = new HashMap<>();
         return buttonsState.get(key);
+    }
+
+    public String getFirmwareFilename(int chip) {
+        if (this.firmwareFilename == null || this.firmwareFilename.length != 2) this.firmwareFilename = new String[2];
+        return firmwareFilename[chip];
+    }
+
+    public void setFirmwareFilename(int chip, String firmwareFilename) {
+        if (this.firmwareFilename == null || this.firmwareFilename.length != 2) this.firmwareFilename = new String[2];
+        this.firmwareFilename[chip] = firmwareFilename;
     }
 
     public int getRefreshIntervalMs() {

@@ -410,6 +410,15 @@ public class EmulationFramework {
             // That would allow to load "relocatable" areas at their right place.
             // e.g. TX code @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by code 0xBFC1C742-0xBFC1C76A
             memory.loadFile(imageFile, cpuState.getResetAddress(), prefs.isFirmwareWriteProtected(chip));
+            // Store path in prefs
+            // Make it relative if possible
+            String workDir = new File(".").getCanonicalPath() + File.separator;
+            String fileName = imageFile.getCanonicalPath();
+            if (fileName.startsWith(workDir)) {
+                fileName = fileName.substring(workDir.length());
+            }
+
+            prefs.setFirmwareFilename(chip, fileName);
             isImageLoaded[chip] = true;
 
             cpuState.reset();
