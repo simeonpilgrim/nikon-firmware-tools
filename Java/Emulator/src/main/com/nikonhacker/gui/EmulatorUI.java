@@ -386,7 +386,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
     public EmulatorUI() {
-        super(ApplicationInfo.getNameVersion());
+        super(ApplicationInfo.getNameVersion() + " - (none) / (none)");
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -1631,6 +1631,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 SwingUtilities.invokeLater(runnable);
             }
         });
+
+        setTitle(ApplicationInfo.getNameVersion() + " - " + (imageFile[Constants.CHIP_FR]==null?"(none)":imageFile[Constants.CHIP_FR].getName()) + " / " + (imageFile[Constants.CHIP_TX]==null?"(none)":imageFile[Constants.CHIP_TX].getName()));
 
         setEmulatorSleepCode(chip, prefs.getSleepTick(chip));
 
