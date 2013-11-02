@@ -32,6 +32,7 @@ import com.nikonhacker.emu.trigger.condition.BreakCondition;
 import com.nikonhacker.encoding.FirmwareDecoder;
 import com.nikonhacker.encoding.FirmwareEncoder;
 import com.nikonhacker.encoding.FirmwareFormatException;
+import com.nikonhacker.encoding.NkldDecoder;
 import com.nikonhacker.gui.component.ad.AdConverterFrame;
 import com.nikonhacker.gui.component.analyse.AnalyseProgressDialog;
 import com.nikonhacker.gui.component.analyse.GenerateSysSymbolsDialog;
@@ -119,6 +120,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String COMMAND_UI_OPTIONS                   = "UI_OPTIONS";
     private static final String COMMAND_DECODE                       = "DECODE";
     private static final String COMMAND_ENCODE                       = "ENCODE";
+    private static final String COMMAND_DECODE_NKLD                  = "DECODE_NKLD";
     private static final String COMMAND_LOAD_STATE                   = "LOAD_STATE";
     private static final String COMMAND_SAVE_STATE                   = "SAVE_STATE";
     private static final String COMMAND_QUIT                         = "QUIT";
@@ -860,6 +862,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         fileMenu.add(new JSeparator());
 
+        //decoder
+        tmpMenuItem = new JMenuItem("Decode lens correction data");
+        //tmpMenuItem.setMnemonic(KeyEvent.VK_D);
+        tmpMenuItem.setActionCommand(COMMAND_DECODE_NKLD);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
+
+        fileMenu.add(new JSeparator());
+
         //Save state
         tmpMenuItem = new JMenuItem("Save state");
         tmpMenuItem.setActionCommand(COMMAND_SAVE_STATE);
@@ -1267,6 +1278,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         else if (COMMAND_ENCODE.equals(e.getActionCommand())) {
             openEncodeDialog();
         }
+        else if (COMMAND_DECODE_NKLD.equals(e.getActionCommand())) {
+            openDecodeNkldDialog();
+        }
         else if (COMMAND_LOAD_STATE.equals(e.getActionCommand())) {
             loadState();
         }
@@ -1323,7 +1337,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
-                "Choose decoding source and destination",
+                "Choose source file and destination dir",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
@@ -1333,7 +1347,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 new FirmwareDecoder().decode(sourceFile.getText(), destinationDir.getText(), false);
                 JOptionPane.showMessageDialog(this, "Decoding complete", "Done", JOptionPane.INFORMATION_MESSAGE);
             } catch (FirmwareFormatException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(), "Error decoding files", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, e.getMessage() + "\nPlease see console for full stack trace", "Error decoding files", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
         }
     }
@@ -1355,7 +1370,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         };
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 inputs,
-                "Choose encoding destination and source files",
+                "Choose target encoded file and source files",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
@@ -1368,10 +1383,39 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 new FirmwareEncoder().encode(inputFilenames, destinationFile.getText());
                 JOptionPane.showMessageDialog(this, "Encoding complete", "Done", JOptionPane.INFORMATION_MESSAGE);
             } catch (FirmwareFormatException e) {
-                JOptionPane.showMessageDialog(this, e.getMessage(), "Error encoding files", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, e.getMessage() + "\nPlease see console for full stack trace", "Error encoding files", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
             }
         }
     }
+
+    private void openDecodeNkldDialog() {
+        JTextField sourceFile = new JTextField();
+        JTextField destinationFile = new JTextField();
+        FileSelectionPanel sourceFileSelectionPanel = new FileSelectionPanel("Source file", sourceFile, false);
+        sourceFileSelectionPanel.setFileFilter("nkld*.bin", "Lens correction data file (nkld*.bin)");
+        final JComponent[] inputs = new JComponent[]{
+                sourceFileSelectionPanel,
+                new FileSelectionPanel("Destination file", destinationFile, true)
+        };
+        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
+                inputs,
+                "Choose source file and destination dir",
+                JOptionPane.OK_CANCEL_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                JOptionPane.DEFAULT_OPTION)) {
+            try {
+                new NkldDecoder().decode(sourceFile.getText(), destinationFile.getText(), false);
+                JOptionPane.showMessageDialog(this, "Decoding complete.\nFile '" + new File(destinationFile.getText()).getAbsolutePath() + "' was created.", "Done", JOptionPane.INFORMATION_MESSAGE);
+            } catch (FirmwareFormatException e) {
+                JOptionPane.showMessageDialog(this, e.getMessage() + "\nPlease see console for full stack trace", "Error decoding files", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
+        }
+    }
+
 
     private void loadState() {
         JTextField sourceFile = new JTextField();
