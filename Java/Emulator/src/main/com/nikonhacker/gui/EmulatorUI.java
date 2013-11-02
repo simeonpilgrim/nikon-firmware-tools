@@ -436,6 +436,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             statusBar[chip] = new JLabel(statusText[chip]);
             statusBar[chip].setOpaque(true);
             statusBar[chip].setBackground(STATUS_BGCOLOR_DEFAULT);
+            statusBar[chip].setMinimumSize(new Dimension(0,0));
             contentPane[chip].add(statusBar[chip], BorderLayout.SOUTH);
         }
 
