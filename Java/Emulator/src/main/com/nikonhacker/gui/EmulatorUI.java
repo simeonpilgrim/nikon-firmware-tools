@@ -386,7 +386,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
     public EmulatorUI() {
-        super(ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion());
+        super(ApplicationInfo.getNameVersion());
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -2059,7 +2059,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         // html content
         JEditorPane editorPane = new JEditorPane("text/html", "<html><body style=\"" + style + "\">"
-                + "<font size=\"+1\">" + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + "</font><br/>"
+                + "<font size=\"+1\">" + ApplicationInfo.getNameVersion() + "</font><br/>"
                 + "<i>A dual (Fujitsu FR + Toshiba TX) microcontroller emulator in Java, aimed at mimicking the behaviour of Nikon DSLRs</i><br/>"
                 + "<font size=\"-2\">Built on " + ApplicationInfo.getBuildTime() + "</font><br/><br/>"
                 + "This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.<br/>"

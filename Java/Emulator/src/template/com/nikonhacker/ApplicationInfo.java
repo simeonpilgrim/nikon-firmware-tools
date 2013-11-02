@@ -11,5 +11,8 @@ public class ApplicationInfo {
     public static String getBuildTime() {
         return "@BUILDTIME@";
     }
+    public static String getNameVersion() {
+        return getName() + " v" + getVersion();
+    }
 }
 
