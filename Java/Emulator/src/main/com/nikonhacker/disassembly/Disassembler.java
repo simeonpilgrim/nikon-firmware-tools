@@ -135,7 +135,7 @@ public abstract class Disassembler {
     }
 
     protected void writeHeader(Writer writer) throws IOException {
-        writer.write("; " + ApplicationInfo.getName() + " v" + ApplicationInfo.getVersion() + "\n");
+        writer.write("; " + ApplicationInfo.getNameVersion() + "\n");
         writer.write(";   Date:   " + startTime + "\n");
         if (inputFileName != null) {
             writer.write(";   Input:  " + inputFileName + "\n");
