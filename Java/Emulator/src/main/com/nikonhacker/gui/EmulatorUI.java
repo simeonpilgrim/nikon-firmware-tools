@@ -337,13 +337,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
         if (args.length > 0) {
-            if (new File(args[0]).exists()) {
-                imageFile[Constants.CHIP_FR] = new File(args[0]);
-                if (args.length > 1) {
-                    if (new File(args[1]).exists()) {
-                        imageFile[Constants.CHIP_TX] = new File(args[1]);
-                    }
-                }
+            imageFile[Constants.CHIP_FR] = new File(args[0]);
+            if (args.length > 1) {
+                imageFile[Constants.CHIP_TX] = new File(args[1]);
             }
         }
 
@@ -459,7 +455,27 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         for (int chip = 0; chip < 2; chip++) {
             if (imageFile[chip] != null) {
-                initialize(chip);
+                // There was a command line argument.
+                if (imageFile[chip].exists()) {
+                    initialize(chip);
+                }
+                else {
+                    JOptionPane.showMessageDialog(this, "Given " + Constants.CHIP_LABEL[chip] + " firmware file does not exist:\n" + imageFile[chip].getAbsolutePath(), "File not found", JOptionPane.WARNING_MESSAGE);
+                }
+            }
+            else {
+                // Check if a FW file is stored in the prefs
+                String firmwareFilename = prefs.getFirmwareFilename(chip);
+                if (firmwareFilename != null) {
+                    File firmwareFile = new File(firmwareFilename);
+                    if (firmwareFile.exists()) {
+                        imageFile[chip] = firmwareFile;
+                        initialize(chip);
+                    }
+                    else {
+                        JOptionPane.showMessageDialog(this, Constants.CHIP_LABEL[chip] + " firmware file stored in preference file cannot be found:\n" + imageFile[chip].getAbsolutePath(), "File not found", JOptionPane.WARNING_MESSAGE);
+                    }
+                }
             }
         }
 
