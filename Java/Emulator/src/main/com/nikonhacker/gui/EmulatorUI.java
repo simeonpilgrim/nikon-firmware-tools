@@ -167,7 +167,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final int KEY_EVENT_SCREEN               = KeyEvent.VK_S; // Not recommended
     private static final int KEY_EVENT_REALTIME_DISASSEMBLY = KeyEvent.VK_R;
     private static final int KEY_EVENT_SOURCE               = KeyEvent.VK_G; // Meaningless, but well...
-    private static final int KEY_EVENT_KEYS                 = KeyEvent.VK_K; // Unused for now, but reserved
 
 
     public static final String BUTTON_SIZE_SMALL  = "SMALL";
@@ -184,7 +183,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
     public static final Color STATUS_BGCOLOR_RUN     = Color.GREEN;
     public static final Color STATUS_BGCOLOR_DEBUG   = Color.ORANGE;
     public static final Color STATUS_BGCOLOR_BREAK   = new Color(255, 127, 127);
-    public static final Color STATUS_BGCOLOR_ERROR   = Color.RED;
 
     private EmulationFramework framework;
 
