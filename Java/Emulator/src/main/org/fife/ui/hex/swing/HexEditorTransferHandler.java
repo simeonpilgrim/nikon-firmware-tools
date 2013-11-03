@@ -49,7 +49,8 @@ class HexEditorTransferHandler extends TransferHandler {
 		}
 	}
 
-
+    /** returns not null only if stringFlavor is possible 
+     */
 	private DataFlavor getImportFlavor(DataFlavor[] flavors, HexEditor e) {
 		for (int i=0; i<flavors.length; i++) {
 			if (flavors[i].equals(DataFlavor.stringFlavor)) {
@@ -85,6 +86,7 @@ class HexEditorTransferHandler extends TransferHandler {
 		HexEditor e = (HexEditor)c;
 		boolean imported = false;
 
+        // check if stringFlavor is possible
 		DataFlavor flavor = getImportFlavor(t.getTransferDataFlavors(), e);
 		if (flavor!=null) {
 			try {
