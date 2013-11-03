@@ -1140,7 +1140,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
 
         //disassembly options
-        uiOptionsMenuItem = new JMenuItem("UI Options");
+        uiOptionsMenuItem = new JMenuItem("Preferences");
         uiOptionsMenuItem.setActionCommand(COMMAND_UI_OPTIONS);
         uiOptionsMenuItem.addActionListener(this);
         toolsMenu.add(uiOptionsMenuItem);
@@ -1734,10 +1734,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
         options.add(large);
         options.add(closeAllWindowsOnStopCheckBox);
         options.add(refreshIntervalPanel);
+        options.add(new JLabel("Bigger value greatly increase emulation speed"));
 
         if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
                 options,
-                "UI Options",
+                "Preferences",
                 JOptionPane.OK_CANCEL_OPTION,
                 JOptionPane.PLAIN_MESSAGE,
                 null,
