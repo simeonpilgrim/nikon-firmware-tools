@@ -19,8 +19,7 @@ class ByteArrayTransferable implements Transferable {
 	private byte[] bytes;
 
 	private static final DataFlavor[] FLAVORS = {
-		DataFlavor.stringFlavor,
-		DataFlavor.plainTextFlavor,
+		DataFlavor.stringFlavor
 	};
 
 
@@ -76,9 +75,6 @@ class ByteArrayTransferable implements Transferable {
 			throws UnsupportedFlavorException, IOException {
 		if (flavor.equals(FLAVORS[0])) {
 			return new String(bytes); // Use platform default charset.
-		}
-		else if (flavor.equals(FLAVORS[1])) {
-			return new StringReader(new String(bytes));
 		}
 	    throw new UnsupportedFlavorException(flavor);
 	}
