@@ -128,7 +128,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 }
                 else {
                     targetField.setBackground(Color.WHITE);
-                    if (!exploreAddress(address)) {
+                    if (!exploreAddress(address,true)) {
                         JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found matching address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -138,7 +138,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!exploreAddress(cpuState.pc)) {
+                if (!exploreAddress(cpuState.pc,false)) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(cpuState.pc, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -210,7 +210,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      * @param address
      * @return
      */
-    public boolean exploreAddress(int address) {
+    public boolean exploreAddress(int address, final boolean moveCursor) {
         address = address & 0xFFFFFFFE; // ignore LSB (error in FR, ISA mode in TX)
         targetField.setText(Format.asHex(address, 8));
         Function function = codeStructure.getFunction(address);
@@ -224,7 +224,16 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 // must be called after repaint that is not done yet
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
+                        // this is faster way
                         setLineContextVisible(line);
+                        // set cursor only if necessary, because it is very slowly
+                        if (moveCursor) {
+                            try {
+                                listingArea.setCaretPosition(listingArea.getLineStartOffset(line));
+                            } catch (BadLocationException e1) {
+                                e1.printStackTrace();
+                            }
+                        }
                     }
                 });
             }
@@ -457,7 +466,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         if (addressFromLine != null) {
                             cpuState.setPc(addressFromLine);
                             ui.updateState(chip);
-                            exploreAddress(cpuState.pc);
+                            exploreAddress(cpuState.pc,false);
                         }
                     }
                 } catch (BadLocationException ble) {
@@ -524,7 +533,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
     }
 
 
-    public void reachAndHighlightPc() {
+    private void reachAndHighlightPc() {
         if (pcHighlightTag != null) {
             listingArea.removeLineHighlight(pcHighlightTag);
         }
@@ -533,7 +542,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
             if (lineFromAddress == null) {
                 // PC is not found in current function. Try to find the correct function
                 // ExploreAddress will take care of calling this function to highlight PC
-                exploreAddress(cpuState.pc);
+                exploreAddress(cpuState.pc,false);
             }
             if (lineFromAddress != null) {
                 pcHighlightTag = listingArea.addLineHighlight(lineFromAddress, Color.CYAN);
@@ -570,7 +579,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         this.enabled = enabled;
     }
 
-    public void highlightPc() {
+    private void highlightPc() {
         if (pcHighlightTag != null) {
             listingArea.removeLineHighlight(pcHighlightTag);
         }
