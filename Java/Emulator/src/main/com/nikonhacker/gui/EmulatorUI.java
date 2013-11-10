@@ -2908,7 +2908,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (sourceCodeFrame[chip] == null) {
                 toggleSourceCodeWindow(chip);
             }
-            if (!sourceCodeFrame[chip].exploreAddress(address)) {
+            if (!sourceCodeFrame[chip].exploreAddress(address,true)) {
                 JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
             }
         }
