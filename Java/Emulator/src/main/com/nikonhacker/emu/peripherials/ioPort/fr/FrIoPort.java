@@ -32,10 +32,10 @@ public class FrIoPort extends IoPort {
         // - P07 aka 0x50000100_0x80 is output (eg set @001089B2 and cleared @001089E0). It could be LCD power on
         // - P05 aka 0x50000100.bit5 is output for serial.
         // - P04 is output (eg set @001E7F56 and cleared @001E7334)
-        // - P03 is output
-        // - P02 is unknown
-        // - P01 is output
-        // - P00 is output
+        // - P03 is output (from reversing)
+        // - P02 is output (from reversing)
+        // - P01 is output (from reversing)
+        // - P00 is output (from reversing)
         // coderat: code piece testing bit, doesn't mean something !!!
         //          For outputs above there are definetly code pieces to set them
         ioPorts[IoPort.PORT_0].setDirectionOutput((byte) 0xFF);
