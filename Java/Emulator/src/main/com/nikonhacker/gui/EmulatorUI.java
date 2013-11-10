@@ -186,28 +186,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private EmulationFramework framework;
 
-    /** Type of run
-     * @deprecated use EmulatorFramework.ExecutionMode. This is left temporarily for compatibility of the prefs file */
-    public static enum RunMode {
-        /** Run without any break */
-        RUN("Run"),
-
-        /** Run without all break triggers enabled */
-        DEBUG("Debug"),
-
-        /** Just execute one instruction, then break, */
-        STEP("Step");
-        private String label;
-
-        RunMode(String label) {
-            this.label = label;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
-
     // UI
 
     private final Insets toolbarButtonMargin;

@@ -61,8 +61,6 @@ public class Prefs {
     private int[]                              serialInterfaceFrameSelectedTab;
     private int[]                              genericSerialFrameSelectedTab;
     private int[]                              ioPortsFrameSelectedTab;
-    private EmulatorUI.RunMode[]               altModeForSyncedCpuUponStep;
-    private EmulatorUI.RunMode[]               altModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponDebug;
     private EmulationFramework.ExecutionMode[] altExecutionModeForSyncedCpuUponStep;
     private Map<String, Integer>               buttonsState;
@@ -128,34 +126,12 @@ public class Prefs {
     /** @deprecated this is a temporary migration process */
     private static void convertExecutionMode(Prefs prefs) {
         if (prefs.altExecutionModeForSyncedCpuUponDebug == null || prefs.altExecutionModeForSyncedCpuUponDebug.length != 2) {
-            if (prefs.altModeForSyncedCpuUponDebug != null && prefs.altModeForSyncedCpuUponDebug.length == 2) {
-                prefs.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{runModeToExecutionMode(prefs.altModeForSyncedCpuUponDebug[0]), runModeToExecutionMode(prefs.altModeForSyncedCpuUponDebug[1])};
-            }
-            else {
-                prefs.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
-            }
+            prefs.altExecutionModeForSyncedCpuUponDebug = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
         }
         if (prefs.altExecutionModeForSyncedCpuUponStep == null || prefs.altExecutionModeForSyncedCpuUponStep.length != 2) {
-            if (prefs.altModeForSyncedCpuUponStep != null && prefs.altModeForSyncedCpuUponStep.length == 2) {
-                prefs.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{runModeToExecutionMode(prefs.altModeForSyncedCpuUponStep[0]), runModeToExecutionMode(prefs.altModeForSyncedCpuUponStep[1])};
-            }
-            else {
-                prefs.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
-            }
+            prefs.altExecutionModeForSyncedCpuUponStep = new EmulationFramework.ExecutionMode[]{EmulationFramework.ExecutionMode.RUN, EmulationFramework.ExecutionMode.RUN};
         }
     }
-
-    /** @deprecated this is a temporary migration process */
-    private static EmulationFramework.ExecutionMode runModeToExecutionMode(EmulatorUI.RunMode runMode) {
-        switch (runMode) {
-            case DEBUG:
-                return EmulationFramework.ExecutionMode.DEBUG;
-            case STEP:
-                return EmulationFramework.ExecutionMode.STEP;
-        }
-        return  EmulationFramework.ExecutionMode.RUN;
-    }
-
 
     public static XStream getPrefsXStreamIn() {
         XStream xStream = XStreamUtils.getBaseXStream();
