@@ -3,6 +3,7 @@ package com.nikonhacker.gui.component.sourceCode;
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
+import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
@@ -464,6 +465,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         JTextArea textArea = (JTextArea) textComponent;
                         Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                         if (addressFromLine != null) {
+                            // TODO at the moment set current ISA mode. It must warn if target code place has different ISA mode,
+                            // but it doesn't. It is because list of memory ranges is deleted after disassembling.
+                            if (cpuState instanceof TxCPUState) {
+                                addressFromLine |= (((TxCPUState)cpuState).is16bitIsaMode ? 1 : 0);
+                            }
                             cpuState.setPc(addressFromLine);
                             ui.updateState(chip);
                             exploreAddress(cpuState.pc,false);
