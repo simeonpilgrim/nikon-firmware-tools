@@ -465,9 +465,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         JTextArea textArea = (JTextArea) textComponent;
                         Integer addressFromLine = getAddressFromLine(textArea.getLineOfOffset(lastClickedTextPosition));
                         if (addressFromLine != null) {
-                            // TODO at the moment set current ISA mode. It must warn if target code place has different ISA mode,
-                            // but it doesn't. It is because list of memory ranges is deleted after disassembling.
                             if (cpuState instanceof TxCPUState) {
+                                // do not allow to set PC outside of current function, because ISA type can be different
+                                Integer lineFromAddress = getLineFromAddress(cpuState.pc);
+                                if (lineFromAddress == null)
+                                    return;
                                 addressFromLine |= (((TxCPUState)cpuState).is16bitIsaMode ? 1 : 0);
                             }
                             cpuState.setPc(addressFromLine);
