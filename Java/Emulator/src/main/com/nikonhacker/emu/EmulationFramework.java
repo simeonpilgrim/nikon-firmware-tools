@@ -59,6 +59,8 @@ import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.SpiBus;
+import com.nikonhacker.emu.peripherials.sdController.SdController;
+import com.nikonhacker.emu.peripherials.sdController.fr.FrSdController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
 import com.nikonhacker.emu.trigger.condition.AndCondition;
@@ -199,6 +201,7 @@ public class EmulationFramework {
             FrontPanel frontPanel = null;
             ImageTransferCircuit imageTransferCircuit = null;
             Lcd lcd = null;
+            SdController[] sdController = null;
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -216,6 +219,7 @@ public class EmulationFramework {
                 resolutionConverter = new FrResolutionConverter[Expeed4002IoListener.NUM_RESOLUTION_CONVERTER];
                 imageTransferCircuit = new FrImageTransferCircuit(platform[chip]);
                 lcd = new FrLcd(platform[chip]);
+                sdController = new FrSdController[Expeed6300IoListener.NUM_SD_CONTROLLER];
 
                 // Standard FR registers
                 memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
@@ -223,6 +227,8 @@ public class EmulationFramework {
                 memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // Specific Pin I/O register
                 memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                // 63000XXX and 64000XXX
+                memory.addActivityListener(new Expeed6300IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // 6B0000XX interrupt sharing macro in ASIC
                 memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
                 // JPEG codec 0x40X3
@@ -254,6 +260,10 @@ public class EmulationFramework {
                 
                 for (int i = 0; i<resolutionConverter.length; i++) {
                     resolutionConverter[i] = new FrResolutionConverter(i,platform[chip]);
+                }
+
+                for (int i = 0; i<sdController.length; i++) {
+                    sdController[i] = new FrSdController(i,platform[chip]);
                 }
             }
             else {
@@ -397,6 +407,7 @@ public class EmulationFramework {
             platform[chip].setFrontPanel(frontPanel);
             platform[chip].setImageTransferCircuit(imageTransferCircuit);
             platform[chip].setLcd(lcd);
+            platform[chip].setSdController(sdController);
 
             clockGenerator.setPlatform(platform[chip]);
 

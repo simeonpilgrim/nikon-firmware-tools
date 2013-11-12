@@ -19,6 +19,7 @@ import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
+import com.nikonhacker.emu.peripherials.sdController.SdController;
 
 import java.util.List;
 
@@ -50,6 +51,7 @@ public class Platform {
     private FrontPanel             frontPanel;
     private ImageTransferCircuit   imageTransferCircuit;
     private Lcd                    lcd;
+    private SdController[]         sdController;
 
     private List<SerialDevice> serialDevices;
 
@@ -204,4 +206,13 @@ public class Platform {
     public void setLcd(Lcd lcd) {
         this.lcd = lcd;
     }
+
+    public SdController[] getSdController() {
+        return sdController;
+    }
+
+    public void setSdController(SdController[] sdController) {
+        this.sdController = sdController;
+    }
+
 }
