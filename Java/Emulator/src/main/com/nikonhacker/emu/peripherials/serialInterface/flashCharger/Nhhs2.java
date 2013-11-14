@@ -46,7 +46,7 @@ public class Nhhs2 extends SerialInterface {
     @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         this.numBits = numBits;
-        System.out.println("St950x0.onBitNumberChange not implemented");
+        System.out.println("Nhhs2.onBitNumberChange not implemented");
     }
 
     public String toString() {
