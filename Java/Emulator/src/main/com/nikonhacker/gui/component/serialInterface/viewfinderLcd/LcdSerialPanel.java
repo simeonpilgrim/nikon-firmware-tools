@@ -317,6 +317,8 @@ public class LcdSerialPanel extends SerialDevicePanel {
     }
 
     public void dispose() {
+        refreshTimer.stop();
+        refreshTimer = null;
         rxTxSerialPanel.dispose();
     }
 
