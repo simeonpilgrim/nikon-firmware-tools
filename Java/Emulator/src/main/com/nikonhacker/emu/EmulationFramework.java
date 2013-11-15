@@ -468,7 +468,7 @@ public class EmulationFramework {
                     e.printStackTrace();
                     if (callbackHandler != null) callbackHandler.onException(e);
                 }
-            }, false);
+            }, false, true);
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -57,7 +57,7 @@ public class MasterClock implements Runnable {
      * @param clockable the object to wake up repeatedly
      * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
-    public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
+    public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled, boolean precise) {
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         // Check if already present
         boolean found = false;
@@ -70,7 +70,7 @@ public class MasterClock implements Runnable {
             }
         }
         if (!found) {
-            entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled));
+            entries.add(new ClockableEntry(clockable, clockableCallbackHandler, enabled, precise));
         }
         requestResheduling();
     }
@@ -80,9 +80,8 @@ public class MasterClock implements Runnable {
      * @param clockable
      */
     public void add(Clockable clockable) {
-        add(clockable, null, true);
+        add(clockable, null, true, true);
     }
-
 
     /**
      * Removes a clockable object.
@@ -106,22 +105,37 @@ public class MasterClock implements Runnable {
 
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
-
+        int maxUnpreciseFrequency = 1;
+        
         // Precompute all frequencies
         Map<ClockableEntry,Integer> entryFrequencies = new HashMap<>();
-        for (ClockableEntry entry : entries) {
-            entryFrequencies.put(entry, entry.clockable.getFrequencyHz());
-        }
 
         // Compute least common multiple frequency
         for (ClockableEntry entry : entries) {
-            int frequencyHz = entryFrequencies.get(entry);
+            final int frequencyHz = entry.clockable.getFrequencyHz();
+            entryFrequencies.put(entry, frequencyHz);
+
             if (frequencyHz > 0) {
-                leastCommonMultipleFrequency = longLCM(frequencyHz, leastCommonMultipleFrequency);
+                // skip unprecise entrys like serial, etc
+                if (entry.isPrecise) {
+                    leastCommonMultipleFrequency = longLCM(frequencyHz, leastCommonMultipleFrequency);
+                } else {
+                    maxUnpreciseFrequency = frequencyHz;
+                }
                 entry.isFrequencyZero = false;
             }
             else {
                 entry.isFrequencyZero = true;
+            }
+        }
+        // not likely, but possible: unprecise items accept drift of 25%
+        if (leastCommonMultipleFrequency < (maxUnpreciseFrequency<<2)) {
+            // include unprecise entries also in calculation
+            for (ClockableEntry entry : entries) {
+                if (!entry.isPrecise) {
+                    int frequencyHz = entryFrequencies.get(entry);
+                    leastCommonMultipleFrequency = longLCM(frequencyHz, leastCommonMultipleFrequency);
+                }
             }
         }
 
@@ -139,6 +153,14 @@ public class MasterClock implements Runnable {
                 leastCommonCounterThreshold = intLCM(newThreshold, leastCommonCounterThreshold);
             }
         }
+        // TODO
+        // coderat: Problem fixed for serial port transfer time at low baudrates (96 KBps or 9600 Bps) - they are ignored during 
+        // calculations by setting isPrecise=false
+        //
+        // BUT in general cases with two different Clockables with extremly low frequency and extremly high frequency 
+        // still exist, yielding huge treshholds and Emulator runing slow or virtually hanging.
+        if (leastCommonCounterThreshold>20000)
+            System.out.println("Warning: MasterClock calculations will take too long, because frequencies are very different");
 
         masterClockTickDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
 
@@ -508,11 +530,13 @@ public class MasterClock implements Runnable {
         int counterThreshold = 0;
         boolean enabled;
         boolean isFrequencyZero;
+        boolean isPrecise;
 
-        public ClockableEntry(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled) {
+        public ClockableEntry(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled, boolean isPrecise) {
             this.clockable = clockable;
             this.clockableCallbackHandler = clockableCallbackHandler;
             this.enabled = enabled;
+            this.isPrecise = isPrecise;
         }
 
         @Override

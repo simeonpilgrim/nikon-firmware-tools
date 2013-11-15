@@ -272,7 +272,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         // Signal if there are values waiting
         if (getNbTxValuesWaiting() > 0) {
             // Insert delay of a few CPU cycles.
-            platform.getMasterClock().add(this);
+            platform.getMasterClock().add(this, null, true, false);
         }
     }
 
