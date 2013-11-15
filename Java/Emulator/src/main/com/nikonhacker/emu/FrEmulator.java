@@ -198,6 +198,6 @@ public class FrEmulator extends Emulator {
         emulator.setContext(memory, cpuState, new FrInterruptController(platform));
         emulator.setDisassemblyLogger(new DisassemblyLogger(System.out));
 
-        masterClock.add(new FrEmulator(platform), null, true);
+        masterClock.add(new FrEmulator(platform));
     }
 }
