@@ -33,6 +33,8 @@ public class TxInterruptController extends AbstractInterruptController {
     public static final  int ACTIVE_FALLING = 0b10;
     public static final  int ACTIVE_RISING  = 0b11;
 
+    public static final  int CG_ACTIVE_BOTH_EDGES  = 0b100;
+
     // Register fields
     // Ilev
     private int ilev;
@@ -395,7 +397,17 @@ public class TxInterruptController extends AbstractInterruptController {
             return;
         // selectable active state interrupts
         if ((num>=INT0 && num <= INTF) || (num>=INT10 && num<= INT1F)) {
-            switch (getImcEim(getRequestImcSection(num))) {
+            int condition = getImcEim(getRequestImcSection(num));
+            
+            // if CG standby clear selectable interrupts
+            if (num<=INTB || (num>=INT10 && num<=INT1B)) {
+                final int imcg = getIMCGSectionForInterrupt(num);
+                // use standby condition if enabled
+                if (isImcgIntxen(imcg)) {
+                    condition = getImcgEmxg(imcg);
+                }
+            }
+            switch (condition) {
                 case ACTIVE_LOW: // "L"
                 case ACTIVE_HIGH: // "H"
                     return;
@@ -485,7 +497,30 @@ public class TxInterruptController extends AbstractInterruptController {
      pass as parameter offset from the begining of IMCG block
     */
     public void setImcg(int imcgOffset, int value) {
-        imcgBytes[imcgOffset] = value;
+        if (imcgBytes[imcgOffset] != value) {
+            imcgBytes[imcgOffset] = value;
+            
+            int reg = TxIoListener.REGISTER_IMCGA + (imcgOffset & (~3));
+            int section = 3 - (imcgOffset & 3);
+            int num = 0;
+            
+            // find correspondent interrupt number
+            for ( ; num<= SOFT; num++) {
+                InterruptDescription desc = hardwareInterruptDescription[num];
+                if (desc.cgCtrlRegAddr==reg && desc.cgCtrlRegSection==section) {
+                    break;
+                }
+            }
+            if (num > SOFT)
+                throw new RuntimeException("Invalid IMCG register " + reg + " section " + section);
+
+            // if CG standby selectable interrupts
+            if ((num>=INT0 && num<=INTB) || (num>=INT10 && num<=INT1B)) {
+                if (isImcgIntxen(value)) {
+                    initSelectableInterrupt (num, getImcgEmxg(value));
+                }
+            }
+        }
     }
     /**
      return byte of IMC
@@ -495,6 +530,39 @@ public class TxInterruptController extends AbstractInterruptController {
         return imcBytes[imcOffset];
     }
 
+    private void initSelectableInterrupt (int num, int condition) {
+        synchronized (this) {
+            boolean active=true;
+
+            // check if new condition match
+            switch (condition) {
+                case ACTIVE_LOW: // "L"
+                    if (interruptChannelValue[num]!=0) {
+                        active = false;
+                        interruptPended[num] = false;
+                    } else 
+                        interruptPended[num] = true;
+                    break;
+                case ACTIVE_HIGH: // "H"
+                    if (interruptChannelValue[num]==0) {
+                        active = false;
+                        interruptPended[num] = false;
+                    } else
+                        interruptPended[num] = true;
+                    break;
+                default:
+                    // if there is pended then clear it
+                    interruptPended[num] = false;
+                    active = false;
+            }
+           /* coderat: important to retry in this way, because it can be disabled in meantime, like
+              for example done for DMA6 completion interrupt. IMPORTANT: datasheets says that changing
+              IMC do not clear requests that already held.
+            */
+            if (active)
+                request(num);
+        }
+    }
     /**
      set byte of IMC
      pass as parameter offset from the begining of IMC block
@@ -519,37 +587,17 @@ public class TxInterruptController extends AbstractInterruptController {
 
             // only Level capable interrupts
             if ((num>=INT0 && num<= INT1F) || (num>=INTDMA0 && num<=SOFT)) {
-                synchronized (this) {
-                    boolean active=true;
-
-                    // check if new condition match
-                    switch (getImcEim(value)) {
-                        case ACTIVE_LOW: // "L"
-                            if (interruptChannelValue[num]!=0) {
-                                active = false;
-                                interruptPended[num] = false;
-                            } else 
-                                interruptPended[num] = true;
-                            break;
-                        case ACTIVE_HIGH: // "H"
-                            if (interruptChannelValue[num]==0) {
-                                active = false;
-                                interruptPended[num] = false;
-                            } else
-                                interruptPended[num] = true;
-                            break;
-                        default:
-                            // if there is pended then clear it
-                            interruptPended[num] = false;
-                            active = false;
+                int condition = getImcEim(value);
+                
+                // if CG interrupt enabled
+                if ((num>=INT0 && num<=INTB) || (num>=INT10 && num<=INT1B)) {
+                    final int imcg = getIMCGSectionForInterrupt(num);
+                    // use standby condition if enabled
+                    if (isImcgIntxen(imcg)) {
+                        condition = getImcgEmxg(imcg);
                     }
-                   /* coderat: important to retry in this way, because it can be disabled in meantime, like
-                      for example done for DMA6 completion interrupt. IMPORTANT: datasheets says that changing
-                      IMC do not clear requests that already held.
-                    */
-                    if (active)
-                        request(num);
                 }
+                initSelectableInterrupt (num, condition);
             }
         }
     }
@@ -569,7 +617,17 @@ public class TxInterruptController extends AbstractInterruptController {
             if (num==KWUP || (num>=INTDMA0 && num<=SOFT)) {
                 retry = interruptPended[num];
             } else if ((num>=INT0 && num <= INTF) || (num>=INT10 && num<= INT1F)) {
-                switch (getImcEim(getRequestImcSection(num))) {
+                int condition = getImcEim(getRequestImcSection(num));
+                
+                // if CG interrupt enabled
+                if (num<=INTB || (num>=INT10 && num<=INT1B)) {
+                    final int imcg = getIMCGSectionForInterrupt(num);
+                    // use standby condition if enabled
+                    if (isImcgIntxen(imcg)) {
+                        condition = getImcgEmxg(imcg);
+                    }
+                }
+                switch (condition) {
                     case ACTIVE_LOW: // "L"
                     case ACTIVE_HIGH: // "H"
                         retry = interruptPended[num];
@@ -608,12 +666,22 @@ public class TxInterruptController extends AbstractInterruptController {
         if (num<INT0 || (num>INT1F && num<INTDMA0) || (num>SOFT))
             throw new RuntimeException("Interrupt input value can't be set for channel " + num);
 
+        // if value change
         if (value != interruptChannelValue[num]) {
             synchronized (this) {
                 boolean active=true;
-    
+                int condition = getImcEim(getRequestImcSection(num));
+                
+                // if CG interrupt enabled
+                if (num<=INTB || (num>=INT10 && num<=INT1B)) {
+                    final int imcg = getIMCGSectionForInterrupt(num);
+                    // use standby condition if enabled
+                    if (isImcgIntxen(imcg)) {
+                        condition = getImcgEmxg(imcg);
+                    }
+                }
                 // check if condition match
-                switch (getImcEim(getRequestImcSection(num))) {
+                switch (condition) {
                     case ACTIVE_LOW: // "L"
                         if (value!=0) {
                             active = false;
@@ -641,6 +709,9 @@ public class TxInterruptController extends AbstractInterruptController {
                         if (value==0) {
                             active = false;
                         }
+                        break;
+                    case CG_ACTIVE_BOTH_EDGES:
+                        // any change is an interrupt reason
                         break;
                 }
                 if (active)
