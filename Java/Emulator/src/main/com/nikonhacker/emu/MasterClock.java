@@ -160,7 +160,7 @@ public class MasterClock implements Runnable {
         // BUT in general cases with two different Clockables with extremly low frequency and extremly high frequency 
         // still exist, yielding huge treshholds and Emulator runing slow or virtually hanging.
         if (leastCommonCounterThreshold>20000)
-            System.out.println("Warning: MasterClock calculations will take too long, because frequencies are very different");
+            System.out.println("Warning: MasterClock calculations will take too long("+ leastCommonCounterThreshold +"), because frequencies are very different");
 
         masterClockTickDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
 
