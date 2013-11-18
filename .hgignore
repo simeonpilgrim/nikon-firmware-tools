@@ -12,3 +12,5 @@ Firmware Patch/Firmware Patch/obj/
 Java/Emulator/ant-classes/
 Java/Emulator/ant-gen/
 Java/Emulator/dist/jar
+Java/Emulator/batch_build/
+Java/Emulator/.idea/
