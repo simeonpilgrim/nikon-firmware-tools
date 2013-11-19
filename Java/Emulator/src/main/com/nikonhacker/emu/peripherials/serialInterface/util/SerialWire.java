@@ -22,6 +22,11 @@ public class SerialWire extends SerialDevice {
     }
 
     @Override
+    public void readHalfDuplex() {
+        targetDevice.readHalfDuplex();
+    }
+
+    @Override
     public void onBitNumberChange(SerialDevice serialDevice, int numBits) {
         // Do nothing
     }
