@@ -1809,6 +1809,8 @@ public class TxIoListener extends IoActivityListener {
                 ((TxInterruptController)platform.getInterruptController()).setIvr31_9(value); break;
             case REGISTER_INTCLR:
                 ((TxInterruptController)platform.getInterruptController()).setIntClr(value); break;
+            case REGISTER_ICRCG:
+                ((TxInterruptController)platform.getInterruptController()).setIcrcg(value); break;
             case REGISTER_DREQFLG:
                 ((TxInterruptController)platform.getInterruptController()).setDreqflg(value); break;
             // DMA controller
