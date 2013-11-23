@@ -54,6 +54,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
 import com.nikonhacker.emu.peripherials.serialInterface.flashCharger.Nhhs2;
+import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
@@ -348,14 +349,18 @@ public class EmulationFramework {
                 // Flash charger
                 Nhhs2 nhhs2 = new Nhhs2("Flash charger");
 
+                FMountCircuit fMountCircuit = new FMountCircuit("F-Mount");
                 // Store devices
                 serialDevices.add(eeprom);
                 serialDevices.add(lcdDriver);
                 serialDevices.add(nhhs2);
+                serialDevices.add(fMountCircuit);
 
                 // Perform connection
                 connectTxHsc2SerialDevices(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2], eeprom, lcdDriver, ioPorts);
                 connectTxHsc1SerialDevice(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 1], nhhs2);
+
+                connectTxSc1SerialDevice(serialInterfaces[1], fMountCircuit, ioPorts);
 
                 AdValueProvider provider = new TxAdPrefsValueProvider(prefs, Constants.CHIP_TX);
                 adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
@@ -545,14 +550,9 @@ public class EmulationFramework {
         Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(6), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(2));
         Pin.interconnect(txIoPorts[IoPort.PORT_F].getPin(7), frontPanel.getButton(FrontPanel.KEY_MODEDIAL).getPin(3));
 
-        // PI3/PHC5IN1	lens release button
-        // TODO
-
         // Flash Open sensor = PH3 : is the flash unit open ?
         // TODO
 
-        // SD card: P53 (set present, clear empty) - TBC
-        // TODO
     }
 
     /**
@@ -563,6 +563,20 @@ public class EmulationFramework {
      */
     private void connectTxHsc1SerialDevice(SerialInterface serialInterface, Nhhs2 nhhs2) {
         SerialDevice.interConnectSerialDevices(serialInterface, nhhs2);
+    }
+
+    /**
+     * Connect Tx serial interface SC1 with lens mount
+     *
+     * @param serialInterface
+     * @param fMountCircuit
+     */
+    private void connectTxSc1SerialDevice(SerialInterface serialInterface, FMountCircuit fMountCircuit, IoPort[] txIoPorts) {
+        SerialDevice.interConnectSerialDevices(serialInterface, fMountCircuit);
+
+        // Connect CPU pins
+        Pin.interconnect(txIoPorts[IoPort.PORT_I].getPin(3), fMountCircuit.getFromTXPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(7), fMountCircuit.getToTXPin());
     }
 
     /**
