@@ -6,7 +6,9 @@ import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.peripherials.interruptController.InterruptController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
+import com.nikonhacker.emu.trigger.condition.AndCondition;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
+import com.nikonhacker.emu.trigger.condition.BreakPointCondition;
 import com.nikonhacker.gui.component.disassembly.DisassemblyLogger;
 
 import java.io.PrintWriter;
@@ -18,6 +20,8 @@ public abstract class Emulator implements Clockable {
     protected PrintWriter                breakLogPrintWriter;
     protected       int                  sleepIntervalMs = 0;
     protected final List<BreakCondition> breakConditions = new ArrayList<BreakCondition>();
+    protected final HashMap<Integer, BreakCondition> pcBreakConditions = new HashMap<Integer, BreakCondition>();
+    protected       boolean              breakConditionsPresent;
     protected       Set<OutputOption>    outputOptions   = EnumSet.noneOf(OutputOption.class);
     protected       boolean              exitSleepLoop   = false;
 
@@ -73,15 +77,38 @@ public abstract class Emulator implements Clockable {
         this.sleepIntervalMs = sleepIntervalMs;
     }
 
-    public void clearBreakConditions() {
+    public final void clearBreakConditions() {
         synchronized (breakConditions) {
             breakConditions.clear();
+            pcBreakConditions.clear();
+            breakConditionsPresent = false;
         }
     }
 
-    public void addBreakCondition(BreakCondition breakCondition) {
+    public final void addBreakCondition(BreakCondition breakCondition) {
+        boolean isPCCondition = false;
+        int pc = 0;
+
+        if (breakCondition instanceof BreakPointCondition) {
+            isPCCondition = true;
+            pc = ((BreakPointCondition)breakCondition).getPc();
+        } else if (breakCondition instanceof AndCondition) {
+            List<BreakCondition> conditions = ((AndCondition)breakCondition).getConditions();
+            if (conditions.size() == 1) {
+                BreakCondition brk = conditions.get(0);
+                if (brk instanceof BreakPointCondition) {
+                    isPCCondition = true;
+                    pc = ((BreakPointCondition)brk).getPc();
+                }
+            }
+        }
         synchronized (breakConditions) {
-            breakConditions.add(breakCondition);
+            if (isPCCondition) {
+                pcBreakConditions.put(pc,breakCondition);
+            } else {
+                breakConditions.add(breakCondition);
+            }
+            breakConditionsPresent = true;
         }
     }
 
@@ -201,32 +228,48 @@ public abstract class Emulator implements Clockable {
         }
     }
 
-    protected BreakCondition processConditions(List<BreakCondition> breakConditions) {
-        for (BreakCondition breakCondition : breakConditions) {
-            if (breakCondition.matches(platform.cpuState, platform.memory)) {
-                BreakTrigger trigger = breakCondition.getBreakTrigger();
-                if (trigger != null) {
-                    if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
-                        trigger.log(breakLogPrintWriter, platform, context.callStack);
-                    }
-                    if (trigger.getInterruptToRequest() != null) {
-                        platform.interruptController.request(trigger.getInterruptToRequest());
-                    }
-                    if (trigger.getInterruptToWithdraw() != null) {
-                        platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
-                    }
-                    platform.cpuState.applyRegisterChanges(trigger.getNewCpuStateValues(), trigger.getNewCpuStateFlags());
-                    if (trigger.getMustStartLogging() && logger != null) {
-                        logger.setLogging(true);
-                    }
-                    if (trigger.getMustStopLogging() && logger != null) {
-                        logger.setLogging(false);
-                    }
-                }
-                if (trigger == null || trigger.mustBreak()) {
-                    return breakCondition;
-                }
+    private final boolean executeBreakCondition(final BreakCondition breakCondition) {
+        BreakTrigger trigger = breakCondition.getBreakTrigger();
+        if (trigger != null) {
+            if (trigger.mustBeLogged() && breakLogPrintWriter != null) {
+                trigger.log(breakLogPrintWriter, platform, context.callStack);
             }
+            if (trigger.getInterruptToRequest() != null) {
+                platform.interruptController.request(trigger.getInterruptToRequest());
+            }
+            if (trigger.getInterruptToWithdraw() != null) {
+                platform.interruptController.removeRequest(trigger.getInterruptToWithdraw());
+            }
+            platform.cpuState.applyRegisterChanges(trigger.getNewCpuStateValues(), trigger.getNewCpuStateFlags());
+            if (trigger.getMustStartLogging() && logger != null) {
+                logger.setLogging(true);
+            }
+            if (trigger.getMustStopLogging() && logger != null) {
+                logger.setLogging(false);
+            }
+        }
+        if (trigger == null || trigger.mustBreak()) {
+            return true;
+        }
+        return false;
+    }
+    
+    protected final BreakCondition processConditions() {
+        synchronized(breakConditions) {
+            // check fast pc-based conditions first
+            final BreakCondition pcBreakCondition = pcBreakConditions.get(platform.cpuState.getPc()&(~1));
+            if (pcBreakCondition!=null) {
+                if (executeBreakCondition(pcBreakCondition))
+                    return pcBreakCondition;
+            }
+            // check all other conditions if any
+            if (!breakConditions.isEmpty())
+                for (BreakCondition breakCondition : breakConditions) {
+                    if (breakCondition.matches(platform.cpuState, platform.memory)) {
+                        if (executeBreakCondition(breakCondition))
+                            return breakCondition;
+                    }
+                }
         }
         return null;
     }
