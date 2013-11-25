@@ -28,7 +28,7 @@ public class Expeed6300IoListener extends IoActivityListener {
 
     @Override
     public Byte onLoadData8(byte[] pageData, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
-        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load8 is not supported yet");
+        if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load8 is not supported yet");
         return null;
     }
 
@@ -39,7 +39,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
         switch (addr&0xFFF) {
             default:
-                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load16 is not supported yet");
+                if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load16 is not supported yet");
         }
         return null;
     }
@@ -51,7 +51,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
         switch (addr&0xFFF) {
             default:
-                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load32 is not supported yet");
+                if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load32 is not supported yet");
         }
         return null;
     }
@@ -59,7 +59,7 @@ public class Expeed6300IoListener extends IoActivityListener {
 
     @Override
     public void onStore8(byte[] pageData, int addr, byte value, DebuggableMemory.AccessSource accessSource) {
-        if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
+        if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
     }
 
     @Override
@@ -69,7 +69,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
         switch (addr&0xFFF) {
             default:
-                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
+                if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
         }
     }
 
@@ -80,7 +80,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
         switch (addr&0xFFF) {
             default:
-                if (logRegisterMessages) warn("Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
+                if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
     }
 }
