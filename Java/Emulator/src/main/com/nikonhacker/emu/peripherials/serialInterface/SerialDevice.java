@@ -39,4 +39,8 @@ public abstract class SerialDevice {
     public abstract void onBitNumberChange(SerialDevice serialDevice, int numBits);
 
     public abstract void write(Integer value);
+    
+    public void readHalfDuplex() {
+        throw new RuntimeException("readHalfDuplex() no implemented");
+    }
 }

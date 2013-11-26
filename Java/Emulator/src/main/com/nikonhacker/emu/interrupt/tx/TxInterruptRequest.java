@@ -83,10 +83,12 @@ public class TxInterruptRequest extends InterruptRequest {
      * 2) then, for interrupts, on level ("7" is the highest)
      * 3) finally on interrupt number (lower interrupt number means more priority)
      * See section 6.5.1.6
+     * (hardware interrupts can be 0x02-0x66)
+     *
      * @return a Lower number for higher priority
      */
     public int getPriority() {
-        return -(getType().getPriority() << 8) - (getLevel() << 4) + interruptNumber;
+        return -(getType().getPriority() << 12) - (getLevel() << 8) + interruptNumber;
     }
 
     @Override

@@ -58,8 +58,12 @@ public class FrIoPort extends IoPort {
         // P84 = LCD closed (0 when closed)
         ioPorts[IoPort.PORT_8].setInputEnabled((byte) 0xFF);
         // Does not work When the LCD turns off => P05 and PD1 go to 0, and PC3 goes to 1
-        ioPorts[IoPort.PORT_C].setDirectionOutput((byte) 0xFF);
-        ioPorts[IoPort.PORT_D].setDirectionOutput((byte) 0xFF);
+        for (int port = IoPort.PORT_B; port<= IoPort.PORT_D; port++) {
+            ioPorts[port].setDirectionOutput((byte) 0xFF);
+            for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+                ioPorts[port].getPin(bitNumber).setFunction(ioPorts[port].outputFunctions[bitNumber]);
+            }
+        }
         return ioPorts;
     }
 }

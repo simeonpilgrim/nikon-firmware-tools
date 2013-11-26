@@ -15,4 +15,8 @@ public class BreakPointCondition extends AbstractLoggingBreakCondition implement
     public boolean matches(CPUState cpuState, Memory memory) {
         return cpuState.pc == pc;
     }
+
+    public final int getPc() {
+        return pc;
+    }
 }

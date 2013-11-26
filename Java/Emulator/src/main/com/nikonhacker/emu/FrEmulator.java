@@ -143,12 +143,10 @@ public class FrEmulator extends Emulator {
             }
 
             // Process breakConditions
-            if (!breakConditions.isEmpty()) {
-                synchronized (breakConditions) {
-                    BreakCondition breakCondition = processConditions(breakConditions);
-                    if (breakCondition != null) {
-                        return breakCondition;
-                    }
+            if (breakConditionsPresent) {
+                BreakCondition breakCondition = processConditions();
+                if (breakCondition != null) {
+                    return breakCondition;
                 }
             }
 
