@@ -101,7 +101,7 @@ public class TxHSerialInterface extends TxSerialInterface {
 
     @Override
     protected int getMaxFifoSize() {
-        if (getMod1Fdpx() == 0b11) {
+        if (isFullDuplex()) {
             return HSERIAL_RX_FIFO_SIZE / 2;
         }
         else {

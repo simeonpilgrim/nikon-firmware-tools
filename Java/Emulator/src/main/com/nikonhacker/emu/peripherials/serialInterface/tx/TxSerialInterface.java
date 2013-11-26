@@ -37,8 +37,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     private static final int MOD1_SINT_MASK    = 0b00001110;
     private static final int MOD1_TXE_MASK     = 0b00010000;
     private static final int MOD1_FDPX_MASK    = 0b01100000;
-    private static final int MOD1_FDPX_RX_MASK = 0b00100000;
-    private static final int MOD1_FDPX_TX_MASK = 0b01000000;
+    protected static final int MOD1_FDPX_RX_MASK = 0b00100000;
+    protected static final int MOD1_FDPX_TX_MASK = 0b01000000;
 
     private static final int BRCR_BRS_MASK    = 0b00001111;
     private static final int BRCR_BRCK_MASK   = 0b00110000;
@@ -189,14 +189,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
                 txFifo.add(buf);
                 // TODO signal if full ?
             }
-            if (isMod1TxeSet()) {
-                // Buffer was just written, and TX is enabled
-                // If RXE is also enabled (or we're not in full duplex)
-                if (isMod0RxeSet() || !isFullDuplex()) {
-                    // Then start transfer
-                    startTransfer();
-                }
-            }
+            // Then start transfer
+            startTransfer();
         }
         else {
             // Used to reset buffer
@@ -230,10 +224,9 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 //        System.out.println(getName() + ".setMod0(0x" + Format.asHex(mod0, 8) + ")");
         boolean previousRxEnabled = isMod0RxeSet();
         this.mod0 = mod0;
-        boolean currentRxEnabled = isMod0RxeSet();
 
         // If RX has just been enabled, and TX was already enabled (and we're in full duplex, otherwise transfer will already have started)
-        if (currentRxEnabled && !previousRxEnabled && isMod1TxeSet() && isFullDuplex()) {
+        if ( !previousRxEnabled ) {
             // Then start now.
             startTransfer();
         }
@@ -253,27 +246,37 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 //        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
         boolean previousTxEnabled = isMod1TxeSet();
         this.mod1 = mod1;
-        boolean currentTxEnabled = isMod1TxeSet();
 
         // And in case duplex mode changes
         computeRxFillLevel();
         computeTxFillLevel();
 
         // Check if TXE was just enabled.
-        if (currentTxEnabled && !previousTxEnabled) {
+        if (!previousTxEnabled) {
             // If TX has just been enabled, and either we're in half duplex or we're in full duplex and RX was already enabled
-            if (isMod0RxeSet() || !isFullDuplex()) {
-                startTransfer();
-            }
+            startTransfer();
         }
     }
 
     private void startTransfer() {
-        // Signal if there are values waiting
-        if (getNbTxValuesWaiting() > 0) {
-            // Insert delay of a few CPU cycles.
-            platform.getMasterClock().add(this, null, true, false);
+        switch (getMod1Fdpx()) {
+            case MOD1_FDPX_RX_MASK|MOD1_FDPX_TX_MASK:
+                if (!isMod0RxeSet())
+                    return;
+            case MOD1_FDPX_TX_MASK:
+                if (!isMod1TxeSet())
+                    return;
+                // Signal if there are values waiting for send
+                if (getNbTxValuesWaiting() <= 0)
+                    return;
+                break;
+            case MOD1_FDPX_RX_MASK:
+                // if disabled or not I/O mode or not clock master then passive role
+                if (!isMod0RxeSet() || !isIoMode() || isCrIocSet())
+                    return;
         }
+        // Insert delay of a few CPU cycles.
+        platform.getMasterClock().add(this, null, true, false);
     }
 
 
@@ -406,7 +409,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     /**
      * @return true if Enabled
      */
-    protected boolean isEnSet() {
+    protected final boolean isEnSet() {
         return (en & EN_SIOE_MASK) != 0;
     }
 
@@ -414,7 +417,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     /*
      * @return true if I/O interface mode is in SCLK input clock mode (slave)
      */
-    public boolean isCrIocSet() {
+    public final boolean isCrIocSet() {
         return (cr & CR_IOC_MASK) != 0;
     }
 
@@ -461,19 +464,19 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
 
-    protected int getMod0Sc() {
+    protected final int getMod0Sc() {
         return mod0 & MOD0_SC_MASK;
     }
 
-    protected int getMod0Sm() {
+    protected final int getMod0Sm() {
         return (mod0 & MOD0_SM_MASK) >> 2;
     }
 
-    protected boolean isMod0WuSet() {
+    protected final boolean isMod0WuSet() {
         return (mod0 & MOD0_WU_MASK) != 0;
     }
 
-    protected boolean isMod0RxeSet() {
+    protected final boolean isMod0RxeSet() {
         return (mod0 & MOD0_RXE_MASK) != 0;
     }
 
@@ -481,24 +484,24 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         mod0 = mod0 & ~MOD0_RXE_MASK;
     }
 
-    protected boolean isMod0CtseSet() {
+    protected final boolean isMod0CtseSet() {
         return (mod0 & MOD0_CTSE_MASK) != 0;
     }
 
-    protected boolean isMod0Tb8Set() {
+    protected final boolean isMod0Tb8Set() {
         return (mod0 & MOD0_TB8_MASK) != 0;
     }
 
-    protected boolean isIoMode() {
+    protected final boolean isIoMode() {
         return getMod0Sm() == 0b00;
     }
 
 
-    protected int getMod1Sint(){
+    protected final int getMod1Sint(){
         return (mod1 & MOD1_SINT_MASK) >> 1;
     }
 
-    protected boolean isMod1TxeSet() {
+    protected final boolean isMod1TxeSet() {
         return (mod1 & MOD1_TXE_MASK) != 0;
     }
 
@@ -506,20 +509,20 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         mod1 = mod1 & ~MOD1_TXE_MASK;
     }
 
-    protected int getMod1Fdpx() {
-        return (mod1 & MOD1_FDPX_MASK) >> 5;
+    protected final int getMod1Fdpx() {
+        return (mod1 & MOD1_FDPX_MASK);
     }
 
-    protected boolean isMod1FdpxRxSet() {
+    protected final boolean isMod1FdpxRxSet() {
         return (mod1 & MOD1_FDPX_RX_MASK) != 0;
     }
 
-    protected boolean isMod1FdpxTxSet() {
+    protected final boolean isMod1FdpxTxSet() {
         return (mod1 & MOD1_FDPX_TX_MASK) != 0;
     }
 
-    private boolean isFullDuplex() {
-        return getMod1Fdpx() == 0b11;
+    protected final boolean isFullDuplex() {
+        return getMod1Fdpx() == (MOD1_FDPX_RX_MASK|MOD1_FDPX_TX_MASK);
     }
 
     protected int getIntervalTimeInSclk() {
@@ -1015,20 +1018,29 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         bitNumberBeingTransferred++;
         if (bitNumberBeingTransferred == getNumBits() + getIntervalTimeInSclk() /* TODO + start/stop/parity if UART */) {
             bitNumberBeingTransferred = 0;
-            // Transfer one byte
-            Integer value = read();
-            if (value != null) {
-                super.valueReady(value);
-                // device may stop transmission automatically if FIFO was used and configured like this
-                if (!isMod1TxeSet()) {
-                    // unregister
-                    platform.getMasterClock().remove(this);
+            
+            if (getMod1Fdpx()==MOD1_FDPX_RX_MASK) {
+                // half-duplex receive (clock master)
+                if (isEnSet() && isMod0RxeSet()) {
+                    targetDevice.readHalfDuplex();
+                    // device may stop reception automatically if FIFO was used and configured like this
+                    if (isMod0RxeSet()) {
+                        return null;
+                    }
+                }
+            } else {
+                // Transfer one byte
+                Integer value = read();
+                if (value != null) {
+                    super.valueReady(value);
+                    // device may stop transmission automatically if FIFO was used and configured like this
+                    if (isMod1TxeSet()) {
+                        return null;
+                    }
                 }
             }
-            else {
-                // End of transmission - unregister
-                platform.getMasterClock().remove(this);
-            }
+            // End of transmission - unregister
+            platform.getMasterClock().remove(this);
         }
         return null;
     }
