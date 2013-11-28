@@ -11,7 +11,7 @@ public class Dtx extends Disassembler
     private static final String DEFAULT_OPTIONS_FILENAME = "dtx.txt";
 
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
-        new Dtx().execute(Constants.CHIP_FR, args);
+        new Dtx().execute(Constants.CHIP_TX, args);
     }
 
 
