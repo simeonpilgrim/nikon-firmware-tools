@@ -319,7 +319,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-//    private static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s;j = u + Ju", "i+", "addiu $t1,$t2,-100",
+
     private static final TxInstruction addiuInstruction = new TxInstruction("addiu", "j, [i, ]s", "i>k", "", "j+", "addiu $t1,$t2,-100",
             "ADDition Immediate 'Unsigned' without overflow: set $t1 to ($t2 plus signed 16-bit immediate), no overflow",
             InstructionFormat32.I, InstructionFormat16.RRIA,
@@ -775,7 +775,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-//    private static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u; j = u0000", "jV", "lui $t1,100",
+
     private static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", ">j", "", "jV", "lui $t1,100",
             "Load Upper Immediate: Set high-order 16 bits of $t1 to 16-bit immediate and low-order 16 bits to 0",
             InstructionFormat32.I, InstructionFormat16.RI,
@@ -2400,11 +2400,7 @@ public class TxInstructionSet
                 }
             });
 
-    private static final TxInstruction jrraInstruction = new TxInstruction("jr", "A", ">", "", "", "jr $ra",
-            "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
-            null, InstructionFormat16.RI,
-            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
-            new SimulationCode() {
+    private static final SimulationCode jrraSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.popItem();
                     context.setDelayedPc(
@@ -2412,44 +2408,44 @@ public class TxInstructionSet
                     );
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+            
+    private static final TxInstruction jrraInstruction = new TxInstruction("jr", "A", ">", "", "", "jr $ra",
+            "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
+            null, InstructionFormat16.RI,
+            Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
+            jrraSimulationCode
+            );
+            
     // alternate naming
     private static final TxInstruction jrraRetInstruction = new TxInstruction("ret", "", ">", "", "", "ret",
             "RETurn: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
-            new SimulationCode() {
+            jrraSimulationCode
+            );
+
+    private static final SimulationCode jrcraSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.popItem();
-                    context.setDelayedPc(
-                            context.cpuState.getReg(TxCPUState.RA)
-                    );
-                    context.cpuState.pc += statement.getNumBytes();
+                    context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
                 }
-            });
+            };
 
     private static final TxInstruction jrcraInstruction = new TxInstruction("jrc", "A", ">", "", "", "jrc $ra",
             "Jump Register RA unconditionally Compact: Jump to statement whose address is in $ra (no delay slot)",
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.popItem();
-                    context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
-                }
-            });
+            jrcraSimulationCode
+            );
 
     // alternate naming
     private static final TxInstruction jrcraRetInstruction = new TxInstruction("ret", "", ">", "", "", "ret",
             "RETurn compact: Jump to statement whose address is in $ra (no delay slot)",
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
-                public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.popItem();
-                    context.cpuState.setPc(context.cpuState.getReg(TxCPUState.RA));
-                }
-            });
+            jrcraSimulationCode
+            );
 
     private static final TxInstruction jrcInstruction = new TxInstruction("jrc", "i", ">", "Iu", "", "jrc $t2",
             "Jump Register unconditionally Compact: Jump to statement whose address is in $t2 (no delay slot)",
