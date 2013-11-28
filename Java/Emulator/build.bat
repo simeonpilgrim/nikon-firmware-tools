@@ -9,6 +9,7 @@ echo.
 echo %~n0             Clean, compile all sources and build .jar
 echo %~n0 templates   Clean, compile only template sources
 echo %~n0 jar         Only create jar
+echo %~n0 release     Create release archive
 echo %~n0 env         Set environment (variables) and exit
 echo %~n0 help        Show this help
 echo.
@@ -49,8 +50,13 @@ echo *** Set
 goto :EOF
 )
 
+del %jar-dir%\%app-name%-%app-version%.zip 2> nul
+if "%1"=="release" goto makerelease
+
+del %jar-dir%\%app-name%.jar 2> nul
 if "%1"=="jar" goto makejar
 
+rem ### Clean
 rmdir /S /Q %class-dir% 2> nul
 if ERRORLEVEL 1 goto error
 mkdir %class-dir%
@@ -117,7 +123,6 @@ rem ##################### Jar ###############
 echo Building jar file %jar-dir%\%app-name%.jar...
 
 :makejar
-del %app-name%.jar 2> nul
 xcopy /S /Q /Y %source-dir:/=\%\*.png %class-dir%\
 if ERRORLEVEL 1 goto error
 
@@ -131,6 +136,34 @@ if not exist %jar-dir%/nul mkdir %jar-dir%
 jar -cf %jar-dir%\%app-name%.jar -C %class-dir% .
 if ERRORLEVEL 1 goto error
 
+echo *** Done.
+goto :EOF
+
+rem ##################### Optional ###############
+:makerelease
+setlocal
+
+jar -cfM %jar-dir%\%app-name%-%app-version%.zip %lib-dir%/*.jar
+if ERRORLEVEL 1 goto error
+
+jar -ufM %jar-dir%\%app-name%-%app-version%.zip -C %jar-dir% %app-name%.jar
+if ERRORLEVEL 1 goto error
+
+cd batch
+jar -ufM ..\%jar-dir%\%app-name%-%app-version%.zip *.bat *.sh
+if ERRORLEVEL 1 goto error
+cd ..
+
+jar -ufM %jar-dir%\%app-name%-%app-version%.zip *.txt
+if ERRORLEVEL 1 goto error
+
+jar -ufM %jar-dir%\%app-name%-%app-version%.zip -C conf .
+if ERRORLEVEL 1 goto error
+
+jar -ufM %jar-dir%\%app-name%-%app-version%.zip -C data .
+if ERRORLEVEL 1 goto error
+
+endlocal
 echo *** Done.
 goto :EOF
 
