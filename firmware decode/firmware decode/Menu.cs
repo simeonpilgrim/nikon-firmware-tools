@@ -274,6 +274,35 @@ namespace Nikon_Decode
         }
 
 
+        private static void InteractiveTextD7000(string fileName)
+        {
+            firmConsts = new D7000_0103_Const();
+
+            if (File.Exists(fileName))
+            {
+                byte[] data;
+
+                using (BinaryReader br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite)))
+                {
+                    data = br.ReadBytes((int)br.BaseStream.Length);
+                }
+
+                if (data != null)
+                {
+
+                    string line;
+                    while ((line = Console.ReadLine()) != "")
+                    {
+                        long addr;
+                        if (long.TryParse(line, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out addr))
+                        {
+                            Console.WriteLine("0x{0:X4} {1}", addr, ResolveString(data, addr, firmConsts.EngMenuTextAddr));
+                        }
+                    }
+                }
+            }
+        }
+
         private static void InteractiveTextD5100(string fileName)
         {
             firmConsts = new D5100_0101_Const();
