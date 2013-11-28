@@ -62,7 +62,7 @@ public abstract class Disassembler {
                         + "-i range=offset   map range of memory to input file offset\n"
                         + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
                         + "-m range=type     describe memory range (use -m? to list types)\n"
-                        + "-o filename       output file\n"
+                        + "-o filename       output file .asm\n"
                         + "-s address=name   define symbol\n"
                         + "-t address        interrupt vector start, equivalent to -m address,0x400=DATA:V\n"
                         + "-v                verbose\n"
@@ -98,6 +98,13 @@ public abstract class Disassembler {
 
     public void setDebugPrintWriter(PrintWriter debugPrintWriter) {
         this.debugPrintWriter = debugPrintWriter;
+    }
+
+    public void closeDebugPrintWriter() {
+        if (debugPrintWriter!=null) {
+            debugPrintWriter.close();
+            debugPrintWriter=null;
+        }
     }
 
     ///* Logging */
@@ -146,7 +153,7 @@ public abstract class Disassembler {
 
     protected void fixRangeBoundaries(Range memRange) {
         if ((memRange.getStart() & 1) != 0) {
-            log("ERROR : Odd start address 0x" + Format.asHex(memRange.getStart(), 8));
+            log("ERROR : Odd start address 0x" + Format.asHex(memRange.getStart(), 8)+"\n");
             memRange.setStart(memRange.getStart() - 1);
         }
         if ((memRange.getEnd() & 1) != 0) {
@@ -219,7 +226,7 @@ public abstract class Disassembler {
                 case 0:
                     // Not an option => Input file. Check we don't have one already
                     if (inputFileName != null) {
-                        log("too many input files");
+                        log("too many input files\n");
                         usage();
                         return false;
                     }
@@ -231,7 +238,7 @@ public abstract class Disassembler {
                 case 'e':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
@@ -242,7 +249,7 @@ public abstract class Disassembler {
                 case 'f':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
@@ -259,7 +266,7 @@ public abstract class Disassembler {
                 case 'i':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
 
@@ -274,7 +281,7 @@ public abstract class Disassembler {
                 case 'j':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     OptionHandler.parseJumpHint(jumpHints, jumpHintOffsets, argument);
@@ -300,8 +307,15 @@ public abstract class Disassembler {
                 case 'o':
                     outputFileName = optionHandler.getArgument();
                     if (StringUtils.isBlank(outputFileName)) {
-                        log("option '-" + option + "' requires an argument");
+                        log("option '-" + option + "' requires an argument\n");
                         return false;
+                    }
+                    String ext = FilenameUtils.getExtension(outputFileName);
+                    if (!ext.equals("")) {
+                        if (!ext.equalsIgnoreCase("asm")) {
+                            log("option '-" + option + "' only extension .asm is allowed\n");
+                            return false;
+                        }
                     }
                     break;
 
@@ -309,7 +323,7 @@ public abstract class Disassembler {
                 case 's':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     OptionHandler.parseSymbol(symbols, argument, getRegisterLabels());
@@ -319,7 +333,7 @@ public abstract class Disassembler {
                 case 't':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     memRanges.add(OptionHandler.parseTypeRange(option, argument + "," + CodeAnalyzer.INTERRUPT_VECTOR_LENGTH + "=DATA:V"));
@@ -334,7 +348,7 @@ public abstract class Disassembler {
                 case 'w':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     if (!OutputOption.parseFlag(chip, outputOptions, option, argument)) {
@@ -346,7 +360,7 @@ public abstract class Disassembler {
                 case 'x':
                     argument = optionHandler.getArgument();
                     if (StringUtils.isBlank(argument)) {
-                        log("option \"-" + option + "\" requires an argument");
+                        log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
                     try {
@@ -363,7 +377,7 @@ public abstract class Disassembler {
                     break;
 
                 default:
-                    log("unknown option \"-" + option + "\"");
+                    log("unknown option \"-" + option + "\"\n");
                     usage();
                     return false;
             }
@@ -388,13 +402,15 @@ public abstract class Disassembler {
                             String option = buf.substring(0, 2);
                             String params = buf.substring(2).trim();
                             if (StringUtils.isNotBlank(params)) {
-                                processOptions(chip, new String[]{option, params});
+                                if (!processOptions(chip, new String[]{option, params}))
+                                    throw new ParsingException("Incorrect options");
                                 continue;
                             }
                         }
                     }
 
-                    processOptions(chip, new String[]{buf});
+                    if (!processOptions(chip, new String[]{buf}))
+                        throw new ParsingException("ParsingException");
                 }
             }
         }
@@ -532,7 +548,7 @@ public abstract class Disassembler {
         startTime = new Date().toString();
 
         if (inputFileName == null && memory == null) {
-            log(getClass().getSimpleName() + ": no input file");
+            log(getClass().getSimpleName() + ": no input file\n");
             usage();
             System.exit(-1);
         }
@@ -573,7 +589,8 @@ public abstract class Disassembler {
         else {
             readOptions(chip, optionsFilename);
         }
-        processOptions(chip, args);
+        if (!processOptions(chip, args))
+            throw new ParsingException("Incorrect options");
 
         initialize();
 
