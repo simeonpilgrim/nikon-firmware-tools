@@ -57,13 +57,17 @@ del %jar-dir%\%app-name%.jar 2> nul
 if "%1"=="jar" goto makejar
 
 rem ### Clean
+if exist %class-dir% (
 rmdir /S /Q %class-dir% 2> nul
 if ERRORLEVEL 1 goto error
+)
 mkdir %class-dir%
 if ERRORLEVEL 1 goto error
 
+if exist %gen-dir% (
 rmdir /S /Q %gen-dir% 2> nul
 if ERRORLEVEL 1 goto error
+)
 mkdir %gen-dir%
 if ERRORLEVEL 1 goto error
 
