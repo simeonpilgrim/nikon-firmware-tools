@@ -10,10 +10,14 @@ public class Dtx extends Disassembler
 {
     private static final String DEFAULT_OPTIONS_FILENAME = "dtx.txt";
 
+    public Dtx() {
+        super(Constants.CHIP_TX);
+    }
+    
     public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
         Dtx dtx = new Dtx();
         try {
-            dtx.execute(Constants.CHIP_TX, args);
+            dtx.execute(args);
         } finally {
             dtx.closeDebugPrintWriter();
         }
