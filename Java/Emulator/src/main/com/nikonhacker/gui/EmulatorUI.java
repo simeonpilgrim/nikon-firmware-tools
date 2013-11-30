@@ -1787,7 +1787,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                         disassembler = new Dfr();
                         disassembler.setDebugPrintWriter(new PrintWriter(new StringWriter())); // Ignore
                         disassembler.setOutputFileName(null);
-                        disassembler.processOptions(chip, new String[]{
+                        disassembler.processOptions(new String[]{
                                 "-m",
                                 "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE"
                         });
@@ -1818,7 +1818,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                         disassembler = new Dtx();
                         disassembler.setDebugPrintWriter(new PrintWriter(new StringWriter())); // Ignore
                         disassembler.setOutputFileName(null);
-                        disassembler.processOptions(chip, new String[]{
+                        disassembler.processOptions(new String[]{
                                 "-m",
                                 "0x" + Format.asHex(baseAddress, 8) + "-0x" + Format.asHex(lastAddress, 8) + "=CODE:32",
                                 "-m",

@@ -68,7 +68,7 @@ public class AnalyseProgressDialog extends JDialog {
                     debugPrintWriter.println("Initializing disassembler...");
                     disassembler.setDebugPrintWriter(debugPrintWriter);
                     disassembler.setOutputFileName(outputFilename);
-                    disassembler.readOptions(chip, optionsFilename);
+                    disassembler.readOptions(optionsFilename);
                     disassembler.setOutputOptions(emulatorUI.getPrefs().getOutputOptions(chip));
                     disassembler.setMemory(memory);
                     disassembler.initialize();

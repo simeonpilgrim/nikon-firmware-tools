@@ -2,8 +2,11 @@ package com.nikonhacker.disassembly;
 
 import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
+import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.FastMemory;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.disassembly.fr.FrCodeAnalyzer;
+import com.nikonhacker.disassembly.tx.TxCodeAnalyzer;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,6 +38,9 @@ public abstract class Disassembler {
     private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
     private Map<Integer, List<Integer>> jumpHintOffsets = new HashMap<Integer, List<Integer>>();
 
+    protected Disassembler(int chip) {
+        this.chip = chip;
+    }
     /**
      * @param writer
      * @param statement
@@ -210,13 +216,12 @@ public abstract class Disassembler {
     /**
      * Processes options passed as a String array. E.g. {"infile.bin", "-t1", "-m", "0x00040000-0x00040947=CODE"}
      *
-     * @param chip
      * @param args
      * @return
      * @throws com.nikonhacker.disassembly.ParsingException
      *
      */
-    public boolean processOptions(int chip, String[] args) throws ParsingException {
+    public boolean processOptions(String[] args) throws ParsingException {
         Character option;
         String argument;
         OptionHandler optionHandler = new OptionHandler(args);
@@ -364,7 +369,7 @@ public abstract class Disassembler {
                         return false;
                     }
                     try {
-                        readOptions(this.chip, argument);
+                        readOptions(argument);
                     } catch (IOException e) {
                         debugPrintWriter.println("Cannot open given options file '" + argument + "'");
                         System.exit(1);
@@ -386,7 +391,7 @@ public abstract class Disassembler {
         return true;
     }
 
-    public void readOptions(int chip, String filename) throws IOException, ParsingException {
+    public void readOptions(String filename) throws IOException, ParsingException {
         FileReader reader = null;
         BufferedReader fp = null;
         try {
@@ -402,14 +407,14 @@ public abstract class Disassembler {
                             String option = buf.substring(0, 2);
                             String params = buf.substring(2).trim();
                             if (StringUtils.isNotBlank(params)) {
-                                if (!processOptions(chip, new String[]{option, params}))
+                                if (!processOptions(new String[]{option, params}))
                                     throw new ParsingException("Incorrect options");
                                 continue;
                             }
                         }
                     }
 
-                    if (!processOptions(chip, new String[]{buf}))
+                    if (!processOptions(new String[]{buf}))
                         throw new ParsingException("ParsingException");
                 }
             }
@@ -460,7 +465,13 @@ public abstract class Disassembler {
 
             debugPrintWriter.println("Post processing...");
             combineJumpHints();
-            new CodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
+            
+            if (chip==Constants.CHIP_FR) {
+                new FrCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
+            } else {
+                new TxCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
+            }
+            
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getNumStatements() + " statements");
@@ -568,8 +579,7 @@ public abstract class Disassembler {
         if (outWriter != null) outWriter.close();
     }
 
-    protected void execute(int chip, String[] args) throws ParsingException, IOException, DisassemblyException {
-        this.chip = chip;
+    protected void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
         if (args.length == 0) {
             usage();
             System.exit(-1);
@@ -587,9 +597,9 @@ public abstract class Disassembler {
             System.out.println("No specific options file " + specificFilename + " or default options file " + optionsFilename + " could be found.");
         }
         else {
-            readOptions(chip, optionsFilename);
+            readOptions(optionsFilename);
         }
-        if (!processOptions(chip, args))
+        if (!processOptions(args))
             throw new ParsingException("Incorrect options");
 
         initialize();
