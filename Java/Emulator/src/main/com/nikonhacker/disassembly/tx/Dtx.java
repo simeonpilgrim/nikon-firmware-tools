@@ -14,10 +14,13 @@ public class Dtx extends Disassembler
         super(Constants.CHIP_TX);
     }
     
-    public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
+    public static void main(String[] args) {
         Dtx dtx = new Dtx();
         try {
             dtx.execute(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+            dtx.log("ERROR : " + e.getClass().getName() + ": " + e.getMessage()+"\n");
         } finally {
             dtx.closeDebugPrintWriter();
         }

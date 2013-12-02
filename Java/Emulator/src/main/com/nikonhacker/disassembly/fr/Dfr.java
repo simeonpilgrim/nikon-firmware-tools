@@ -56,10 +56,13 @@ public class Dfr extends Disassembler
         super(Constants.CHIP_FR);
     }
 
-    public static void main(String[] args) throws IOException, DisassemblyException, ParsingException {
+    public static void main(String[] args) {
         Dfr dfr = new Dfr();
         try {
             dfr.execute(args);
+        } catch (Exception e) {
+            e.printStackTrace();
+            dfr.log("ERROR : " + e.getClass().getName() + ": " + e.getMessage()+"\n");
         } finally {
             dfr.closeDebugPrintWriter();
         }
