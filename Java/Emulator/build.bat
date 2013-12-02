@@ -50,23 +50,21 @@ echo *** Set
 goto :EOF
 )
 
-del %jar-dir%\%app-name%-%app-version%.zip 2> nul
-if "%1"=="release" goto makerelease
+del /Q %jar-dir%\*.* 2> nul
 
-del %jar-dir%\%app-name%.jar 2> nul
 if "%1"=="jar" goto makejar
 
 rem ### Clean
 if exist %class-dir% (
-rmdir /S /Q %class-dir% 2> nul
-if ERRORLEVEL 1 goto error
+rmdir /S /Q %class-dir%
+if exist %class-dir% goto :EOF
 )
 mkdir %class-dir%
 if ERRORLEVEL 1 goto error
 
 if exist %gen-dir% (
-rmdir /S /Q %gen-dir% 2> nul
-if ERRORLEVEL 1 goto error
+rmdir /S /Q %gen-dir%
+if exist %gen-dir% goto :EOF
 )
 mkdir %gen-dir%
 if ERRORLEVEL 1 goto error
@@ -140,12 +138,27 @@ if not exist %jar-dir%/nul mkdir %jar-dir%
 jar -cf %jar-dir%\%app-name%.jar -C %class-dir% .
 if ERRORLEVEL 1 goto error
 
+if NOT "%1"=="release" (
 echo *** Done.
 goto :EOF
+)
 
-rem ##################### Optional ###############
-:makerelease
-setlocal
+rem ##################### Release ###############
+
+echo Creating distribution file %jar-dir%\%app-name%-%app-version%.zip...
+setlocal enabledelayedexpansion
+
+if 1==1 (
+echo Main-Class: com.nikonhacker.gui.EmulatorUI
+echo Specification-Title: %app-name%
+echo Specification-Version: %app-version%
+echo Implementation-Title: com.nikonhacker.gui.EmulatorUI
+echo Implementation-Version: %app-version% %build-time%
+echo Implementation-Vendor: nikonhacker.com
+for /F "delims=" %%i in ('dir /b %lib-dir%\*.jar') do set class-path=!class-path! %lib-dir%\%%i
+echo Class-Path:!class-path!
+) > %jar-dir%\manifest.txt
+jar -ufm %jar-dir%\%app-name%.jar %jar-dir%\manifest.txt
 
 jar -cfM %jar-dir%\%app-name%-%app-version%.zip %lib-dir%/*.jar
 if ERRORLEVEL 1 goto error
