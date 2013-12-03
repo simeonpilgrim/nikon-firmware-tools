@@ -67,6 +67,7 @@ public abstract class Disassembler {
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
                         + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
+                        + "-j source=@(tableAddress+records*recordsize) define tables for a dynamic jump\n" 
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file .asm\n"
                         + "-s address=name   define symbol\n"
