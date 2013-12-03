@@ -536,7 +536,8 @@ public abstract class Disassembler {
 
         StatementContext context = new StatementContext();
         context.cpuState = getCPUState(memRange);
-
+        context.memory = memory;
+        
         try {
             if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
                 while (context.cpuState.pc < memRange.getEnd()) {

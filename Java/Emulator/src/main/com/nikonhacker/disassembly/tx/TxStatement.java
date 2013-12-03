@@ -433,7 +433,7 @@ public class TxStatement extends Statement {
 
     }
 
-    private void executeAction(StatementContext context, boolean updateRegisters) {
+    private void executeAction(StatementContext context, final boolean updateRegisters) {
         int currentlySelectedRegisterNumber = TxCPUState.NOREG;
 
         for (char actionChar : instruction.getAction().toCharArray()) {
@@ -489,6 +489,58 @@ public class TxStatement extends Statement {
                 case 'x':
                     // Unselect register
                     currentlySelectedRegisterNumber = TxCPUState.NOREG;
+                    break;
+                case 'd':
+                case 'e':
+                case 'f':
+                case 'h':
+                case 'g':
+                    if (updateRegisters) {
+                        if (context.cpuState.isRegisterDefined(ri_rs_fs)) {
+                            final int addr;
+                            if (decodedImmBitWidth<8) // 16-bit commands with 5/6/7 bit immediate
+                                addr = context.cpuState.getReg(ri_rs_fs) + decodedImm;
+                            else
+                                addr = context.cpuState.getReg(ri_rs_fs) + BinaryArithmetics.signExtend(decodedImmBitWidth, decodedImm);
+                            /*
+                                coderat: This is heuristic evaluation, so use loadInstruction...() functions for
+                                         memory access, because I do not want memory auto-expansion here
+                             */
+                            // exclude from analyse non-existing addresses
+                            if (context.memory.isMapped(addr)) {
+                                // load value
+                                if (actionChar =='g') {
+                                    // exclude from analyse non-existing addresses
+                                    if (context.memory.isMapped(addr+3)) {
+                                        context.cpuState.setRegisterDefined(rj_rt_ft);
+                                        context.cpuState.setReg(rj_rt_ft, context.memory.loadInstruction32(addr));
+                                        break;
+                                    }
+                                } else if (actionChar =='f') {
+                                    if (context.memory.isMapped(addr+1)) {
+                                        context.cpuState.setRegisterDefined(rj_rt_ft);
+                                        context.cpuState.setReg(rj_rt_ft, BinaryArithmetics.signExtend(16,context.memory.loadInstruction16(addr)));
+                                        break;
+                                    }
+                                } else if (actionChar =='h') {
+                                    if (context.memory.isMapped(addr+1)) {
+                                        context.cpuState.setRegisterDefined(rj_rt_ft);
+                                        context.cpuState.setReg(rj_rt_ft, context.memory.loadInstruction16(addr));
+                                        break;
+                                    }
+                                } else if (actionChar =='e') {
+                                    context.cpuState.setRegisterDefined(rj_rt_ft);
+                                    context.cpuState.setReg(rj_rt_ft, context.memory.loadInstruction8(addr));
+                                    break;
+                                } else {
+                                    context.cpuState.setRegisterDefined(rj_rt_ft);
+                                    context.cpuState.setReg(rj_rt_ft, BinaryArithmetics.signExtend(8,context.memory.loadInstruction8(addr)));
+                                    break;
+                                }
+                            }
+                      }
+                      context.cpuState.setRegisterUndefined(rj_rt_ft);
+                    }
                     break;
                 default:
                     System.err.println("bad action '" + actionChar + "' in " + instruction + " at " + Format.asHex(context.cpuState.pc, 8));
@@ -741,6 +793,48 @@ public class TxStatement extends Statement {
                         }
                         else {
                             buffer.append(Format.asHexInBitsLength((outputOptions.contains(OutputOption.DOLLAR)?"$":"0x"), decodedImm, decodedImmBitWidth - 1));
+                        }
+                    }
+                    break;
+                    
+                case 'e':   // load byte constant from memory
+                case 'h':   // load halfword constant from memory
+                case 'g':   // load word constant from memory
+                    if (context.cpuState.isRegisterDefined(ri_rs_fs))
+                    {
+                        offset = context.cpuState.getReg(ri_rs_fs);
+                        if (decodedImmBitWidth<8) // 16-bit commands with 5/6/7 bit immediate
+                            offset += decodedImm;
+                        else
+                            offset += BinaryArithmetics.signExtend(decodedImmBitWidth, decodedImm);
+                        buffer.append('[' + Format.asHex(offset, 8)+']');
+                        /*
+                            coderat: This is heuristic evaluation, so use loadInstruction...() functions for
+                                     memory access, because I do not want memory auto-expansion here
+                         */
+                        // exclude from analyse non-existing addresses
+                        if (context.memory.isMapped(offset)) {
+                            // load value
+                            final int value;
+                            if (formatChar =='e') {
+                                value = context.memory.loadInstruction8(offset);
+                                tmp = 2;
+                            } else {
+                                if (formatChar =='h') {
+                                    // exclude from analyse non-existing addresses
+                                    if (!context.memory.isMapped(offset+1))
+                                        break;
+                                    value = context.memory.loadInstruction16(offset);
+                                    tmp = 4;
+                                } else {
+                                    // exclude from analyse non-existing addresses
+                                    if (!context.memory.isMapped(offset+3))
+                                        break;
+                                    tmp = 8;
+                                    value = context.memory.loadInstruction32(offset);
+                                }
+                            }
+                            buffer.append("->"+ Format.asHex(value, tmp));
                         }
                     }
                     break;
