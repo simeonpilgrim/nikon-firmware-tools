@@ -1779,3 +1779,7 @@
 # the following is *one* of the observed values:
 -j 0xBFC018F0=0xBFC017D0
 -j 0xBFC3402E=@(0xBFC92984+13*4)
+
+-j 0xBFC5E9BE=@(0xBFC9D360+3*4)
+-j 0xBFC5DF20=@(0xBFC9D25C+10*4)
+-j 0xBFC58D4E=@(0xBFC9C784+32*4)
