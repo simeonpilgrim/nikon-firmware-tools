@@ -8,7 +8,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /*
-Copyright (c) 2003-2010,  Pete Sanderson and Kenneth Vollmar
+
+Parts of code Copyright (c) 2003-2010,  Pete Sanderson and Kenneth Vollmar
 
 Developed by Pete Sanderson (psanderson@otterbein.edu)
 and Kenneth Vollmar (kenvollmar@missouristate.edu)
@@ -695,7 +696,7 @@ public class TxInstructionSet
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "si>j", "", "jw", "lw $t1,-100($t2)",
+    private static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "si>j", "g", "g", "lw $t1,-100($t2)",
             "Load Word: Set $t1 to contents of effective memory word address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -706,7 +707,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    private static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "si>j", "", "jw", "lwl $t1,-100($t2)",
+    private static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "si>j", "h", "jw", "lwl $t1,-100($t2)",
             "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -721,7 +722,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    private static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "si>j", "", "jw", "lwr $t1,-100($t2)",
+    private static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "si>j", "h", "jw", "lwr $t1,-100($t2)",
             "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1753,7 +1754,7 @@ public class TxInstructionSet
             });
 
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "si>j", "", "jw", "lb $t1,-100($t2)",
+    private static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "si>j", "e", "d", "lb $t1,-100($t2)",
             "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1765,7 +1766,7 @@ public class TxInstructionSet
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "si>j", "", "jw", "lbu $t1,-100($t2)",
+    private static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "si>j", "e", "e", "lbu $t1,-100($t2)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1776,7 +1777,7 @@ public class TxInstructionSet
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "si>j", "", "jw", "lh $t1,-100($t2)",
+    private static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "si>j", "h", "f", "lh $t1,-100($t2)",
             "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -1788,7 +1789,7 @@ public class TxInstructionSet
                 }
             });
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "si>j", "", "jw", "lhu $t1,-100($t2)",
+    private static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "si>j", "h", "h", "lhu $t1,-100($t2)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2461,7 +2462,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lbInstruction: does not sign-extend offset
      */
-    private static final TxInstruction lb16Instruction = new TxInstruction("lb", "j, u(i)", "ui>j", "", "jw", "lb $t1,-100($t2)",
+    private static final TxInstruction lb16Instruction = new TxInstruction("lb", "j, u(i)", "ui>j", "e", "d", "lb $t1,-100($t2)",
             "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2475,7 +2476,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lbuInstruction: does not sign-extend offset
      */
-    private static final TxInstruction lbu16Instruction = new TxInstruction("lbu", "j, u(i)", "ui>j", "", "jw", "lbu $t1,-100($t2)",
+    private static final TxInstruction lbu16Instruction = new TxInstruction("lbu", "j, u(i)", "ui>j", "e", "e", "lbu $t1,-100($t2)",
             "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2545,7 +2546,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lhInstruction: does not sign-extend offset but multiplies it by 2
      */
-    private static final TxInstruction lh16Instruction = new TxInstruction("lh", "j, 2u(i)", "ui>j", "", "jw", "lh $t1,-100($t2)",
+    private static final TxInstruction lh16Instruction = new TxInstruction("lh", "j, 2u(i)", "ui>j", "h", "f", "lh $t1,-100($t2)",
             "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2559,7 +2560,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lhuInstruction: does not sign-extend offset but multiplies it by 2
      */
-    private static final TxInstruction lhu16Instruction = new TxInstruction("lhu", "j, 2u(i)", "ui>j", "", "jw", "lhu $t1,-100($t2)",
+    private static final TxInstruction lhu16Instruction = new TxInstruction("lhu", "j, 2u(i)", "ui>j", "h", "h", "lhu $t1,-100($t2)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -2630,7 +2631,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lwInstruction: does not sign-extend offset but multiplies it by 4
      */
-    private static final TxInstruction lw16Instruction = new TxInstruction("lw", "j, 4u(i)", "ui>j", "", "jw", "lw $t1,-100($t2)",
+    private static final TxInstruction lw16Instruction = new TxInstruction("lw", "j, 4u(i)", "ui>j", "g", "g", "lw $t1,-100($t2)",
             "Load Word: Set $t1 to 32-bit value from effective memory word address",
             null, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
