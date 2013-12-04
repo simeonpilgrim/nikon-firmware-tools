@@ -38,6 +38,8 @@ public abstract class Disassembler {
     private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
     private Map<Integer, List<Integer>> jumpHintOffsets = new HashMap<Integer, List<Integer>>();
 
+    private boolean optionsFileProcessed;
+
     protected Disassembler(int chip) {
         this.chip = chip;
     }
@@ -248,8 +250,7 @@ public abstract class Disassembler {
                         return false;
                     }
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
-                    System.exit(1);
-                    break;
+                    return false;
 
                 case 'F':
                 case 'f':
@@ -259,8 +260,7 @@ public abstract class Disassembler {
                         return false;
                     }
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
-                    System.exit(1);
-                    break;
+                    return false;
 
                 case 'H':
                 case 'h':
@@ -296,8 +296,7 @@ public abstract class Disassembler {
                 case 'L':
                 case 'l':
                     debugPrintWriter.println("-" + option + ": not implemented yet!\n");
-                    System.exit(1);
-                    break;
+                    return false;
 
                 case 'M':
                 case 'm':
@@ -371,9 +370,10 @@ public abstract class Disassembler {
                     }
                     try {
                         readOptions(argument);
+                        optionsFileProcessed = true;
                     } catch (IOException e) {
                         debugPrintWriter.println("Cannot open given options file '" + argument + "'");
-                        System.exit(1);
+                        return false;
                     }
                     break;
 
@@ -586,23 +586,19 @@ public abstract class Disassembler {
             usage();
             System.exit(-1);
         }
-        String optionsFilename;
-        String specificFilename = FilenameUtils.removeExtension(args[args.length - 1]) + "." + getClass().getSimpleName().toLowerCase() + ".txt";
-        if (new File(specificFilename).exists()) {
-            optionsFilename = specificFilename;
-        }
-        else {
-            optionsFilename = getDefaultOptionsFilename();
-        }
-
-        if (!new File(optionsFilename).exists()) {
-            System.out.println("No specific options file " + specificFilename + " or default options file " + optionsFilename + " could be found.");
-        }
-        else {
-            readOptions(optionsFilename);
-        }
         if (!processOptions(args))
             throw new ParsingException("Incorrect options");
+        
+        if (!optionsFileProcessed) {
+            // try to load default file
+            String defaultFilename = FilenameUtils.removeExtension(args[args.length - 1]) + "." + getClass().getSimpleName().toLowerCase() + ".txt";
+            if (!new File(defaultFilename).exists()) {
+                System.out.println("No options file given and no default options file " + defaultFilename + " found.");
+            }
+            else {
+                readOptions(defaultFilename);
+            }
+        }
 
         initialize();
 
@@ -626,8 +622,6 @@ public abstract class Disassembler {
     protected abstract CodeStructure getCodeStructure(int start);
 
     protected abstract CPUState getCPUState(Range memRange);
-
-    protected abstract String getDefaultOptionsFilename();
 
     protected abstract String[][] getRegisterLabels();
 

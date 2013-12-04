@@ -8,8 +8,6 @@ import java.util.Set;
 
 public class Dtx extends Disassembler
 {
-    private static final String DEFAULT_OPTIONS_FILENAME = "dtx.txt";
-
     public Dtx() {
         super(Constants.CHIP_TX);
     }
@@ -127,12 +125,6 @@ public class Dtx extends Disassembler
     protected CPUState getCPUState(Range memRange) {
         return new TxCPUState(memRange.getStart());
     }
-
-    @Override
-    protected String getDefaultOptionsFilename() {
-        return DEFAULT_OPTIONS_FILENAME;
-    }
-
 
     ///* initialization */
 

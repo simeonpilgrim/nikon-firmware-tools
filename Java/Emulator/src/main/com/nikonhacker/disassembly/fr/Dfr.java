@@ -50,8 +50,6 @@ import java.util.Set;
 
 public class Dfr extends Disassembler
 {
-    private static final String DEFAULT_OPTIONS_FILENAME = "dfr.txt";
-
     public Dfr() {
         super(Constants.CHIP_FR);
     }
@@ -134,10 +132,6 @@ public class Dfr extends Disassembler
 
     protected CPUState getCPUState(Range memRange) {
         return new FrCPUState(memRange.getStart());
-    }
-
-    protected String getDefaultOptionsFilename() {
-        return DEFAULT_OPTIONS_FILENAME;
     }
 
     /* initialization */
