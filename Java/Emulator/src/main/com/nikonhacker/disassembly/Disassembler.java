@@ -304,7 +304,7 @@ public abstract class Disassembler {
                     argument = optionHandler.getArgument();
                     if ("?".equals(argument)) {
                         System.err.println(OptionHandler.getFullHelp());
-                        return false;
+                        System.exit(1);
                     }
                     memRanges.add(OptionHandler.parseTypeRange(option, argument));
                     break;
