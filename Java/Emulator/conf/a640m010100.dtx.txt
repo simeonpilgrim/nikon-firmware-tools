@@ -60,7 +60,8 @@
 # Do not disassemble, because code is at wrong address
 #-m 0xBFC0A008-0xBFC0A12B=CODE:32
 #-m 0xBFC0A12C-0xBFC0D66F=CODE:16
-#-m 0xBFC0D9F8-0xBFC0ED43=CODE:32
+-m 0xBFC0D9F8-0xBFC0ED43=CODE:32
+-m 0xBFC0ED44-0xBFC0ED69=DATA:L
 
 -m 0xBFC10000-0xBFC1417D=CODE:16
 
@@ -102,9 +103,6 @@
 #-m 0xFFFF412C-0xFFFF766F=CODE:16
 ##0xFF
 ##-m 0xFFFF7670-0xFFFF7977=DATA:L
-## CODE32 for sure, but probably badly located:
-#-m 0xFFFF79F8-0xFFFF8D43=CODE:32
-#-m 0xFFFF8D44-0xFFFF8D69=DATA:L
 #
 #####################################################
 
