@@ -1,5 +1,6 @@
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
-# A special part is also included  but commented out :
+#
+# A special part is also included  but commented out (can be disassembled using a640m010100updatecode.dtx.txt):
 # - the copy of code @0xBFC0A000-0xBFC0ED69 to RAM 0xFFFF4000-0xFFFF8D69 performed by code 0xBFC1C742-0xBFC1C76A is described in -i and -m
  ############################## File map: D5100
 -i 0xBFC00000-0xBFCBFFFF=0x00000000
