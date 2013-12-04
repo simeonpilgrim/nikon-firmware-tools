@@ -1,0 +1,20 @@
+# Usage:
+# startDtx.bat -wstructure -wparameters -wshift -wli -wquestion -wdmov -wbz -wret -waddress -whexcode -x a640m010100updatecode.dtx.txt -o a640m010100updatecode.asm a640m010100.bin
+
+#-i 0xFFFF0000-0xFFFF1FFF=0x8000
+# Area @0xBFC08000-0xBFC08FFF is copied to RAM 0xFFFF0000-0xFFFF0FFF
+#-m 0xBFC08000-0xBFC08FFF
+# Area @0xBFC09000-0xBFC09FFF is copied to RAM 0xFFFF1000-0xFFFF1FFF
+#-m 0xBFC09000-0xBFC09FFF
+
+# Area @0xBFC0A000-0xBFC0ED69 is copied to RAM 0xFFFF4000-0xFFFF8D69 by the code at 0xBFC1C742-0xBFC1C76A
+-i 0xFFFF4000-0xFFFF8D69=0xA000
+
+-m 0xFFFF4000-0xFFFF4007=DATA:L
+-m 0xFFFF4008-0xFFFF412B=CODE:32
+-m 0xFFFF412C-0xFFFF766F=CODE:16
+##0xFF
+-m 0xFFFF7670-0xFFFF7977=DATA:L
+
+
+
