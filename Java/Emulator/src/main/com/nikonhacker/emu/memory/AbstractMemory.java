@@ -407,6 +407,11 @@ public abstract class AbstractMemory implements Memory {
             ByteBuffer buffer = ByteBuffer.allocate(rangeSize);
 
             // Read bytes of the file.
+            if (fc.position()!=range.getFileOffset()) {
+                if (range.getFileOffset()>=fc.size())
+                    throw new IOException("Error : expected file offset " + range.getFileOffset() + " do not exist");
+                fc.position(range.getFileOffset());
+            }
             int bytesRead;
             do {
                 bytesRead = fc.read(buffer);
@@ -414,14 +419,15 @@ public abstract class AbstractMemory implements Memory {
 
             // Push bytes to memory
             int address = range.getStart();
-            map(address, rangeSize, true, !isWriteProtected, true);
-            long bytesPushed = 0;
+            // map address must be page size aligned
+            map(truncateToPage(address), getOffset(address) + rangeSize, true, !isWriteProtected, true);
+            int bytesPushed = 0;
             buffer.position(0);
             while (bytesPushed < rangeSize) {
                 int page = getPTE(address);
                 int offset = getOffset(address);
                 byte[] pageBuffer = getPage(page);
-                int byteCount = PAGE_SIZE - offset;
+                int byteCount = Math.min(rangeSize - bytesPushed, PAGE_SIZE - offset);
                 buffer.get(pageBuffer, offset, byteCount);
                 address += byteCount;
                 bytesPushed += byteCount;
