@@ -1,5 +1,7 @@
 # Usage:
-# startDtx.bat -wstructure -wparameters -wshift -wli -wquestion -wdmov -wbz -wret -waddress -whexcode -x a640m010100updatecode.dtx.txt -o a640m010100updatecode.asm a640m010100.bin
+# startDtx.bat -wstructure -wparameters -wmemory -wshift -wli -wquestion -wdmov -wbz -wret -waddress -whexcode -x a640m010100updatecode.dtx.txt -o a640m010100updatecode.asm a640m010100.bin
+#
+# WARNING: doesn't work in Emulator, because memory content at 0xFFFF4000 is not automatically loaded. This not a bug!
 
 #-i 0xFFFF0000-0xFFFF1FFF=0x8000
 # Area @0xBFC08000-0xBFC08FFF is copied to RAM 0xFFFF0000-0xFFFF0FFF

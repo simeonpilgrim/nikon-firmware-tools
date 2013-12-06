@@ -1,4 +1,8 @@
 # The main part of this file describes the D5100 "B" firmware, ver 1.01
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b640101b.dfr.txt -o b640101b.asm b640101b.bin
+#
 # Two special parts are also included but commented out :
 # - the ROM part at 0x000E0000
 # - the copy of code to 0x80080000 performed by the ROM bootup
