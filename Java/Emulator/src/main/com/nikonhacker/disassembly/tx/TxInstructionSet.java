@@ -763,16 +763,24 @@ public class TxInstructionSet
             lwrSimulationCode
             );
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "si>j", "Ju", "", "sw $t1,-100($t2)",
-            "Store Word: Store contents of $t1 into effective memory word address",
-            InstructionFormat32.I, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode swSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rj_rt_ft));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction swInstructionAnalyse = new TxInstruction("sw", "j, s(i)", "si>j", "mg", "", "sw $t1,-100($t2)",
+            "Store Word: Store contents of $t1 into effective memory word address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            swSimulationCode
+            );
+    private static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "si>j", "Ju", "", "sw $t1,-100($t2)",
+            "Store Word: Store contents of $t1 into effective memory word address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            swSimulationCode
+            );
     private static final TxInstruction swlInstruction = new TxInstruction("swl", "j, s(i)", "si>j", "", "", "swl $t1,-100($t2)",
             "Store Word Left: Store high-order 1 to 4 bytes of $t1 into memory, starting with effective byte address and continuing through the low-order byte of its word",
             InstructionFormat32.I, null,
@@ -787,11 +795,7 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    private static final TxInstruction swrInstruction = new TxInstruction("swr", "j, s(i)", "si>j", "", "", "swr $t1,-100($t2)",
-            "Store Word Right: Store low-order 1 to 4 bytes of $t1 into memory, starting with high-order byte of word containing effective byte address and continuing through that byte address",
-            InstructionFormat32.I, null,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode swrSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16);
                     int source = context.cpuState.getReg(statement.rj_rt_ft);
@@ -800,7 +804,19 @@ public class TxInstructionSet
                     }
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction swrInstructionAnalyse = new TxInstruction("swr", "j, s(i)", "si>j", "mh", "", "swr $t1,-100($t2)",
+            "Store Word Right: Store low-order 1 to 4 bytes of $t1 into memory, starting with high-order byte of word containing effective byte address and continuing through that byte address",
+            InstructionFormat32.I, null,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            swrSimulationCode
+            );
+    private static final TxInstruction swrInstruction = new TxInstruction("swr", "j, s(i)", "si>j", "", "", "swr $t1,-100($t2)",
+            "Store Word Right: Store low-order 1 to 4 bytes of $t1 into memory, starting with high-order byte of word containing effective byte address and continuing through that byte address",
+            InstructionFormat32.I, null,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            swrSimulationCode
+            );
 
     private static final TxInstruction luiInstruction = new TxInstruction("lui", "j, u", ">j", "", "jV", "lui $t1,100",
             "Load Upper Immediate: Set high-order 16 bits of $t1 to 16-bit immediate and low-order 16 bits to 0",
@@ -1858,31 +1874,47 @@ public class TxInstructionSet
             lhuSimulationCode
             );
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "j>si", "", "jw", "sb $t1,-100($t2)",
-            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            InstructionFormat32.I, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode sbSimulation = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x000000ff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "j>si", "", "jw", "sh $t1,-100($t2)",
-            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
+            };
+    private static final TxInstruction sbInstructionAnalyse = new TxInstruction("sb", "j, s(i)", "j>si", "me", "jw", "sb $t1,-100($t2)",
+            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            sbSimulation
+            );
+    private static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "j>si", "", "jw", "sb $t1,-100($t2)",
+            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sbSimulation
+            );
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final SimulationCode shSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction shInstructionAnalyse = new TxInstruction("sh", "j, s(i)", "j>si", "mh", "jw", "sh $t1,-100($t2)",
+            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            shSimulationCode
+            );
+    private static final TxInstruction shInstruction = new TxInstruction("sh", "j, s(i)", "j>si", "", "jw", "sh $t1,-100($t2)",
+            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            shSimulationCode
+            );
     private static final TxInstruction syncInstruction = new TxInstruction("sync", "", ">", "", "", "sync",
             "SYNC: Wait for all operations to complete",
             InstructionFormat32.I, InstructionFormat16.RI,
@@ -3227,18 +3259,26 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of sbInstruction: does not sign-extend offset
      */
-    private static final TxInstruction sb16Instruction = new TxInstruction("sb", "j, s(i)", "si>j", "", "", "sb $t1,-100($t2)",
-            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
-            InstructionFormat32.I, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode sb16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store8(
                             context.cpuState.getReg(statement.ri_rs_fs) + statement.imm,
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x000000ff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction sb16InstructionAnalyse = new TxInstruction("sb", "j, s(i)", "si>j", "me", "", "sb $t1,-100($t2)",
+            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sb16SimulationCode
+            );
+    private static final TxInstruction sb16Instruction = new TxInstruction("sb", "j, s(i)", "si>j", "", "", "sb $t1,-100($t2)",
+            "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sb16SimulationCode
+            );
 
     /**
      * EXTENDed 16-bit ISA version of sbfpInstruction: sign-extends offset
@@ -3308,18 +3348,26 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of shInstruction: does not sign-extend offset but multiplies it by 2
      */
-    private static final TxInstruction sh16Instruction = new TxInstruction("sh", "j, 2s(i)", "si>j", "", "", "sh $t1,-100($t2)",
-            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode sh16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
                             context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 1),
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction sh16InstructionAnalyse = new TxInstruction("sh", "j, 2s(i)", "si>j", "mh", "", "sh $t1,-100($t2)",
+            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sh16SimulationCode
+            );
+    private static final TxInstruction sh16Instruction = new TxInstruction("sh", "j, 2s(i)", "si>j", "", "", "sh $t1,-100($t2)",
+            "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sh16SimulationCode
+            );
 
     /**
      * EXTENDed 16-bit ISA version of shfpInstruction: sign-extends offset and multiplies it by 2
@@ -3388,16 +3436,24 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of swInstruction: does not sign-extend offset but multiplies it by 4
      */
-    private static final TxInstruction sw16Instruction = new TxInstruction("sw", "j, 4u(i)", "ui>j", "", "", "sw $t1,-100($t2)",
-            "Store Word: Store contents of $t1 into effective memory word address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode sw16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 2), context.cpuState.getReg(statement.rj_rt_ft));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction sw16InstructionAnalyse = new TxInstruction("sw", "j, 4u(i)", "ui>j", "mg", "", "sw $t1,-100($t2)",
+            "Store Word: Store contents of $t1 into effective memory word address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sw16SimulationCode
+            );
+    private static final TxInstruction sw16Instruction = new TxInstruction("sw", "j, 4u(i)", "ui>j", "", "", "sw $t1,-100($t2)",
+            "Store Word: Store contents of $t1 into effective memory word address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            sw16SimulationCode
+            );
 
 
     /**
@@ -4252,6 +4308,12 @@ public class TxInstructionSet
             expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16InstructionAnalyse);
             expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16InstructionAnalyse);
             expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16InstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b11011000_00000000, 0b11111000_00000000, swInstructionAnalyse);
+            expandInstruction(opcode16Map,         0b11011000_00000000, 0b11111000_00000000, sw16InstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b11000000_00000000, 0b11111000_00000000, sbInstructionAnalyse);
+            expandInstruction(opcode16Map,         0b11000000_00000000, 0b11111000_00000000, sb16InstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b11001000_00000000, 0b11111000_00000000, shInstructionAnalyse);
+            expandInstruction(opcode16Map,         0b11001000_00000000, 0b11111000_00000000, sh16InstructionAnalyse);
         } else {
             expandInstruction(extendedOpcode16Map, 0b10000000_00000000, 0b11111000_00000000, lbInstruction);
             expandInstruction(opcode16Map,         0b10011000_00000000, 0b11111000_00000000, lw16Instruction);
@@ -4263,6 +4325,12 @@ public class TxInstructionSet
             expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16Instruction);
             expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16Instruction);
             expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16Instruction);
+            expandInstruction(extendedOpcode16Map, 0b11011000_00000000, 0b11111000_00000000, swInstruction);
+            expandInstruction(opcode16Map,         0b11011000_00000000, 0b11111000_00000000, sw16Instruction);
+            expandInstruction(extendedOpcode16Map, 0b11000000_00000000, 0b11111000_00000000, sbInstruction);
+            expandInstruction(opcode16Map,         0b11000000_00000000, 0b11111000_00000000, sb16Instruction);
+            expandInstruction(extendedOpcode16Map, 0b11001000_00000000, 0b11111000_00000000, shInstruction);
+            expandInstruction(opcode16Map,         0b11001000_00000000, 0b11111000_00000000, sh16Instruction);
         }
         expandInstruction(opcode16Map,         0b11111110_00000000, 0b11111111_00000000, lwfp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b11111110_00000000, 0b11111111_00000000, lwfpInstruction);
@@ -4324,26 +4392,17 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b01100100_10000000, 0b11111111_10000000, saveInstruction);
 
-        expandInstruction(opcode16Map,         0b11000000_00000000, 0b11111000_00000000, sb16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b11000000_00000000, 0b11111000_00000000, sbInstruction);
-
         expandInstruction(opcode16Map,         0b00111000_10000000, 0b11111000_10000000, sbfp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b00111000_10000000, 0b11111000_11100000, sbfpInstruction);
 
         expandInstruction(opcode16Map,         0b01111000_10000000, 0b11111000_10000000, sbsp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b01111000_10000000, 0b11111000_11100000, sbspInstruction);
 
-        expandInstruction(opcode16Map,         0b11001000_00000000, 0b11111000_00000000, sh16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b11001000_00000000, 0b11111000_00000000, shInstruction);
-
         expandInstruction(opcode16Map,         0b10111000_10000001, 0b11111000_10000001, shfp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b10111000_10000001, 0b11111000_11100001, shfpInstruction);
 
         expandInstruction(opcode16Map,         0b10111000_10000000, 0b11111000_10000001, shsp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b10111000_10000000, 0b11111000_11100001, shspInstruction);
-
-        expandInstruction(opcode16Map,         0b11011000_00000000, 0b11111000_00000000, sw16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b11011000_00000000, 0b11111000_00000000, swInstruction);
 
         expandInstruction(opcode16Map,         0b11111111_00000000, 0b11111111_00000000, swfp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b11111111_00000000, 0b11111111_00000000, swfpInstruction);
@@ -4494,6 +4553,10 @@ public class TxInstructionSet
             opcodeResolvers[0b100100] = new DirectInstructionResolver(lbuInstructionAnalyse);
             opcodeResolvers[0b100101] = new DirectInstructionResolver(lhuInstructionAnalyse);
             opcodeResolvers[0b100001] = new DirectInstructionResolver(lhInstructionAnalyse);
+            opcodeResolvers[0b101011] = new DirectInstructionResolver(swInstructionAnalyse);
+            opcodeResolvers[0b101110] = new DirectInstructionResolver(swrInstructionAnalyse);
+            opcodeResolvers[0b101000] = new DirectInstructionResolver(sbInstructionAnalyse);
+            opcodeResolvers[0b101001] = new DirectInstructionResolver(shInstructionAnalyse);
         } else {
             opcodeResolvers[0b100000] = new DirectInstructionResolver(lbInstruction);
             opcodeResolvers[0b100010] = new DirectInstructionResolver(lwlInstruction);
@@ -4502,16 +4565,16 @@ public class TxInstructionSet
             opcodeResolvers[0b100100] = new DirectInstructionResolver(lbuInstruction);
             opcodeResolvers[0b100101] = new DirectInstructionResolver(lhuInstruction);
             opcodeResolvers[0b100001] = new DirectInstructionResolver(lhInstruction);
+            opcodeResolvers[0b101011] = new DirectInstructionResolver(swInstruction);
+            opcodeResolvers[0b101110] = new DirectInstructionResolver(swrInstruction);
+            opcodeResolvers[0b101000] = new DirectInstructionResolver(sbInstruction);
+            opcodeResolvers[0b101001] = new DirectInstructionResolver(shInstruction);
         }
         opcodeResolvers[0b100111] = betaResolver;
 
-        opcodeResolvers[0b101000] = new DirectInstructionResolver(sbInstruction);
-        opcodeResolvers[0b101001] = new DirectInstructionResolver(shInstruction);
         opcodeResolvers[0b101010] = new DirectInstructionResolver(swlInstruction);
-        opcodeResolvers[0b101011] = new DirectInstructionResolver(swInstruction);
         opcodeResolvers[0b101100] = betaResolver;
         opcodeResolvers[0b101101] = betaResolver;
-        opcodeResolvers[0b101110] = new DirectInstructionResolver(swrInstruction);
         opcodeResolvers[0b101111] = /*CACHE*/ betaResolver;
 
         opcodeResolvers[0b110000] = /*LL*/ betaResolver;

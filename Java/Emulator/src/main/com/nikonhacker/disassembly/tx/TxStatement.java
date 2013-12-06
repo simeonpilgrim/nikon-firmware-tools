@@ -555,6 +555,7 @@ public class TxStatement extends Statement {
 
         int offset = 0;
         boolean isOptionalExpression = false; // sections between square brackets are "optional"
+        boolean writeDirection = false; // for memory operations
 
         StringBuilder buffer = new StringBuilder();
         StringBuilder tmpBuffer = null;
@@ -796,7 +797,9 @@ public class TxStatement extends Statement {
                         }
                     }
                     break;
-                    
+                case 'm':   // for use with e, h, g
+                    writeDirection = true;
+                    break;
                 case 'e':   // load byte constant from memory
                 case 'h':   // load halfword constant from memory
                 case 'g':   // load word constant from memory
@@ -807,11 +810,24 @@ public class TxStatement extends Statement {
                             offset += decodedImm;
                         else
                             offset += BinaryArithmetics.signExtend(decodedImmBitWidth, decodedImm);
-                        buffer.append('[' + Format.asHex(offset, 8)+']');
+                        buffer.append('(' + Format.asHex(offset, 8)+')');
                         /*
                             coderat: This is heuristic evaluation, so use loadInstruction...() functions for
                                      memory access, because I do not want memory auto-expansion here
                          */
+                        if (writeDirection) {
+                            buffer.append('=');
+                            if (context.cpuState.isRegisterDefined(rj_rt_ft)) {
+                                if (formatChar=='e')
+                                    tmp = 2;
+                                else if (formatChar=='h')
+                                    tmp = 4;
+                                else
+                                    tmp = 8;
+                                buffer.append(Format.asHex(context.cpuState.getReg(rj_rt_ft), tmp));
+                            }
+                            break;
+                        }
                         // exclude from analyse non-existing addresses
                         if (context.memory.isMapped(offset)) {
                             // load value
@@ -834,7 +850,7 @@ public class TxStatement extends Statement {
                                     value = context.memory.loadInstruction32(offset);
                                 }
                             }
-                            buffer.append("->"+ Format.asHex(value, tmp));
+                            buffer.append(':'+ Format.asHex(value, tmp));
                         }
                     }
                     break;
