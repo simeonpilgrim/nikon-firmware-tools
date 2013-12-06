@@ -695,23 +695,28 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
-    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "si>j", "g", "g", "lw $t1,-100($t2)",
-            "Load Word: Set $t1 to contents of effective memory word address",
-            InstructionFormat32.I, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lwSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     // Changed from MARS : Added sign extension to offset
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.load32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    private static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "si>j", "h", "jw", "lwl $t1,-100($t2)",
-            "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
-            InstructionFormat32.I, null,
+            };
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final TxInstruction lwInstructionAnalyse = new TxInstruction("lw", "j, s(i)", "si>j", "g", "g", "lw $t1,-100($t2)",
+            "Load Word: Set $t1 to contents of effective memory word address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            lwSimulationCode
+            );
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final TxInstruction lwInstruction = new TxInstruction("lw", "j, s(i)", "si>j", "", "jw", "lw $t1,-100($t2)",
+            "Load Word: Set $t1 to contents of effective memory word address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lwSimulationCode
+            );
+    private static final SimulationCode lwlSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16);
                     int result = context.cpuState.getReg(statement.rj_rt_ft);
@@ -721,12 +726,20 @@ public class TxInstructionSet
                     context.cpuState.setReg(statement.rj_rt_ft, result);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    private static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "si>j", "h", "jw", "lwr $t1,-100($t2)",
-            "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
+            };
+    private static final TxInstruction lwlInstructionAnalyse = new TxInstruction("lwl", "j, s(i)", "si>j", "h", "jw", "lwl $t1,-100($t2)",
+            "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
             InstructionFormat32.I, null,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            lwlSimulationCode
+            );
+    private static final TxInstruction lwlInstruction = new TxInstruction("lwl", "j, s(i)", "si>j", "", "jw", "lwl $t1,-100($t2)",
+            "Load Word Left: Load from 1 to 4 bytes left-justified into $t1, starting with effective memory byte address and continuing through the low-order byte of its word",
+            InstructionFormat32.I, null,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lwlSimulationCode
+            );
+    private static final SimulationCode lwrSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     int address = context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16);
                     int result = context.cpuState.getReg(statement.rj_rt_ft);
@@ -736,7 +749,19 @@ public class TxInstructionSet
                     context.cpuState.setReg(statement.rj_rt_ft, result);
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lwrInstructionAnalyse = new TxInstruction("lwr", "j, s(i)", "si>j", "h", "jw", "lwr $t1,-100($t2)",
+            "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
+            InstructionFormat32.I, null,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lwrSimulationCode
+            );
+    private static final TxInstruction lwrInstruction = new TxInstruction("lwr", "j, s(i)", "si>j", "", "jw", "lwr $t1,-100($t2)",
+            "Load Word Right: Load from 1 to 4 bytes right-justified into $t1, starting with effective memory byte address and continuing through the high-order byte of its word",
+            InstructionFormat32.I, null,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lwrSimulationCode
+            );
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     private static final TxInstruction swInstruction = new TxInstruction("sw", "j, s(i)", "si>j", "Ju", "", "sw $t1,-100($t2)",
             "Store Word: Store contents of $t1 into effective memory word address",
@@ -1754,52 +1779,84 @@ public class TxInstructionSet
             });
 
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "si>j", "e", "d", "lb $t1,-100($t2)",
-            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
-            InstructionFormat32.I, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lbSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded signed
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadSigned8(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "si>j", "e", "e", "lbu $t1,-100($t2)",
-            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            };
+    private static final TxInstruction lbInstructionAnalyse = new TxInstruction("lb", "j, s(i)", "si>j", "e", "d", "lb $t1,-100($t2)",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            lbSimulationCode
+            );
+    private static final TxInstruction lbInstruction = new TxInstruction("lb", "j, s(i)", "si>j", "", "jw", "lb $t1,-100($t2)",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lbSimulationCode
+            );
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final SimulationCode lbuSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "si>j", "h", "f", "lh $t1,-100($t2)",
-            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
+            };
+    private static final TxInstruction lbuInstructionAnalyse = new TxInstruction("lbu", "j, s(i)", "si>j", "e", "e", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            lbuSimulationCode
+            );
+    private static final TxInstruction lbuInstruction = new TxInstruction("lbu", "j, s(i)", "si>j", "", "jw", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lbuSimulationCode
+            );
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final SimulationCode lhSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded signed
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadSigned16(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
-    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
-    private static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "si>j", "h", "h", "lhu $t1,-100($t2)",
-            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            };
+    private static final TxInstruction lhInstructionAnalyse = new TxInstruction("lh", "j, s(i)", "si>j", "h", "f", "lh $t1,-100($t2)",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+            lhSimulationCode
+            );
+    private static final TxInstruction lhInstruction = new TxInstruction("lh", "j, s(i)", "si>j", "", "jw", "lh $t1,-100($t2)",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lhSimulationCode
+            );
+    /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
+    private static final SimulationCode lhuSimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     // offset is sign-extended and halfword value is loaded unsigned
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lhuInstructionAnalyse = new TxInstruction("lhu", "j, s(i)", "si>j", "h", "h", "lhu $t1,-100($t2)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lhuSimulationCode
+            );
+    private static final TxInstruction lhuInstruction = new TxInstruction("lhu", "j, s(i)", "si>j", "", "jw", "lhu $t1,-100($t2)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            InstructionFormat32.I, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lhuSimulationCode
+            );
     /* This is both for the 32-bit instruction and the EXTENDed 16-bit one. Both have a fixed 16-bit immediate value */
     private static final TxInstruction sbInstruction = new TxInstruction("sb", "j, s(i)", "j>si", "", "jw", "sb $t1,-100($t2)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
@@ -2462,30 +2519,46 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lbInstruction: does not sign-extend offset
      */
-    private static final TxInstruction lb16Instruction = new TxInstruction("lb", "j, u(i)", "ui>j", "e", "d", "lb $t1,-100($t2)",
-            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lb16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadSigned8(context.cpuState.getReg(statement.ri_rs_fs) + statement.imm));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lb16InstructionAnalyse = new TxInstruction("lb", "j, u(i)", "ui>j", "e", "d", "lb $t1,-100($t2)",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lb16SimulationCode
+            );
+    private static final TxInstruction lb16Instruction = new TxInstruction("lb", "j, u(i)", "ui>j", "", "jw", "lb $t1,-100($t2)",
+            "Load Byte: Set $t1 to signed 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lb16SimulationCode
+            );
 
     /**
      * non-EXTENDed 16-bit ISA version of lbuInstruction: does not sign-extend offset
      */
-    private static final TxInstruction lbu16Instruction = new TxInstruction("lbu", "j, u(i)", "ui>j", "e", "e", "lbu $t1,-100($t2)",
-            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lbu16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned8(context.cpuState.getReg(statement.ri_rs_fs) + statement.imm));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lbu16InstructionAnalyse = new TxInstruction("lbu", "j, u(i)", "ui>j", "e", "e", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lbu16SimulationCode
+            );
+    private static final TxInstruction lbu16Instruction = new TxInstruction("lbu", "j, u(i)", "ui>j", "", "jw", "lbu $t1,-100($t2)",
+            "Load Byte Unsigned: Set $t1 to unsigned 8-bit value from effective memory byte address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lbu16SimulationCode
+            );
 
     /**
      * EXTENDed 16-bit ISA version of lbufpInstruction: sign-extends offset
@@ -2546,30 +2619,46 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lhInstruction: does not sign-extend offset but multiplies it by 2
      */
-    private static final TxInstruction lh16Instruction = new TxInstruction("lh", "j, 2u(i)", "ui>j", "h", "f", "lh $t1,-100($t2)",
-            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lh16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadSigned16(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 1)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lh16InstructionAnalyse = new TxInstruction("lh", "j, 2u(i)", "ui>j", "h", "f", "lh $t1,-100($t2)",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lh16SimulationCode
+            );
+    private static final TxInstruction lh16Instruction = new TxInstruction("lh", "j, 2u(i)", "ui>j", "", "jw", "lh $t1,-100($t2)",
+            "Load Halfword: Set $t1 to signed 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lh16SimulationCode
+            );
 
     /**
      * non-EXTENDed 16-bit ISA version of lhuInstruction: does not sign-extend offset but multiplies it by 2
      */
-    private static final TxInstruction lhu16Instruction = new TxInstruction("lhu", "j, 2u(i)", "ui>j", "h", "h", "lhu $t1,-100($t2)",
-            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lhu16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 1)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lhu16InstructionAnalyse = new TxInstruction("lhu", "j, 2u(i)", "ui>j", "h", "h", "lhu $t1,-100($t2)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lhu16SimulationCode
+            );
+    private static final TxInstruction lhu16Instruction = new TxInstruction("lhu", "j, 2u(i)", "ui>j", "", "jw", "lhu $t1,-100($t2)",
+            "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lhu16SimulationCode
+            );
 
     /**
      * EXTENDed 16-bit ISA version of lhufpInstruction: sign-extends offset and multiplies it by 2
@@ -2631,16 +2720,24 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of lwInstruction: does not sign-extend offset but multiplies it by 4
      */
-    private static final TxInstruction lw16Instruction = new TxInstruction("lw", "j, 4u(i)", "ui>j", "g", "g", "lw $t1,-100($t2)",
-            "Load Word: Set $t1 to 32-bit value from effective memory word address",
-            null, InstructionFormat16.RRI,
-            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
-            new SimulationCode() {
+    private static final SimulationCode lw16SimulationCode = new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.cpuState.setReg(statement.rj_rt_ft, context.memory.load32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 2)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
-            });
+            };
+    private static final TxInstruction lw16InstructionAnalyse = new TxInstruction("lw", "j, 4u(i)", "ui>j", "g", "g", "lw $t1,-100($t2)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lw16SimulationCode
+            );
+    private static final TxInstruction lw16Instruction = new TxInstruction("lw", "j, 4u(i)", "ui>j", "", "jw", "lw $t1,-100($t2)",
+            "Load Word: Set $t1 to 32-bit value from effective memory word address",
+            null, InstructionFormat16.RRI,
+            Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
+            lw16SimulationCode
+            );
 
     /**
      * EXTENDed 16-bit ISA version of lwfpInstruction: sign-extends offset
@@ -4126,23 +4223,11 @@ public class TxInstructionSet
 
         expandInstruction(opcode16Map,         0b11101000_10000000, 0b11111000_11111111, jrcInstruction);
 
-        expandInstruction(opcode16Map,         0b10000000_00000000, 0b11111000_00000000, lb16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b10000000_00000000, 0b11111000_00000000, lbInstruction);
-
-        expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b10100000_00000000, 0b11111000_00000000, lbuInstruction);
-
         expandInstruction(opcode16Map,         0b00111000_00000000, 0b11111000_10000000, lbufp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b00111000_00000000, 0b11111000_11100000, lbufpInstruction);
 
         expandInstruction(opcode16Map,         0b01111000_00000000, 0b11111000_10000000, lbusp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b01111000_00000000, 0b11111000_11100000, lbuspInstruction);
-
-        expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b10001000_00000000, 0b11111000_00000000, lhInstruction);
-
-        expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b10101000_00000000, 0b11111000_00000000, lhuInstruction);
 
         expandInstruction(opcode16Map,         0b10111000_00000001, 0b11111000_10000001, lhufp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b10111000_00000001, 0b11111000_11100001, lhufpInstruction);
@@ -4156,9 +4241,29 @@ public class TxInstructionSet
 
         expandInstruction(extendedOpcode16Map, 0b01001000_11100000, 0b11111000_11100000, luiInstruction);
 
-        expandInstruction(opcode16Map,         0b10011000_00000000, 0b11111000_00000000, lw16Instruction);
-        expandInstruction(extendedOpcode16Map, 0b10011000_00000000, 0b11111000_00000000, lwInstruction);
-
+        if (outputOptions.contains(OutputOption.MEMORY)) {
+            expandInstruction(extendedOpcode16Map, 0b10000000_00000000, 0b11111000_00000000, lbInstructionAnalyse);
+            expandInstruction(opcode16Map,         0b10011000_00000000, 0b11111000_00000000, lw16InstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b10011000_00000000, 0b11111000_00000000, lwInstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b10100000_00000000, 0b11111000_00000000, lbuInstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b10101000_00000000, 0b11111000_00000000, lhuInstructionAnalyse);
+            expandInstruction(extendedOpcode16Map, 0b10001000_00000000, 0b11111000_00000000, lhInstructionAnalyse);
+            expandInstruction(opcode16Map,         0b10000000_00000000, 0b11111000_00000000, lb16InstructionAnalyse);
+            expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16InstructionAnalyse);
+            expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16InstructionAnalyse);
+            expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16InstructionAnalyse);
+        } else {
+            expandInstruction(extendedOpcode16Map, 0b10000000_00000000, 0b11111000_00000000, lbInstruction);
+            expandInstruction(opcode16Map,         0b10011000_00000000, 0b11111000_00000000, lw16Instruction);
+            expandInstruction(extendedOpcode16Map, 0b10011000_00000000, 0b11111000_00000000, lwInstruction);
+            expandInstruction(extendedOpcode16Map, 0b10100000_00000000, 0b11111000_00000000, lbuInstruction);
+            expandInstruction(extendedOpcode16Map, 0b10101000_00000000, 0b11111000_00000000, lhuInstruction);
+            expandInstruction(extendedOpcode16Map, 0b10001000_00000000, 0b11111000_00000000, lhInstruction);
+            expandInstruction(opcode16Map,         0b10000000_00000000, 0b11111000_00000000, lb16Instruction);
+            expandInstruction(opcode16Map,         0b10100000_00000000, 0b11111000_00000000, lbu16Instruction);
+            expandInstruction(opcode16Map,         0b10001000_00000000, 0b11111000_00000000, lh16Instruction);
+            expandInstruction(opcode16Map,         0b10101000_00000000, 0b11111000_00000000, lhu16Instruction);
+        }
         expandInstruction(opcode16Map,         0b11111110_00000000, 0b11111111_00000000, lwfp16Instruction);
         expandInstruction(extendedOpcode16Map, 0b11111110_00000000, 0b11111111_00000000, lwfpInstruction);
 
@@ -4381,13 +4486,23 @@ public class TxInstructionSet
         opcodeResolvers[0b011110] = betaResolver;
         opcodeResolvers[0b011111] = starResolver;
 
-        opcodeResolvers[0b100000] = new DirectInstructionResolver(lbInstruction);
-        opcodeResolvers[0b100001] = new DirectInstructionResolver(lhInstruction);
-        opcodeResolvers[0b100010] = new DirectInstructionResolver(lwlInstruction);
-        opcodeResolvers[0b100011] = new DirectInstructionResolver(lwInstruction);
-        opcodeResolvers[0b100100] = new DirectInstructionResolver(lbuInstruction);
-        opcodeResolvers[0b100101] = new DirectInstructionResolver(lhuInstruction);
-        opcodeResolvers[0b100110] = new DirectInstructionResolver(lwrInstruction);
+        if (outputOptions.contains(OutputOption.MEMORY)) {
+            opcodeResolvers[0b100000] = new DirectInstructionResolver(lbInstructionAnalyse);
+            opcodeResolvers[0b100010] = new DirectInstructionResolver(lwlInstructionAnalyse);
+            opcodeResolvers[0b100110] = new DirectInstructionResolver(lwrInstructionAnalyse);
+            opcodeResolvers[0b100011] = new DirectInstructionResolver(lwInstructionAnalyse);
+            opcodeResolvers[0b100100] = new DirectInstructionResolver(lbuInstructionAnalyse);
+            opcodeResolvers[0b100101] = new DirectInstructionResolver(lhuInstructionAnalyse);
+            opcodeResolvers[0b100001] = new DirectInstructionResolver(lhInstructionAnalyse);
+        } else {
+            opcodeResolvers[0b100000] = new DirectInstructionResolver(lbInstruction);
+            opcodeResolvers[0b100010] = new DirectInstructionResolver(lwlInstruction);
+            opcodeResolvers[0b100110] = new DirectInstructionResolver(lwrInstruction);
+            opcodeResolvers[0b100011] = new DirectInstructionResolver(lwInstruction);
+            opcodeResolvers[0b100100] = new DirectInstructionResolver(lbuInstruction);
+            opcodeResolvers[0b100101] = new DirectInstructionResolver(lhuInstruction);
+            opcodeResolvers[0b100001] = new DirectInstructionResolver(lhInstruction);
+        }
         opcodeResolvers[0b100111] = betaResolver;
 
         opcodeResolvers[0b101000] = new DirectInstructionResolver(sbInstruction);
