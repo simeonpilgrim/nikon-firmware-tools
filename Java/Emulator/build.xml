@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="NikonEmulator"/>
-    <property name="app-version"      value="2.49"/>
+    <property name="app-version"      value="2.50"/>
     <property name="app-mainclass"    value="com.nikonhacker.gui.EmulatorUI"/>
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
