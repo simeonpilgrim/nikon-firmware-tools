@@ -1496,6 +1496,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 makeOutputOptionCheckBox(chip, OutputOption.ORDINAL, prefs.getOutputOptions(chip), true),
                 makeOutputOptionCheckBox(chip, OutputOption.PARAMETERS, prefs.getOutputOptions(chip), true),
                 makeOutputOptionCheckBox(chip, OutputOption.INT40, prefs.getOutputOptions(chip), true),
+                makeOutputOptionCheckBox(chip, OutputOption.MEMORY, prefs.getOutputOptions(chip), true),
                 new JLabel("(hover over the options for help. See also 'Tools/Options/Disassembler output')", SwingConstants.CENTER)
         };
 
