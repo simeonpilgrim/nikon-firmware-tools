@@ -35,7 +35,6 @@ import java.util.List;
 import java.util.Vector;
 
 public class MemoryHexEditorFrame extends DocumentFrame implements ActionListener, HexEditorListener {
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private DebuggableMemory memory;
     private CPUState cpuState;
@@ -124,9 +123,9 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
         setContentPane(mainPanel);
 
         // Start update timer
-        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(ui.getPrefs().getRefreshIntervalMs(), new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                refreshData();
+                refreshData(false);
             }
         });
         refreshTimer.start();
@@ -214,8 +213,8 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
 
 
 
-    private void refreshData() {
-        if (ui.getFramework().isEmulatorPlaying(chip)) {
+    private void refreshData(boolean force) {
+        if (force || ui.getFramework().isEmulatorPlaying(chip)) {
             refreshMemoryPage();
             refreshMemoryWatcheValues();
         }
@@ -365,7 +364,7 @@ public class MemoryHexEditorFrame extends DocumentFrame implements ActionListene
     }
 
     public void setEditable(boolean editable) {
-        refreshData();
+        refreshData(true);
         this.editable = editable;
         hexEditor.setCellEditable(editable);
     }
