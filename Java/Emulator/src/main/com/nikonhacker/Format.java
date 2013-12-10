@@ -292,17 +292,32 @@ public class Format {
 
     /**
      * Create a file filter suitable for JFileChooser.setFileFilter()
-     * @param suffix String which all visible files will end with (must include the dot if you mean an extension)
+     * @param suffix String that visible files can end with (must include the dot if you mean an extension) or wildcard in form <startPart>*<endPart>
      * @param description The text accompanying the extension (must include the " (*.xxx)" at the end)
      * @return the filter
      */
-    public static FileFilter createFilter(final String suffix, final String description) {
+    public static FileFilter createFilter(final String mask, final String description) {
+        final int wildcardPosition = mask.indexOf('*');
+        final String startPart;
+        final String suffix;
+
+        if (wildcardPosition != -1) {
+            startPart = mask.substring(0,wildcardPosition-1);
+            suffix = mask.substring(wildcardPosition+1);
+        } else {
+            startPart = null;
+            suffix = mask;
+        }
         return new FileFilter() {
             @Override
             public boolean accept(File f) {
                 if (f != null) {
                     if (f.isDirectory()) {
                         return true;
+                    }
+                    if (startPart != null) {
+                        if (!f.getName().toLowerCase().startsWith(startPart))
+                            return false;
                     }
                     return f.getName().toLowerCase().endsWith(suffix);
                 }
