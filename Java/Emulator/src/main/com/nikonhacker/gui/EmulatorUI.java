@@ -1307,7 +1307,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         JTextField sourceFile = new JTextField();
         JTextField destinationDir = new JTextField();
         FileSelectionPanel sourceFileSelectionPanel = new FileSelectionPanel("Source file", sourceFile, false);
-        sourceFileSelectionPanel.setFileFilter("*.bin", "Firmware file (*.bin)");
+        sourceFileSelectionPanel.setFileFilter(".bin", "Firmware file (*.bin)");
         final JComponent[] inputs = new JComponent[]{
                 sourceFileSelectionPanel,
                 new FileSelectionPanel("Destination dir", destinationDir, true)
@@ -1335,10 +1335,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
         JTextField sourceFile1 = new JTextField();
         JTextField sourceFile2 = new JTextField();
         FileSelectionPanel destinationFileSelectionPanel = new FileSelectionPanel("Destination file", destinationFile, false);
-        destinationFileSelectionPanel.setFileFilter("*.bin", "Encoded firmware file (*.bin)");
+        destinationFileSelectionPanel.setFileFilter(".bin", "Encoded firmware file (*.bin)");
         FileSelectionPanel sourceFile1SelectionPanel = new FileSelectionPanel("Source file 1", sourceFile1, false);
+        // TODO coderat: only suffix filter is possible, no wildcards !
         destinationFileSelectionPanel.setFileFilter("a*.bin", "Decoded A firmware file (a*.bin)");
         FileSelectionPanel sourceFile2SelectionPanel = new FileSelectionPanel("Source file 2", sourceFile2, false);
+        // TODO coderat: only suffix filter is possible, no wildcards !
         destinationFileSelectionPanel.setFileFilter("b*.bin", "Decoded B firmware file (b*.bin)");
         final JComponent[] inputs = new JComponent[]{
                 destinationFileSelectionPanel,
