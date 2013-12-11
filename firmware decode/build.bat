@@ -4,13 +4,14 @@ cd %~dp0
 
 if NOT "%1"=="help" goto start
 echo ################## HELP #######################
-echo Batch building Microsoft .NET projects. Possible usage:
+echo Batch building Microsoft .NET projects without Visual Studio installed.
+echo Possible usage:
 echo.
 echo %~n0             Clean, compile all sources and build .jar
 echo %~n0 clean       Clean
 echo %~n0 help        Show this help
 echo.
-echo NEED: Microsoft .NET framework >=v2 32-bit installed
+echo NEED: Only Microsoft .NET framework >=v4 32-bit installed
 goto :EOF
 
 :start
