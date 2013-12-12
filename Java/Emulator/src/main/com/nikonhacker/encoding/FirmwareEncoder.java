@@ -34,7 +34,8 @@ public class FirmwareEncoder {
         try {
             File outFile = new File(outFilename);
             File outDir = outFile.getParentFile();
-            outDir.mkdirs();
+            if (outDir!=null)
+                outDir.mkdirs();
 
             List<FirmwareFileEntry> entries = new ArrayList<FirmwareFileEntry>();
             for (String inputFilename : inputFilenames) {
@@ -47,13 +48,10 @@ public class FirmwareEncoder {
             }
 
             byte[] packed = FirmwareUtils.pack(entries);
+            byte[] encrypted = FirmwareUtils.xor(packed);
 
-            FirmwareUtils.dumpFile(outFile, packed, 0, packed.length);
+            FirmwareUtils.dumpFile(outFile, encrypted, 0, encrypted.length);
 
-//            byte[] encrypted = NikonUtils.xor(packed);
-//
-//            NikonUtils.dumpFile(outFile, encrypted, 0, encrypted.length);
-//
         } catch (Exception e) {
             throw new FirmwareFormatException(e);
         }
