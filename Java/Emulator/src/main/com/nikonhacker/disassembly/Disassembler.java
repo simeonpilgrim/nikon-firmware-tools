@@ -37,6 +37,7 @@ public abstract class Disassembler {
     private Map<Integer, Symbol> symbols = new HashMap<Integer, Symbol>();
     private Map<Integer, List<Integer>> jumpHints = new HashMap<Integer, List<Integer>>();
     private Map<Integer, List<Integer>> jumpHintOffsets = new HashMap<Integer, List<Integer>>();
+    private Integer entryPoint;
 
     private boolean optionsFileProcessed;
 
@@ -64,7 +65,7 @@ public abstract class Disassembler {
 
     protected void usage() {
         String help =
-                "-e address=name   (not implemented) define entry point symbol\n"
+                "-e address=name   define entry point symbol\n"
                         + "-f range=address  (not implemented) map range of input file to memory address\n"
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
@@ -249,8 +250,8 @@ public abstract class Disassembler {
                         log("option \"-" + option + "\" requires an argument\n");
                         return false;
                     }
-                    debugPrintWriter.println("-" + option + ": not implemented yet!\n");
-                    return false;
+                    entryPoint = Format.parseUnsigned(argument);
+                    break;
 
                 case 'F':
                 case 'f':
@@ -456,7 +457,7 @@ public abstract class Disassembler {
         }
         else {
             // Advanced two pass disassembly, with intermediary structural analysis
-            CodeStructure codeStructure = getCodeStructure(memRanges.first().getStart());
+            CodeStructure codeStructure = getCodeStructure(entryPoint==null ? memRanges.first().getStart() : entryPoint);
             debugPrintWriter.println("Disassembling the code ranges...");
             for (Range range : memRanges) {
                 if (range.getRangeType().isCode()) {
