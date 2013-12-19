@@ -54,23 +54,31 @@ namespace MakePatch
 
                 using (var sw = new StreamWriter(file_b + "_patch.txt"))
                 {
+                    List<Tuple<byte, byte>> chunk = new List<Tuple<byte, byte>>();
+
                     for (int i = 0; i < count; i++)
                     {
                         var ba = a.blocks[i];
                         var bb = b.blocks[i];
 
                         var dataend = ba.Length - 2; // ignore CRC at end of block
-
+                        int last = -1;
                         for (int j = 0; j < dataend; j++)
                         {
                             if (ba[j] != bb[j])
                             {
-                                var patch_s = string.Format("new Patch({0}, 0x{1:X6}, new byte[] {{ 0x{2:X2} }} , new byte[] {{ 0x{3:X2} }} ),", i, j, ba[j], bb[j]);
-                                //var s = string.Format("{0}, 0x{1:X6}, 0x{2:X2}, 0x{3:X2}", i, j, ba[j], bb[j]);
-                                sw.WriteLine(patch_s);
-                                Debug.WriteLine(patch_s);
+                                if (j != last + 1)
+                                {
+                                    OutputChunk(sw, i, chunk, last);
+                                    chunk.Clear();
+                                }
+
+                                chunk.Add(new Tuple<byte, byte>(ba[j], bb[j]));
+                                last = j;
                             }
                         }
+                        OutputChunk(sw, i, chunk, last);
+                        chunk.Clear();
                     }
 
                 }
@@ -80,12 +88,42 @@ namespace MakePatch
             return false;
         }
 
+        private static void OutputChunk(StreamWriter sw, int fileId, List<Tuple<byte, byte>> chunk, int last)
+        {
+            if (chunk.Count == 0) return;
+
+            int count = chunk.Count -1;
+            var addr = last - count;
+            var sba = new StringBuilder();
+            var sbb = new StringBuilder();
+
+            for (int i = 0; i <= count; i++)
+            {
+                sba.AppendFormat("0x{0:X2}", chunk[i].Item1);
+                sbb.AppendFormat("0x{0:X2}", chunk[i].Item2);
+                if (i != count)
+                {
+                    sba.Append(", ");
+                    sbb.Append(", ");
+                }
+
+            }
+
+            var patch_s = string.Format("new Patch({0}, 0x{1:X6}, new byte[] {{ {2} }} , new byte[] {{ {3} }} ),", fileId, addr, sba.ToString(), sbb.ToString());
+            
+            sw.WriteLine(patch_s);
+            Debug.WriteLine(patch_s);
+        }
+
+
+
         static void Usage()
         {
             Console.WriteLine("FirmwarePatch {0}.{1}", 1, 2);
             Console.WriteLine("  Usage:");
             Console.WriteLine("  FirmwarePatch [firmware orig] [firmware new]");
-            Console.WriteLine();
+            Console.WriteLine("    Output is [firmware new]patch.txt");
+            Console.WriteLine("");
         }
     }
 }

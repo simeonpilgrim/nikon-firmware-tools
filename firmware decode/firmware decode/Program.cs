@@ -40,9 +40,11 @@ namespace Nikon_Decode
             //DecodeNKLDFile(@"C:\Dev\libgphoto2-2.5.1.1\examples\Nikon_func_0xfe63_0x00000000_0x00020000_0x00000000.bin");
 
 
-            // FR_V.DecodeFile(@"C:\Dev\examples\d5100\0x0008A2BC.BIN");
+            //FR_V.DecodeFile(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\d5100\0x0008A2BC.BIN");
 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
+            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
@@ -105,7 +107,10 @@ namespace Nikon_Decode
             //DumpMenusD800(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\b630101a.bin");
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
-            InteractiveTextD7000(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin");
+            //InteractiveTextD7000(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin");
+
+            //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin", 0x79DF9A, 0x79DFB2, 0x79DFBA, 0x79DFC2);
+            //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin", 0x79DFB2, 0x79DFBA, 0x79DFC2);
 
             //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x74e884, 0x74e891, 0x74e896, 0x74e8a5, 0x74e8b2, 0x74e8c0, 0x74e8d1);
             //SearchDumpsForIntDiff(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b720101_.bin", 0xB426d0, 0xB426dd, 0xB426e3, 0xB426f2, 0xB426fd, 0xB42707, 0xB42717);
