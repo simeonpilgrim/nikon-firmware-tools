@@ -101,6 +101,11 @@ public abstract class AbstractMemory implements Memory {
      */
     public int map(int addr, int len, boolean read, boolean write, boolean exec)
             throws MemoryMapException {
+        return map(addr, len, read, write, exec, true);
+    }
+
+    private final int map(int addr, int len, boolean read, boolean write, boolean exec, boolean strictNewAlloc)
+            throws MemoryMapException {
         // Check address is page aligned
         if ((addr % PAGE_SIZE) != 0) {
             MemoryMapException.unalignedAddress(addr);
@@ -127,6 +132,8 @@ public abstract class AbstractMemory implements Memory {
 
             // Check pages aren't already allocated
             if (getPage(pte + i) != null) {
+                if (!strictNewAlloc)
+                    continue;
                 throw new Error("Memory map of already mapped location addr=0x"
                         + Integer.toHexString(addr) + " len=" + len);
             }
@@ -420,7 +427,7 @@ public abstract class AbstractMemory implements Memory {
             // Push bytes to memory
             int address = range.getStart();
             // map address must be page size aligned
-            map(truncateToPage(address), getOffset(address) + rangeSize, true, !isWriteProtected, true);
+            map(truncateToPage(address), getOffset(address) + rangeSize, true, !isWriteProtected, true,false);
             int bytesPushed = 0;
             buffer.position(0);
             while (bytesPushed < rangeSize) {
