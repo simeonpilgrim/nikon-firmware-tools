@@ -16,7 +16,7 @@ public class Dtx extends Disassembler
         Dtx dtx = new Dtx();
         try {
             dtx.execute(args);
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             e.printStackTrace();
             dtx.log("ERROR : " + e.getClass().getName() + ": " + e.getMessage()+"\n");
         } finally {
