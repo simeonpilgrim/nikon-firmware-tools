@@ -58,7 +58,7 @@ public class Dfr extends Disassembler
         Dfr dfr = new Dfr();
         try {
             dfr.execute(args);
-        } catch (Exception e) {
+        } catch (Exception | Error e) {
             e.printStackTrace();
             dfr.log("ERROR : " + e.getClass().getName() + ": " + e.getMessage()+"\n");
         } finally {
