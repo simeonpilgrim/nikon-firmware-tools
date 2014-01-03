@@ -583,8 +583,7 @@ public abstract class CodeAnalyzer {
                 if (StringUtils.isBlank(statement.getCommentString())) {
                     Symbol symbol = symbols.get(int40targetAddress);
                     if (symbol != null) {
-                        statement.setCommentString("" + int40targetAddress);
-//                        statement.comment = symbol.getName();
+                        statement.setCommentString("0x" + Format.asHex(int40targetAddress, 8));
                     }
                 }
             }
