@@ -21,16 +21,29 @@ public class FrCodeAnalyzer extends CodeAnalyzer {
 //                            000ABB72  B42D                         LSL     #2,AC
 //                            000ABB74  00CC                         LD      @(AC,R12),R12
 //                            000ABB76  970C                         JMP     @R12
+//
+// or some elements another way around:
+//   ...
+//   80087696  8B0D            MOV    R0,R13
+//   80087698  B42D           LSL     #2,R13
+//   8008769A  9F8C 8008 CA74 LDI:32  #0x8008CA74,R12
+//   ...
         if (
             ((memory.loadInstruction16(address - 14) & 0xFF00) == 0xF500)   // BNC:D
             &&((memory.loadInstruction16(address - 12) & 0xFF0F) == 0x8B0D) // MOV    R<0>,AC
-            && (memory.loadInstruction16(address - 10) == 0x9F8C) // LDI:32  #0x<base_address>,R12
-            && (memory.loadInstruction16(address - 4) == 0xB42D) // LSL     #2,AC
             && (memory.loadInstruction16(address - 2) == 0x00CC) // LD      @(AC,R12),R12
             && (memory.loadInstruction16(address    ) == 0x970C) // JMP     @R12
             ) {
 
-            int baseAddress = memory.loadInstruction32(address - 8);
+            int baseAddress;
+            if ((memory.loadInstruction16(address - 10) == 0x9F8C)     // LDI:32  #0x<base_address>,R12
+                && (memory.loadInstruction16(address - 4) == 0xB42D)) {// LSL     #2,AC
+                baseAddress = memory.loadInstruction32(address - 8);
+            } else if ((memory.loadInstruction16(address - 10) == 0xB42D) // LSL     #2,AC
+                && (memory.loadInstruction16(address - 8) == 0x9F8C)) {   // LDI:32  #0x<base_address>,R12
+                baseAddress = memory.loadInstruction32(address - 6);
+            } else 
+                return null;
             
             // Short version (size <= 0xF) : 000ABB66  A850                         CMP     #0x5,R<0>   ; number_of_elements
             if (   ((memory.loadInstruction16(address - 16) & 0xFF00) == 0xA800) // comparing max value with register <n'>
