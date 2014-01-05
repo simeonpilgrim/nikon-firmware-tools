@@ -172,6 +172,8 @@ public class FrStatement extends Statement {
         int tmp;
         int pos;
 
+        boolean writeDirection = false; // for memory operations
+
         decodedImm = imm;
         decodedRiRsFs = ri_rs_fs;
         decodedRjRtFt = rj_rt_ft;
@@ -229,6 +231,59 @@ public class FrStatement extends Statement {
                     break;
                 case 'F':
                     currentBuffer.append(FrCPUState.registerLabels[FrCPUState.FP]);
+                    break;
+                case 'm':   // for use with E, H, G
+                    writeDirection = true;
+                    break;
+                case 'G': // load 32-bit word
+                case 'H': // load 16-bit value
+                case 'E': // load 8-bit value
+                    if (context.cpuState.isRegisterDefined(decodedRjRtFt))
+                    {
+                        final int addr = context.cpuState.getReg(decodedRjRtFt);
+                        currentBuffer.append('(' + Format.asHex(addr, 8)+')');
+                        /*
+                            coderat: This is heuristic evaluation, so use loadInstruction...() functions for
+                                     memory access, because I do not want memory auto-expansion here
+                         */
+                        if (writeDirection) {
+                            currentBuffer.append('=');
+                            if (context.cpuState.isRegisterDefined(decodedRiRsFs)) {
+                                if (formatChar=='E')
+                                    tmp = 2;
+                                else if (formatChar=='H')
+                                    tmp = 4;
+                                else
+                                    tmp = 8;
+                                currentBuffer.append(Format.asHex(context.cpuState.getReg(decodedRiRsFs), tmp));
+                            }
+                            break;
+                        }
+                        // exclude from analyse non-existing addresses
+                        if (context.memory.isMapped(addr)) {
+                            // load value
+                            final int value;
+                            if (formatChar =='E') {
+                                value = context.memory.loadInstruction8(addr);
+                                tmp = 2;
+                            } else {
+                                if (formatChar =='H') {
+                                    // exclude from analyse non-existing addresses
+                                    if (!context.memory.isMapped(addr+1))
+                                        break;
+                                    value = context.memory.loadInstruction16(addr);
+                                    tmp = 4;
+                                } else {
+                                    // exclude from analyse non-existing addresses
+                                    if (!context.memory.isMapped(addr+3))
+                                        break;
+                                    tmp = 8;
+                                    value = context.memory.loadInstruction32(addr);
+                                }
+                            }
+                            currentBuffer.append(':'+ Format.asHex(value, tmp));
+                        }
+                    }
                     break;
                 case 'M':
                     currentBuffer.append("ILM");
@@ -450,6 +505,42 @@ public class FrStatement extends Statement {
                     break;
                 case 'x':
                     r = FrCPUState.NOREG;
+                    break;
+                case 'E':
+                case 'G':
+                case 'H':
+                    if (updateRegisters) {
+                        if (context.cpuState.isRegisterDefined(decodedRjRtFt)) {
+                            final int addr = context.cpuState.getReg(decodedRjRtFt);
+                            /*
+                                coderat: This is heuristic evaluation, so use loadInstruction...() functions for
+                                         memory access, because I do not want memory auto-expansion here
+                             */
+                            // exclude from analyse non-existing addresses
+                            if (context.memory.isMapped(addr)) {
+                                // load value
+                                if (s =='G') {
+                                    // exclude from analyse non-existing addresses
+                                    if (context.memory.isMapped(addr+3)) {
+                                        context.cpuState.setRegisterDefined(decodedRiRsFs);
+                                        context.cpuState.setReg(decodedRiRsFs, context.memory.loadInstruction32(addr));
+                                        break;
+                                    }
+                                } else if (s =='H') {
+                                    if (context.memory.isMapped(addr+1)) {
+                                        context.cpuState.setRegisterDefined(decodedRiRsFs);
+                                        context.cpuState.setReg(decodedRiRsFs, context.memory.loadInstruction16(addr));
+                                        break;
+                                    }
+                                } else {
+                                    context.cpuState.setRegisterDefined(decodedRiRsFs);
+                                    context.cpuState.setReg(decodedRiRsFs, context.memory.loadInstruction8(addr));
+                                    break;
+                                }
+                            }
+                      }
+                      context.cpuState.setRegisterUndefined(decodedRiRsFs);
+                    }
                     break;
                 default:
                     System.err.println("bad action '" + s + "' in " + instruction + " at " + Format.asHex(context.cpuState.pc, 8));

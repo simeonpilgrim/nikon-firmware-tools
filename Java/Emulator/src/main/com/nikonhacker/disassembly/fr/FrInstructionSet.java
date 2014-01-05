@@ -312,7 +312,60 @@ public class FrInstructionSet {
             context.cycleIncrement = 1;
         }
     };
-
+    public static final SimulationCode ldSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.cpuState.setReg(statement.ri_rs_fs, context.memory.load32(context.cpuState.getReg(statement.rj_rt_ft)));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_B;
+        }
+    };
+    public static final SimulationCode lduhSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned16(context.cpuState.getReg(statement.rj_rt_ft)));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_B;
+        }
+    };
+    public static final SimulationCode ldubSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned8(context.cpuState.getReg(statement.rj_rt_ft)));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_B;
+        }
+    };
+    public static final SimulationCode stSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.memory.store32(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_A;
+        }
+    };
+    public static final SimulationCode sthSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.memory.store16(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_A;
+        }
+    };
+    public static final SimulationCode stbSimulationCode = new SimulationCode() {
+        @Override
+        public void simulate(Statement statement, StatementContext context) throws EmulationException {
+            context.memory.store8(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
+            /* No change to NZVC */
+            context.cpuState.pc += 2;
+            context.cycleIncrement = FrInstructionSet.CYCLES_A;
+        }
+    };
     /**
      * Instruction types (formats)
      */
@@ -380,8 +433,8 @@ public class FrInstructionSet {
      * Main instruction map
      * These are the official names from Fujitsu's spec
      */
-    private static void addBaseInstructions() {
-/*      new FrInstruction( encod ,  mask , format             ,nX,nY, name,     displayFmt,     action     , Type                     ,isCond, delay, simulationCode) */
+    private static void addBaseInstructions(Set<OutputOption> options) {
+/*                         encode, mask,   new FrInstruction( format             ,nX,nY, name,     displayFmt,     action     , Type                     ,isCond, delay, simulationCode) */
         /* LD @(R13,Rj), Ri */
         fillInstructionMap(0x0000, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LD",     "@(A&j),i",     "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
@@ -424,35 +477,29 @@ public class FrInstructionSet {
             }
         }));
         /* LD @Rj, Ri */
-        fillInstructionMap( 0x0400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LD",     "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.cpuState.setReg(statement.ri_rs_fs, context.memory.load32(context.cpuState.getReg(statement.rj_rt_ft)));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_B;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x0400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LD",     "@j,i;G",      "G"       , Instruction.FlowType.NONE, false, false, ldSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x0400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LD",     "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, ldSimulationCode
+            ));
+        }
         /* LDUH @Rj, Ri */
-        fillInstructionMap( 0x0500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUH",   "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned16(context.cpuState.getReg(statement.rj_rt_ft)));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_B;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x0500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUH",   "@j,i;H",      "H"       , Instruction.FlowType.NONE, false, false, lduhSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x0500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUH",   "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, lduhSimulationCode
+            ));
+        }
         /* LDUB @Rj, Ri */
-        fillInstructionMap( 0x0600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUB",   "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.cpuState.setReg(statement.ri_rs_fs, context.memory.loadUnsigned8(context.cpuState.getReg(statement.rj_rt_ft)));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_B;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x0600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUB",   "@j,i;E",      "E"       , Instruction.FlowType.NONE, false, false, ldubSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x0600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUB",   "@j,i;Ju",      "iw"       , Instruction.FlowType.NONE, false, false, ldubSimulationCode
+            ));
+        }
         /* LD @R15+, Ri */
         fillInstructionMap( 0x0700, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 0, "LD",     "@S+,i",        "iwSw"     , Instruction.FlowType.NONE, false, false, ldR15RiSimulationCode));
         /* MOV Ri, PS */
@@ -568,35 +615,29 @@ public class FrInstructionSet {
             }
         }));
         /* ST Ri, @Rj */
-        fillInstructionMap( 0x1400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "ST",     "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.memory.store32(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_A;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x1400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "ST",     "i,@j;mG",      ""         , Instruction.FlowType.NONE, false, false, stSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x1400, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "ST",     "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, stSimulationCode
+            ));
+        }
         /* STH Ri, @Rj */
-        fillInstructionMap( 0x1500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STH",    "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.memory.store16(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_A;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x1500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STH",    "i,@j;mH",      ""         , Instruction.FlowType.NONE, false, false, sthSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x1500, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STH",    "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, sthSimulationCode
+            ));
+        }
         /* STB Ri, @Rj */
-        fillInstructionMap( 0x1600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STB",    "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
-            @Override
-            public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                context.memory.store8(context.cpuState.getReg(statement.rj_rt_ft), context.cpuState.getReg(statement.ri_rs_fs));
-                /* No change to NZVC */
-                context.cpuState.pc += 2;
-                context.cycleIncrement = FrInstructionSet.CYCLES_A;
-            }
-        }));
+        if (options.contains(OutputOption.MEMORY)) {
+            fillInstructionMap( 0x1600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STB",    "i,@j;mE",      ""         , Instruction.FlowType.NONE, false, false, stbSimulationCode
+            ));
+        } else {
+            fillInstructionMap( 0x1600, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "STB",    "i,@j;Ju",      ""         , Instruction.FlowType.NONE, false, false, stbSimulationCode
+            ));
+        }
         /* ST Ri, @-R15 */
         fillInstructionMap( 0x1700, 0xFFF0, new FrInstruction(InstructionFormat.E, 0, 0, "ST",     "i,@-S",        "Sw"       , Instruction.FlowType.NONE, false, false, stRiR15SimulationCode));
         /* MOV PS, Ri */
@@ -2222,7 +2263,7 @@ public class FrInstructionSet {
             instructionMap[i] = defaultInstruction;
         }
         // Then overwrite with actual instructions
-        addBaseInstructions();
+        addBaseInstructions(options);
         // And optionally replace some opcodes with alternate versions
         if (options.contains(OutputOption.STACK))
             replaceAltStackInstructions();
