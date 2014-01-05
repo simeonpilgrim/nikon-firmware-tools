@@ -29,7 +29,7 @@ public enum OutputOption {
     ORDINAL     ("ordinalnames",    "(if structure is enabled) generate names based on ordinal numbers instead of address", false),
     PARAMETERS  ("parameters",      "(if structure is enabled) try to resolve not only functions but also parameters", false),
     INT40       ("int40",           new String[]{"(if structure is enabled) resolve calls through INT40 wrapper", null}, true),
-    MEMORY      ("memory",          new String[]{null, "(if structure is enabled) try to use memory content to resolve indirect addressing"}, true),
+    MEMORY      ("memory",          "(if structure is enabled) try to use memory content to resolve indirect addressing", true),
 
     //FILEMAP     ("filemap",         "write file map"),
     //MEMORYMAP   ("memorymap",       "write memory map"),
