@@ -1194,7 +1194,8 @@
 # Unknown :
 #-m 0x008818A0-0x0088389F=DATA:L
 
--m 0x008838A0-0x00889B17=CODE
+# it is at wrong address
+#-m 0x008838A0-0x00889B17=CODE
 
 # Unknown
 #-m 0x00889B18-0x008a64af=DATA:L
