@@ -302,7 +302,7 @@
 #-m 0x000DC304-0x000DC30F=DATA:L
 
 # Table defining uITRON Tasks (32b header + Table of 0x3C records of 0x1C bytes)
-#-m 0x000DC310-0x000DC9A3=DATA:L
+-m 0x000DC310-0x000DC9A3=DATA:L
 
 # Unknown
 #-m 0x000DC9A4-0x000DD357=DATA:L
