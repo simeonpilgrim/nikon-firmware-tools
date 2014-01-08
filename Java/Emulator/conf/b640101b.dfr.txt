@@ -10,7 +10,7 @@
 
 ############################### File map: D5100
 -i 0x00040000-0x00BFFFFF=0x00000000
- 
+
 ############################### Memory map:
 
 -m 0x00040000-0x00040709=CODE
@@ -37,9 +37,12 @@
 #-m 0x000504E2-0x0005425F=DATA:L
 # FotoNation RedEye library Copyright :
 #-m 0x00054200-0x00054255=DATA:L
-#-m 0x00054256-0x00055eeb=DATA:L
-#JPEG till the end ?
-#-m 0x00055eec-0x00081d5f=DATA:L
+# PictBridge JPEG
+#-m 0x00054258-0x00055de3=DATA:L
+# Timezone JPEGs
+#-m 0x00055de4-0x0008A120=DATA:L
+# ?
+#-m 0x0008A121-0x00081d5f=DATA:L
 #JPEGs
 #-m 0x00081d60-0x0008a15f=DATA:L
 # Unknown :
@@ -2852,6 +2855,7 @@
 -s 0x17421C=Read_GRDx1D
 -s 0x17438E=Tsk2E
 -s 0x176572=LoadTimeZoneJpg
+-s 0x176602=ShowPictBridgePicture (R4 [IN unknown], R5 [IN unknown])
 -s 0x178DDA=setup_screen_ptrs_A
 -s 0x178E54=setup_screen_ptrs_B
 -s 0x178ED6=setup_screen_ptrs_C
