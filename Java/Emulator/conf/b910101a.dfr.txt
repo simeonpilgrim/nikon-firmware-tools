@@ -197,12 +197,12 @@
 -s 0x13A428=AudioDMAC_Start_Ch1
 -s 0x13A5CC=AudioDMAC_Start_Ch4
 -s 0x13A76A=AudioDMAC_Start_Ch5
--s 0x13AD76=Audio_Debug
+-s 0x13AD76=Audio_Debug(R4 [IN message])
 -s 0x13ADBC=DmaT_PostMessage
 -s 0x13AE00=DmaT_OnMsg
 -s 0x13B19A=AudioDmaTask_OnMessage_InitRec
 -s 0x13F62C=AudioApi_OnNotifyCompletion
--s 0x1A228E=Debug
+-s 0x1A228E=DebugPrint(R4 [IN message] /* mostly for video */)
 -s 0x1AABCE=Axis_StartTask
 -s 0x1AAC1C=Axis_ExitTask
 -s 0x1AAC54=Axis_Init
@@ -225,7 +225,8 @@
 -s 0x1ADB58=Axis_SetAdjustParam
 -s 0x1ADD08=Axis_ReadAdjustDataB
 -s 0x1ADE2C=Axis_ReadAdjustData
--s 0x1AE3F2=Axis_Debug
+-s 0x1AE3F2=Axis_Debug(R4 [IN message])
+-s 0x1C9E98=HDMIDebugPrint(R4 [IN message])
 
 # for Emulator
 -s 0xD3938=tblTaskData
