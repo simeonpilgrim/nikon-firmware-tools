@@ -372,25 +372,25 @@ public class FrInstructionSet {
     public enum InstructionFormat {
         /** Layout of type A instructions is as follows : <pre>[   op          |  Rj   |  Ri   ]</pre> */
         A,
-    
+
         /** Layout of type B instructions is as follows : <pre>[   op  |       x       |  Ri   ]</pre> */
         B,
-    
+
         /** Layout of type C instructions is as follows : <pre>[   op          |   x   |  Ri   ]</pre> */
         C,
-    
+
         /** Layout of type D instructions is as follows : <pre>[   op          |       x       ]</pre> */
         D,
-    
+
         /** Layout of type E instructions is as follows : <pre>[   op                  |  Ri   ]</pre> */
         E,
-    
+
         /** Layout of type F instructions is as follows : <pre>[   op    |     offset / 2      ]</pre> */
         F,
-    
+
         /** Layout of type Z instructions is as follows : <pre>[   op                          ]</pre> */
         Z,
-    
+
         /** Layout for data reading is as follows :       <pre>[               x               ]</pre> */
         W
     }
@@ -445,7 +445,7 @@ public class FrInstructionSet {
                 context.cycleIncrement = CYCLES_B;
             }
         }));
-		
+
         /* LDUH @(R13,Rj), Ri */
         fillInstructionMap( 0x0100, 0xFF00, new FrInstruction(InstructionFormat.A, 0, 0, "LDUH",   "@(A&j),i",     "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
@@ -896,9 +896,9 @@ public class FrInstructionSet {
         /* LDM1 (reglist) */
         fillInstructionMap( 0x8D00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "LDM1",   "y",            "Sw"       , Instruction.FlowType.NONE, false, false, ldm1SimulationCode));
         /* STM0 (reglist) */
-        fillInstructionMap( 0x8E00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM0",   "z",           "Sw"       , Instruction.FlowType.NONE, false, false, stm0SimulationCode));
+        fillInstructionMap( 0x8E00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM0",   "xz",           "Sw"       , Instruction.FlowType.NONE, false, false, stm0SimulationCode));
         /* STM1 (reglist) */
-        fillInstructionMap( 0x8F00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM1",   "y",           "Sw"       , Instruction.FlowType.NONE, false, false, stm1SimulationCode));
+        fillInstructionMap( 0x8F00, 0xFF00, new FrInstruction(InstructionFormat.D, 0, 0, "STM1",   "xy",           "Sw"       , Instruction.FlowType.NONE, false, false, stm1SimulationCode));
         /* BORL #u4, @Ri (u4: 0 to 0FH) */
         fillInstructionMap( 0x9000, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "BORL",   "#u,@i;Iu",     ""         , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
@@ -1663,7 +1663,7 @@ public class FrInstructionSet {
         fillInstructionMap( 0xB730, 0xFFF0, new FrInstruction(InstructionFormat.A, 0, 0, "MOV",    "h,i",          "iw"       , Instruction.FlowType.NONE, false, false, movRsRiSimulationCode));
         fillInstructionMap( 0xB740, 0xFFF0, new FrInstruction(InstructionFormat.A, 0, 0, "MOV",    "h,i",          "iw"       , Instruction.FlowType.NONE, false, false, movRsRiSimulationCode));
         fillInstructionMap( 0xB750, 0xFFF0, new FrInstruction(InstructionFormat.A, 0, 0, "MOV",    "h,i",          "iw"       , Instruction.FlowType.NONE, false, false, movRsRiSimulationCode));
-        
+
         /* ASR #u4, Ri */
         fillInstructionMap( 0xB800, 0xFF00, new FrInstruction(InstructionFormat.C, 0, 0, "ASR",    "#d,i",         "iw"       , Instruction.FlowType.NONE, false, false, new SimulationCode() {
             @Override
@@ -2169,7 +2169,7 @@ public class FrInstructionSet {
             }
         }));
     }
-	
+
 
     /**
      * These are replacement names for all stack-related operations

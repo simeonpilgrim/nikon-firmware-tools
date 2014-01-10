@@ -435,19 +435,30 @@ public class FrStatement extends Statement {
                     /* register list */
                     currentBuffer.append(fmt_par);
                     boolean first = true;
-                    for (int i = 0; i < 8; ++i)
-                    {
-                        if ((decodedImm & (1 << i)) != 0)
-                        {
-                            if (first)
-                                first = false;
-                            else
-                                currentBuffer.append(",");
 
-                            if ((decodedImm & 0x100) != 0)
+                    if ((decodedImm & 0x100) != 0) {
+                        for (int i = 7; i >= 0; i--)
+                        {
+                            if ((decodedImm & (1 << i)) != 0)
+                            {
+                                if (first)
+                                    first = false;
+                                else
+                                    currentBuffer.append(",");
                                 currentBuffer.append(FrCPUState.registerLabels[c + 7 - i]);
-                            else
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < 8; ++i)
+                        {
+                            if ((decodedImm & (1 << i)) != 0)
+                            {
+                                if (first)
+                                    first = false;
+                                else
+                                    currentBuffer.append(",");
                                 currentBuffer.append(FrCPUState.registerLabels[c + i]);
+                            }
                         }
                     }
                     currentBuffer.append(fmt_ens);
