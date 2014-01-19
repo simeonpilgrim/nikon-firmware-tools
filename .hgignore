@@ -1,0 +1,18 @@
+syntax: glob
+*.suo
+*.user
+dfr/dfr/bin/
+dfr/dfr/obj/
+firmware decode/firmware decode/bin
+firmware decode/firmware decode/obj
+JpegDetails/JpegDetails/obj
+JpegDetails/JpegDetails/bin
+Firmware Patch/Firmware Patch/bin/
+Firmware Patch/Firmware Patch/obj/
+Java/Emulator/ant-classes/
+Java/Emulator/ant-gen/
+Java/Emulator/dist/jar
+Java/Emulator/batch_build/
+Java/Emulator/.idea/
+Firmware Patch/MakePatch/bin
+Firmware Patch/MakePatch/obj
