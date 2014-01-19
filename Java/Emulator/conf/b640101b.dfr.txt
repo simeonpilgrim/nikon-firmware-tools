@@ -1428,7 +1428,6 @@
 -s 0xB090E=call_sub_B15FA
 -s 0xB091C=call_sub_B1710
 -s 0xB092A=call_sub_B17D0
--s 0xB09F2=__pure_virtual_called
 -s 0xB0A00=call_sub_B43FA
 -s 0xB0A0E=call_sub_B440C
 -s 0xB0A62=clear_mem_8f98xxxx
@@ -1618,12 +1617,10 @@
 -s 0xBE6BC=ccall_sub_B11EC
 -s 0xBE75E=ccall_sub_B14DC
 -s 0xBE76C=ccall_sub_B15FA
--s 0xBE77A=__pure_virtual_called_0
 -s 0xBE788=ccall_sub_B17D0
 -s 0xBE796=call_sub_B0938
 -s 0xBE7A4=call_sub_B09A2
 -s 0xBE7B2=call_sub_B09BA
--s 0xBE85C=__pure_virtual_called_1
 -s 0xBE86A=ccall_sub_B43FA
 -s 0xBE878=ccall_sub_B440C
 -s 0xBE950=call_scrn_videomode_xx
@@ -1651,8 +1648,6 @@
 -s 0xBEFBC=eMovie_TTR_Cancel
 -s 0xBEFFA=eMovie_TTR_Pause
 -s 0xBF032=eMovie_TTR_Resume
--s 0xBF0D2=__pure_virtual_called_2
--s 0xBF0E0=__pure_virtual_called_3
 -s 0xBF0EE=nullsub_95
 -s 0xBF0F0=nullsub_39
 -s 0xBF0F2=call_call_call_start_task_x38_a
@@ -1739,7 +1734,6 @@
 -s 0xC19A0=flag_x30_clr_x10000_set_x4000
 -s 0xC19BC=flag_x30_clr_x10000_set_x8000
 -s 0xC1A9C=req_AudioMsg09
--s 0xC1AC0=__pure_virtual_called_4
 -s 0xC1ACE=call_wait_FlagEvent0x2D
 -s 0xC1D46=req_Tsk0F_action04_Tsk0C_Tsk0D
 -s 0xC1E4A=call_set_LED_ON
@@ -1761,7 +1755,6 @@
 -s 0xC2ECE=Play_TryFinal
 -s 0xC2EE4=Play_TryPauseAck
 -s 0xC30DE=call_sub_BDDF0
--s 0xC31C0=__pure_virtual_called_5
 -s 0xC31CE=call_sub_BDEF4
 -s 0xC3230=vid_checkWeAreHappy_xx
 -s 0xC3298=Play_Stop_and_Final
@@ -1786,7 +1779,6 @@
 -s 0xC3C66=call_sub_C44C2
 -s 0xC3C78=cccall_sub_1F34B8
 -s 0xC3C86=cccall_sub_1F354C
--s 0xC3CA6=__pure_virtual_called_6
 -s 0xC3CF0=call_sub_1E690C_iff
 -s 0xC3D0E=make_vid_filename
 -s 0xC3DA4=setup_vid_settings
@@ -2767,7 +2759,6 @@
 -s 0x15B83E=buildFileOutputName
 -s 0x15C396=get_FileSeqNumber
 -s 0x15C7C8=set_8F86BF40
--s 0x15CF02=abort
 -s 0x15DA90=Delete_Image?
 -s 0x15FDA0=GetTotalImageCount
 -s 0x1632F2=buildFileOutputName_x1
@@ -3419,8 +3410,6 @@
 -s 0x1C00CE=hdmi_init_overlay_buffer
 -s 0x1C015A=image720_480_filling
 -s 0x1C017C=hdmi_1920_1020_buffer_init
--s 0x1C019E=__pure_virtual_called_7
--s 0x1C01AC=__pure_virtual_called_8
 -s 0x1C0408=start00_4004_action
 -s 0x1C05C0=incress_monitor_brightness
 -s 0x1C06B2=wait_event_23_x1000
@@ -4319,7 +4308,6 @@
 -s 0x1F06BA=tsk04_Type1
 -s 0x1F06D8=tsk04_Type2
 -s 0x1F06F4=tsk04_Type3
--s 0x1F0738=__pure_virtual_called_10
 -s 0x1F0754=tsk04_Type4
 -s 0x1F0772=tsk04_Type7
 -s 0x1F0790=tsk04_Type9
@@ -4559,7 +4547,6 @@
 -s 0x201B18=Draw_Menu_UI
 -s 0x201E0A=draw_element12
 -s 0x201EAA=draw_current_menu_item
--s 0x202234=__pure_virtual_called_11
 -s 0x202242=call_sub_1BB262
 -s 0x203DFE=I2C_send_recv
 -s 0x203F20=Tsk0x_PostMsg_1
@@ -4858,12 +4845,6 @@
 -s 0x2CDB0C=BFT100_s3_2CDB0C
 -s 0x2CDCC8=nullsub_61
 -s 0x2CDCCA=BFT100_s1_2CDCCA
--s 0x2CDCFC=__pure_virtual_called_17
--s 0x2CDD0A=__pure_virtual_called_18
--s 0x2CDD18=__pure_virtual_called_19
--s 0x2CDD26=__pure_virtual_called_20
--s 0x2CDD34=__pure_virtual_called_21
--s 0x2CDD42=__pure_virtual_called_22
 -s 0x2CDD50=BFT99_s1_2CDD50
 -s 0x2CDD72=BFT99_s3
 -s 0x2CDDAC=ResetDefaultSettings
@@ -5331,7 +5312,6 @@
 -s 0x2EE818=BFT69_s4_2EE818
 -s 0x2EE878=BFT69_s8_2EE878
 -s 0x2EE920=BFT69_s3_2EE920
--s 0x2EE936=abort_0
 -s 0x2EE94C=BFT70_s1_2EE94C
 -s 0x2EEA04=BFT70_s8_2EEA04
 -s 0x2EEA5E=BFT70_s3_2EEA5E
@@ -6333,7 +6313,6 @@
 -s 0x34BFB8=draw_SETUP
 -s 0x34C158=Pop_card_err_status
 -s 0x34C73C=render_overlay_menu
--s 0x34C74E=__pure_virtual_called_23
 -s 0x34C75C=BFT314_s2_34C75C
 -s 0x34C76A=BFT181_s2_34C76A
 -s 0x34C778=BFT184_s1_34C778
@@ -6341,7 +6320,6 @@
 -s 0x34C794=BFTxx_s2_34C794
 -s 0x34C7A2=BFTxx_s2_34C7A2
 -s 0x34C7B0=call_sub_34F3E8
--s 0x34C7BE=__pure_virtual_called_24
 -s 0x34C7CC=BFT204_s2_34C7CC
 -s 0x34C7DA=Straighten_menu_interface
 -s 0x34C7E8=BFT253_s2
@@ -6367,7 +6345,6 @@
 -s 0x34C8E8=BFT323_s1_34C8E8
 -s 0x34C8F6=BFT323_s3_34C8F6
 -s 0x34C904=BFT213_s2_34C904
--s 0x34C912=__pure_virtual_called_25
 -s 0x34C920=BFT325_s1_34C920
 -s 0x34C92E=BFT325_s3_34C92E
 -s 0x34C93C=call_sub_345DEC

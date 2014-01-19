@@ -4,7 +4,9 @@
 # startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b630102a.dfr.txt -o b630102a.asm b630102a.bin
 
 ############################### File map: D800
--i 0x00040000-0x00EFFFFF=0x00000000
+-i 0x00040000-0x000DFFFF=0x00000000
+-i 0x00100000-0x0087FFFF=0x000C0000
+-i 0x00C00000-0x0103FFFF=0x009E0000
 
 ############################### Memory map:
 
