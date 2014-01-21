@@ -662,22 +662,22 @@ namespace Nikon_Decode
 
             internal void Dump(TextWriter tw, string p)
             {
-                //if (firmConsts.BFT_start != 0)
-                //{
-                //    tw.WriteLine("{0}BigFuncTable: 0x{1:X8} {2}", p, mem_loc, (mem_loc - firmConsts.BFT_start) / size_of);
-                //    tw.WriteLine("{0}  field_00: 0x{1:X4}", p, field_0);
-                //    tw.WriteLine("{0}  field_02: 0x{1:X4}", p, field_2);
-                //    tw.WriteLine("{0}  field_04: 0x{1:X8} - {2}", p, field_4, ResolveFuncName(field_4));
-                //    tw.WriteLine("{0}  field_08: 0x{1:X8} - {2}", p, field_8, ResolveFuncName(field_8));
-                //    tw.WriteLine("{0}  field_0C: 0x{1:X8} - {2}", p, field_C, ResolveFuncName(field_C));
-                //    tw.WriteLine("{0}  field_10: 0x{1:X8} - {2}", p, field_10, ResolveFuncName(field_10));
-                //    tw.WriteLine("{0}  field_14: 0x{1:X8} - {2}", p, field_14, ResolveFuncName(field_14));
-                //    tw.WriteLine("{0}  field_18: 0x{1:X8} - {2}", p, field_18, ResolveFuncName(field_18));
-                //    tw.WriteLine("{0}  field_1C: 0x{1:X8} - {2}", p, field_1C, ResolveFuncName(field_1C));
-                //    tw.WriteLine("{0}  field_20: 0x{1:X8} - {2}", p, field_20, ResolveFuncName(field_20));
-                //    tw.WriteLine("{0}  field_24: 0x{1:X8} - {2}", p, field_24, ResolveFuncName(field_24));
-                //    tw.WriteLine("{0}  field_28: 0x{1:X8} - {2}", p, field_28, ResolveFuncName(field_28));
-                //}
+                if (firmConsts.BFT_start != 0)
+                {
+                    tw.WriteLine("{0}BigFuncTable: 0x{1:X8} {2}", p, mem_loc, (mem_loc - firmConsts.BFT_start) / size_of);
+                    tw.WriteLine("{0}  field_00: 0x{1:X4}", p, field_0);
+                    tw.WriteLine("{0}  field_02: 0x{1:X4}", p, field_2);
+                    if(field_4 != 0 )tw.WriteLine("{0}  ptr_1 (setup): 0x{1:X8} - {2}", p, field_4, ResolveFuncName(field_4));
+                    if (field_8 != 0) tw.WriteLine("{0}  ptr_2: 0x{1:X8} - {2}", p, field_8, ResolveFuncName(field_8));
+                    if (field_C != 0) tw.WriteLine("{0}  ptr_3 (action): 0x{1:X8} - {2}", p, field_C, ResolveFuncName(field_C));
+                    if (field_10 != 0) tw.WriteLine("{0}  ptr_4: 0x{1:X8} - {2}", p, field_10, ResolveFuncName(field_10));
+                    if (field_14 != 0) tw.WriteLine("{0}  ptr_5: 0x{1:X8} - {2}", p, field_14, ResolveFuncName(field_14));
+                    if (field_18 != 0) tw.WriteLine("{0}  ptr_6: 0x{1:X8} - {2}", p, field_18, ResolveFuncName(field_18));
+                    if (field_1C != 0) tw.WriteLine("{0}  ptr_7: 0x{1:X8} - {2}", p, field_1C, ResolveFuncName(field_1C));
+                    if (field_20 != 0) tw.WriteLine("{0}  ptr_8 (check): 0x{1:X8} - {2}", p, field_20, ResolveFuncName(field_20));
+                    if (field_24 != 0) tw.WriteLine("{0}  ptr_9: 0x{1:X8} - {2}", p, field_24, ResolveFuncName(field_24));
+                    tw.WriteLine("{0}  field_28: 0x{1:X8}", p, field_28);
+                }
             }
         }
 
