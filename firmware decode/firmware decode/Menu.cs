@@ -62,12 +62,12 @@ namespace Nikon_Decode
 
                 DFR_file = @"C:\Users\spilgrim\Downloads\FrEmu\b640101b.dfr.txt";
 
-                MenuRootList = new long[] { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870, 
-                                     0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0, 
+                MenuRootList = new long[] { 0x8F9CA140, 0x8F9CE6A0, 0x8F9C8F50, 0x8F9CFBC0, 0x8F9CD060, 0x8F9CE870,
+                                     0x8F9CC210, 0x8F9CA060, 0x8F9C9FB0, 0x8F9CCF70, 0x8F9CE700, 0x8F9CF7F0,
                                      0x8F9CA120, 0x8F9CA020, 0x8F9C9F30, 0x8F9C9D20, 0x8F9C9C10, 0x8F9C9B90,
                                      0x8F9C9B20, 0x8F9C9AA0, 0x8F9C9860, 0x8F9C9ED0, 0x8F9C9C90, 0x8F9C9800,
                                      0x8F9C97C0, 0x8F9C9750, 0x8F9C96D0, 0x8F9C9650, 0x8F9C8DB0, 0x8F9C8CD0,
-                                     0x8F9C8A30, 0x8F9C9560, 0x8F9C95E0, 0x8F9CC120, 0x8F9C8540, 0x8F9C8DF0, 
+                                     0x8F9C8A30, 0x8F9C9560, 0x8F9C95E0, 0x8F9CC120, 0x8F9C8540, 0x8F9C8DF0,
                                      0x8F9C8420, 0x8F9C7C70, 0x8F9C7A30, 0x8F9C7A60, 0x8F9C72A0, 0x8F9C71E0,
                                      0x8F9C7190, 0x8F9C6F90, 0x8F9C6F70, 0x8F9C6F20, 0x8F9C6EE0, 0x8F9C6EA0,
                                      0x8F9C6E80, 0x8F9C6E60, 0x8F9C6E40, 0x8F9C6E20, 0x8F9C6E00, 0x8F9C6DE0,
@@ -79,8 +79,8 @@ namespace Nikon_Decode
         {
             public D3S_0101_Const()
             {
-                BFT_start = 0; // not known yet.
-                BFT_end = 0; // not known yet.
+                BFT_start = 0x877E55D8;
+                BFT_end = 0x877E7E77; // don't know exactly, so take max possible
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x46ABC8;
@@ -93,15 +93,15 @@ namespace Nikon_Decode
                 DFR_file = @"";
 
                 MenuRootList = new long[] { 0x877E8348, 0x877E8CB8, 0x877EA0A8, 0x877EA088, 0x877ECAD8,
-                                0x877ECA28, 0x877EF9C8, 0x877F1868, 0x877F2E68, 0x877EF908, 0x877EF818, 
-                                0x877EF578, 0x877EF348, 0x877EF1E8, 0x877EF158, 0x877EF0B8, 0x877EEE48, 
-                                0x877EEF18, 0x877EEEB8, 0x877EEED8, 0x877E9C98, 0x877E9BE8, 0x877E9B08, 
-                                0x877E9A58, 0x877E9948, 0x877E9878, 0x877E9728, 0x877E96E8, 0x877E9678, 
-                                0x877E95F8, 0x877E9598, 0x877E93E8, 0x877E8FB8, 0x877E9168, 0x877E91E8, 
-                                0x877E9258, 0x877E92D8, 0x877E8F58, 0x877E8F18, 0x877E8E28, 0x877E8EA8, 
+                                0x877ECA28, 0x877EF9C8, 0x877F1868, 0x877F2E68, 0x877EF908, 0x877EF818,
+                                0x877EF578, 0x877EF348, 0x877EF1E8, 0x877EF158, 0x877EF0B8, 0x877EEE48,
+                                0x877EEF18, 0x877EEEB8, 0x877EEED8, 0x877E9C98, 0x877E9BE8, 0x877E9B08,
+                                0x877E9A58, 0x877E9948, 0x877E9878, 0x877E9728, 0x877E96E8, 0x877E9678,
+                                0x877E95F8, 0x877E9598, 0x877E93E8, 0x877E8FB8, 0x877E9168, 0x877E91E8,
+                                0x877E9258, 0x877E92D8, 0x877E8F58, 0x877E8F18, 0x877E8E28, 0x877E8EA8,
                                 0x877E8DA8, 0x877E8D38, 0x877E9358, 0x877E8C78, 0x877E81C8, 0x877E8168,
-                                0x877E8128, 0x877E8018, 0x877E7E78, 0x877E7EC8, 0x877E7F78, 0x877E7CB8, 
-                                0x877E7D18, 0x877E7D38, 0x877E7BB8, 0x877E7BD8, 0x877E7BF8, 0x877E7C18, 
+                                0x877E8128, 0x877E8018, 0x877E7E78, 0x877E7EC8, 0x877E7F78, 0x877E7CB8,
+                                0x877E7D18, 0x877E7D38, 0x877E7BB8, 0x877E7BD8, 0x877E7BF8, 0x877E7C18,
                                 0x877E7C38, 0x877E7C58, 0x877E7C78, 0x877E7C98, 0x877E7CD8, 0x877E7CF8 };
             }
         }
@@ -123,15 +123,15 @@ namespace Nikon_Decode
 
                 DFR_file = @"";
 
-                MenuRootList = new long[] { 0x8F9B5518, 0x8F9BBB48, 0x8F9BB608, 0x8F9BA338, 0x8F9BA0D8, 
-                                0x8F9B82A8, 0x8F9BA158, 0x8F9B7448, 0x8F9B74E8, 0x8F9B7488, 0x8F9B74A8, 
-                                0x8F9B7688, 0x8F9B7728, 0x8F9B77B8, 0x8F9B80E8, 0x8F9B81D8, 0x8F9B7E48, 
-                                0x8F9B7948, 0x8F9B52F8, 0x8F9B2CD8, 0x8F9B2CB8, 0x8F9B2C18, 0x8F9B2AE8, 
-                                0x8F9B2AA8, 0x8F9B2A38, 0x8F9B29B8, 0x8F9B2958, 0x8F9B27A8, 0x8F9B2718, 
+                MenuRootList = new long[] { 0x8F9B5518, 0x8F9BBB48, 0x8F9BB608, 0x8F9BA338, 0x8F9BA0D8,
+                                0x8F9B82A8, 0x8F9BA158, 0x8F9B7448, 0x8F9B74E8, 0x8F9B7488, 0x8F9B74A8,
+                                0x8F9B7688, 0x8F9B7728, 0x8F9B77B8, 0x8F9B80E8, 0x8F9B81D8, 0x8F9B7E48,
+                                0x8F9B7948, 0x8F9B52F8, 0x8F9B2CD8, 0x8F9B2CB8, 0x8F9B2C18, 0x8F9B2AE8,
+                                0x8F9B2AA8, 0x8F9B2A38, 0x8F9B29B8, 0x8F9B2958, 0x8F9B27A8, 0x8F9B2718,
                                 0x8F9B2698, 0x8F9B2618, 0x8F9B25A8, 0x8F9B2528, 0x8F9B22E8, 0x8F9B2288,
-                                0x8F9B2248, 0x8F9B21D8, 0x8F9B2158, 0x8F9B20D8, 0x8F9B2068, 0x8F9B1FE8, 
+                                0x8F9B2248, 0x8F9B21D8, 0x8F9B2158, 0x8F9B20D8, 0x8F9B2068, 0x8F9B1FE8,
                                 0x8F9B1368, 0x8F9B11E8, 0x8F9B1188, 0x8F9B1168, 0x8F9B1148, 0x8F9B1108,
-                                0x8F9B0FC8, 0x8F9B0F28, 0x8F9B0758, 0x8F9B0588, 0x8F9B0558, 0x8F9AFDC8, 
+                                0x8F9B0FC8, 0x8F9B0F28, 0x8F9B0758, 0x8F9B0588, 0x8F9B0558, 0x8F9AFDC8,
                                 0x8F9AFD08, 0x8F9AFCB8, 0x8F9AFAB8, 0x8F9AFA98, 0x8F9AFA48, 0x8F9AFA08,
                                 0x8F9AF9E8, 0x8F9AF9C8 ,0x8F9AF9A8, 0x8F9AF988, 0x8F9AF968, 0x8F9AF948,
                                 0x8F9AF928, 0x8F9AF908, 0x8F9AF8E8, 0x8F9AF8C8, 0x8F9AF8A8, 0x8F9AF888};
@@ -171,8 +171,8 @@ namespace Nikon_Decode
         {
             public D300S_0101_Const()
             {
-                BFT_start = 0x0;
-                BFT_end = 0x0;
+                BFT_start = 0x9F932CC8;
+                BFT_end = 0x9F935E83;  // don't know exactly, so take max possible
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x465640;
@@ -184,16 +184,16 @@ namespace Nikon_Decode
 
                 DFR_file = @"";
 
-                MenuRootList = new long[] { 0x9F9380B4, 0x9F938004, 0x9F937F14, 0x9F937ED4, 0x9F93A6B4, 
-                                0x9F93A8D4, 0x9F937DE4, 0x9F937D84, 0x9F937BD4, 0x9F937B44, 0x9F940B94, 
+                MenuRootList = new long[] { 0x9F9380B4, 0x9F938004, 0x9F937F14, 0x9F937ED4, 0x9F93A6B4,
+                                0x9F93A8D4, 0x9F937DE4, 0x9F937D84, 0x9F937BD4, 0x9F937B44, 0x9F940B94,
                                 0x9F9406E4, 0x9F9402A4, 0x9F93FE64, 0x9F93EE04, 0x9F93D674, 0x9F93D5D4,
                                 0x9F93D244, 0x9F93D4E4, 0x9F93D014, 0x9F93EC04, 0x9F93EC64, 0x9F935E84,
-                                0x9F935EA4, 0x9F935EC4, 0x9F935EE4, 0x9F935F04, 0x9F935F24, 0x9F935F44, 
-                                0x9F935F64, 0x9F935F84, 0x9F935FA4, 0x9F935FC4, 0x9F935FE4, 0x9F936004, 
-                                0x9F936024, 0x9F936044, 0x9F936184, 0x9F936234, 0x9F936284, 0x9F9362C4, 
-                                0x9F936364, 0x9F9367A4, 0x9F936AF4, 0x9F937714, 0x9F937E64, 0x9F937AC4, 
+                                0x9F935EA4, 0x9F935EC4, 0x9F935EE4, 0x9F935F04, 0x9F935F24, 0x9F935F44,
+                                0x9F935F64, 0x9F935F84, 0x9F935FA4, 0x9F935FC4, 0x9F935FE4, 0x9F936004,
+                                0x9F936024, 0x9F936044, 0x9F936184, 0x9F936234, 0x9F936284, 0x9F9362C4,
+                                0x9F936364, 0x9F9367A4, 0x9F936AF4, 0x9F937714, 0x9F937E64, 0x9F937AC4,
                                 0x9F937A44, 0x9F9379D4, 0x9F937954, 0x9F9373D4, 0x9F936974, 0x9F938094,
-                                0x9F93CB14, 0x9F93CBE4, 0x9F93CD84, 0x9F93CE24, 0x9F93CEB4, 0x9F936914, 
+                                0x9F93CB14, 0x9F93CBE4, 0x9F93CD84, 0x9F93CE24, 0x9F93CEB4, 0x9F936914,
                                 0x9F9368D4, 0x9F936754};
             }
         }
@@ -202,8 +202,8 @@ namespace Nikon_Decode
         {
             public D700_0103_Const()
             {
-                BFT_start = 0x0;
-                BFT_end = 0x0;
+                BFT_start = 0x9F04D718;
+                BFT_end = 0x9F05061F;  // don't know exactly, so take max possible
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x3FF7E0;
@@ -215,19 +215,19 @@ namespace Nikon_Decode
 
                 DFR_file = @"";
 
-                MenuRootList = new long[] { 
+                MenuRootList = new long[] {
                     0x9F057D00, 0x9F0594F0, 0x9F054E20, 0x9F059B10,
-               
 
-                    0x9F0573F0, 0x9F057180, 0x9F059A90, 0x9F057B50, 0x9F057C40, 0x9F0578B0, 0x9F057680, 
+
+                    0x9F0573F0, 0x9F057180, 0x9F059A90, 0x9F057B50, 0x9F057C40, 0x9F0578B0, 0x9F057680,
                     0x9F057490, 0x9F057520, 0x9F052710, 0x9F0526F0, 0x9F054C00, 0x9F0521E0, 0x9F052050,
                     0x9F051FA0, 0x9F051E80, 0x9F051DF0, 0x9F052130, 0x9F051D00, 0x9F051CC0, 0x9F0519C0,
                     0x9F051B70, 0x9F051BD0, 0x9F051C50, 0x9F051930, 0x9F0518B0, 0x9F0517C0, 0x9F051500,
                     0x9F0514A0, 0x9F051460, 0x9F0513F0, 0x9F051370, 0x9F0512F0, 0x9F051740, 0x9F051830,
-                    0x9F051280, 0x9F051200, 0x9F0511C0,  
+                    0x9F051280, 0x9F051200, 0x9F0511C0,
 
                     0x9F050C40, 0x9F050AC0, 0x9F050A00, 0x9F0509B0, 0x9F0506E0, 0x9F0506A0,
-                    0x9F050660, 0x9F050680, 0x9F050640, 0x9F050620, 
+                    0x9F050660, 0x9F050680, 0x9F050640, 0x9F050620,
                 };
             }
         }
@@ -240,7 +240,7 @@ namespace Nikon_Decode
                 BFT_start = 0x84F245F8;
                 BFT_end = 0x84F2C158;
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000, 0xC00000, 0x1040000, 0x220000);
-                
+
                 EngTableAddr = 0xD13A64;
                 EngMenuTextAddr = 0xD14BF4;
                 EngLastAddr = 0xD17174;
@@ -252,11 +252,11 @@ namespace Nikon_Decode
 
                 DFR_file = @"";
 
-                MenuRootList = new long[] { 
+                MenuRootList = new long[] {
                     0x84F436B4, 0x84F436D4, 0x84F436F4, 0x84F43714, 0x84F43734, 0x84F43754, 0x84F43774, 0x84F43794,
                     0x84F437B4, 0x84F437D4, 0x84F437F4, 0x84F43814, 0x84F43834, 0x84F43854, 0x84F43874, 0x84F43894,
                     0x84F438B4, 0x84F438D4, 0x84F438F4, 0x84F43914, 0x84F43954, 0x84F43994, 0x84F439E4, 0x84F43A04,
-                    0x84F43AE4, 0x84F43B04, 0x84F43C04, 0x84F43C54, 0x84F43C94, 0x84F43D04, 0x84F43D84, 0x84F43D34, 
+                    0x84F43AE4, 0x84F43B04, 0x84F43C04, 0x84F43C54, 0x84F43C94, 0x84F43D04, 0x84F43D84, 0x84F43D34,
                     0x84F43F04, 0x84F43F34, 0x84F44494, 0x84F444C4, 0x84F44694, 0x84F44E94, 0x84F44EB4, 0x84F44EF4,
                     0x84F44F54, 0x84F45094, 0x84F452B4, 0x84F45134, 0x84F450D4, 0x84F46E24, 0x84F49734, 0x84F51F44,
                     0x84F51A94, 0x84F50644, 0x84F4E614, 0x84F4BFC4, 0x84F4C004, 0x84F4C024, 0x84F4C064,
@@ -398,7 +398,7 @@ namespace Nikon_Decode
                 {
                     q.Enqueue(l);
                 }
-                
+
 
                 while (q.Count > 0)
                 {
@@ -424,7 +424,7 @@ namespace Nikon_Decode
                                 int az = 0;
                             }
                             var ss2 = string.Format("Menu 0x{0:X8} MenuEl 0x{1:X8} SubMenu 0x{2:X8}", addr, s14.mem_loc, s14.menu_ptr);
-                            q.Enqueue(s14.menu_ptr);   
+                            q.Enqueue(s14.menu_ptr);
                         }
                     }
 
@@ -457,8 +457,8 @@ namespace Nikon_Decode
                         sw2.WriteLine("}");
                     }
                 }
-                
-            }      
+
+            }
         }
 
         private static void MenuDump(TextWriter tw_txt, TextWriter tw_sym, string p, long addr)
@@ -524,7 +524,7 @@ namespace Nikon_Decode
                 if (field_12 < firmConsts.BFT_Count)
                 {
                     field_12_item = new Unknown_xx(data, field_12, addrOffset);
-                }        
+                }
             }
 
             public void ReadElements(byte[] data)
@@ -554,7 +554,7 @@ namespace Nikon_Decode
             public UInt16 field_4; //
             public UInt16 field_6; //
             public UInt16 field_8; //
-            public UInt16 field_A; //       
+            public UInt16 field_A; //
             public UInt16 field_C; //
             public UInt16 field_E; //
             public UInt16 field_10; //
