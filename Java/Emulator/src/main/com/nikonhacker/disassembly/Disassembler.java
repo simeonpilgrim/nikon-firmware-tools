@@ -70,7 +70,7 @@ public abstract class Disassembler {
                         + "-h                display this message\n"
                         + "-i range=offset   map range of memory to input file offset\n"
                         + "-j source=target[,target[,...]] define values for a dynamic jump (used in code structure analysis)\n"
-                        + "-j source=@(tableAddress+records*recordsize) define tables for a dynamic jump\n" 
+                        + "-j source=@(tableAddress+records*recordsize) define tables for a dynamic jump\n"
                         + "-m range=type     describe memory range (use -m? to list types)\n"
                         + "-o filename       output file .asm\n"
                         + "-s address=name   define symbol\n"
@@ -467,13 +467,13 @@ public abstract class Disassembler {
 
             debugPrintWriter.println("Post processing...");
             combineJumpHints();
-            
+
             if (chip==Constants.CHIP_FR) {
                 new FrCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             } else {
                 new TxCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             }
-            
+
             // print and output
             debugPrintWriter.println("Structure analysis results :");
             debugPrintWriter.println("  " + codeStructure.getNumStatements() + " statements");
@@ -506,6 +506,16 @@ public abstract class Disassembler {
         }
     }
 
+    protected void dumpFunctionReferences(CodeStructure codeStructure) throws IOException {
+
+        openOutput(0, false, "funcrefs.txt");
+        if (outWriter != null) {
+
+            codeStructure.writeFunctionReferences(outWriter);
+            outWriter.close();
+        }
+    }
+
     private void combineJumpHints() {
         for (Integer source : jumpHintOffsets.keySet()) {
             List<Integer> targetAddresses = new ArrayList<>();
@@ -515,7 +525,6 @@ public abstract class Disassembler {
             jumpHints.put(source, targetAddresses);
         }
     }
-
 
     protected void disassembleDataMemoryRange(Range memRange, Range fileRange) throws IOException, DisassemblyException {
 
@@ -539,7 +548,7 @@ public abstract class Disassembler {
         StatementContext context = new StatementContext();
         context.cpuState = getCPUState(memRange);
         context.memory = memory;
-        
+
         try {
             if (memRange.getRangeType().widths.contains(RangeType.Width.MD_LONG)) {
                 while (context.cpuState.pc < memRange.getEnd()) {
@@ -589,7 +598,7 @@ public abstract class Disassembler {
         }
         if (!processOptions(args))
             throw new ParsingException("Incorrect options");
-        
+
         if (!optionsFileProcessed) {
             // try to load default file
             String defaultFilename = FilenameUtils.removeExtension(args[args.length - 1]) + "." + getClass().getSimpleName().toLowerCase() + ".txt";
@@ -603,11 +612,16 @@ public abstract class Disassembler {
 
         initialize();
 
-        disassembleMemRanges();
+        CodeStructure codeStructure = disassembleMemRanges();
 
         cleanup();
 
         System.out.println("Disassembly done.");
+
+        if (outputOptions.contains(OutputOption.FUNCREFS)) {
+            dumpFunctionReferences(codeStructure);
+            System.out.println("Function references dump done.");
+        }
     }
 
     public Integer findSymbolAddressByName(String name) {
