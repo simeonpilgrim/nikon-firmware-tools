@@ -239,6 +239,21 @@ public abstract class CodeStructure {
         }
     }
 
+    public void writeFunctionReferences (Writer writer) throws IOException {
+
+        for (Function function : functions.values()) {
+
+            writer.write(Format.asHex(function.getAddress(), 8) + ":");
+
+            for (Function callerFunction : function.getCalledBy().values()) {
+                writer.write(" " + Format.asHex(callerFunction.getAddress(), 8) );
+            }
+
+            writer.write(System.lineSeparator());
+        }
+
+    }
+
     /**
      * This method replaces addresses in operands and comments by corresponding symbol names (if any),
      * indicates if branches go forward (skip) or backwards (loop) and decodes call parameters

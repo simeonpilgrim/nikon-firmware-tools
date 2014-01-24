@@ -35,8 +35,8 @@ public enum OutputOption {
     //MEMORYMAP   ("memorymap",       "write memory map"),
 
     //SYMBOLS     ("symbols",         "write symbol table"),
-    //XREF1       ("crossreference",  "write cross reference"),
-    //XREF2       ("xreference",      "write cross reference"),
+    FUNCREFS    ("funcreferences",  "write function cross references", false),
+    //XREF2       ("xreferences",      "write cross references"),
 
     VERBOSE     ("verbose",         "verbose messages", false),
     DEBUG       ("debug",           "debug disassembler", false)
