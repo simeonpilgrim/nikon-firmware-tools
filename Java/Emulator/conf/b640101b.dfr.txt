@@ -3121,10 +3121,10 @@
 -s 0x1A8B90=Tsk19part3_send_and_receive_param_1A8B90(R4 [OUT error_code] /* Send message param and checksum, and receive response param */)
 -s 0x1A8D90=Tsk19part4_process_param_in_1A8D90(R4 [OUT error_code] /* Received param is checked */)
 -s 0x1A8F1E=Tsk19BeforeLoop_1A8F1E(R4 [IN boolean])
--s 0x1A90E0=init_fifos(/* initializes empty fifo1 and fifo2, and set the last field of each record of arrayC to its ordinal index */)
--s 0x1A9122=get_lifo_head_value(R4 [OUT head->value] /* get the value field of the head element of the lifo, or 0 if lifo is empty */)
+-s 0x1A90E0=Tsk19init_fifos(/* initializes empty fifo1 and fifo2, and set the last field of each record of arrayC to its ordinal index */)
+-s 0x1A9122=Tsk19get_lifo_head_value(R4 [OUT head->value] /* get the value field of the head element of the lifo, or 0 if lifo is empty */)
 -s 0x1A9188=Tsk19part5_dlist_callxx
--s 0x1A9228=push_dlist_item(R4 [IN index] /* inserts the <index>th element of arrayC at the head of the lifo */)
+-s 0x1A9228=Tsk19push_dlist_item(R4 [IN index] /* inserts the <index>th element of arrayC at the head of the lifo */)
 -s 0x1A929C=int_1B_mode_0_set_serial_error_flag
 -s 0x1A92AE=int_1B_mode_1_read_msg_header
 -s 0x1A92EE=int_1B_mode_2_stop_timer
