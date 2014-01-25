@@ -477,7 +477,7 @@
 -s 0xBFC1A32C=HSC1_command0xD0
 -s 0xBFC1A3B0=Task0x2
 -s 0xBFC1A510=delay_task0x2
--s 0xBFC1A568=SC0_transmit
+-s 0xBFC1A568=SC0_receive
 -s 0xBFC1A628=start_SC0_RX
 -s 0xBFC1A6B8=Setup_SC0_braudrate
 -s 0xBFC1A74C=DynamicCall_tableBFC97314
