@@ -1,6 +1,6 @@
 # The main part of this file describes the D5100 "A" firmware, ver 1.01
 #
-# Usage:
+# Use in Emulator or:
 # startDtx.bat -wstructure -wparameters -wmemory -wshift -wli -wquestion -wdmov -wbz -wret -waddress -whexcode -x a640m010100.dtx.txt -o a640m010100.asm a640m010100.bin
 #
 # A special part is also included  but commented out (can be disassembled using a640m010100updatecode.dtx.txt):
@@ -482,7 +482,7 @@
 -s 0xBFC1A6B8=Setup_SC0_braudrate
 -s 0xBFC1A74C=DynamicCall_tableBFC97314
 -s 0xBFC1A788=terminate_task0x2
--s 0xBFC1A890=enable_SC0_RX
+-s 0xBFC1A890=enable_SC0_RX_9600Bps
 -s 0xBFC1A970=task0x8_dcall_09
 -s 0xBFC1AA2C=task0x8_dcall_0A
 -s 0xBFC1AA50=get_index_tableBFC97314
@@ -546,7 +546,7 @@
 -s 0xBFC1CCE8=set_flg0x9_0x4000
 -s 0xBFC1CDB0=setup_TBB
 -s 0xBFC1CE78=system_wait
--s 0xBFC1CEF8=enable_SC0_RX
+-s 0xBFC1CEF8=enable_SC0_RX_4800Bps
 -s 0xBFC1D0DC=INTRX0_body01
 -s 0xBFC1D568=call_call_setup_struFFFF583B_FFFF6E14
 -s 0xBFC1D634=call_setup_struFFFF583B_FFFF6E14
@@ -835,11 +835,9 @@
 -s 0xBFC35CBC=buzzer_off
 -s 0xBFC35CE4=make_beep
 -s 0xBFC35D6C=setup_stru_FFFF6FB8
--s 0xBFC362D8=change_AF_assist_lamp
 -s 0xBFC3636C=call_AF_assist_lamp_on
 -s 0xBFC3639C=call_AF_assist_lamp_off /* stop TB7 */
 -s 0xBFC36424=setup@FFFF406F
--s 0xBFC364A8=change_AF_assist_lamp
 -s 0xBFC36548=AF_assist_lamp_off
 -s 0xBFC36590=IR_remote_init
 -s 0xBFC365D0=init_frontIR_raisingedge
@@ -1078,7 +1076,6 @@
 -s 0xBFC43624=INTRX1_body
 -s 0xBFC43750=INT7_body01
 -s 0xBFC437B4=INTCMP6_body02
--s 0xBFC437D0=INTCMP6_body00
 -s 0xBFC437E8=lens_serial_routine
 -s 0xBFC439A8=lens_testing_command_routine
 -s 0xBFC437D0=INT7_body00_or_INTCMP6_body00
