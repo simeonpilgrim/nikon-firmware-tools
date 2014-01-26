@@ -43,23 +43,51 @@ namespace Nikon_Decode
 
         internal static FirmConsts firmConsts = null;
 
-        internal class D600_0101_Const : FirmConsts
+        internal class D3200_0101_Const : FirmConsts
         {
             public D3200_0101_Const()
             {
+                BFT_start = 0x9D314214;
+                BFT_end = 9D325FE8; // not used
+                // this is need for loading firmware and tracing addresses back
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
+
+                EngTableAddr = 0x71B56C;
+                EngLastAddr = 0x71DF43;  // not used
+				EngMenuTextAddr = 0x71C5C4;
+                EngHelpTextAddr = 0x71C180;
+                EngDailTextAddr = 0x71C180;
+
+				// big segment copied in the begining of firmware, comes from asm source
+				// used to find strings
+                Copy_From = 0x4356D4;
+                Copy_To = 0x9D313830;
+
+                // not important and may be empty
+                DFR_file = @"b830101a.dfr.txt";
+                MenuRootList = new long[] {
+                	0
+                };
+            }
+        }
+
+        internal class D600_0101_Const : FirmConsts
+        {
+            public D600_0101_Const()
+            {
                 BFT_start = 0x9E50C9CC;
-                BFT_end = 0x9E51419C; // don't know exactly
+                BFT_end = 0x9E51419C; // not used
                 // this is need for loading firmware and tracing addresses back
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
                 EngTableAddr = 0x6D556C;
-                EngLastAddr = 0x6D8C6B;
-								EngMenuTextAddr = 0x6D674C;
+                EngLastAddr = 0x6D8C6B;     // not used
+				EngMenuTextAddr = 0x6D674C;
                 EngHelpTextAddr = 0x6D6184;
                 EngDailTextAddr = 0x6D6184;
 
-								// big segment copied in the begining of firmware, comes from asm source
-								// used to find strings
+				// big segment copied in the begining of firmware, comes from asm source
+				// used to find strings
                 Copy_From = 0x466E10;
                 Copy_To = 0x9E50BEAC;
 
@@ -67,6 +95,34 @@ namespace Nikon_Decode
                 DFR_file = @"b910101a.dfr.txt";
                 MenuRootList = new long[] {
                 	0
+                };
+            }
+        }
+
+        internal class D3100_0101_Const : FirmConsts
+        {
+            public D3100_0101_Const()
+            {
+                BFT_start = 0x8FBFB028;
+                BFT_end = 0x8FC03C40; // not used
+                // this is need for loading firmware and tracing addresses back
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
+
+                EngTableAddr = 0x4553D0;
+                EngLastAddr = 0x457023;	// not used
+    			EngMenuTextAddr = 0x00455D18;
+                EngHelpTextAddr = 0x00455994;
+                EngDailTextAddr = 0x00455994;
+
+				// big segment copied in the begining of firmware, comes from asm source
+				// used to find strings
+                Copy_From = 0x3395D8;
+                Copy_To = 0x8FBECFA0;
+
+                // not important and may be empty
+                DFR_file = @"b740101b.dfr.txt";
+                MenuRootList = new long[] {
+                    0
                 };
             }
         }
@@ -360,9 +416,21 @@ namespace Nikon_Decode
             }
         }
 
+        private static void DumpMenusD3200(string fileName)
+        {
+            firmConsts = new D3200_0101_Const();
+            DumpMenus(fileName);
+        }
+
         private static void DumpMenusD600(string fileName)
         {
             firmConsts = new D600_0101_Const();
+            DumpMenus(fileName);
+        }
+
+        private static void DumpMenusD3100(string fileName)
+        {
+            firmConsts = new D3100_0101_Const();
             DumpMenus(fileName);
         }
 
