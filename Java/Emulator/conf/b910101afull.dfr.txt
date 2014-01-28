@@ -1,0 +1,36 @@
+# WARNING: doesn't work in Emulator, because memory content at 0xFFFF4000
+#          is not automatically loaded. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b910101afull.dfr.txt -o b910101a.asm b910101a.bin
+
+-x b910101a.dfr.txt
+-e 0x40000
+
+# zero initialised data (application)
+#-m 0x9E3C1724-0x9E50BEAB=DATA:L
+
+# zero initialised data (mITRON)
+#-m 0x68000800-0x6800380C=DATA:L
+
+# zero initialised data (mITRON)
+#-m 0x680059AC-0x6800BF23=DATA:L
+
+# not initialised data (mITRON)
+#-m 0x6800BF24-...=DATA:B
+
+# copied data (application)
+-i 0x9E50BEAC-0x9E522D43=0x00426E10
+-m 0x9E50BEAC-0x9E522D43=DATA:W
+
+# copied data (mITRON)
+-i 0x6800380C-0x6800382B=0x0044FEE4
+-m 0x6800380C-0x6800382B=DATA:L
+
+# copied data (application)
+-i 0x9F1A4C90-0x9F1A5DFE=0x0044ED74
+-m 0x9F1A4C90-0x9F1A5DFD=CODE
+
+# at 0x001122EA copied size 0x000110D0
+-i 0x9E522D44-0x9E533E13=0x0043DCA8
+-m 0x9E522D44-0x9E533E13=DATA:L
