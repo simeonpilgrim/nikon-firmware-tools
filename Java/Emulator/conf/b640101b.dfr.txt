@@ -3025,7 +3025,9 @@
 -s 0x1794E4=req01_Tsk0B_action01
 -s 0x17977C=req3_Tsk0B_action01
 -s 0x179A08=resize_image_to_DEST_vid
--s 0x179AD4=Tsk0B_snd_Msg01
+-s 0x179AD4=RectangleToPlaneCopyResize_byTsk0B (R4 [IN ptr_dst_in_plan], R5 [IN rect_width],R6 [IN rect_height], R7 [IN plane_width_bytes] /* , struct */)
+-s 0x179C5E=RectangleToPlaneCopyResize_byTsk0C (R4 [IN ptr_dst_in_plan], R5 [IN rect_width],R6 [IN rect_height], R7 [IN plane_width_bytes] /* , struct */)
+-s 0x179D56=RectangleToPlaneCopyResize_byTsk0B_179D56 (R4 [IN ptr_dst_in_plan], R5 [IN rect_width],R6 [IN rect_height], R7 [IN plane_width_bytes] /* , struct */)
 -s 0x179B84=req_Tsk0B_action01
 -s 0x179F10=req04_Tsk0B_action01
 -s 0x17A0E8=req01_Tsk0E_Action03
@@ -4020,8 +4022,8 @@
 -s 0x1E5CD4=HCD_0x65000118_11C_handler
 -s 0x1E5E30=Tsk06_08_0B_Notifier
 -s 0x1E5F0C=Tsk06_PostMsg_1
--s 0x1E602C=Tsk08_PostMsg_2
--s 0x1E612E=call_Tsk08_PostMsg_2
+-s 0x1E602C=DecodeJPEG_byTsk08(R4 [IN ptr_to_struct])
+-s 0x1E612E=call_DecodeJPEG_byTsk08(R4 [IN ptr_to_struct])
 -s 0x1E6720=PictureData0
 -s 0x1E67D4=start_task_x20
 -s 0x1E67FA=Tsk20
