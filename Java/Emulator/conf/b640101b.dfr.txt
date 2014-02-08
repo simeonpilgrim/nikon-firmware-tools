@@ -3559,7 +3559,7 @@
 -s 0x1D1550=nullsub_126
 -s 0x1D1552=nullsub_127
 -s 0x1D1554=nullsub_48
--s 0x1D155A=ret_0_2
+-s 0x1D155A=ret_0_2_b
 -s 0x1D1634=nullsub_49
 -s 0x1D1646=nullsub_50
 -s 0x1D1648=start_task_x25_x26
