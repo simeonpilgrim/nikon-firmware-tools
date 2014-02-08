@@ -2970,8 +2970,8 @@
 -s 0x17227E=s_firmware_encrypt_xx
 -s 0x17234C=InstallAfirmware
 -s 0x17285C=call_reflash_NikonLensData
--s 0x17293E=call_EmbeddedFlashClear
--s 0x172950=call_EmbeddedFlashWrite
+-s 0x17293E=call_EmbeddedFlashClear(R4 [IN addr; OUT bool_ok],R5 [IN size])
+-s 0x172950=call_EmbeddedFlashWrite(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
 -s 0x172962=call_flash_firmware_xx
 -s 0x172970=copy_8000_xx
 -s 0x1729BC=s40x7_1729BC
@@ -6635,8 +6635,8 @@
 -s 0x8F800000=Flash_Check_BF
 -s 0x8F800070=Flash_WaitCount
 -s 0x8F800088=flash_firmware_xx
--s 0x8F8003FA=EmbeddedFlashClear
--s 0x8F800452=EmbeddedFlashWrite
+-s 0x8F8003FA=EmbeddedFlashClear(R4 [IN addr; OUT bool_ok],R5 [IN size])
+-s 0x8F800452=EmbeddedFlashWrite(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
 -s 0x8F80056E=Flash_CheckClear_xx
 -s 0x8F8005D2=Flash_ClearSector
 -s 0x8F8006B0=Flash_SingleByteProgram
