@@ -103,10 +103,13 @@ sub testConsistency {
 			print "!!! Symbol $name conflicts with ".$Symbols{$addr}."\n";
 		}
 
+		my $strippedName = $name;
+		$strippedName =~ s#\(.+##;
+
 		foreach my $func (values %Symbols) {
 			$func =~ s#\(.+##;
 
-			if ($func eq $name) {
+			if ($func eq $strippedName) {
 				print "!!! Duplicated symbol $func\n";
 			}
 		}
