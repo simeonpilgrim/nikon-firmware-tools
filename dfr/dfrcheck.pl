@@ -100,7 +100,7 @@ sub testConsistency {
 		my ($addr,$name) = (hex($1),$2);
 
 		if (exists($Symbols{$addr}) ) {
-			print "!!! Symbol $name conflicts with ".$Symbols{$addr}."\n";
+			print "!!! Symbol address $name conflicts with ".$Symbols{$addr}."\n";
 		}
 
 		my $strippedName = $name;
@@ -110,7 +110,7 @@ sub testConsistency {
 			$func =~ s#\(.+##;
 
 			if ($func eq $strippedName) {
-				print "!!! Duplicated symbol $func\n";
+				print "!!! Symbol name duplicated $func\n";
 			}
 		}
 		$Symbols{$addr} = $name;
