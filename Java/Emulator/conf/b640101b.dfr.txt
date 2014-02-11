@@ -2764,7 +2764,7 @@
 -s 0x1632F2=buildFileOutputName_x1
 -s 0x164AC2=load_nikon001_dsc_file
 -s 0x164CBC=nullsub_177
--s 0x164CBE=trace(R4 [IN szDebugString])
+-s 0x164CBE=debug_print(R4 [IN string])
 -s 0x168596=stringSpaceExtend
 -s 0x168688=setPointerValue
 -s 0x16869C=getPointerValue
@@ -3382,10 +3382,10 @@
 -s 0x1BC85A=s6B01_1BC85A
 -s 0x1BCD12=RW_6B01xxxx
 -s 0x1BCF9E=s6B01_1BCF9E
--s 0x1BCFF0=call_x6B010000_WriteByte
--s 0x1BCFFC=call_x6B010000_ReadByte
--s 0x1BD008=x6B010000_WriteByte
--s 0x1BD016=x6B010000_ReadByte
+-s 0x1BCFF0=call_x6B010000_WriteByte(R4 [IN offset], R5 [IN value])
+-s 0x1BCFFC=call_x6B010000_ReadByte(R4 [IN offset; OUT value])
+-s 0x1BD008=x6B010000_WriteByte(R4 [IN offset], R5 [IN value])
+-s 0x1BD016=x6B010000_ReadByte(R4 [IN offset; OUT value])
 -s 0x1BD026=nullsub_87
 -s 0x1BD028=get_1BD028
 -s 0x1BD032=s6B01_1BD032
@@ -4115,7 +4115,7 @@
 -s 0x1EBA76=DmaT_StopPlay_02
 -s 0x1EBB60=Dma4_Int
 -s 0x1EBBB4=Dma5_Int
--s 0x1EBC68=DmaT_Debug
+-s 0x1EBC68=debug_DmaT_print(R4 [IN string],R5 [IN param2],R6 [IN param3], R7 [In param4])
 -s 0x1EBC72=I2C_Tx
 -s 0x1EDFC6=AudioCodec_SetOutputLevel
 -s 0x1EE182=AudioT_SetOutputLine
