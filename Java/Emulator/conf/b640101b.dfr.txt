@@ -3383,9 +3383,9 @@
 -s 0x1BCD12=RW_6B01xxxx
 -s 0x1BCF9E=s6B01_1BCF9E
 -s 0x1BCFF0=call_x6B010000_WriteByte(R4 [IN offset], R5 [IN value])
--s 0x1BCFFC=call_x6B010000_ReadByte(R4 [IN offset; OUT value])
+-s 0x1BCFFC=call_x6B010000_ReadByte(R4 [IN offset; OUT is_ok], R5 [IN ptr_value])
 -s 0x1BD008=x6B010000_WriteByte(R4 [IN offset], R5 [IN value])
--s 0x1BD016=x6B010000_ReadByte(R4 [IN offset; OUT value])
+-s 0x1BD016=x6B010000_ReadByte(R4 [IN offset; OUT is_ok], R5 [IN ptr_value])
 -s 0x1BD026=nullsub_87
 -s 0x1BD028=get_1BD028
 -s 0x1BD032=s6B01_1BD032
@@ -4117,6 +4117,8 @@
 -s 0x1EBBB4=Dma5_Int
 -s 0x1EBC68=debug_DmaT_print(R4 [IN string],R5 [IN param2],R6 [IN param3], R7 [In param4])
 -s 0x1EBC72=I2C_Tx
+-s 0x001EDFBE=return0_001EDFBE
+-s 0x001EDFC2=return0_001EDFC2
 -s 0x1EDFC6=AudioCodec_SetOutputLevel
 -s 0x1EE182=AudioT_SetOutputLine
 -s 0x1EE408=AudioCodec_SetInputLevel
