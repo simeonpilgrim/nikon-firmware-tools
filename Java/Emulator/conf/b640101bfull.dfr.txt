@@ -1,8 +1,7 @@
-# WARNING: doesn't work in Emulator, because memory content at 0xFFFF4000
-#          is not automatically loaded. This not a bug!
+# WARNING: doesn't work in Emulator. This not a bug!
 #
 # Usage:
-# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b640101b_full.dfr.txt -o b640101b.asm b640101b.bin
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b640101bfull.dfr.txt -o b640101b.asm b640101b.bin
 
 # data segment
 #0x68000000-?
