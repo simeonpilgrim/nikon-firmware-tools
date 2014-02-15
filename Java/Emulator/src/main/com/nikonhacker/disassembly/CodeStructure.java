@@ -243,7 +243,16 @@ public abstract class CodeStructure {
 
         for (Function function : functions.values()) {
 
-            writer.write(Format.asHex(function.getAddress(), 8) + ":");
+            // function last address is 0 if not disassembled (not a CODE range)
+            int lastAddr = 0;
+            // get last segment
+            List<CodeSegment> segments = function.getCodeSegments();
+            if (segments.size()>0) {
+                CodeSegment codeSegment = segments.get(segments.size()-1);
+                lastAddr = codeSegment.getEnd();
+            }
+
+            writer.write(Format.asHex(function.getAddress(), 8) + " " + Format.asHex(lastAddr, 8) + ":");
 
             for (Function callerFunction : function.getCalledBy().values()) {
                 writer.write(" " + Format.asHex(callerFunction.getAddress(), 8) );
