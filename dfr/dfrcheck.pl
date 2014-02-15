@@ -10,10 +10,13 @@
 #
 # History:
 # 23Jan14 coderat: creation
+# 15Feb14 coderat: add -s option for printing all symbols sorted
 #
 
 my @cranges;
 my @dranges;
+
+my %Symbols;
 
 # ------------------------------------------------------------------------
 
@@ -93,8 +96,6 @@ sub testConsistency {
 			die "!!! Not found input range for CODE\n";
 	}
 
-	my %Symbols;
-
 	# find all symbols
 	while ($buf =~ m#\-s[ ]+0x([0-9a-fA-F]+)=([^\r\n]+)#gm) {
 		my ($addr,$name) = (hex($1),$2);
@@ -106,7 +107,9 @@ sub testConsistency {
 		my $strippedName = $name;
 		$strippedName =~ s#\(.+##;
 
-		foreach my $func (values %Symbols) {
+		foreach (values %Symbols) {
+
+			my $func = $_;
 			$func =~ s#\(.+##;
 
 			if ($func eq $strippedName) {
@@ -120,15 +123,31 @@ sub testConsistency {
 		print "!!! No symbols found\n";
 	}
 }
-
 # ------------------------------------------------------------------------
+sub dumpSymbols {
+	foreach my $addr (sort {$a <=> $b} keys %Symbols) {
+		printf ("-s 0x%08X=%s\n", $addr, $Symbols{$addr});
+	}
+}
+# ------------------------------------------------------------------------
+
+my $doDump=0;
 
 if (@ARGV<1) {
 	print "DFR utility\n\n";
-	print "Use: [perl] dfrcheck.pl <dfr/dtxfile>\n";
+	print "Use: [perl] dfrcheck.pl <dfr/dtxfile> [-s]\n";
 	exit 0;
+} elsif (@ARGV>1) {
+	if ($ARGV[1] eq '-s') {
+		$doDump=1;
+	} else {
+		die "Unknown option";
+	}
 }
 
 testConsistency;
 
+if ($doDump) {
+	dumpSymbols;
+}
 exit 0;
