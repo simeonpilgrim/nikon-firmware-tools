@@ -249,7 +249,10 @@ public abstract class CodeStructure {
             List<CodeSegment> segments = function.getCodeSegments();
             if (segments.size()>0) {
                 CodeSegment codeSegment = segments.get(segments.size()-1);
+                // address of last statement
                 lastAddr = codeSegment.getEnd();
+                Statement statement = getStatement(lastAddr);
+                lastAddr += statement.getNumBytes()-1;
             }
 
             writer.write(Format.asHex(function.getAddress(), 8) + " " + Format.asHex(lastAddr, 8) + ":");
