@@ -1,6 +1,7 @@
 # The main part of this file describes the D3100 "B" firmware, ver 1.01
-# Two special parts are also included but commented out :
-# - the ROM part at 0x000E0000
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b740101b.dfr.txt -o b740101b.asm b740101b.bin
 #
 
 ############################### File map: D3100
