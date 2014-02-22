@@ -1,0 +1,90 @@
+#!/usr/bin/perl -w
+
+my $csv = shift @ARGV || 'camera_matrix.csv';
+
+# These columns are turned into wiki links
+%Links = qw/
+    Model 1
+    proc_a 1
+    proc_b 1
+    asic 1
+    Sensor 1
+    autofocus 1
+/;
+
+%H_Rename = (
+    'proc_a' => 'I/O<br />Processor (A)',
+    'proc_b' => 'Image<br />Processor (B)',
+    'DCD' => '[[DCD | Distortion<br />Control<br />Data(L)]]',
+    'sm'=> 'Service<br />Manual Notes',
+);
+
+open(C,"<$csv") or die;
+
+while (<C>) {
+    chomp;
+    my @row = split(',');
+
+    # Header Line
+    if ($. == 1) {
+        for (my $i=0; $i < scalar @row; $i++) {
+            @headers = @row;
+            $hmap{$headers[$i]}=$i;
+        }
+        next;
+    }
+
+    push @rows,\@row;
+}
+
+print '{| border="1" cellspacing="0" cellpadding="2"',"\n";
+
+print "|-\n";
+foreach my $col (@headers) {
+    my $h = clean($col);
+    $h = $H_Rename{$h} if defined $H_Rename{$h}; 
+    print "! $h\n";
+}
+
+
+foreach my $row (sort sort_cameras @rows) {
+    print "|-\n";
+    for (my $i=0; $i < scalar @$row; $i++) {
+        my $col = clean($row->[$i]);
+        my $h   = $headers[$i] || '';
+        if (defined $Links{$h} and not_blank($col)) {
+            print "| [[$col]]\n";
+        } else {
+            print "| $col\n";
+        }
+    }
+}
+print "|}\n";
+
+sub sort_cameras {
+    my $nModel = $hmap{nModel};
+    my $year   = $hmap{Year};
+
+    my $amod = $a->[$nModel];
+    my $bmod = $b->[$nModel];
+
+    my $ayear = $a->[$year];
+    my $byear = $b->[$year];
+
+    return $byear <=> $ayear unless not_blank($amod) and not_blank($bmod);
+    return $bmod cmp $amod; 
+}
+
+sub clean {
+    my $s = shift;
+    $s =~ s/[\n\l\r]//g;
+    $s = '' unless defined $s;
+    return $s;
+}
+
+sub not_blank {
+    my $s = shift;
+    return 0 unless defined $s;
+    return 0 if $s =~ /^\s*$/;
+    return 1;
+}
