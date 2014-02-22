@@ -40,6 +40,11 @@
 
 -m 0x00267870-0x00309553=CODE
 
+# this part is flashed during firmware update (can be up to 7MB)
+-i 0x02100000-0x0216FFFF=0x00840000
+-m 0x02100000-0x0212A001=CODE
+-m 0x0212A002-0x0216C4E3=DATA:W
+
 ############################### Symbols
 
 # syscalls
