@@ -46,11 +46,14 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin"); 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");    
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
 
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
+            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
+
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
 
