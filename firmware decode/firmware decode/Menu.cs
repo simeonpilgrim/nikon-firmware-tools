@@ -48,7 +48,7 @@ namespace Nikon_Decode
             public D3200_0101_Const()
             {
                 BFT_start = 0x9D314214;
-                BFT_end = 9D325FE8; // not used
+                BFT_end = 0x9D325FE8; // not used
                 // this is need for loading firmware and tracing addresses back
                 offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
 
