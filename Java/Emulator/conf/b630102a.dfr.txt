@@ -1,0 +1,186 @@
+# The main part of this file describes the D800 "B" firmware, ver 1.02a
+#
+# Use in Emulator or
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b630102a.dfr.txt -o b630102a.asm b630102a.bin
+
+############################### File map: D800
+-i 0x00040000-0x000DFFFF=0x00000000
+-i 0x00100000-0x0087FFFF=0x000C0000
+-i 0x00C00000-0x0103FFFF=0x009E0000
+
+############################### Memory map:
+
+-m 0x00040000-0x00040A77=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x00040A78-0x00040BD7=DATA:W
+
+-m 0x00040BD8-0x00040CB5=CODE
+
+# Softune RTOS Copyright :
+-m 0x00040CB6-0x00040D21=DATA:L
+
+# ITRON kernel code
+-m 0x00040D21-0x0008A3E9=CODE
+
+# tblTaskData
+-m 0x000D1244-0x000D1A5F=DATA:L
+
+
+
+# Interrupt vector table.
+-t 0x000DFC00
+
+-m 0x00100000-0x0029387D=CODE
+
+-m 0x003FA48E-0x004CFDE7=CODE
+
+-m 0x005A9678-0x005B68A5=CODE
+
+############################### Symbols
+
+# syscalls
+-s 0x40BD8=sys_unsupported_function (R12 [OUT err_code])
+-s 0x40BDC=sys_reserved_function (R12 [OUT err_code])
+-s 0x41456=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
+-s 0x41474=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
+-s 0x41492=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
+-s 0x414EE=sys_def_cyc(R4 [IN cycno], R5 [IN ptr_to_pk_dcyc], R12 [OUT err_code] /* Define Cyclic Handler */)
+-s 0x4156C=sys_act_cyc(R4 [IN cycno], R5 [IN cycact], R12 [OUT err_code] /* Activate Cyclic Handler */)
+-s 0x415D2=sys_ref_cyc(R5 [IN ptr_to_pk_rcyc], R5 [IN cycno], R12 [OUT err_code] /* Get Cyclic Handler Status */)
+-s 0x41654=sys_def_alm(R4 [IN almno], R5 [IN ptr_to_pk_dalm], R12 [OUT err_code] /* Define Alarm Handler */)
+-s 0x416E2=sys_ref_alm(R4 [IN ptr_to_pk_ralm], R5 [IN almno], R12 [OUT err_code] /* Get Alarm Handler Status */)
+-s 0x41754=sys_sus_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Suspend Other Task */)
+-s 0x417D8=sys_rsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Resume Suspended Task */)
+-s 0x41860=sys_frsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Forcibly Resume suspended Task */)
+-s 0x418C0=sys_slp_tsk(R12 [OUT err_code] /* Sleep Task */)
+-s 0x418F6=sys_tslp_tsk(R4 [IN timeout], R12 [OUT err_code] /* Sleep Task with Timeout */)
+-s 0x4197A=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
+-s 0x419DC=sys_can_wup(R4 [IN tsk_id], R12 [OUT err_code], R13 [OUT wakeup_count] /* Cancel Wakeup Request */)
+-s 0x41A40=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
+-s 0x41ABE=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
+-s 0x41B18=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
+-s 0x41BB6=sys_dis_dsp(R12 [OUT err_code] /* Disable Dispatch */)
+-s 0x41BD8=sys_ena_dsp(R12 [OUT err_code] /* Enable Dispatch */)
+-s 0x41BF4=sys_chg_pri(R4 [IN tsk_id], R5 [IN tsk_prio], R12 [OUT err_code] /* Change Task Priority */)
+-s 0x41C5C=sys_rot_rdq(R4 [IN tsk_prio], R12 [OUT err_code] /* Rotate Tasks on the Ready Queue */)
+-s 0x41CC2=sys_rel_wai(R4 [IN tsk_id], R12 [OUT err_code] /* Release Wait of Other Task */)
+-s 0x41D44=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
+-s 0x41D64=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
+-s 0x41E38=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
+-s 0x41E7A=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
+-s 0x41EBC=sys_preq_sem(R4 [IN sem_id], R12 [OUT err_code] /* Poll and request Semaphore */)
+-s 0x41EF0=sys_twai_sem(R4 [IN sem_id], R5 [IN timeout], R12 [OUT err_code] /* Wait on Semaphore with Timeout */)
+-s 0x41F76=sys_ref_sem(R4 [IN ptr_to_pk_rsem], R5 [IN sem_id], R12 [OUT err_code] /* Get Semaphore Status */)
+-s 0x41FC0=sys_set_flg(R4 [IN flag_id], R5 [IN set_pattern], R12 [OUT err_code] /* Set Eventflag */)
+-s 0x4205A=sys_clr_flg(R4 [IN flag_id], R5 [IN clr_pattern], R12 [OUT err_code] /* Clear Eventflag */)
+-s 0x42082=sys_wai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag */)
+-s 0x4210A=sys_pol_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag, polling */)
+-s 0x42162=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout; OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
+-s 0x42220=sys_ref_flg(R4 [IN ptr_to_pk_rflg], R5 [IN flag_id], R12 [OUT err_code] /* Get Eventflag Status */)
+-s 0x42256=sys_snd_msg(R4 [IN mailbox_id], R5 [IN ptr_to_pk_msg], R12 [OUT err_code] /* Send Message to Mailbox */)
+-s 0x422B0=sys_rcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox */)
+-s 0x42300=sys_prcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, polling */)
+-s 0x4234E=sys_trcv_msg(R5 [IN mailbox_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, with Timeout */)
+-s 0x423D0=sys_ref_mbx(R4 [IN ptr_to_pk_rmbx], R5 [IN mailbox_id], R12 [OUT err_code] /* Get Mailbox Status */)
+-s 0x42454=sys_get_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block */)
+-s 0x42548=sys_pget_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block, polling */)
+-s 0x42648=sys_rel_blk(R4 [IN mempool_id], R5 [OUT blk_start], R12 [OUT err_code] /* Release Variable-Sized Memory Block */)
+-s 0x42806=sys_ref_mpl(R4 [IN ptr_to_pk_rmempool], R5 [IN mempool_id], R12 [OUT err_code] /* Get Variable-Sized Memorypool Status */)
+-s 0x42880=sys_get_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block */)
+-s 0x428DC=sys_pget_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Poll and Get Fixed-Sized Memory Block */)
+-s 0x42920=sys_tget_blf(R5 [IN mempool_f_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block with Timeout */)
+-s 0x429C2=sys_rel_blf(R4 [IN mempool_f_id], R5 [OUT blk_f_start], R12 [OUT err_code] /* Release Fixed-Sized Memory Block */)
+-s 0x42A90=sys_ref_mpf(R4 [IN ptr_to_pk_rmempool_f], R5 [IN mempool_f_id], R12 [OUT err_code] /* Get Fixed-Sized Memorypool Status */)
+-s 0x42ACC=sys_loc_cpu(R12 [OUT err_code] /* Lock CPU */)
+-s 0x42AE0=sys_unl_cpu(R12 [OUT err_code] /* Unlock CPU */)
+-s 0x42AF4=sys_chg_ilm(R4 [IN ilmask], R12 [OUT err_code] /* Change Interrupt Level Mask */)
+-s 0x42B1C=sys_ref_ilm(R12 [OUT err_code], R13 [OUT ilmask] /* Get Interrupt Level Mask */)
+-s 0x42B40=sys_get_ver(R4 [IN ptr_to_pk_ver], R12 [OUT err_code] /* Get Version Information */)
+-s 0x42B7C=sys_ref_sys(R4 [IN ptr_to_pk_rsys], R12 [OUT err_code] /* Get System Status */)
+
+-s 0x40E24=SetupTCB
+-s 0x40D22=StartIdleTask
+# tasks
+-s 0x159A14=task_0x01
+-s 0x1AE258=task_0x02
+-s 0x1A8284=task_0x03
+-s 0x1AA024=task_0x04
+-s 0x1C3B3E=task_0x05
+-s 0x1C4D1E=task_0x06
+-s 0x27849A=task_0x07
+-s 0x1B339A=task_0x08
+-s 0x1B53D6=task_0x09
+-s 0x1B0D88=task_0x0A
+-s 0x1B0732=task_0x0B
+-s 0x1AE798=task_0x0C
+-s 0x1B5AF4=task_0x0D
+-s 0x1B607C=task_0x0E
+-s 0x1B6604=task_0x0F
+-s 0x26B1E4=task_0x10
+-s 0x26B49A=task_0x11
+-s 0x1ACDE4=task_0x12
+-s 0x1AD6BC=task_0x13
+-s 0x177268=task_0x14
+-s 0x1972FC=task_0x15
+-s 0x13B104=task_0x16
+-s 0x1E7E8A=task_0x17
+-s 0x138E02=task_0x18
+-s 0x13B3A4=task_0x19
+-s 0x1000E2=task_0x1A( /* Autorun */)
+-s 0x12B1D8=task_0x1B
+-s 0x12E7BA=task_0x1C
+-s 0x266EE4=task_0x1D
+-s 0x2668E0=task_0x1E
+-s 0x2299C8=task_0x1F
+-s 0x19D66E=task_0x20
+-s 0x12F636=task_0x21
+-s 0x2791B8=task_0x22
+-s 0x1F3AEC=task_0x23
+-s 0x260EC6=task_0x24
+-s 0x25FD0C=task_0x25
+-s 0x4385C=task_0x26
+-s 0x18DC94=task_0x27
+-s 0x27662C=task_0x28
+-s 0x27666C=task_0x29
+-s 0x274984=task_0x2A
+-s 0x18EA2C=task_0x2B
+-s 0x18F3E0=task_0x2C
+-s 0x1C17EC=task_0x2D
+-s 0x1C9504=task_0x2E
+-s 0x27767A=task_0x2F
+-s 0x1C53EC=task_0x30
+-s 0x277A0A=task_0x31
+-s 0x111FC6=task_0x32
+-s 0x116654=task_0x33
+-s 0x10D228=task_0x34
+-s 0x197F46=task_0x35
+-s 0x155E4A=task_0x36
+-s 0x46A56E=task_0x37
+-s 0x49B9E8=task_0x38
+-s 0x1985E2=task_0x39
+-s 0x147C8C=task_0x3A
+-s 0x1BB1DA=task_0x3B
+-s 0x1540D0=task_0x3C
+-s 0x154130=task_0x3D
+-s 0x263F3A=task_0x3E
+-s 0x6176A=task_0x3F
+-s 0x609C8=task_0x40
+-s 0x677D6=task_0x41
+-s 0x6781E=task_0x42
+-s 0x6778E=task_0x43
+-s 0x6BD04=task_0x44
+-s 0x5E936=task_0x45
+-s 0x5D43A=task_0x46
+-s 0x5AA4A=task_0x47
+-s 0x1D40FC=task_0x48
+-s 0x1D0BA8=task_0x49
+-s 0x25DE12=task_0x4A
+
+# other
+
+# for Emulator
+-s 0xD1244=tblTaskData
+-s 0x68003828=pCurrentTCB
+

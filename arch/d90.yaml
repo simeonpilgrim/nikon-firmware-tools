@@ -1,0 +1,217 @@
+-   name: cm
+    label: CM Base Plate Unit\n(1001)
+    blocks:
+        - Main MCU (A?)
+        - Sub MCU (?)
+        - IC (?)
+-   name: dg
+    label: DG PCB\n(1031)
+    blocks:
+        - RISC\nMCU (B?)
+        - ASIC\nExpeed
+        - Elphida DDR\n x2
+        - IC\nSpansion Flash?
+        - mic\n(1051)
+        - speaker\n(1052)
+    ports:
+        - hdmi
+        - usb
+        - sd card
+-   from: dg
+    to: cm
+    label: 39-pin\n(1023)
+-   name: sb
+    label: SB/IF PCB\n(1041)
+    ports:
+        - AV Out
+        - GPS
+        - DC Plug
+-   from: sb
+    to: dg
+    label: 21-pin\n(1025)
+-   name: sensor
+    label: Sensor PCB\n(1032)
+    blocks:
+        - Sensor\n(1060)
+    ports:
+        - b1036
+        - b1037
+-   from: sensor
+    to: dg
+    label: 15-pin\n(1053)
+-   from: sensor
+    to: dg
+    label: 50-pin\n(1024)
+-   name: dg_power
+    label: Imaging Power PCB\n(1029)
+-   to: dg
+    from: dg_power
+    label: 12-pin\n(1049)
+-   name: lcd
+    label: Main LCD\n(1057)
+-   name: backbuttons
+    label: Back Buttons\n(1034)
+-   from: backbuttons
+    to: lcd
+    label: 4-pin
+-   from: backbuttons
+    to: dg
+    label: 21-pin
+-   to: lcd
+    from: dg
+    label: 51-pin
+-   name: dcdc
+    label: DC/DC PCB\n(1030)
+-   name: power_drive
+    label: Power Drive PCB\n(1002)
+    blocks:
+        - Motor Drive IC
+    ports:
+        - Aperture (SQ) Motor
+        - Buzzer\n(1055)
+-   name: battery
+    label: EN-EL3e Battery
+-   from: battery
+    to: power_drive
+    label: +/-/PGID
+-   from: power_drive
+    to: dcdc
+    label: 30-pin b-to-b
+-   from: power_drive
+    to: sb
+    label: +/-
+-   from: dcdc
+    to: dg
+    label: 12-pin\n(1048)
+-   from: dcdc
+    to: dg_power
+    label: 3 wires
+-   from: power_drive
+    to: cm
+    label: 40-pin b-to-b
+-   from: dcdc
+    to: sensor/b1036
+    label: 2-wires
+-   from: dcdc
+    to: sensor/b1037
+    label: 2-wires
+-   name: front_body
+    label: Front Body FPC
+    blocks:
+        - motor driver
+    ports: 
+        - AF motor
+        - AF/MF Switch
+        - AFPI FPC\n(1012) # 4-pin
+        - Lens FPC\n(1013) # 7-pin
+-   name: af_fpc
+    label: AF FPC\n(1005)
+    blocks:
+        - IL X 148A\n(CAM1000?)
+-   from: af_fpc
+    to: front_body
+    label: 15-pin
+-   name: bkt_sb
+    label: BKT FPC\n(1014)
+    blocks:
+        - Flash Btn
+        - Bracket Btn
+-   from: bkt_sb
+    to: front_body
+    label: 3-pin
+-   from: front_body
+    to: cm
+    label: 39-pin
+-   from: front_body
+    to: cm
+    label: VBT6/PGND
+-   name: metering
+    label: Metering FPC\n(1008)
+    blocks:
+        - ILX145L
+-   from: metering
+    to: cm
+    label: 11-pin
+-   name: grip_fpc
+    label: Grip FPC\n(1016)
+    ports:
+        - RS-232
+-   name: grip
+    label: MB-D80 Battery Grip
+-   from: grip
+    to: grip_fpc
+    label: 15-pin
+-   from: grip_fpc
+    to: cm
+    label: 19-pin
+-   name: top_fpc
+    label: Top Cover FPC\n(1007)
+    blocks:
+        - Top LCD\n(1044)
+        - Top LCD\nDriver IC
+        - Main Command\nDial
+        - Sub Command\nDial
+    ports:
+        - Hot Shoe
+        - AF Lamp
+        - Flash Open Detect
+-   name: mode_fpc
+    label: Mode Dial FPC\n(1006)
+    ports:
+        - Flash Popup Coil
+        - IR Port\n(1056) # remocon, 3-wires
+-   from: mode_fpc
+    to: top_fpc
+    label: 19-pin
+-   from: top_fpc
+    to: cm
+    label: 51-pin
+-   name: flash_ir
+    label: Flash IR
+-   from: flash_ir
+    to: top_fpc
+    label: 2 wires
+-   name: pi_fpc
+    label: PI FPC\n(1018)
+    ports:
+        - Fmin SW
+        - MG Coil?
+        - Paraview? Switch
+        - Sequence? Switch
+-   name: flash_pcb
+    label: Flash\n(1040)
+    ports:
+        - Flash Coil\n(1038)
+        - Flash Cap\n(1043) # "Main Condensor", 2-wires
+-   from: flash_pcb
+    to: flash_ir
+    label: 4 wires
+-   from: power_drive
+    to: flash_pcb
+    label: 4 wires
+-   from: pi_fpc
+    to: cm
+    label: 31-pins
+-   from: flash_pcb
+    to: pi_fpc
+    label: 8-pins
+-   name: shutter_fpc
+    label: Shutter FPC\n(1019)
+    ports:
+        - Shutter Unit # 5-pin
+-   from: shutter_fpc
+    to: pi_fpc
+    label: 5-pin
+-   name: penta_fpc
+    label: Penta FPC\n(1021)
+-   name: si_fpc
+    label: Viewfinder FPC\n(1022)
+    blocks:
+        - LCD\n(1046) # SI-LCD
+        - LED\n(1027) # SI-LED FPC, 4-pin
+-   from: penta_fpc
+    to: si_fpc
+    label: 19-pin
+-   from: cm
+    to: penta_fpc
+    label: 31-pin
