@@ -79,18 +79,18 @@ sub byte2int($@) {
 }
 #-------------------------------------------------------------
 sub readData($) {
-	my $len = $_[0];
-	my $buf;
+    my $len = $_[0];
+    my $buf;
 
-  my $n = read (IN, $buf, $len);
+    my $n = read (IN, $buf, $len);
 
-  if (!defined $n) {
-    die "!!! Problem reading: $!\n";
-  }
+    if (!defined $n) {
+        die "!!! Problem reading: $!\n";
+    }
 
-  if ($n != $len) {
-    die "!!! Not enough data in read\n";
-  }
+    if ($n != $len) {
+        die "!!! Not enough data in read\n";
+    }
 
 	# 8-bit checksum
 #  $checksum += unpack("%8C*", $buf);
@@ -124,13 +124,13 @@ for (;;) {
 		last;
 	}
 	my $recordSize = unpack ('N', readData(4));
-  printf "Record 0x%02X, size=%d\n", $recordID, $recordSize;
+    printf "Record 0x%02X, size=%d\n", $recordID, $recordSize;
 
-  my $record = readData($recordSize);
+    my $record = readData($recordSize);
 
-  if ($recordID==1) {
-  	my ($version, $name, $basedProfile);
-  	($version, $name, $basedProfile, $modified, $record) = unpack ('a4 Z20 n C x a*', $record);
+    if ($recordID==1) {
+      	my ($version, $name, $basedProfile);
+      	($version, $name, $basedProfile, $modified, $record) = unpack ('a4 Z20 n C x a*', $record);
 
 		print "Version=$version name=\'$name\' based on ".$baseProfiles{$basedProfile}."\n";
 
