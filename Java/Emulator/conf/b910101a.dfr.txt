@@ -300,8 +300,8 @@
 -s 0x0026863E=TaskDelay(R4 [IN time; OUT err])
 -s 0x002686B0=TaskSleepTimeout(R4 [IN timeout; OUT err])
 -s 0x0026871C=TaskSleep(R4 [IN timeout; OUT err])
--s 0x00268758=TaskSetEventFlag(R4 [flag_id; OUT err], R5 [IN set_pattern])
--s 0x00268788=TaskClearEventFlag(R4 [flag_id; OUT err], R5 [IN clr_pattern])
+-s 0x00268758=TaskSetEventFlag(R4 [IN flag_id; OUT err], R5 [IN set_pattern])
+-s 0x00268788=TaskClearEventFlag(R4 [IN flag_id; OUT err], R5 [IN clr_pattern])
 -s 0x002687BC=call_TaskWaitFlag(R4 [IN ptr_flag_pattern; OUT err], R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode])
 -s 0x002687DC=1ms_set50000119.bit1_1ms
 -s 0x00283524=SUB_double(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
@@ -317,7 +317,7 @@
 -s 0x002838CE=DIV_double(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN diviHi], R7 [IN diviLo])
 -s 0x00283AD6=DIV_float(R4 [IN dividend; OUT quot], R5 [IN divisor])
 -s 0x00283B78=DIV_int(R4 [IN dividend; OUT quotient], R5 [IN divisor])
--s 0x00283BC6=DIV_int64(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN divHi], R7 [IN divLo]
+-s 0x00283BC6=DIV_int64(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN divHi], R7 [IN divLo])
 -s 0x00283C64=dtoi(R4 [IN doubleHi; OUT int], R5 [IN doubleLo])
 -s 0x00283CA2=dtoui(R4 [IN doubleHi; OUT uint], R5 [IN doubleLo])
 -s 0x00283CE0=ftod(R4 [IN float; OUT doubleHi], R5 [OUT doubleLo])
@@ -369,7 +369,7 @@
 -s 0x00285572=strncmp(R4 [IN str1; OUT res], R5 [IN str2], R6 [IN n])
 -s 0x00285590=strncpy(R4 [IN dst; OUT dst], R5 [IN src], R6 [IN n])
 -s 0x002855B0=strstr(R4 [IN where; OUT pos], R5 [iN what])
--s 0x002855E2=strtok(R4 [IN str; OUT ptr_token], R5 [ptr_delimeters])
+-s 0x002855E2=strtok(R4 [IN str; OUT ptr_token], R5 [IN ptr_delimeters])
 -s 0x00285678=strtol(R4 [IN str; OUT int], R5 [IN ptr_endptr], R6 [IN base])
 -s 0x00285702=vsprintf(R4 [IN dst; OUT chars], R5 [IN formatstring], R6 [IN va_list])
 -s 0x002866A6=atan(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
