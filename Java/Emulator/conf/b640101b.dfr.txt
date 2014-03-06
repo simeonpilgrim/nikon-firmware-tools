@@ -4727,8 +4727,10 @@
 -s 0x0022E020=notcalled_22E020
 -s 0x00232F42=nullsub_69
 -s 0x00232F44=nullsub_70
--s 0x0023430A=double_neg
+-s 0x0023430A=SUB_double(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
 -s 0x00234310=double_addition
+-s 0x002344F8=SUB_float(R4 [IN floatA; OUT res], R5 [IN floatB])
+-s 0x002344FE=ADD_float(R4 [IN floatA; OUT res], R5 [IN floatB])
 -s 0x002345EE=ADD_uint64
 -s 0x002345F4=AND_uint64
 -s 0x002345FA=CMP_double
@@ -4743,6 +4745,7 @@
 -s 0x00234A28=doubleToUint
 -s 0x00234A66=_ftod
 -s 0x00234A8E=_ftoi
+-s 0x00234AC6=ftoui(R4 [IN float; OUT uint])
 -s 0x00234AFE=itod
 -s 0x00234B18=itof
 -s 0x00234B32=int32_to_int64
