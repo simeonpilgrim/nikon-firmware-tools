@@ -7,14 +7,12 @@
 -i 0x00040000-0x003FFFFF=0x00000000
 
 # copied data
-# at 0x00040944 copied size 0x00016E98
-#-i 0x9E50BEAC-0x9E522D43=0x00425E04
-# at 0x00040968 copied size 0x00000020
-#-i 0x6800380C-0x6800382B=0x0044EED8
-# at 0x001122EA copied size 0x000110D0
-#-i 0x9E522D44-0x9E533E13=0x0043CC9C
-# at 0x000409B0 copied size 0x0000116E
-#-i 0x9F1A4C90-0x9F1A5DFD=0x0044DD68
+# at 0x000ED138 copied size 0x0000A680
+#-i 0x87DE58E8-0x87DEFF67=0x00113E28
+# at 0x000ED15C copied size 0x00000462
+#-i 0x87DDF8B0-0x87DDFD11=0x0011E4A8
+# at 0x000ED17A copied size 0x00000118
+#-i 0x68005A10-0x68005B27=0x0011E90C
 
 ############################### Memory map
 
@@ -220,3 +218,6 @@
 -s 0x000467EA=memcpy_fast(R4 [IN dst], R5 [IN src], R6 [IN count])
 -s 0x0004681C=memset_word(R4 [IN dst], R5 [IN word], R6 [IN countBytes])
 -s 0x0004684C=memset_fast(R4 [IN dst], R5 [IN byte], R6 [IN count])
+-s 0x0006FC1A=call_FlashClear(R4 [IN addr; OUT bool_ok],R5 [IN size])
+-s 0x0006FC2C=call_FlashWrite(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
+-s 0x0006FC3E=call_FlashWriteFirmwareOrSettings()
