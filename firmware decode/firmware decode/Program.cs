@@ -46,11 +46,14 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin"); 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");    
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
 
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
+
+            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
+            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
 
@@ -128,6 +131,240 @@ namespace Nikon_Decode
             //MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
             //FindEmptyBlocks(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x40000);
 
+            Dump_D7000_S179(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\D7000\s179.bin");
+
+        }
+
+
+
+
+        private static void Dump_D7000_S179_s177_B_A(string filename, string header, byte[] data, int offset, int number)
+        {
+            var tw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            tw.WriteLine(header);
+
+            for (int i = 0; i < number; i++)
+            {
+                int idx = offset + (i * 6);
+                int addr = (data[idx + 0] << 8) + data[idx + 1];
+                int high = (data[idx + 2] << 8) + data[idx + 4];
+                int low = (data[idx + 3] << 8) + data[idx + 5];
+
+                var s = string.Format("0x{3:X4} 0x{0:X4} : 0x{1:X4} {2:X4} ( {4} )", addr, high, low, idx - offset, (high <<16)+(low) );
+                            Debug.WriteLine(s);
+                            tw.WriteLine(s);
+
+
+            }
+
+            tw.Close();
+            tw.Dispose();
+        }
+
+        private static void Dump_D7000_S179_s177_D(string filename, string header, byte[] data, int offset)
+        {
+            var tw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            tw.WriteLine(header);
+
+
+            tw.WriteLine(string.Format("Msg 00: {0}", DataToStr(data, offset + 0, 12)));
+            tw.WriteLine(string.Format("Msg 0E a/b: {0}", DataToStr(data, offset + 0xc, 2)));
+            tw.WriteLine(string.Format("Msg 0F a/b: {0}", DataToStr(data, offset + 0xe, 2)));
+            tw.WriteLine(string.Format("Msg 10: {0}", DataToStr(data, offset + 0x10, 2)));
+            tw.WriteLine(string.Format("Msg 12 a/b: {0}", DataToStr(data, offset + 0x12, 2)));
+            tw.WriteLine(string.Format("Msg 13: {0}", DataToStr(data, offset + 0x14, 9)));
+            tw.WriteLine(string.Format("Msg 1F: {0}", DataToStr(data, offset + 0x1D, 2)));
+            tw.WriteLine(string.Format("Msg 23: {0}", DataToStr(data, offset + 0x1F, 7)));
+
+            tw.Close();
+            tw.Dispose();
+        }
+
+        private static void Dump_D7000_S179_s177_D_a(string filename, string header, byte[] data, int offset)
+        {
+            var tw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            tw.WriteLine(header);
+
+
+            tw.WriteLine(string.Format("Msg 00: {0}", DataToStr(data, offset + 0, 8)));
+            tw.WriteLine(string.Format("Msg 0E: {0}", DataToStr(data, offset + 0xC, 6)));
+            tw.WriteLine(string.Format("Msg 1F: {0}", DataToStr(data, offset + 0x1A, 2)));
+            tw.WriteLine(string.Format("Msg 23: {0}", DataToStr(data, offset + 0x1C, 7)));
+
+            tw.Close();
+            tw.Dispose();
+        }
+
+        private static void Dump_D7000_S179_X(TextWriter tw, byte[] data, int offset)
+        {
+            var v0 = (data[offset+0] << 8) + data[offset+1];
+            var v1 = (data[offset+2] << 8) + data[offset+3];
+
+            tw.WriteLine(string.Format("{0:X4} {1:X4} ({2})", v0, v1, v1));
+        }
+
+        private static void Dump_D7000_S179_s177_E(string filename, byte[] data, int offset)
+        {
+            var tw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            for (int v5 = 0; v5 < 7; v5++)
+            {
+                for (int r10 = 0; r10 < 3; r10++) // 0,1,2
+                {
+                    for (int r11 = 0; r11 < 1; r11++) // < 9
+                    {
+                        tw.WriteLine("");
+                        tw.WriteLine("v5: {0} r10: {1} r11: {2}", v5, r10, r11);
+                    
+                        for (int i = 0; i < 9; i++)
+                        {
+                            int idx = offset + 0x1E6 + (r10 * 0xF30) + (0x17A * r11) + (v5 * 0x36) + (6 * i);
+            
+                            int addr = (data[idx + 0] << 8) + data[idx + 1];
+                            int high = (data[idx + 2] << 8) + data[idx + 4];
+                            int low = (data[idx + 3] << 8) + data[idx + 5];
+
+                            var s = string.Format("0x{3:X4} 0x{0:X4} : 0x{1:X4} {2:X4} ( {4} )", addr, high, low, idx - offset, (high <<16)+(low) );
+                            tw.WriteLine(s);
+                        }
+                    }
+                }
+            }
+
+            tw.Close();
+            tw.Dispose();
+        }
+
+        private static void Dump_D7000_S179(string fileName)
+        {
+            if (File.Exists(fileName))
+            {
+                BinaryReader br = null;
+                StreamWriter tw = null;
+
+                try
+                {
+                    br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+                    tw = new StreamWriter(File.Open(fileName + ".txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+                    var data = br.ReadBytes((int)br.BaseStream.Length);
+
+                    Dump_D7000_S179_s177_B_A(fileName + " - 25 fps.txt", "0x02560  fpsIdx_1345_3 25fps",  data, 0x02560, (0x02662 - 0x02560) / 6);
+                    Dump_D7000_S179_s177_B_A(fileName + " - 30 fps.txt", "0x02662 fpsIdx_1345_4 30fps", data, 0x02662, (0x02662 - 0x02560) / 6);
+                    Dump_D7000_S179_s177_B_A(fileName + " - 10 fps.txt", "0x0245E fpsIdx_1345_2 10fps", data, 0x0245E, (0x02662 - 0x02560) / 6);
+                    Dump_D7000_S179_s177_B_A(fileName + " - 24 fps.txt", "0x0235C fpsIdx_1345_1 24fps", data, 0x0235C, (0x02662 - 0x02560) / 6);
+
+                    Dump_D7000_S179_s177_D(fileName + "D - 24 fps.txt", "0595 fpsIdx_1345_1 24fps", data, 0x0595);
+                    Dump_D7000_S179_s177_D(fileName + "D - 25 fps.txt", "0606 fpsIdx_1345_1 25fps", data, 0x0606);
+                    Dump_D7000_S179_s177_D(fileName + "D - 30 fps.txt", "0640 fpsIdx_1345_1 30fps", data, 0x0640);
+                    Dump_D7000_S179_s177_D(fileName + "D - 30 fps.txt", "0640 fpsIdx_1345_1 30fps", data, 0x0640);
+
+                    Dump_D7000_S179_s177_D_a(fileName + "D - 2.txt", "05CF", data, 0x05CF);
+                    Dump_D7000_S179_s177_D_a(fileName + "D - 5 AF.txt", "067A", data, 0x067A);
+
+                    tw.WriteLine("1E994A fpsIdx_b_4_30 A");
+                    Dump_D7000_S179_X(tw, data, 0x19b4);
+                    Dump_D7000_S179_X(tw, data, 0x19b8);
+                    Dump_D7000_S179_X(tw, data, 0x1968);
+                    Dump_D7000_S179_X(tw, data, 0x19bc);
+
+                    tw.WriteLine("1E994A fpsIdx_b_4_30 B");
+                    Dump_D7000_S179_X(tw, data, 0x1960);
+                    Dump_D7000_S179_X(tw, data, 0x1968);
+                    Dump_D7000_S179_X(tw, data, 0x1970);
+
+                    tw.WriteLine("1E994A fpsIdx_b_4_30 END");
+                    Dump_D7000_S179_X(tw, data, 0x1978);
+                    Dump_D7000_S179_X(tw, data, 0x1980);
+
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E9A08 fpsIdx_b_3_25 A");
+                    Dump_D7000_S179_X(tw, data, 0x1938);
+                    Dump_D7000_S179_X(tw, data, 0x193C);
+                    Dump_D7000_S179_X(tw, data, 0x18EC);
+                    Dump_D7000_S179_X(tw, data, 0x1940);
+
+                    tw.WriteLine("1E9A08 fpsIdx_b_3_25 B");
+                    Dump_D7000_S179_X(tw, data, 0x18E4);
+                    Dump_D7000_S179_X(tw, data, 0x18Ec);
+                    Dump_D7000_S179_X(tw, data, 0x18F4);
+
+                    tw.WriteLine("1E9A08 fpsIdx_b_3_25 END");
+                    Dump_D7000_S179_X(tw, data, 0x18FC);
+                    Dump_D7000_S179_X(tw, data, 0x1904);
+
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E9AC0 fps_idx_1_24 A");
+                    Dump_D7000_S179_X(tw, data, 0x184C);
+                    Dump_D7000_S179_X(tw, data, 0x1850);
+                    Dump_D7000_S179_X(tw, data, 0x1800);
+                    Dump_D7000_S179_X(tw, data, 0x1854);
+
+                    tw.WriteLine("1E9AC0 fps_idx_1_24 B");
+                    Dump_D7000_S179_X(tw, data, 0x17f8);
+                    Dump_D7000_S179_X(tw, data, 0x1800);
+                    Dump_D7000_S179_X(tw, data, 0x1808);
+
+                    tw.WriteLine("1E9AC0 fps_idx_1_24 END");
+                    Dump_D7000_S179_X(tw, data, 0x1810);
+                    Dump_D7000_S179_X(tw, data, 0x1918);
+
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E98A8 fpsIdx_b_2");
+                    Dump_D7000_S179_X(tw, data, 0x1874);
+                    Dump_D7000_S179_X(tw, data, 0x1878);
+                    Dump_D7000_S179_X(tw, data, 0x187C);
+                    Dump_D7000_S179_X(tw, data, 0x1880);
+                    Dump_D7000_S179_X(tw, data, 0x1884);
+
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E98C2 fpsIdx_b_5_AF? A");
+                    Dump_D7000_S179_X(tw, data, 0x1A24);
+                    Dump_D7000_S179_X(tw, data, 0x1A28);
+                    Dump_D7000_S179_X(tw, data, 0x19DC);
+                    Dump_D7000_S179_X(tw, data, 0x1A2C);
+                    Dump_D7000_S179_X(tw, data, 0x19DC);
+                    tw.WriteLine("1E98C2 fpsIdx_b_5_AF? B");
+                    Dump_D7000_S179_X(tw, data, 0x19DC);
+                    Dump_D7000_S179_X(tw, data, 0x19E0);
+                    Dump_D7000_S179_X(tw, data, 0x19E4);
+                    Dump_D7000_S179_X(tw, data, 0x1AE8);
+                    Dump_D7000_S179_X(tw, data, 0x19EC);
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E97AA x0E_eq_1");
+                    Dump_D7000_S179_X(tw, data, 0x1760);
+                    Dump_D7000_S179_X(tw, data, 0x1768);
+                    Dump_D7000_S179_X(tw, data, 0x1718 + 8);
+                    Dump_D7000_S179_X(tw, data, 0x1770);
+                    Dump_D7000_S179_X(tw, data, 0x1718 + 10);
+
+                    tw.WriteLine();
+                    tw.WriteLine("1E97AA x0E_eq_2");
+                    Dump_D7000_S179_X(tw, data, 0x1764);
+                    Dump_D7000_S179_X(tw, data, 0x176C);
+                    Dump_D7000_S179_X(tw, data, 0x1718 + 8);
+                    Dump_D7000_S179_X(tw, data, 0x1774);
+                    Dump_D7000_S179_X(tw, data, 0x1718 + 0x10);
+
+
+                    Dump_D7000_S179_s177_E(fileName + "_E.txt", data, 0x5EB0);
+                }
+                finally
+                {
+                    if (br != null)
+                        br.Close();
+                    if (tw != null)
+                        tw.Close();
+                }
+            }
         }
 
         private static void DecodeNKLDFile(string fileName)
