@@ -286,6 +286,8 @@
 -s 0x001D5640=debug_AudioSvcTaskPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
 -s 0x001D6ADE=sys_getAddressPtrCurrentTCB(R4 [OUT pCurrentTCB])
 -s 0x001F0992=debug_TemperaturePrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x0021759C=ptp_GetFCxxFExxTableAddress
+-s 0x002271C0=ptp_ResponceError
 -s 0x00249F26=getHalfWord_LE(R4 [IN ptr; OUT halfword])
 -s 0x00249F56=getWord_LE(R4 [IN ptr; OUT halfword])
 -s 0x002683A2=call_sys_twai_flg(R4 [IN struct; OUT err], R5 [IN timeout])
@@ -377,6 +379,8 @@
 # for Emulator
 -s 0x000D3938=tblTaskData
 -s 0x6800382C=pCurrentTCB
+-s 0x003282C8=txSetsTableV2
+-s 0x003836B0=ptpTableCodeFCxxV2
 
 -j 0x001CA98C=@(0x0032E3FC+23*4)
 -j 0x00062846=@(0x000CECE4+17*64)
