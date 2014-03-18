@@ -1,0 +1,34 @@
+# The main part of this file describes the D7000 "B" firmware, ver 1.04
+# Two special parts are also included but commented out :
+# - the ROM part at 0x000E0000
+# - the copy of code to 0x80080000 performed by the ROM bootup
+#
+# Use in Emulator or
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b7500104a.dfr.txt -o b7500104a.asm b7500104a.bin
+
+############################### File map: D7000
+-i 0x00040000-0x00BFFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0x00040000-0x000406D7=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x000406D8-0x00040837=DATA:W
+
+-m 0x00040838-0x00040915=CODE
+
+# Softune RTOS Copyright :
+-m 0x00040916-0x00040981=DATA:L
+
+-m 0x00040982-0x000504B1=CODE
+
+-m 0x000ABB0A-0x000DA1E9=CODE
+
+# Interrupt vector table.
+-t 0x000dfc00
+
+-m 0x00100000-0x0021D057=CODE
+-m 0x0029897C-0x00367E7D=CODE
+

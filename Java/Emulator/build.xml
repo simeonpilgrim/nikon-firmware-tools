@@ -1,0 +1,209 @@
+<?xml version="1.0"?>
+
+
+<project name="Nikon Emulator" default="all" basedir=".">
+
+	<description>Nikon Emulator build file</description>
+
+	<!-- Set global properties for this build. -->
+    <property name="app-name"         value="NikonEmulator"/>
+    <property name="app-version"      value="2.50"/>
+    <property name="app-mainclass"    value="com.nikonhacker.gui.EmulatorUI"/>
+    <property name="source-dir"       location="src/main"/>
+    <property name="template-dir"     location="src/template"/>
+    <property name="target-dir"       location="ant_build"/>
+    <property name="class-dir"        location="${target-dir}/classes"/>
+    <property name="gen-dir"          location="${target-dir}/gen"/>
+    <property name="dist-dir"         location="${target-dir}/dist"/>
+    <property name="jar-dir"          location="${dist-dir}/jar"/>
+    <property name="lib-dir"          location="lib"/>
+    <property name="batch-dir"        location="batch"/>
+    <property name="conf-dir"         location="conf"/>
+    <property name="data-dir"         location="data"/>
+    <property name="tools-dir"        location="tools"/>
+	<property name="debug"            value="true"/>
+	<property name="debuglevel"       value="lines,vars,source"/>
+	<property name="java-level"       value="1.7"/>
+    <property file="build.credentials.properties" />
+
+    <tstamp>
+        <format property="build-time" pattern="yyyy-MM-dd HH:mm:ss" />
+    </tstamp>
+
+    <path id="build.classpath">
+        <fileset dir="${lib-dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <!-- default target -->
+    <target name="all" depends="clean,dist" description="Default target to build all"/>
+
+    <target name="preprocess" description="Substitute values for symbolic names in template files">
+        <copy todir="${gen-dir}">
+            <fileset dir="${template-dir}"/>
+            <filterchain>
+                <replacetokens>
+                    <token key="APPNAME" value="${app-name}"/>
+                    <token key="APPVERSION" value="${app-version}"/>
+                    <token key="BUILDTIME" value="${build-time}"/>
+                </replacetokens>
+            </filterchain>
+        </copy>
+    </target>
+
+	<!-- Compiles all classes.  -->
+	<target name="compile" description="Compile the source." depends="preprocess">
+		<delete includeEmptyDirs="true" quiet="true" dir="${class-dir}"/>
+		<mkdir dir="${class-dir}"/>
+
+		<javac destdir="${class-dir}" deprecation="yes"
+                classpathref="build.classpath"
+				debug="${debug}" debuglevel="${debuglevel}"
+				source="${java-level}" target="${java-level}">
+            <src path="${source-dir}"/>
+            <src path="${gen-dir}"/>
+        </javac>
+        <copy todir="${class-dir}" >
+            <fileset dir="${source-dir}">
+                <include name="**/*.png"/>
+                <include name="**/*.jpg"/>
+                <include name="**/*.properties"/>
+            </fileset>
+        </copy>
+	</target>
+
+	<!-- Build the executable jar.  -->
+	<target name="make-jar" depends="compile" description="Create the Nikon Emulator jar">
+        <delete dir="${jar-dir}"/>
+		<mkdir dir="${jar-dir}"/>
+        <delete file="${gen-dir}/MANIFEST.MF"/>
+
+        <!-- Capture the path as a delimited property using the refid attribute -->
+        <property name="orig.classpath" refid="build.classpath"/>
+        <!-- Emit the property to the ant console -->
+        <echo message="Classpath = ${orig.classpath}"/>
+
+        <!-- convert classpath to a flat list/string for use in manifest task -->
+        <pathconvert property="mf.classpath" pathsep=" ">
+            <path refid="build.classpath" />
+            <map from="${lib-dir}" to="lib"/>
+        </pathconvert>
+
+        <!-- Emit the property to the ant console -->
+        <echo message="Converted classpath = ${mf.classpath}"/>
+
+        <manifest file="${gen-dir}/MANIFEST.MF">
+            <attribute name="Built-By" value="${user}"/>
+            <attribute name="Built-Date" value="${build-time}"/>
+            <attribute name="Main-Class" value="${app-mainclass}"/>
+            <attribute name="Class-Path" value="${mf.classpath}" />
+            <attribute name="Specification-Title" value="${app-name}"/>
+            <attribute name="Specification-Version" value="${app-version}"/>
+            <attribute name="Implementation-Title" value="${app-mainclass}"/>
+            <attribute name="Implementation-Version" value="${app-version} ${build-time}"/>
+            <attribute name="Implementation-Vendor" value="nikonhacker.com"/>
+        </manifest>
+
+        <jar destfile="${jar-dir}/${app-name}.jar" manifest="${gen-dir}/MANIFEST.MF">
+			<fileset dir="${class-dir}"/>
+		</jar>
+	</target>
+
+
+    <!-- Prepare the distribution -->
+    <target name="dist" depends="make-jar" description="Prepare files for distribution">
+        <delete file="${dist-dir}/${app-name}-${app-version}.zip"/>
+        <delete>
+            <fileset dir="${dist-dir}" includes="*-src.zip"/>
+        </delete>
+        <!-- Binary dist -->
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             basedir="."
+             includes="lib/**/*.jar"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${jar-dir}"
+             includes="${app-name}.jar"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${batch-dir}"
+             includes="*.bat *.sh"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="."
+             includes="*.txt"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${conf-dir}"
+             includes="*.*"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}.zip"
+             update="true"
+             basedir="${data-dir}"
+             includes="*.*"
+                />
+
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             basedir="."
+             includes="build.xml"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             update="true"
+             basedir="."
+             includes="src/**/*.*"
+                />
+        <zip destfile="${dist-dir}/${app-name}-${app-version}-src.zip"
+             update="true"
+             basedir="."
+             includes="lib/**/*.*"
+                />                
+    </target>
+
+
+    <!-- Clean dirs -->
+    <target name="clean" description="cleanup module">
+        <delete dir="${target-dir}"/>
+    </target>
+    
+    <taskdef name="gcupload"
+            classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
+            classpath="${tools-dir}\googlecode_upload\ant-googlecode-0.0.3.jar" />
+
+    <target name="upload-build" description="Upload built file to Google Code">
+        <gcupload
+                username="${gc.username}"
+                password="${gc.password}"
+                projectname="nikon-firmware-tools"
+                filename="${dist-dir}/${app-name}-${app-version}.zip"
+                targetfilename="${app-name}-${app-version}.zip"
+                summary="Version ${app-version} of ${app-name} (requires Java 1.7)"
+                labels="Featured, Type-Archive, OpSys-All" />
+        <echo message="Don't forget to deprecate the previous release"/>
+    </target>
+
+
+    <!-- Process Jflex file -->
+    <!-- This target was used to get the initial files, but they were then manually tuned to reach the usable state -->
+    <!--<target name="process-jflex" description="Create a Java Syntax Highlighting from the Flex file">-->
+    <!--<java jar="${tools-dir}/jflex/lib/JFlex.jar" fork="true" failonerror="true" maxmemory="128m">-->
+    <!--<arg value="${source-dir}/com/nikonhacker/gui/component/sourceCode/syntaxHighlighter/AssemblerFrTokenMaker.flex"/>-->
+    <!--<classpath>-->
+    <!--<pathelement location="${tools-dir}/jflex/lib/classes.zip"/>-->
+    <!--<pathelement location="${tools-dir}/jflex/lib/JFlex.jar"/>-->
+    <!--</classpath>-->
+    <!--</java>-->
+    <!--<java jar="${tools-dir}/jflex/lib/JFlex.jar" fork="true" failonerror="true" maxmemory="128m">-->
+    <!--<arg value="${source-dir}/com/nikonhacker/gui/component/sourceCode/syntaxHighlighter/AssemblerTxTokenMaker.flex"/>-->
+    <!--<classpath>-->
+    <!--<pathelement location="${tools-dir}/jflex/lib/classes.zip"/>-->
+    <!--<pathelement location="${tools-dir}/jflex/lib/JFlex.jar"/>-->
+    <!--</classpath>-->
+    <!--</java>-->
+    <!--</target>-->
+
+</project>

@@ -1,0 +1,389 @@
+# The main part of this file describes the D600 "B" firmware, ver 1.01a
+#
+# Use in Emulator or
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b910101a.dfr.txt -o b910101a.asm b910101a.bin
+
+############################### File map: D600
+-i 0x00040000-0x00BFFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0x00040000-0x00040B03=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x00040B04-0x00040C63=DATA:W
+
+
+-m 0x00040C64-0x00040D41=CODE
+
+# Softune RTOS Copyright :
+-m 0x00040D42-0x00040DAD=DATA:L
+
+# ITRON kernel code
+-m 0x00040DAE-0x0008CAB1=CODE
+
+# tblTaskData
+-m 0x000D3938-0x000D41A7=DATA:L
+
+
+
+# Interrupt vector table.
+-t 0x000DFC00
+
+-m 0x00100000-0x00286BB9=CODE
+
+-m 0x003990AA-0x00466E0D=CODE
+
+-m 0x005411C4-0x0054E3F1=CODE
+
+############################### Symbols
+
+# syscalls
+-s 0x00040C64=sys_unsupported_function (R12 [OUT err_code])
+-s 0x00040C68=sys_reserved_function (R12 [OUT err_code])
+-s 0x000414E2=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
+-s 0x00041500=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
+-s 0x0004151E=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
+-s 0x0004157A=sys_def_cyc(R4 [IN cycno], R5 [IN ptr_to_pk_dcyc], R12 [OUT err_code] /* Define Cyclic Handler */)
+-s 0x000415F8=sys_act_cyc(R4 [IN cycno], R5 [IN cycact], R12 [OUT err_code] /* Activate Cyclic Handler */)
+-s 0x0004165E=sys_ref_cyc(R4 [IN ptr_to_pk_rcyc], R5 [IN cycno], R12 [OUT err_code] /* Get Cyclic Handler Status */)
+-s 0x000416E0=sys_def_alm(R4 [IN almno], R5 [IN ptr_to_pk_dalm], R12 [OUT err_code] /* Define Alarm Handler */)
+-s 0x0004176E=sys_ref_alm(R4 [IN ptr_to_pk_ralm], R5 [IN almno], R12 [OUT err_code] /* Get Alarm Handler Status */)
+-s 0x000417E0=sys_sus_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Suspend Other Task */)
+-s 0x00041864=sys_rsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Resume Suspended Task */)
+-s 0x000418EC=sys_frsm_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Forcibly Resume suspended Task */)
+-s 0x0004194C=sys_slp_tsk(R12 [OUT err_code] /* Sleep Task */)
+-s 0x00041982=sys_tslp_tsk(R4 [IN timeout], R12 [OUT err_code] /* Sleep Task with Timeout */)
+-s 0x00041A06=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
+-s 0x00041A68=sys_can_wup(R4 [IN tsk_id], R12 [OUT err_code], R13 [OUT wakeup_count] /* Cancel Wakeup Request */)
+-s 0x00041ACC=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
+-s 0x00041B4A=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
+-s 0x00041BA4=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
+-s 0x00041C42=sys_dis_dsp(R12 [OUT err_code] /* Disable Dispatch */)
+-s 0x00041C64=sys_ena_dsp(R12 [OUT err_code] /* Enable Dispatch */)
+-s 0x00041C80=sys_chg_pri(R4 [IN tsk_id], R5 [IN tsk_prio], R12 [OUT err_code] /* Change Task Priority */)
+-s 0x00041CE8=sys_rot_rdq(R4 [IN tsk_prio], R12 [OUT err_code] /* Rotate Tasks on the Ready Queue */)
+-s 0x00041D4E=sys_rel_wai(R4 [IN tsk_id], R12 [OUT err_code] /* Release Wait of Other Task */)
+-s 0x00041DD0=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
+-s 0x00041DF0=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
+-s 0x00041EC4=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
+-s 0x00041F06=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
+-s 0x00041F48=sys_preq_sem(R4 [IN sem_id], R12 [OUT err_code] /* Poll and request Semaphore */)
+-s 0x00041F7C=sys_twai_sem(R4 [IN sem_id], R5 [IN timeout], R12 [OUT err_code] /* Wait on Semaphore with Timeout */)
+-s 0x00042002=sys_ref_sem(R4 [IN ptr_to_pk_rsem], R5 [IN sem_id], R12 [OUT err_code] /* Get Semaphore Status */)
+-s 0x0004204C=sys_set_flg(R4 [IN flag_id], R5 [IN set_pattern], R12 [OUT err_code] /* Set Eventflag */)
+-s 0x000420E6=sys_clr_flg(R4 [IN flag_id], R5 [IN clr_pattern], R12 [OUT err_code] /* Clear Eventflag */)
+-s 0x0004210E=sys_wai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag */)
+-s 0x00042196=sys_pol_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag, polling */)
+-s 0x000421EE=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout; OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
+-s 0x000422AC=sys_ref_flg(R4 [IN ptr_to_pk_rflg], R5 [IN flag_id], R12 [OUT err_code] /* Get Eventflag Status */)
+-s 0x000422E2=sys_snd_msg(R4 [IN mailbox_id], R5 [IN ptr_to_pk_msg], R12 [OUT err_code] /* Send Message to Mailbox */)
+-s 0x0004233C=sys_rcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox */)
+-s 0x0004238C=sys_prcv_msg(R5 [IN mailbox_id], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, polling */)
+-s 0x000423DA=sys_trcv_msg(R5 [IN mailbox_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT ptr_to_pk_msg] /* Receive Message from Mailbox, with Timeout */)
+-s 0x0004245C=sys_ref_mbx(R4 [IN ptr_to_pk_rmbx], R5 [IN mailbox_id], R12 [OUT err_code] /* Get Mailbox Status */)
+-s 0x000424E0=sys_get_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block */)
+-s 0x000425D4=sys_pget_blk(R5 [IN mempool_id], R6 [IN blk_size], R12 [OUT err_code], R13 [OUT blk_start] /* Get Variable-Sized Memory Block, polling */)
+-s 0x000426D4=sys_rel_blk(R4 [IN mempool_id], R5 [OUT blk_start], R12 [OUT err_code] /* Release Variable-Sized Memory Block */)
+-s 0x00042892=sys_ref_mpl(R4 [IN ptr_to_pk_rmempool], R5 [IN mempool_id], R12 [OUT err_code] /* Get Variable-Sized Memorypool Status */)
+-s 0x0004290C=sys_get_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block */)
+-s 0x00042968=sys_pget_blf(R5 [IN mempool_f_id], R12 [OUT err_code], R13 [OUT blk_f_start] /* Poll and Get Fixed-Sized Memory Block */)
+-s 0x000429AC=sys_tget_blf(R5 [IN mempool_f_id], R6 [IN timeout], R12 [OUT err_code], R13 [OUT blk_f_start] /* Get Fixed-Sized Memory Block with Timeout */)
+-s 0x00042A4E=sys_rel_blf(R4 [IN mempool_f_id], R5 [OUT blk_f_start], R12 [OUT err_code] /* Release Fixed-Sized Memory Block */)
+-s 0x00042B1C=sys_ref_mpf(R4 [IN ptr_to_pk_rmempool_f], R5 [IN mempool_f_id], R12 [OUT err_code] /* Get Fixed-Sized Memorypool Status */)
+-s 0x00042B58=sys_loc_cpu(R12 [OUT err_code] /* Lock CPU */)
+-s 0x00042B6C=sys_unl_cpu(R12 [OUT err_code] /* Unlock CPU */)
+-s 0x00042B80=sys_chg_ilm(R4 [IN ilmask], R12 [OUT err_code] /* Change Interrupt Level Mask */)
+-s 0x00042BA8=sys_ref_ilm(R12 [OUT err_code], R13 [OUT ilmask] /* Get Interrupt Level Mask */)
+-s 0x00042BCC=sys_get_ver(R4 [IN ptr_to_pk_ver], R12 [OUT err_code] /* Get Version Information */)
+-s 0x00042C08=sys_ref_sys(R4 [IN ptr_to_pk_rsys], R12 [OUT err_code] /* Get System Status */)
+
+# Tasks
+-s 0x00040EB0=SetupTCB
+-s 0x00040DAE=StartIdleTask
+-s 0x0015C10A=task_0x01
+-s 0x00199308=task_0x02
+-s 0x002693F8=task_0x03
+-s 0x001B2876=task_0x04
+-s 0x001AB850=task_0x05
+-s 0x001AE1AA=task_0x06
+-s 0x001C8CA4=task_0x07 (/* HDMI CECTask */)
+-s 0x001C9FAE=task_0x08 (/* HDMI CEC timers */)
+-s 0x001CA50E=task_0x09
+-s 0x002644E0=task_0x0A
+-s 0x001B79E4=task_0x0B
+-s 0x001B9A40=task_0x0C
+-s 0x001B53A6=task_0x0D
+-s 0x001B4D50=task_0x0E
+-s 0x001B2DB6=task_0x0F
+-s 0x001BA174=task_0x10 (/* resolution converter #0 */)
+-s 0x001BA6FC=task_0x11 (/* resolution converter #1 */)
+-s 0x001BAC84=task_0x12 (/* resolution converter #2 */)
+-s 0x00256EE8=task_0x13
+-s 0x0025719E=task_0x14
+-s 0x001B1402=task_0x15 (/* block transfer #0 */)
+-s 0x001B1CDA=task_0x16 (/* block transfer #1 */)
+-s 0x0017A40C=task_0x17
+-s 0x00198D24=task_0x18
+-s 0x0013D120=task_0x19 (/* AudioTask */ )
+-s 0x001D56BC=task_0x1A (/* AudioSvcTask */ )
+-s 0x0013ADA4=task_0x1B (/* AudioDmaTask */)
+-s 0x00100108=task_0x1C( /* Autorun */)
+-s 0x0012BE6C=task_0x1D
+-s 0x0012FAEE=task_0x1E
+-s 0x00254258=task_0x1F
+-s 0x00253B70=task_0x20
+-s 0x0019F3C8=task_0x21
+-s 0x0013091A=task_0x22
+-s 0x0026533A=task_0x23
+-s 0x001E291E=task_0x24
+-s 0x0024E0C8=task_0x25
+-s 0x0024CF32=task_0x26
+-s 0x00043820=task_0x27
+-s 0x00190EFC=task_0x28
+-s 0x00261FCA=task_0x29
+-s 0x0026200A=task_0x2A
+-s 0x00260266=task_0x2B
+-s 0x00191DCE=task_0x2C
+-s 0x00192628=task_0x2D
+-s 0x001C6626=task_0x2E ( /* TftTask */ )
+-s 0x001CFE80=task_0x2F ( /* TftBackLight */ )
+-s 0x002635D4=task_0x30 ( /* TftSubTask */ )
+-s 0x001CA8CE=task_0x31 ( /* HdmiTask */ )
+-s 0x00263958=task_0x32 ( /* HdmiSubTask */ )
+-s 0x00112112=task_0x33
+-s 0x0011722C=task_0x34 ( /* movie ... */)
+-s 0x0010D714=task_0x35
+-s 0x00199BEA=task_0x36
+-s 0x0015874A=task_0x37
+-s 0x00409CEE=task_0x38
+-s 0x0043DC8E=task_0x39
+-s 0x0019A282=task_0x3A
+-s 0x0014A1B4=task_0x3B
+-s 0x001BFC6A=task_0x3C
+-s 0x00156A1C=task_0x3D
+-s 0x00156A7C=task_0x3E
+-s 0x002511AC=task_0x3F
+-s 0x00063482=task_0x40 ( /* movie encoder */)
+-s 0x000626E0=task_0x41 ( /* movie decoder */)
+-s 0x000694E8=task_0x42 ( /* movie ent */)
+-s 0x00069530=task_0x43 ( /* movie display */)
+-s 0x000694A0=task_0x44 ( /* movie cc */)
+-s 0x0006DCEC=task_0x45 ( /* movie stream mbox */)
+-s 0x0005FD52=task_0x46 ( /* movie record buttons */)
+-s 0x0005E7C2=task_0x47 ( /* movie play buttons */)
+-s 0x0005BBA8=task_0x48 ( /* movie ... */)
+-s 0x001BFE88=task_0x49
+-s 0x001BFE86=task_0x4A
+-s 0x0024AF4A=task_0x4B
+-s 0x00268928=task_0x4C
+-s 0x0013D3EE=task_0x4D
+
+# other
+-s 0x00040A38=time(R4 [OUT time_in_ms])
+-s 0x00041048=UpdateClock_ms()
+-s 0x00041E44=krnl_TableGetRecord(R14 [IN ptr_table; OUT ptr_record], R4 [IN index_1_based])
+-s 0x00063F14=movie_time_limit?
+-s 0x0006415C=encode_mbox_write_error_callback
+-s 0x000655A6=check_recording_time_over
+-s 0x000655E8=check_media_max_time
+-s 0x00069A8A=moviectl_fs_write_result
+-s 0x00128A42=debug_GUIPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x00131E9C=Axis_sub_131E9C
+-s 0x00133F02=AudioCodec_Initialize
+-s 0x00133F4C=I2C_Tx
+-s 0x00133F4C=I2C_Tx
+-s 0x00134208=AudioC_TableSwitch
+-s 0x00138704=AudioCodec_StartPlay
+-s 0x0013A2E4=AudioDMAC_Init_Ch1
+-s 0x0013A350=AudioDMAC_Init_Ch4
+-s 0x0013A3BC=AudioDMAC_Init_Ch5
+-s 0x0013A428=AudioDMAC_Start_Ch1
+-s 0x0013A5CC=AudioDMAC_Start_Ch4
+-s 0x0013A76A=AudioDMAC_Start_Ch5
+-s 0x0013AD76=Audio_Debug(R4 [IN message])
+-s 0x0013AD76=debug_AudioCodecPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x0013ADBC=DmaT_PostMessage
+-s 0x0013AE00=DmaT_OnMsg
+-s 0x0013B19A=AudioDmaTask_OnMessage_InitRec
+-s 0x0013F62C=AudioApi_OnNotifyCompletion
+-s 0x0016D878=dlist_init(R4 [IN ptr_to_list] /*creates sentinel node at the beginning*/)
+-s 0x0016D880=dlist_is_empty(R4 [IN ptr_to_element; OUT is_empty] )
+-s 0x0016D88C=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 before R4*/)
+-s 0x0016D89C=dlist_insert_after(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element] /*insert R5 after R4*/)
+-s 0x0016D8AC=dlist_remove(R4 [IN ptr_to_element] /*remove R4 element*/)
+-s 0x0016D8BC=dlist_remove_previous(R4 [IN ptr_to_element] /*remove item before R4*/)
+-s 0x0016D8D2=dlist_remove_next(R4 [IN ptr_to_element] /*remove item after R4*/)
+-s 0x001A228E=debug_Print(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001A228E=DebugPrint(R4 [IN message] /* mostly for video */)
+-s 0x001AABCE=Axis_StartTask
+-s 0x001AAC1C=Axis_ExitTask
+-s 0x001AAC54=Axis_Init
+-s 0x001AAEC6=Axis_PowerOn
+-s 0x001AB012=Axis_PowerOff
+-s 0x001AB118=Axis_GetRawData_ST
+-s 0x001AB260=Axis_ConvertToVector
+-s 0x001AB352=Axis_PowerOn_0
+-s 0x001AB450=Axis_PowerOff_0
+-s 0x001AB552=Axis_GetRawData_MEMSIC
+-s 0x001AB698=Axis_ConvertToVector_MEMSIC
+-s 0x001ABEE6=Axis_FlashInf
+-s 0x001AC05C=Axis_ReconvertAdjust
+-s 0x001AC21E=Axis_ConvertAngle
+-s 0x001AC7AC=Axis_sub_1AC7AC
+-s 0x001AD0F4=Axis_ConvertAdjustLog
+-s 0x001AD738=Axis_ConvertToFixedPoint16
+-s 0x001AD8EE=Axis_ConvertToMountDirection
+-s 0x001AD9E6=Axis_CalcAdjustParam
+-s 0x001ADB58=Axis_SetAdjustParam
+-s 0x001ADD08=Axis_ReadAdjustDataB
+-s 0x001ADE2C=Axis_ReadAdjustData
+-s 0x001AE3F2=Axis_Debug(R4 [IN message])
+-s 0x001AE3F2=debug_AxisPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001AE3FC=LowPriority_WaitSem(R4 [IN sem_id])
+-s 0x001AE444=LowPriority_PollSem(R4 [IN sem_id; OUT error_code])
+-s 0x001AE48C=LowPriority_SigSem(R4 [IN sem_id])
+-s 0x001AE4F2=return_halfword9E47F334(R4 [OUT value])
+-s 0x001AE546=crc16(R4 [IN size; OUT crc16], R5 [IN ptr_buf])
+-s 0x001AEA7C=EncryptData(R4 [IN ptr_data], R5 [IN size], R6 [IN IV], R7 [IN ptr_key])
+-s 0x001AF9D0=sys_getCurrentTaskID(R4 [OUT id])
+-s 0x001AFAC0=callInttableFunction(R4 [IN fn_idx])
+-s 0x001AFAE0=MessageLoopForever(R4 [IN ptr_to_mbx_id])
+-s 0x001AFB08=call_MailboxPtr_SendMessage(R4 [IN ptr_ptr_to_mbx_id; OUT bool_OK], R5 [IN ptr_msg])
+-s 0x001AFB1C=call_MessageLoopForever(R4 [IN ptr_to_mbx_id])
+-s 0x001AFB2E=ccall_MailboxPtr_SendMessage(R4 [IN ptr_to_mbx_id; OUT bool_OK], R5 [IN ptr_msg])
+-s 0x001BA18C=SendMessage_Task_0x10
+-s 0x001BA714=SendMessage_Task_0x11
+-s 0x001BAC9C=SendMessage_Task_0x12
+-s 0x001BB24A=MailboxPtr_SendMessage(R4 [IN ptr_to_mbx_id; OUT bool_OK], R5 [IN ptr_msg])
+-s 0x001BB26E=MailboxPtr_RecieveMessage(R4 [IN ptr_to_mbx_id; OUT bool_OK], R5 [IN ptr_to_msgptr])
+-s 0x001BB358=EventPtr_SetPtr(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN flag_id])
+-s 0x001BB362=EventPtr_SetFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN set_pattern])
+-s 0x001BB382=EventPtr_ClearFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN clr_pattern])
+-s 0x001BB3A8=EventPtr_WaitFlag_OR(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wai_pattern], R6 [IN ptr_out_pattern])
+-s 0x001BB3D8=EventPtr_WaitFlag_AND(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wai_pattern], R6 [IN ptr_out_pattern])
+-s 0x001BB408=EventPtr_WaitFlag_OR_Timeout(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern], R7 [IN timeout])
+-s 0x001BB440=EventPtr_WaitFlag_AND_Timeout(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern], R7 [IN timeout])
+-s 0x001BB478=EventPtr_PollFlag(R4 [IN ptr_to_flag_id; OUT bool_OK], R5 [IN wait_pattern], R6 [IN ptr_out_pattern])
+-s 0x001BB628=call_sys_ref_tsk(R4 [IN taskId; OUT state], R5 [IN ptr_pk_rtsk])
+-s 0x001BB642=isTaskDormant(R4 [IN taskId; OUT state])
+-s 0x001BB6FC=SemaphorePtr_SetID(R4 [IN ptr_to_id; OUT bool_OK], R5 [IN id])
+-s 0x001BB706=SignalSemaphorePtr(R4 [IN ptr_to_id; OUT bool_OK])
+-s 0x001BB726=WaitOnSemaphorePtr(R4 [IN ptr_to_id; OUT bool_OK])
+-s 0x001BB74C=WaitOnSemaphoreTimeout(R4 [IN ptr_to_id; OUT bool_OK], R5 [IN timeout])
+-s 0x001BB772=PollAndRequestSemaphore(R4 [IN ptr_to_id; OUT bool_OK])
+-s 0x001BB7C0=QueueInit(R4 [IN ptr_queue], R5 [IN param], R6 [IN param], R7 [IN param])
+-s 0x001BB876=QueueIsEmpty(R4 [IN ptr_queue; OUT is_empty])
+-s 0x001BB8AE=QueueAdd(R4 [IN ptr_queue; OUT err], R5 [IN ptr_data])
+-s 0x001BB91E=QueueTake(R4 [IN ptr_queue], R5 [IN ptr_data])
+-s 0x001C9E98=debug_HDMICECPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001C9E98=HDMIDebugPrint(R4 [IN message])
+-s 0x001D0B92=debug_HDMIPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001D2C6E=debug_EepromPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001D42BE=debug_I2CPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001D5098=debug_AudioSvcPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001D5640=debug_AudioSvcTaskPrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x001D6ADE=sys_getAddressPtrCurrentTCB(R4 [OUT pCurrentTCB])
+-s 0x001F0992=debug_TemperaturePrint(R4 [IN string], R5 [IN param2], R6 [IN param3], R7 [IN param4])
+-s 0x0021759C=ptp_GetFCxxFExxTableAddress
+-s 0x002271C0=ptp_ResponceError
+-s 0x00249F26=getHalfWord_LE(R4 [IN ptr; OUT halfword])
+-s 0x00249F56=getWord_LE(R4 [IN ptr; OUT halfword])
+-s 0x002683A2=call_sys_twai_flg(R4 [IN struct; OUT err], R5 [IN timeout])
+-s 0x002683D0=call_sys_twai_sem(R4 [IN ptr_id; OUT err], R5 [IN timeout])
+-s 0x002683EA=call_sys_tslp_tsk(R4 [IN unused; OUT err], R5 [IN timeout])
+-s 0x00268406=call_sys_dly_tsk(R4 [IN unused; OUT err], R5 [IN timeout])
+-s 0x00268422=ExecuteWaitingFunctionsForTask0x38(R4 [IN func_ptr; OUT err], R5 [IN ptr_struct_param], R6 [IN timeout])
+-s 0x002684C6=TaskWaitFlag(R4 [IN ptr_flag_pattern; OUT err], R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode])
+-s 0x00268526=TaskWaitFlagTimeout(R4 [IN ptr_flag_pattern; OUT err], R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R8 [IN timeout])
+-s 0x00268596=TaskWaitSemaphore(R4 [IN sem_id; OUT err])
+-s 0x002685E0=TaskWaitSemaphoreTimeout(R4 [IN sem_id; OUT err], R5 [IN timeout])
+-s 0x0026863E=TaskDelay(R4 [IN time; OUT err])
+-s 0x002686B0=TaskSleepTimeout(R4 [IN timeout; OUT err])
+-s 0x0026871C=TaskSleep(R4 [IN timeout; OUT err])
+-s 0x00268758=TaskSetEventFlag(R4 [IN flag_id; OUT err], R5 [IN set_pattern])
+-s 0x00268788=TaskClearEventFlag(R4 [IN flag_id; OUT err], R5 [IN clr_pattern])
+-s 0x002687BC=call_TaskWaitFlag(R4 [IN ptr_flag_pattern; OUT err], R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode])
+-s 0x002687DC=1ms_set50000119.bit1_1ms
+-s 0x00283524=SUB_double(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x0028352A=ADD_double(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00283712=SUB_float(R4 [IN floatA; OUT res], R5 [IN floatB])
+-s 0x00283718=ADD_float(R4 [IN floatA; OUT res], R5 [IN floatB])
+-s 0x00283808=ADD_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x0028380E=AND_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00283814=CMP_double(R4 [IN aHi; OUT res], R5 [IN aLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00283846=CMP_float(R4 [IN floatA; OUT res], R5 [IN floatB])
+-s 0x00283870=CMP_int64(R4 [IN aHi; OUT res], R5 [IN aLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00283882=CMP_uint64(R4 [IN aHi; OUT res], R5 [IN aLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x002838CE=DIV_double(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN diviHi], R7 [IN diviLo])
+-s 0x00283AD6=DIV_float(R4 [IN dividend; OUT quot], R5 [IN divisor])
+-s 0x00283B78=DIV_int(R4 [IN dividend; OUT quotient], R5 [IN divisor])
+-s 0x00283BC6=DIV_int64(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN divHi], R7 [IN divLo])
+-s 0x00283C64=dtoi(R4 [IN doubleHi; OUT int], R5 [IN doubleLo])
+-s 0x00283CA2=dtoui(R4 [IN doubleHi; OUT uint], R5 [IN doubleLo])
+-s 0x00283CE0=ftod(R4 [IN float; OUT doubleHi], R5 [OUT doubleLo])
+-s 0x00283D08=ftoi(R4 [IN float; OUT int])
+-s 0x00283D40=ftoui(R4 [IN float; OUT uint])
+-s 0x00283D78=itod(R4 [IN int; OUT doubleHi], R5 [OUT doubleLo])
+-s 0x00283D92=itof(R4 [IN int; OUT float])
+-s 0x00283DAC=int2int64(R4 [IN int; OUT resHi], R5 [OUT resLo])
+-s 0x00283DB2=int64toint(R4 [IN hi; OUT res], R5 [IN lo])
+-s 0x00283DB6=MOD_int(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x00283E8E=MUL_double(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00283F92=MUL_float(R4 [IN floatA; OUT resFloat], R5 [IN floatB])
+-s 0x00284006=MUL_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x0028401A=OR_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x00284020=SHL_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN shiftHi], R7 [IN shiftLo])
+-s 0x0028403C=SAR_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN shiftHi], R7 [IN shiftLo])
+-s 0x00284058=SHR_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN shiftHi], R7 [IN shiftLo])
+-s 0x00284074=SUB_uint64(R4 [IN aHi; OUT resHi], R5 [IN aLo; OUT resLo], R6 [IN bHi], R7 [IN bLo])
+-s 0x0028407A=DIV_uint(R4 [IN dividend; OUT quotient], R5 [IN divisor])
+-s 0x002840C2=DIV_uint64(R4 [IN dividendHi; OUT quotHi], R5 [IN dividendLo; OUT quotLo], R6 [IN divHi], R7 [IN divLo])
+-s 0x002840F0=uint2double(R4 [IN uint; OUT doubleHi], R5 [OUT doubleLo])
+-s 0x0028413A=uint2float(R4 [IN uint; OUT float])
+-s 0x0028418C=uint2uint64(R4 [IN uint; OUT uint64Hi], R5 [OUT uint64Lo])
+-s 0x00284192=MOD_uint(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x002841DA=MOD_uint64(R4 [IN dividendHi; OUT remHi], R5 [IN dividendLo; OUT remLo], R6 [IN divHi], R7 [IN divLo])
+-s 0x00284214=abs(R4 [IN value; OUT res])
+-s 0x00284222=atan2(R4 [IN doubleYHi; OUT outHi], R5 [IN doubleYLo; OUT outLo], R6 [IN doubleXHi], R7 [IN doubleXLo])
+-s 0x00284396=atoi(R4 [IN str; OUT int])
+-s 0x00284404=ceil(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
+-s 0x002844EA=floor(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
+-s 0x002845E2=isdigit(R4 [IN char; OUT yes])
+-s 0x002845F2=abs_002845F2(R4 [IN value; OUT res])
+-s 0x00284600=log(R4 [IN doubleXHi; OUT outHi], R5 [IN doubleXLo; OUT outLo], R6 [IN doubleYHi], R7 [IN doubleYLo])
+-s 0x0028480A=log10(R4 [IN doubleXHi; OUT outHi], R5 [IN doubleXLo; OUT outLo], R6 [IN doubleYHi], R7 [IN doubleYLo])
+-s 0x00284A58=memcmp(R4 [IN source1; OUT res], R5 [IN source2], R6 [IN count])
+-s 0x00284A72=memcpy(R4 [IN ptr_dst],R5 [IN ptr_src], R6 [IN size])
+-s 0x00284A82=memmove(R4 [IN dst; OUT dst], R5 [IN source], R6 [IN count])
+-s 0x00284AA4=memset(R4 [IN dst; OUT dst], R5 [IN val], R6 [IN count])
+-s 0x00284AB2=pow(R4 [IN doubleXHi; OUT outHi], R5 [IN doubleXLo; OUT outLo], R6 [IN doubleYHi], R7 [IN doubleYLo])
+-s 0x00285240=rand(R4 [OUT value])
+-s 0x00285278=sprintf(R4 [IN dst; OUT chars], R5 [IN formatstring], R6 [IN param3], R7 [IN param4])
+-s 0x00285312=sqrt(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
+-s 0x002854F0=strcat(R4 [IN dst; OUT dst], R5 [IN src])
+-s 0x0028550A=strchr(R4 [IN ptr; OUT pos], R5 [IN char])
+-s 0x0028551C=strcmp(R4 [IN str1; OUT res], R5 [IN str2]))
+-s 0x00285530=strcpy(R4 [IN dst; OUT dst], R5 [IN src])
+-s 0x0028553E=strlen(R4 [IN ptr; OUT len])
+-s 0x0028554E=strncat(R4 [IN dst; OUT dst], R5 [IN src], R6 [IN n])
+-s 0x00285572=strncmp(R4 [IN str1; OUT res], R5 [IN str2], R6 [IN n])
+-s 0x00285590=strncpy(R4 [IN dst; OUT dst], R5 [IN src], R6 [IN n])
+-s 0x002855B0=strstr(R4 [IN where; OUT pos], R5 [iN what])
+-s 0x002855E2=strtok(R4 [IN str; OUT ptr_token], R5 [IN ptr_delimeters])
+-s 0x00285678=strtol(R4 [IN str; OUT int], R5 [IN ptr_endptr], R6 [IN base])
+-s 0x00285702=vsprintf(R4 [IN dst; OUT chars], R5 [IN formatstring], R6 [IN va_list])
+-s 0x002866A6=atan(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
+
+# for Emulator
+-s 0x000D3938=tblTaskData
+-s 0x6800382C=pCurrentTCB
+-s 0x003282C8=txSetsTableV2
+-s 0x003836B0=ptpTableCodeFCxxV2
+
+-j 0x001CA98C=@(0x0032E3FC+23*4)
+-j 0x00062846=@(0x000CECE4+17*64)
+-j 0x0006359E=@(0x000CF378+7*64)
+-j 0x0006DD0C=@(0x000D2528+7*4)
+#------------------------------------------------------
