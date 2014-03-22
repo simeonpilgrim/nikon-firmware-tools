@@ -6661,6 +6661,12 @@
 -s 0x000DC310=tblTaskData
 -s 0x68000800=pCurrentTCB
 -s 0x68000910=Real_Time_Clock
+-s 0x0024AE8C=ptpTable10xx
+-s 0x0024B104=ptpTable90E8_90FE
+-s 0x0024AD84=ptpTable91xx
+-s 0x0024ADC4=ptpTable9000_92xx
+-s 0x0024AD9C=ptpTable98xx
+-s 0x00249D90=ptpTableFCxx_FExx
 
 ########## Menu Data Symbols
 
