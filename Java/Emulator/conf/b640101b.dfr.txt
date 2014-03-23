@@ -6667,6 +6667,7 @@
 -s 0x0024ADC4=ptpTable9000_92xx
 -s 0x0024AD9C=ptpTable98xx
 -s 0x00249D90=ptpTableFCxx_FExx
+-s 0x00267CF4=txSetsTable
 
 ########## Menu Data Symbols
 
