@@ -238,6 +238,58 @@ namespace Nikon_Decode
             tw.Dispose();
         }
 
+        private static void Dump_Bit8(TextWriter tw, int b)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                tw.Write((b & (1<<i)) != 0? '1':'0');
+            }
+            tw.Write(' ');
+        }
+
+        //private static int last_12bitsof16(int b0, int b1)
+        //{
+        //    int r = 0;
+        //    //for (int i = 4; i < 8; i++)
+        //    //{
+        //    //    ((b & (1 << i)) != 0 ? (1) : 0);
+        //    //}         
+        //}
+        private static void Dump_D7000_S179_ISO_tab(string filename, byte[] data, int offset, int num)
+        {
+            var tw = new StreamWriter(File.Open(filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+            for (int i = 0; i < num; i=i+1)
+            {
+                var b0 = data[offset + 0 + (i * 8)];
+                var b1 = data[offset + 1 + (i * 8)];
+                var b2 = data[offset + 2 + (i * 8)];
+                var b3 = data[offset + 3 + (i * 8)];
+                var b4 = data[offset + 4 + (i * 8)];
+                var b5 = data[offset + 5 + (i * 8)];
+                var b6 = data[offset + 6 + (i * 8)];
+                var b7 = data[offset + 7 + (i * 8)];
+
+                var v0 = (b0 >> 4) + (b1 << 4);
+                var v1 = (b3 << 8) + b2;
+                var v2 = (b5 << 8) + b4;
+                var v3 = (b7 << 8) + b6;
+                Dump_Bit8(tw, b0);
+                Dump_Bit8(tw, b1);
+                Dump_Bit8(tw, b2);
+                Dump_Bit8(tw, b3);
+                Dump_Bit8(tw, b4);
+                Dump_Bit8(tw, b5);
+                Dump_Bit8(tw, b6);
+                Dump_Bit8(tw, b7);
+
+                tw.WriteLine(string.Format("{0,4} {1:X4} {2:X4} {3:X4} {4:X4}   {1} {2} {3} {4}", i, v0, v1, v2, v3));
+            }
+
+            tw.Close();
+            tw.Dispose();
+        }
+
         private static void Dump_D7000_S179(string fileName)
         {
             if (File.Exists(fileName))
@@ -356,6 +408,8 @@ namespace Nikon_Decode
 
 
                     Dump_D7000_S179_s177_E(fileName + "_E.txt", data, 0x5EB0);
+
+                    Dump_D7000_S179_ISO_tab(fileName + "_iso.txt", data, 0xC48A, 120);
                 }
                 finally
                 {
