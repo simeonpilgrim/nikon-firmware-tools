@@ -3,10 +3,10 @@ package com.nikonhacker.encoding;
 import java.io.File;
 import java.util.List;
 
-public class NkldDecoder {
+public class NopDecoder {
 
     private static void usage() {
-        System.out.println("Usage : " + NkldDecoder.class.getName() + " <infile> [<outfile>]");
+        System.out.println("Usage : " + NopDecoder.class.getName() + " <infile> [<outfile>]");
         System.exit(-1);
     }
 
@@ -22,7 +22,7 @@ public class NkldDecoder {
             outFile = args[1];
         }
         try {
-            new NkldDecoder().decode(args[0], outFile, true);
+            new NopDecoder().decode(args[0], outFile, true);
         } catch (FirmwareFormatException e) {
             e.printStackTrace();
             usage();
@@ -37,12 +37,17 @@ public class NkldDecoder {
             throw new FirmwareFormatException("Source file does not exist");
         } else {
             try {
-                byte[] source = NkldUtils.load(sourceFile);
+                byte[] source = NopUtils.load(sourceFile);
 
-                NkldHeader nkldHeader = NkldUtils.getNkldHeader(source);
+                NopHeader nopHeader = NopUtils.getNopHeader(source);
 
-                int computedCrc = NkldUtils.computeChecksum(source, 0, nkldHeader.totalLength);
-                if (computedCrc != 0) {
+                // TODO this is only simple length check
+                if (source.length <= NopHeader.SIZE + 3) {
+                    throw new FirmwareFormatException("Bad NOP file length");
+                }
+
+                int computedCrc = NopUtils.computeChecksum(source, 0, source.length-2);
+                if (computedCrc != NopUtils.getUInt16(source, source.length-2)) {
                     String msg = "Warning : checksum not OK for " + sourceFileName + ". Computed=" + computedCrc + ", expected=0";
                     if (ignoreCrcErrors) {
                         System.err.println(msg);
@@ -52,8 +57,8 @@ public class NkldDecoder {
                     }
                 }
 
-                NkldUtils.decrypt(source, nkldHeader.dataOffset, nkldHeader.dataLength);
-                NkldUtils.dumpFile(new File(unpackFileName), source, 0, nkldHeader.totalLength);
+                NopUtils.decrypt(nopHeader, source, NopHeader.SIZE, source.length - 3 - NopHeader.SIZE);
+                NopUtils.dumpFile(new File(unpackFileName), source, 0, source.length);
             } catch (Exception e) {
                 throw new FirmwareFormatException(e);
             }

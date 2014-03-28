@@ -11,8 +11,8 @@ import java.util.Date;
 import java.util.List;
 
 public class NkldUtils {
-    
-    private static final int[] tab0 = { 
+
+    private static final int[] tab0 = {
             0xc1,0xbf,0x6d,0x0d,0x59,0xc5,0x13,0x9d,0x83,0x61,0x6b,0x4f,0xc7,0x7f,0x3d,0x3d,
 			0x53,0x59,0xe3,0xc7,0xe9,0x2f,0x95,0xa7,0x95,0x1f,0xdf,0x7f,0x2b,0x29,0xc7,0x0d,
 			0xdf,0x07,0xef,0x71,0x89,0x3d,0x13,0x3d,0x3b,0x13,0xfb,0x0d,0x89,0xc1,0x65,0x1f,
@@ -49,7 +49,7 @@ public class NkldUtils {
 			0xc6,0x67,0x4a,0xf5,0xa5,0x12,0x65,0x7e,0xb0,0xdf,0xaf,0x4e,0xb3,0x61,0x7f,0x2f };
 
 
-    private static final int[] tab2 = { 
+    private static final int[] tab2 = {
             0x00,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x0C,0x0C,0x0C,0x0C,0x0C,0x08,
             0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,0x08,
             0x08,0x05,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,0x02,
@@ -114,7 +114,7 @@ public class NkldUtils {
         final int b1 = (v>>8) & 0xFF;
         final int b2 = (v>>16) & 0xFF;
         final int b3 = (v>>24) & 0xFF;
-        
+
         return tab1[b0 ^ b1 ^ b2 ^ b3];
     }
 
@@ -135,16 +135,13 @@ public class NkldUtils {
         return tab0[n & 0xff];
     }
 
-    public static void decrypt(byte[] data, int offset, int length) throws IOException {
-        final int v = 0xB401C81B;
-        final byte[] s= { 'N','C','D','S','L','R' };
-
-        int r9 = init_cj(v);
-        final int r5 = init_ci(s);
+    protected static final void decryptData(int iv, byte[] key, byte[] data, int offset, int size) throws IOException {
+        int r9 = init_cj(iv);
+        final int r5 = init_ci(key);
 
         int r4 = r5 * 0x260;
 
-        for (int i = 0; i < length; i++,offset++)
+        for (int i = 0; i < size; i++,offset++)
         {
             r9 += r4;
             r4 += r5;
@@ -152,7 +149,13 @@ public class NkldUtils {
         }
     }
 
-    public static NkldHeader getNkldHeader (byte[] data) throws FirmwareFormatException {
+    public static void decrypt(byte[] data, int offset, int size) throws IOException {
+        final int v = 0xB401C81B;
+        final byte[] s= { 'N','C','D','S','L','R' };
+        decryptData(v, s, data, offset, size);
+    }
+
+    public static final NkldHeader getNkldHeader (byte[] data) throws FirmwareFormatException {
         NkldHeader nkldHeader = new NkldHeader();
 
         nkldHeader.dataOffset = getUInt16(data,0);
@@ -217,7 +220,7 @@ public class NkldUtils {
         }
     }
 
-    private static int getUInt16(byte[] buffer, int offset) {
+    protected static int getUInt16(byte[] buffer, int offset) {
         final int v0 = buffer[offset] & 0xFF;
         final int v1 = buffer[offset + 1] & 0xFF;
         return ((v0 << 8) | v1);
@@ -229,7 +232,7 @@ public class NkldUtils {
         buffer[offset] = (byte) (value & 0xff);
     }
 
-    private static int getUInt32(byte[] buffer, int offset) {
+    protected static int getUInt32(byte[] buffer, int offset) {
         final int v0 = buffer[offset] & 0xFF;
         final int v1 = buffer[offset + 1] & 0xFF;
         final int v2 = buffer[offset + 2] & 0xFF;
@@ -244,7 +247,7 @@ public class NkldUtils {
         }
     }
 
-    private static String getString(byte[] buffer, int offset, int length) {
+    protected static String getString(byte[] buffer, int offset, int length) {
         StringBuilder b = new StringBuilder(length);
         for (int i = 0; i < length; i++) {
             b.append((char) buffer[offset + i]);
