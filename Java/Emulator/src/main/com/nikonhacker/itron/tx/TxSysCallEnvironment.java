@@ -25,12 +25,15 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
     private final TxEmulator emulator;
     private final CodeStructure codeStructure;
 
+    private final TxItronTaskTable taskTable;
+
     public TxSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
         super(platform);
         // Using a separate emulator, but sharing memory (and interrupt controller, though not used in Tx)
         emulator = new TxEmulator(syscallPlatform);
 
         this.codeStructure = codeStructure;
+        taskTable = new TxItronTaskTable(syscallPlatform.getMemory());
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
@@ -45,9 +48,10 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         else {
             Memory memory = syscallPlatform.getMemory();
             int stateValue = memory.load32(pk_robj);
+
             /* Strangely, the TX implementation always returns 0 (OK) as error code, even when task_id does not exist (optimization ?).
 
-               coderat 26.06.2013 
+               coderat 26.06.2013
                this is a bug in iTRON implementation for TMP19A: no one function checks if tsk_id is in range
 
                Let's return "non existent object" if state is 0.
@@ -56,62 +60,15 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 return new TxTaskInformation(objId, ErrorCode.E_ID);
             }
             else {
-                // empty context
                 Integer addrContext = null;
                 Integer nextPC = null;
-                final int MAX_TASKS = 0xD; // it is hardcoded 
-
-                /* Get these labels only once for the first task, because it takes too long.
-                   Actually, correct way is to have one function that returns at once complete task table,
-                   otherwise we risk inconsistent data. */
-                if (codeStructure == null) {
-                    if (objId==1)
-                        System.err.println("Next PC/Context not available! Code must be disassembled with 'structure' option first");
+                if (objId==1)
+                    taskTable.read(codeStructure);
+                if (objId == taskTable.getCurrentTask()) {
+                    nextPC = originalCPUState.getPc();
                 } else {
-                    if (objId==1) {
-                        // address of task constant data table
-                        if (codeStructure.tblTaskData==null) {
-                            System.err.println("Next PC/Context not available! No label called 'tblTaskData' was found in disassembly");
-                        }
-                        if (codeStructure.pCurrentTCB==null) {
-                            System.err.println("Next PC/Context not available! No label called 'pCurrentTCB' was found in disassembly");
-                        }
-                        if (codeStructure.tblTCB==null) {
-                            System.err.println("Next PC/Context not available! No label called 'tblTCB' was found in disassembly");
-                        }
-                    }
-
-                    // gathering optinal information
-                    if (codeStructure.tblTCB != null && codeStructure.pCurrentTCB != null) {
-
-                        // check if enough elements in task table
-                        if (objId>0 && objId<=MAX_TASKS) {
-
-                            int TCB = codeStructure.tblTCB + (objId-1) * 0x10;
-                            // if it is current TCB, context may be not set yet
-                            if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = originalCPUState.getPc();
-                            } else {
-                                addrContext = memory.load32(TCB+0xC);
-
-                                // is context reasonable pointer?
-                                if (addrContext!=0 && addrContext!=-1) {
-                                    if ((addrContext&1)!=0) {
-                                        // task was never started, look for start address TaskData
-                                        if (codeStructure.tblTaskData != null) {
-                                            nextPC = memory.load32(codeStructure.tblTaskData + (objId-1)*0x14 + 4);
-                                        }
-                                    } else {
-                                        // load return-instruction-address from task context
-                                        nextPC = memory.load32(addrContext + 4);
-                                    }
-                                } else {
-                                    // not good value
-                                    addrContext = 0;
-                                }
-                            }
-                        }
-                    }
+                    addrContext = taskTable.getContext(objId);
+                    nextPC = taskTable.getNextPc(objId);
                 }
                 return new TxTaskInformation(objId, errorCode,
                         stateValue,
