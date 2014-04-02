@@ -47,6 +47,7 @@ import com.nikonhacker.gui.component.interruptController.InterruptControllerFram
 import com.nikonhacker.gui.component.interruptController.TxInterruptControllerFrame;
 import com.nikonhacker.gui.component.ioPort.IoPortsFrame;
 import com.nikonhacker.gui.component.itron.ITronObjectFrame;
+import com.nikonhacker.gui.component.itron.ITronReturnStackFrame;
 import com.nikonhacker.gui.component.memoryActivity.MemoryActivityViewerFrame;
 import com.nikonhacker.gui.component.memoryHexEditor.MemoryHexEditorFrame;
 import com.nikonhacker.gui.component.memoryMapped.Component4006Frame;
@@ -111,6 +112,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String[] COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW  = {"FR_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW", "TX_COMMAND_TOGGLE_PROGRAMMABLE_TIMERS_WINDOW"};
     private static final String[] COMMAND_TOGGLE_CALL_STACK_WINDOW           = {"FR_TOGGLE_CALL_STACK_WINDOW", "TX_TOGGLE_CALL_STACK_WINDOW"};
     private static final String[] COMMAND_TOGGLE_ITRON_OBJECT_WINDOW         = {"FR_TOGGLE_ITRON_OBJECT_WINDOW", "TX_TOGGLE_ITRON_OBJECT_WINDOW"};
+    private static final String[] COMMAND_TOGGLE_ITRON_RETURN_STACK_WINDOW   = {"FR_TOGGLE_ITRON_RETURN_STACK_WINDOW", "TX_TOGGLE_ITRON_RETURN_STACK_WINDOW"};
     private static final String[] COMMAND_CHIP_OPTIONS                       = {"FR_OPTIONS", "TX_OPTIONS"};
 
     private static final String COMMAND_GENERATE_SYS_SYMBOLS         = "GENERATE_SYS_SYMBOLS";
@@ -224,6 +226,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private JCheckBoxMenuItem[] customMemoryRangeLoggerMenuItem = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] callStackMenuItem               = new JCheckBoxMenuItem[2];
     private JCheckBoxMenuItem[] iTronObjectMenuItem             = new JCheckBoxMenuItem[2];
+    private JCheckBoxMenuItem[] iTronReturnStackMenuItem        = new JCheckBoxMenuItem[2];
 
     private JMenuItem[]         analyseMenuItem        = new JMenuItem[2];
     private JCheckBoxMenuItem[] codeStructureMenuItem  = new JCheckBoxMenuItem[2];
@@ -291,6 +294,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private FrontPanelFrame frontPanelFrame;
 
     private ITronObjectFrame[] ITronObjectFrame = new ITronObjectFrame[2];
+    private ITronReturnStackFrame[] iTronReturnStackFrame = new ITronReturnStackFrame[2];
 
     // Misc UI related fields
     private String[]  statusText     = {STATUS_DEFAULT_TEXT, STATUS_DEFAULT_TEXT};
@@ -1047,6 +1051,13 @@ public class EmulatorUI extends JFrame implements ActionListener {
             iTronObjectMenuItem[chip].addActionListener(this);
             traceMenu.add(iTronObjectMenuItem[chip]);
 
+            //µITRON Return Stack
+            iTronReturnStackMenuItem[chip] = new JCheckBoxMenuItem("µITRON " + Constants.CHIP_LABEL[chip] + " Return stack");
+            if (chip==Constants.CHIP_TX)
+            iTronReturnStackMenuItem[chip].setActionCommand(COMMAND_TOGGLE_ITRON_RETURN_STACK_WINDOW[chip]);
+            iTronReturnStackMenuItem[chip].addActionListener(this);
+            traceMenu.add(iTronReturnStackMenuItem[chip]);
+
             traceMenu.add(new JSeparator());
         }
 
@@ -1215,6 +1226,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_ITRON_OBJECT_WINDOW)) != Constants.CHIP_NONE) {
             toggleITronObject(chip);
+        }
+        else if ((chip = getChipCommandMatchingAction(e, COMMAND_TOGGLE_ITRON_RETURN_STACK_WINDOW)) != Constants.CHIP_NONE) {
+            toggleITronReturnStack(chip);
         }
         else if ((chip = getChipCommandMatchingAction(e, COMMAND_SAVE_LOAD_MEMORY)) != Constants.CHIP_NONE) {
             openSaveLoadMemoryDialog(chip);
@@ -1616,7 +1630,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                             signalEmulatorStopped(chip);
                             if (o instanceof BreakCondition) {
                                 if (((BreakCondition) o).getBreakTrigger() != null) {
-        
+
                                     setStatusText(chip, "Break trigger matched : " + ((BreakCondition) o).getBreakTrigger().getName());
                                     statusBar[chip].setBackground(STATUS_BGCOLOR_BREAK);
                                 }
@@ -2287,6 +2301,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             ITronObjectFrame[chip] = null;
             if (mustReOpen) toggleITronObject(chip);
         }
+        if (iTronReturnStackFrame[chip] != null) {
+            iTronReturnStackFrame[chip].dispose();
+            iTronReturnStackFrame[chip] = null;
+            if (mustReOpen) toggleITronReturnStack(chip);
+        }
     }
 
     private void toggleBreakTriggerList(int chip) {
@@ -2564,6 +2583,22 @@ public class EmulatorUI extends JFrame implements ActionListener {
         updateState(chip);
     }
 
+    private void toggleITronReturnStack(int chip) {
+        if (iTronReturnStackFrame[chip] == null) {
+            iTronReturnStackFrame[chip] = new ITronReturnStackFrame("µITRON Return Stack", "os", true, true, false, true, chip, this, framework.getPlatform(chip), framework.getCodeStructure(chip));
+            iTronReturnStackFrame[chip].enableUpdate(!framework.isEmulatorPlaying(chip));
+            if (!framework.isEmulatorPlaying(chip)) {
+                iTronReturnStackFrame[chip].updateAll();
+            }
+            addDocumentFrame(chip, iTronReturnStackFrame[chip]);
+            iTronReturnStackFrame[chip].display(true);
+        }
+        else {
+            iTronReturnStackFrame[chip].dispose();
+            iTronReturnStackFrame[chip] = null;
+        }
+        updateState(chip);
+    }
 
     private void toggleCodeStructureWindow(int chip) {
         if (codeStructureFrame[chip] == null) {
@@ -2664,6 +2699,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 else if (frame == ITronObjectFrame[chip]) {
                     toggleITronObject(chip); return;
                 }
+                else if (frame == iTronReturnStackFrame[chip]) {
+                    toggleITronReturnStack(chip); return;
+                }
             }
         System.err.println("EmulatorUI.frameClosing : Unknown frame is being closed. Please add handler for " + frame.getClass().getSimpleName());
     }
@@ -2745,6 +2783,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         callStackButton[chip].setEnabled(framework.isImageLoaded(chip));
         iTronObjectMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
         iTronObjectButton[chip].setEnabled(framework.isImageLoaded(chip));
+        iTronReturnStackMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
 
         saveLoadMemoryMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
         saveLoadMemoryButton[chip].setEnabled(framework.isImageLoaded(chip));
@@ -2766,6 +2805,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
             if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(framework.isEmulatorPlaying(chip));
             if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(!framework.isEmulatorPlaying(chip));
+            if (iTronReturnStackFrame[chip] != null) iTronReturnStackFrame[chip].enableUpdate(!framework.isEmulatorPlaying(chip));
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
             if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
@@ -2784,6 +2824,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (memoryHexEditorFrame[chip] != null) memoryHexEditorFrame[chip].setEditable(true);
             if (callStackFrame[chip] != null) callStackFrame[chip].setAutoRefresh(false);
             if (ITronObjectFrame[chip] != null) ITronObjectFrame[chip].enableUpdate(true);
+            if (iTronReturnStackFrame[chip] != null) iTronReturnStackFrame[chip].enableUpdate(true);
             if (breakTriggerListFrame[chip] != null) breakTriggerListFrame[chip].setEditable(true);
             if (sourceCodeFrame[chip] != null) sourceCodeFrame[chip].setEditable(true);
             if (interruptControllerFrame[chip] != null) interruptControllerFrame[chip].setEditable(true);
@@ -2845,6 +2886,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
         }
         if (ITronObjectFrame[chip] != null) {
             ITronObjectFrame[chip].onEmulatorStop(chip);
+        }
+        if (iTronReturnStackFrame[chip] != null) {
+            iTronReturnStackFrame[chip].onEmulatorStop(chip);
         }
     }
 
