@@ -542,6 +542,7 @@ public class TxCPUState extends CPUState {
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;
         cloneCpuState.pc = pc;
+        cloneCpuState.is16bitIsaMode = is16bitIsaMode;
         return cloneCpuState;
     }
 
