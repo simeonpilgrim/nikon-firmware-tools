@@ -2943,6 +2943,15 @@ public class EmulatorUI extends JFrame implements ActionListener {
         memoryHexEditorFrame[chip].jumpToAddress(address, 4);
     }
 
+    public void jumpToContext(int chip, int taskId) {
+        if (framework.getCodeStructure(chip) != null) {
+            if (iTronReturnStackFrame[chip] == null) {
+                toggleITronReturnStack(chip);
+            }
+            iTronReturnStackFrame[chip].exploreTask(taskId);
+        }
+    }
+
     public void onBreaktriggersChange(int chip) {
         if (sourceCodeFrame[chip] != null) {
             sourceCodeFrame[chip].updateBreakTriggers();
