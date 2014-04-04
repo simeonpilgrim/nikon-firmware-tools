@@ -5,6 +5,7 @@ import com.nikonhacker.disassembly.CodeStructure;
 import com.nikonhacker.disassembly.Function;
 import com.nikonhacker.disassembly.tx.TxCPUState;
 import com.nikonhacker.emu.memory.Memory;
+import com.nikonhacker.emu.Platform;
 import com.nikonhacker.itron.ReturnStackEntry;
 
 import java.util.LinkedList;
@@ -14,13 +15,13 @@ public class TxItronTaskTable {
     private final static int MAXTASKS = 0xD; // it is hardcoded in a640m010100
 
     private CodeStructure codeStructure;
-    private Memory memory;
+    private Platform platform;
     private int [] nextPc = new int[MAXTASKS];
     private int [] context = new int[MAXTASKS];
     private int currentTask;
 
-    public TxItronTaskTable(Memory memory) {
-        this.memory = memory;
+    public TxItronTaskTable(Platform platform) {
+        this.platform = platform;
     }
 
     public int read(CodeStructure codeStructure) {
@@ -44,6 +45,7 @@ public class TxItronTaskTable {
             return 0;
         } while(false);
 
+        final Memory memory = platform.getMemory();
         final int currentTCB = memory.load32(codeStructure.pCurrentTCB);
 
         // check if enough elements in task table
@@ -70,11 +72,12 @@ public class TxItronTaskTable {
                     context[objId] = addrContext;
                     continue;
                 }
+                nextPc[objId] = 0;
             } else {
+                nextPc[objId] = platform.getCpuState().getPc();
                 currentTask = objId;
             }
             context[objId] = 0;
-            nextPc[objId] = 0;
         }
         return MAXTASKS;
     }
@@ -86,7 +89,13 @@ public class TxItronTaskTable {
 
         int addrContext = context[index];
         if (addrContext==0) {
-            // no valid context
+            // no valid context in stack
+
+            if (index == currentTask) {
+                final TxCPUState currentState = (TxCPUState)platform.getCpuState();
+                if ( currentState.is16bitIsaMode)
+                    return currentState.createCopy();
+            }
             return null;
         }
         TxCPUState state = new TxCPUState();
@@ -95,6 +104,8 @@ public class TxItronTaskTable {
 
         // if complete context available
         if ((addrContext&1)==0) {
+
+            final Memory memory = platform.getMemory();
 
             state.setRegisterDefined(TxCPUState.Status);
             state.setReg(TxCPUState.Status, memory.load32(addrContext));
@@ -157,6 +168,8 @@ public class TxItronTaskTable {
         int sp = state.getReg(TxCPUState.SP);
         int ra = state.getPc() | (state.is16bitIsaMode ? 1 : 0);
 
+        boolean firstRun = true;
+        final Memory memory = platform.getMemory();
         while (sp<0) {
             Function function = codeStructure.findFunctionIncluding(ra & 0xFFFFFFFE);
             if (function==null)
@@ -171,7 +184,18 @@ public class TxItronTaskTable {
                 // so use it as end condition
                 break;
             }
+
             //  16-bit path
+            if (firstRun) {
+                firstRun = false;
+                if ((function.getAddress()|1)==ra) {
+                    // we are at first instruction of function, no stack change yet
+                    if (!state.isRegisterDefined(TxCPUState.RA))
+                        break;
+                    ra = state.getReg(TxCPUState.RA);
+                    continue;
+                }
+            }
             int args;
             final int opcode = memory.load32(function.getAddress());
 
@@ -218,7 +242,7 @@ public class TxItronTaskTable {
     public Integer getNextPc(int index) {
         if (index>0 && index<=MAXTASKS) {
             index--;
-            if (context[index]!=0) {
+            if (nextPc[index]!=0) {
                 return nextPc[index];
             }
         }

@@ -1,5 +1,6 @@
 package com.nikonhacker.gui.component.itron;
 
+import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.CPUState;
 import com.nikonhacker.disassembly.CodeStructure;
@@ -10,6 +11,7 @@ import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import com.nikonhacker.gui.swing.VerticalLayout;
 import com.nikonhacker.itron.tx.TxItronTaskTable;
+import com.nikonhacker.itron.fr.FrItronTaskTable;
 import com.nikonhacker.itron.ReturnStackEntry;
 
 import javax.swing.*;
@@ -29,9 +31,10 @@ public class ITronReturnStackFrame extends DocumentFrame {
 
     private Emulator emulator;
     private CodeStructure codeStructure;
-    private final Platform platform;
 
-    private final TxItronTaskTable taskTable;
+    private final TxItronTaskTable txTaskTable;
+    private final FrItronTaskTable frTaskTable;
+
     private int tasks;
     LinkedList<ReturnStackEntry> returnStack;
 
@@ -44,8 +47,11 @@ public class ITronReturnStackFrame extends DocumentFrame {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.codeStructure = codeStructure;
-        this.platform = platform;
-        taskTable = new TxItronTaskTable(platform.getMemory());
+        switch (chip) {
+            case Constants.CHIP_TX: txTaskTable = new TxItronTaskTable(platform); frTaskTable = null; break;
+            case Constants.CHIP_FR: frTaskTable = new FrItronTaskTable(platform); txTaskTable = null; break;
+            default: frTaskTable = null; txTaskTable = null;
+        }
 
         setLayout(new BorderLayout());
 
@@ -111,15 +117,13 @@ public class ITronReturnStackFrame extends DocumentFrame {
         returnStack = null;
 
         if (tasks>0) {
-            TxCPUState st=taskTable.getUserCpuState(taskNumberComboBox.getSelectedIndex()+1);
-            if (st!=null) {
-                returnStack = taskTable.getUserReturnStack(st);
-            } else {
-                st = ((TxCPUState)platform.getCpuState());
-                if ( st.is16bitIsaMode) {
-                    // attempt trace current task
-                    returnStack = taskTable.getUserReturnStack(st);
-                }
+            switch (chip) {
+                case Constants.CHIP_TX:
+                    returnStack = txTaskTable.getUserReturnStack(txTaskTable.getUserCpuState(taskNumberComboBox.getSelectedIndex()+1));
+                    break;
+                case Constants.CHIP_FR:
+                    returnStack = frTaskTable.getUserReturnStack(frTaskTable.getUserCpuState(taskNumberComboBox.getSelectedIndex()+1));
+                    break;
             }
         }
 
@@ -131,7 +135,8 @@ public class ITronReturnStackFrame extends DocumentFrame {
         } else {
             // update task data and list
             for (ReturnStackEntry entry : returnStack) {
-                model.addElement(entry.function.getName() + ": 0x" + Format.asHex(entry.returnAddress,8));
+                // bit0 of TX means 16-bit code
+                model.addElement(entry.function.getName() + ": 0x" + Format.asHex(entry.returnAddress&0xFFFFFFFE,8));
             }
             returnStackList.setModel(model);
             returnStackList.setEnabled(true);
@@ -142,7 +147,7 @@ public class ITronReturnStackFrame extends DocumentFrame {
     }
 
     public final void updateAll() {
-        int i = taskTable.read(codeStructure);
+        int i = (chip == Constants.CHIP_TX ? txTaskTable.read(codeStructure) : frTaskTable.read(codeStructure));
 
         // get tasks and update combobox
         if (i != tasks) {

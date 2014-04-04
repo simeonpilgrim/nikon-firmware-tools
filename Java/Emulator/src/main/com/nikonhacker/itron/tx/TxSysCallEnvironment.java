@@ -33,7 +33,7 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
         emulator = new TxEmulator(syscallPlatform);
 
         this.codeStructure = codeStructure;
-        taskTable = new TxItronTaskTable(syscallPlatform.getMemory());
+        taskTable = new TxItronTaskTable(platform);
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
@@ -64,12 +64,8 @@ public class TxSysCallEnvironment extends SysCallEnvironment {
                 Integer nextPC = null;
                 if (objId==1)
                     taskTable.read(codeStructure);
-                if (objId == taskTable.getCurrentTask()) {
-                    nextPC = originalCPUState.getPc();
-                } else {
-                    addrContext = taskTable.getContext(objId);
-                    nextPC = taskTable.getNextPc(objId);
-                }
+                addrContext = taskTable.getContext(objId);
+                nextPC = taskTable.getNextPc(objId);
                 return new TxTaskInformation(objId, errorCode,
                         stateValue,
                         memory.load32(pk_robj + 4),

@@ -22,6 +22,8 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
     private final FrEmulator    emulator;
     private final CodeStructure codeStructure;
 
+    private final FrItronTaskTable taskTable;
+
     public FrSysCallEnvironment(Platform platform, CodeStructure codeStructure) {
         super(platform);
 
@@ -29,6 +31,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
         emulator = new FrEmulator(syscallPlatform);
 
         this.codeStructure = codeStructure;
+        taskTable = new FrItronTaskTable(platform);
     }
 
     public TaskInformation getTaskInformation(int chip, int objId) {
@@ -45,63 +48,12 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
             Integer addrContext = null;
             Integer nextPC = null;
 
+            if (objId==1)
+                taskTable.read(codeStructure);
+            addrContext = taskTable.getContext(objId);
+            nextPC = taskTable.getNextPc(objId);
+
             Memory memory = syscallPlatform.getMemory();
-            /* Get these labels only once for the first task, because it takes too long.
-               Actually, correct way is to have one function that returns at once complete task table,
-               otherwise we risk inconsistent data. */
-            if (codeStructure == null) {
-                // make only one warning
-                if (objId==1) {
-                    System.err.println("Next PC/Context not available! Code must be disassembled with 'structure' option first");
-                }
-            }
-            else {
-                if (objId==1) {
-                    // address of task constant data table
-                    if (codeStructure.tblTaskData==null) {
-                        System.err.println("Next PC/Context not available! No label called 'tblTaskData' was found in disassembly");
-                    }
-                    if (codeStructure.pCurrentTCB==null) {
-                        System.err.println("Next PC/Context not available! No label called 'pCurrentTCB' was found in disassembly");
-                    }
-                }
-
-                // gathering optional information
-                if (codeStructure.tblTaskData != null && codeStructure.pCurrentTCB != null) {
-
-                    // check if enough elements in task table
-                    if (objId>0 && objId<=memory.loadUnsigned16(codeStructure.tblTaskData)) {
-                        int elementSize = memory.loadUnsigned16(codeStructure.tblTaskData+2);
-
-                        // check if reasonable size of element
-                        if (elementSize>0 && elementSize<2048) {
-                            int taskData = codeStructure.tblTaskData+4+(objId-1)*elementSize;
-                            int TCB = memory.load32(taskData);
-
-                            // if it is current TCB, context may be not set yet
-                            if (TCB==memory.load32(codeStructure.pCurrentTCB)) {
-                                nextPC = originalCPUState.getPc();
-                            }
-                            else {
-                                int context = memory.load32(TCB+0x18);
-
-                                // is context reasonable pointer?
-                                if (context!=0 && context!=-1) {
-                                    // load return-instruction-address from task context
-                                    nextPC = memory.load32(context);
-                                    addrContext = context;
-                                }
-                                else if (context==0) {
-                                    // if DORMANT state look for start address in constants
-                                    if ((memory.load32(TCB+8)&0x1F) == 0x10) {
-                                        nextPC = memory.load32(taskData+0x10);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             return new FrTaskInformation(objId, errorCode,
                     memory.load32(pk_robj + 8),
                     memory.load32(pk_robj + 4),
@@ -172,6 +124,7 @@ public class FrSysCallEnvironment extends SysCallEnvironment {
 
         // Tweak alt cpuState
         tmpCpuState.I = 0; // prevent interrupts
+        tmpCpuState.setS(0);
         tmpCpuState.setILM(0, false);
         tmpCpuState.pc = BASE_ADDRESS_SYSCALL; // point to the new code
 
