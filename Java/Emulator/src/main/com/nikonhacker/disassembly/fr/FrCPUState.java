@@ -174,7 +174,7 @@ public class FrCPUState extends CPUState {
      * @return CCR
      */
     public int getCCR() {
-        return (S << 5) | (I << 4) | (N << 3) | (Z << 2) | (V << 1) | C; 
+        return (S << 5) | (I << 4) | (N << 3) | (Z << 2) | (V << 1) | C;
     }
 
     /**
@@ -345,6 +345,7 @@ public class FrCPUState extends CPUState {
             cloneCpuState.setReg(i, getReg(i));
         }
         cloneCpuState.regValidityBitmap = regValidityBitmap;
+        cloneCpuState.setS(getS());
         cloneCpuState.pc = pc;
         return cloneCpuState;
     }

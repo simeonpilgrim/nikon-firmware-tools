@@ -1053,7 +1053,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
             //µITRON Return Stack
             iTronReturnStackMenuItem[chip] = new JCheckBoxMenuItem("µITRON " + Constants.CHIP_LABEL[chip] + " Return stack");
-            if (chip==Constants.CHIP_TX)
             iTronReturnStackMenuItem[chip].setActionCommand(COMMAND_TOGGLE_ITRON_RETURN_STACK_WINDOW[chip]);
             iTronReturnStackMenuItem[chip].addActionListener(this);
             traceMenu.add(iTronReturnStackMenuItem[chip]);
