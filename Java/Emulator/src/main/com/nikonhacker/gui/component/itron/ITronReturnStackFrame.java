@@ -162,6 +162,10 @@ public class ITronReturnStackFrame extends DocumentFrame {
         }
     }
 
+    public void exploreTask(int taskId) {
+        taskNumberComboBox.setSelectedIndex(taskId-1);
+    }
+
     public void enableUpdate(boolean enable) {
         updateButton.setEnabled(enable);
     }

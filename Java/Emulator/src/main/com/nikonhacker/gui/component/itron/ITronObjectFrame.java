@@ -136,7 +136,7 @@ public class ITronObjectFrame extends DocumentFrame {
                     }
                     if ("addrContextHex".equals(sysCallEnvironment.getTaskPropertyNames()[column])) {
                         try {
-                            ui.jumpToMemory(chip, Format.parseUnsigned(taskTable.getValueAt(row, column).toString()));
+                            ui.jumpToContext(chip, Format.parseUnsigned(taskTable.getValueAt(row, 0).toString()));
                         } catch (ParsingException e1) {
                             // ignore
                         }
