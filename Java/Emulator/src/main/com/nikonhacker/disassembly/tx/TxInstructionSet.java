@@ -14,23 +14,23 @@ Parts of code Copyright (c) 2003-2010,  Pete Sanderson and Kenneth Vollmar
 Developed by Pete Sanderson (psanderson@otterbein.edu)
 and Kenneth Vollmar (kenvollmar@missouristate.edu)
 
-Permission is hereby granted, free of charge, to any person obtaining 
-a copy of this software and associated documentation files (the 
-"Software"), to deal in the Software without restriction, including 
-without limitation the rights to use, copy, modify, merge, publish, 
-distribute, sublicense, and/or sell copies of the Software, and to 
-permit persons to whom the Software is furnished to do so, subject 
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject
 to the following conditions:
 
-The above copyright notice and this permission notice shall be 
+The above copyright notice and this permission notice shall be
 included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR 
-ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF 
-CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 (MIT license, http://www.opensource.org/licenses/mit-license.html)
@@ -647,7 +647,7 @@ public class TxInstructionSet
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     // Mask all but low 5 bits of register containing shift amount.
                     context.cpuState.setReg(statement.rd_fd,
-                            (context.cpuState.getReg(statement.rj_rt_ft) << (context.cpuState.getReg(statement.ri_rs_fs)) & 0b11111));
+                            context.cpuState.getReg(statement.rj_rt_ft) << (context.cpuState.getReg(statement.ri_rs_fs) & 0b11111));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -2499,14 +2499,14 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             };
-            
+
     private static final TxInstruction jrraInstruction = new TxInstruction("jr", "A", ">", "", "", "jr $ra",
             "Jump Register RA unconditionally: Jump to statement whose address is in $ra",
             null, InstructionFormat16.RI,
             Instruction.FlowType.RET, false, Instruction.DelaySlotType.NORMAL,
             jrraSimulationCode
             );
-            
+
     // alternate naming
     private static final TxInstruction jrraRetInstruction = new TxInstruction("ret", "", ">", "", "", "ret",
             "RETurn: Jump to statement whose address is in $ra",
