@@ -149,7 +149,7 @@
 -s 0xBFC0197C=prepare_task_env
 -s 0xBFC01E5C=Call_software_interrupt
 -s 0xBFC0251C=SetupTasking($a0 [IN num_tasks])
--s 0xBFC026B4=useless_BFC026B4 /* disabled by a constant with value false */
+-s 0xBFC026B4=useless_BFC026B4 (/* disabled by a constant with value false */)
 -s 0xBFC0272C=return_addr_after_task_JR_@BFC01BE0
 -s 0xBFC02BE8=sys_dis_dsp
 -s 0xBFC02C28=sys_can_wup($a0 [IN tsk_id], $v0 [OUT err_code_or_wupcount] /* Cancel wakeup requests */)
@@ -318,7 +318,7 @@
 -s 0xBFC15BD8=init_Devices
 -s 0xBFC15CD4=clr_flags
 -s 0xBFC15D38=delay_activate_sub0xBFC16C24($a0 [IN must_activate /*0=no, 1=yes*/], $a1 [IN delay_time], $a2 [IN sub_activated_by_sub0xBFC16C24])
--s 0xBFC15D70=load_eeprom_to_FFFF4000 /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */
+-s 0xBFC15D70=load_eeprom_to_FFFF4000( /* eeprom address = 0, DEST address = 0xFFFF4000, counter = 0xC0 */)
 -s 0xBFC15D98=req_eeprom_IO_0($a0 [IN eeprom_address], $a1 [IN buffer], $a2 [IN counter], $a3 [IN is_mode_read /* 0=writing, 1=reading */])
 -s 0xBFC15DE4=change_WatchdogTimer_Setup
 -s 0xBFC15E54=checksum_compare
@@ -493,7 +493,7 @@
 -s 0xBFC1AD54=SC0_RX_routine
 -s 0xBFC1AE10=wait_TMRF_elapse06
 -s 0xBFC1AE48=SC0_routine
--s 0xBFC1AF10=prepare_SC0_TX_data /* copy source data to SC0_TX_buffer. Effetive SRC address = 0xFF(BF)000000 + three byte from SC0_RX data. Counter = @FFFF55CD. snd_multi_commands2lens. send 0xD3C3 to lens. send 0xC5 to lens. save 8 bytes response with lens_response_table4. send 0xE7 to lens. no response needed. */
+-s 0xBFC1AF10=prepare_SC0_TX_data( /* copy source data to SC0_TX_buffer. Effetive SRC address = 0xFF(BF)000000 + three byte from SC0_RX data. Counter = @FFFF55CD. snd_multi_commands2lens. send 0xD3C3 to lens. send 0xC5 to lens. save 8 bytes response with lens_response_table4. send 0xE7 to lens. no response needed. */)
 -s 0xBFC1AF6C=Save_SC0RX_to_DESTbuf
 -s 0xBFC1AFBC=request_read_eeprom_00
 -s 0xBFC1B024=request_write_eeprom_format01
@@ -542,7 +542,7 @@
 -s 0xBFC1C934=task0x8_dcall_0x12
 -s 0xBFC1CBF4=delay_send@FFFF56E0
 -s 0xBFC1CC44=copy_@FFFF56E0
--s 0xBFC1CCAC=task0x8_dcall_18_1A /* was HSC1_RX_buffer_copy00 */
+-s 0xBFC1CCAC=task0x8_dcall_18_1A( /* was HSC1_RX_buffer_copy00 */)
 -s 0xBFC1CCE8=set_flg0x9_0x4000
 -s 0xBFC1CDB0=setup_TBB
 -s 0xBFC1CE78=system_wait
@@ -723,7 +723,7 @@
 -s 0xBFC2EE30=change_struFFFF6F50.field02_14_17
 -s 0xBFC2EF20=change_struFFFF6F50.field02
 -s 0xBFC2EF5C=change_IO_output
--s 0xBFC2F04C=IO_output_high_lev /* stop TB10. lots of ports output high */
+-s 0xBFC2F04C=IO_output_high_lev( /* stop TB10. lots of ports output high */)
 -s 0xBFC2F0CC=call_setup_struFFFF6F50
 -s 0xBFC2F1BC=call_setup_PI6andTB11
 -s 0xBFC2F1DC=clear_lcd_driver_buffer
@@ -836,7 +836,7 @@
 -s 0xBFC35CE4=make_beep
 -s 0xBFC35D6C=setup_stru_FFFF6FB8
 -s 0xBFC3636C=call_AF_assist_lamp_on
--s 0xBFC3639C=call_AF_assist_lamp_off /* stop TB7 */
+-s 0xBFC3639C=call_AF_assist_lamp_off( /* stop TB7 */)
 -s 0xBFC36424=setup@FFFF406F
 -s 0xBFC36548=AF_assist_lamp_off
 -s 0xBFC36590=IR_remote_init
@@ -998,7 +998,7 @@
 -s 0xBFC3FE10=set_center_focus_point
 -s 0xBFC3FE40=Task0x5
 -s 0xBFC3FF5C=Setup_DMA6_DMA7_for_HSC2
--s 0xBFC40084=eeprom_write /* IN @FFFF7022 = 16bit address for eeprom, IN @FFFF7024 = src_address, IN @FFFF7028 = counter */
+-s 0xBFC40084=eeprom_write( /* IN @FFFF7022 = 16bit address for eeprom, IN @FFFF7024 = src_address, IN @FFFF7028 = counter */)
 -s 0xBFC401B8=send_eeprom_COMMAND($a0 [IN command])
 -s 0xBFC40300=HINTTX2_body_COMMAND
 -s 0xBFC40354=HINTRX2_body_COMMAND
@@ -1007,7 +1007,7 @@
 -s 0xBFC40594=HINTRX2_body_READ
 -s 0xBFC405F8=start_eeprom_dma_transfer
 -s 0xBFC406C0=INTDMA6_body00
--s 0xBFC40724=send_eeprom_RDSR /*enables HSC2, send 0x5 0x0 */
+-s 0xBFC40724=send_eeprom_RDSR( /*enables HSC2, send 0x5 0x0 */)
 -s 0xBFC407D0=HINTTX2_body_RDSR
 -s 0xBFC40850=HINTRX2_body_RDSR
 -s 0xBFC408D4=INTCMP5_body00
@@ -1025,18 +1025,18 @@
 -s 0xBFC41240=lens_command_0xE7_0
 -s 0xBFC41338=lens_comman_d0xEA
 -s 0xBFC413C0=select_lens_command_group02
--s 0xBFC41454=lens_command_0xD6 /* send lens command 0xD6 + 5-byte parameter, no response expected */
+-s 0xBFC41454=lens_command_0xD6( /* send lens command 0xD6 + 5-byte parameter, no response expected */)
 -s 0xBFC414E0=lens_command_0xD3
 -s 0xBFC41610=lens_command_0xD4
--s 0xBFC4166C=lens_command_0xD2 /* send lens command 0xD2 + 4-byte parameter, no response expected */
+-s 0xBFC4166C=lens_command_0xD2( /* send lens command 0xD2 + 4-byte parameter, no response expected */)
 -s 0xBFC416DC=lens_command_0xD5
 -s 0xBFC41730=set_command0xD5_parameter
 -s 0xBFC418F0=clear_v0
 -s 0xBFC418F4=lens_command_0xD3_or_0xD1
 -s 0xBFC419CC=lens_command_0xD1
--s 0xBFC41A28=lens_command_0xC5 /* set SC1 header0 = 0xC5, 0x8 bytes response expected */
+-s 0xBFC41A28=lens_command_0xC5( /* set SC1 header0 = 0xC5, 0x8 bytes response expected */)
 -s 0xBFC41A48=select_lens_command_Ex
--s 0xBFC41AC0=lens_command_0xE3 /* no parameter, no response */
+-s 0xBFC41AC0=lens_command_0xE3( /* no parameter, no response */)
 -s 0xBFC41AF4=lens_command_0xE0
 -s 0xBFC41B8C=lens_command_0xE8
 -s 0xBFC41C1C=lens_command_0xEC
@@ -1064,7 +1064,7 @@
 -s 0xBFC42DB4=Send_0xC5_0xEA_0xD5_0xD3_to_lens
 -s 0xBFC42E70=Send_0xC2_0xDC_to_lens
 -s 0xBFC4304C=setup@FFFF5840_5844
--s 0xBFC4316C=lens_command_0xE7 /* send lens command 0xE7 + 1-byte parameter, no response expected */
+-s 0xBFC4316C=lens_command_0xE7( /* send lens command 0xE7 + 1-byte parameter, no response expected */)
 -s 0xBFC431DC=send_lens_command_0xD3C3_0xC5
 -s 0xBFC43338=lens_command0xC5_00
 -s 0xBFC433A4=multi_commands2lens
@@ -1143,19 +1143,19 @@
 -s 0xBFC470C0=INTF_body
 -s 0xBFC47148=Task0x8
 -s 0xBFC47384=setup_FR_comm_header
--s 0xBFC47468=HSC0_header_RTX /* transmit_2bytes_response */
+-s 0xBFC47468=HSC0_header_RTX( /* transmit_2bytes_response */)
 -s 0xBFC47510=copy_FR_set_to_HSC0_TX_buffer
 -s 0xBFC475A4=cal_HSC0_checksum($a0 [IN source /* if $a0==0 => TX buffer, otherwise => RX buffer */], $v0 [OUT checksum])
 -s 0xBFC475E4=clear_FR_set_TX_flag
--s 0xBFC47610=HSC0_FRset_payload_RTX /* transmit_HSC0_TX_buffer */
+-s 0xBFC47610=HSC0_FRset_payload_RTX( /* transmit_HSC0_TX_buffer */)
 -s 0xBFC4769C=transmit_FR_set
--s 0xBFC476DC=save_FRset_RX /* SRC = payload in HSC1_RX_buffer, DEST = second address in task0x8_table */
+-s 0xBFC476DC=save_FRset_RX( /* SRC = payload in HSC1_RX_buffer, DEST = second address in task0x8_table */)
 -s 0xBFC4773C=change_FR_set_RX_flag
 -s 0xBFC47760=HSC0_checksum_ACK_RTX
 -s 0xBFC47874=reset_FRset_syns_flag
 -s 0xBFC478A0=set_FRset_TX_flag
 -s 0xBFC478C4=dynamic_call_table0xFFFF5A6C
--s 0xBFC47940=setup_FRsets_Dcall_table /* was prepare_HSC0 */
+-s 0xBFC47940=setup_FRsets_Dcall_table( /* was prepare_HSC0 */)
 -s 0xBFC47B0C=INT0xF_body01
 -s 0xBFC47BB0=INT0xF_body02
 -s 0xBFC47BD8=INT_HSC0_RX_body00
@@ -1242,7 +1242,7 @@
 -s 0xBFC4D908=setup_struFFFF6C48
 -s 0xBFC4DCDC=start_metering
 -s 0xBFC4DEA4=init_struFFFF6A5C_FFFF8BB4
--s 0xBFC4E410=metering_data_convert /* IN: ADC_ch0_buffer, OUT: buffer 0xFFFF6A5C, OUT: buffer 0xFFFF8198, 0xFFFF82B0, 0xFFFF83C8 */
+-s 0xBFC4E410=metering_data_convert( /* IN: ADC_ch0_buffer, OUT: buffer 0xFFFF6A5C, OUT: buffer 0xFFFF8198, 0xFFFF82B0, 0xFFFF83C8 */)
 -s 0xBFC4EBFC=exposure_metering_mode_handler
 -s 0xBFC4ED18=get_struFFFF8B8C_field0_4_8
 -s 0xBFC4ED40=get02_struFFFF6A5C.field70
@@ -1251,7 +1251,7 @@
 -s 0xBFC4F098=get01_struFFFF6A5C.field70
 -s 0xBFC4F0CC=setup@FFFF8B70
 -s 0xBFC4F1F8=setup@FFFF8C00_8C02
--s 0xBFC4F23C=metering_table01_handler /* cal_average_metering00 */
+-s 0xBFC4F23C=metering_table01_handler( /* cal_average_metering00 */)
 -s 0xBFC4F348=change@FFFF8C2E
 -s 0xBFC4F418=get_metering_table03_08
 -s 0xBFC4F554=setup_task0x9_index_00
@@ -1346,7 +1346,7 @@
 -s 0xBFC58864=Get_current_focus_point
 -s 0xBFC588F0=change_current_focus_point_0
 -s 0xBFC58A40=get_current_focus_point
--s 0xBFC58D5C=try_AF_testing /* activate task0xA */
+-s 0xBFC58D5C=try_AF_testing( /* activate task0xA */)
 -s 0xBFC58DA0=get_sth_then_stop_ADA_SC1
 -s 0xBFC58FE8=call_start_task0xA
 -s 0xBFC59064=get_lens_response_17bytes
@@ -1362,7 +1362,7 @@
 -s 0xBFC60978=call_setup_stru_FFFF8028
 -s 0xBFC60A38=setup_struFFFF7B08
 -s 0xBFC60AA0=setup_stru_FFFF6B7C
--s 0xBFC60DF8=get_ADA_conversions /* counter = @(IN a0 + 0xBFC9D6A8), buffer 0xFFFF44FC = ADA conversions array */
+-s 0xBFC60DF8=get_ADA_conversions( /* counter = @(IN a0 + 0xBFC9D6A8), buffer 0xFFFF44FC = ADA conversions array */)
 -s 0xBFC60F38=change_multi_port_output
 -s 0xBFC61098=start_ADA_DMA4
 -s 0xBFC6117C=get_ADA_array
@@ -1732,7 +1732,7 @@
 -s 0xBFC8CB08=setup_power_flag
 -s 0xBFC8CB34=array_search
 -s 0xBFC8CBE4=three_value_compare
--s 0xBFC8CC04=update@FFFF407C_or_FFFF95F8 /* was update_focus_position */
+-s 0xBFC8CC04=update@FFFF407C_or_FFFF95F8( /* was update_focus_position */)
 -s 0xBFC8CC20=update@FFFF407C
 -s 0xBFC8CC50=setup_battery_level_flag
 -s 0xBFC8CC80=get_battery_level_flag
