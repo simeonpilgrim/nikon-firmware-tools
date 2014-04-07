@@ -186,7 +186,7 @@ public class LcdDriver extends SpiSlaveDevice {
 
     private void setNextNibbleFrom(int nibble) {
         int byteNumber = nibbleAddress/2;
-        if (nibble % 2 == 0) {
+        if (nibbleAddress % 2 == 0) {
             // Even nibble number => replace Hi
             values[byteNumber] = (byte) ((nibble & 0xF0) | (values[byteNumber] & 0x0F));
         }

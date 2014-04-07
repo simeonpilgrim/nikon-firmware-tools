@@ -194,16 +194,17 @@ public class LcdSerialPanel extends SerialDevicePanel {
         String[] values = manualValuesTextField.getText().trim().split("[\\s,]+");
         int byteNumber = 0;
         for (String value : values) {
+            if (byteNumber == manualValues.length) {
+                byteNumber++;
+                System.err.println("Too many values to render in LCD. Ignoring the " + byteNumber + "th byte onwards");
+                return;
+            }
             try {
                 manualValues[byteNumber] = (byte) (Format.parseUnsigned(value) & 0xFF);
             } catch (ParsingException e) {
                 System.err.println("Cannot parse value: " + value);
             }
             byteNumber++;
-            if (byteNumber == manualValues.length) {
-                System.err.println("Too many values to render in LCD. Ignoring the " + manualValues.length + "th byte onwards");
-                return;
-            }
         }
     }
 
