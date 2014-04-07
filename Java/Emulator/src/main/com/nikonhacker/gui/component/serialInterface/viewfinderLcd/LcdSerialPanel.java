@@ -184,7 +184,8 @@ public class LcdSerialPanel extends SerialDevicePanel {
     private void updateTextFieldFromArray(JTextField textField, byte[] values) {
         String s ="";
         for (byte value : values) {
-            s += "0x" + Format.asHex(value, 2) + " ";
+            // must &0xFF, because Java casts always "byte(signed)" to "int"
+            s += "0x" + Format.asHex((value&0xFF), 2) + " ";
         }
         textField.setText(s.trim());
     }
