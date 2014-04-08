@@ -3267,13 +3267,13 @@ public class TxInstructionSet
                     context.cpuState.pc += statement.getNumBytes();
                 }
             };
-    private static final TxInstruction sb16InstructionAnalyse = new TxInstruction("sb", "j, s(i)", "si>j", "me", "", "sb $t1,-100($t2)",
+    private static final TxInstruction sb16InstructionAnalyse = new TxInstruction("sb", "j, u(i)", "ui>j", "me", "", "sb $t1,-100($t2)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             sb16SimulationCode
             );
-    private static final TxInstruction sb16Instruction = new TxInstruction("sb", "j, s(i)", "si>j", "", "", "sb $t1,-100($t2)",
+    private static final TxInstruction sb16Instruction = new TxInstruction("sb", "j, u(i)", "ui>j", "", "", "sb $t1,-100($t2)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             InstructionFormat32.I, InstructionFormat16.RRI,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -3299,7 +3299,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of sbfpInstruction: does not sign-extend offset
      */
-    private static final TxInstruction sbfp16Instruction = new TxInstruction("sb", "j, s(F)", "sF>j", "", "", "sb $t1,-100($fp)",
+    private static final TxInstruction sbfp16Instruction = new TxInstruction("sb", "j, u(F)", "uF>j", "", "", "sb $t1,-100($fp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
@@ -3331,7 +3331,7 @@ public class TxInstructionSet
     /**
      * non-EXTENDed 16-bit ISA version of sbspInstruction: does not sign-extend offset
      */
-    private static final TxInstruction sbsp16Instruction = new TxInstruction("sb", "j, s(S)", "sS>j", "", "", "sb $t1,-100($sp)",
+    private static final TxInstruction sbsp16Instruction = new TxInstruction("sb", "j, u(S)", "uS>j", "", "", "sb $t1,-100($sp)",
             "Store Byte: Store the low-order 8 bits of $t1 into the effective memory byte address",
             null, InstructionFormat16.FPB_SPB,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
