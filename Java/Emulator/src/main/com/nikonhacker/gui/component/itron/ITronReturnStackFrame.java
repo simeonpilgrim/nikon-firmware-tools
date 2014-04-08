@@ -151,10 +151,16 @@ public class ITronReturnStackFrame extends DocumentFrame {
 
         // get tasks and update combobox
         if (i != tasks) {
+            final boolean firstUpdate = (tasks == 0);
             tasks = i;
             taskNumberComboBox.removeAllItems();
             for (i=1; i<= tasks; i++) {
                 taskNumberComboBox.addItem(Integer.toHexString(i).toUpperCase());
+            }
+            if (firstUpdate) {
+                i = (chip == Constants.CHIP_TX ? txTaskTable.getCurrentTask() : frTaskTable.getCurrentTask());
+                if (i != 0)
+                    exploreTask(i);
             }
             // do not call updateReturnList() here, because changed task selection do it anyway
         } else {
