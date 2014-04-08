@@ -7,6 +7,7 @@ public interface Constants {
     int      CHIP_NONE             = -1;
     int      CHIP_FR               = 0;
     int      CHIP_TX               = 1;
+    int      CHIP_ARM              = 2;
     String[] CHIP_LABEL            = {"FR80", "TX19"};
     Color[]  CHIP_BACKGROUND_COLOR = {new Color(240, 240, 255), new Color(248, 255, 248)};
 
