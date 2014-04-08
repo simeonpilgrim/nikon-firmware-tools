@@ -13,8 +13,6 @@ import java.awt.event.ActionListener;
 
 public class CPUStateEditorFrame extends DocumentFrame {
 
-    private Timer refreshTimer;
-
     private final CPUStateComponent cpuPanel;
 
     private boolean editable = false;
@@ -31,16 +29,6 @@ public class CPUStateEditorFrame extends DocumentFrame {
 
         getContentPane().add(cpuPanel);
 
-        // Prepare refresh timer
-        refreshTimer = new Timer(refreshInterval, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                cpuPanel.refresh();
-            }
-        });
-
-        if (!editable) {
-            refreshTimer.start();
-        }
     }
 
     public void setLogger(DisassemblyLogger logger) {
@@ -53,21 +41,11 @@ public class CPUStateEditorFrame extends DocumentFrame {
         this.editable = editable;
         cpuPanel.setEditable(editable);
         if (editable) {
-            if (refreshTimer.isRunning()) {
-                refreshTimer.stop();
-            }
             cpuPanel.refresh();
-        }
-        else {
-            if (!refreshTimer.isRunning()) {
-                refreshTimer.start();
-            }
         }
     }
 
     public void dispose() {
-        refreshTimer.stop();
-        refreshTimer = null;
         super.dispose();
     }
 }
