@@ -4,6 +4,7 @@ import com.nikonhacker.ApplicationInfo;
 import com.nikonhacker.Format;
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.memory.FastMemory;
+import com.nikonhacker.emu.memory.FastMemoryLE;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.disassembly.fr.FrCodeAnalyzer;
 import com.nikonhacker.disassembly.tx.TxCodeAnalyzer;
@@ -470,7 +471,7 @@ public abstract class Disassembler {
 
             if (chip==Constants.CHIP_FR) {
                 new FrCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
-            } else {
+            } else if (chip==Constants.CHIP_TX) {
                 new TxCodeAnalyzer(codeStructure, memRanges, memory, symbols, jumpHints, outputOptions, debugPrintWriter).postProcess();
             }
 
@@ -582,7 +583,7 @@ public abstract class Disassembler {
         }
 
         if (memory == null) {
-            memory = new FastMemory();
+            memory = (chip==Constants.CHIP_ARM ? new FastMemoryLE() : new FastMemory());
             memory.loadFile(new File(inputFileName), fileRanges, true);
         }
     }
