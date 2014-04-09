@@ -119,10 +119,10 @@ public class TxCPUStateComponent extends CPUStateComponent {
         registerPanel.add(new JLabel("pc (ISA 16b)"), "wrap 15");
 
         for (int i = 0; i < 16; i++) {
-            registerPanel.add(new JLabel(TxCPUState.registerLabels[i*2]+" = 0x"), "align right");
-            registerPanel.add(regTextFields[i*2]);
-            registerPanel.add(new JLabel(TxCPUState.registerLabels[i*2+1]+" = 0x"), "align right");
-            registerPanel.add(regTextFields[i*2+1], "wrap" + (i==15?" 15":""));
+            registerPanel.add(new JLabel(TxCPUState.registerLabels[i]+" = 0x"), "align right");
+            registerPanel.add(regTextFields[i]);
+            registerPanel.add(new JLabel(TxCPUState.registerLabels[i+16]+" = 0x"), "align right");
+            registerPanel.add(regTextFields[i+16], "wrap" + (i==15?" 15":""));
         }
 
         regTextFields[0].setEnabled(false);
