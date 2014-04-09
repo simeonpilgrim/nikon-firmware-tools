@@ -36,10 +36,12 @@ public class ITronReturnStackFrame extends DocumentFrame {
     private final FrItronTaskTable frTaskTable;
 
     private int tasks;
+    private int currentTask;
     LinkedList<ReturnStackEntry> returnStack;
 
     private final JList returnStackList;
     private JButton updateButton;
+    private JButton gotoPcButton;
     private JCheckBox autoUpdateCheckbox;
     private JComboBox taskNumberComboBox;
 
@@ -55,7 +57,7 @@ public class ITronReturnStackFrame extends DocumentFrame {
 
         setLayout(new BorderLayout());
 
-        JPanel topPanel = new JPanel();
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         topPanel.add(new JLabel("Task 0x"));
         taskNumberComboBox = new JComboBox();
         taskNumberComboBox.addActionListener(new ActionListener() {
@@ -64,6 +66,16 @@ public class ITronReturnStackFrame extends DocumentFrame {
             }
         });
         topPanel.add(taskNumberComboBox);
+
+        gotoPcButton = new JButton("Current");
+        gotoPcButton.setEnabled(false);
+        gotoPcButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if (currentTask != 0)
+                    exploreTask(currentTask);
+            }
+        });
+        topPanel.add(gotoPcButton);
 
         updateButton = new JButton("Update");
         updateButton.addActionListener(new ActionListener() {
@@ -149,18 +161,18 @@ public class ITronReturnStackFrame extends DocumentFrame {
     public final void updateAll() {
         int i = (chip == Constants.CHIP_TX ? txTaskTable.read(codeStructure) : frTaskTable.read(codeStructure));
 
+        if (i>0) {
+            currentTask = (chip == Constants.CHIP_TX ? txTaskTable.getCurrentTask() : frTaskTable.getCurrentTask());
+            // only enable if current task is available
+            if (currentTask != 0)
+                gotoPcButton.setEnabled(true);
+        }
         // get tasks and update combobox
         if (i != tasks) {
-            final boolean firstUpdate = (tasks == 0);
             tasks = i;
             taskNumberComboBox.removeAllItems();
             for (i=1; i<= tasks; i++) {
                 taskNumberComboBox.addItem(Integer.toHexString(i).toUpperCase());
-            }
-            if (firstUpdate) {
-                i = (chip == Constants.CHIP_TX ? txTaskTable.getCurrentTask() : frTaskTable.getCurrentTask());
-                if (i != 0)
-                    exploreTask(i);
             }
             // do not call updateReturnList() here, because changed task selection do it anyway
         } else {
@@ -174,6 +186,9 @@ public class ITronReturnStackFrame extends DocumentFrame {
 
     public void enableUpdate(boolean enable) {
         updateButton.setEnabled(enable);
+        // always disable on start of emulation
+        if (enable==false)
+            gotoPcButton.setEnabled(false);
     }
 
     public void onEmulatorStop(int chip) {
