@@ -2880,6 +2880,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
     private void signalEmulatorStopped(int chip) {
         // TODO this should iterate on all windows. A NOP onEmulatorStop() should exist in DocumentFrame
+        // coderat: do not agree, because function updateState(chip)->setEnabled() is called for example
+        //          in onNormalExit() after call this one. So not all windows need call from here.
         if (sourceCodeFrame[chip] != null) {
             sourceCodeFrame[chip].onEmulatorStop();
         }
