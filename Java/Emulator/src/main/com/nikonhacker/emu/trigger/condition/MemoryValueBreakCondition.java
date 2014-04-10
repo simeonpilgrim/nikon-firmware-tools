@@ -53,12 +53,12 @@ public class MemoryValueBreakCondition extends AbstractLoggingBreakCondition imp
     }
 
     public void setValue(int value) {
-        this.value = value;
+        this.value = value & mask;
     }
 
     public boolean matches(CPUState cpuState, Memory memory) {
-        int currentValue = memory.load32(address);
-        boolean matches = negate ^ ((currentValue & mask) == value);
+        final int currentValue = memory.load32(address) & mask;
+        final boolean matches = negate ^ (currentValue == value);
         if (matches && isChangeDetection) {
             // Re-arm trigger so that if will fire when value changes from the current one
             negate = true;
