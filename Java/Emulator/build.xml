@@ -7,7 +7,7 @@
 
 	<!-- Set global properties for this build. -->
     <property name="app-name"         value="NikonEmulator"/>
-    <property name="app-version"      value="2.50"/>
+    <property name="app-version"      value="2.51"/>
     <property name="app-mainclass"    value="com.nikonhacker.gui.EmulatorUI"/>
     <property name="source-dir"       location="src/main"/>
     <property name="template-dir"     location="src/template"/>
@@ -161,7 +161,7 @@
              update="true"
              basedir="."
              includes="lib/**/*.*"
-                />                
+                />
     </target>
 
 
@@ -169,7 +169,7 @@
     <target name="clean" description="cleanup module">
         <delete dir="${target-dir}"/>
     </target>
-    
+
     <taskdef name="gcupload"
             classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask"
             classpath="${tools-dir}\googlecode_upload\ant-googlecode-0.0.3.jar" />
