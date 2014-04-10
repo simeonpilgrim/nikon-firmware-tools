@@ -168,9 +168,8 @@ public class TxItronTaskTable {
         int sp = state.getReg(TxCPUState.SP);
         int ra = state.getPc() | (state.is16bitIsaMode ? 1 : 0);
 
-        boolean firstRun = true;
         final Memory memory = platform.getMemory();
-        while (sp<0) {
+        for (boolean firstRun = true; sp<0; firstRun=false) {
             Function function = codeStructure.findFunctionIncluding(ra & 0xFFFFFFFE);
             if (function==null)
                 break;
@@ -187,7 +186,6 @@ public class TxItronTaskTable {
 
             //  16-bit path
             if (firstRun) {
-                firstRun = false;
                 if ((function.getAddress()|1)==ra) {
                     // we are at first instruction of function, no stack change yet
                     if (!state.isRegisterDefined(TxCPUState.RA))
@@ -200,7 +198,7 @@ public class TxItronTaskTable {
             final int opcode = memory.load32(function.getAddress());
 
             // F70064F6 save    r31,r16,r17,r18-r23,r30, 0x30
-            if ((opcode& 0xF800FFC0)==0xF00064C0) {
+            if ((opcode& 0xF800FF80)==0xF0006480) {
 
                 // add stack frame
                 sp += (((opcode>>16) & 0xF) + (opcode & 0xF))<<3;
@@ -214,7 +212,13 @@ public class TxItronTaskTable {
                     default:
                         sp = 0; continue;
                 }
-                ra = memory.load32(sp - 4 - args*4);
+                if ((opcode&0x40)==0) {
+                    // ra was not saved
+                    if (!firstRun || !state.isRegisterDefined(TxCPUState.RA))
+                        break;
+                    ra = state.getReg(TxCPUState.RA);
+                    continue;
+                }
 
             // 64C1     save    r31, 0x08
             } else if ((opcode & 0xFFC00000)==0x64C00000) {
