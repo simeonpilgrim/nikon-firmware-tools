@@ -45,10 +45,10 @@ public class D5100FrontPanel extends FrontPanel {
                 {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"},
                 {"0_highlight", "1_highlight", "2_highlight", "3_highlight", "4_highlight", "5_highlight", "6_highlight", "7_highlight", "8_highlight", "9_highlight", "10_highlight", "11_highlight", "12_highlight"}},
                 false, new int[][]{
-                {1,1,0,0,0,0,1,1,1,0,0,0,1} /*PF4=pin0 values for each of the 13 states*/,
-                {1,1,1,1,0,0,0,0,0,0,1,1,1} /*PF5=pin1 values for each of the 13 states*/,
-                {1,0,0,1,1,0,0,1,1,1,1,0,0} /*PF6=pin2 values for each of the 13 states*/,
-                {1,1,1,1,1,1,1,1,0,0,0,0,0} /*PF7=pin3 values for each of the 13 states*/
+                {1,1,1,1,1,1,1,1,0,0,0,0,0} /*PF4=pin0 values for each of the 13 states*/,
+                {1,0,0,1,1,0,0,1,1,1,1,0,0} /*PF5=pin1 values for each of the 13 states*/,
+                {1,1,1,1,0,0,0,0,0,0,1,1,1} /*PF6=pin2 values for each of the 13 states*/,
+                {1,1,0,0,0,0,1,1,1,0,0,0,1} /*PF7=pin3 values for each of the 13 states*/
         });
 
         // addLed(panel, "led", bgWidth, bgHeight);
