@@ -60,13 +60,13 @@ public class TxDmaController implements DmaController {
     }
 
     public int getRsr() {
-        System.err.println("RSR register of DMA controller has no effect for now");
         return rsr;
     }
 
     public void setRsr(int rsr) {
         this.rsr = rsr;
-        System.err.println("RSR register of DMA controller has no effect for now (set to 0x" + Format.asHex(rsr, 8) + ")");
+        if (rsr!=0)
+            System.err.println("RSR register of DMA controller has no effect for now (set to 0x" + Format.asHex(rsr, 8) + ")");
     }
 
     public int getDhr() {
