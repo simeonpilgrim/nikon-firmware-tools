@@ -133,7 +133,6 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         if (isTbrunTbrunSet() && isTbrunTbprunSet()) {
             // Check that clock is not external
             // TODO why check this ?
-            System.err.println(getName() + " is started while configured as pin-driven");
         }
         else {
             // Spec says "Timer Run/Stop Control - 0: Stop & clear - 1: Count"
