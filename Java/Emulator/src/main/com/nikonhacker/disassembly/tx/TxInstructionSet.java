@@ -3,6 +3,8 @@ package com.nikonhacker.disassembly.tx;
 import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.*;
 import com.nikonhacker.emu.EmulationException;
+import com.nikonhacker.emu.interrupt.tx.CoprocessorUnusableException;
+import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptController;
 
 import java.util.EnumSet;
 import java.util.Set;
@@ -1412,8 +1414,15 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.cpuState.getReg(statement.ri_rs_fs/*fs*/));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        context.cpuState.setReg(statement.rj_rt_ft, context.cpuState.getReg(statement.ri_rs_fs/*fs*/));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1423,8 +1432,15 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.ri_rs_fs/*fs*/, context.cpuState.getReg(statement.rj_rt_ft)) ;
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        context.cpuState.setReg(statement.ri_rs_fs/*fs*/, context.cpuState.getReg(statement.rj_rt_ft)) ;
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1434,8 +1450,16 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, ((TxCPUState)context.cpuState).getCp1CrReg(statement.ri_rs_fs/*cr#*/));
-                    context.cpuState.pc += statement.getNumBytes();
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        context.cpuState.setReg(statement.rj_rt_ft, txCPUState.getCp1CrReg(statement.ri_rs_fs/*cr#*/));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1446,8 +1470,16 @@ public class TxInstructionSet
             // Crash @BFC00600 : Unknown CP1 register number 71
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    ((TxCPUState)context.cpuState).setCp1CrReg(statement.ri_rs_fs/*cr#*/, context.cpuState.getReg(statement.rj_rt_ft)) ;
-                    context.cpuState.pc += statement.getNumBytes();
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        txCPUState.setCp1CrReg(statement.ri_rs_fs/*cr#*/, context.cpuState.getReg(statement.rj_rt_ft)) ;
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1458,8 +1490,15 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.load32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        context.cpuState.setReg(statement.rj_rt_ft, context.memory.load32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16)));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1469,8 +1508,15 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.memory.store32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rj_rt_ft));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        context.memory.store32(context.cpuState.getReg(statement.ri_rs_fs) + (statement.imm << 16 >> 16), context.cpuState.getReg(statement.rj_rt_ft));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1480,17 +1526,24 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float add1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float add2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    float sum = add1 + add2;
-                    // overflow detected when sum is positive or negative infinity.
-                    /*
-                    if (sum == Float.NEGATIVE_INFINITY || sum == Float.POSITIVE_INFINITY) {
-                      throw new ProcessingException(statement,"arithmetic overflow");
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float add1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float add2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        float sum = add1 + add2;
+                        // overflow detected when sum is positive or negative infinity.
+                        /*
+                        if (sum == Float.NEGATIVE_INFINITY || sum == Float.POSITIVE_INFINITY) {
+                          throw new ProcessingException(statement,"arithmetic overflow");
+                        }
+                        */
+                        context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(sum));
+                        context.cpuState.pc += statement.getNumBytes();
                     }
-                    */
-                    context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(sum));
-                    context.cpuState.pc += statement.getNumBytes();
                 }
             }
     );
@@ -1500,11 +1553,18 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float sub1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float sub2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    float diff = sub1 - sub2;
-                    context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(diff));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float sub1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float sub2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        float diff = sub1 - sub2;
+                        context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(diff));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             }
     );
@@ -1514,11 +1574,18 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float mul1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float mul2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    float prod = mul1 * mul2;
-                    context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(prod));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float mul1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float mul2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        float prod = mul1 * mul2;
+                        context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(prod));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
     private static final TxInstruction divSInstruction = new TxInstruction("div.s", "k, [i, ]j", "ij>k", "", "kw", "div.s $f0,$f1,$f3",
@@ -1527,11 +1594,18 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float div1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float div2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    float quot = div1 / div2;
-                    context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(quot));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float div1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float div2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        float quot = div1 / div2;
+                        context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits(quot));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1541,11 +1615,19 @@ public class TxInstructionSet
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 0) {
-                        context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
-                    }
-                    else {
-                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        if (txCPUState.getConditionFlag(statement.sa_cc) == 0) {
+                            context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        }
+                        else {
+                            context.cpuState.pc += statement.getNumBytes(); // normal flow
+                        }
                     }
                 }
             });
@@ -1555,11 +1637,19 @@ public class TxInstructionSet
             Instruction.FlowType.BRA, true, Instruction.DelaySlotType.NORMAL,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    if (((TxCPUState)context.cpuState).getConditionFlag(statement.sa_cc) == 1) {
-                        context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
-                    }
-                    else {
-                        context.cpuState.pc += statement.getNumBytes(); // normal flow
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        if (txCPUState.getConditionFlag(statement.sa_cc) == 1) {
+                            context.cpuState.pc += 4 + (statement.imm << 16 >> 14); // sign extend and x4
+                        }
+                        else {
+                            context.cpuState.pc += statement.getNumBytes(); // normal flow
+                        }
                     }
                 }
             });
@@ -1570,9 +1660,16 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    // convert integer to single (interpret $f1 value as int?)
-                    context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits((float) context.cpuState.getReg(statement.ri_rs_fs)));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        // convert integer to single (interpret $f1 value as int?)
+                        context.cpuState.setReg(statement.rd_fd, Float.floatToIntBits((float) context.cpuState.getReg(statement.ri_rs_fs)));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
     private static final TxInstruction cvtWSInstruction = new TxInstruction("cvt.w.s", "k, i", "i>k", "", "kw", "cvt.w.s $f0,$f1",
@@ -1581,9 +1678,16 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    // convert single precision in $f1 to integer stored in $f0
-                    context.cpuState.setReg(statement.rd_fd, (int) Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs)));
-                    context.cpuState.pc += statement.getNumBytes();
+                    if ((((TxCPUState)context.cpuState).getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        // convert single precision in $f1 to integer stored in $f0
+                        context.cpuState.setReg(statement.rd_fd, (int) Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs)));
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
@@ -1594,13 +1698,21 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    if (op1 == op2)
-                        ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
-                    else
-                        ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    context.cpuState.pc += statement.getNumBytes();
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        if (op1 == op2)
+                            txCPUState.setConditionFlag(statement.sa_cc);
+                        else
+                            txCPUState.clearConditionFlag(statement.sa_cc);
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
     private static final TxInstruction cLeSInstruction = new TxInstruction("c.le.s", "[l, ]i, j", "", "", "", "c.le.s 1,$f0,$f1",
@@ -1609,13 +1721,21 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    if (op1 <= op2)
-                        ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
-                    else
-                        ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    context.cpuState.pc += statement.getNumBytes();
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        if (op1 <= op2)
+                            txCPUState.setConditionFlag(statement.sa_cc);
+                        else
+                            txCPUState.clearConditionFlag(statement.sa_cc);
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
     private static final TxInstruction cLtSInstruction = new TxInstruction("c.lt.s", "[l, ]i, j", "", "", "", "c.lt.s 1,$f0,$f1",
@@ -1624,13 +1744,21 @@ public class TxInstructionSet
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
-                    float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
-                    if (op1 < op2)
-                        ((TxCPUState)context.cpuState).setConditionFlag(statement.sa_cc);
-                    else
-                        ((TxCPUState)context.cpuState).clearConditionFlag(statement.sa_cc);
-                    context.cpuState.pc += statement.getNumBytes();
+                    final TxCPUState txCPUState = (TxCPUState)context.cpuState;
+                    if ((txCPUState.getStatusCU()&2)==0) {
+                        if (context.nextPc != null)
+                            throw new TxEmulationException("FPU exception in delayed slot not implemented at 0x" + Format.asHex(context.cpuState.pc, 8));
+                        context.pushStatement(statement);
+                        ((TxInterruptController)context.interruptController).request(new CoprocessorUnusableException(1));
+                    } else {
+                        float op1 = Float.intBitsToFloat(context.cpuState.getReg(statement.ri_rs_fs));
+                        float op2 = Float.intBitsToFloat(context.cpuState.getReg(statement.rj_rt_ft));
+                        if (op1 < op2)
+                            txCPUState.setConditionFlag(statement.sa_cc);
+                        else
+                            txCPUState.clearConditionFlag(statement.sa_cc);
+                        context.cpuState.pc += statement.getNumBytes();
+                    }
                 }
             });
 
