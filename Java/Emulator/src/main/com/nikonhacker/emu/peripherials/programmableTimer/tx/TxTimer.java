@@ -283,7 +283,11 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public void setTbst(int tbst) {
-        throw new RuntimeException(getName() + ": Cannot write to TB" + Format.asHex(timerNumber, 1) + "ST register");
+        /* code does exactly that:
+        BFC7BF1C F71F4BE0 lui     r3, 0xFF00
+        BFC7BF20 F109DB54 sw      r2, 0x4914(r3)
+        Silently ignore
+        */
     }
 
 
