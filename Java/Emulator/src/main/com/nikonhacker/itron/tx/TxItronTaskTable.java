@@ -186,8 +186,10 @@ public class TxItronTaskTable {
 
             //  16-bit path
             if (firstRun) {
-                if ((function.getAddress()|1)==ra) {
-                    // we are at first instruction of function, no stack change yet
+                if ((function.getAddress()|1)==ra       // we are at first instruction of function
+                    || memory.loadUnsigned16(ra & 0xFFFFFFFE)==0xE8A0 // or we are at RET without delay slot
+                    ) {
+                    // no stack framing yet
                     if (!state.isRegisterDefined(TxCPUState.RA))
                         break;
                     ra = state.getReg(TxCPUState.RA);
