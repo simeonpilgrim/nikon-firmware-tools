@@ -424,6 +424,10 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         return ((TxClockGenerator)platform.getClockGenerator()).getFt0Hz() / getDivider();
     }
 
+    private final int getInterruptNumber() {
+        return TxInterruptController.INTTB0 + timerNumber + (timerNumber>0xF ? TxInterruptController.INTTB10-TxInterruptController.INTTBF-1 : 0);
+    }
+
     @Override
     public Object onClockTick() {
 //        System.out.println(getName() + (operate?" operates":" doesn't operate"));
@@ -479,7 +483,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 currentValue = 0;
             }
             if (interruptCondition) {
-                platform.getInterruptController().request(TxInterruptController.INTTB0 + timerNumber);
+                platform.getInterruptController().request(getInterruptNumber());
             }
         }
         return null;
@@ -487,7 +491,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
 
     @Override
     public String toString() {
-        int requestLevel = ((TxInterruptController) platform.getInterruptController()).getRequestLevel(TxInterruptController.INTTB0 + timerNumber);
+        int requestLevel = ((TxInterruptController) platform.getInterruptController()).getRequestLevel(getInterruptNumber());
         return getName() + " @" + getFrequencyString() + ": TB" + Format.asHex(timerNumber, 1) + "EN=0x" + Format.asHex(getTben(), 2)
                 + ", RUN=0x" + Format.asHex(getTbrun(), 2)
                 + ", RG0=" + tbrg0 + "d, RG1=" + tbrg1 + "d"
