@@ -203,7 +203,7 @@ public class TxItronTaskTable {
             if ((opcode& 0xF800FF80)==0xF0006480) {
 
                 // add stack frame
-                sp += (((opcode>>16) & 0xF) + (opcode & 0xF))<<3;
+                sp += (((opcode>>16) & 0xF0) + (opcode & 0xF))<<3;
                 // calc size of saved args
                 switch ((opcode>>16)&0xF) {
                     case 0b0000: case 0b0001: case 0b0010: case 0b0011: case 0b1011: args = 0; break;
