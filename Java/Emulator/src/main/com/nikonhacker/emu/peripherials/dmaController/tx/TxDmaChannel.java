@@ -90,7 +90,7 @@ public class TxDmaChannel {
         // if at least one of non-settable bits is set to 0 and correspondent request is active
         if ( ((csr & CSR_NC_MASK)==0 && (this.csr & CSR_NC_MASK)!=0) ||
             ((csr & CSR_ABC_MASK)==0 && (this.csr & CSR_ABC_MASK)!=0) ) {
-            // "L" active    
+            // "L" active
             ((TxInterruptController)txDmaController.getPlatform().getInterruptController()).setInterruptChannelValue(TxInterruptController.INTDMA0 + channelNumber,1);
         }
         // Set CSR, except for NC and AbC which can only be reset, not set
@@ -449,7 +449,7 @@ public class TxDmaChannel {
                 }
                 sar += srcIncrement;
                 dar += dstIncrement;
-                bcr--;
+                bcr -= dpsBytes;
 
                 if (isCcrExternalRequest()) {
                     // "a request made to the DMAC is cleared after completion of each data transfer (transfer of the amount of data specified by TrSiz)" (p 10-19)
