@@ -579,7 +579,7 @@ public class TxIoListener extends IoActivityListener {
         if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
             // IMC registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             return ((intc.getImc(addr-REGISTER_IMC00)<<8) | intc.getImc(addr-REGISTER_IMC00+1));
         }
         if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
@@ -740,7 +740,7 @@ public class TxIoListener extends IoActivityListener {
         } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
             // IMCG registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             return ((intc.getImcg(addr-REGISTER_IMCGA)<<8) | intc.getImcg(addr-REGISTER_IMCGA+1));
         }
         else switch (addr){
@@ -782,10 +782,10 @@ public class TxIoListener extends IoActivityListener {
         if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
             // IMC registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
-            return ((intc.getImc(addr-REGISTER_IMC00)<<24) | 
-                    (intc.getImc(addr-REGISTER_IMC00+1)<<16) | 
-                    (intc.getImc(addr-REGISTER_IMC00+2)<<8) | 
+
+            return ((intc.getImc(addr-REGISTER_IMC00)<<24) |
+                    (intc.getImc(addr-REGISTER_IMC00+1)<<16) |
+                    (intc.getImc(addr-REGISTER_IMC00+2)<<8) |
                      intc.getImc(addr-REGISTER_IMC00+3));
         }
         else if (addr >= REGISTER_PORT0 && addr < REGISTER_PORT0 + (NUM_PORT << PORT_OFFSET_SHIFT)) {
@@ -1015,10 +1015,10 @@ public class TxIoListener extends IoActivityListener {
         } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
             // IMCG registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
-            return ((intc.getImcg(addr-REGISTER_IMCGA)<<24) | 
-                    (intc.getImcg(addr-REGISTER_IMCGA+1)<<16) | 
-                    (intc.getImcg(addr-REGISTER_IMCGA+2)<<8) | 
+
+            return ((intc.getImcg(addr-REGISTER_IMCGA)<<24) |
+                    (intc.getImcg(addr-REGISTER_IMCGA+1)<<16) |
+                    (intc.getImcg(addr-REGISTER_IMCGA+2)<<8) |
                      intc.getImcg(addr-REGISTER_IMCGA+3));
         }
         switch (addr) {
@@ -1135,7 +1135,6 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 3:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 3:
-                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1390,7 +1389,7 @@ public class TxIoListener extends IoActivityListener {
         if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
             // IMC registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             intc.setImc(addr-REGISTER_IMC00,(value>>8)&0xFF);
             intc.setImc(addr-REGISTER_IMC00+1,value&0xFF);
             return;
@@ -1444,7 +1443,6 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP + 2:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP + 2:
-                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1516,7 +1514,7 @@ public class TxIoListener extends IoActivityListener {
         else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
             // IMCG registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             intc.setImcg(addr-REGISTER_IMCGA,(value>>8)&0xFF);
             intc.setImcg(addr-REGISTER_IMCGA+1,value&0xFF);
             return;
@@ -1549,7 +1547,7 @@ public class TxIoListener extends IoActivityListener {
         if (addr >= REGISTER_IMC00 && addr < (REGISTER_IMC19+4)) {
             // IMC registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             intc.setImc(addr-REGISTER_IMC00,(value>>24)&0xFF);
             intc.setImc(addr-REGISTER_IMC00+1,(value>>16)&0xFF);
             intc.setImc(addr-REGISTER_IMC00+2,(value>>8)&0xFF);
@@ -1624,7 +1622,10 @@ public class TxIoListener extends IoActivityListener {
                     case REGISTER_TBTCAP:
                         txInputCaptureTimer.setTbtcap(value); break;
                     case REGISTER_TBTRDCAP:
-                        if (logRegisterMessages) warn("Writing " + value + " to TBTRDCAP register !");
+                        /* code does exactly this even if in datasheet is read-only:
+                        	BFC1123E F71F4EE0 lui     r6, 0xFF00
+                        	BFC11242 F209DEF0 sw      r7, 0x4A10(r6)
+                         */
                         txInputCaptureTimer.setCurrentValue(value);
                         break;
                 }
@@ -1783,7 +1784,7 @@ public class TxIoListener extends IoActivityListener {
         } else if (addr >= REGISTER_IMCGA && addr < (REGISTER_IMCG11+4)) {
             // IMCG registers.
             TxInterruptController intc = (TxInterruptController)platform.getInterruptController();
-            
+
             intc.setImcg(addr-REGISTER_IMCGA,(value>>24)&0xFF);
             intc.setImcg(addr-REGISTER_IMCGA+1,(value>>16)&0xFF);
             intc.setImcg(addr-REGISTER_IMCGA+2,(value>>8)&0xFF);
