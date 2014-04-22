@@ -615,6 +615,9 @@ public class TxIoListener extends IoActivityListener {
                     return txTimer.getTbcp0() & 0xFFFF;
                 case REGISTER_TB0CP1 + 2:
                     return txTimer.getTbcp1() & 0xFFFF;
+                default:
+                    // return upper halfs as 0 (datasheet)
+                    return 0;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1115,10 +1118,6 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_TB0RG1 + 2:
                 case REGISTER_TB0RG1 + 3:
                     stop("The TBnRG1 register cannot be accessed by 8-bit for now");
-                case REGISTER_TB0CP0 + 3:
-                    txTimer.setTbcp0(value); break;
-                case REGISTER_TB0CP1 + 3:
-                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1423,10 +1422,6 @@ public class TxIoListener extends IoActivityListener {
                     txTimer.setTbrg0(value); break;
                 case REGISTER_TB0RG1 + 2:
                     txTimer.setTbrg1(value); break;
-                case REGISTER_TB0CP0 + 2:
-                    txTimer.setTbcp0(value); break;
-                case REGISTER_TB0CP1 + 2:
-                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
@@ -1602,10 +1597,6 @@ public class TxIoListener extends IoActivityListener {
                     txTimer.setTbrg0(value); break;
                 case REGISTER_TB0RG1:
                     txTimer.setTbrg1(value); break;
-                case REGISTER_TB0CP0:
-                    txTimer.setTbcp0(value); break;
-                case REGISTER_TB0CP1:
-                    txTimer.setTbcp1(value); break;
             }
         }
         else if (addr >= REGISTER_TCEN && addr < REGISTER_CAPCR0 + (NUM_CAPTURE_CHANNEL << INPUT_CAPTURE_OFFSET_SHIFT )) {
