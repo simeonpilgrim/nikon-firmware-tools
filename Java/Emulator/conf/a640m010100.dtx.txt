@@ -227,7 +227,7 @@
 -s 0xBFC12A30=TBF_RUN
 -s 0xBFC12A3C=TBF_STOP
 -s 0xBFC12A5C=sys_sta_tsk_00($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code] /* Start task */)
--s 0xBFC12A68=sys_sta_tsk_01
+-s 0xBFC12A68=sys_sta_tsk_01($a0 [IN tsk_id], $a1 [IN tsk_param], $v0 [OUT err_code])
 -s 0xBFC12A74=sys_ext_tsk
 -s 0xBFC12A80=sys_deact_or_ter_tsk_00($a0 [IN tsk_id], $v0 [OUT err_code] /* Deactivate task */)
 -s 0xBFC12A8C=sys_chg_pri
