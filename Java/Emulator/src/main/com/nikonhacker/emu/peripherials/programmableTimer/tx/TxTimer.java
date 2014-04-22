@@ -316,7 +316,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public void setTbuc(int tbuc) {
-        this.currentValue = tbuc;
+        // only 16-bit are writable
+        this.currentValue = tbuc & 0xFFFF;
     }
 
     private void toggleFf0() {
@@ -340,6 +341,8 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public void setTbrg0(int tbrg0) {
+        // only 16-bit are writable
+        tbrg0 = tbrg0 & 0xFFFF;
         // "If double buffering is enabled, data is transferred from register buffer 0 to the TB0RG0/1
         // timer register when there is a match between UC0 and TB0RG0/1."
         if (isTbcrTbwbfSet()) {
@@ -357,14 +360,15 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
     }
 
     public void setTbrg1(int tbrg1) {
-        this.tbrg1 = tbrg1;
+        // only 16-bit are writable
+        this.tbrg1 = tbrg1 & 0xFFFF;
     }
 
     public int getTbcp0() {
         return tbcp0;
     }
 
-    public void setTbcp0(int tbcp0) {
+    private void setTbcp0(int tbcp0) {
         this.tbcp0 = tbcp0;
     }
 
@@ -379,7 +383,7 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         return tbcp1;
     }
 
-    public void setTbcp1(int tbcp1) {
+    private void setTbcp1(int tbcp1) {
         this.tbcp1 = tbcp1;
     }
 
