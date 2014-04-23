@@ -31,11 +31,13 @@ public class FrontPanel {
     public static final String KEY_AEL_AFL    = "aelafl";
     public static final String KEY_SHUTTER    = "shutter";
     public static final String KEY_DIAL       = "dial";
-    public static final String KEY_MODEDIAL = "modedial";
+    public static final String KEY_MODEDIAL   = "modedial";
 
+    public static final String KEY_CARDLED    = "led";
 
     Map<String, CameraButton> buttons = new HashMap<>();
     private Prefs prefs;
+    CameraLed led;
 
     public FrontPanel(Prefs prefs) {
         this.prefs = prefs;
@@ -56,7 +58,18 @@ public class FrontPanel {
         buttons.put(key, new CameraButton(key, imageSuffixes, isLeftClickTemp, statePinValues, prefs));
     }
 
+    protected void addCameraLed(String key, String[][] imageSuffixes) {
+        if (led!=null)
+            throw new RuntimeException("Only one LED is implemented");
+        else
+            led = new CameraLed(key, imageSuffixes);
+    }
+
     public CameraButton getButton(String key) {
         return buttons.get(key);
+    }
+
+    public CameraLed getLed(String key) {
+        return led;
     }
 }
