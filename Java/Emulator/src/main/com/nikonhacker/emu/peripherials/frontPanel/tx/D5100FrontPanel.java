@@ -51,7 +51,7 @@ public class D5100FrontPanel extends FrontPanel {
                 {1,1,0,0,0,0,1,1,1,0,0,0,1} /*PF7=pin3 values for each of the 13 states*/
         });
 
-        // addLed(panel, "led", bgWidth, bgHeight);
+        addCameraLed(KEY_CARDLED, new String[][]{{null, "on"}, {"highlight", "on"}} );
     }
 
 }

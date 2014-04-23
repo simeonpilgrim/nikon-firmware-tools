@@ -447,6 +447,7 @@ public class EmulationFramework {
                 interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
                 // Perform LCD screen connection
                 connectLcdScreenRelatedPins(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts(), (FrLcd) platform[Constants.CHIP_FR].getLcd());
+                connectFrontPanelPins(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getFrontPanel());
             }
 
             // 3. RESTORE
@@ -486,6 +487,10 @@ public class EmulationFramework {
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(7), lcd.getPowerPin());
         // Input pin to indicate rotation (upside down)
         // Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(3), /*button*/);
+    }
+
+    private void connectFrontPanelPins(IoPort[] frIoPorts, FrontPanel frontPanel) {
+        Pin.interconnect(frIoPorts[IoPort.PORT_2].getPin(0), frontPanel.getLed(FrontPanel.KEY_CARDLED).getPin());
     }
 
     private void connectFrontPanel(FrontPanel frontPanel, IoPort[] txIoPorts) {

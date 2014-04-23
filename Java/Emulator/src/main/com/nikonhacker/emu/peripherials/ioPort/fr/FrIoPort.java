@@ -43,6 +43,11 @@ public class FrIoPort extends IoPort {
             ioPorts[IoPort.PORT_0].getPin(bitNumber).setFunction(ioPorts[IoPort.PORT_0].outputFunctions[bitNumber]);
         }
 
+        ioPorts[IoPort.PORT_2].setDirectionOutput((byte) 0xFF);
+        for (int bitNumber = 0; bitNumber < 8; bitNumber++) {
+            ioPorts[IoPort.PORT_2].getPin(bitNumber).setFunction(ioPorts[IoPort.PORT_2].outputFunctions[bitNumber]);
+        }
+
         // Configure port 7 for input
         // - P76 aka 0x50000107.bit6 is input for serial.
         // - P75 aka 0x50000107.bit5 is input (eg tested @00113D54)
