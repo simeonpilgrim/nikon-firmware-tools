@@ -2,6 +2,7 @@ package com.nikonhacker.gui.component.ioPort;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.emu.peripherials.ioPort.*;
+import com.nikonhacker.emu.peripherials.ioPort.function.AbstractInputPinFunction;
 import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourceComponent;
 import com.nikonhacker.emu.peripherials.ioPort.util.FixedSourcePin;
 import com.nikonhacker.emu.peripherials.ioPort.util.ForwardingPin;
@@ -24,6 +25,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
     private static final Border    BORDER_HI         = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HI);
     private static final Border    BORDER_HIZ        = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HIZ);
     private static final Border    BORDER_LO         = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_LO);
+    private static final Border    BORDER_PULLUP     = new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_PULLUP);
 
     private final IoPort[] ioPorts;
 
@@ -114,8 +116,8 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         }
 
         // Footer line - legend (avoid "key" as there are pin KEYs)
-        addCommonLegend(configPanel, "hover to see details");
-        addCommonLegend(valuePanel, "hover to see connections");
+        addCommonLegend(configPanel);
+        addCommonLegend(valuePanel);
         JLabel label = new JLabel("OUT", SwingConstants.CENTER);
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBackground(Color.BLACK);
@@ -137,7 +139,7 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         getContentPane().add(tabbedPane);
     }
 
-    private void addCommonLegend(JPanel panel, String detail) {
+    private void addCommonLegend(JPanel panel) {
         JSeparator separator = new JSeparator();
         panel.add(separator, "span 9, gapleft rel, growx, wrap");
         panel.add(new JLabel("legend"), "right");
@@ -154,9 +156,13 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         label.setPreferredSize(PREFERRED_SIZE);
         label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_HIZ));
         panel.add(label);
-        label = new JLabel(detail, SwingConstants.CENTER);
+        label = new JLabel("P-Up", SwingConstants.CENTER);
+        label.setPreferredSize(PREFERRED_SIZE);
+        label.setBorder(new MatteBorder(COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, COLOR_BORDER_SIZE, Constants.COLOR_PULLUP));
         panel.add(label);
-        panel.add(label, "span 3");
+        label = new JLabel("hover to see details", SwingConstants.CENTER);
+        panel.add(label);
+        panel.add(label, "span 2");
     }
 
     private JLabel createLabel() {
@@ -258,13 +264,19 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
                 // input is enabled
                 pinComp = pinInputs[portNumber][7 - bitNumber];
             }
-            else {
+            else if (pin.isInputFunction()) {
+                // input is enabled for KEY, INT
+                pinComp = pinInputs[portNumber][7 - bitNumber];
+            } else {
                 // input is disabled
                 pinComp = pinDisabledInputs[portNumber][7 - bitNumber];
             }
             Integer inputValue = pin.getInputValue();
             if (inputValue == null) {
-                border = BORDER_HIZ;
+                if ((ioPorts[portNumber].getPullUp()&(1<<bitNumber))!=0)
+                    border = BORDER_PULLUP;
+                else
+                    border = BORDER_HIZ;
             }
             else if (inputValue == 0) {
                 border = BORDER_LO;

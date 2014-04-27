@@ -66,6 +66,9 @@ public class VariableFunctionPin extends Pin {
         }
     }
 
+    public final boolean isInputFunction() {
+        return (function instanceof AbstractInputPinFunction);
+    }
     /**
      * To be called by external component
      * This implementation delegates the behaviour to the attached function, if any

@@ -14,6 +14,7 @@ public interface Constants {
     Color COLOR_HI  = Color.RED;
     Color COLOR_HIZ = Color.ORANGE;
     Color COLOR_LO  = Color.BLUE;
+    Color COLOR_PULLUP = Color.GREEN;
 
     String LABEL_HI  = "VCC";
     String LABEL_HIZ = "---";
