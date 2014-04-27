@@ -41,6 +41,8 @@ public abstract class IoPort {
     protected PinFunction[] inputFunctions = new PinFunction[8];
     protected PinFunction[] outputFunctions = new PinFunction[8];
 
+    protected byte pullUp;
+
     public boolean logPinMessages = true;
 
     /**
@@ -180,5 +182,13 @@ public abstract class IoPort {
 
     public void removeIoPortsListener(IoPortConfigListener ioPortConfigListener) {
         ioPortConfigListeners.remove(ioPortConfigListener);
+    }
+
+    public void setPullUp(byte pullUp) {
+        this.pullUp = pullUp;
+    }
+
+    public byte getPullUp() {
+        return pullUp;
     }
 }

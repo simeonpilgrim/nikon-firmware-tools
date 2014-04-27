@@ -257,7 +257,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_PORT0ODE + 3:
                     return txIoPort.getOpenDrainControlRegister();
                 case REGISTER_PORT0PUP + 3:
-                    return txIoPort.getPullUpControlRegister();
+                    return txIoPort.getPullUp();
                 case REGISTER_PORT0PIE + 3:
                     return txIoPort.getInputEnableControlRegister();
             }
@@ -809,7 +809,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_PORT0ODE:
                     return (int) txIoPort.getOpenDrainControlRegister();
                 case REGISTER_PORT0PUP:
-                    return (int) txIoPort.getPullUpControlRegister();
+                    return (int) txIoPort.getPullUp();
                 case REGISTER_PORT0PIE:
                     return (int) txIoPort.getInputEnableControlRegister();
             }
@@ -1082,7 +1082,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_PORT0ODE + 3:
                     txIoPort.setOpenDrainControlRegister(value); break;
                 case REGISTER_PORT0PUP + 3:
-                    txIoPort.setPullUpControlRegister(value); break;
+                    txIoPort.setPullUp(value); break;
                 case REGISTER_PORT0PIE + 3:
                     txIoPort.setInputEnableControlRegister(value); break;
             }
@@ -1567,7 +1567,7 @@ public class TxIoListener extends IoActivityListener {
                 case REGISTER_PORT0ODE:
                     txIoPort.setOpenDrainControlRegister((byte) value); break;
                 case REGISTER_PORT0PUP:
-                    txIoPort.setPullUpControlRegister((byte) value); break;
+                    txIoPort.setPullUp((byte) value); break;
                 case REGISTER_PORT0PIE:
                     txIoPort.setInputEnableControlRegister((byte) value); break;
             }

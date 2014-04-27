@@ -22,8 +22,6 @@ public class TxIoPort extends IoPort {
     private byte functionRegister3;
     /** Port open-drain control register */
     private byte openDrainControlRegister;
-    /** Port pull-up control register */
-    private byte pullUpControlRegister;
 
     /** The 3 following arrays declare the functions that can be performed by each Port Pin
      * when the corresponding bit of the corresponding register is 1.
@@ -158,15 +156,6 @@ public class TxIoPort extends IoPort {
     public void setOpenDrainControlRegister(byte openDrainControlRegister) {
 //        System.out.println("Port #" + portNumber + " : setOpenDrainControlRegister(0x" + Format.asHex( openDrainControlRegister& 0xFF, 2) + ")");
         this.openDrainControlRegister = openDrainControlRegister;
-    }
-
-    public byte getPullUpControlRegister() {
-        return pullUpControlRegister;
-    }
-
-    public void setPullUpControlRegister(byte pullUpControlRegister) {
-//        System.out.println("Port #" + portNumber + " : setPullUpControlRegister(0x" + Format.asHex(pullUpControlRegister& 0xFF, 2) + ")");
-        this.pullUpControlRegister = pullUpControlRegister;
     }
 
     public byte getInputEnableControlRegister() {
