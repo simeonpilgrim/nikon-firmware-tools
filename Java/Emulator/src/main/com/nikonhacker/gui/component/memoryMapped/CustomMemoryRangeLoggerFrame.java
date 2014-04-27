@@ -33,6 +33,8 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
     // By default, only log code access
     private final Set<DebuggableMemory.AccessSource> selectedAccessSources = EnumSet.of(DebuggableMemory.AccessSource.CODE);
 
+    private int ranges;
+
     public CustomMemoryRangeLoggerFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, EmulatorUI ui, final DebuggableMemory memory, final CPUState cpuState) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.memory = memory;
@@ -129,20 +131,23 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
         minusButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (listeners.size() > 1) {
+                if (listeners.size() > 0) {
                     MemoryActivityListener listener = listeners.get(minAddressField);
                     if (listener != null) {
                         memory.removeActivityListener(listener);
                         textArea.getPrintWriter().println("Stopping previous listener");
                     }
                     listeners.remove(minAddressField);
+                }
+                if (ranges>1) {
                     selectionPanelContainer.remove(selectionPanel);
                     frame.pack();
+                    ranges --;
                 }
             }
         });
         selectionPanel.add(minusButton);
-
+        ranges ++;
         selectionPanelContainer.add(selectionPanel);
         this.pack();
     }
