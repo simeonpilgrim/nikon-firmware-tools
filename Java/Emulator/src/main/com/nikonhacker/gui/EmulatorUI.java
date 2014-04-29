@@ -456,7 +456,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                         initialize(chip);
                     }
                     else {
-                        JOptionPane.showMessageDialog(this, Constants.CHIP_LABEL[chip] + " firmware file stored in preference file cannot be found:\n" + imageFile[chip].getAbsolutePath(), "File not found", JOptionPane.WARNING_MESSAGE);
+                        JOptionPane.showMessageDialog(this, Constants.CHIP_LABEL[chip] + " firmware file stored in preference file cannot be found:\n" + firmwareFile.getAbsolutePath(), "File not found", JOptionPane.WARNING_MESSAGE);
                     }
                 }
             }
@@ -1563,8 +1563,13 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
-            imageFile[chip] = fc.getSelectedFile();
-            reset(chip);
+            final File firmwareFile = fc.getSelectedFile();
+            if (firmwareFile.exists()) {
+                imageFile[chip] = firmwareFile;
+                reset(chip);
+            } else {
+                JOptionPane.showMessageDialog(this, "Given " + Constants.CHIP_LABEL[chip] + " firmware file does not exist:\n" + firmwareFile.getAbsolutePath(), "File not found", JOptionPane.WARNING_MESSAGE);
+            }
         }
     }
 
