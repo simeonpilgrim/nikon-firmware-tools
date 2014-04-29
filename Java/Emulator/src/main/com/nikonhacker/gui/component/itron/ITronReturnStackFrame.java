@@ -16,6 +16,7 @@ import com.nikonhacker.itron.ReturnStackEntry;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -40,6 +41,7 @@ public class ITronReturnStackFrame extends DocumentFrame {
     LinkedList<ReturnStackEntry> returnStack;
 
     private final JList returnStackList;
+    private JButton copyButton;
     private JButton updateButton;
     private JButton gotoPcButton;
     private JCheckBox autoUpdateCheckbox;
@@ -76,6 +78,20 @@ public class ITronReturnStackFrame extends DocumentFrame {
             }
         });
         topPanel.add(gotoPcButton);
+
+        copyButton = new JButton("Copy");
+        copyButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s="";
+                ListModel model = returnStackList.getModel();
+                for(int i = 0; i < model.getSize(); i++){
+                    s += model.getElementAt(i) + System.lineSeparator();
+                }
+                StringSelection selection = new StringSelection(s);
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+            }
+        });
+        topPanel.add(copyButton);
 
         updateButton = new JButton("Update");
         updateButton.addActionListener(new ActionListener() {
