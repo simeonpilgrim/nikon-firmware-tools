@@ -144,7 +144,7 @@
 -s 0xBFC00D78=clearInterruptLEVel
 -s 0xBFC00D90=null_BFC00D90
 -s 0xBFC01184=sub_bfc01184_($s0 [IN index])
--s 0xBFC0178C=get_task_Wait_Object_ID
+-s 0xBFC0178C=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
 -s 0xBFC018F8=Task_Dispatch
 -s 0xBFC0197C=prepare_task_env
 -s 0xBFC01E5C=Call_software_interrupt
@@ -154,7 +154,6 @@
 -s 0xBFC02BE8=sys_dis_dsp
 -s 0xBFC02C28=sys_can_wup($a0 [IN tsk_id], $v0 [OUT err_code_or_wupcount] /* Cancel wakeup requests */)
 -s 0xBFC02C90=sys_ref_tsk($a0 [IN tsk_id], $a1 [IN ptr_to_pk_rtsk], $v0 [OUT err_code] /* Get task Status */)
--s 0xBFC02D98=get_task_Wait_Object_ID($a0 [IN ptr_task_status_table], $v0 [OUT Wait_Object_ID])
 -s 0xBFC02E10=setInterruptLEVel_00($a0 [IN level])
 -s 0xBFC02E28=sys_cfg_int($a0 [IN bNumber], $a1 [IN low5bit_imc], $a2 [IN high3bit_imc] /* Setup int type, level, dmac */)
 -s 0xBFC02E40=sys_deact_tsk($a0 [IN tsk_id], $v0 [OUT err_code] /* Activate task */)
