@@ -52,7 +52,8 @@ public class NkldDecoder {
                     }
                 }
 
-                NkldUtils.decrypt(source, nkldHeader.dataOffset, nkldHeader.dataLength);
+                // last 2 bytes are crc padding
+                NkldUtils.decrypt(source, nkldHeader.dataOffset, nkldHeader.dataLength-2);
                 NkldUtils.dumpFile(new File(unpackFileName), source, 0, nkldHeader.totalLength);
             } catch (Exception e) {
                 throw new FirmwareFormatException(e);

@@ -10,6 +10,5 @@ public class NkldHeader {
     public int entryCount;
     public int magic;
     public int dataLength;
-    public int reserved;
-    public int crcPadding;
+    public int unknown;
 }

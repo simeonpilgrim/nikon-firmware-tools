@@ -165,7 +165,7 @@ public class NkldUtils {
         nkldHeader.entryCount = getUInt16(data,6);
         nkldHeader.magic = getUInt32(data,8);
         nkldHeader.dataLength = getUInt16(data,12);
-        nkldHeader.crcPadding = getUInt16(data,14);
+        nkldHeader.unknown = getUInt16(data,14);
 
         if (nkldHeader.magic != 0x87C7CAAC || nkldHeader.majorVersion != 1)
             System.err.println("Warning : unsupported magic and version");
