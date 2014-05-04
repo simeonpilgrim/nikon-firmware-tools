@@ -6,6 +6,7 @@
 # REQUIREMENTS:
 #
 # Author: coderat
+# License: BSD 3-Clause (http://opensource.org/licenses/BSD-3-Clause)
 #
 # History:
 # 29Apr14 coderat: creation
@@ -42,7 +43,7 @@ binmode IN;
 # header
 my $tmp = readData(16);
 
-my ($dataOffset, $totalLength, $majorVersion, $minorVersion, $entryCount, $magic, $dataLength, $crcPadding) = unpack('n n C C n N n n', $tmp);
+my ($dataOffset, $totalLength, $majorVersion, $minorVersion, $entryCount, $magic, $dataLength, $unknown) = unpack('n n C C n N n n', $tmp);
 
 ($magic == 0x87C7CAAC) ||
 	die "!!! unsupported magic $magic\n";
@@ -51,7 +52,7 @@ my ($dataOffset, $totalLength, $majorVersion, $minorVersion, $entryCount, $magic
 
 print "Version:$majorVersion.$minorVersion\n";
 print "Total length:$totalLength\n";
-printf("Crc padding:0x%04X\n",$crcPadding);
+printf("Unknown:0x%04X\n",$unknown);
 print "Data length: $dataLength at $dataOffset\n";
 print "Entrys: $entryCount\n";
 
@@ -66,8 +67,8 @@ for (my $i=0; $i < $entryCount; $i++) {
 	# entry header
 	my $tmp = readData(16);
 
-	my ($entryLength, $id, $subId) = unpack ('n C C', $tmp);
-	printf("Lens ID: %02X SubID:%02X ", $id, $subId);
+	my ($entryLength, $id, $subId, $prop) = unpack ('n C C x2 C', $tmp);
+	printf("Lens ID: %02X subID:%02X prop:%02X ", $id, $subId, $prop);
 	print "entry length: $entryLength\n";
 
 	seek(IN, $entryLength - 16, 1)
