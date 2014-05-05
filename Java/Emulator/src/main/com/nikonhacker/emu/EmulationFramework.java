@@ -482,11 +482,7 @@ public class EmulationFramework {
     }
 
     private void connectLcdScreenRelatedPins(IoPort[] frIoPorts, IoPort[] txIoPorts, FrLcd lcd) {
-        // Output pin to power LCD screen (does not seem right as P05, PD1 and PC3 don't behave as seen in dumps)
-        // Also tried with TX P93
-        Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(7), lcd.getPowerPin());
-        // Input pin to indicate rotation (upside down)
-        // Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(3), /*button*/);
+        Pin.interconnect(frIoPorts[IoPort.PORT_C].getPin(3), lcd.getPowerPin());
     }
 
     private void connectFrontPanelPins(IoPort[] frIoPorts, FrontPanel frontPanel) {
