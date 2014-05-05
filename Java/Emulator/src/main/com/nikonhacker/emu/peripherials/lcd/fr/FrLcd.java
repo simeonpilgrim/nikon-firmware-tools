@@ -41,14 +41,14 @@ public class FrLcd implements Lcd {
         final int factorR = Math.round(1.4f * (v-128) );
         final int factorG = Math.round(-0.343f * (u-128) - 0.711f * (v-128));
         final int factorB = Math.round(1.765f * (u-128) );
-        
+
         // coderat: conversion YCbCr->RGB clamp is needed, because RGB do not include complete YCbCr space
         pixels[pos]   = (clamp(y+factorR) << 16) | (clamp(y+factorG) << 8) | clamp(y+factorB);
         pixels[pos+1] = (clamp(y1+factorR) << 16) | (clamp(y1+factorG) << 8) | clamp(y1+factorB);
     }
 
     /**    this method can be used to show any screen or picture buffer in YCbCr 4:2:2 format
-    
+
          @param img Initialised image object with "width" and "height" of image to be displayed
          @param yAddr start of Y buffer
          @param cbAddr start of Cb buffer
@@ -74,10 +74,10 @@ public class FrLcd implements Lcd {
         for (int yPos = 0, pixelPos=0; yPos < imageHeight; yPos++) {
             for (int xPos = 0; xPos < imageWidth; xPos+=2, yAddr+=2, pixelPos+=2) {
                 final int y = memory.loadUnsigned16(yAddr, null);
-                setPixelsFromYCbCr422(pixels, pixelPos, 
+                setPixelsFromYCbCr422(pixels, pixelPos,
                                       y>>8,
-                                      y&0xFF, 
-                                      memory.loadUnsigned8(cbAddr++, null), 
+                                      y&0xFF,
+                                      memory.loadUnsigned8(cbAddr++, null),
                                       memory.loadUnsigned8(crAddr++, null));
             }
             yAddr += addY;
@@ -97,7 +97,7 @@ public class FrLcd implements Lcd {
 
         @Override
         public void setInputValue(int value) {
-            isPoweredOn = (value == 1);
+            isPoweredOn = (value == 0);
         }
     }
 
