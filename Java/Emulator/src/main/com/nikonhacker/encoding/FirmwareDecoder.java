@@ -24,8 +24,8 @@ public class FirmwareDecoder {
         try {
             new FirmwareDecoder().decode(args[0], destDir, true);
         } catch (FirmwareFormatException e) {
-            usage();
             e.printStackTrace();
+            usage();
         }
         System.out.println("Operation complete.");
 
@@ -38,8 +38,12 @@ public class FirmwareDecoder {
         } else {
             try {
                 byte[] source = FirmwareUtils.load(sourceFile);
-                byte[] decrypted = FirmwareUtils.xor(source);
-                List<FirmwareFileEntry> fileEntries = FirmwareUtils.unpack(decrypted);
+                int type = FirmwareUtils.tryXor(source);
+                if (type == 0) {
+                    throw new FirmwareFormatException("Unknown file type !!!");
+                }
+
+                List<FirmwareFileEntry> fileEntries = FirmwareUtils.unpack(source, type);
                 File unpackDir = new File(unpackDirName);
                 unpackDir.mkdirs();
                 for (FirmwareFileEntry fileEntry : fileEntries) {

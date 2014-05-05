@@ -48,7 +48,7 @@ public class FirmwareEncoder {
             }
 
             byte[] packed = FirmwareUtils.pack(entries);
-            byte[] encrypted = FirmwareUtils.xor(packed);
+            byte[] encrypted = FirmwareUtils.xor(packed, FirmwareUtils.STANDARD);
 
             FirmwareUtils.dumpFile(outFile, encrypted, 0, encrypted.length);
 
