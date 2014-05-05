@@ -616,7 +616,7 @@ public class EmulationFramework {
         // TX PC3 => FR 0x50000107.bit6 (INT16) , tested by FR at 001A885C, 001A8896 (init) and 001A8976 (send header)
         Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), txIoPorts[IoPort.PORT_C].getPin(3));
 
-        // Pin.interconnect(main power button, txIoPorts[IoPort.PORT_A].getPin(0));
+        // TODO TX ??? => FR 0x5000010B.bit3 (INT23) autofocus reached (for beep)
     }
 
 

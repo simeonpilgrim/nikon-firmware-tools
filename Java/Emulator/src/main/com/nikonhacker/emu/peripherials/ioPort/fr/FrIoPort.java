@@ -64,6 +64,9 @@ public class FrIoPort extends IoPort {
         // D5100 specific: Override Port7.pin6 as external interrupt trigger channel 6 (interrupt 0x16)
         ioPorts[IoPort.PORT_7].inputFunctions[6] = new FrIoPinInterruptFunction(interruptController, 6);
 
+        // D5100 specific: Override PortB.pin3 as external interrupt trigger channel 13 (interrupt 0x23)
+        ioPorts[IoPort.PORT_B].inputFunctions[3] = new FrIoPinInterruptFunction(interruptController, 13);
+
         // default all inputs
         for (portNumber = 0; portNumber < ioPorts.length; portNumber++) {
             ioPorts[portNumber].setFunctionRegister((byte)0);
