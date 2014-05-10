@@ -30,7 +30,7 @@
 -m 0x8F800000-0x8F800A9B=CODE
 
 # Menus
--s 0x8F9D1934=BFTTable
+-s 0x8F9D1934=BFTDataV2C
 -s 0x005EA9A0=textTableEnglish
 -s 0x005EB678=dialogTextTableEnglish
 -s 0x005EB6FC=menuTextTableEnglish

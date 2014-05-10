@@ -1,0 +1,63 @@
+# WARNING: doesn't work in Emulator, because memory content is not automatically loaded. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b6830101afull.dfr.txt -o b830101a.asm b830101a.bin
+
+# initialised data segment copied to 0x8F9C4E78 by the loop at 0x40574
+-m 0x8F9C4E78-0x8F9DCD8B=DATA:L
+
+# copied data
+# at 0x000409B8 copied size 0x00000020
+-i 0x680008F0-0x6800090F=0x00415864
+# at 0x00040994 copied size 0x000127B8
+-i 0x9D313830-0x9D325FE7=0x003F56D4
+# at 0x00112EBE copied size 0x0000C878
+-i 0x9D325FE8-0x9D33285F=0x00407E8C
+# at 0x00040A00 copied size 0x00001160
+-i 0x9DA8EE6C-0x9DA8FFCB=0x00414704
+
+-x b830101a.dfr.txt
+-e 0x40000
+
+# initialised data segment copied to 0x8F9C4E78 by the loop at 0x40574
+-i 0x8F9C4E78-0x8F9DCD8B=0x0033BDE4
+
+# Area copied to 0x8F9C4E78 by the loop at 0x405EC
+-i 0x8F800000-0x8F800A9B=0x00353CF8
+# copied code segment
+-m 0x8F800000-0x8F800A9B=CODE
+
+# Menus
+-s 0x9D314214=BFTDataV30
+-s 0x0071B56C=textTableEnglish
+-s 0x0071C524=dialogTextTableEnglish
+-s 0x0071C5C4=menuTextTableEnglish
+-s 0x0071C180=helpTextTableEnglish
+
+-s 0x9D326088=rootMenu0
+-s 0x9D3260A8=rootMenu1
+-s 0x9D326348=rootMenu2
+-s 0x9D326408=rootMenu3
+-s 0x9D326448=rootMenu4
+-s 0x9D326488=rootMenu5
+-s 0x9D3264F8=rootMenu6
+-s 0x9D326748=rootMenu7
+-s 0x9D327888=rootMenu8
+-s 0x9D32A238=rootMenu9
+-s 0x9D32A288=rootMenu10
+-s 0x9D32A4B8=rootMenu11
+-s 0x9D32ADD8=rootMenu12
+-s 0x9D32B6A8=rootMenu13
+-s 0x9D32BB98=rootMenu14
+-s 0x9D32BF28=rootMenu15
+-s 0x9D32BF68=rootMenu16
+-s 0x9D32C0C8=rootMenu17
+-s 0x9D32CA98=rootMenu18
+-s 0x9D32CAD8=rootMenu19
+-s 0x9D32CB78=rootMenu20
+-s 0x9D32CBD8=rootMenu21
+-s 0x9D32DB58=rootMenu22
+-s 0x9D32DC18=rootMenu23
+-s 0x9D32F2E8=rootMenu24
+-s 0x9D32F4F8=rootMenu25
+-s 0x9D330A58=rootMenu26
