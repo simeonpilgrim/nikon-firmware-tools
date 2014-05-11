@@ -1,0 +1,77 @@
+# WARNING: doesn't work in Emulator, because memory content is not automatically loaded. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b700_103full.dfr.txt -o b700_103.asm b700_103.bin
+
+# copied data
+# at 0x000403C0 copied size 0x00013498
+-i 0x9F049094-0x9F05C52B=0x0026C724
+# at 0x000403E4 copied size 0x00000020
+-i 0x000084A4-0x000084C3=0x00280440
+# at 0x00040408 copied size 0x00000888
+-i 0x9F0249A0-0x9F025227=0x0027FBB8
+-m 0x9F0249A0-0x9F025227=CODE
+
+-x b700_103.dfr.txt
+-e 0x40000
+
+# Menus
+-s 0x9F04D718=BFTDataVC
+-s 0x003FF7E0=textTableEnglish
+-s 0x00400204=dialogTextTableEnglish
+-s 0x00400220=menuTextTableEnglish
+-s 0x003FFD84=helpTextTableEnglish
+-s 0x9F050620=rootMenu0
+-s 0x9F050640=rootMenu1
+-s 0x9F050660=rootMenu2
+-s 0x9F050680=rootMenu3
+-s 0x9F0506A0=rootMenu4
+-s 0x9F0506E0=rootMenu5
+-s 0x9F0509B0=rootMenu6
+-s 0x9F050A00=rootMenu7
+-s 0x9F050AC0=rootMenu8
+-s 0x9F050C40=rootMenu9
+-s 0x9F0511C0=rootMenu10
+-s 0x9F051200=rootMenu11
+-s 0x9F051280=rootMenu12
+-s 0x9F0512F0=rootMenu13
+-s 0x9F051370=rootMenu14
+-s 0x9F0513F0=rootMenu15
+-s 0x9F051460=rootMenu16
+-s 0x9F0514A0=rootMenu17
+-s 0x9F051500=rootMenu18
+-s 0x9F051740=rootMenu19
+-s 0x9F0517C0=rootMenu20
+-s 0x9F051830=rootMenu21
+-s 0x9F0518B0=rootMenu22
+-s 0x9F051930=rootMenu23
+-s 0x9F0519C0=rootMenu24
+-s 0x9F051B70=rootMenu25
+-s 0x9F051BD0=rootMenu26
+-s 0x9F051C50=rootMenu27
+-s 0x9F051CC0=rootMenu28
+-s 0x9F051D00=rootMenu29
+-s 0x9F051DF0=rootMenu30
+-s 0x9F051E80=rootMenu31
+-s 0x9F051FA0=rootMenu32
+-s 0x9F052050=rootMenu33
+-s 0x9F052130=rootMenu34
+-s 0x9F0521E0=rootMenu35
+-s 0x9F0526F0=rootMenu36
+-s 0x9F052710=rootMenu37
+-s 0x9F054C00=rootMenu38
+-s 0x9F054E20=rootMenu39
+-s 0x9F057180=rootMenu40
+-s 0x9F0571F0=rootMenu41
+-s 0x9F057210=rootMenu42
+-s 0x9F0573F0=rootMenu43
+-s 0x9F057490=rootMenu44
+-s 0x9F057520=rootMenu45
+-s 0x9F057680=rootMenu46
+-s 0x9F0578B0=rootMenu47
+-s 0x9F057B50=rootMenu48
+-s 0x9F057C40=rootMenu49
+-s 0x9F057D00=rootMenu50
+-s 0x9F0594F0=rootMenu51
+-s 0x9F059A90=rootMenu52
+-s 0x9F059B10=rootMenu53
