@@ -2215,7 +2215,7 @@
 -s 0x001254FC=set_s286_func_ptrs
 -s 0x00125512=nullsub_175
 -s 0x00125514=nullsub_176
--s 0x00125516=s286_func_1
+-s 0x00125516=TftBacklight_SetIllumiLevel
 -s 0x001255B4=s286_func_2
 -s 0x001256E6=set_s175_f100plus_bits_OR
 -s 0x00125728=set_s175_f100plus_bits_AND
@@ -4408,6 +4408,8 @@
 -s 0x001F2180=Tsk15
 -s 0x001F22E0=int_23_body
 -s 0x001F236C=call_change_5000010x
+-s 0x001F28E0=TftBacklight_On
+-s 0x001F2922=TftBacklight_Off
 -s 0x001F2950=@0x40040000.bit7_cleared
 -s 0x001F2960=setup_0x4004xxxx
 -s 0x001F2D76=set_YUV_address_to_chip4004
