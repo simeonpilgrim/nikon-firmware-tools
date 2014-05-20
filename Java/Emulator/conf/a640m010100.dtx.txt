@@ -414,7 +414,7 @@
 -s 0xBFC189B8=I2C_TX_routine
 -s 0xBFC18B0C=Init_RTC
 -s 0xBFC18B60=get_systemtime
--s 0xBFC18C6C=request_I2C_IO($a0 [IN command1] /* 0x50,0x52,0x5E => I2C_counter=1, 0x54 => I2C_counter=7 */, $a1 [IN command2]) /* OUT : Dcall 0xBFC18CC9. Send buffer 0xFFFF6DA8. Get response @0xFFFF6DA8 */
+-s 0xBFC18C6C=request_I2C_IO($a0 [IN command1] /* 0x50,0x52,0x5E => I2C_counter=1, 0x54 => I2C_counter=7 */, $a1 [IN command2] /* OUT : Dcall 0xBFC18CC9. Send buffer 0xFFFF6DA8. Get response @0xFFFF6DA8 */)
 -s 0xBFC18CC8=I2C_Dcall
 -s 0xBFC18DC4=I2C_data_format_converting
 -s 0xBFC18E64=make_I2C_data
@@ -456,9 +456,9 @@
 -s 0xBFC19D9C=ADB_chanel3_result_amplify00
 -s 0xBFC19DD8=get_ADB_conversion_ch3($v0 [OUT ADB_conversion_lowpass_filter])
 -s 0xBFC19E14=get_smoothed_ADB_ch3($v0 [OUT ADB_result_lowpass_filtering])
--s 0xBFC19E74=prepare_ADB_setting($a0 [IN use_channel_3_or 1] /* 0=select analog channel 1, 1=select analog channel 3 */)
+-s 0xBFC19E74=prepare_ADB_setting($a0 [IN use_channel_3_or_1] /* 0=select analog channel 1, 1=select analog channel 3 */)
 -s 0xBFC19EE0=wait_time_elapse
--s 0xBFC19F00=get_ADB_conversion($a0 [IN use_channel_3_or 1] /* 0=ch1+read ADBREG1, 1=ch3+read ADBREG3 */, $v0 [OUT 10_bits_conversion])
+-s 0xBFC19F00=get_ADB_conversion($a0 [IN use_channel_3_or_1] /* 0=ch1+read ADBREG1, 1=ch3+read ADBREG3 */, $v0 [OUT 10_bits_conversion])
 -s 0xBFC19F62=stop_ADB
 -s 0xBFC19F7C=FLash_exposure_checking
 -s 0xBFC19FD4=call_call_Flash_AFiLL
@@ -1272,7 +1272,7 @@
 -s 0xBFC516C4=call_setup_stru_FFFF6B7C
 -s 0xBFC51768=call_setup_metering_table04_05_06_07
 -s 0xBFC517AC=clear_FFFF5FDC.field2Fx
--s 0xBFC51928=setup_metering)table04_06
+-s 0xBFC51928=setup_metering_table04_06
 -s 0xBFC51BD0=call_setup_struFFFF93D8_FFFF93E4_FFFF9514
 -s 0xBFC51C28=setup_struFFFF93D8_FFFF93E4_FFFF9514
 -s 0xBFC51D4C=setup_struFFFF6C48_0
@@ -1406,7 +1406,7 @@
 -s 0xBFC7052C=task0x8_dcall_11
 -s 0xBFC71EE4=check_TMRF_counter
 -s 0xBFC746B0=clear@FFFF52F0
--s 0xBFC746BC=update_tableFFFF4EE0&&FFFF50E8
+-s 0xBFC746BC=update_tablesFFFF4EE0_FFFF50E8
 -s 0xBFC74710=clear_AF_buffer
 -s 0xBFC7479C=clear_AF_related_data
 -s 0xBFC74D8C=clear_AF_all_data
@@ -1457,7 +1457,7 @@
 -s 0xBFC7A9E0=HSC1_checking
 -s 0xBFC7AA6C=rightshift@FFFF4074
 -s 0xBFC7AB68=task0xB_startcode0x0_0x80_shooting
--s 0xBFC7ADA0=eeprom_write_0($a0 [IN src_address], $a1 [IN counter], $a2 [IN eeprom_DEST_address], $a3 [IN external pk_msg_or_default_pk_msg_if_0])
+-s 0xBFC7ADA0=eeprom_write_0($a0 [IN src_address], $a1 [IN counter], $a2 [IN eeprom_DEST_address], $a3 [IN external_pk_msg_or_default_pk_msg_if_0])
 -s 0xBFC7AE1C=setup_INT_TMRA
 -s 0xBFC7AE38=Flash_jobs
 -s 0xBFC7AFA8=Lens_0xD2_0xD4_0xDA_ViewFinder_FRset_sync
@@ -1572,11 +1572,11 @@
 -s 0xBFC86B14=INT_TMR1_body00
 -s 0xBFC86CDC=INT_TMR1_body01
 -s 0xBFC86EF0=call_wakeup_task0B
--s 0xBFC86F1C=get_minimum($a0 [IN], $a1 [IN], $a2 [IN], $v0 [OUT minimum_a0_a1_a2])
+-s 0xBFC86F1C=get_minimum($a0 [IN param1], $a1 [IN param2], $a2 [IN param3], $v0 [OUT minimum_a0_a1_a2])
 -s 0xBFC86F44=fetch_from_exposure_table
 -s 0xBFC86FA4=nonlinear_converting_2
 -s 0xBFC87014=get_divi
--s 0xBFC87064=ABS($a0 [IN], $a1 [IN]$v0 [OUT absolute_value_a0_a1])
+-s 0xBFC87064=ABS($a0 [IN param1], $a1 [IN param2], $v0 [OUT absolute_value_a0_a1])
 -s 0xBFC87078=setup_TB4
 -s 0xBFC87224=HSC1_transmit_1byte
 -s 0xBFC8737C=HSC1_transreceive_1byte($a0 [IN byte_to_send], $v0 [OUT 4_bits_response])
@@ -1679,7 +1679,7 @@
 -s 0xBFC8B550=send_0x4_to_task0xD
 -s 0xBFC8B578=request_battery_AUC
 -s 0xBFC8B608=test_battery
--s 0xBFC8B638=set@FFFF95F7($a0 [IN] /* @FFFF95F7 |= a0 */)
+-s 0xBFC8B638=set@FFFF95F7($a0 [IN mask] /* @FFFF95F7 |= a0 */)
 -s 0xBFC8B648=change@FFFF95F6_FFFF95F7
 -s 0xBFC8B6B8=battery_level_check
 -s 0xBFC8B70C=start_battery_AUC_routine
@@ -1740,11 +1740,11 @@
 -s 0xBFC8CC20=update@FFFF407C
 -s 0xBFC8CC50=setup_battery_level_flag
 -s 0xBFC8CC80=get_battery_level_flag
--s 0xBFC8CCE8=get_coefficient_array[4]
--s 0xBFC8CE4C=get_ADA_array[4]
--s 0xBFC8CEB4=get_ADA_amplify_array[4]
+-s 0xBFC8CCE8=get_coefficient_arrayOf4
+-s 0xBFC8CE4C=get_ADA_arrayOf4
+-s 0xBFC8CEB4=get_ADA_amplify_arrayOf4
 -s 0xBFC8CF28=get_ADA_Difference_array
--s 0xBFC8CFC4=multiply_0xC($a0 [IN], $v0 [OUT a0_x_4_x_3])
+-s 0xBFC8CFC4=multiply_0xC($a0 [IN num], $v0 [OUT a0_x_4_x_3])
 -s 0xBFC8CFF4=sys_set_flg_03
 -s 0xBFC8D000=send_mbx_00
 -s 0xBFC8D018=send_mbx_01($a0 [IN mbxID], $a1 [IN two_bytes_to_send])

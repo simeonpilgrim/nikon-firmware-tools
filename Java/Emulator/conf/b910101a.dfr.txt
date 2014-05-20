@@ -337,7 +337,7 @@
 -s 0x0013FD9E=AudioApi_RecEnd()
 -s 0x0013FE06=AudioApi_GetBuffer(R4 [IN param1], R5 [IN param2], R6 [IN param3])
 -s 0x0013FE5A=AudioApi_SetBuffer()
--s 0x0013FEB6=AudioApi_xxF (7* not used */)
+-s 0x0013FEB6=AudioApi_xxF ( /* not used */)
 -s 0x0013FF02=AudioApi_xx10
 -s 0x0013FF4E=AudioApi_GetVolumeLevel(R4 [IN param1], R5 [IN param2])
 -s 0x0013FFD2=AudioApi_SetHdmiPlay(R4 [IN param1])
