@@ -173,7 +173,7 @@
 -s 0x0006DCEC=task_0x45 ( /* movie stream mbox */)
 -s 0x0005FD52=task_0x46 ( /* movie record buttons */)
 -s 0x0005E7C2=task_0x47 ( /* movie play buttons */)
--s 0x0005BBA8=task_0x48 ( /* movie ... */)
+-s 0x0005BBA8=task_0x48_MovieAudioStreamer
 -s 0x001BFE88=task_0x49
 -s 0x001BFE86=task_0x4A
 -s 0x0024AF4A=task_0x4B
@@ -326,6 +326,9 @@
 -s 0x00064E38=movieEncoder_CreateFile
 -s 0x00064f04=movideEncoder_InitCodec
 -s 0x0006502C=movie_record_cc()
+-s 0x000652B2=movieAudio_InitializeCapture
+-s 0x000652EA=movieAudio_StartCapture
+-s 0x0006530C=movieAudio_FinalizeCapture
 -s 0x000655A6=check_recording_time_over
 -s 0x000655E8=check_media_max_time
 -s 0x000656FC=movie_encode_ent?()
@@ -411,8 +414,9 @@
 -s 0x0006E13C=movie_sdram_map()
 -s 0x0006E7D4=movie_sdram_map_mplay()
 -s 0x0006EE00=WaitClean_EventFlag_x37_0x1000
--s 0x0006EF8E=Set_EventFlag_x37_0x200
--s 0x0006EF9C=Set_EventFlag_x37_0x400
+-s 0x0006EF58=Tsk48Request_InitializePlayBack
+-s 0x0006EF8E=Tsk48Request_StartPlayBack
+-s 0x0006EF9C=Tsk48Request_FinalizePlayBack
 -s 0x0006F030=movie_decode()
 -s 0x0006F4D0=movie_decode_preview()
 -s 0x0006FCF6=movie_decode_openfile
@@ -425,6 +429,7 @@
 -s 0x00071F9C=ribery_get_result(R4 [IN param1; OUT err], R5 [IN param2])
 -s 0x00072000=movie_decode_display()
 -s 0x0007295A=movie_decode_init_video_ram()
+-s 0x00072A9C=movieAudio_InitializePlayBack
 -s 0x00072B2E=h264_IncrementAudioDelayCoounter()
 -s 0x00072C2E=movie_decode_check_audio_sync()
 -s 0x00072E84=movie_decode_TtrAdjustPoint(R4 [IN param1; OUT err])
