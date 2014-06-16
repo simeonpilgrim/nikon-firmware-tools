@@ -2224,6 +2224,7 @@
 -s 0x00104846=wait_flg_0x16_0x80_move_dlist_elem_8FCAA6B8_8FCAA6B0
 -s 0x00104904=move_dlist_element_from_8FCAA6B0_to_8FCAA6B8
 -s 0x00104D46=move_element_from_8FCAA6B0_to_8FCAA6A8_set_flg_0x16_0x1000000
+-s 0x00104DB0=waitNotEmptyDlist_8FCAA6A8_on_flg_0x16_0x1000000(R4 [OUT element])
 -s 0x00104F4A=call_move_dlist_element_from_R4_to_8FCAA6E0_signalxx
 -s 0x00104F72=move_dlist_element_from_R4_to_8FCAA6E0_signalxx(R4 [IN dlist])
 -s 0x001054E2=req_new_mem
@@ -4313,8 +4314,9 @@
 -s 0x001E8A10=check_Fstops?
 -s 0x001E8A78=check_lens_data
 -s 0x001E8AB2=check_Exposure_time
--s 0x001E8ACE=set_50000103_x08
--s 0x001E8B32=s6700xxxx_set
+-s 0x001E8ACE=set_50000103bit3_6700030Cbit23(R4 [IN 0_or_1])
+-s 0x001E8B32=s67000xxx_set
+-s 0x001E8B4C=set50000101bit3_then_50000101bit2(R4 [IN 0_or_1])
 -s 0x001E957C=rb0_01
 -s 0x001E96EE=rb0_02
 -s 0x001E97C0=rb0_03

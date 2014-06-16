@@ -796,8 +796,8 @@
 -s 0x00104056=dlist4x_40_to_42_lowpriority // dlist4x *__cdecl()
 -s 0x00104106=dlist4x_42_to_41
 -s 0x001041CA=dlistx4_40_to_42
--s 0x0010421C=dlist4x_42_to_45
--s 0x001042E0=dlist_45_to_46
+-s 0x0010421C=dlist4x_42_to_45_set_flg_0x16_0x80
+-s 0x001042E0=dlist_45_to_46_wait_flg_0x16_0x80
 -s 0x00104376=dlist4x_46_to_41_or_41_to_40?
 -s 0x001044E4=call_dlist4x_104500_LP
 -s 0x00104500=dlist4x_104500
@@ -2563,6 +2563,7 @@
 -s 0x001E7E1E=set_movedata_res_fps
 -s 0x001E7F14=set_dword_8F95FE30
 -s 0x001E849E=push_value_stack
+-s 0x001E84B6=Tsk18_init
 -s 0x001E8918=do_ValStack_tasks_A
 -s 0x001E8E1A=do_ValStack_tasks_B
 -s 0x001E9210=set_mvd_f5_1
@@ -2609,13 +2610,15 @@
 -s 0x001EAE90=AddRingBuffer_x62
 -s 0x001EAEBE=sensor_Capture
 -s 0x001EAEE6=set_Timer_110
--s 0x001EAF0A=clear_Timer_110
+-s 0x001EAF0A=stop_Timer_110
 -s 0x001EAF1A=set_Timer_120
--s 0x001EAF3E=clear_Timer_120
+-s 0x001EAF3E=stop_Timer_120
 -s 0x001EAF4E=Set_timer120_clear_wait_flag_x15_100
 -s 0x001EAF98=Set_timer120_clearflag_x15_100
 -s 0x001EAFBE=Wait_Clear_Timer120_Flag_15_x100
+-s 0x001EB0B8=inttab_5_int0x15_body
 -s 0x001EB1A8=inttab_0_int16_body
+-s 0x001EB2CA=timer_110_interrupt
 -s 0x001EB91E=DMA_Event_Overflow
 -s 0x001EBBD4=DMA_Event_Underflow
 -s 0x001EBC18=DMACh4_1EBC18
