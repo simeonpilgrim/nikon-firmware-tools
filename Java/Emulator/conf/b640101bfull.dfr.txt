@@ -1,0 +1,43 @@
+# WARNING: doesn't work in Emulator, because memory content at 0xFFFF4000
+#          is not automatically loaded. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b640101bfull.dfr.txt -o b640101b.asm b640101b.bin
+
+# data segment
+#0x68000000-?
+
+# BSS (zero initialized) data segment at 0x8F800A9C length 0x001C43DC
+#-m 0x8F800A9C-0x8F9C4E77=DATA:L
+
+# initialised data segment copied to 0x8F9C4E78 by the loop at 0x40574
+-m 0x8F9C4E78-0x8F9DCD8B=DATA:L
+
+# segment at 0xCDC70410
+
+-x b640101b.dfr.txt
+-e 0x40000
+# it is at wrong address and missing data segment, so perhaps never used
+#-i 0x80A82000-0x80A88277=0x8438A0
+#-m 0x80A82000-0x80A88277=CODE
+
+# initialised data segment copied to 0x8F9C4E78 by the loop at 0x40574
+-i 0x8F9C4E78-0x8F9DCD8B=0x0033BDE4
+
+# Area copied to 0x8F9C4E78 by the loop at 0x405EC
+-i 0x8F800000-0x8F800A9B=0x00353CF8
+# copied code segment
+-m 0x8F800000-0x8F800A9B=CODE
+
+# in call_call_XX_tab_Func()
+#-j 0x001F15EA=()
+
+# in Type0_sub_44()
+#-j 0x001F1254=()
+
+# in BigTab_xx01
+#-j 0x001D047A=()
+#-j 0x001D04BE=()
+
+# inttab table
+-j 0x001D9962=@(0x8F9D6FD0+97*4)

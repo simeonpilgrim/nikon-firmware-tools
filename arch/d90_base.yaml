@@ -1,0 +1,48 @@
+-   name: cm
+    label: CM
+    blocks:
+        - Main MCU (A?)
+        - Sub  MCU
+    ports:
+        - Viewfinder
+        - Flash
+        - Shutter
+        - Grip (RS-232)
+        - Metering
+        - Auto Focus
+        - Lens
+-   name: top
+    label: Top
+    blocks:
+        - Top LCD
+        - Main Controls
+    ports:
+        - Hot Shoe
+-   name: dg
+    label: DG
+    blocks:
+        - RISC MCU (B?)
+        - Expeed ASIC
+        - DDR
+        - Flash EEPROM
+    ports:
+        - SD Card
+        - HDMI
+        - USB
+        - Image Sensor
+        - LCD Screen
+        - GPS
+        - Back Buttons
+-   name: power
+    label: Power
+    ports:
+        - Battery
+        - Aperture\nMotor
+-   from: cm
+    to: dg
+-   from: power
+    to: cm
+-   from: power
+    to: dg
+-   from: top
+    to: cm
