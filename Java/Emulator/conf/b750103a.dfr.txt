@@ -3,6 +3,8 @@
 # - the ROM part at 0x000E0000
 # - the copy of code to 0x80080000 performed by the ROM bootup
 #
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b750103a.dfr.txt -o b750103a.asm b750103a.bin
 
 ############################### File map: D7000
 -i 0x00040000-0x00BFFFFF=0x00000000
@@ -176,7 +178,8 @@
 -s 0x00043284=ret_zero_2
 -s 0x00043288=ret_zero_3
 -s 0x0004FF84=nullsub_8
--s 0x000ABB0A=fill_or_fade_region // void __cdecl(rect *rect, char clr_idx)
+# void __cdecl(rect *rect, char clr_idx)
+-s 0x000ABB0A=fill_or_fade_region
 -s 0x000AC614=nullsub_215
 -s 0x000AF63E=WaitClear_Flag2E_x1000
 -s 0x000AF6A2=setFlag2E_x1000
@@ -638,7 +641,8 @@
 -s 0x000D4868=atom_stsd_D4868
 -s 0x000D4988=mp4f_add_D4988
 -s 0x000D6C7A=ribery_bridge_set_memory_map
--s 0x000D7D4A=ribery_load_ram // void __cdecl(void *dstPtr, void *srcPtr, int cBytes)
+# void __cdecl(void *dstPtr, void *srcPtr, int cBytes)
+-s 0x000D7D4A=ribery_load_ram
 -s 0x000D7D60=memset_dword
 -s 0x000D7D84=ribery_cpu_firm_download
 -s 0x000D7F9A=ribery_D7F9A
@@ -793,7 +797,8 @@
 -s 0x00103F0C=dlist18_to_10
 -s 0x00103F50=dlist3x_d30_getentry
 -s 0x00103FE6=dlist3x_d30_to_d32
--s 0x00104056=dlist4x_40_to_42_lowpriority // dlist4x *__cdecl()
+# dlist4x *__cdecl()
+-s 0x00104056=dlist4x_40_to_42_lowpriority
 -s 0x00104106=dlist4x_42_to_41
 -s 0x001041CA=dlistx4_40_to_42
 -s 0x0010421C=dlist4x_42_to_45_set_flg_0x16_0x80
@@ -806,10 +811,12 @@
 -s 0x001046D0=dlist_46_all_to_40
 -s 0x00104A06=call_dlist_process_32_LP_NOTCALLED
 -s 0x00104A22=dlist_process_32
--s 0x00104A72=dlist_31_insert // void __cdecl(void *dlist3x)
+# void __cdecl(void *dlist3x)
+-s 0x00104A72=dlist_31_insert
 -s 0x00104AAA=dlist_32_to_31
 -s 0x00104ADE=dlist_process_31_and_32_to_31_NOTCALLED
--s 0x00104B32=dlist4x_104B32 // dlist4x *__cdecl()
+# dlist4x *__cdecl()
+-s 0x00104B32=dlist4x_104B32
 -s 0x00104CBA=dlist4x_43_to_44
 -s 0x00104D20=dlist4x_44_GetItem_WaitFor
 -s 0x00104D9C=dlist_31_item_process_A
@@ -825,18 +832,25 @@
 -s 0x00105A74=dlist22_process
 -s 0x00105E22=get_dlist1x_or_dlist2x_raw_ptr
 -s 0x00105F92=dlist11_and_dlist20_xx
--s 0x001061D2=call_process_24_21_23_33_31_32_16_12_GRD // void __cdecl(void *fp_dlist1x, void *fp_dlist3x, void *fp_dlist2x, char *str)
--s 0x0010620A=process_24_21_23_33_31_32_16_12 // int __cdecl(void *fp_dlist1x, void *fp_dlist3x, void *fp_dlist2x, char *str)
--s 0x00106BB2=dlist_init // void __cdecl(void *dlist)
+# void __cdecl(void *fp_dlist1x, void *fp_dlist3x, void *fp_dlist2x, char *str)
+-s 0x001061D2=call_process_24_21_23_33_31_32_16_12_GRD
+# int __cdecl(void *fp_dlist1x, void *fp_dlist3x, void *fp_dlist2x, char *str)
+-s 0x0010620A=process_24_21_23_33_31_32_16_12
+# void __cdecl(void *dlist)
+-s 0x00106BB2=dlist_init
 -s 0x00106BBA=dlist_comp_prev
 -s 0x00106BC6=dlist_insert_before
 -s 0x00106BD6=dlist_insert_after
--s 0x00106BE6=dlist_remove // void __cdecl(dlist *obj)
+# void __cdecl(dlist *obj)
+-s 0x00106BE6=dlist_remove
 -s 0x00106BF6=dlist_remove_prev
--s 0x00106C0C=dlist_remove_next // void *__cdecl(void *dlist)
--s 0x00106C24=LowPriority_WaitSem // void __cdecl(enum SemaphoreID)
+# void *__cdecl(void *dlist)
+-s 0x00106C0C=dlist_remove_next
+# void __cdecl(enum SemaphoreID)
+-s 0x00106C24=LowPriority_WaitSem
 -s 0x00106C62=LowPriority_PollSem
--s 0x00106CAA=LowPriority_SigSem // void __cdecl(enum SemaphoreID SemaphoreId)
+# void __cdecl(enum SemaphoreID SemaphoreId)
+-s 0x00106CAA=LowPriority_SigSem
 -s 0x00106CE6=signal_semaphores
 -s 0x00106D10=get_SemiphoreThreadID
 -s 0x00106D1A=Wait_ExternalTicks
@@ -850,8 +864,10 @@
 -s 0x001072C8=encrypt_init_cj
 -s 0x001072EE=encrypt_init_ci
 -s 0x00107340=memcpy_fast
--s 0x00107372=memset_fast // void __cdecl(void *dest, char value, int count)
--s 0x001073A2=memset_fastish // void __cdecl(void *addr, int fill, int width)
+# void __cdecl(void *dest, char value, int count)
+-s 0x00107372=memset_fast
+# void __cdecl(void *addr, int fill, int width)
+-s 0x001073A2=memset_fastish
 -s 0x00107FD4=transmit_Set46
 -s 0x00107FF0=AddItemToRingBuffer0
 -s 0x0010802E=start_task_x19
@@ -934,7 +950,8 @@
 -s 0x00116884=init_dlists_7x
 -s 0x0011696C=get_AF_Info
 -s 0x00116A0A=ExposureCalc_xx
--s 0x00118E6C=scnoutput_118E6C // void __cdecl(dlist4x *pic, int a1, int a2)
+# void __cdecl(dlist4x *pic, int a1, int a2)
+-s 0x00118E6C=scnoutput_118E6C
 -s 0x0011B350=flg_13_xNNN
 -s 0x0011B560=Tsk0C_PostMsg_1A
 -s 0x0011B616=Tsk0C_PostMsg_1B
@@ -1169,7 +1186,8 @@
 -s 0x00138F58=ptp_ResponceMsg
 -s 0x00138F94=ptp_Flow_Good
 -s 0x00138FA0=ptp_flow_bad
--s 0x00139028=ptp_ResponceError // void __cdecl(enum PTP_ResponceCodes code, char, char)
+# void __cdecl(enum PTP_ResponceCodes code, char, char)
+-s 0x00139028=ptp_ResponceError
 -s 0x0013913E=ptp_SendData
 -s 0x00139286=ptp_RecvData
 -s 0x00139A0A=littleEndian_Word
@@ -1576,7 +1594,8 @@
 -s 0x00158898=FormatMemCard
 -s 0x0015919A=LED_On
 -s 0x00159200=LED_On_B?
--s 0x00159254=LED_Off // void __cdecl(char idx)
+# void __cdecl(char idx)
+-s 0x00159254=LED_Off
 -s 0x00159CC2=call_sub_159D84
 -s 0x0015A7CA=mov_s327_to_s328
 -s 0x0015A826=getMovieRecordingSlot?
@@ -1589,7 +1608,8 @@
 -s 0x0015BE10=OpenFile_GRD
 -s 0x0015BE3C=CloseFile_GRD
 -s 0x0015BE68=CF_read
--s 0x0015BEC4=CF_write // int __cdecl(void *file, char *data, int data_size, int *bytesWritten)
+# int __cdecl(void *file, char *data, int data_size, int *bytesWritten)
+-s 0x0015BEC4=CF_write
 -s 0x0015BF4C=Seek_GRD
 -s 0x0015BF86=CF_seek2?
 -s 0x0015BFC2=CF_create
@@ -1609,8 +1629,10 @@
 -s 0x0015C40E=CF_sub_15C40E
 -s 0x0015CD32=create_photo_dir_plus
 -s 0x0015EF88=build_filename_15EF88
--s 0x0015FD6E=ntoa_000 // void __cdecl(char *str, int val)
--s 0x0015FDCE=ntoa_0000 // void __cdecl(char *str, int val)
+# void __cdecl(char *str, int val)
+-s 0x0015FD6E=ntoa_000
+# void __cdecl(char *str, int val)
+-s 0x0015FDCE=ntoa_0000
 -s 0x0015FE56=buildFileOutputName
 -s 0x00163680=dlist_9x_setup
 -s 0x00166A84=init_dlists_Ax
@@ -1847,7 +1869,8 @@
 -s 0x0017B954=setup_screen_ptrs_A
 -s 0x0017B9D6=setup_screen_ptrs_B
 -s 0x0017BA58=setup_screen_ptrs_C
--s 0x0017BAE2=BitBilt_Jpeg // void __cdecl(struc_131 *s131, void *screen_ptrs, int color_idx)
+# void __cdecl(struc_131 *s131, void *screen_ptrs, int color_idx)
+-s 0x0017BAE2=BitBilt_Jpeg
 -s 0x0017C656=Tsk0C_PostMsg_1D
 -s 0x0017C706=Tsk0C_PostMsg_1E
 -s 0x0017C8D8=Tsk0C_PostMsg_1F
@@ -1886,7 +1909,8 @@
 -s 0x0018C4BA=Tsk0C_PostMsg_6
 -s 0x0018D398=isSupportedDistortionCorrectionLens
 -s 0x0019902E=process_24_21_23_33_31_32_16_12_f2
--s 0x00199572=func2_dlist1x // int __cdecl(dlist1x *d, char *str)
+# int __cdecl(dlist1x *d, char *str)
+-s 0x00199572=func2_dlist1x
 -s 0x001995B6=func2_dlist3x
 -s 0x001995D2=func2_dlist2x
 -s 0x00199630=func3_dlist1x
@@ -2100,8 +2124,10 @@
 -s 0x001C5C14=set_8F9BE000
 -s 0x001C5C1E=set_8F9BDFFC
 -s 0x001C5C28=set_8F9BDFF8
--s 0x001C5C48=display_text // void __cdecl(int, int, int, int, void *text, int)
--s 0x001C6054=draw_symbol // void __fastcall(void *, int, int, int symbol_id, __int16)
+# void __cdecl(int, int, int, int, void *text, int)
+-s 0x001C5C48=display_text
+# void __fastcall(void *, int, int, int symbol_id, __int16)
+-s 0x001C6054=draw_symbol
 -s 0x001C60DE=draw_symbol_2
 -s 0x001C670A=Draw_Symbol_Screen
 -s 0x001C6920=screen_set_YCbCr_pointers
@@ -2109,7 +2135,8 @@
 -s 0x001C87D8=Set_ScreenClr_zero
 -s 0x001C87E2=Tsk10_PostMsg_4B
 -s 0x001C88EC=Tsk10_PostMsg_4C_SetScreenYuvColor
--s 0x001C8A18=color_fill // void __cdecl(rect *rect, char clr_idx)
+# void __cdecl(rect *rect, char clr_idx)
+-s 0x001C8A18=color_fill
 -s 0x001C8AD6=hdmi_color_fill
 -s 0x001C8C6E=Tsk10_PostMsg_4D
 -s 0x001C8E72=fullscreen_fade
@@ -2220,7 +2247,8 @@
 -s 0x001DA1EA=SysActiveCyclicHandler
 -s 0x001DA20C=SetSystemClock
 -s 0x001DA230=GetSystemClock
--s 0x001DA27C=DelayTask // void __cdecl(int delayTime)
+# void __cdecl(int delayTime)
+-s 0x001DA27C=DelayTask
 -s 0x001DA284=GetTaskId
 -s 0x001DA2AA=sys_ref_task
 -s 0x001DA2C4=TaskInDormantState
@@ -2704,14 +2732,18 @@
 -s 0x001EE954=setAfterDeleteDirection
 -s 0x001EE970=getAfterDeleteDirection
 -s 0x001EE97C=setSlideShowTime
--s 0x001EE996=getSlideShowTime // int __cdecl()
+# int __cdecl()
+-s 0x001EE996=getSlideShowTime
 -s 0x001EE9A4=setHDMIOutput
--s 0x001EE9BE=getHDMIOutput // int __cdecl()
--s 0x001EE9CC=setVideoMode // void __cdecl(int mode)
+# int __cdecl()
+-s 0x001EE9BE=getHDMIOutput
+# void __cdecl(int mode)
+-s 0x001EE9CC=setVideoMode
 -s 0x001EE9E2=getVideoMode
 -s 0x001EE9F0=setImageCommentEnabled
 -s 0x001EEA06=getImageCommentEnabled
--s 0x001EEA14=setUsingAndSetImageComment // void __cdecl(int useComment)
+# void __cdecl(int useComment)
+-s 0x001EEA14=setUsingAndSetImageComment
 -s 0x001EEA2A=getUsingAndSetImageComment
 -s 0x001EEA38=setAutoImageRotation
 -s 0x001EEA4E=getAutoImageRotation
@@ -2799,7 +2831,8 @@
 -s 0x001EF250=setVideoQuality_sb
 -s 0x001EF27A=ret_zero_52
 -s 0x001EF27E=nullsub_98
--s 0x001EF280=set_1EF280 // void __cdecl(char val)
+# void __cdecl(char val)
+-s 0x001EF280=set_1EF280
 -s 0x001EF28A=get_1EF28A
 -s 0x001EF294=getBeepPitch
 -s 0x001EF2B4=setBeepPitch
@@ -3079,7 +3112,8 @@
 -s 0x0021AF42=memset
 -s 0x0021AF50=pow(R4 [IN doubleXHi; OUT outHi], R5 [IN doubleXLo; OUT outLo], R6 [IN doubleYHi], R7 [IN doubleYLo])
 -s 0x0021B6DE=rand(R4 [OUT value])
--s 0x0021B716=sprintf // int(int, char *fmt, ...)
+# int(int, char *fmt, ...)
+-s 0x0021B716=sprintf
 -s 0x0021B7B0=sqrt(R4 [IN doubleHi; OUT outHi], R5 [IN doubleLo; OUT outLo])
 -s 0x0021B98E=strcat
 -s 0x0021B9A8=strchr
@@ -3959,7 +3993,8 @@
 -s 0x002F808C=check_CustomSetting_ranges_defaults
 -s 0x002F817E=Check_Setting_NonDefault
 -s 0x002FA898=ShowFadedPopup
--s 0x002FBC98=show_popup_message // void __cdecl(int text_idx, int, int, int)
+# void __cdecl(int text_idx, int, int, int)
+-s 0x002FBC98=show_popup_message
 -s 0x002FD1C8=time_2FD1C8
 -s 0x002FD25A=stime
 -s 0x002FD2C8=time_2FD2C8
@@ -3968,7 +4003,8 @@
 -s 0x002FF44A=BFTxx_s3_2FF44A
 -s 0x002FF44C=BFT00_s2
 -s 0x0030973C=BFTxx_s6_30973C
--s 0x0030A56C=date_time_30A56C // void __cdecl(Set2B *time, char arg_2)
+# void __cdecl(Set2B *time, char arg_2)
+-s 0x0030A56C=date_time_30A56C
 -s 0x0030A88A=ret_zero_58
 -s 0x0030B436=BFT478_s2
 -s 0x0030B43A=BFTxx_s2_30B43A
@@ -4189,7 +4225,8 @@
 -s 0x00315184=getWBFluorescentBias
 -s 0x00315192=setWBDaylightBias
 -s 0x003151AE=getWBDaylightBias
--s 0x003151BE=setWBFlashBias // void __cdecl(int wbFlashBias)
+# void __cdecl(int wbFlashBias)
+-s 0x003151BE=setWBFlashBias
 -s 0x003151DC=getWBFlashBias
 -s 0x003151EA=setWBCloudyBias
 -s 0x00315206=getWBCloudyBias
@@ -4543,9 +4580,11 @@
 -s 0x0035A42E=BFT463_s1
 -s 0x0035A452=BFT466_s1
 -s 0x0035A4D0=BFT466_s3
--s 0x0035A578=SetJpegCompression // void __cdecl(char qualPriority)
+# void __cdecl(char qualPriority)
+-s 0x0035A578=SetJpegCompression
 -s 0x0035A5B4=SetNEFCompression
--s 0x0035A5F0=SetNEFBitLevel // void __cdecl(char set14bit)
+# void __cdecl(char set14bit)
+-s 0x0035A5F0=SetNEFBitLevel
 -s 0x0035A62C=SetJpegImageSize
 -s 0x0035A668=SetImageQualityMode
 -s 0x0035A6A4=SetActiveDLighting
@@ -4740,7 +4779,8 @@
 -s 0x00364F06=ftp_364F06
 -s 0x00367BA4=display_wireless_security_sym
 -s 0x8F800000=Flash_Check_BF
--s 0x8F800070=flash_ticks_wait // void __cdecl(int ticks)
+# void __cdecl(int ticks)
+-s 0x8F800070=flash_ticks_wait
 -s 0x8F800088=flash_firmware_XX
 -s 0x8F8003D8=EmbeddedFlashClear
 -s 0x8F800430=EmbeddedFlashWrite
