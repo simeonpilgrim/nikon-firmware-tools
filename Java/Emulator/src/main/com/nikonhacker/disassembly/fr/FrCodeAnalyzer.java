@@ -147,17 +147,18 @@ public class FrCodeAnalyzer extends CodeAnalyzer {
                     ry = -1;
                 }
 
-                while (ry!=-1) {
+                if (ry!=-1) {
                     if (state.isRegisterDefined(ry)) {
                         tableAddr = state.getReg(ry);
-
-                        // empirical rule: 0x2022 choosed to avoid clash with PTP error codes
-                        if (tableAddr<-1 || tableAddr >0x2022)
-                            break;
                     }
-                    if (state.isRegisterDefined(13))
-                        tableAddr = state.getReg(13);
-                    break;
+                    // take biggest value of these two
+                    if (state.isRegisterDefined(13)) {
+                        final int addr = state.getReg(13);
+                        // empiric: 0xFFFFFFFF and 0 are considered invalid
+                        // addresses above 0x8xxxxxxx are negative integers
+                        if (tableAddr>=-1 && (addr<-1 || addr>tableAddr))
+                            tableAddr = addr;
+                    }
                 }
             }
             // empirical rule: 0x2022 choosed to avoid clash with PTP error codes
