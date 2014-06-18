@@ -111,32 +111,61 @@ public class FrCodeAnalyzer extends CodeAnalyzer {
 
     protected final List<Integer> getCallTableEntrys(Function currentFunction, int address, Statement statement) {
 
-        final int opcodes1 = memory.loadInstruction16(address - 4);
-        final int opcodes2 = memory.loadInstruction16(address - 2);
-        final int opcodes3 = memory.loadInstruction16(address);
+        final int callOpcode = memory.loadInstruction16(address);
 
-        if (   ((opcodes1&0xFFF0) == 0xB420)                // LSL     #2,R<x>
-            && ((opcodes2&0xFF0F) == 0x0000)                // LD      @(R13,R<y>),R0
-            && (opcodes3 == 0x9F10 || opcodes3 == 0x9710)) {// CALL:D  @R0  or  CALL    @R0
+        if (callOpcode == 0x9F10 || callOpcode == 0x9710) {// CALL:D  @R0  or  CALL    @R0
 
-            final int rx = opcodes1&0xF;
-            final int ry = (opcodes2>>4)&0xF;
-            final CPUState state = statement.context.cpuState;
             int tableAddr = 0;
+            final int opcodes1 = memory.loadInstruction16(address - 6);
+            final int opcodes2 = memory.loadInstruction16(address - 4);
+            final int opcodes3 = memory.loadInstruction16(address - 2);
+            final CPUState state = statement.context.cpuState;
 
-            // 2 cases
-            if (rx==13 && state.isRegisterDefined(ry)) {
-                tableAddr = state.getReg(ry);
-            } else if (rx==ry && state.isRegisterDefined(13)) {
-                tableAddr = state.getReg(13);
+            if (   ((opcodes2&0xFFF0) == 0xB420)            // LSL     #2,R<x>
+                && ((opcodes3&0xFF0F) == 0x0000)) {         // LD      @(R13,R<y>),R0
+
+                final int rx = opcodes2&0xF;
+                final int ry = (opcodes3>>4)&0xF;
+
+                // 2 cases
+                if (rx==13 && state.isRegisterDefined(ry)) {
+                    tableAddr = state.getReg(ry);
+                } else if (rx==ry && state.isRegisterDefined(13)) {
+                    tableAddr = state.getReg(13);
+                }
+            } else {
+
+                final int ry;
+
+                if ((opcodes3&0xFF0F) == 0x0000) {           // LD      @(R13,R<y>),R0
+                    ry = (opcodes3>>4)&0xF;
+                } else if ((opcodes2&0xFF0F) == 0x0000) {    // LD      @(R13,R<y>),R0
+                    ry = (opcodes2>>4)&0xF;
+                } else if ((opcodes1&0xFF0F) == 0x0000) {    // LD      @(R13,R<y>),R0
+                    ry = (opcodes1>>4)&0xF;
+                } else {
+                    ry = -1;
+                }
+
+                while (ry!=-1) {
+                    if (state.isRegisterDefined(ry)) {
+                        tableAddr = state.getReg(ry);
+
+                        // empirical rule: 0x2022 choosed to avoid clash with PTP error codes
+                        if (tableAddr<-1 || tableAddr >0x2022)
+                            break;
+                    }
+                    if (state.isRegisterDefined(13))
+                        tableAddr = state.getReg(13);
+                    break;
+                }
             }
-            // empirical rule
-            if (tableAddr<-1 || tableAddr >0x200) {
+            // empirical rule: 0x2022 choosed to avoid clash with PTP error codes
+            if (tableAddr<-1 || tableAddr >0x2022) {
                 debugPrintWriter.println("WARNING : Cannot determine table size for CALL. Add -j 0x" + Format.asHex(address, 8) + "=@(0x" + Format.asHex(tableAddr, 8) + "+...*4) to specify targets");
                 return null;
             }
         }
-
         debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
         return null;
     }
