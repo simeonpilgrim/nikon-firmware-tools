@@ -26,7 +26,7 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
         1)
         BFC8C8E4 5C08     sltiu   r4, 0x08
         BFC8C8E6 F7FF6013 bteqz   ...
-        
+
         BFC8C8EA 3288     sll     r2, r4, 2       OR BFC3404E E288     sll     r2, 2
 
         BFC8C8EC F7D74BE9 lui     r3, 0xBFC9
@@ -37,7 +37,7 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
         2)
         BFC4CC9A 5F32     sltiu   r<x>, 0x32
         BFC4CC9C F000600C bteqz   ...
-        
+
         BFC4CCA0 F7D74BE9 lui     r3, 0xBFC9
         BFC4CCA4 E769     addu    r2, r<y>, r3
         BFC4CCA6 F608A240 lbu     r2, 0x4600(r2)
@@ -50,15 +50,15 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
 
         */
         if (
-              ((memory.loadInstruction32(address - 10)& 0xF800FFE0)== 0xF0004BE0) // lui     r3, <baseHI>  
-            && (memory.loadInstruction16(address - 6) == 0xE269)                  // addu    r2, r3        
+              ((memory.loadInstruction32(address - 10)& 0xF800FFE0)== 0xF0004BE0) // lui     r3, <baseHI>
+            && (memory.loadInstruction16(address - 6) == 0xE269)                  // addu    r2, r3
             &&((memory.loadInstruction32(address - 4) & 0xF800FFE0)== 0xF0009A40) // lw      r2, <baseLOsigned>(r2)
-            && (memory.loadInstruction16(address    ) == 0xEA80)) {               // jrc     r2            
+            && (memory.loadInstruction16(address    ) == 0xEA80)) {               // jrc     r2
 
                 // tabled access
                 final int baseAddress = (extendOffset(memory.loadInstruction32(address - 10))<<16) +
                                         BinaryArithmetics.signExtend(16, extendOffset(memory.loadInstruction32(address - 4)));
-                    
+
                 if (
                     ((memory.loadInstruction16(address - 18) & 0xF800) == 0x5800) // sltiu   r<x>, 0x08 ; number_of_elements
                     && ((memory.loadInstruction32(address - 16) & 0xF800FFE0) == 0xF0006000)) { // bteqz   part_2_of_init
@@ -74,9 +74,9 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
                          ) {
                         return new int[] {baseAddress, (memory.loadInstruction16(address - 18) & 0x00FF) };
                     }
-                } else if ( 
+                } else if (
                     ((memory.loadInstruction16(address - 28) & 0xF800) == 0x5800) // sltiu   r<x>, 0x08 ; number_of_elements
-                    && ((memory.loadInstruction32(address - 26) & 0xF800FFE0) == 0xF0006000)) { // bteqz   
+                    && ((memory.loadInstruction32(address - 26) & 0xF800FFE0) == 0xF0006000)) { // bteqz
 
                     // indirect table case (2)
                     final int addOpcode = memory.loadInstruction16(address - 18);
@@ -85,14 +85,14 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
                          && ((memory.loadInstruction16(address - 28) & 0x0700) == (addOpcode & 0x0700))) // check x == y)
                          ) {
                          int indexTableSize = memory.loadInstruction16(address - 28) & 0x00FF;
-                         
+
                          // get index table address
                         if ( indexTableSize>0
-                            &&((memory.loadInstruction32(address - 22)& 0xF800FFE0)== 0xF0004BE0) // lui     r3, <baseHI>  
+                            &&((memory.loadInstruction32(address - 22)& 0xF800FFE0)== 0xF0004BE0) // lui     r3, <baseHI>
                                                                                                   // ...
                             &&((memory.loadInstruction32(address -16) & 0xF800FFE0)== 0xF000A240) // lbu     r2, <baseLOsigned>(r2)
-                            && (memory.loadInstruction16(address -12) == 0xE288)) {               // sll     r2, 2            
-                         
+                            && (memory.loadInstruction16(address -12) == 0xE288)) {               // sll     r2, 2
+
                             // parse table of indexes and search for highest value - this will be jump table size
                             final int baseAddressIndexes = (extendOffset(memory.loadInstruction32(address - 22))<<16) +
                                                     BinaryArithmetics.signExtend(16, extendOffset(memory.loadInstruction32(address - 16)));
@@ -102,9 +102,14 @@ public class TxCodeAnalyzer extends CodeAnalyzer {
                             }
                             return new int[] {baseAddress,maxIndex+1};
                         }
-                    } 
+                    }
                 }
         }
+        return null;
+    }
+
+    protected final List<Integer> getCallTableEntrys(Function currentFunction, int address, Statement statement) {
+        debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
         return null;
     }
 }
