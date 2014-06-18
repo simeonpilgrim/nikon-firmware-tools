@@ -21,7 +21,7 @@ public abstract class CodeAnalyzer {
     private Map<Integer, Symbol> symbols;
     private Map<Integer, List<Integer>> jumpHints;
     private Set<OutputOption> outputOptions;
-    private PrintWriter debugPrintWriter;
+    protected PrintWriter debugPrintWriter;
 
     public static final int INTERRUPT_VECTOR_LENGTH = 0x400;
     private static final String FUNCTION_PREFIX = "sub";
@@ -265,14 +265,6 @@ public abstract class CodeAnalyzer {
 
         debugPrintWriter.println("Label generation took " + (System.currentTimeMillis() - start) + "ms");
 
-
-        //int target = 0x00041C52;
-//        int target = 0x00041CEC;
-//        for (Integer interruptNumber : interruptTable.keySet()) {
-//            Integer address = interruptTable.get(interruptNumber);
-//            testIfFunctionCallsTarget(address, target, "interrupt_0x" + Format.asHex(interruptNumber, 2) + "_");
-//        }
-
     }
 
     private void testIfFunctionCallsTarget(Integer address, int target, String path) {
@@ -291,6 +283,8 @@ public abstract class CodeAnalyzer {
             }
         }
     }
+
+    protected abstract List<Integer> getCallTableEntrys(Function currentFunction, int address, Statement statement);
 
     void followFunction(Function currentFunction, Integer address, boolean stopAtFirstProcessedStatement) throws IOException, DisassemblyException {
         if (!codeStructure.isStatement(address)) {
@@ -326,7 +320,7 @@ public abstract class CodeAnalyzer {
                     }
                     else {
                         // target is dynamic
-                        resolveDynamicTarget(currentFunction, address, jumps, statement);
+                        resolveJumpDynamicTarget(currentFunction, address, jumps, statement);
                     }
                     break;
                 case CALL:
@@ -334,23 +328,27 @@ public abstract class CodeAnalyzer {
                         currentSegment.setEnd(address + statement.getNumBytes());
                         processedStatements.add(address + statement.getNumBytes());
                     }
-                    int targetAddress = statement.decodedImm;
-                    if (targetAddress == 0) {
-                        List<Integer> potentialTargets = jumpHints.get(address);
-                        if (potentialTargets != null) {
+                    if (statement.decodedImm == 0) {
+                        do {
+                            List<Integer> potentialTargets = jumpHints.get(address);
+                            if (potentialTargets == null) {
+                                potentialTargets = getCallTableEntrys(currentFunction, address, statement);
+                                if (potentialTargets == null) {
+                                    currentFunction.getCalls().add(new Jump(address, 0, statement.getInstruction(), true));
+                                    break;
+                                }
+                            }
                             int i = 0;
                             for (Integer potentialTarget : potentialTargets) {
-                                addCall(currentFunction, statement, address, potentialTarget & 0xFFFFFFFE, "call_target_" + Integer.toHexString(address) + "_" + i, true);
+                                // 0 means void element, but count number anyway - it makes easier to read listing
+                                if (potentialTarget != 0)
+                                    addCall(currentFunction, statement, address, potentialTarget & 0xFFFFFFFE, "call_target_" + Integer.toHexString(address) + "_" + i, true);
                                 i++;
                             }
-                        }
-                        else {
-                            currentFunction.getCalls().add(new Jump(address, 0, statement.getInstruction(), true));
-                            debugPrintWriter.println("WARNING : Cannot determine dynamic target of CALL. Add -j 0x" + Format.asHex(address, 8) + "=addr1[, addr2[, ...]] to specify targets");
-                        }
+                         } while(false);
                     }
                     else {
-                        addCall(currentFunction, statement, address, targetAddress & 0xFFFFFFFE, "", false);
+                        addCall(currentFunction, statement, address, statement.decodedImm & 0xFFFFFFFE, "", false);
                     }
                     break;
                 case INT:
@@ -458,8 +456,8 @@ public abstract class CodeAnalyzer {
     }
 
     protected abstract int[] getJmpTableAddressSize(int address);
-    
-    private void resolveDynamicTarget(Function currentFunction, Integer address, List<Jump> jumps, Statement statement) {
+
+    private void resolveJumpDynamicTarget(Function currentFunction, Integer address, List<Jump> jumps, Statement statement) {
         // First see if we have a hint
         List<Integer> potentialTargets = jumpHints.get(address);
         if (potentialTargets != null) {
@@ -474,7 +472,7 @@ public abstract class CodeAnalyzer {
         }
         else {
             // Try to determine table size
-            
+
             int addressSize[] = getJmpTableAddressSize(address);
             if (addressSize!=null) {
                 try {
