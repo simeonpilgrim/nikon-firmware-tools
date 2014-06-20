@@ -9,6 +9,7 @@ import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.breakTrigger.BreakTriggerEditDialog;
 import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.ListSelectionDialog;
 import org.fife.ui.rsyntaxtextarea.*;
 import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -109,7 +110,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
 
         JPanel topToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        topToolbar.add(new JLabel("Function name or address:"));
+        topToolbar.add(new JLabel("Name/address/regex:"));
         targetField = new JTextField(7);
         topToolbar.add(targetField);
         final JButton exploreButton = new JButton("Explore");
@@ -123,7 +124,26 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         // Add listeners
         ActionListener exploreExecutor = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromString(targetField.getText());
+                String str = targetField.getText();
+                Integer address = null;
+
+                if (str.indexOf('*') !=-1 || str.indexOf('+') !=-1 || str.indexOf('\\') !=-1 || str.indexOf('[') !=-1) {
+                    // regular expression
+                    List<Function> matchedSymbols = codeStructure.getAddressFromExpression(str);
+
+                    if (matchedSymbols!=null) {
+                        DefaultListModel listModel = new DefaultListModel();
+                        for (Function func : matchedSymbols) {
+                            listModel.addElement(func.getName());
+                        }
+
+                        final int selection = new ListSelectionDialog(null, "Found symbols:", listModel).showListSelectionDialog();
+                        if (selection!=-1)
+                            address = matchedSymbols.get(selection).getAddress();
+                    }
+                } else {
+                    address = codeStructure.getAddressFromString(str);
+                }
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }
@@ -154,7 +174,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 }
             }
         });
-        
+
 
         // Create listing
 
@@ -571,7 +591,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         Rectangle visibleRect = listingArea.getVisibleRect();
 
         int lineHeight = listingArea.getFontMetrics(listingArea.getFont()).getHeight();
-        
+
         int firstLine = (int) Math.ceil((double) visibleRect.y / lineHeight);
         int lastLine = (int) Math.floor((double) (visibleRect.y + visibleRect.height) / lineHeight);
 

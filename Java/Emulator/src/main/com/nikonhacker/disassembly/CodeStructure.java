@@ -406,4 +406,17 @@ public abstract class CodeStructure {
         }
         return address;
     }
+
+    public final List<Function> getAddressFromExpression(String regex) {
+        List<Function> foundFuncs = new ArrayList<Function>();
+        regex = regex.trim();
+        // Try to find by name
+        for (SortedMap.Entry<Integer, Function> entry : functions.entrySet()) {
+            Function func = entry.getValue();
+            if (func.getName().matches(regex)) {
+                foundFuncs.add(func);
+            }
+        }
+        return (foundFuncs.isEmpty() ? null : foundFuncs);
+    }
 }

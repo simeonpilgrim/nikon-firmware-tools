@@ -14,6 +14,7 @@ import com.nikonhacker.disassembly.Jump;
 import com.nikonhacker.disassembly.fr.FrCodeStructure;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
+import com.nikonhacker.gui.swing.ListSelectionDialog;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,6 +24,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 public class CodeStructureFrame extends DocumentFrame
 {
@@ -37,7 +39,7 @@ public class CodeStructureFrame extends DocumentFrame
     public enum Orientation{
         HORIZONTAL(SwingConstants.WEST),
         VERTICAL(SwingConstants.NORTH);
-        
+
         private int swingValue;
 
         Orientation(int swingValue) {
@@ -61,7 +63,7 @@ public class CodeStructureFrame extends DocumentFrame
 
         // Create toolbar
         JPanel toolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        
+
         final JComboBox orientationCombo = new JComboBox(new Orientation[]{Orientation.HORIZONTAL, Orientation.VERTICAL});
         Orientation currentOrientation = getCurrentOrientation();
         orientationCombo.setSelectedItem(currentOrientation);
@@ -79,7 +81,26 @@ public class CodeStructureFrame extends DocumentFrame
 
         ActionListener exploreActionListener = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                Integer address = codeStructure.getAddressFromString(targetField.getText());
+                String str = targetField.getText();
+                Integer address = null;
+
+                if (str.indexOf('*') !=-1 || str.indexOf('+') !=-1 || str.indexOf('\\') !=-1 || str.indexOf('[') !=-1) {
+                    // regular expression
+                    List<Function> matchedSymbols = codeStructure.getAddressFromExpression(str);
+
+                    if (matchedSymbols!=null) {
+                        DefaultListModel listModel = new DefaultListModel();
+                        for (Function func : matchedSymbols) {
+                            listModel.addElement(func.getName());
+                        }
+
+                        final int selection = new ListSelectionDialog(null, "Found symbols:", listModel).showListSelectionDialog();
+                        if (selection!=-1)
+                            address = matchedSymbols.get(selection).getAddress();
+                    }
+                } else {
+                    address = codeStructure.getAddressFromString(str);
+                }
                 if (address == null) {
                     targetField.setBackground(Color.RED);
                 }
@@ -166,7 +187,7 @@ public class CodeStructureFrame extends DocumentFrame
         });
         toolbar.add(clearButton);
 
-        
+
         // Create graph
         Component graphComponent = getGraphPane(chip);
 
