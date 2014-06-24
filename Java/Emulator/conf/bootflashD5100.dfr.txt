@@ -1,0 +1,203 @@
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x bootflashD5100.dfr.txt -o bootflashD5100.asm bootflashD5100.bin
+#
+# WARNING: doesn't work in Emulator, because memory content at 0xFFFF4000 is not automatically loaded. This not a bug!
+
+-i 0x000E0000-0x000FFFFF=0x00000000
+
+# -------------- COPIED CODE AND DATA
+# initialised data
+-i 0x80200000-0x8020003B=0x00000630
+-m 0x80200000-0x8020003B=DATA:L
+# zero initialised data
+#-m 0x8020003C-8020055F
+# not initialised data
+#-m 0x80200560-
+
+# application code
+-i 0x800813D0-0x8008C8A1=0x00001FA8
+-m 0x800813D0-0x8008C8A1=CODE
+
+-i 0x8008C8A4-0x8008CE0D=0x00001A3C
+-m 0x8008C8A4-0x8008CE0D=DATA:W
+
+-i 0x80080000-0x800800DF=0x0000066C
+-m 0x80080000-0x800800DF=DATA:L
+
+# ITRON kernel code
+-i 0x800800E0-0x800813CF=0x0000074C
+-m 0x800800E0-0x800800FB=CODE
+-m 0x800800FC-0x8008025B=DATA:W
+-m 0x8008025C-0x80080339=CODE
+-m 0x8008033A-0x800803A6=DATA:W
+-m 0x800803A6-0x8008137F=CODE
+# sys ver data
+-m 0x80081380-0x80081393=DATA:L
+-m 0x80081394-0x800813CF=CODE
+
+# interrupt table
+-i 0x8008CE10-0x8008D20F=0x0001FC00
+-m 0x8008CE10-0x8008D20F=DATA:L
+
+# -------------- IN-PLACE CODE
+# power on code
+-m 0x000E0000-0x000E062D=CODE
+
+# version
+-m 0x00ffbc0-0x000ffbdf=DATA:L
+
+-t 0x000ffc00
+
+-s 0xE060E=SetupHardware()
+
+-s 0x8008025C=sys_unsupported_function (R12 [OUT err_code])
+-s 0x80080260=sys_reserved_function (R12 [OUT err_code])
+-s 0x80080640=UpdateClock_ms()
+-s 0x800809CC=sys_set_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Set System Clock */)
+-s 0x800809EA=sys_get_tim(R4 [IN ptr_to_pk_tim], R12 [OUT err_code] /* Get System Clock */)
+-s 0x80080A08=sys_dly_tsk(R4 [IN dly_tim], R12 [OUT err_code] /* Delay Task */)
+-s 0x80080AAC=sys_slp_tsk(R12 [OUT err_code] /* Sleep Task */)
+-s 0x80080AE2=sys_tslp_tsk(R4 [IN timeout], R12 [OUT err_code] /* Sleep Task with Timeout */)
+-s 0x80080B66=sys_wup_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Wakeup Other Task */)
+-s 0x80080BDC=sys_sta_tsk(R4 [IN tsk_id], R5 [IN tsk_param], R12 [OUT err_code] /* Start Task */)
+-s 0x80080C5A=sys_ext_tsk(R12 [OUT err_code] /* Exit Issuing Task */)
+-s 0x80080CB4=sys_ter_tsk(R4 [IN tsk_id], R12 [OUT err_code] /* Terminate Other Task */)
+-s 0x80080D52=sys_chg_pri(R4 [IN tsk_id], R5 [IN tsk_prio], R12 [OUT err_code] /* Change Task Priority */)
+-s 0x80080DC6=sys_get_tid(R12 [OUT err_code], R13 [OUT tsk_id] /* Get Task Identifier */)
+-s 0x80080DE6=sys_ref_tsk(R4 [IN ptr_to_pk_rtsk], R5 [IN tsk_id], R12 [OUT err_code] /* Get Task Status */)
+-s 0x80080E3A=krnl_TableGetRecord(R14 [IN ptr_table; OUT ptr_record], R4 [IN index_1_based])
+-s 0x80080EBA=sys_sig_sem(R4 [IN sem_id], R12 [OUT err_code] /* Signal Semaphore */)
+-s 0x80080EFC=sys_wai_sem(R4 [IN sem_id], R12 [OUT err_code] /* Wait on Semaphore */)
+-s 0x80080F3E=sys_preq_sem(R4 [IN sem_id], R12 [OUT err_code] /* Poll and request Semaphore */)
+-s 0x80080F72=sys_twai_sem(R4 [IN sem_id], R5 [IN timeout], R12 [OUT err_code] /* Wait on Semaphore with Timeout */)
+-s 0x80080FF8=sys_ref_sem(R4 [IN ptr_to_pk_rsem], R5 [IN sem_id], R12 [OUT err_code] /* Get Semaphore Status */)
+-s 0x80081042=sys_set_flg(R4 [IN flag_id], R5 [IN set_pattern], R12 [OUT err_code] /* Set Eventflag */)
+-s 0x800810DC=sys_clr_flg(R4 [IN flag_id], R5 [IN clr_pattern], R12 [OUT err_code] /* Clear Eventflag */)
+-s 0x80081104=sys_wai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag */)
+-s 0x8008118C=sys_pol_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [OUT flag_pattern] /* Wait for Eventflag, polling */)
+-s 0x800811E4=sys_twai_flg(R5 [IN flag_id], R6 [IN wai_pattern], R7 [IN wait_flag_mode], R12 [OUT err_code], R13 [IN timeout; OUT flag_pattern] /* Wait for Eventflag, with Timeout */)
+-s 0x80081350=sys_loc_cpu(R12 [OUT err_code] /* Lock CPU */)
+-s 0x80081364=sys_unl_cpu(R12 [OUT err_code] /* Unlock CPU */)
+-s 0x80081394=sys_get_ver(R4 [IN ptr_to_pk_ver], R12 [OUT err_code] /* Get Version Information */)
+
+-s 0x800804A8=SetupTCB
+-s 0x800813D0=task_0x01( /* Autorun */)
+-s 0x800819A0=task_0x02
+-s 0x80082C96=task_0x03
+-s 0x800803A6=StartTaskScheduling
+
+-s 0x8008197c=TryStartFirmwareEntry()
+-s 0x80082C80=startTask_0x03()
+-s 0x80081966=clearFlagsJumpToAddress(R4 [IN addr])
+-s 0x8008C0EA=return0(R4 [OUT 0])
+-s 0x8008C0EE=return0_8008c0ee(R4 [OUT 0])
+-s 0x8008C0F2=return0_8008C0F2(R4 [OUT 0])
+-s 0x8008C0F6=trap
+-s 0x800835C8=setupDlistItems()
+-s 0x800836D8=safeInsertDlist(R4 [IN item_index])
+-s 0x80083618=getDlistEntryIndex(R4 [OUT index_or_0])
+-s 0x80081430=insertDlistItem1()
+-s 0x80081586=loadFlashRFile(R4 [IN name])
+-s 0x80081760=loadFlashLFile(R4 [IN name])
+-s 0x8008222A=call_flashProgram(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
+-s 0x80082210=call_flashErase(R4 [IN addr; OUT bool_ok],R5 [IN size])
+-s 0x80083916=ReloadTimer_InterruptHandler()
+-s 0x80081E9A=set80200060_00()
+-s 0x8008189A=FindFile(R4 [IN namemask;OUT found], R5 [IN ptr_foundname])
+-s 0x80082C38=getTimeMs(R4 [OUT time_in_ms])
+
+# flash library
+-s 0x80082192=flashWaitStatusArea(R4 [IN ptr; OUT bool_ok], R5 [IN halfword_count])
+-s 0x800821F2=flashExternChipReset()
+-s 0x80081FF0=flashEraseSectors(R4 [IN ptr; OUT bool_ok], R5 [IN size])
+-s 0x80081FAC=flashCheckErasedArea(R4 [IN ptr; OUT bool_ok],R5 [IN count])
+-s 0x800820EC=flashProgramHalfword(R4 [IN addr],R5 [IN hword])
+-s 0x80081F08=flashProgram(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
+-s 0x80081EAE=flashErase(R4 [IN addr; OUT bool_ok],R5 [IN size])
+
+# crt library
+-s 0x8008C706=DIV_int(R4 [IN dividend; OUT quotient], R5 [IN divisor])
+-s 0x8008C754=MOD_int(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x8008C7A2=DIV_uint(R4 [IN dividend; OUT quotient], R5 [IN divisor])
+-s 0x8008C7EA=MOD_uint(R4 [IN dividend; OUT remainder], R5 [IN divisor])
+-s 0x8008C832=memcpy(R4 [IN dest], R5 [IN source], R6 [IN count])
+-s 0x8008C842=memset(R4 [IN dest], R5 [IN val], R6 [IN count])
+-s 0x8008C850=strcmp(R4 [IN str1; OUT int], R5 [IN str2])
+-s 0x8008c864=strcpy(R4 [IN dstAddr], R5 [IN srcAddr])
+-s 0x8008c872=strlen(R4 [IN addr])
+-s 0x8008C882=strncpy(R4 [IN dstString], R5 [IN srcString], R6 [IN len])
+
+# dlist library
+-s 0x800888E2=dlist_is_empty(R4 [IN ptr_to_element; OUT is_empty])
+-s 0x800888C6=dlist_init(R4 [IN ptr_to_list])
+-s 0x80088900=dlist_insert_before(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element])
+-s 0x8008892E=dlist_insert_after(R4 [IN ptr_to_element], R5 [IN ptr_to_new_element])
+-s 0x80088960=dlist_remove(R4 [IN ptr_to_element])
+-s 0x80088988=dlist_remove_previous(R4 [IN ptr_to_element])
+-s 0x800889A2=dlist_remove_next(R4 [IN ptr_to_element])
+
+# ATAM library (compiled with C compiler optimisation Off)
+-s 0x800829CA=SDDriver_readMbr
+-s 0x80082564=SDDriver_dettach(R4 [IN half;OUT err])
+-s 0x8008265A=SDDriver_attach(R4 [IN half;OUT err], R5 [IN ptr_ptrDevInfo])
+-s 0x80082716=SDDriver_getSectorSizeOs(R4 [IN pDevInfo], R5 [IN ptr_bytePartitionType], R5 [IN ptr_SectorSize])
+-s 0x80082758=SDDriver_bread(R4 [IN ptr_ptrDevInfo; OUT err], R5 [IN startBlock], R6 [IN count], R7 [IN buf])
+-s 0x80082840=SDDriver_bwrite(R4 [IN ptr_ptrDevInfo; OUT err], R5 [IN startBlock], R6 [IN count], R7 [IN buf])
+-s 0x8008422C=SDDriver_interruptHandler()
+-s 0x800848C8=SDDriver_breadAbs(R4 [IN startBlock; OUT err], R5 [IN count], R6 [IN buf], R7 [IN ptr] /*, IN ptr_byte*/)
+-s 0x80084984=SDDriver_bwriteAbs(R4 [IN startBlock; OUT err], R5 [IN count], R6 [IN buf], R7 [IN ptr] /*, IN ptr_byte*/)
+-s 0x80084A52=SDDriver_getTimeMs(R4 [OUT time_in_ms])
+-s 0x80084A64=SDDriver_checkTimeout(R4 [IN halfIntervalMs; OUT expired],R5 [IN startTimeMs], R6 [IN numRetrys])
+-s 0x800878CE=SDHost_readWord(R4 [IN ptr;OUT word])
+-s 0x800878E4=SDHost_writeWord(R4 [IN ptr], R5 [IN word])
+-s 0x800878F8=SDHost_AndWord(R4 [IN ptr], R5 [IN ANDword])
+-s 0x80087912=SDHost_OrWord(R4 [IN ptr], R5 [IN ORword])
+-s 0x80087C3E=SDHost_DisableClock()
+
+-s 0x8008B698=FAT16_IO_struct_setup
+-s 0x8008B83A=FAT32_IO_struct_setup
+-s 0x80082246=FSMedia_CreateDevices()
+-s 0x80082282=_FSMedia_CreateDeviceStructure(R4 [IN ptrDeviceStruct])
+-s 0x800824CC=FSMedia_GetDeviceStructure(R4 [IN devicename; OUT err], R5 [IN ptr_ptrDevice])
+-s 0x800823F0=FSMedia_Attach(R4 [IN devicename; OUT err], R5 [IN ptr_ptrFuncnames], R6 [IN ptr_ptrDevInfo])
+-s 0x8008246E=FSMedia_Dettach(R4 [IN devicename; OUT err], R5 [IN param2])
+
+# MDF library
+-s 0x8008A18C=FS_startMDF()
+-s 0x8008A206=FS_endMDF()
+-s 0x8008BF76=FS_initDrv(R4 [IN drivename; OUT err], R5 [IN ptrFuncnames], R6 [IN ptrDevInfo])
+-s 0x8008C058=FS_endDrv(R4 [IN drivename; OUT err])
+-s 0x8008C182=_FS_DriveName(R4 [IN path; OUT err], R5 [IN for_drivename], R6 [IN ptr_ptr_rest_path])
+-s 0x8008C13E=_FS_getDriveIdx(R4 [IN drivename; OUT positiveIdx])
+# first function call in FS_readdir
+-s 0x80089c6e=_FS_getDirCBPtr(R4 [IN dirnumHI; OUT err], R5 [IN dirnumLO], R6 [IN ptr_dirPtr])
+# first function call in FS_read
+-s 0x800889BE=_FS_getFileCBPtr(R4 [IN filenumHI; OUT err], R5 [IN filenumLO], R6 [IN ptr_filePtr])
+
+-s 0x80089D64=FS_opendir(R4 [IN path; OUT err], R5 [IN ptr_dirnum])
+-s 0x80089FB0=FS_readdir(R4 [IN dirnum; OUT err], R5 [IN ptr_fsdirent])
+-s 0x8008A128=FS_closedir(R4 [IN dirnum; OUT err])
+-s 0x800895C0=FS_open(R4 [IN name;OUT filenum], R5 [IN mode], R6 [IN amode])
+-s 0x800896CA=FS_read(R4 [IN filenum;OUT err], R5 [IN buf], R6 [IN count], R7 [IN ptr_gotCount])
+-s 0x80089776=FS_close(R4 [IN filenum; OUT err])
+-s 0x80089818=FS_lseek(R4 [IN filenum; OUT pos], R5 [In offset], R6 [IN 0_set_1_current_2_end])
+-s 0x80089B3C=FS_mkdir(R4 [IN dirname;OUT err])
+-s 0x80089974=FAT_getVolLabel(R4 [IN drivename;OUT err], R5 [IN labelString12byte])
+-s 0x80089B3C=FS_getAttribute(R4 [IN filename;OUT err_or_byteAmode])
+-s 0x80089BC6=FS_getFreeSpace(R4 [IN drivename;OUT err], R5 [IN ptrClusterSize], R6 [IN ptrTotalClusters], R7 [IN ptrFreeClusters])
+
+#
+-s 0x8008000C=tblTaskData
+-s 0x80096330=pCurrentTCB
+
+-s 0x80800000=firmwareImage
+
+-j 0x80083900=@(0x8008C9A8+4*4)
+-j 0x80083870=@(0x8008C9B8+5*4)
+
+# ATAM struct(0x80200004) function +0x8 (open SDHost)
+-j 0x80082446=0x8008265A
+# ATAM struct(0x80200004) function +0x4 (close SDHost)
+-j 0x800824B4=0x80082564
+
+-s 0x80012345=_F(R4 [IN filenum; OUT pos], R5 [In offset])
