@@ -2604,7 +2604,7 @@
 -s 0x0012E0DC=start_task_x1C
 -s 0x0012E0E8=Tsk1CUSBMain
 -s 0x0012E828=task1C_timer_200ms
--s 0x0012E84E=DetectUSBVbusLow(R4 [OUT isLow])
+-s 0x0012E84E=DetectUSBVbusHigh(R4 [OUT bool])
 -s 0x0012E88E=tsk1C_waitlist_setup
 -s 0x0012E8AA=tsk1C_waitlist_timecheck
 -s 0x0012E944=tsk1C_waitlist_add(R4 [IN funcPtr], R5 [IN timeInterval])
@@ -3978,7 +3978,7 @@
 -s 0x001C11E6=Lang_xx03
 -s 0x001C1264=Lang_xx02
 -s 0x001C12F6=Lang_xx01
--s 0x001C1374=draw_symbol
+-s 0x001C1374=drawString(R4 [IN param1], R5 [IN x], R6 [IN y], R7 [IN msgID] /* , word */)
 -s 0x001C13FE=draw_symbol_2
 -s 0x001C1690=Draw_sth14
 -s 0x001C1854=call_get_txt
@@ -6580,7 +6580,7 @@
 -s 0x003176E2=set_3176E2
 -s 0x003176F8=get_3176F8
 -s 0x00317704=set_317704
--s 0x0031771A=get_31771A
+-s 0x0031771A=isUsbActive
 -s 0x00317728=set_s0B_f1_x20
 -s 0x0031773E=get_s0B_f1_x20
 -s 0x0031774C=setNoCardRecord
@@ -6887,7 +6887,7 @@
 -s 0x003226D8=ExpoFlashCompPics
 -s 0x003227EE=Display_Popup_or_Error
 -s 0x00322816=Display_Error
--s 0x003229DE=renderInfoSDcardStatus
+-s 0x003229DE=renderInfoScreenErrorString
 -s 0x0032351A=get_displaying_icon
 -s 0x0032363E=renderInfoReleaseMode
 -s 0x003236A0=ReleaseModeMenu_xx2
@@ -6902,8 +6902,8 @@
 -s 0x00324A96=render_icon_i
 -s 0x00324BF6=render_shooting_mode_icon
 -s 0x00325772=Tsk2B_Action03_LiveView
--s 0x00325AF2=Liveview_action00_body
--s 0x00326C48=Liveview_action01_body
+-s 0x00325AF2=Tsk2B_action00_InfoScreen
+-s 0x00326C48=Tsk2B_action01_InfoScreenChangeSetting
 -s 0x00327510=RotateMenuIdx
 -s 0x00327550=MainUI_CanChangeSetting
 -s 0x00327A88=set_stru_8F965166_0x0080
