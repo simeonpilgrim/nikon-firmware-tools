@@ -7,7 +7,7 @@ public class NopDecoder {
 
     private static void usage() {
         System.out.println("Usage : " + NopDecoder.class.getName() + " <infile> [<outfile>]");
-        System.exit(-1);
+        System.exit(1);
     }
 
     public static void main(String[] args) {

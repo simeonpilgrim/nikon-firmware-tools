@@ -8,7 +8,7 @@ import java.util.List;
 public class FirmwareEncoder {
     private static void usage() {
         System.out.println("Usage : " + FirmwareEncoder.class.getName() + " <infile1> [ <infile2> [...]] <outfile> ");
-        System.exit(-1);
+        System.exit(1);
     }
 
     public static void main(String[] args) {
