@@ -327,19 +327,13 @@ public class EmulatorUI extends JFrame implements ActionListener {
 
         initProgrammableTimerAnimationIcons(BUTTON_SIZE_SMALL);
 
-        // Using System L&F allows transparent window icon in the title bar on Windows, but causes a Sort exception in JDK 1.7 because of stricter sort - see http://www.java.net/node/700601
-        // Use old less strict sort to avoid the Exception
-        // Works, but ugly
-        //System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-        //UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        // Tried to set Nimbus L&F to be able to reduce component size. Not successful till now.
-//        for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-//            if ("Nimbus".equals(info.getName())) {
-//                UIManager.setLookAndFeel(info.getClassName());
-//                break;
-//            }
-//        }
+        // a lot of calls are made from GUI in AWT thread that exits fast with no error code
+        Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+            public void uncaughtException(Thread t, Throwable e) {
+                e.printStackTrace();
+                System.exit(1);
+            }
+        });
 
         //Schedule a job for the event-dispatching thread:
         //creating and showing this application's GUI.
