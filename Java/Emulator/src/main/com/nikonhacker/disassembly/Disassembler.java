@@ -574,7 +574,7 @@ public abstract class Disassembler {
         if (inputFileName == null && memory == null) {
             log(getClass().getSimpleName() + ": no input file\n");
             usage();
-            System.exit(-1);
+            System.exit(1);
         }
 
         openOutput(0, false, "asm");
@@ -595,7 +595,7 @@ public abstract class Disassembler {
     protected void execute(String[] args) throws ParsingException, IOException, DisassemblyException {
         if (args.length == 0) {
             usage();
-            System.exit(-1);
+            System.exit(1);
         }
         if (!processOptions(args))
             throw new ParsingException("Incorrect options");

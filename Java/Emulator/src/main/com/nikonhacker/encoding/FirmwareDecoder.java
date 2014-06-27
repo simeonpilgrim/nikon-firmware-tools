@@ -7,7 +7,7 @@ public class FirmwareDecoder {
 
     private static void usage() {
         System.out.println("Usage : " + FirmwareDecoder.class.getName() + " <infile> [<destdir>] ");
-        System.exit(-1);
+        System.exit(1);
     }
 
     public static void main(String[] args) {

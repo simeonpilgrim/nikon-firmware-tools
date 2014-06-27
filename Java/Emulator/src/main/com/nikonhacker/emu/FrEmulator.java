@@ -176,7 +176,7 @@ public class FrEmulator extends Emulator {
         if (args.length < 2) {
             System.err.println("Usage Emulator <file> <initialPc>");
             System.err.println(" e.g. Emulator fw.bin 0x40000");
-            System.exit(-1);
+            System.exit(1);
         }
         int initialPc = Format.parseUnsigned(args[1]);
 
