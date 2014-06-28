@@ -106,7 +106,7 @@ public class MasterClock implements Runnable {
         // Determine least common multiple of all frequencies
         long leastCommonMultipleFrequency = 1;
         int maxUnpreciseFrequency = 1;
-        
+
         // Precompute all frequencies
         Map<ClockableEntry,Integer> entryFrequencies = new HashMap<>();
 
@@ -154,13 +154,13 @@ public class MasterClock implements Runnable {
             }
         }
         // TODO
-        // coderat: Problem fixed for serial port transfer time at low baudrates (96 KBps or 9600 Bps) - they are ignored during 
+        // coderat: Problem fixed for serial port transfer time at low baudrates (96 KBps or 9600 Bps) - they are ignored during
         // calculations by setting isPrecise=false
         //
-        // BUT in general cases with two different Clockables with extremly low frequency and extremly high frequency 
+        // BUT in general cases with two different Clockables with extremly low frequency and extremly high frequency
         // still exist, yielding huge treshholds and Emulator runing slow or virtually hanging.
         if (leastCommonCounterThreshold>20000)
-            System.out.println("Warning: MasterClock calculations will take too long("+ leastCommonCounterThreshold +"), because frequencies are very different");
+            System.out.println("WARNING: MasterClock calculations take too long("+ leastCommonCounterThreshold +"), because frequencies are very different. Some timers will be unprecise !!!");
 
         masterClockTickDurationPs = PS_PER_SEC/leastCommonMultipleFrequency;
 
@@ -226,83 +226,6 @@ public class MasterClock implements Runnable {
             running = true;
             new Thread(this).start();
         }
-    }
-
-    /**
-     * This is the way to run the clock synchronously. Normally only called internally.
-     * Use start() instead to start the clock.
-     * Note: this is the non-optimized version that goes through each step and and each entry
-     */
-    public void oldrun() {
-        ClockableEntry entryToDisable = null;
-        // Infinite loop
-        while (running) {
-            if (rescheduleRequested) {
-                prepareSchedule();
-            }
-            // At each loop turn, check to see if an entry has reached its counter threshold
-            for (ClockableEntry currentEntry : entries) {
-                // Increment its counter
-                currentEntry.counterValue++;
-                if (currentEntry.counterValue >= currentEntry.counterThreshold) {
-                    // Threshold reached for this entry
-                    // Reset Counter
-                    currentEntry.counterValue = 0;
-                    if (currentEntry.enabled && !currentEntry.isFrequencyZero) {
-                        // If it's enabled. Call its onClockTick() method
-                        try {
-                            Object result = currentEntry.clockable.onClockTick();
-                            if (result != null) {
-                                // A non-null result means this entry shouldn't run anymore
-                                entryToDisable = currentEntry;
-                                // Warn the callback method
-                                if (currentEntry.clockableCallbackHandler != null) {
-                                    currentEntry.clockableCallbackHandler.onNormalExit(result);
-                                }
-                            }
-                        }
-                        catch (Exception e) {
-                            // In case of exception this entry shouldn't run anymore
-                            entryToDisable = currentEntry;
-                            // Warn the callback method
-                            if (currentEntry.clockableCallbackHandler != null) {
-                                currentEntry.clockableCallbackHandler.onException(e);
-                            }
-                        }
-
-                        if (entryToDisable != null) {
-                            disableEntry(entryToDisable);
-
-                            // Check if all entries are disabled
-                            if (allEntriesDisabled()) {
-                                // All entries are now disabled. Stop clock
-                                running = false;
-                                break;
-                            }
-
-                            // Clear entryToDisable
-                            entryToDisable = null;
-                        }
-                    }
-                }
-            }
-            // Increment elapsed time
-            totalElapsedTimePs += masterClockTickDurationPs;
-        }
-
-        // If we got here, one entry was just disabled and caused the clock to stop.
-        // Before we exit, let's rotate the list so that when the clock restarts, it resumes exactly where it left off
-        // To do so, the entry we just run will be rotated to the end
-        while (entries.get(entries.size() - 1) != entryToDisable) Collections.rotate(entries, 1);
-
-//        System.err.println("MasterClock reordered:");
-//        for (ClockableEntry entry : entries) {
-//            System.err.println("  " + (entry.enabled ? "ON: " : "OFF:") + entry.clockable.toString() + " every " + entry.counterThreshold + " ticks");
-//        }
-//        System.err.println("---------------------------------------");
-
-
-        //System.err.println("Clock is stopped\r\n=======================================================");
     }
 
     /**
