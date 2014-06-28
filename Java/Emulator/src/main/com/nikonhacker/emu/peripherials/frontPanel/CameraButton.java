@@ -2,6 +2,7 @@ package com.nikonhacker.emu.peripherials.frontPanel;
 
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
+import com.nikonhacker.emu.peripherials.ioPort.util.PulledOutputPin;
 
 /**
  * This is the model for a camera button. This has nothing to do with UI
@@ -61,7 +62,7 @@ public class CameraButton {
 
         // Create pins, initialized according to stored state
         for (int i = 0; i < numberPins; i++) {
-            buttonPins[i] = new ButtonOutputPin(key + " button" + (numberPins==1?"":(" pin"+i)), statePinValues[i][state]);
+            buttonPins[i] = new PulledOutputPin(key + " button" + (numberPins==1?"":(" pin"+i)), statePinValues[i][state]);
         }
     }
 
