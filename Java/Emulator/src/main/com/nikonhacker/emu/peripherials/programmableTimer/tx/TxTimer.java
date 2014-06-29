@@ -438,6 +438,18 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
         if (operate) {
             boolean interruptCondition = false;
             currentValue++;
+
+            // coderat: always check overflow first, because value could be invalid (17-bit)
+            // Detect overflow at 16bit
+            if (currentValue > MAX_COUNTER_VALUE) {
+                // overflow
+                tbst |= TBST_INTTB0Fn_MASK;
+                if (!isTbimTbim0fnSet()) {
+                    interruptCondition = true;
+                }
+                currentValue = 0;
+            }
+
             // Comparator 0
             if (currentValue == tbrg0) {
                 // CP0 matches
@@ -477,15 +489,6 @@ public class TxTimer extends ProgrammableTimer implements CpuPowerModeChangeList
                 }
             }
 
-            // Detect overflow at 16bit
-            if (currentValue > MAX_COUNTER_VALUE) {
-                // overflow
-                tbst |= TBST_INTTB0Fn_MASK;
-                if (!isTbimTbim0fnSet()) {
-                    interruptCondition = true;
-                }
-                currentValue = 0;
-            }
             if (interruptCondition) {
                 platform.getInterruptController().request(getInterruptNumber());
             }
