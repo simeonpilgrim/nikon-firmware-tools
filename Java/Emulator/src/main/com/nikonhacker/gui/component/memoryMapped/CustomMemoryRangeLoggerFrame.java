@@ -74,17 +74,21 @@ public class CustomMemoryRangeLoggerFrame extends DocumentFrame {
         ActionListener actionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int minAddress = Format.parseIntHexField(minAddressField);
-                int maxAddress = Format.parseIntHexField(maxAddressField);
-                MemoryActivityListener listener = listeners.get(minAddressField);
-                if (listener != null) {
-                    memory.removeActivityListener(listener);
-                    textArea.getPrintWriter().println("Stopping previous listener");
+                try {
+                    int minAddress = Format.parseIntHexField(minAddressField);
+                    int maxAddress = Format.parseIntHexField(maxAddressField);
+                    MemoryActivityListener listener = listeners.get(minAddressField);
+                    if (listener != null) {
+                        memory.removeActivityListener(listener);
+                        textArea.getPrintWriter().println("Stopping previous listener");
+                    }
+                    listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSources, ui.getFramework().getMasterClock());
+                    memory.addActivityListener(listener);
+                    listeners.put(minAddressField, listener);
+                    textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
+                } catch (NumberFormatException excp) {
+                    // do nothing, field is now red
                 }
-                listener = new RangeAccessLoggerActivityListener(textArea.getPrintWriter(), minAddress, maxAddress, cpuState, selectedAccessSources, ui.getFramework().getMasterClock());
-                memory.addActivityListener(listener);
-                listeners.put(minAddressField, listener);
-                textArea.getPrintWriter().println("Starting listener for " + Constants.CHIP_LABEL[chip] + " range 0x" + Format.asHex(minAddress, 8) + " - 0x" + Format.asHex(maxAddress, 8));
             }
         };
 
