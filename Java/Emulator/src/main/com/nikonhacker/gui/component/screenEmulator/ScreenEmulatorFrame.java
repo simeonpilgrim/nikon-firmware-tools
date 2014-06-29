@@ -30,7 +30,6 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
     private ScreenEmulatorComponent screenEmulator;
     private boolean poweredOn;
-    private final String titleBase;
 
     public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yAddr, int cbAddr, int crAddr, int screenWidth, int screenHeight, int refreshInterval) {
         super(title + " - backlight:OFF", imageName, resizable, closable, maximizable, iconifiable, chip, ui);
@@ -41,7 +40,6 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         this.screenHeight = screenHeight;
         this.yuvAlign = screenWidth;
         this.lcd = lcd;
-        this.titleBase = title;
 
         JPanel selectionPanel = new JPanel();
         selectionPanel.add(new JLabel("Y = 0x"));
@@ -173,10 +171,10 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
                 if (poweredOn!=lcd.isPoweredOn()) {
                     poweredOn = lcd.isPoweredOn();
-                    if (poweredOn)
-                        setTitle(titleBase + " - backlight:ON");
-                    else
-                        setTitle(titleBase + " - backlight:OFF");
+
+                    final String title = getTitle();
+                    final int pos = title.indexOf('-');
+                    setTitle((pos>0 ? title.substring(0,pos-1): title) + (poweredOn ? " - backlight:ON" : " - backlight:OFF"));
                 }
             }
         }
