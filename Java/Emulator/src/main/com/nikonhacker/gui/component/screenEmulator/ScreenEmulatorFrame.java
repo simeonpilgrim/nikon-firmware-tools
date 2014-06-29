@@ -29,9 +29,11 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
     private       Timer      refreshTimer;
     private final JTextField yAddressField, uAddressField, vAddressField, widthField, heightField, yuvAlignField;
     private ScreenEmulatorComponent screenEmulator;
+    private boolean poweredOn;
+    private final String titleBase;
 
     public ScreenEmulatorFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, FrLcd lcd, int yAddr, int cbAddr, int crAddr, int screenWidth, int screenHeight, int refreshInterval) {
-        super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
+        super(title + " - backlight:OFF", imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.yAddr = yAddr;
         this.cbAddr = cbAddr;
         this.crAddr = crAddr;
@@ -39,6 +41,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         this.screenHeight = screenHeight;
         this.yuvAlign = screenWidth;
         this.lcd = lcd;
+        this.titleBase = title;
 
         JPanel selectionPanel = new JPanel();
         selectionPanel.add(new JLabel("Y = 0x"));
@@ -75,7 +78,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         contentPanel.add(selectionPanel, BorderLayout.NORTH);
         screenEmulator = new ScreenEmulatorComponent();
         contentPanel.add(new JScrollPane(screenEmulator, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), BorderLayout.CENTER);
-        
+
         getContentPane().add(contentPanel);
 
         setPreferredSize(new Dimension(screenWidth, 600));
@@ -99,7 +102,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
 
     public void actionPerformed(ActionEvent e) {
         int width,align;
-        
+
         this.yAddr = Format.parseIntHexField(yAddressField);
         this.cbAddr = Format.parseIntHexField(uAddressField);
         this.crAddr = Format.parseIntHexField(vAddressField);
@@ -138,7 +141,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
         // This method is called whenever the contents needs to be painted
         public void paintComponent(Graphics graphics) {
             Graphics2D g2d = (Graphics2D) graphics;
-            
+
             if (img!=null) {
                 if (img.getWidth()!=screenWidth || img.getHeight()!=screenHeight || yuvAlign != previousYuvAlign) {
                     img.flush();
@@ -152,7 +155,7 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                 // Get size of JScrollPane
                 int w = getParent().getWidth();
                 int h = getParent().getHeight();
-    
+
                 // Create the resizing transform upon first call or resize
                 if (resizeTransform == null || previousW != w || previousH != h) {
                     resizeTransform = new AffineTransform();
@@ -163,24 +166,21 @@ public class ScreenEmulatorFrame extends DocumentFrame implements ActionListener
                     previousW = w;
                     previousH = h;
                 }
-    
+
                 lcd.updateImage(img, yAddr, cbAddr, crAddr, yuvAlign);
 
                 g2d.drawImage(img, resizeTransform, null);
 
-                // Overlay "off" if powered off
-                if (!lcd.isPoweredOn()) {
-                    String s = "OFF";
-                    g2d.setFont(new Font("Arial", Font.PLAIN, 50));
-                    g2d.setColor(Color.gray);
-                    // Center using actual width horizontally, and max char height vertically
-                    double x = (screenWidth * currentScale - g2d.getFontMetrics().getStringBounds(s, g2d).getWidth()) / 2;
-                    double y = (screenHeight * currentScale + g2d.getFontMetrics().getMaxAscent()) / 2;
-                    g2d.drawString(s, (int) x, (int) (y));
+                if (poweredOn!=lcd.isPoweredOn()) {
+                    poweredOn = lcd.isPoweredOn();
+                    if (poweredOn)
+                        setTitle(titleBase + " - backlight:ON");
+                    else
+                        setTitle(titleBase + " - backlight:OFF");
                 }
             }
         }
-        
+
         @Override
         public String getToolTipText(MouseEvent event) {
             Point mousePos = getMousePosition();
