@@ -297,11 +297,11 @@ public class EmulationFramework {
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
-                    serialInterfaces[i] = new TxSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip), prefs);
+                    serialInterfaces[i] = new TxSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
                 }
                 // Hi-speed
                 for (int i = 0; i < TxIoListener.NUM_HSERIAL_IF; i++) {
-                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip), prefs);
+                    serialInterfaces[TxIoListener.NUM_SERIAL_IF + i] = new TxHSerialInterface(i, platform[chip], prefs.isLogSerialMessages(chip));
                 }
 
                 ((TxCPUState) cpuState).setInterruptController((TxInterruptController) interruptController);
@@ -754,7 +754,6 @@ public class EmulationFramework {
 
         // Don't store prefs via XStream
         xStream.omitField(EmulationFramework.class, "prefs");
-        xStream.omitField(TxSerialInterface.class, "prefs");
         xStream.omitField(TxDmaController.class, "prefs");
         xStream.omitField(TxAdPrefsValueProvider.class, "prefs");
 
@@ -834,8 +833,8 @@ public class EmulationFramework {
 
                 /* Relink prefs */
                 framework.setPrefs(prefs);
-                // TODO: prefs should be removed from TxSerialHandler once it is fixed
                 // TODO: prefs should be removed from TxDMAController or injected here
+                // TODO: prefs inject to TxAdPrefsValueProvider
 
                 /* TODO: should relink callback handler */
             }

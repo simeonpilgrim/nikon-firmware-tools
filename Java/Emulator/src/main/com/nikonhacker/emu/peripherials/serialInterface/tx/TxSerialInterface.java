@@ -2,7 +2,6 @@ package com.nikonhacker.emu.peripherials.serialInterface.tx;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
-import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.Clockable;
 import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
@@ -113,8 +112,8 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     protected int rst; // Receive FIFO status register
     protected int tst = TST_TUR_MASK; // Transmit FIFO status register
     protected int   fcnf; // FIFO configuration register
-    
-    /*   Interrupt_handler_INTTBF takes in emu 2.40 sometimes 1201 TX instructions. 
+
+    /*   Interrupt_handler_INTTBF takes in emu 2.40 sometimes 1201 TX instructions.
          If serial communication starts immediately after setting TXE=1 and such INTTBF happens just
          before setting RXE=1 then communication will break, because received bytes will be lost:
 
@@ -125,10 +124,10 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
          So we expect it to be undocumented behaviour of FullDuplex communication:
          - transmission with TX19 as master in this case starts only after both RX and TX are enabled
-         
+
          This will be used always until one knows better.
      */
-    public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages, Prefs prefs) {
+    public TxSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
         super(serialInterfaceNumber, platform, logSerialMessages);
     }
 
@@ -971,7 +970,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         char stopBits = '-';
         char parity = '-';
         boolean flowCtrl = false;
-        
+
         if (modeUART) {
             stopBits = ((mod2&MOD2_STOP_MASK)!=0 ? '2':'1');
             if ((cr&CR_ENABLE_PARITY_MASK)==0) {
@@ -992,7 +991,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
             default:
                 baudStr = "" + baud; break;
         }
-        return (modeUART ? "UART " : "I/O ") + baudStr + ", " + getNumBits() + ", " + stopBits + 
+        return (modeUART ? "UART " : "I/O ") + baudStr + ", " + getNumBits() + ", " + stopBits +
                 (flowCtrl ? ", CTS":", -")+ ", " + parity + ((mod2 & MOD2_ENDIAN_MASK)!=0 ? ", MSB":", LSB");
     }
 
@@ -1018,7 +1017,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
         bitNumberBeingTransferred++;
         if (bitNumberBeingTransferred == getNumBits() + getIntervalTimeInSclk() /* TODO + start/stop/parity if UART */) {
             bitNumberBeingTransferred = 0;
-            
+
             if (getMod1Fdpx()==MOD1_FDPX_RX_MASK) {
                 // half-duplex receive (clock master)
                 if (isEnSet() && isMod0RxeSet()) {
