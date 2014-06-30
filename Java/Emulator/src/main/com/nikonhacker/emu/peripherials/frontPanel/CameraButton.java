@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.peripherials.frontPanel;
 
-import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 import com.nikonhacker.emu.peripherials.ioPort.util.PulledOutputPin;
 
@@ -14,8 +13,8 @@ public class CameraButton {
 
     private Pin[]   buttonPins;
     private int[][] statePinValues;
-    private Prefs   prefs;
     private int     state;
+    private FrontPanel frontPanel;
 
     /**
      * Creates a new CameraButton that can be in 'n' distinct states.
@@ -26,7 +25,7 @@ public class CameraButton {
      * @param statePinValues an array[p][n] of values that each pin should be returned for to each state
      * @param prefs the preference object to load/store values
      */
-    public CameraButton(String key, String[][] imageSuffixes, boolean isLeftClickTemp, int[][] statePinValues, Prefs prefs) {
+    public CameraButton(String key, String[][] imageSuffixes, boolean isLeftClickTemp, int[][] statePinValues, FrontPanel frontPanel, int initState) {
         // Sanity check on arrays
         int numberPins = statePinValues.length;
         int numberStates = statePinValues[0].length;
@@ -48,17 +47,11 @@ public class CameraButton {
         this.imageSuffixes = imageSuffixes;
         this.isLeftClickTemp = isLeftClickTemp;
         this.statePinValues = statePinValues;
-        this.prefs = prefs;
+        this.frontPanel = frontPanel;
         this.buttonPins = new Pin[numberPins];
 
         // Initialize state according to last stored state
-        Integer storedState = prefs.getButtonState(key);
-        if (storedState == null) {
-            state = 0;
-        }
-        else {
-            state = storedState;
-        }
+        state = initState;
 
         // Create pins, initialized according to stored state
         for (int i = 0; i < numberPins; i++) {
@@ -88,7 +81,7 @@ public class CameraButton {
 
     public void setState(int state) {
         this.state = state;
-        prefs.setButtonState(key, state);
+        frontPanel.storeButtonState(key, state);
         for (int pinNumber = 0; pinNumber < statePinValues.length; pinNumber++) {
             buttonPins[pinNumber].setOutputValue(statePinValues[pinNumber][state]);
         }
