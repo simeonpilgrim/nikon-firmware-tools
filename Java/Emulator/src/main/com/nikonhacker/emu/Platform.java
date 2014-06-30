@@ -13,6 +13,7 @@ import com.nikonhacker.emu.peripherials.imageTransferCircuit.ImageTransferCircui
 import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.jpegCodec.JpegCodec;
 import com.nikonhacker.emu.peripherials.lcd.Lcd;
+import com.nikonhacker.emu.peripherials.mirrorBox.MirrorBox;
 import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
@@ -52,6 +53,7 @@ public class Platform {
     private ImageTransferCircuit   imageTransferCircuit;
     private Lcd                    lcd;
     private SdController[]         sdController;
+    private MirrorBox              mirrorBox;
 
     private List<SerialDevice> serialDevices;
 
@@ -215,4 +217,11 @@ public class Platform {
         this.sdController = sdController;
     }
 
+    public MirrorBox getMirrorBox() {
+        return mirrorBox;
+    }
+
+    public void setMirrorBox(MirrorBox mirrorBox) {
+        this.mirrorBox = mirrorBox;
+    }
 }
