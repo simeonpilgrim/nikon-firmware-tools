@@ -40,6 +40,7 @@ import com.nikonhacker.emu.peripherials.keyCircuit.KeyCircuit;
 import com.nikonhacker.emu.peripherials.keyCircuit.tx.TxKeyCircuit;
 import com.nikonhacker.emu.peripherials.lcd.Lcd;
 import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
+import com.nikonhacker.emu.peripherials.mirrorBox.MirrorBox;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer;
 import com.nikonhacker.emu.peripherials.programmableTimer.fr.FrReloadTimer32;
@@ -203,6 +204,7 @@ public class EmulationFramework {
             ImageTransferCircuit imageTransferCircuit = null;
             Lcd lcd = null;
             SdController[] sdController = null;
+            MirrorBox mirrorBox = null;
 
             if (chip == Constants.CHIP_FR) {
                 cpuState = new FrCPUState();
@@ -356,6 +358,8 @@ public class EmulationFramework {
                 serialDevices.add(nhhs2);
                 serialDevices.add(fMountCircuit);
 
+                mirrorBox = new MirrorBox(platform[chip]);
+
                 // Perform connection
                 connectTxHsc2SerialDevices(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 2], eeprom, lcdDriver, ioPorts);
                 connectTxHsc1SerialDevice(serialInterfaces[TxIoListener.NUM_SERIAL_IF + 1], nhhs2);
@@ -368,6 +372,8 @@ public class EmulationFramework {
                 frontPanel = new D5100FrontPanel(prefs);
 
                 connectFrontPanel(frontPanel, ioPorts);
+
+                connectMirrorBox(mirrorBox, ioPorts);
             }
 
             // Set up input port overrides according to prefs
@@ -413,6 +419,7 @@ public class EmulationFramework {
             platform[chip].setImageTransferCircuit(imageTransferCircuit);
             platform[chip].setLcd(lcd);
             platform[chip].setSdController(sdController);
+            platform[chip].setMirrorBox(mirrorBox);
 
             clockGenerator.setPlatform(platform[chip]);
 
@@ -578,6 +585,14 @@ public class EmulationFramework {
         Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(7), fMountCircuit.getToTXPin());
     }
 
+    private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {
+        Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(5), mirrorBox.getWiperPin(0));
+        Pin.interconnect(txIoPorts[IoPort.PORT_H].getPin(0), mirrorBox.getWiperPin(1));
+        Pin.interconnect(txIoPorts[IoPort.PORT_H].getPin(1), mirrorBox.getWiperPin(2));
+
+        Pin.interconnect(txIoPorts[IoPort.PORT_6].getPin(3), mirrorBox.getMovePin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_1].getPin(1), mirrorBox.getDirPin());
+    }
     /**
      * Connect Tx serial interface HSC2 with the eeprom and the lcd driver via a SPI bus
      *
