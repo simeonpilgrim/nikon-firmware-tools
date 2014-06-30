@@ -55,7 +55,8 @@ public class FrontPanel {
      * @param statePinValues an array[p][n] of pin values, indicating for each pin, the value it should be in for each state. p is the number of pins to drive. n is the number of states the button can be in.
      */
     protected void addCameraButton(String key, String[][] imageSuffixes, boolean isLeftClickTemp, int[][] statePinValues) {
-        buttons.put(key, new CameraButton(key, imageSuffixes, isLeftClickTemp, statePinValues, prefs));
+        final Integer state = prefs.getButtonState(key);
+        buttons.put(key, new CameraButton(key, imageSuffixes, isLeftClickTemp, statePinValues, this, (state==null ? 0 : state)));
     }
 
     protected void addCameraLed(String key, String[][] imageSuffixes) {
@@ -71,5 +72,11 @@ public class FrontPanel {
 
     public CameraLed getLed(String key) {
         return led;
+    }
+
+    public final void storeButtonState(String key, int state) {
+        // in mode "Load State" there will be nothing saved
+        if (prefs!=null)
+            prefs.setButtonState(key, state);
     }
 }

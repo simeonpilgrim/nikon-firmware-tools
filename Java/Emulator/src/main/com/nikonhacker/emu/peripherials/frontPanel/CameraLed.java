@@ -1,6 +1,5 @@
 package com.nikonhacker.emu.peripherials.frontPanel;
 
-import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
 
 public class CameraLed {
