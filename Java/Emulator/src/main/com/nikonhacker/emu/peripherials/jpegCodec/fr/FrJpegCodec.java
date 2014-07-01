@@ -17,7 +17,7 @@ import javax.imageio.stream.ImageInputStream;
 /*
     Usecase: decode JPEG to YCbCr422
 
-General init:    
+General init:
 0x0000     written to 0x4003040A               (@0x0010182C)
 0x0000     written to 0x4013040A               (@0x00101834)
 0x0000     written to 0x40030F00               (@0x001019F6)
@@ -108,11 +108,11 @@ WaitForEventFlag
 class DebuggableMemoryInputStream extends java.io.InputStream {
     private DebuggableMemory memory;
     private int size,addr;
-    
+
     protected int pos = 0;
     protected int mark = 0;
-    
-    DebuggableMemoryInputStream(int addr, int size,DebuggableMemory memory) {
+
+    DebuggableMemoryInputStream(int addr, int size, DebuggableMemory memory) {
         this.addr = addr;
         this.size = size;
         this.memory = memory;
@@ -121,7 +121,7 @@ class DebuggableMemoryInputStream extends java.io.InputStream {
     public synchronized int available()  {
         return size - pos;
     }
- 
+
     public synchronized int read() {
         if (pos>=size)
             return -1;
@@ -134,7 +134,7 @@ class DebuggableMemoryInputStream extends java.io.InputStream {
             return 0;
         return this.read(b,0,b.length);
     }
-    
+
     public synchronized int read(byte[] b, int off, int len) {
         // from oracle doc
         if (b == null) {
@@ -162,7 +162,7 @@ class DebuggableMemoryInputStream extends java.io.InputStream {
     public synchronized void reset() {
         pos = mark;
     }
-    
+
     public synchronized long skip(long n) {
         if (n<=0)
             return 0;
@@ -172,18 +172,18 @@ class DebuggableMemoryInputStream extends java.io.InputStream {
         pos += n;
         return n;
     }
-    
+
     public synchronized void mark(int readlimit) {
         mark = pos;
     }
-    
+
     public boolean markSupported() {
         return true;
     }
- 
+
     public void close() {
     }
-    
+
     public void rewind() {
         pos = mark = 0;
     }
@@ -192,35 +192,34 @@ class DebuggableMemoryInputStream extends java.io.InputStream {
 public class FrJpegCodec implements JpegCodec {
     private int codecNumber;
     private Platform platform;
-    
+
     private int addrJpeg, addrY, addrCb, addrCr;
 
     // number of 512B pages
     private int sizeJpeg;
-    
+
     private int widthY, widthCbCr;
     private int reg400,reg402;
-    
+
     private int command;
-    
-    private DebuggableMemoryInputStream stream = null;
+
     private BufferedImage image = null;
-    
+
     private int outputWidth, outputHeight;
     private byte interruptStatus, errorCode, reg000;
     private int transferInterruptStatus;
-    
+
     public FrJpegCodec(int codecNumber, Platform platform) {
         this.codecNumber = codecNumber;
         this.platform = platform;
     }
-    
+
     public void setSrcAddrJpeg(int value) {
         if ((value & 0xF)!=0)
             throw new RuntimeException("JpegCodec (" + codecNumber +"): JPEG buffer address is not aligned to 16");
         addrJpeg = value;
     }
-    
+
     public int getSrcAddrJpeg() {
         return addrJpeg;
     }
@@ -230,7 +229,7 @@ public class FrJpegCodec implements JpegCodec {
             throw new RuntimeException("JpegCodec (" + codecNumber +"): Y buffer address is not aligned to 16");
         addrY = value;
     }
-    
+
     public int getDstAddrY() {
         return addrY;
     }
@@ -240,7 +239,7 @@ public class FrJpegCodec implements JpegCodec {
             throw new RuntimeException("JpegCodec (" + codecNumber +"): U buffer address is not aligned to 16");
         addrCb = value;
     }
-    
+
     public int getDstAddrCb() {
         return addrCb;
     }
@@ -254,7 +253,7 @@ public class FrJpegCodec implements JpegCodec {
     public int getDstAddrCr() {
         return addrCr;
     }
-    
+
     public void setReg400(int value) {
         reg400 = value;
         // coderat: no idea why, but it resolves loop waiting for this
@@ -266,7 +265,7 @@ public class FrJpegCodec implements JpegCodec {
     public int getReg400() {
         return reg400;
     }
-    
+
     public void setReg402(int value) {
         // coderat: no idea why, but it resolves loop in interrupt
         if ((value&0x80)!=0 && command==0x2000) {
@@ -369,25 +368,25 @@ public class FrJpegCodec implements JpegCodec {
     public int getCommand() {
         return command;
     }
-    
+
     public byte getJPEGWidthHi() {
         if (image==null)
             return 0;
         return (byte)((image.getWidth()>>8)&0xFF);
     }
-    
+
     public byte getJPEGWidthLo() {
         if (image==null)
             return 0;
         return (byte)(image.getWidth()&0xFF);
     }
-    
+
     public byte getJPEGHeightHi() {
         if (image==null)
             return 0;
         return (byte)((image.getHeight()>>8)&0xFF);
     }
-    
+
     public byte getJPEGHeightLo() {
         if (image==null)
             return 0;
@@ -413,7 +412,7 @@ public class FrJpegCodec implements JpegCodec {
     public int getOutputHeight() {
         return outputHeight;
     }
-    
+
     public void setInterruptStatus (byte value) {
         interruptStatus &= value;
         if (interruptStatus==0 && transferInterruptStatus==0)
@@ -423,7 +422,7 @@ public class FrJpegCodec implements JpegCodec {
     public byte getInterruptStatus() {
         return interruptStatus;
     }
-    
+
     public void setTransferInterruptStatus (int value) {
         transferInterruptStatus &= (~value);
         if (interruptStatus==0 && transferInterruptStatus==0)
@@ -444,15 +443,15 @@ public class FrJpegCodec implements JpegCodec {
 
     public boolean loadImage() {
         /* Method 3 */
-        stream = new DebuggableMemoryInputStream(addrJpeg,sizeJpeg*512,platform.getMemory());
+        final DebuggableMemoryInputStream stream = new DebuggableMemoryInputStream(addrJpeg,sizeJpeg*512,platform.getMemory());
 
         // get only JPEG readers: we do not want to read other image types!
         Iterator<ImageReader> readers = ImageIO.getImageReadersByFormatName("jpg");
-        
+
         if (readers.hasNext()) {
             try {
                 ImageInputStream iis = ImageIO.createImageInputStream(stream);
-    
+
                 // try each reader and find one
                 while (readers.hasNext()) {
                     ImageReader reader = readers.next();
@@ -497,7 +496,7 @@ public class FrJpegCodec implements JpegCodec {
      float used for better performance
      */
     private static final int getY(int r, int g, int b) {
-        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion 
+        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion
            seems to bring no difference.
 
            use canonical calculation formula here, because result is very close to original */
@@ -509,7 +508,7 @@ public class FrJpegCodec implements JpegCodec {
      float used for better performance
      */
     private static final int getCb2(int r1, int g1, int b1,int r2, int g2, int b2) {
-        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion 
+        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion
            seems to bring no difference.
 
            use canonical calculation formula here, because result is very close to original */
@@ -521,7 +520,7 @@ public class FrJpegCodec implements JpegCodec {
      float used for better performance
      */
     private static final int getCr2(int r1, int g1, int b1,int r2, int g2, int b2) {
-        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion 
+        /* NOTE: using original long coefficients from http://en.wikipedia.org/wiki/YCbCr#JPEG_conversion
            seems to bring no difference.
 
            use canonical calculation formula here, because result is very close to original */
@@ -530,7 +529,7 @@ public class FrJpegCodec implements JpegCodec {
 
     private boolean convertRgbToYCbCr422(BufferedImage image) {
         DebuggableMemory memory = platform.getMemory();
-        
+
         if (image==null)
             return false;
 
@@ -551,7 +550,7 @@ public class FrJpegCodec implements JpegCodec {
         int offsetY = addrY;
         int offsetCb = addrCb;
         int offsetCr = addrCr;
-        
+
         // create output data and obey alignment
         for (int pixel = 0; pixel < pixels.length; offsetY += addY, offsetCb += addCbCr, offsetCr += addCbCr) {
             for (int i=0; i< width; i+=2, pixel += 6, offsetY+=2) {
@@ -568,7 +567,7 @@ public class FrJpegCodec implements JpegCodec {
                 final int b2 = ((int)pixels[pixel+3] & 0xFF);
                 final int g2 = ((int)pixels[pixel+4] & 0xFF);
                 final int r2 = ((int)pixels[pixel+5] & 0xFF);
-    
+
                 // TODO optimize to use .storeBlock(), because can be up to 16Mpix
                 // coderat: no clamp is need here, because conversion formules RGB->YCbCr are already biased
                 memory.store16(offsetY, (getY(r1, g1, b1)<<8)|getY(r2, g2, b2), DebuggableMemory.AccessSource.IMGA);
