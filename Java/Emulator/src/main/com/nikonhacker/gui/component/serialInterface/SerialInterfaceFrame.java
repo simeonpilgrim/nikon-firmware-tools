@@ -14,6 +14,7 @@ import com.nikonhacker.gui.swing.VerticalLayout;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.swing.*;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -88,6 +89,13 @@ public class SerialInterfaceFrame extends DocumentFrame {
 
         // Add tab panel
         getContentPane().add(tabbedPane);
+    }
+
+    @Override
+    public void internalFrameClosing(InternalFrameEvent e) {
+        // coderat: only close when not runing
+        if (!ui.getFramework().isEmulatorPlaying(chip))
+            ui.frameClosing(this);
     }
 
     private void send(SerialInterface serialInterface, JTextArea txTextArea, int value) {

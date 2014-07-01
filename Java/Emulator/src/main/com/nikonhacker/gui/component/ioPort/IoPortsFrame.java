@@ -14,6 +14,7 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.InternalFrameEvent;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -137,6 +138,16 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
         tabbedPane.setSelectedIndex(ui.getPrefs().getIoPortsFrameSelectedTab(chip));
 
         getContentPane().add(tabbedPane);
+        for (IoPort ioPort : ioPorts) {
+            ioPort.addIoPortsListener(this);
+        }
+    }
+
+    @Override
+    public void internalFrameClosing(InternalFrameEvent e) {
+        // coderat: only close when not runing
+        if (!ui.getFramework().isEmulatorPlaying(chip))
+            ui.frameClosing(this);
     }
 
     private void addCommonLegend(JPanel panel) {
@@ -359,6 +370,9 @@ public class IoPortsFrame extends DocumentFrame implements IoPortConfigListener 
 
     @Override
     public void dispose() {
+        for (IoPort ioPort : ioPorts) {
+            ioPort.removeIoPortsListener(this);
+        }
         super.dispose();
 
         // Un-hook the loggers

@@ -5,6 +5,7 @@ import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 
 import javax.swing.*;
+import javax.swing.event.InternalFrameEvent;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +34,13 @@ public class GenericSerialFrame extends DocumentFrame {
 
         tabbedPane.setSelectedIndex(ui.getPrefs().getGenericSerialFrameSelectedTab(chip));
 
+    }
+
+    @Override
+    public void internalFrameClosing(InternalFrameEvent e) {
+        // coderat: only close when not runing
+        if (!ui.getFramework().isEmulatorPlaying(chip))
+            ui.frameClosing(this);
     }
 
     @Override
