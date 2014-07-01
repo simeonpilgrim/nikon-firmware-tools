@@ -138,8 +138,11 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                         }
 
                         final int selection = new ListSelectionDialog(null, "Found symbols:", listModel).showListSelectionDialog();
-                        if (selection!=-1)
-                            address = matchedSymbols.get(selection).getAddress();
+                        if (selection==-1) {
+                            // user canceled selection
+                            return;
+                        }
+                        address = matchedSymbols.get(selection).getAddress();
                     }
                 } else {
                     address = codeStructure.getAddressFromString(str);
@@ -149,7 +152,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
                 }
                 else {
                     targetField.setBackground(Color.WHITE);
-                    if (!exploreAddress(address,true)) {
+                    if (!exploreAddress(address, true)) {
                         JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found matching address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                     }
                 }
@@ -159,7 +162,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
         exploreButton.addActionListener(exploreExecutor);
         goToPcButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!exploreAddress(cpuState.pc,false)) {
+                if (!exploreAddress(cpuState.pc, false)) {
                     JOptionPane.showMessageDialog(SourceCodeFrame.this, "No function found at address 0x" + Format.asHex(cpuState.pc, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -233,7 +236,7 @@ public class SourceCodeFrame extends DocumentFrame implements ActionListener, Ke
      */
     public boolean exploreAddress(int address, final boolean moveCursor) {
         address = address & 0xFFFFFFFE; // ignore LSB (error in FR, ISA mode in TX)
-        targetField.setText(Format.asHex(address, 8));
+
         Function function = codeStructure.getFunction(address);
         if (function == null) {
             function = codeStructure.findFunctionIncluding(address);
