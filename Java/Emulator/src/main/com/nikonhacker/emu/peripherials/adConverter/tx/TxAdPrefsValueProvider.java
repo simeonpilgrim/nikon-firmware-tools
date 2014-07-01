@@ -53,4 +53,8 @@ public class TxAdPrefsValueProvider implements AdValueProvider {
             return prefs.getAdValue(chip, key);
         }
     }
+
+    public final void setPrefs(Prefs prefs) {
+        this.prefs = prefs;
+    }
 }

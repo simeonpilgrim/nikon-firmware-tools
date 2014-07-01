@@ -32,6 +32,10 @@ public class TxDmaController implements DmaController {
         return prefs;
     }
 
+    public final void setPrefs(Prefs prefs) {
+        this.prefs = prefs;
+    }
+
 
     public int getDcr() {
         // throw new RuntimeException("DCR register of DMA controller should not be read");
