@@ -2487,16 +2487,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private void toggleIoPortsWindow(int chip) {
         if (ioPortsFrame[chip] == null) {
             ioPortsFrame[chip] = new IoPortsFrame("I/O ports", "io", false, true, false, true, chip, this, framework.getPlatform(chip).getIoPorts());
-            for (IoPort ioPort : framework.getPlatform(chip).getIoPorts()) {
-                ioPort.addIoPortsListener(ioPortsFrame[chip]);
-            }
             addDocumentFrame(chip, ioPortsFrame[chip]);
             ioPortsFrame[chip].display(true);
         }
         else {
-            for (IoPort ioPort : framework.getPlatform(chip).getIoPorts()) {
-                ioPort.removeIoPortsListener(ioPortsFrame[chip]);
-            }
             ioPortsFrame[chip].dispose();
             ioPortsFrame[chip] = null;
         }
@@ -2768,12 +2762,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         programmableTimersButton[chip].setEnabled(framework.isImageLoaded(chip));
         interruptControllerMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
         interruptControllerButton[chip].setEnabled(framework.isImageLoaded(chip));
-        serialInterfacesMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
-        serialInterfacesButton[chip].setEnabled(framework.isImageLoaded(chip));
-        ioPortsMenuItem[chip].setEnabled(framework.isImageLoaded(chip));
-        ioPortsButton[chip].setEnabled(framework.isImageLoaded(chip));
         if (chip == Constants.CHIP_TX) {
-            serialDevicesMenuItem[chip].setEnabled(framework.isImageLoaded(chip)); serialDevicesButton[chip].setEnabled(framework.isImageLoaded(chip));
             adConverterMenuItem[chip].setEnabled(framework.isImageLoaded(chip)); adConverterButton[chip].setEnabled(framework.isImageLoaded(chip));
             frontPanelMenuItem.setEnabled(framework.isImageLoaded(chip)); frontPanelButton.setEnabled(framework.isImageLoaded(chip));
         }
@@ -2797,6 +2786,14 @@ public class EmulatorUI extends JFrame implements ActionListener {
             pauseMenuItem[chip].setEnabled(framework.isEmulatorPlaying(chip)); pauseButton[chip].setEnabled(framework.isEmulatorPlaying(chip));
             stepMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); stepButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
             chipOptionsMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); chipOptionsButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
+            // coderat: opening of IO Ports window or other spying window with runing emulation may cause unpredictable results,
+            // because it runs asynchronously. In constructor a pin will be inserted in the middle of connection by 2
+            // consequent calls that may fail to transfer value correctly in another thread !
+            if (chip == Constants.CHIP_TX) {
+                serialDevicesMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); serialDevicesButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
+            }
+            serialInterfacesMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); serialInterfacesButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
+            ioPortsMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); ioPortsButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
 
             // Editable components
             if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(!framework.isEmulatorPlaying(chip));
@@ -2816,6 +2813,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
             stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
             chipOptionsMenuItem[chip].setEnabled(false); chipOptionsButton[chip].setEnabled(false);
+            if (chip == Constants.CHIP_TX) {
+                serialDevicesMenuItem[chip].setEnabled(false); serialDevicesButton[chip].setEnabled(false);
+            }
+            serialInterfacesMenuItem[chip].setEnabled(false); serialInterfacesButton[chip].setEnabled(false);
+            ioPortsMenuItem[chip].setEnabled(false); ioPortsButton[chip].setEnabled(false);
 
             // Editable components  TODO does it make sense ? And why true ?
             if (cpuStateEditorFrame[chip] != null) cpuStateEditorFrame[chip].setEditable(true);
