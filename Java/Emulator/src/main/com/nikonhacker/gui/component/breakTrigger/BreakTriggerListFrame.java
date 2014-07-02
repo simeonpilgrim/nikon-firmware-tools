@@ -24,6 +24,8 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -50,7 +52,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
     private final JButton                 deleteButton;
     private final JButton                 addSyscallButton;
 
-    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, EmulatorUI ui, Emulator emulator, final List<BreakTrigger> breakTriggers, Memory memory) {
+    public BreakTriggerListFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, final int chip, final EmulatorUI ui, Emulator emulator, final List<BreakTrigger> breakTriggers, Memory memory) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.emulator = emulator;
         this.breakTriggers = breakTriggers;
@@ -87,6 +89,19 @@ public class BreakTriggerListFrame extends DocumentFrame {
         triggerTable.getColumnModel().getColumn(6).setPreferredWidth(200);
         triggerTable.getColumnModel().getColumn(7).setPreferredWidth(100);
         triggerTable.getColumnModel().getColumn(8).setPreferredWidth(100);
+        triggerTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                // right mouse button
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    final int row = triggerTable.rowAtPoint(e.getPoint());
+                    if (row!=-1) {
+                        final BreakTrigger trigger = breakTriggers.get(row);
+                        if (trigger.getCpuStateFlags().pc==1)
+                            ui.jumpToSource(chip, trigger.getCpuStateValues().pc);
+                    }
+                }
+            }
+        });
 
         JScrollPane listScroller = new JScrollPane(triggerTable);
         listScroller.setPreferredSize(new Dimension(WINDOW_WIDTH, WINDOW_HEIGHT));
@@ -380,7 +395,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
             name = "Trigger_" + i;
             i++;
         }
-        while (isNameInUse(name));        
+        while (isNameInUse(name));
         return name;
     }
 
