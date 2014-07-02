@@ -275,7 +275,7 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
                     return;
         }
         // Insert delay of a few CPU cycles.
-        platform.getMasterClock().add(this, null, true, false);
+        platform.getMasterClock().add(this, -1, true, false);
     }
 
 

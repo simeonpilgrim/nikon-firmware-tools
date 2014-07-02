@@ -20,6 +20,7 @@ import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
 import com.nikonhacker.emu.peripherials.dmaController.DmaController;
 import com.nikonhacker.emu.peripherials.dmaController.tx.TxDmaController;
+import com.nikonhacker.emu.peripherials.frontPanel.CameraLed;
 import com.nikonhacker.emu.peripherials.frontPanel.FrontPanel;
 import com.nikonhacker.emu.peripherials.frontPanel.tx.D5100FrontPanel;
 import com.nikonhacker.emu.peripherials.imageTransferCircuit.ImageTransferCircuit;
@@ -118,10 +119,15 @@ public class EmulationFramework {
     private boolean[] isImageLoaded     = {false, false};
     private boolean[] isEmulatorPlaying = {false, false};
 
-    private CodeStructure[] codeStructure = new CodeStructure[2];
+    private CodeStructure[] codeStructure;
 
     public EmulationFramework(Prefs prefs) {
         this.prefs = prefs;
+        initCodeStructure();
+    }
+
+    private void initCodeStructure() {
+        codeStructure = new CodeStructure[2];
     }
 
     public void setPrefs(Prefs prefs) {
@@ -162,7 +168,7 @@ public class EmulationFramework {
     }
 
 
-    public void initialize(final int chip, File imageFile, final ClockableCallbackHandler callbackHandler) {
+    public void initialize(final int chip, File imageFile) {
 
         //System.err.println("Loading image for " + Constants.CHIP_LABEL[chip]);
         try {
@@ -224,22 +230,7 @@ public class EmulationFramework {
                 lcd = new FrLcd(platform[chip]);
                 sdController = new FrSdController[Expeed6300IoListener.NUM_SD_CONTROLLER];
 
-                // Standard FR registers
-                memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Unknown component 0x4006
-                memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Specific Pin I/O register
-                memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // 63000XXX and 64000XXX
-                memory.addActivityListener(new Expeed6300IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // 6B0000XX interrupt sharing macro in ASIC
-                memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // JPEG codec 0x40X3
-                memory.addActivityListener(new Expeed40X3IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Resolution converter 0x40XF and 0x4002
-                memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-                // Image Transfer 0x4018
-                memory.addActivityListener(new Expeed4018IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                setupMemoryListeners(chip, memory);
 
                 // Programmable timers
                 for (int i = 0; i < ExpeedIoListener.NUM_TIMER; i++) {
@@ -281,7 +272,7 @@ public class EmulationFramework {
                 clockGenerator = new TxClockGenerator();
                 interruptController = new TxInterruptController(platform[chip]);
 
-                memory.addActivityListener(new TxIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+                setupMemoryListeners(chip, memory);
 
                 // Programmable timers
                 // First put all 16-bit timers
@@ -462,7 +453,23 @@ public class EmulationFramework {
             // Finally, add the emulator to the list of clockable devices, in disabled state
             // We pass here an anonymous Callback Handler that does what is required here, then called the
             // external callback handler
-            masterClock.add(emulator[chip], new ClockableCallbackHandler() {
+            masterClock.add(emulator[chip], chip, false, true);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setupCallbacks(final ClockableCallbackHandler callbackHandler0, final ClockableCallbackHandler callbackHandler1) {
+        final ClockableCallbackHandler[] clockableCallbackHandlers = new ClockableCallbackHandler[2];
+
+        clockableCallbackHandlers[0] = getCallbackHandler(0, callbackHandler0);
+        clockableCallbackHandlers[1] = getCallbackHandler(1, callbackHandler1);
+        masterClock.setupClockableCallbackHandlers(clockableCallbackHandlers);
+    }
+
+    private ClockableCallbackHandler getCallbackHandler(final int chip, final ClockableCallbackHandler callbackHandler) {
+        return new ClockableCallbackHandler() {
                 @Override
                 public void onNormalExit(Object o) {
                     try {
@@ -481,10 +488,30 @@ public class EmulationFramework {
                     e.printStackTrace();
                     if (callbackHandler != null) callbackHandler.onException(e);
                 }
-            }, false, true);
+            };
+    }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+    private final void setupMemoryListeners(int chip, DebuggableMemory memory) {
+        if (chip==Constants.CHIP_FR) {
+            // Standard FR registers
+            memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // Unknown component 0x4006
+            memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // Specific Pin I/O register
+            memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // 63000XXX and 64000XXX
+            memory.addActivityListener(new Expeed6300IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // 6B0000XX interrupt sharing macro in ASIC
+            memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // JPEG codec 0x40X3
+            memory.addActivityListener(new Expeed40X3IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // Resolution converter 0x40XF and 0x4002
+            memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            // Image Transfer 0x4018
+            memory.addActivityListener(new Expeed4018IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+
+        } else if (chip==Constants.CHIP_TX) {
+            memory.addActivityListener(new TxIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
         }
     }
 
@@ -742,6 +769,7 @@ public class EmulationFramework {
         if (eeprom != null) {
             prefs.setLastEepromContents(eeprom.getMemory());
         }
+        masterClock.setupClockableCallbackHandlers(null);
     }
 
 
@@ -752,13 +780,21 @@ public class EmulationFramework {
         xStream.omitField(Platform.class, "memory");
         xStream.omitField(StatementContext.class, "memory");
 
-        // Don't store prefs via XStream
+        // Don't store disassembled code via XStream (Java heap overflow)
+        xStream.omitField(EmulationFramework.class, "codeStructure");
+
+        // Don't store prefs
         xStream.omitField(EmulationFramework.class, "prefs");
         xStream.omitField(TxDmaController.class, "prefs");
         xStream.omitField(TxAdPrefsValueProvider.class, "prefs");
+        xStream.omitField(FrontPanel.class, "prefs");
+        xStream.omitField(D5100FrontPanel.class, "prefs");
 
-        // Don't store callback handler via XStream
-        xStream.omitField(MasterClock.ClockableEntry.class, "clockableCallbackHandler");
+        // Don't store callback handler
+        xStream.omitField(MasterClock.class, "clockableCallbackHandlers");
+        xStream.omitField(CameraLed.class, "listener");
+// instead of omit we close window before save
+//        xStream.omitField(IoPort.class, "IoPortConfigListener");
 
         // Use some aliases
         xStream.alias("r32", Register32.class);
@@ -776,7 +812,6 @@ public class EmulationFramework {
         ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(fileOutputStream));
 
         StringWriter writer = new StringWriter();
-//        new XStream(new StaxDriver()).toXML(framework, writer);
         getFrameworkXStream().toXML(framework, writer);
 
         byte[] bytes = writer.toString().getBytes("UTF-8");
@@ -813,8 +848,12 @@ public class EmulationFramework {
                 throw new IOException("Error loading state file\nFirst file not called " + FRAMEWORK_ZIPENTRY_NAME);
             }
             else {
-                framework = (EmulationFramework) XStreamUtils.load(zipInputStream);
+                framework = (EmulationFramework) XStreamUtils.load(zipInputStream, getFrameworkXStream());
 
+                // clean code structure
+                framework.initCodeStructure();
+                /* Relink prefs */
+                framework.setPrefs(prefs);
                 /* Restore and relink memory */
                 for (int chip = 0; chip < 2; chip++) {
                     // Read memory
@@ -825,18 +864,19 @@ public class EmulationFramework {
                     }
                     else {
                         // Restore memory to platform
-                        framework.getPlatform(chip).getMemory().loadAllFromStream(zipInputStream);
+                        final DebuggableMemory memory = new DebuggableMemory(prefs.isLogMemoryMessages(chip));
+                        framework.getPlatform(chip).setMemory(memory);
+                        memory.loadAllFromStream(zipInputStream);
                         // Also update its reference in framework
-                        framework.getEmulator(chip).context.memory = framework.getPlatform(chip).getMemory();
+                        framework.getEmulator(chip).context.memory = memory;
+                        framework.setupMemoryListeners(chip, memory);
                     }
                 }
 
-                /* Relink prefs */
-                framework.setPrefs(prefs);
-                // TODO: prefs should be removed from TxDMAController or injected here
-                // TODO: prefs inject to TxAdPrefsValueProvider
+                ((TxDmaController)framework.getPlatform(Constants.CHIP_TX).getDmaController()).setPrefs(prefs);
+                ((TxAdPrefsValueProvider)((TxAdConverter)framework.getPlatform(Constants.CHIP_TX).getAdConverter()).getProvider()).setPrefs(prefs);
 
-                /* TODO: should relink callback handler */
+                // We do not want that loaded front panel writes to Prefs, so do not set
             }
         } finally {
             if (zipInputStream != null) zipInputStream.close();

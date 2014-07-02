@@ -95,7 +95,7 @@ public class MirrorBox implements Clockable {
                     setClockInterval(wipersTimes[state+1]);
                     // if first time
                     if (!inClock)
-                        platform.getMasterClock().add(this, null, true, false);
+                        platform.getMasterClock().add(this, -1, true, false);
                 } else {
                     // move not possible, so stop (in reality still spins due to inertion/torque)
                     setClockInterval(0);
@@ -108,7 +108,7 @@ public class MirrorBox implements Clockable {
                     setClockInterval(wipersTimes[state]);
                     // if first time
                     if (!inClock)
-                        platform.getMasterClock().add(this, null, true, false);
+                        platform.getMasterClock().add(this, -1, true, false);
                 } else {
                     // move not possible, so stop
                     setClockInterval(0);
