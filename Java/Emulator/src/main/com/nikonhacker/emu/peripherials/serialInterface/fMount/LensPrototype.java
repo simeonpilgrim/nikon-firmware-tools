@@ -10,16 +10,16 @@ import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
 /*
     This is just some commands emulation. There is no particular lens type
     emulated, but most info comes from 35mm 1.8 G
-    
+
  */
 public class LensPrototype extends LensDevice implements Clockable {
 
     private static final int SLOW_BAUD_RATE = 192307/2;    // Bps
     private static final int FAST_BAUD_RATE = 312500/2;    // Bps
-    
+
     private MasterClock masterClock;
     private boolean isTimerActive;
-    
+
     // set if lens was disconnected from mount
     private boolean unpluged;
 
@@ -32,24 +32,24 @@ public class LensPrototype extends LensDevice implements Clockable {
     }
 
     private State state = State.IDLE;
-    
+
     // emulated time of last action from mount
     private long lastAccessTime;
-    
+
     private int baudRate = SLOW_BAUD_RATE; // Bps
-    
+
     // TODO workaround for MasterClock.prepareSchedule() broken calculations
     // (setting too low frequency results very low speed (5cps), so use higher frequency with counter)
     private int timerCount;
-    
+
     // only set if command needs several actions
     private int currentCommand = -1;
     private int transferCount;
     private int[] transferData;
-    
+
     private int[] command40Data = {0x00, 0x00, 0x01, 0x04, 0x00, 0x00, 0x01};
     private int[] command41Data = {0, 0};
-    private int[] command28Data = {0x10, 0x14, 0xff, 0xff, 0xcc, 0xfa, 0x07, 0x03, 
+    private int[] command28Data = {0x10, 0x14, 0xff, 0xff, 0xcc, 0xfa, 0x07, 0x03,
                                    0x03, 0x8d, 0x04, 0x00, 0x40, 0x6c, 0xf9, 0xfb,
                                    0x44, 0x14, 0x9f, 0x58, 0x44, 0x44, 0x14, 0x14,
                                    0xa1, 0x14, 0x00, 0x13, 0x5e, 0x08, 0x07, 0xf8,
@@ -58,7 +58,7 @@ public class LensPrototype extends LensDevice implements Clockable {
     private int[] commandC2Data = {0x08, 0x00, 0x00, 0x00};
     private int[] commandE7Data = {0};
     private int[] commandEAData = {0};
-    
+
     public LensPrototype (FMountCircuit fMountCircuit, MasterClock masterClock) {
         super(fMountCircuit);
         this.masterClock = masterClock;
@@ -120,7 +120,7 @@ public class LensPrototype extends LensDevice implements Clockable {
                 if (transferCount!=0) {
                     // aprox 177us
                     timerCount = (baudRate==FAST_BAUD_RATE ? 28 : 17);
-                    masterClock.add(this, null, true, false);
+                    masterClock.add(this, -1, true, false);
                 }
                 break;
             case RECEIVE_BYTES:
@@ -128,7 +128,7 @@ public class LensPrototype extends LensDevice implements Clockable {
                 if (transferCount!=0) {
                     // aprox 30us @156 KBps, 72us @ 96 KBps
                     timerCount = (baudRate==FAST_BAUD_RATE ? 5 : 7);
-                    masterClock.add(this, null, true, false);
+                    masterClock.add(this, -1, true, false);
                 } else {
                     // if command 0x40 was successfull, set new baud rate
                     if (currentCommand==0x40)
@@ -189,7 +189,7 @@ public class LensPrototype extends LensDevice implements Clockable {
             if (transferCount!=0) {
                     // aprox 30us @156 KBps, 72us @ 96 KBps
                     timerCount = (baudRate==FAST_BAUD_RATE ? 5 : 7);
-                masterClock.add(this, null, true, false);
+                masterClock.add(this, -1, true, false);
             }
             fMountCircuit.setPin2Value(1);
             return ch;
@@ -230,14 +230,14 @@ public class LensPrototype extends LensDevice implements Clockable {
     public int getChip() {
         return Constants.CHIP_TX;
     }
-    
+
     private boolean testCommandAborted() {
         boolean isAbort = false;
         final long newTime = masterClock.getTotalElapsedTimePs();
-        
+
         // if command started
         if (state != State.IDLE) {
-            // check if mount didn't act for long time 
+            // check if mount didn't act for long time
             if ((newTime-lastAccessTime)>=5*MasterClock.PS_PER_MS) {
                 System.out.println("Lens abort condition detected");
                 // timeout, restart everything

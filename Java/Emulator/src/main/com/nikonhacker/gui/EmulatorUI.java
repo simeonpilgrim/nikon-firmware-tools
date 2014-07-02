@@ -455,6 +455,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 }
             }
         }
+        framework.setupCallbacks(getCallbackHandler(0), getCallbackHandler(1));
 
         restoreMainWindowSettings();
 
@@ -852,11 +853,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
         tmpMenuItem.addActionListener(this);
         fileMenu.add(tmpMenuItem);
 
-//        //Load state
-//        tmpMenuItem = new JMenuItem("Load state");
-//        tmpMenuItem.setActionCommand(COMMAND_LOAD_STATE);
-//        tmpMenuItem.addActionListener(this);
-//        fileMenu.add(tmpMenuItem);
+        //Load state
+        tmpMenuItem = new JMenuItem("Load state");
+        tmpMenuItem.setActionCommand(COMMAND_LOAD_STATE);
+        tmpMenuItem.addActionListener(this);
+        fileMenu.add(tmpMenuItem);
 
         fileMenu.add(new JSeparator());
 
@@ -1401,47 +1402,69 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
 
+    private static final String STATE_EXTENSION = ".xstate";
+
     private void loadState() {
-        JTextField sourceFile = new JTextField();
-        final JComponent[] inputs = new JComponent[] {
-                new FileSelectionPanel("Source file", sourceFile, false),
-        };
-        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-                inputs,
-                "Choose state file",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                JOptionPane.DEFAULT_OPTION)) {
-            try {
-                framework = EmulationFramework.load(sourceFile.getText(), prefs);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, e.getMessage() + "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
+        final JFileChooser fc = new JFileChooser();
+
+        fc.setDialogTitle("Select source file");
+        fc.setCurrentDirectory(new java.io.File("."));
+
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        /* TODO add chip name to triggers extension */
+        fc.setFileFilter(Format.createFilter(STATE_EXTENSION, "Emulator state (*" + STATE_EXTENSION + ")"));
+
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File sourceFile = fc.getSelectedFile();
+            if (!sourceFile.exists()) {
+                JOptionPane.showMessageDialog(this, "Could not find file '" + sourceFile.getAbsolutePath() + "'.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            else {
+
+                // Problem: some UI components install listeners and links will be lost
+                closeAllFrames();
+                try {
+                    final String source = sourceFile.getAbsolutePath();
+                    setTitle(ApplicationInfo.getNameVersion() + " - Loading...");
+
+                    framework = EmulationFramework.load(source, prefs);
+                    framework.setupCallbacks(getCallbackHandler(0), getCallbackHandler(1));
+                    framework.getMasterClock().setSyncPlay(prefs.isSyncPlay());
+                    setTitle(ApplicationInfo.getNameVersion() + " - Loaded " + source);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, e.getMessage() + "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
 
     private void saveState() {
-        JTextField destinationFile = new JTextField();
-        final JComponent[] inputs = new JComponent[] {
-                new FileSelectionPanel("Destination file", destinationFile, false),
-        };
-        if (JOptionPane.OK_OPTION == JOptionPane.showOptionDialog(this,
-                inputs,
-                "Choose destination file",
-                JOptionPane.OK_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                JOptionPane.DEFAULT_OPTION)) {
-            try {
-                EmulationFramework.saveStateToFile(framework, destinationFile.getText());
-                JOptionPane.showMessageDialog(this, "State saving complete", "Done", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception e) {
-                e.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error saving state file\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        final JFileChooser fc = new JFileChooser();
+
+        fc.setDialogTitle("Select destination file");
+        fc.setCurrentDirectory(new java.io.File("."));
+
+        fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        /* TODO add chip name to triggers extension */
+        fc.setFileFilter(Format.createFilter(STATE_EXTENSION, "Emulator state (*" + STATE_EXTENSION + ")"));
+
+        if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File destinationFile = fc.getSelectedFile();
+            if (!(destinationFile.getAbsolutePath().toLowerCase().endsWith(STATE_EXTENSION))) {
+                destinationFile = new File(destinationFile.getAbsolutePath() + STATE_EXTENSION);
+            }
+            if (!destinationFile.exists() || JOptionPane.showConfirmDialog(this, "Are you sure you want to overwrite " + destinationFile.getName(), "Confirm overwrite", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+
+                // spying frames insert IO forwarding pins that should not be saved
+                closeAllSpyFrames();
+                try {
+                    EmulationFramework.saveStateToFile(framework, destinationFile.getAbsolutePath());
+                    JOptionPane.showMessageDialog(this, "State saving complete", "Done", JOptionPane.INFORMATION_MESSAGE);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Error saving state file\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                }
             }
         }
     }
@@ -1609,17 +1632,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
         updateState(chip);
     }
 
-    private void initialize(final int chip) {
-        // Stop timers if active from a previous session (reset)
-        if (framework.getPlatform(chip) != null && framework.getPlatform(chip).getProgrammableTimers()[0].isActive()) {
-            for (ProgrammableTimer timer : framework.getPlatform(chip).getProgrammableTimers()) {
-                timer.setActive(false);
-            }
-            // Stop button animation
-            setProgrammableTimerAnimationEnabled(chip, true);
-        }
-
-        framework.initialize(chip, imageFile[chip], new ClockableCallbackHandler() {
+    private ClockableCallbackHandler getCallbackHandler(final int chip) {
+        return new ClockableCallbackHandler() {
             @Override
             public void onNormalExit(final Object o) {
                 Runnable  runnable = new Runnable() {
@@ -1664,7 +1678,20 @@ public class EmulatorUI extends JFrame implements ActionListener {
                 };
                 SwingUtilities.invokeLater(runnable);
             }
-        });
+        };
+    }
+
+    private void initialize(final int chip) {
+        // Stop timers if active from a previous session (reset)
+        if (framework.getPlatform(chip) != null && framework.getPlatform(chip).getProgrammableTimers()[0].isActive()) {
+            for (ProgrammableTimer timer : framework.getPlatform(chip).getProgrammableTimers()) {
+                timer.setActive(false);
+            }
+            // Stop button animation
+            setProgrammableTimerAnimationEnabled(chip, true);
+        }
+
+        framework.initialize(chip, imageFile[chip]);
 
         setTitle(ApplicationInfo.getNameVersion() + " - " + (imageFile[Constants.CHIP_FR]==null?"(none)":imageFile[Constants.CHIP_FR].getName()) + " / " + (imageFile[Constants.CHIP_TX]==null?"(none)":imageFile[Constants.CHIP_TX].getName()));
 
@@ -2279,6 +2306,20 @@ public class EmulatorUI extends JFrame implements ActionListener {
             interruptControllerFrame[chip] = null;
             if (mustReOpen) toggleInterruptController(chip);
         }
+        closeSpyFrames(chip, mustReOpen);
+        if (ITronObjectFrame[chip] != null) {
+            ITronObjectFrame[chip].dispose();
+            ITronObjectFrame[chip] = null;
+            if (mustReOpen) toggleITronObject(chip);
+        }
+        if (iTronReturnStackFrame[chip] != null) {
+            iTronReturnStackFrame[chip].dispose();
+            iTronReturnStackFrame[chip] = null;
+            if (mustReOpen) toggleITronReturnStack(chip);
+        }
+    }
+
+    private final void closeSpyFrames(int chip, boolean mustReOpen) {
         if (serialInterfaceFrame[chip] != null) {
             serialInterfaceFrame[chip].dispose();
             serialInterfaceFrame[chip] = null;
@@ -2294,16 +2335,11 @@ public class EmulatorUI extends JFrame implements ActionListener {
             ioPortsFrame[chip] = null;
             if (mustReOpen) toggleIoPortsWindow(chip);
         }
-        if (ITronObjectFrame[chip] != null) {
-            ITronObjectFrame[chip].dispose();
-            ITronObjectFrame[chip] = null;
-            if (mustReOpen) toggleITronObject(chip);
-        }
-        if (iTronReturnStackFrame[chip] != null) {
-            iTronReturnStackFrame[chip].dispose();
-            iTronReturnStackFrame[chip] = null;
-            if (mustReOpen) toggleITronReturnStack(chip);
-        }
+    }
+
+    private final void closeAllSpyFrames() {
+        closeSpyFrames(Constants.CHIP_FR, false);
+        closeSpyFrames(Constants.CHIP_TX, false);
     }
 
     private void toggleBreakTriggerList(int chip) {
@@ -2933,7 +2969,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             if (sourceCodeFrame[chip] == null) {
                 toggleSourceCodeWindow(chip);
             }
-            if (!sourceCodeFrame[chip].exploreAddress(address,true)) {
+            if (!sourceCodeFrame[chip].exploreAddress(address, true)) {
                 JOptionPane.showMessageDialog(this, "No function found at address 0x" + Format.asHex(address, 8), "Cannot explore function", JOptionPane.ERROR_MESSAGE);
             }
         }

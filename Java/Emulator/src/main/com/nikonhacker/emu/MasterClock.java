@@ -13,6 +13,7 @@ public class MasterClock implements Runnable {
 
     private DecimalFormat milliSecondFormatter = new DecimalFormat("0000.000000000");
 
+    private ClockableCallbackHandler[] clockableCallbackHandlers;
     /**
      * All objects to "clock", encapsulated in an internal class to store their counter value and threshold
      */
@@ -57,7 +58,7 @@ public class MasterClock implements Runnable {
      * @param clockable the object to wake up repeatedly
      * @param clockableCallbackHandler the object containing methods called on exit or Exception
      */
-    public synchronized void add(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled, boolean precise) {
+    public synchronized void add(Clockable clockable, int clockableCallbackHandler, boolean enabled, boolean precise) {
         //System.err.println("Adding " + clockable.getClass().getSimpleName());
         // Check if already present
         boolean found = false;
@@ -80,7 +81,7 @@ public class MasterClock implements Runnable {
      * @param clockable
      */
     public void add(Clockable clockable) {
-        add(clockable, null, true, true);
+        add(clockable, -1, true, true);
     }
 
     /**
@@ -256,8 +257,8 @@ public class MasterClock implements Runnable {
                                 // A non-null result means this entry shouldn't run anymore
                                 entriesToDisable.add(currentEntry);
                                 // Warn the callback method
-                                if (currentEntry.clockableCallbackHandler != null) {
-                                    currentEntry.clockableCallbackHandler.onNormalExit(result);
+                                if (currentEntry.clockableCallbackHandler >=0) {
+                                    clockableCallbackHandlers[currentEntry.clockableCallbackHandler].onNormalExit(result);
                                 }
                             }
                         }
@@ -265,8 +266,8 @@ public class MasterClock implements Runnable {
                             // In case of exception this entry shouldn't run anymore
                             entriesToDisable.add(currentEntry);
                             // Warn the callback method
-                            if (currentEntry.clockableCallbackHandler != null) {
-                                currentEntry.clockableCallbackHandler.onException(e);
+                            if (currentEntry.clockableCallbackHandler >=0) {
+                                clockableCallbackHandlers[currentEntry.clockableCallbackHandler].onException(e);
                             }
                         }
 
@@ -331,8 +332,8 @@ public class MasterClock implements Runnable {
                 for (ClockableEntry candidateEntry : entries) {
                     if (candidateEntry.enabled && candidateEntry.clockable instanceof Emulator) {
                         //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
-                        if (candidateEntry.clockableCallbackHandler != null) {
-                            candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to " + entryToDisable.clockable.getClass().getSimpleName());
+                        if (candidateEntry.clockableCallbackHandler >= 0) {
+                            clockableCallbackHandlers[candidateEntry.clockableCallbackHandler].onNormalExit("Sync stop due to " + entryToDisable.clockable.getClass().getSimpleName());
                         }
                         //System.err.println("Disabling " + candidateEntry.clockable.getClass().getSimpleName());
                         candidateEntry.enabled = false;
@@ -348,9 +349,9 @@ public class MasterClock implements Runnable {
     private void setLinkedEntriesEnabled(int chip, boolean enabled) {
         for (ClockableEntry candidateEntry : entries) {
             if ((candidateEntry.enabled != enabled) && (candidateEntry.clockable.getChip() == chip)) {
-                if (!enabled && candidateEntry.clockableCallbackHandler != null) {
+                if (!enabled && candidateEntry.clockableCallbackHandler >= 0) {
                     //System.err.println("Calling onNormalExit() on callback for " + candidateEntry.clockable.getClass().getSimpleName());
-                    candidateEntry.clockableCallbackHandler.onNormalExit("Sync stop due to chip " + Constants.CHIP_LABEL[chip] + " stopping.");
+                    clockableCallbackHandlers[candidateEntry.clockableCallbackHandler].onNormalExit("Sync stop due to chip " + Constants.CHIP_LABEL[chip] + " stopping.");
                 }
                 //System.err.println((enabled?"Enabling ":"Disabling ") + candidateEntry.clockable.getClass().getSimpleName());
                 candidateEntry.enabled = enabled;
@@ -444,18 +445,21 @@ public class MasterClock implements Runnable {
         return a * (b / intGCD(a, b));
     }
 
+    public void setupClockableCallbackHandlers(ClockableCallbackHandler[] clockableCallbackHandlers) {
+        this.clockableCallbackHandlers = clockableCallbackHandlers;
+    }
 
     // This is a wrapper for the device, its counter value and its counter threshold
     static class ClockableEntry {
-        Clockable                clockable;
-        ClockableCallbackHandler clockableCallbackHandler;
+        final Clockable        clockable;
+        final int              clockableCallbackHandler;
         int counterValue     = 0;
         int counterThreshold = 0;
         boolean enabled;
         boolean isFrequencyZero;
         boolean isPrecise;
 
-        public ClockableEntry(Clockable clockable, ClockableCallbackHandler clockableCallbackHandler, boolean enabled, boolean isPrecise) {
+        public ClockableEntry(Clockable clockable, int clockableCallbackHandler, boolean enabled, boolean isPrecise) {
             this.clockable = clockable;
             this.clockableCallbackHandler = clockableCallbackHandler;
             this.enabled = enabled;
