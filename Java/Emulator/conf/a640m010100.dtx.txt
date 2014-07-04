@@ -1507,7 +1507,7 @@
 -s 0xBFC80DCC=INT18_body07
 -s 0xBFC81194=INT_TMRA_Body02
 -s 0xBFC812D8=INT_TMRA_Body01
--s 0xBFC8139C=lockMirror
+-s 0xBFC8139C=maybe_curtain_action
 -s 0xBFC81588=setup_INT_TMRB2_Body0
 -s 0xBFC815F1=INT_TMRB2_Body0
 -s 0xBFC81A7C=call_setup_TB4
