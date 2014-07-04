@@ -613,12 +613,13 @@ public class EmulationFramework {
     }
 
     private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {
+        Pin.interconnect(txIoPorts[IoPort.PORT_1].getPin(1), mirrorBox.getDirPin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(2), mirrorBox.getX1Pin());
+        Pin.interconnect(txIoPorts[IoPort.PORT_6].getPin(3), mirrorBox.getMovePin());
+
         Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(5), mirrorBox.getWiperPin(0));
         Pin.interconnect(txIoPorts[IoPort.PORT_H].getPin(0), mirrorBox.getWiperPin(1));
         Pin.interconnect(txIoPorts[IoPort.PORT_H].getPin(1), mirrorBox.getWiperPin(2));
-
-        Pin.interconnect(txIoPorts[IoPort.PORT_6].getPin(3), mirrorBox.getMovePin());
-        Pin.interconnect(txIoPorts[IoPort.PORT_1].getPin(1), mirrorBox.getDirPin());
     }
     /**
      * Connect Tx serial interface HSC2 with the eeprom and the lcd driver via a SPI bus
