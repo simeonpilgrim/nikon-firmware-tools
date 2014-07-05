@@ -9,10 +9,7 @@ import com.nikonhacker.emu.peripherials.interruptController.tx.TxInterruptContro
 public class TxAdConverter implements AdConverter {
     public TxAdUnit[] units;
 
-    private AdValueProvider provider;
-
     public TxAdConverter(Emulator emulator, TxInterruptController interruptController, AdValueProvider provider) {
-        this.provider = provider;
         units = new TxAdUnit[3];
         units[0] = new TxAdUnit('A', 4, emulator, interruptController, provider);
         units[1] = new TxAdUnit('B', 4, emulator, interruptController, provider);
@@ -24,7 +21,4 @@ public class TxAdConverter implements AdConverter {
         return units;
     }
 
-    public final AdValueProvider getProvider() {
-        return provider;
-    }
 }
