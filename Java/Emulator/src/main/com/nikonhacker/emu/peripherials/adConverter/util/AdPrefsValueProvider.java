@@ -1,4 +1,4 @@
-package com.nikonhacker.emu.peripherials.adConverter.tx;
+package com.nikonhacker.emu.peripherials.adConverter.util;
 
 import com.nikonhacker.Prefs;
 import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
@@ -8,18 +8,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TxAdPrefsValueProvider implements AdValueProvider {
+public class AdPrefsValueProvider implements AdValueProvider {
 
     private Prefs prefs;
     private int chip;
     private Map<String, Integer> indices;
 
-    public TxAdPrefsValueProvider(Prefs prefs, int chip) {
+    public AdPrefsValueProvider(Prefs prefs, int chip) {
         this.prefs = prefs;
         this.chip = chip;
         indices = new HashMap<>();
     }
 
+    public String getName() {
+        return "Preferences";
+    }
 
     @Override
     public int getAnalogValue(char unitName, int channel) {
@@ -52,6 +55,10 @@ public class TxAdPrefsValueProvider implements AdValueProvider {
         else {
             return prefs.getAdValue(chip, key);
         }
+    }
+
+    public int peekAnalogValue(char unitName, int channel) {
+        return 0;
     }
 
     public final void setPrefs(Prefs prefs) {

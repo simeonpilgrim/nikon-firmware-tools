@@ -12,9 +12,10 @@ import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.fr.*;
 import com.nikonhacker.emu.memory.listener.tx.TxIoListener;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
+import com.nikonhacker.emu.peripherials.adConverter.AdUnit;
 import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
 import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdConverter;
-import com.nikonhacker.emu.peripherials.adConverter.tx.TxAdPrefsValueProvider;
+import com.nikonhacker.emu.peripherials.adConverter.util.AdPrefsValueProvider;
 import com.nikonhacker.emu.peripherials.clock.ClockGenerator;
 import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.clock.tx.TxClockGenerator;
@@ -357,7 +358,7 @@ public class EmulationFramework {
 
                 connectTxSc1SerialDevice(serialInterfaces[1], fMountCircuit, ioPorts);
 
-                AdValueProvider provider = new TxAdPrefsValueProvider(prefs, Constants.CHIP_TX);
+                AdValueProvider provider = new AdPrefsValueProvider(prefs, Constants.CHIP_TX);
                 adConverter = new TxAdConverter(emulator[Constants.CHIP_TX], (TxInterruptController) interruptController, provider);
 
                 frontPanel = new D5100FrontPanel(prefs);
@@ -787,7 +788,7 @@ public class EmulationFramework {
         // Don't store prefs
         xStream.omitField(EmulationFramework.class, "prefs");
         xStream.omitField(TxDmaController.class, "prefs");
-        xStream.omitField(TxAdPrefsValueProvider.class, "prefs");
+        xStream.omitField(AdPrefsValueProvider.class, "prefs");
         xStream.omitField(FrontPanel.class, "prefs");
         xStream.omitField(D5100FrontPanel.class, "prefs");
 
@@ -875,8 +876,17 @@ public class EmulationFramework {
                 }
 
                 ((TxDmaController)framework.getPlatform(Constants.CHIP_TX).getDmaController()).setPrefs(prefs);
-                ((TxAdPrefsValueProvider)((TxAdConverter)framework.getPlatform(Constants.CHIP_TX).getAdConverter()).getProvider()).setPrefs(prefs);
-
+                // TODO add FR DMA when implemented
+                if (framework.getPlatform(Constants.CHIP_FR).getDmaController()!=null) {
+                    System.err.println("!!! add code for load FR DMA");
+                }
+                for (AdUnit adUnit : framework.getPlatform(Constants.CHIP_TX).getAdConverter().getUnits()) {
+                    for (int i = 0; i < adUnit.getNumChannels(); i++) {
+                        final AdValueProvider provider = adUnit.getProvider(i);
+                        if (provider instanceof AdPrefsValueProvider)
+                            ((AdPrefsValueProvider)provider).setPrefs(prefs);
+                    }
+                }
                 // We do not want that loaded front panel writes to Prefs, so do not set
             }
         } finally {

@@ -4,6 +4,8 @@ import com.nikonhacker.Format;
 import com.nikonhacker.disassembly.ParsingException;
 import com.nikonhacker.emu.peripherials.adConverter.AdConverter;
 import com.nikonhacker.emu.peripherials.adConverter.AdUnit;
+import com.nikonhacker.emu.peripherials.adConverter.AdValueProvider;
+import com.nikonhacker.emu.peripherials.adConverter.util.AdPrefsValueProvider;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.swing.DocumentFrame;
 import net.miginfocom.swing.MigLayout;
@@ -20,9 +22,10 @@ import java.util.Map;
 
 public class AdConverterFrame extends DocumentFrame {
     private AdConverter adConverter;
+    private Timer       refreshTimer;
     private Map<String, JTextField> valueFields = new HashMap<String, JTextField>();
 
-    public AdConverterFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, AdConverter adConverter) {
+    public AdConverterFrame(String title, String imageName, boolean resizable, boolean closable, boolean maximizable, boolean iconifiable, int chip, final EmulatorUI ui, final AdConverter adConverter) {
         super(title, imageName, resizable, closable, maximizable, iconifiable, chip, ui);
         this.adConverter = adConverter;
         JPanel mainPanel = new JPanel(new MigLayout());
@@ -35,12 +38,18 @@ public class AdConverterFrame extends DocumentFrame {
                 mainPanel.add(channelLabel, "center");
 
                 final JTextField valueListField = new JTextField();
-                List<Integer> adValueList = ui.getPrefs().getAdValueList(chip, channelKey);
-                if (adValueList == null) {
-                    adValueList = new ArrayList<Integer>();
-                    adValueList.add(0);
+                final AdValueProvider provider = adUnit.getProvider(i);
+                if (provider instanceof AdPrefsValueProvider) {
+                    List<Integer> adValueList = ui.getPrefs().getAdValueList(chip, channelKey);
+                    if (adValueList == null) {
+                        adValueList = new ArrayList<Integer>();
+                        adValueList.add(0);
+                    }
+                    valueListField.setText(formatList(adValueList));
+                } else {
+                    valueListField.setText("0x" + Format.asHex(provider.peekAnalogValue(adUnit.getUnitName(), i), 1));
                 }
-                valueListField.setText(formatList(adValueList));
+                valueListField.setToolTipText(provider.getName());
                 valueListField.setMaximumSize(new Dimension(1000, getPreferredSize().height));
                 valueListField.setPreferredSize(new Dimension(1000, getPreferredSize().height));
                 mainPanel.add(valueListField, "growx, wrap");
@@ -59,6 +68,24 @@ public class AdConverterFrame extends DocumentFrame {
 
         mainPanel.add(saveButton, "span 2, center, wrap");
         setContentPane(mainPanel);
+
+        // Start update timer
+        refreshTimer = new Timer(ui.getPrefs().getRefreshIntervalMs(), new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                for (AdUnit adUnit : adConverter.getUnits()) {
+                    for (int i = 0; i < adUnit.getNumChannels(); i++) {
+
+                        final AdValueProvider provider = adUnit.getProvider(i);
+
+                        if (!(provider instanceof AdPrefsValueProvider)) {
+                            final String channelKey = "" + adUnit.getUnitName() + i;
+                            valueFields.get(channelKey).setText("0x" + Format.asHex(provider.peekAnalogValue(adUnit.getUnitName(), i), 1));
+                        }
+                    }
+                }
+            }
+        });
+        refreshTimer.start();
     }
 
     private void saveValueLists() {
@@ -96,4 +123,11 @@ public class AdConverterFrame extends DocumentFrame {
         }
         return values;
     }
+
+    public void dispose() {
+        refreshTimer.stop();
+        refreshTimer = null;
+        super.dispose();
+    }
+
 }

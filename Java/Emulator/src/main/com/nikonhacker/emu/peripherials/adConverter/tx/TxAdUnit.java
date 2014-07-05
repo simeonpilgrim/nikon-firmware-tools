@@ -40,7 +40,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
     private final int numChannels;
     private Emulator emulator;
     private TxInterruptController interruptController;
-    private AdValueProvider provider;
+    private AdValueProvider[] providers;
 
     private int clk;
 
@@ -82,7 +82,10 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
         this.numChannels = numChannels;
         this.emulator = emulator;
         this.interruptController = interruptController;
-        this.provider = provider;
+        providers = new AdValueProvider[numChannels];
+        // set default provider
+        for (int i=0; i<numChannels; i++)
+            providers[i] = provider;
         reset();
     }
 
@@ -102,6 +105,14 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
 
     public int getNumChannels() {
         return numChannels;
+    }
+
+    public AdValueProvider getProvider(int channel) {
+        return providers[channel];
+    }
+
+    public void setProvider(int channel, AdValueProvider provider) {
+        this.providers[channel] = provider;
     }
 
     public int getClk() {
@@ -385,7 +396,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                 // top-priority conversion is handled first
                 // TODO: normally, a full conversion cycle should pass before this one starts
                 // top priority is always single fixed
-                setConvertedValue(REGSP, provider.getAnalogValue(unitName, getMod2Hpadch()) & 0x3FF);
+                setConvertedValue(REGSP, providers[getMod2Hpadch()].getAnalogValue(unitName, getMod2Hpadch()) & 0x3FF);
                 isEoc[TOP_PRIORITY] = true;
                 isBusy[TOP_PRIORITY] = false;
                 requestAdTopPriorityCompleteInterrupt();
@@ -400,7 +411,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                 if (currentScanChannel < lastScanChannel) {
                     // Scan still in progress
                     // target register is according to scanned channel
-                    setConvertedValue(currentScanChannel, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
+                    setConvertedValue(currentScanChannel, providers[currentScanChannel].getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                     currentScanChannel++;
                     // Continue scanning
                 }
@@ -411,7 +422,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                         if (!isMod0Scan()) {
                             // Repeat fixed mode
                             // target register is according to number of conversions performed
-                            setConvertedValue(conversionNumber, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
+                            setConvertedValue(conversionNumber, providers[currentScanChannel].getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                             conversionNumber++;
                             if (conversionNumber == conversionInterruptInterval) {
                                 requestAdCompleteInterrupt();
@@ -426,7 +437,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                         else {
                             // Repeat scan mode, scan complete.
                             // target register is according to scanned channel
-                            setConvertedValue(currentScanChannel, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
+                            setConvertedValue(currentScanChannel, providers[currentScanChannel].getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                             requestAdCompleteInterrupt();
                             // ADnMOD <EOCF> is set to "1."
                             isEoc[NORMAL_PRIORITY] = true;
@@ -438,7 +449,7 @@ public class TxAdUnit implements AdUnit, CycleCounterListener {
                     else {
                         // Single fixed mode, or single channel scan complete
                         // target register is according to scanned channel
-                        setConvertedValue(currentScanChannel, provider.getAnalogValue(unitName, currentScanChannel) & 0x3FF);
+                        setConvertedValue(currentScanChannel, providers[currentScanChannel].getAnalogValue(unitName, currentScanChannel) & 0x3FF);
                         isEoc[NORMAL_PRIORITY] = true;
                         isBusy[NORMAL_PRIORITY] = false;
                         requestAdCompleteInterrupt();
