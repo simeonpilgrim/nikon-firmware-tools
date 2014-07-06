@@ -2190,7 +2190,7 @@
 -s 0x000ED44A=strlen_0
 -s 0x000ED45A=strncpy_0
 -s 0x00100000=toggle_5000010B_x02
--s 0x00100024=wai_flg0x1
+-s 0x00100024=wai_flg0x1(R4 [IN pattern])
 -s 0x00100096=notify_flg0x1_0x10000
 -s 0x001000E8=WaitForEvnt_x01_x20000000
 -s 0x00100106=Tsk16FirmwareInitialisation
@@ -2409,9 +2409,9 @@
 -s 0x001250E2=cccall_start05_4006chip
 -s 0x00125122=CSIO_ch00_INTbody
 -s 0x00125138=CSIO_ch01_INTbody
--s 0x00125150=CSIO_ch01_sending_word
--s 0x0012522A=CSIO_ch01_sending_block
--s 0x00125348=CSIO_ch00_sending_dword
+-s 0x00125150=IMX071_writeReg(R4 [IN addr], R5 [IN value])
+-s 0x0012522A=IMX071_writeRegs(R4 [IN addr], R5 [IN ptr], R5 [IN count])
+-s 0x00125348=CSIO_ch00_sending_word
 -s 0x0012540C=CSIO_ch00_sending_block
 -s 0x001254EC=nullsub_13
 -s 0x001254F0=nullsub_14
@@ -3169,7 +3169,7 @@
 -s 0x0016DC34=NEF_JPEG
 -s 0x0016DEBC=WriteNef_Sub
 -s 0x0016E1F0=start_task_x11
--s 0x0016E1FC=Task11
+-s 0x0016E1FC=Tsk11
 -s 0x0016E3AE=Task11_Setup
 -s 0x0016E406=WaitForEvnt_x0B_x10
 -s 0x0016E6E2=Tsk02_PostMsg_1
@@ -3249,7 +3249,8 @@
 -s 0x0017400E=SD_Driver_read_MBR
 -s 0x001741DE=Seek_GRDx1D
 -s 0x0017421C=Read_GRDx1D
--s 0x0017425A=call_sta_Tsk2E
+-s 0x0017425A=start_tsk_x2E
+-s 0x001742E4=stop_tsk_x2E
 -s 0x0017438E=Tsk2E
 -s 0x00174428=Call_CloseFile
 -s 0x00174460=I2C_Operation(R4 [IN param; OUT ok])
@@ -3654,6 +3655,7 @@
 -s 0x001A9452=start_task_x2F
 -s 0x001A9464=Tsk2F
 -s 0x001A9574=dlist_x3x_Init
+-s 0x001A9480=copySets_2E_2F_30to8F8504E8
 -s 0x001A95BC=dlist_x31_insert
 -s 0x001A95E6=dlist_x30_getItem
 -s 0x001A9680=enque_event_xB
@@ -4058,6 +4060,7 @@
 -s 0x001CAE6A=notcalled_1CAE6A
 -s 0x001CB6C6=AVI_RIFF_xx
 -s 0x001CC1EC=AVI_idx1
+-s 0x001CC668=PTPSessionInitStruct8F95D7D8
 -s 0x001CC836=start_tsk28
 -s 0x001CC886=stop_tsk28
 -s 0x001CC8CC=Tsk28
@@ -4422,6 +4425,7 @@
 -s 0x001DDF4C=set_4019005C
 -s 0x001DE054=set_40190082
 -s 0x001DE064=set_40190084
+-s 0x001DE3F0=cccall_start06_4006chip
 -s 0x001DE43C=setup_semaphore_x47
 -s 0x001DE520=WaitOnSemaphore_x47
 -s 0x001DE534=SignalSemaphore_x47
@@ -4484,6 +4488,7 @@
 -s 0x001E0932=setup_semaphore_x22
 -s 0x001E098C=WaitOnSemaphore_x22
 -s 0x001E09A0=SignalSemaphore_x22
+-s 0x001E0D20=cccall_start01_4006chip
 -s 0x001E0D60=Setup_Tsk0E_callback
 -s 0x001E0D82=Tsk0E
 -s 0x001E0D9E=Task0E_SendMessage
@@ -4628,6 +4633,7 @@
 -s 0x001E8A78=check_lens_data
 -s 0x001E8AB2=check_Exposure_time
 -s 0x001E8ACE=set_50000103bit3_6700030Cbit23(R4 [IN 0_or_1])
+-s 0x001E8B00=set_50000109bit6_6700030Cbit31(R4 [IN 0_or_1])
 -s 0x001E8B32=s67000xxx_set
 -s 0x001E8B4C=set50000101bit3_then_50000101bit2(R4 [IN 0_or_1])
 -s 0x001E957C=rb0_01
@@ -4987,6 +4993,7 @@
 -s 0x001F2F70=nullsub_183
 -s 0x001F2FD4=Setup_DMA_Audio
 -s 0x001F3038=AudioApi_OnNotifyCompletion(R4 [IN param1], R5 [IN param2])
+-s 0x001F317A=DetectAudioOperation_1rec2play (R4 [OUT mode])
 -s 0x001F31A8=AudioApi_SetInputLevel(R4 [IN param1])
 -s 0x001F31F2=AudioApi_SetInputLine(R4 [IN mic_0_intern_1_extern])
 -s 0x001F323E=call_get_8F98027C_ptr_value
@@ -5096,6 +5103,7 @@
 -s 0x001F5EDE=nullsub_21
 -s 0x001F5EE0=call_sub_158EE6
 -s 0x001F5F50=Tsk29
+-s 0x001F643C=start_tskx2D
 -s 0x001F64B4=Tsk2D
 -s 0x001F6542=ret0__0001
 -s 0x001F6FF0=ret1__0000
@@ -5105,10 +5113,15 @@
 -s 0x001F78D0=ret1__0003
 -s 0x001F7D6A=nullsub_22
 -s 0x001F7E6A=nullsub_56
+-s 0x001F7E6C=initListsBuffersCE7326A0
+-s 0x001F7EDA=initListsBuffersCE738460
+-s 0x001F8030=create_WLANQUE3.BIN
+-s 0x001F80E4=read_WLANQUE3.BIN
 -s 0x001F89B8=struc_139_compare
 -s 0x001F89D6=struc_139_copy
 -s 0x001F90C2=get_8F980D01
 -s 0x001F93F4=ptp_OC_GetObjectInfo_sub1
+-s 0x001F98D0=call_set_LED_xx_SendSet12(R4 [IN on])
 -s 0x001F9AC4=init_400Axxxx
 -s 0x001F9AF6=setup_400Axxxx
 -s 0x001FA1DE=MacroCalc
@@ -5239,7 +5252,7 @@
 -s 0x002067B4=set2A_sync
 -s 0x0020680E=nullsub_83
 -s 0x00206810=set50_sync
--s 0x00206828=dlist_x3x_getNext
+-s 0x00206828=dlist_x30orx31_getNext
 -s 0x00206898=dlist_x30_insert
 -s 0x002069A0=nullsub_57
 -s 0x0020800E=call_nullsub_57
@@ -7503,6 +7516,7 @@
 -s 0x8F8515DC=txSet02
 -s 0x8F8515E2=txSet01
 -s 0x8F899C3D=txSet4E
+-s 0x8F8A1800=tftOutputBufferAddr
 -s 0x8F8A510E=currentGUImode
 -s 0x8F9CA140=rootMenu0_Shooting
 -s 0x8F9CE6A0=rootMenu1_Additems
