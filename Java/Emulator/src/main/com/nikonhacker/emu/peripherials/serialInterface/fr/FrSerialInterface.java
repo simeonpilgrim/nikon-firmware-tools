@@ -2,7 +2,9 @@ package com.nikonhacker.emu.peripherials.serialInterface.fr;
 
 import com.nikonhacker.Constants;
 import com.nikonhacker.Format;
+import com.nikonhacker.emu.Clockable;
 import com.nikonhacker.emu.Platform;
+import com.nikonhacker.emu.peripherials.clock.fr.FrClockGenerator;
 import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 
@@ -12,7 +14,7 @@ import java.util.Queue;
 /**
  * Behaviour based on spec in http://edevice.fujitsu.com/fj/MANUAL/MANUALp/en-pdf/CM71-10147-2E.pdf
  */
-public class FrSerialInterface extends SerialInterface {
+public class FrSerialInterface extends SerialInterface implements Clockable {
     public static final int FIFO_SIZE = 128; // Spec says 16, but code splits message at 0x80
 
     public static final int SCR_TXE_MASK  = 0b0000_0001;
@@ -31,6 +33,12 @@ public class FrSerialInterface extends SerialInterface {
     public static final int SSR_REC_MASK  = 0b1000_0000;
 
     public static final int SMR_SCKE_MASK = 0b0000_0010;
+    public static final int SMR_MODE_MASK = 0b1110_0000;
+
+    public static final int SMR_MODE_UART = 0b0000_0000;
+    public static final int SMR_MODE_MP_UART = 0b0000_0001;
+    public static final int SMR_MODE_CSIO = 0b0000_0010;
+    public static final int SMR_MODE_I2C  = 0b0000_0100;
 
     public static final int FCR0_FE1_MASK  = 0b0000_0001;
     public static final int FCR0_FE2_MASK  = 0b0000_0010;
@@ -85,15 +93,18 @@ public class FrSerialInterface extends SerialInterface {
     private int rxInterruptNumber, txInterruptNumber;
     private int rxInterruptSource, txInterruptSource;
 
+    private int bitNumberBeingTransferred = 0;
 
     public FrSerialInterface(int serialInterfaceNumber, Platform platform, boolean logSerialMessages) {
         super(serialInterfaceNumber, platform, logSerialMessages);
+        // TODO : we still do not know the interrupt numbers for reception.
+        // But all handlers are same, so should work with same interrupt
         switch (serialInterfaceNumber) {
             case 0: /* 0x60 */
-                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_1_SHARED_REQUEST_NR; 
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_1_SHARED_REQUEST_NR;
                 break;
             case 1: /* 0x70 */
-                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_2_SHARED_REQUEST_NR; 
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_2_SHARED_REQUEST_NR;
                 break;
             case 2: /* 0x80 speculations */
             case 3: /* 0x90 speculations */
@@ -102,7 +113,7 @@ public class FrSerialInterface extends SerialInterface {
                 break;
             case 5: /* 0xB0 */
             case 6: /* 0xC0 speculations */
-                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_0_SHARED_REQUEST_NR; 
+                rxInterruptNumber = txInterruptNumber = FrInterruptController.SERIAL_IF_0_SHARED_REQUEST_NR;
                 break;
         }
         rxInterruptSource = 2 * serialInterfaceNumber + 18;
@@ -125,10 +136,6 @@ public class FrSerialInterface extends SerialInterface {
         if ((scrIbcr & SCR_UPCL_MASK) != 0) {
             clearViaUpcl();
         }
-        if (isTieOrTbieSetInScr(scrIbcr)) {
-            // TODO : we still do not know the interrupt numbers for reception
-            throw new RuntimeException("Serial Interface " + serialInterfaceNumber + ": TX interrupt is not implemented yet");
-        }
         synchronized (this) {
             // if TX interrupt (TIE or TBIE) becomes disabled, remove the current request, if any
             if (isTieOrTbieSetInScr(this.scrIbcr) && !isTieOrTbieSetInScr(scrIbcr)) {
@@ -138,7 +145,12 @@ public class FrSerialInterface extends SerialInterface {
             if (isRieSetInScr(this.scrIbcr) && !isRieSetInScr(scrIbcr)) {
                 removeInterrupt(rxInterruptNumber,rxInterruptSource);
             }
+            boolean previousTxEnabled = isScrTxeSet();
             this.scrIbcr = scrIbcr & 0b0111_1111;
+            // Check if TXE was just enabled.
+            if (!previousTxEnabled) {
+                startTransfer();
+            }
         }
     }
 
@@ -201,6 +213,10 @@ public class FrSerialInterface extends SerialInterface {
         }
 
         this.smr = smr;
+    }
+
+    public int getSmrMode() {
+        return ((smr & SMR_MODE_MASK) >>5);
     }
 
     public boolean isSmrSckeSet() {
@@ -358,19 +374,78 @@ public class FrSerialInterface extends SerialInterface {
         // "The transmission data empty flag (SSR:TDRE) is cleared to "0" when transmission data is written to the transmission data register (TDR)"
         clearSsrTdre();
 
-        if (isScrTxeSet()) {
-            // TODO transmitting process should only start in this case
-        }
-        else {
-            if (logSerialMessages) System.out.println("setTdr() called while TXE is not set. TXE is ignored for now");
-        }
+        // Then start transfer
+        if (tdrWasWritten)
+            startTransfer();
+    }
 
+    private final int getNbTxValuesWaiting() {
+        final Queue<Integer> txFifo = isTxFifo1()?fifo1:fifo2;
+        if (txFifo == null) {
+            return (isSsrTdreSet() ? 0 : 1);
+        }
+        return txFifo.size();
+    }
+
+    private final void startTransfer() {
         // In slave mode, we have to wait for a byte to come in and use its clock to transmit
-        if (!isSlaveAndClockInputEnabled() && tdrWasWritten) {
-            super.valueReady(read());
+        if (!isSlaveAndClockInputEnabled() &&
+              (isScrTxeSet() && getNbTxValuesWaiting()>0)  ) {
+            // Insert delay of a few CPU cycles.
+            platform.getMasterClock().add(this, -1, true, false);
         }
     }
 
+    @Override
+    public int getChip() {
+        return Constants.CHIP_FR;
+    }
+
+    @Override
+    public int getFrequencyHz() {
+        int freq;
+        if (getSmrMode()==SMR_MODE_CSIO) {
+            freq = ((FrClockGenerator)platform.getClockGenerator()).getPClkFrequency() / (baudRateGenerator+1);
+        } else {
+            // TODO
+            throw new RuntimeException("getFrequencyHz() not implemented in this mode");
+        }
+        return freq;
+    }
+    /**
+     * The goal of this is to delay the actual transfer according to the currently selected baud rate
+     */
+    @Override
+    public Object onClockTick() throws Exception {
+        bitNumberBeingTransferred++;
+        if (bitNumberBeingTransferred == getNumBits() /* TODO + start/stop/parity if UART */) {
+            bitNumberBeingTransferred = 0;
+
+            if (!isScrTxeSet()) {
+                // half-duplex receive (clock master)
+                if (isScrRxeSet()) {
+                    targetDevice.readHalfDuplex();
+                    // device may stop reception automatically if FIFO was used and configured like this
+                    if (isScrRxeSet()) {
+                        return null;
+                    }
+                }
+            } else {
+                // Transfer one byte
+                Integer value = read();
+                if (value != null) {
+                    super.valueReady(value);
+                    // device may stop transmission automatically if FIFO was used and configured like this
+                    if (isScrTxeSet()) {
+                        return null;
+                    }
+                }
+            }
+            // End of transmission - unregister
+            platform.getMasterClock().remove(this);
+        }
+        return null;
+    }
 
     /**
      * Gets the data transmitted via Serial port
