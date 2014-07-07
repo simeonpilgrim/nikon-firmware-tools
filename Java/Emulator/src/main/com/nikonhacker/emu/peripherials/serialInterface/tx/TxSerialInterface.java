@@ -137,7 +137,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setEn(int en) {
-//        System.out.println(getName() + ".setEn(0x" + Format.asHex(en, 8) + ")");
         this.en = en & EN_SIOE_MASK;
     }
 
@@ -173,10 +172,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
      * @param buf the value to send
      */
     public void setBuf(int buf) {
-//        System.out.println(getName() + ".setBuf(0x" + Format.asHex(buf, 8) + ")");
-//        if (en == 0) {
-//            throw new RuntimeException("Attempt to transmit data to disabled " + getName());
-//        }
         if (isEnSet()) {
             if (!isFcnfCnfgSet()) { // FIFO disabled
                 txBuf = buf;
@@ -208,7 +203,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setCr(int cr) {
-//        System.out.println(getName() + ".setCr(0x" + Format.asHex(cr, 8) + ")");
 
         // RB8 and error flags are not writable
         this.cr = (this.cr & 0b10011100) | (cr & 0b01100011);
@@ -220,7 +214,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setMod0(int mod0) {
-//        System.out.println(getName() + ".setMod0(0x" + Format.asHex(mod0, 8) + ")");
         boolean previousRxEnabled = isMod0RxeSet();
         this.mod0 = mod0;
 
@@ -242,7 +235,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
 
     // Note: could be overridden in TxHSerial, because in that case, fill levels are independent of duplex mode, so no need to recompute them
     public void setMod1(int mod1) {
-//        System.out.println(getName() + ".setMod1(0x" + Format.asHex(mod1, 8) + ")");
         boolean previousTxEnabled = isMod1TxeSet();
         this.mod1 = mod1;
 
@@ -284,7 +276,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setMod2(int mod2) {
-//        System.out.println(getName() + ".setMod2(0x" + Format.asHex(mod2, 8) + ")");
 
         // if SWRST goes from 10 to 01, perform a Software reset
         if ((this.mod2 & MOD2_SWRST_MASK) == 0b10 && (mod2 & MOD2_SWRST_MASK)== 0b01) {
@@ -308,7 +299,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setBrcr(int brcr) {
-//        System.out.println(getName() + ".setBrcr(0x" + Format.asHex(brcr, 8) + ")");
         this.brcr = brcr;
     }
 
@@ -318,7 +308,6 @@ public class TxSerialInterface extends SerialInterface implements Clockable {
     }
 
     public void setBradd(int bradd) {
-//        System.out.println(getName() + ".setBradd(0x" + Format.asHex(bradd, 8) + ")");
         this.bradd = bradd & BRnADD_BRnK_MASK;
     }
 
