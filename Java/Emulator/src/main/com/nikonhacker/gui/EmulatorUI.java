@@ -1435,6 +1435,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(this, e.getMessage() + "\nSee console for more info", "Error", JOptionPane.ERROR_MESSAGE);
                 }
+                // some menu items may get disabled
+                updateStates();
             }
         }
     }
