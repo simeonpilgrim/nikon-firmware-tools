@@ -81,6 +81,7 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
 
         setLayout(new BorderLayout());
         add(tabbedPane, BorderLayout.CENTER);
+        refreshData();
 
         // Start update timer
         refreshTimer = new Timer(ui.getPrefs().getRefreshIntervalMs(), new ActionListener() {
