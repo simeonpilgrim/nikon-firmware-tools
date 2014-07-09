@@ -22,7 +22,6 @@ import java.io.IOException;
  * This file is part of NikonEmulator, a NikonHacker.com project.
  */
 public class EepromSerialPanel extends SerialDevicePanel implements HexEditorListener {
-    private static final int UPDATE_INTERVAL_MS = 100; // 10fps
 
     private final RxTxSerialPanel rxTxSerialPanel;
     private final Prefs prefs;
@@ -84,7 +83,7 @@ public class EepromSerialPanel extends SerialDevicePanel implements HexEditorLis
         add(tabbedPane, BorderLayout.CENTER);
 
         // Start update timer
-        refreshTimer = new Timer(UPDATE_INTERVAL_MS, new ActionListener() {
+        refreshTimer = new Timer(ui.getPrefs().getRefreshIntervalMs(), new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 if (eepromHexEditor.isShowing()) {
                     refreshData();
