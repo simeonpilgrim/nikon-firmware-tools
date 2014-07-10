@@ -2289,8 +2289,8 @@
 -s 0x00107C80=memcpy_fast
 -s 0x00107CB2=memset_fast
 -s 0x00107CE2=memset_fastish
--s 0x00108914=set_set46
--s 0x00108930=insert_ringbuffer_0
+-s 0x00108914=send_set46
+-s 0x00108930=insert_ringbuffer_8F80AA78(R4 [IN byte])
 -s 0x0010896E=start_task_x18
 -s 0x0010898E=set0x50000100.bit7_if_pattern_match01
 -s 0x001089BC=clear0x50000100.bit7_if_pattern_Match00
@@ -2303,9 +2303,9 @@
 -s 0x0010A7B8=Tsk18_Init
 -s 0x0010A84E=nullsub_43
 -s 0x0010A850=ChipSetup_01
--s 0x0010A884=set_defaults_4k_xx
--s 0x0010A8C6=x4k_xx1
--s 0x0010A922=Axis_Capture
+-s 0x0010A884=set_defaults_40001xxx
+-s 0x0010A8C6=set_4000010x
+-s 0x0010A922=Axis_Capture(R4 [IN ptr])
 -s 0x0010B210=s6F008xxx_Init
 -s 0x0010B260=s6F00xxxx_10B260
 -s 0x0010C0F0=Tsk1A_bodyB
@@ -2344,6 +2344,7 @@
 -s 0x001173B4=set_1173B4
 -s 0x001173BE=set_1173BE
 -s 0x001173C8=set_1173C8
+-s 0x0011740A=sub_11740a(R4 [IN ptr])
 -s 0x001177AA=save_picture_settings_into_s48
 -s 0x00117D12=copy_settings_to_struc_48
 -s 0x00117DFE=CopySet1CintoR4_F199
@@ -2409,10 +2410,10 @@
 -s 0x001250E2=cccall_start05_4006chip
 -s 0x00125122=CSIO_ch00_INTbody
 -s 0x00125138=CSIO_ch01_INTbody
--s 0x00125150=IMX071_writeReg(R4 [IN addr], R5 [IN value])
--s 0x0012522A=IMX071_writeRegs(R4 [IN addr], R5 [IN ptr], R5 [IN count])
--s 0x00125348=CSIO_ch00_sending_word
--s 0x0012540C=CSIO_ch00_sending_block
+-s 0x00125150=IMX071_writeReg(R4 [IN addr], R5 [IN byte])
+-s 0x0012522A=IMX071_writeRegs(R4 [IN addr], R5 [IN ptrByte], R5 [IN count])
+-s 0x00125348=CSIO_ch00_sending_word(R4 [IN word])
+-s 0x0012540C=CSIO_ch00_sending_block(R4 [IN ptrWord], R5 [IN count])
 -s 0x001254EC=nullsub_13
 -s 0x001254F0=nullsub_14
 -s 0x001254F2=nullsub_15
@@ -3222,7 +3223,7 @@
 -s 0x0017293E=call_EmbeddedFlashClear(R4 [IN addr; OUT bool_ok],R5 [IN size])
 -s 0x00172950=call_EmbeddedFlashWrite(R4 [IN dstAddr], R5 [IN srcAddr], R6 [IN size])
 -s 0x00172962=call_flash_firmware_xx
--s 0x00172970=copy_8000_xx
+-s 0x00172970=FRV_DownloadCode
 -s 0x001729BC=s40x7_1729BC
 -s 0x00172F06=s40x7_172F06
 -s 0x00173286=setup_0x401D004x_0x40170000
@@ -3956,7 +3957,6 @@
 -s 0x001C019E=TftBacklightOn
 -s 0x001C01AC=TftBacklightOff
 -s 0x001C01BA=TftInitialize
--s 0x001C02C0=Tft_xxx1
 -s 0x001C03E4=TftBacklightXXX
 -s 0x001C0408=start00_4004_action
 -s 0x001C05C0=SetTftBrightness
@@ -4607,11 +4607,11 @@
 -s 0x001E7184=Tsk17
 -s 0x001E726C=CSIO_ch00_init_ch01_setup_ISO_VideoFps
 -s 0x001E730A=CSIO_ch0_ch1_sending_data00
--s 0x001E75A0=CSIO_maybe_reset
+-s 0x001E75A0=stopCommunication_IMX071_PowerDown
 -s 0x001E76DE=call_CSIO_ch1_setup_registerF8_63
 -s 0x001E77A6=CSIO_ch01_action0x0F
 -s 0x001E7918=CSIO_ch01_action0x11
--s 0x001E79A8=CSIO_ch01_action0x12
+-s 0x001E79A8=CSIO_ch01_action0x12_IMX071_PowerDown
 -s 0x001E7A9A=CSIO_call00_call00_sending_ch0
 -s 0x001E7B46=push_byte_8F964EA5
 -s 0x001E7B5E=Tsk17_Init
@@ -4671,7 +4671,7 @@
 -s 0x001EAA2C=assert5000010Cbit2_start_timer_120(R4 [IN uSeconds])
 -s 0x001EAA52=wait_timer_120_deassert5000010Cbit2
 -s 0x001EAB4C=inttab_5_int15_body
--s 0x001EAD46=timer_110_interrupt
+-s 0x001EAD46=timer_110_interrupt_IMX071_PowerUp
 -s 0x001EADF6=timer_120_interrupt
 -s 0x001EAE12=getvalues_1EAE12
 -s 0x001EAF90=AudioIF_0ch_InitPlay(R4 [IN param1], R5 [IN param2], R6 [IN param3])
