@@ -89,6 +89,7 @@ public class BreakTriggerListFrame extends DocumentFrame {
         triggerTable.getColumnModel().getColumn(6).setPreferredWidth(200);
         triggerTable.getColumnModel().getColumn(7).setPreferredWidth(100);
         triggerTable.getColumnModel().getColumn(8).setPreferredWidth(100);
+        triggerTable.setToolTipText("Right mouse button jumps to source");
         triggerTable.addMouseListener(new MouseAdapter() {
             public void mouseClicked(MouseEvent e) {
                 // right mouse button
