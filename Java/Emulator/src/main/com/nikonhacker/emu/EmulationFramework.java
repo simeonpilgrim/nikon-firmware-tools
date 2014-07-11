@@ -59,6 +59,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
 import com.nikonhacker.emu.peripherials.serialInterface.flashCharger.Nhhs2;
 import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
+import com.nikonhacker.emu.peripherials.serialInterface.imageSensor.Imx071;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
@@ -260,6 +261,10 @@ public class EmulationFramework {
                 for (int i = 0; i<sdController.length; i++) {
                     sdController[i] = new FrSdController(i,platform[chip]);
                 }
+
+                Imx071 imageSensor = new Imx071(platform[chip]);
+                serialDevices.add(imageSensor);
+                connectFrCsio1SerialDevice(serialInterfaces[1], imageSensor, ioPorts);
             }
             else {
                 cpuState = new TxCPUState();
@@ -611,6 +616,17 @@ public class EmulationFramework {
         // Connect CPU pins
         Pin.interconnect(txIoPorts[IoPort.PORT_I].getPin(3), fMountCircuit.getFromTXPin());
         Pin.interconnect(txIoPorts[IoPort.PORT_J].getPin(7), fMountCircuit.getToTXPin());
+    }
+
+    private void connectFrCsio1SerialDevice(SerialInterface serialInterface, Imx071 imageSensor, IoPort[] frIoPorts) {
+        SerialDevice.interConnectSerialDevices(serialInterface, imageSensor);
+
+        // Connect CPU pins
+        Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(2), imageSensor.getXhsPin());
+        Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(3), imageSensor.getXvsPin());
+        Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(4), imageSensor.getXcePin());
+        Pin.interconnect(frIoPorts[IoPort.PORT_5].getPin(1), imageSensor.getSckPin());
+        Pin.interconnect(frIoPorts[IoPort.PORT_9].getPin(1), imageSensor.getSdiPin());
     }
 
     private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {

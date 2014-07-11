@@ -2,10 +2,12 @@ package com.nikonhacker.gui.component.serialInterface;
 
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
+import com.nikonhacker.emu.peripherials.serialInterface.imageSensor.Imx071;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
 import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
 import com.nikonhacker.gui.EmulatorUI;
 import com.nikonhacker.gui.component.serialInterface.eeprom.EepromSerialPanel;
+import com.nikonhacker.gui.component.serialInterface.imageSensor.ImageSensorSerialPanel;
 import com.nikonhacker.gui.component.serialInterface.viewfinderLcd.LcdSerialPanel;
 import com.nikonhacker.gui.component.serialInterface.fMount.FMountSerialPanel;
 
@@ -19,6 +21,9 @@ public class SerialPanelFactory {
         }
         else if (serialDevice instanceof FMountCircuit) {
             return new FMountSerialPanel((FMountCircuit)serialDevice, ui);
+        }
+        else if (serialDevice instanceof Imx071) {
+            return new ImageSensorSerialPanel((Imx071)serialDevice, ui);
         }
         else return new RxTxSerialPanel(serialDevice);
     }
