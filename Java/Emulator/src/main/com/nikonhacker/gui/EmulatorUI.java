@@ -970,6 +970,12 @@ public class EmulatorUI extends JFrame implements ActionListener {
             ioPortsMenuItem[chip].addActionListener(this);
             componentsMenu.add(ioPortsMenuItem[chip]);
 
+            //Serial devices
+            serialDevicesMenuItem[chip] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[chip] + " serial devices");
+            serialDevicesMenuItem[chip].setActionCommand(COMMAND_TOGGLE_SERIAL_DEVICES[chip]);
+            serialDevicesMenuItem[chip].addActionListener(this);
+            componentsMenu.add(serialDevicesMenuItem[chip]);
+
             componentsMenu.add(new JSeparator());
         }
 
@@ -989,12 +995,6 @@ public class EmulatorUI extends JFrame implements ActionListener {
         componentsMenu.add(component4006MenuItem);
 
         componentsMenu.add(new JSeparator());
-
-        //Serial devices: TX19 only for now
-        serialDevicesMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " serial devices (TX only)");
-        serialDevicesMenuItem[Constants.CHIP_TX].setActionCommand(COMMAND_TOGGLE_SERIAL_DEVICES[Constants.CHIP_TX]);
-        serialDevicesMenuItem[Constants.CHIP_TX].addActionListener(this);
-        componentsMenu.add(serialDevicesMenuItem[Constants.CHIP_TX]);
 
         //A/D converter: TX19 only for now
         adConverterMenuItem[Constants.CHIP_TX] = new JCheckBoxMenuItem(Constants.CHIP_LABEL[Constants.CHIP_TX] + " A/D converter (TX only)");
@@ -2778,8 +2778,8 @@ public class EmulatorUI extends JFrame implements ActionListener {
         interruptControllerMenuItem[chip].setSelected(interruptControllerFrame[chip] != null);
         serialInterfacesMenuItem[chip].setSelected(serialInterfaceFrame[chip] != null);
         ioPortsMenuItem[chip].setSelected(ioPortsFrame[chip] != null);
+        serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
         if (chip == Constants.CHIP_TX) {
-            serialDevicesMenuItem[chip].setSelected(genericSerialFrame[chip] != null);
             adConverterMenuItem[chip].setSelected(adConverterFrame[chip] != null);
         }
 
@@ -2827,9 +2827,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             // coderat: opening of IO Ports window or other spying window with runing emulation may cause unpredictable results,
             // because it runs asynchronously. In constructor a pin will be inserted in the middle of connection by 2
             // consequent calls that may fail to transfer value correctly in another thread !
-            if (chip == Constants.CHIP_TX) {
-                serialDevicesMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); serialDevicesButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
-            }
+            serialDevicesMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); if (chip==Constants.CHIP_TX) serialDevicesButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
             serialInterfacesMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); serialInterfacesButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
             ioPortsMenuItem[chip].setEnabled(!framework.isEmulatorPlaying(chip)); ioPortsButton[chip].setEnabled(!framework.isEmulatorPlaying(chip));
 
@@ -2851,9 +2849,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
             pauseMenuItem[chip].setEnabled(false); pauseButton[chip].setEnabled(false);
             stepMenuItem[chip].setEnabled(false); stepButton[chip].setEnabled(false);
             chipOptionsMenuItem[chip].setEnabled(false); chipOptionsButton[chip].setEnabled(false);
-            if (chip == Constants.CHIP_TX) {
-                serialDevicesMenuItem[chip].setEnabled(false); serialDevicesButton[chip].setEnabled(false);
-            }
+            serialDevicesMenuItem[chip].setEnabled(false); if (chip==Constants.CHIP_TX) serialDevicesButton[chip].setEnabled(false);
             serialInterfacesMenuItem[chip].setEnabled(false); serialInterfacesButton[chip].setEnabled(false);
             ioPortsMenuItem[chip].setEnabled(false); ioPortsButton[chip].setEnabled(false);
 
