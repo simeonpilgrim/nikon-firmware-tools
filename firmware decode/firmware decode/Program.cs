@@ -48,6 +48,8 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");    
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
+            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
 
             //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
@@ -131,7 +133,7 @@ namespace Nikon_Decode
             //MergeDumps(@"C:\Dev\libgphoto2-2.5.0\examples\testa");
             //FindEmptyBlocks(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x40000);
 
-            Dump_D7000_S179(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\D7000\s179.bin");
+           // Dump_D7000_S179(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\D7000\s179.bin");
 
         }
 
