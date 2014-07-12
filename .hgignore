@@ -16,3 +16,7 @@ Java/Emulator/batch_build/
 Java/Emulator/.idea/
 Firmware Patch/MakePatch/bin
 Firmware Patch/MakePatch/obj
+PTP Tools/NikonDump/bin
+PTP Tools/NikonDump/obj
+PTP Tools/NikonFlags/bin
+PTP Tools/NikonFlags/obj
