@@ -18,7 +18,8 @@ public class Imx071 extends SerialInterface {
     private Pin xvs;
     private Pin xhs;
 
-    private Integer currentAddress = null;
+    private Integer address = null;
+    private Integer chipId = null;
     private boolean xceHigh;
     private boolean sckHigh;
     private boolean sdiHigh;
@@ -118,11 +119,16 @@ public class Imx071 extends SerialInterface {
 
     public void write(Integer value) {
         if (isCommunicationEnabled()) {
-            if (currentAddress == null) {
-                currentAddress = value & 0xFF;
+            if (chipId == null) {
+                chipId = value & 0xFF;
+            } else if (address == null) {
+                address = value & 0xFF;
             } else {
-                memory[currentAddress] = (byte)(value & 0xFF);
-                currentAddress++;
+                if (chipId==2)
+                    memory[address] = (byte)(value & 0xFF);
+                else
+                    System.out.println("IMX071: unsupported chipID=" + chipId);
+                address++;
             }
         } else {
             System.out.println("IMX071: receive byte with disabled communication");
@@ -132,7 +138,8 @@ public class Imx071 extends SerialInterface {
     private final void setXce(int value) {
         xceHigh = (value == 1 ? true : false);
         if (xceHigh) {
-            currentAddress = null;
+            address = null;
+            chipId = null;
         }
     }
     private final void setSck(int value) {
