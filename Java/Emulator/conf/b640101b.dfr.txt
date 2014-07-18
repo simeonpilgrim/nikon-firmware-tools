@@ -2305,7 +2305,7 @@
 -s 0x0010A850=ChipSetup_01
 -s 0x0010A884=set_defaults_40001xxx
 -s 0x0010A8C6=set_4000010x
--s 0x0010A922=Axis_Capture(R4 [IN ptr])
+-s 0x0010A922=waitSensorReadoutStarted(R4 [IN ptr])
 -s 0x0010B210=s6F008xxx_Init
 -s 0x0010B260=s6F00xxxx_10B260
 -s 0x0010C0F0=Tsk1A_bodyB
@@ -2333,7 +2333,7 @@
 -s 0x00115920=copy_words
 -s 0x00115930=wait_50000103_0x08_set
 -s 0x00115964=poll_50000103_0x08_set
--s 0x0011599C=int_24_body01
+-s 0x0011599C=inttab_20_int24_source30_body
 -s 0x001159DA=rebuild_MvDefectTable_xx
 -s 0x0011660A=ret_1_11660A
 -s 0x00116956=copy_stru_8F80C470_field_5D0
@@ -4615,9 +4615,10 @@
 -s 0x001E7A9A=CSIO_call00_call00_sending_ch0
 -s 0x001E7B46=push_byte_8F964EA5
 -s 0x001E7B5E=Tsk17_Init
+-s 0x001E7F32=Imx071Init
 -s 0x001E8466=s5000_1E8466
--s 0x001E88B2=enable_1E88B2
--s 0x001E88C6=disable_1E88B2
+-s 0x001E88B2=set5000010Cbit0
+-s 0x001E88C6=clear5000010Cbit0
 -s 0x001E88DA=get_8F964E9C.bit7
 -s 0x001E88E6=get_1E88E6
 -s 0x001E891C=get_1E891C
@@ -4644,7 +4645,7 @@
 -s 0x001E9900=rb0_08
 -s 0x001E9946=rb0_09
 -s 0x001E99E2=rb0_0B
--s 0x001E9A1A=rb0_14
+-s 0x001E9A1A=InitSensorBridge
 -s 0x001E9A64=rb0_15
 -s 0x001E9A88=rb0_16
 -s 0x001E9B6C=rb0_17
@@ -4662,7 +4663,7 @@
 -s 0x001EA7DC=rb0_60
 -s 0x001EA8CA=rb0_61
 -s 0x001EA924=rb0_62
--s 0x001EA952=rb0_64
+-s 0x001EA952=rb0_64_SSBRK
 -s 0x001EA97A=timer_110_Set(R4 [IN uSeconds])
 -s 0x001EA99E=timer_110_Stop
 -s 0x001EA9AE=timer_120_Set(R4 [IN uSeconds])
@@ -4670,7 +4671,12 @@
 -s 0x001EA9E2=pulse5000010Cbit2_forSometime(R4 [IN uSeconds])
 -s 0x001EAA2C=assert5000010Cbit2_start_timer_120(R4 [IN uSeconds])
 -s 0x001EAA52=wait_timer_120_deassert5000010Cbit2
+-s 0x001EAA7C=inttab_1_int11_body
+-s 0x001EAAE4=inttab_7_int17_body
 -s 0x001EAB4C=inttab_5_int15_body
+-s 0x001EAC16=inttab_0_int10_body
+-s 0x001EAC7E=inttab_1c_int22_body
+-s 0x001EACB2=inttab_1f_int24_source31_body
 -s 0x001EAD46=timer_110_interrupt_IMX071_PowerUp
 -s 0x001EADF6=timer_120_interrupt
 -s 0x001EAE12=getvalues_1EAE12
