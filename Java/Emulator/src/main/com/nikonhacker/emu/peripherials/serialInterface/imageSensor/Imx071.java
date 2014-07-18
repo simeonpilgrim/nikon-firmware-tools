@@ -23,7 +23,6 @@ public class Imx071 extends SerialInterface {
     private boolean xceHigh;
     private boolean sckHigh;
     private boolean sdiHigh;
-    private boolean power;
     // ------------------------ Safe methods
 
     public Imx071(Platform  platform) {
@@ -112,9 +111,6 @@ public class Imx071 extends SerialInterface {
         throw new RuntimeException("Imx071.read not possible");
     }
 
-    public boolean getPower() {
-        return power;
-    }
     // ------------------------ Start of synchron methods
 
     public void write(Integer value) {
@@ -148,15 +144,6 @@ public class Imx071 extends SerialInterface {
 
     private final void setSdi(int value) {
         sdiHigh = (value == 1 ? true : false);
-    }
-
-    /*
-        (can be called from other UI thread)
-     */
-    public void setPower(boolean on) {
-        power = on;
-        // channel 5 interrupt 0x15
-        ((FrInterruptController)platform.getInterruptController()).setExternalInterruptChannelValue(5, (on ? 1 : 0));
     }
 
     // ------------------------ End of synchron methods

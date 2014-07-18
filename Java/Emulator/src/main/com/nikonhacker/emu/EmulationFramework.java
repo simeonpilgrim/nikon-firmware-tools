@@ -448,7 +448,7 @@ public class EmulationFramework {
                 // Perform serial interconnection
                 interconnectChipSerialPorts(platform[Constants.CHIP_FR].getSerialInterfaces(), platform[Constants.CHIP_TX].getSerialInterfaces());
                 // Perform serial interconnection
-                interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts());
+                interconnectChipIoPorts(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts(), (FrInterruptController)platform[Constants.CHIP_FR].getInterruptController());
                 // Perform LCD screen connection
                 connectLcdScreenRelatedPins(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getIoPorts(), (FrLcd) platform[Constants.CHIP_FR].getLcd());
                 connectFrontPanelPins(platform[Constants.CHIP_FR].getIoPorts(), platform[Constants.CHIP_TX].getFrontPanel());
@@ -669,7 +669,7 @@ public class EmulationFramework {
         txSerialInterfaceH0.connectTargetDevice(frSerialInterface5);
     }
 
-    private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts) {
+    private void interconnectChipIoPorts(IoPort[] frIoPorts, IoPort[] txIoPorts, final FrInterruptController frInterruptController) {
         // FR 0x50000100.bit5 => TX P53 (INTF), triggered (low) by FR at 001A8CBE and 001A8E24 and set back hi at 001A8E58
         Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(5), txIoPorts[IoPort.PORT_5].getPin(3));
 
@@ -677,6 +677,24 @@ public class EmulationFramework {
         Pin.interconnect(frIoPorts[IoPort.PORT_7].getPin(6), txIoPorts[IoPort.PORT_C].getPin(3));
 
         // TODO TX ??? => FR 0x5000010B.bit3 (INT23) autofocus reached (for beep)
+
+        // TX P45 => FR (INT 0x15)
+        Pin.interconnect(new Pin(Constants.CHIP_LABEL[Constants.CHIP_FR] + " INT0x15") {
+                @Override
+                public final void setInputValue(int value) {
+                    // channel 5 interrupt 0x15
+                    frInterruptController.setExternalInterruptChannelValue(5, value);
+                }
+            }, txIoPorts[IoPort.PORT_4].getPin(5));
+
+        // TX P50 => FR (INT 0x11)
+        Pin.interconnect(new Pin(Constants.CHIP_LABEL[Constants.CHIP_FR] + " INT0x11") {
+                @Override
+                public final void setInputValue(int value) {
+                    // channel 1 interrupt 0x11
+                    frInterruptController.setExternalInterruptChannelValue(1, value);
+                }
+            }, txIoPorts[IoPort.PORT_5].getPin(0));
     }
 
 

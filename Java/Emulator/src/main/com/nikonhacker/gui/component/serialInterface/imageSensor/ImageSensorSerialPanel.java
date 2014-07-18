@@ -37,19 +37,6 @@ public class ImageSensorSerialPanel extends SerialDevicePanel implements HexEdit
         // Hex editor
         JPanel panel = new JPanel();
 
-        JToggleButton powerButton = new JToggleButton("Power On", (imageSensor.getPower() ? true : false));
-        powerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (((JToggleButton)e.getSource()).isSelected()) {
-                    imageSensor.setPower(true);
-                } else {
-                    imageSensor.setPower(false);
-                }
-            }
-        });
-        panel.add(powerButton, BorderLayout.NORTH);
-
         eepromHexEditor = new HexEditor();
         eepromHexEditor.setRowHeaderOffset(0);
         eepromHexEditor.setRowHeaderMinDigits(4);
