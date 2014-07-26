@@ -13,7 +13,6 @@
 #
 
 my $bigEndian = 0;
-my $seekOffset = 0;
 
 my $LONG_TAG_TYPE = 0x04;
 
@@ -52,20 +51,17 @@ my %tiffTagName = (
 	0x011B => 'YResolution',
 	0x011C => 'PlanarConfiguration',
 	0x0128 => 'ResolutionUnit',
-	0x0131 => 'Software',
+	0x0131 => 'FirmwareVersion',
 	0x0132 => 'DateTime',
 	0x013B => 'Artist',
-	$SUB_IFD_TAG
-	       => 'SubIFD Offsets',
+	0x014A => 'SubIFD Offsets',
 	0x0201 => 'JPEGInterchangeFormat Offset',
 	0x0202 => 'JPEGInterchangeFormatLength',
 	0x0213 => 'YCbCrPositioning',
 	0x0214 => 'ReferenceBlackWhite',
 	0x8298 => 'Copyright',
-	$EXIF_IFD_TAG
-	       => 'ExifIFD Offset',
-	$GPS_IFD_TAG
-				 => 'GpsIFD Offset'
+	0x8769 => 'ExifIFD Offset',
+	0x8825 => 'GpsIFD Offset'
 	);
 
 my $MAKERNOTE_TAG = 0x927C;
@@ -83,8 +79,7 @@ my %exifTagName = (
 	0x9208 => 'LightSourceType',
 	0x9209 => 'Flash',
 	0x920A => 'FocalLength',
-	$MAKERNOTE_TAG
-	       => 'MakerNote',
+	0x927C => 'MakerNote',
 	0x9286 => 'UserComment',
 	0x9290 => 'SubSecTime',
 	0x9291 => 'SubSecTimeOriginal',
@@ -112,7 +107,20 @@ my %gpsTagName = (
 	0x0000 => 'Version',
 	);
 
+my @nikonIfdTags = (0x0011);
+
 my %nikonTagName = (
+	0x0001 => 'Version',
+	0x0002 => 'ISO',
+	0x0004 => 'FileType',
+	0x0005 => 'WhiteBalance',
+	0x0007 => 'FocusMode',
+	0x0011 => 'PreviewIFD Offset',
+	0x001B => 'ImageWidthHeight',
+	0x001D => 'SerialNumber',
+	0x0023 => 'PictureControlInfo',
+	0x0084 => 'LensFocalLengthMaxFNumber',
+	0x00A7 => 'ShutterCount'
 	);
 
 #-------------------------------------------------------------
@@ -131,6 +139,23 @@ sub readData($) {
   }
 
   return $buf;
+}
+#-------------------------------------------------------------
+my $headerOffset = 0;
+
+sub setHeaderOffset($) {
+	my $ret = $headerOffset;
+	$headerOffset = $_[0];
+	return $ret;
+}
+#-------------------------------------------------------------
+sub seekFromHeader($) {
+	seek(IN, $headerOffset + $_[0], 0)
+			or die "Problem seeking: $!";
+}
+#-------------------------------------------------------------
+sub tellFilePos($) {
+	return $headerOffset+$_[0];
 }
 #-------------------------------------------------------------
 sub getValueLength ($$) {
@@ -152,7 +177,7 @@ sub printValue ($$$) {
 	my $num;
 
 	# BYTE, small UNDEFINED
-	if ($_[0]==1 || ($_[0]==7 && $_[1]<10)) {
+	if ($_[0]==1 || ($_[0]==7 && $_[1]<16)) {
 		for (my $i=$_[1]; $i>0; $i--) {
 			($num,$value) = unpack( 'Ca*', $value);
 			printf(" %02X", $num);
@@ -204,8 +229,7 @@ sub printIFD($\%;\@) {
 	my @IFDs;
 
 	print "Offset: $offset\n";
-	seek(IN, $seekOffset + $offset, 0)
-			or die "Problem seeking: $!";
+	seekFromHeader($offset);
 	my $buf = readData(2);
 	my $num = unpack( ($bigEndian ? 'n':'i'), $buf);
 	print "Entrys: $num\n";
@@ -223,8 +247,7 @@ sub printIFD($\%;\@) {
 		if ($len>4) {
 			($offset, $buf) = unpack( ($bigEndian ? 'Na*':'Ia*'), $buf);
 
-			seek(IN, $seekOffset + $offset, 0)
-					or die "Problem seeking: $!";
+			seekFromHeader($offset);
 			$value = readData($len);
 		} else {
 			# embedded
@@ -300,8 +323,7 @@ sub printTiff {
 
 					if ($$entry[0] == $MAKERNOTE_TAG) {
 
-						seek(IN, $seekOffset + $$entry[1], 0)
-								or die "Problem seeking: $!";
+						seekFromHeader($$entry[1]);
 
 						# Nikon MakerNote embedd anoter TIFF
 						if (readData(6) eq "Nikon\x00") {
@@ -310,10 +332,15 @@ sub printTiff {
 							readData(2);
 							# TIFF header
 							if (readData(4) eq "\x4D\x4D\x00\x2A") {
-								my $oldSeekOffset = $seekOffset;
-								$seekOffset = $$entry[1]  + 6 + 2 + 2;
-								printIFD(unpack('N', readData(4)), %nikonTagName);
-								$seekOffset = $oldSeekOffset;
+								my $oldHeaderOffset = setHeaderOffset($$entry[1]  + 6 + 2 + 2);
+								my ($j,$nikonSubIfds) = printIFD(unpack('N', readData(4)), %nikonTagName, @nikonIfdTags);
+
+								for (@$nikonSubIfds) {
+									my $entry = $_;
+									print "Nikon PreviewIFD ";
+									printIFD($$entry[1], %tiffTagName);
+								}
+								setHeaderOffset($oldHeaderOffset);
 							}
 
 						} else {
@@ -328,8 +355,7 @@ sub printTiff {
 			}
 		}
 
-		seek(IN, $seekOffset + $offset+$entrys*12+2, 0)
-				or die "Problem seeking: $!";
+		seekFromHeader($offset+$entrys*12+2);
 		# next IFD offset
 		$offset = unpack( ($bigEndian ? 'N':'I'), readData(4));
 	}
