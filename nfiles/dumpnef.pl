@@ -61,7 +61,10 @@ my %tiffTagName = (
 	0x0214 => 'ReferenceBlackWhite',
 	0x8298 => 'Copyright',
 	0x8769 => 'ExifIFD Offset',
-	0x8825 => 'GpsIFD Offset'
+	0x8825 => 'GpsIFD Offset',
+	0x828D => 'CFAPatternDimensions',
+	0x828E => 'CFAPattern',
+	0x9217 => 'PhotoSensorType',
 	);
 
 my $MAKERNOTE_TAG = 0x927C;
