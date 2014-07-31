@@ -64,6 +64,8 @@ my %tiffTagName = (
 	0x8825 => 'GpsIFD Offset',
 	0x828D => 'CFAPatternDimensions',
 	0x828E => 'CFAPattern',
+	0x9003 => 'DateTimeOriginal',
+	0x9216 => 'TIFF/EPVersion',
 	0x9217 => 'PhotoSensorType',
 	);
 
