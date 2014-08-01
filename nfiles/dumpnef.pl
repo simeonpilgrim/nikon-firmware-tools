@@ -10,6 +10,8 @@
 #
 # History:
 # 21Jul14 coderat: creation
+# 01Aug14 coderat: print real file offsets for embedded TIFF;
+#                  embedded LONG values may still differ
 #
 
 my $bigEndian = 0;
@@ -90,20 +92,20 @@ my %exifTagName = (
 	0x9291 => 'SubSecTimeOriginal',
 	0x9292 => 'SubSecTimeDigitized',
 	0xA217 => 'PhotoSensorType',
-  0xA300 => 'FileSource',
-  0xA301 => 'SceneType',
-  0xA302 => 'CFAPattern',
-  0xA401 => 'CustomRendered',
-  0xA402 => 'ExposureMode',
-  0xA403 => 'WhiteBalance',
-  0xA404 => 'DigitalZoomRatio',
-  0xA405 => 'FocalLengthIn35mm',
-  0xA406 => 'SceneCaptureType',
-  0xA407 => 'Gain',
-  0xA408 => 'Contrast',
-  0xA409 => 'Saturation',
-  0xA40A => 'Sharpness',
-  0xA40C => 'SubjectDistanceRange'
+	0xA300 => 'FileSource',
+	0xA301 => 'SceneType',
+	0xA302 => 'CFAPattern',
+	0xA401 => 'CustomRendered',
+	0xA402 => 'ExposureMode',
+	0xA403 => 'WhiteBalance',
+	0xA404 => 'DigitalZoomRatio',
+	0xA405 => 'FocalLengthIn35mm',
+	0xA406 => 'SceneCaptureType',
+	0xA407 => 'Gain',
+	0xA408 => 'Contrast',
+	0xA409 => 'Saturation',
+	0xA40A => 'Sharpness',
+	0xA40C => 'SubjectDistanceRange'
 	);
 
 my @exifIfdTags = ($MAKERNOTE_TAG);
@@ -233,7 +235,7 @@ sub printIFD($\%;\@) {
 	my $ifdTags = $_[2];
 	my @IFDs;
 
-	print "Offset: $offset\n";
+	print "Offset: ".tellFilePos($offset)."\n";
 	seekFromHeader($offset);
 	my $buf = readData(2);
 	my $num = unpack( ($bigEndian ? 'n':'i'), $buf);
@@ -261,7 +263,7 @@ sub printIFD($\%;\@) {
 
 		printf('Tag:%04X type: %s[%d] ',$tag,$tagType{$type},$count);
 		if ($len>4) {
-			printf( '(offset %d) ', $offset);
+			printf( '(offset %d) ', tellFilePos($offset));
 		}
 		if (exists($$tagName{$tag})) {
 			print $$tagName{$tag};
@@ -338,6 +340,7 @@ sub printTiff {
 							# TIFF header
 							if (readData(4) eq "\x4D\x4D\x00\x2A") {
 								my $oldHeaderOffset = setHeaderOffset($$entry[1]  + 6 + 2 + 2);
+								print "NikonIFD ";
 								my ($j,$nikonSubIfds) = printIFD(unpack('N', readData(4)), %nikonTagName, @nikonIfdTags);
 
 								for (@$nikonSubIfds) {
