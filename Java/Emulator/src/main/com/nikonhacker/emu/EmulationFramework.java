@@ -61,6 +61,7 @@ import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.imageSensor.Imx071;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
+import com.nikonhacker.emu.peripherials.serialInterface.sensorBridge.Ei155;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.SpiBus;
@@ -265,6 +266,10 @@ public class EmulationFramework {
                 Imx071 imageSensor = new Imx071(platform[chip]);
                 serialDevices.add(imageSensor);
                 connectFrCsio1SerialDevice(serialInterfaces[1], imageSensor, ioPorts);
+
+                Ei155 sensorBridge = new Ei155(platform[chip]);
+                serialDevices.add(sensorBridge);
+                connectFrCsio0SerialDevice(serialInterfaces[0], sensorBridge, ioPorts);
             }
             else {
                 cpuState = new TxCPUState();
@@ -627,6 +632,13 @@ public class EmulationFramework {
         Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(4), imageSensor.getXcePin());
         Pin.interconnect(frIoPorts[IoPort.PORT_5].getPin(1), imageSensor.getSckPin());
         Pin.interconnect(frIoPorts[IoPort.PORT_9].getPin(1), imageSensor.getSdiPin());
+    }
+
+    private void connectFrCsio0SerialDevice(SerialInterface serialInterface, Ei155 sensorBridge, IoPort[] frIoPorts) {
+        SerialDevice.interConnectSerialDevices(serialInterface, sensorBridge);
+
+        // Connect CPU pins
+        Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(5), sensorBridge.getCsPin());
     }
 
     private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {
