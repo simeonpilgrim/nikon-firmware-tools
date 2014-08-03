@@ -14,29 +14,31 @@ public class MirrorBox implements Clockable {
     private Pin mirrorMove;
     private Pin mirrorDir;
     private Pin mirrorLock;
-    private Pin mirrorX1;
 
     // TODO it is WORKAROUND because MasterClock doesn't work with low clock frequencies!!!
     private static final int CLOCK_FREQ = 100000;
     private int timerCount;
 
     // states for shooting photo movement only!
-    private static final int[] wipersStates = {0b111, 0b110, 0b100, 0b000};
+    private static final int[] wipersStates = {0b000, 0b110, 0b100, 0b110, 0b010, 0b011, 0b111, 0b001, 0b101, 0b100, 0b111, 0b110, 0b100, 0b000};
     // in ms
-    private static final int[] wipersTimes = {0, 18, 30, 33, 0};
+    private static final int[] wipersTimes =  {    0,    26,    21,     4,     8,    34,    19,     6,    13,    21,    14,    18,    30,    33};
+
+    private static final int STATE_MIRROR_DOWN = 10;
+    private static final int STATE_MIRROR_UP_PHOTO = wipersStates.length-1;
+    private static final int STATE_MIRROR_UP_LIVEVIEW = 4;
+    private static final int STATE_MIRROR_UP_LIVEVIEWEXPOSURE = 0;
     private int state;
     private int mirrorMovement;
     private boolean isMoving;
-    private int     timeFromPuls;
 
     public MirrorBox(Platform platform) {
         this.platform = platform;
-        state = 0;
-
+        state = STATE_MIRROR_DOWN;
         for (int i=0; i<3; i++) {
-            wipers[i] = new PulledOutputPin(this.getClass().getSimpleName() + " WIPER" + i + " pin", (wipersStates[0]>>(2-i))&1);
+            wipers[i] = new PulledOutputPin(this.getClass().getSimpleName() + " WIPER" + i + " pin", (wipersStates[STATE_MIRROR_DOWN]>>(2-i))&1);
         }
-        mirrorX1 = new Pin(this.getClass().getSimpleName() + " X1 pin");
+
         mirrorMove = new Pin(this.getClass().getSimpleName() + " MOVE pin") {
             @Override
             public final void setInputValue(int value) {
@@ -63,10 +65,6 @@ public class MirrorBox implements Clockable {
         return mirrorDir;
     }
 
-    public final Pin getX1Pin() {
-        return mirrorX1;
-    }
-
     @Override
     public int getFrequencyHz() {
         return CLOCK_FREQ;
@@ -82,14 +80,6 @@ public class MirrorBox implements Clockable {
         if ( (--timerCount)>0)
             return null;
 
-        if (timeFromPuls!=0) {
-            setClockInterval(timeFromPuls);
-            timeFromPuls = 0;
-            // in emulator puls width can be
-            mirrorX1.setOutputValue(1);
-            mirrorX1.setOutputValue(0);
-            return null;
-        }
         if (mirrorMovement==0)
             return null;
 
@@ -119,16 +109,12 @@ public class MirrorBox implements Clockable {
 
             if (mirrorMovement>0) {
 
-                if (wipersTimes[state+1]!=0) {
-
-                    if (1==state) {
-                        setClockInterval(1);
-                        timeFromPuls = wipersTimes[state+1] - 1;
-                    } else
-                        setClockInterval(wipersTimes[state+1]);
+                if (state !=  STATE_MIRROR_UP_PHOTO) {
+                    setClockInterval(wipersTimes[state+1]);
                     // if first time
-                    if (!inClock)
+                    if (!inClock) {
                         platform.getMasterClock().add(this, -1, true, false);
+                    }
                 } else {
 
                     // move not possible, so stop (in reality still spins due to inertion/torque)
@@ -141,22 +127,13 @@ public class MirrorBox implements Clockable {
 
             } else if (mirrorMovement<0) {
 
-                if (wipersTimes[state]!=0) {
+                if (state != STATE_MIRROR_UP_LIVEVIEWEXPOSURE) {
 
-                    // if highest state
-                    if (wipersStates.length-1 == state) {
-                        setClockInterval(6);
-                        timeFromPuls = wipersTimes[state] - 6;
-
-                    // seems same pulse as on going up
-                    } else if (state==2) {
-                        setClockInterval(wipersTimes[state+1] - 1);
-                        timeFromPuls = 1;
-                    } else
-                        setClockInterval(wipersTimes[state]);
+                    setClockInterval(wipersTimes[state]);
                     // if first time
-                    if (!inClock)
+                    if (!inClock) {
                         platform.getMasterClock().add(this, -1, true, false);
+                    }
                 } else {
 
                     // move not possible, so stop
@@ -168,7 +145,6 @@ public class MirrorBox implements Clockable {
             } else {
 
                 setClockInterval(0);
-                timeFromPuls = 0;
                 platform.getMasterClock().remove(this);
             }
         }

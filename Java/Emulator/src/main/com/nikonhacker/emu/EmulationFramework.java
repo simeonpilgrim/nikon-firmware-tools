@@ -643,7 +643,6 @@ public class EmulationFramework {
 
     private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {
         Pin.interconnect(txIoPorts[IoPort.PORT_1].getPin(1), mirrorBox.getDirPin());
-        Pin.interconnect(txIoPorts[IoPort.PORT_5].getPin(2), mirrorBox.getX1Pin());
         Pin.interconnect(txIoPorts[IoPort.PORT_6].getPin(3), mirrorBox.getMovePin());
 
         Pin.interconnect(txIoPorts[IoPort.PORT_A].getPin(5), mirrorBox.getWiperPin(0));
@@ -707,6 +706,9 @@ public class EmulationFramework {
                     frInterruptController.setExternalInterruptChannelValue(1, value);
                 }
             }, txIoPorts[IoPort.PORT_5].getPin(0));
+
+        // FR 50000100.bit4 => TX P52
+        Pin.interconnect(frIoPorts[IoPort.PORT_0].getPin(4), txIoPorts[IoPort.PORT_5].getPin(2));
     }
 
 
