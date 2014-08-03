@@ -2305,7 +2305,7 @@
 -s 0x0010A850=ChipSetup_01
 -s 0x0010A884=set_defaults_40001xxx
 -s 0x0010A8C6=set_4000010x
--s 0x0010A922=waitSensorReadoutStarted(R4 [IN ptr])
+-s 0x0010A922=waitSensorReadout(R4 [IN ptr])
 -s 0x0010B210=s6F008xxx_Init
 -s 0x0010B260=s6F00xxxx_10B260
 -s 0x0010C0F0=Tsk1A_bodyB
@@ -4607,7 +4607,9 @@
 -s 0x001E7184=Tsk17
 -s 0x001E726C=CSIO_ch00_init_ch01_setup_ISO_VideoFps
 -s 0x001E730A=CSIO_ch0_ch1_sending_data00
+-s 0x001E73BA=PhotoMainLoop
 -s 0x001E75A0=stopCommunication_IMX071_PowerDown
+-s 0x001E763A=LiveViewMainLoop
 -s 0x001E76DE=call_CSIO_ch1_setup_registerF8_63
 -s 0x001E77A6=CSIO_ch01_action0x0F
 -s 0x001E7918=CSIO_ch01_action0x11
@@ -4615,9 +4617,12 @@
 -s 0x001E7A9A=CSIO_call00_call00_sending_ch0
 -s 0x001E7B46=push_byte_8F964EA5
 -s 0x001E7B5E=Tsk17_Init
--s 0x001E7F32=Imx071Init
+-s 0x001E7EFC=SensorBridgeSetup
+-s 0x001E7F32=Imx071Setup
+-s 0x001E7FC0=PhotoStateMachine
 -s 0x001E8466=s5000_1E8466
 -s 0x001E88B2=set5000010Cbit0
+-s 0x001E84BC=LiveViewStateMachine
 -s 0x001E88C6=clear5000010Cbit0
 -s 0x001E88DA=get_8F964E9C.bit7
 -s 0x001E88E6=get_1E88E6
