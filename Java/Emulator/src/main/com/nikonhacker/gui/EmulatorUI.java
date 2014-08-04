@@ -1405,6 +1405,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
     private static final String STATE_EXTENSION = ".xstate";
 
     private void loadState() {
+        if (framework.isEmulatorPlaying(Constants.CHIP_TX) || framework.isEmulatorPlaying(Constants.CHIP_FR)){
+            JOptionPane.showMessageDialog(this, "Could not load while playing", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         final JFileChooser fc = new JFileChooser();
 
         fc.setDialogTitle("Select source file");
@@ -1442,6 +1446,10 @@ public class EmulatorUI extends JFrame implements ActionListener {
     }
 
     private void saveState() {
+        if (framework.isEmulatorPlaying(Constants.CHIP_TX) || framework.isEmulatorPlaying(Constants.CHIP_FR)){
+            JOptionPane.showMessageDialog(this, "Could not save while playing", "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
         final JFileChooser fc = new JFileChooser();
 
         fc.setDialogTitle("Select destination file");
