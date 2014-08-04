@@ -269,7 +269,7 @@ public class EmulationFramework {
 
                 Ei155 sensorBridge = new Ei155(platform[chip]);
                 serialDevices.add(sensorBridge);
-                connectFrCsio0SerialDevice(serialInterfaces[0], sensorBridge, ioPorts);
+                connectFrCsio0SerialDevice(serialInterfaces[0], sensorBridge, ioPorts, (FrInterruptController)interruptController);
             }
             else {
                 cpuState = new TxCPUState();
@@ -634,11 +634,18 @@ public class EmulationFramework {
         Pin.interconnect(frIoPorts[IoPort.PORT_9].getPin(1), imageSensor.getSdiPin());
     }
 
-    private void connectFrCsio0SerialDevice(SerialInterface serialInterface, Ei155 sensorBridge, IoPort[] frIoPorts) {
+    private void connectFrCsio0SerialDevice(SerialInterface serialInterface, Ei155 sensorBridge, IoPort[] frIoPorts, final FrInterruptController frInterruptController) {
         SerialDevice.interConnectSerialDevices(serialInterface, sensorBridge);
 
         // Connect CPU pins
         Pin.interconnect(frIoPorts[IoPort.PORT_1].getPin(5), sensorBridge.getCsPin());
+        Pin.interconnect(new Pin(Constants.CHIP_LABEL[Constants.CHIP_FR] + " INT0x10") {
+                @Override
+                public final void setInputValue(int value) {
+                    // channel 0 interrupt 0x10
+                    frInterruptController.setExternalInterruptChannelValue(0, value);
+                }
+            }, sensorBridge.getRdyPin());
     }
 
     private void connectMirrorBox(MirrorBox mirrorBox, IoPort[] txIoPorts) {
