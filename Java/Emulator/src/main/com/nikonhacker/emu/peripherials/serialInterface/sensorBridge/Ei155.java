@@ -1,7 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.sensorBridge;
 
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
-import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.Platform;
@@ -13,11 +12,13 @@ public class Ei155 extends SerialInterface {
     private int[] memory = new int[0x30];
 
     private Pin cs;
+    private Pin rdy;
 
     private Integer address = null;
     private Integer chipId = null;
     private boolean csHigh;
     private int startBit;
+    private int writtenValue;
 
     // ------------------------ Safe methods
 
@@ -31,6 +32,7 @@ public class Ei155 extends SerialInterface {
                 setCs(value);
             }
         };
+        rdy = new Pin(this.getClass().getSimpleName() + " RDY pin");
     }
 
     public int getNumBits() {
@@ -55,6 +57,10 @@ public class Ei155 extends SerialInterface {
         return cs;
     }
 
+    public final Pin getRdyPin() {
+        return rdy;
+    }
+
     public int[] getMemory() {
         return memory;
     }
@@ -77,12 +83,18 @@ public class Ei155 extends SerialInterface {
                 chipId = value & 0xFF;
             } else if (address == null) {
                 address = value & 0xFF;
-                memory[address] = 0;
+                writtenValue = 0;
             } else {
                 if (chipId==0x45) {
-                    memory[address] |= ((value & 0xFF)<< startBit);
+                    writtenValue |= ((value & 0xFF)<< startBit);
 
                     if (startBit==0) {
+                        memory[address] = writtenValue;
+                        switch (address) {
+                            // the real trigger is not known, INT 0x10 happens in reality 5ms after this command
+                            case 0x12: rdy.setOutputValue(0); break;
+                            case 0x13: rdy.setOutputValue(1); break;
+                        }
                         address = null;
                         startBit = 16;
                     } else {

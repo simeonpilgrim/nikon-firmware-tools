@@ -1,7 +1,6 @@
 package com.nikonhacker.emu.peripherials.serialInterface.imageSensor;
 
 import com.nikonhacker.emu.peripherials.ioPort.Pin;
-import com.nikonhacker.emu.peripherials.interruptController.fr.FrInterruptController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.Platform;
