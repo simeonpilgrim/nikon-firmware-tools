@@ -16,7 +16,7 @@ public class Expeed4002IoListener extends IoActivityListener {
     public static final int ADDRESS_MASK2 = 0xFFEF_F000;
 
     public static final int NUM_RESOLUTION_CONVERTER = 3;
-    
+
     public Expeed4002IoListener(Platform platform, boolean logRegisterMessages) {
         super(platform, logRegisterMessages);
     }
@@ -31,7 +31,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("ResolutionConverter(" + unit + "): Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load8 is not supported yet");
         }
@@ -43,7 +43,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x002: return resolutionConverter.getCommand();
             case 0x00C: return resolutionConverter.getInterruptStatus();
             case 0x010: return resolutionConverter.getScaleFactor0();
@@ -73,7 +73,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x030: return resolutionConverter.getSourceAddressHi();
             case 0x040: return resolutionConverter.getDestinationAddressHi();
             default:
@@ -88,7 +88,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("ResolutionConverter(" + unit + "): Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store8 value 0x" + Format.asHex(value, 2) + " is not supported yet");
         }
@@ -99,7 +99,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x002: resolutionConverter.setCommand(value); break;
             case 0x00C: resolutionConverter.setInterruptStatus(value); break;
             case 0x010: resolutionConverter.setScaleFactor0(value); break;
@@ -128,7 +128,7 @@ public class Expeed4002IoListener extends IoActivityListener {
         final int unit = ( (addr&0x100000)!=0 ? 2 : ((addr>>16)&1) );
 
         FrResolutionConverter resolutionConverter = (FrResolutionConverter)(platform.getResolutionConverter()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x030: resolutionConverter.setSourceAddressHi(value); break;
             case 0x040: resolutionConverter.setDestinationAddressHi(value); break;
             default:

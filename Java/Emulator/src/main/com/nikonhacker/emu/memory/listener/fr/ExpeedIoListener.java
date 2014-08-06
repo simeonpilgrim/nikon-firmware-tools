@@ -139,7 +139,7 @@ public class ExpeedIoListener extends IoActivityListener {
                   ((addr >= REGISTER_EIRR1) && (addr < (REGISTER_ELVR1 + 2)))) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
             int unit = 0;
-            
+
             if (addr>=REGISTER_EIRR1) {
                 unit = 1;
                 addr -= (REGISTER_EIRR1-REGISTER_EIRR0);
@@ -218,7 +218,7 @@ public class ExpeedIoListener extends IoActivityListener {
 
             channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
             addr -= (channel * TIMER32_OFFSET);
-            
+
             // correction because 32-bit timers are at the end of 16-bit timers
             channel += NUM_TIMER;
             switch (addr) {
@@ -240,7 +240,7 @@ public class ExpeedIoListener extends IoActivityListener {
                   (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
             int unit = 0;
-            
+
             if (addr >= REGISTER_EIRR1) {
                 unit = 1;
                 addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
@@ -305,7 +305,7 @@ public class ExpeedIoListener extends IoActivityListener {
 
             channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
             addr -= (channel * TIMER32_OFFSET);
-            
+
             // correction because 32-bit timers are at the end of 16-bit timers
             channel += NUM_TIMER;
             switch (addr) {
@@ -394,7 +394,7 @@ public class ExpeedIoListener extends IoActivityListener {
                   (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
             int unit = 0;
-            
+
             if (addr >= REGISTER_EIRR1) {
                 unit = 1;
                 addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
@@ -480,7 +480,7 @@ public class ExpeedIoListener extends IoActivityListener {
 
             channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
             addr -= (channel * TIMER32_OFFSET);
-            
+
             // correction because 32-bit timers are at the end of 16-bit timers
             channel += NUM_TIMER;
             switch (addr) {
@@ -494,7 +494,7 @@ public class ExpeedIoListener extends IoActivityListener {
                   (addr >= REGISTER_EIRR1 && addr < (REGISTER_ELVR1 + 2)) ) {
             FrInterruptController interruptController = (FrInterruptController)platform.getInterruptController();
             int unit = 0;
-            
+
             if (addr >= REGISTER_EIRR1) {
                 unit = 1;
                 addr -= (REGISTER_EIRR1 - REGISTER_EIRR0);
@@ -558,7 +558,7 @@ public class ExpeedIoListener extends IoActivityListener {
 
             channel = (addr - REGISTER_TMRLRA0_32) / TIMER32_OFFSET;
             addr -= (channel * TIMER32_OFFSET);
-            
+
             // correction because 32-bit timers are at the end of 16-bit timers
             channel += NUM_TIMER;
             switch (addr) {

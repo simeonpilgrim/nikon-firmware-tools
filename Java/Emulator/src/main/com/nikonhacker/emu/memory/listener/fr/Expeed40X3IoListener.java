@@ -28,7 +28,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x000: return jpegCodec.getReg000();
             case 0x007: return jpegCodec.getJPEGHeightHi();
             case 0x008: return jpegCodec.getJPEGHeightLo();
@@ -47,7 +47,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x400: return jpegCodec.getReg400();
             case 0x402: return jpegCodec.getReg402();
             case 0x404: return jpegCodec.getCommand();
@@ -57,12 +57,12 @@ public class Expeed40X3IoListener extends IoActivityListener {
             case 0xF08: return jpegCodec.getCbCrWidth();
             case 0xFF6: return jpegCodec.getTransferInterruptStatus();
             case 0x40A:
-            case 0xF00: 
+            case 0xF00:
             case 0xF0C:
             case 0xF0E:
             case 0xF1C:
-            case 0xF20: 
-            case 0xFF4: 
+            case 0xF20:
+            case 0xFF4:
                 return jpegCodec.getRegUnimplemented();
             default:
                 if (logRegisterMessages) warn("JpegCodec (" + unit + "): Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load16 is not supported yet");
@@ -75,7 +75,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0xF10: return jpegCodec.getDstAddrY();
             case 0xF14: return jpegCodec.getDstAddrCb();
             case 0xF18: return jpegCodec.getDstAddrCr();
@@ -93,7 +93,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x000: jpegCodec.setReg000(value); break;
             case 0x00F: jpegCodec.setInterruptStatus(value); break;
             case 0x410: jpegCodec.setErrorCode(value); break;
@@ -115,7 +115,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x400: jpegCodec.setReg400(value); break;
             case 0x402: jpegCodec.setReg402(value); break;
             case 0x404: jpegCodec.setCommand(value); break;
@@ -129,8 +129,8 @@ public class Expeed40X3IoListener extends IoActivityListener {
             case 0xF0C:
             case 0xF0E:
             case 0xF1C:
-            case 0xF20: 
-            case 0xFF4: 
+            case 0xF20:
+            case 0xFF4:
                 jpegCodec.setRegUnimplemented(value); break;
             default:
                 if (logRegisterMessages) warn("JpegCodec (" + unit + "): Register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
@@ -142,7 +142,7 @@ public class Expeed40X3IoListener extends IoActivityListener {
         int unit = ((addr&0x100000)!=0 ? 1 : 0);
 
         FrJpegCodec jpegCodec = (FrJpegCodec)(platform.getJpegCodec()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0xF10: jpegCodec.setDstAddrY(value); break;
             case 0xF14: jpegCodec.setDstAddrCb(value); break;
             case 0xF18: jpegCodec.setDstAddrCr(value); break;

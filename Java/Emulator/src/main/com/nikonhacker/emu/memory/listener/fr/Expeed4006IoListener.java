@@ -4,6 +4,7 @@ import com.nikonhacker.emu.Platform;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.listener.IoActivityListener;
 
+// main image processor component
 public class Expeed4006IoListener extends IoActivityListener {
 
     public static final int BASE_ADDRESS = 0x4006_0000;
@@ -26,6 +27,7 @@ public class Expeed4006IoListener extends IoActivityListener {
 
     @Override
     public Integer onLoadData16(byte[] pageData, int address, int value, DebuggableMemory.AccessSource accessSource) {
+        // this bit tells that access to image processor registers is possible
         // return fake acknowledge at register 0x40060010
         if (address == 0x40060010) return 0x1000;
         // otherwise, ignore
