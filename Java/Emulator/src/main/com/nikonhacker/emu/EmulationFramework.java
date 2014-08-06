@@ -504,22 +504,7 @@ public class EmulationFramework {
 
     private final void setupMemoryListeners(int chip, DebuggableMemory memory) {
         if (chip==Constants.CHIP_FR) {
-            // Standard FR registers
-            memory.addActivityListener(new ExpeedIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // Unknown component 0x4006
-            memory.addActivityListener(new Expeed4006IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // Specific Pin I/O register
-            memory.addActivityListener(new ExpeedPinIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // 63000XXX and 64000XXX
-            memory.addActivityListener(new Expeed6300IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // 6B0000XX interrupt sharing macro in ASIC
-            memory.addActivityListener(new Expeed6B00IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // JPEG codec 0x40X3
-            memory.addActivityListener(new Expeed40X3IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // Resolution converter 0x40XF and 0x4002
-            memory.addActivityListener(new Expeed4002IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
-            // Image Transfer 0x4018
-            memory.addActivityListener(new Expeed4018IoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
+            memory.addActivityListener(new ExpeedProxyIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));
 
         } else if (chip==Constants.CHIP_TX) {
             memory.addActivityListener(new TxIoListener(platform[chip], prefs.isLogRegisterMessages(chip)));

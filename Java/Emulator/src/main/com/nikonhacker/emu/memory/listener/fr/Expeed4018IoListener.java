@@ -33,14 +33,14 @@ public class Expeed4018IoListener extends IoActivityListener {
     @Override
     public Integer onLoadData16(byte[] pageData, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         FrImageTransferCircuit imageTransferCircuit = (FrImageTransferCircuit)(platform.getImageTransferCircuit());
-        
-        switch (addr&0xFFF) {
+
+        switch (addr&0xFFFF) {
             case 0x00: return imageTransferCircuit.getEnabled();
             case 0x10: return imageTransferCircuit.getInterruptMask();
             case 0x12: return imageTransferCircuit.getInterruptStatus();
             default:
                 int unit = ((addr&0x40)!=0 ? 1 : 0);
-                switch (addr&0xFBF) {
+                switch (addr&0xFFBF) {
                     case 0x100: imageTransferCircuit.channels[unit].setCommand(value); break;
                     case 0x10C: imageTransferCircuit.channels[unit].setSourceBufferWidth(value); break;
                     case 0x10E: imageTransferCircuit.channels[unit].setDestinationBufferWidth(value); break;
@@ -60,7 +60,7 @@ public class Expeed4018IoListener extends IoActivityListener {
         int unit = ((addr&0x40)!=0 ? 1 : 0);
 
         FrImageTransferCircuit imageTransferCircuit = (FrImageTransferCircuit)(platform.getImageTransferCircuit());
-        switch (addr&0xFBF) {
+        switch (addr&0xFFBF) {
             case 0x114: return imageTransferCircuit.channels[unit].getSourceAddress();
             case 0x118: return imageTransferCircuit.channels[unit].getDestinationAddress();
             case 0x104:
@@ -81,13 +81,13 @@ public class Expeed4018IoListener extends IoActivityListener {
     public void onStore16(byte[] pageData, int addr, int value, DebuggableMemory.AccessSource accessSource) {
         FrImageTransferCircuit imageTransferCircuit = (FrImageTransferCircuit)(platform.getImageTransferCircuit());
 
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             case 0x00: imageTransferCircuit.setEnabled(value);
             case 0x10: imageTransferCircuit.setInterruptMask(value); break;
             case 0x12: imageTransferCircuit.setInterruptStatus(value); break;
             default:
                 int unit = ((addr&0x40)!=0 ? 1 : 0);
-                switch (addr&0xFBF) {
+                switch (addr&0xFFBF) {
                     case 0x100: imageTransferCircuit.channels[unit].setCommand(value); break;
                     case 0x10C: imageTransferCircuit.channels[unit].setSourceBufferWidth(value); break;
                     case 0x10E: imageTransferCircuit.channels[unit].setDestinationBufferWidth(value); break;
@@ -106,7 +106,7 @@ public class Expeed4018IoListener extends IoActivityListener {
         int unit = ((addr&0x40)!=0 ? 1 : 0);
 
         FrImageTransferCircuit imageTransferCircuit = (FrImageTransferCircuit)(platform.getImageTransferCircuit());
-        switch (addr&0xFBF) {
+        switch (addr&0xFFBF) {
             case 0x114: imageTransferCircuit.channels[unit].setSourceAddress(value); break;
             case 0x118: imageTransferCircuit.channels[unit].setDestinationAddress(value); break;
             case 0x104:

@@ -16,7 +16,7 @@ public class Expeed6300IoListener extends IoActivityListener {
     public static final int ADDRESS_MASK2 = 0xFFFF_F000;
 
     public static final int NUM_SD_CONTROLLER = 2;
-    
+
     public Expeed6300IoListener(Platform platform, boolean logRegisterMessages) {
         super(platform, logRegisterMessages);
     }
@@ -37,7 +37,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         final int unit = ( (addr&4000000)!=0 ? 1 : 0 );
 
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load16 is not supported yet");
         }
@@ -49,7 +49,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         final int unit = ( (addr&4000000)!=0 ? 1 : 0 );
 
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Load32 is not supported yet");
         }
@@ -67,7 +67,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         final int unit = ( (addr&4000000)!=0 ? 1 : 0 );
 
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store16 value 0x" + Format.asHex(value, 4) + " is not supported yet");
         }
@@ -78,7 +78,7 @@ public class Expeed6300IoListener extends IoActivityListener {
         final int unit = ( (addr&4000000)!=0 ? 1 : 0 );
 
         FrSdController sdController = (FrSdController)(platform.getSdController()[unit]);
-        switch (addr&0xFFF) {
+        switch (addr&0xFFFF) {
             default:
                 if (logRegisterMessages) warn("SD controller ("+(addr&0x4000000)+"):register 0x" + Format.asHex(addr&0xFFF, 3) + ": Store32 value 0x" + Format.asHex(value, 8) + " is not supported yet");
         }
