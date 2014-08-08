@@ -24,9 +24,9 @@ public class SensorBridgeSerialPanel extends SerialDevicePanel {
         this.sensorBridge = sensorBridge;
 
         registerList = new JList();
-        registerList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        registerList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         registerList.setLayoutOrientation(JList.VERTICAL);
-        registerList.setVisibleRowCount(10);
+        registerList.setVisibleRowCount(16);
         add(registerList, BorderLayout.CENTER);
 
         JScrollPane listScroller = new JScrollPane(registerList);
@@ -46,7 +46,7 @@ public class SensorBridgeSerialPanel extends SerialDevicePanel {
         final int [] mem = sensorBridge.getMemory();
         final DefaultListModel model = new DefaultListModel();
         for (int i=0; i<mem.length; i++) {
-            model.addElement(Format.asHex(i, 2) + " : 0x" + Format.asHex(mem[i],6));
+            model.addElement("0x"+Format.asHex(i, 2) + " : " + Format.asHex(mem[i],6));
         }
         registerList.setModel(model);
     }
