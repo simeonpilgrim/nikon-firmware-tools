@@ -39,8 +39,8 @@ public class ImageSensorSerialPanel extends SerialDevicePanel implements HexEdit
 
         eepromHexEditor = new HexEditor();
         eepromHexEditor.setRowHeaderOffset(0);
-        eepromHexEditor.setRowHeaderMinDigits(4);
-        eepromHexEditor.setCellEditable(true);
+        eepromHexEditor.setRowHeaderMinDigits(2);
+        eepromHexEditor.setCellEditable(false);
         eepromHexEditor.setAlternateRowBG(true);
         eepromHexEditor.addHexEditorListener(this);
         panel.add(eepromHexEditor, BorderLayout.CENTER);
