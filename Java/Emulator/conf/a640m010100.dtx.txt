@@ -1455,7 +1455,7 @@
 -s 0xBFC7A8C4=Task0xB
 -s 0xBFC7A9E0=HSC1_checking
 -s 0xBFC7AA6C=setShutterErrorFFFF4073
--s 0xBFC7AB68=task0xB_startcode0x0_0x80_shooting
+-s 0xBFC7AB68=task0xB_startcode0x0_0x80_StillPhotoOrLiveView
 -s 0xBFC7ADA0=eeprom_write_0($a0 [IN src_address], $a1 [IN counter], $a2 [IN eeprom_DEST_address], $a3 [IN external_pk_msg_or_default_pk_msg_if_0])
 -s 0xBFC7AE1C=setup_INT_TMRA_body00
 -s 0xBFC7AE38=MirrorUp_Shooting
@@ -1629,6 +1629,7 @@
 -s 0xBFC889E4=INT_TMR5_body00
 -s 0xBFC88A18=call_INT0xE_switching
 -s 0xBFC88A4C=INT0xE_dcall
+-s 0xBFC88AB4=INT0xE_handler04
 -s 0xBFC88AE8=INT0xE_handler01
 -s 0xBFC88B1C=INT0xE_handler02
 -s 0xBFC88B74=call_sub_BFC8A061
