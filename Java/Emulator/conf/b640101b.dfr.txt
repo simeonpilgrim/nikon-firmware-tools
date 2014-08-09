@@ -1784,7 +1784,7 @@
 -s 0x000BFC90=int_39_DMA3_body
 -s 0x000BFCA6=setupWait_DMA3_0(R4 [IN src], R5 [IN dst], R6 [IN count])
 -s 0x000BFEDC=setupWait_DMA3_1(R4 [IN dst], R5 [IN count], R6 [IN byte])
--s 0x000C0156=Tsk0F_sendMsg04
+-s 0x000C0156=zeroPlane640x480(R4 [IN buf])
 -s 0x000C01E2=Send_Msg01_to_Tsk10
 -s 0x000C02A0=Tsk0D_sendMsg05
 -s 0x000C037A=Send_msg_to_Tsk0C_Tsk0D
@@ -2305,7 +2305,7 @@
 -s 0x0010A850=ChipSetup_01
 -s 0x0010A884=set_defaults_40001xxx
 -s 0x0010A8C6=set_4000010x
--s 0x0010A922=waitSensorReadout(R4 [IN ptr])
+-s 0x0010A922=doFrameReadoutPhoto(R4 [IN ptr])
 -s 0x0010B210=s6F008xxx_Init
 -s 0x0010B260=s6F00xxxx_10B260
 -s 0x0010C0F0=Tsk1A_bodyB
@@ -2318,6 +2318,7 @@
 -s 0x00110BD4=set_8F80C473_bit3
 -s 0x00110BDE=clear_8F80C473_bit3
 -s 0x001110F6=effect_mode_xx
+-s 0x0011123A=doFrameReadoutLiveView(R4 [IN ptr])
 -s 0x00113FC0=set_dword_8F80AA38_1
 -s 0x00113FCC=set_dword_8F80AA34_1
 -s 0x00114000=StartMovieRec
@@ -4025,7 +4026,7 @@
 -s 0x001C6E36=Draw_Symbol_buffer5
 -s 0x001C6E8A=current_vid_draw_Font
 -s 0x001C6F08=hdmi_buffer5_init
--s 0x001C6F36=hdmi_buffer5_filling
+-s 0x001C6F36=buffer5_drawFrameRect
 -s 0x001C700A=buffer_5_draw_border
 -s 0x001C7058=hdmi_call01_buffer5_filling
 -s 0x001C7240=bigtable_xx_00
@@ -6925,7 +6926,7 @@
 -s 0x0032475A=SW_123_On_Off
 -s 0x00324A96=render_icon_i
 -s 0x00324BF6=render_shooting_mode_icon
--s 0x00325772=Tsk2B_Action03_LiveView
+-s 0x00325772=Tsk2B_action03
 -s 0x00325AF2=Tsk2B_action00_InfoScreen
 -s 0x00326C48=Tsk2B_action01_InfoScreenChangeSetting
 -s 0x00327510=RotateMenuIdx
@@ -6977,7 +6978,7 @@
 -s 0x0032E16E=reset_CMOS_temperature
 -s 0x0032E45C=encode_res_fps_quality
 -s 0x0032E550=setflg_0x23_0x8
--s 0x0032E842=hdmi_recording_UI
+-s 0x0032E842=drawLiveViewScreen
 -s 0x0032F27A=nullsub_27
 -s 0x0032F440=call_tsk2B_action02_render_icons
 -s 0x0033008C=draw_Focus_options_icons
@@ -7024,7 +7025,7 @@
 -s 0x0033ACA0=hdmi_call00_buffer5_filling
 -s 0x0033ACDA=draw_lots15
 -s 0x0033B454=Find_TXT_ID
--s 0x0033B8A8=Tsk2B_action02_recording_HDMI_ON
+-s 0x0033B8A8=Tsk2B_action02_LiveView
 -s 0x0033FEDA=change_Table0x8F96534A
 -s 0x0033FF2A=setup_Table0x8F96534A
 -s 0x003402AE=check00_error_status
