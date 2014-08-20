@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Nikon-Patch</title>
+    <style type="text/css">
+        html, body
+        {
+            height: 100%;
+            overflow: auto;
+        }
+        body
+        {
+            padding: 0;
+            margin: 0;
+        }
+        #silverlightControlHost
+        {
+            height: 100%;
+            text-align: center;
+        }
+        #inner
+        {
+            width: 80%;
+            margin: 0px auto;
+        }
+    </style>
+    <script async src="http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+    <script type="text/javascript" src="Silverlight.js"></script>
+    <script type="text/javascript">
+        function onSilverlightError(sender, args) {
+            var appSource = "";
+            if (sender != null && sender != 0) {
+                appSource = sender.getHost().Source;
+            }
+
+            var errorType = args.ErrorType;
+            var iErrorCode = args.ErrorCode;
+
+            if (errorType == "ImageError" || errorType == "MediaError") {
+                return;
+            }
+
+            var errMsg = "Unhandled Error in Silverlight Application " + appSource + "\n";
+
+            errMsg += "Code: " + iErrorCode + "    \n";
+            errMsg += "Category: " + errorType + "       \n";
+            errMsg += "Message: " + args.ErrorMessage + "     \n";
+
+            if (errorType == "ParserError") {
+                errMsg += "File: " + args.xamlFile + "     \n";
+                errMsg += "Line: " + args.lineNumber + "     \n";
+                errMsg += "Position: " + args.charPosition + "     \n";
+            }
+            else if (errorType == "RuntimeError") {
+                if (args.lineNumber != 0) {
+                    errMsg += "Line: " + args.lineNumber + "     \n";
+                    errMsg += "Position: " + args.charPosition + "     \n";
+                }
+                errMsg += "MethodName: " + args.methodName + "     \n";
+            }
+
+            throw new Error(errMsg);
+        }
+    </script>
+<script type="text/javascript"> 
+(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){ 
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o), 
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m) 
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga'); 
+ga('create', 'UA-172680-3', 'simeonpilgrim.com'); 
+ga('send', 'pageview'); 
+</script> 
+    <script type="text/javascript">
+        function EventFunction(cat, action, label) {
+            ga('send', 'event', cat, action, label);
+        }
+    </script> 
+    <!-- Google+ scripts -->
+    <script type="text/javascript">
+        (function () {
+            var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+            po.src = 'https://apis.google.com/js/plusone.js';
+            var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+        })();
+    </script>
+
+</head>
+<body>
+    <div style="width: 1000px; vertical-align: top">
+        <h2>
+            <a href="http://simeonpilgrim.com/blog/nikon-patching-help/">Patching How-To Help</a>
+        &nbsp;&nbsp;
+            <a href="http://simeonpilgrim.com/blog/nikon-patching-faq/">Patching FAQ</a>
+        &nbsp;&nbsp;
+            <a href="ChangeLog.html">Change Log</a>
+        </h2>
+    </div>
+    <div style="height: 100%; width: 1000px; vertical-align: top;">
+        <div style="height: 100%; width: 600px; float: left; vertical-align: top;">
+            <form id="form1" runat="server">
+            <div id="silverlightControlHost" style="vertical-align: top;">
+                <object data="data:application/x-silverlight-2," type="application/x-silverlight-2"
+                    width="100%" height="460px" style="vertical-align: top;">
+                    <param name="source" value="ClientBin/Nikon-Patch.xap?cachepreventer=00004" />
+                    <param name="onError" value="onSilverlightError" />
+                    <param name="background" value="white" />
+                    <param name="minRuntimeVersion" value="4.0.50826.0" />
+                    <param name="autoUpgrade" value="true" />
+                    <a href="http://www.microsoft.com/getsilverlight/Get-Started/Install/Default.aspx" style="text-decoration: none">
+                        <img src="http://go.microsoft.com/fwlink/?LinkId=161376" alt="Get Microsoft Silverlight"
+                            style="border-style: none" />
+                    </a>
+                </object>
+                <iframe id="_sl_historyFrame" style="visibility: hidden; height: 0px; width: 0px;
+                    border: 0px"></iframe>
+            </div>
+            </form>
+            <div>
+                <p>
+                    <span style="font-weight: bold;">WARNING: ALL THAT YOU DO IS AT YOUR OWN RISK</span>.
+                    Installing or using a modified firmware is a potentially dangerous operation. We
+                    take no responsibility in case of damage, injury, or anything that could happen
+                    as a result of applying such a firmware. In particular, installing such a firmware
+                    could brick (destroy) your camera or even set it on fire if you are using a bad
+                    battery. Neither the NikonHacker team or Nikon corporation shall be held responsible
+                    for such use or abuse of your material. By installing or using a modified firmware,
+                    you accept the terms of this disclaimer.</p>
+            </div>
+            <div>
+                <p>
+                    Availible Firmware Alterations:
+                    <ul id="feat_list">
+                    </ul>
+               </p>
+            </div>
+        </div>
+        <div style="border-style: dashed; border-width: 2px; border-color: inherit; height: 100%; width: 350px; float: right; vertical-align: top; padding-bottom: 3px;">
+            <div style="width: 340px; padding: 0px 10px 0px 10px;">
+                <h3>Nikon Project Support:</h3>
+                <p style="width: 336px;">You don't have to 'Buy' the patch, its all free, support the project if you like what we have done.</p>
+
+                <div>
+                    <h4>Paypal</h4>
+                    <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
+                        <input type="hidden" name="cmd" value="_s-xclick" />
+                        <input type="hidden" name="hosted_button_id" value="QPC9VMBTTC53J" />
+                        <table>
+                            <tr><td><input type="hidden" name="on0" value="Contribution Size" />Contribution Size</td></tr>
+                            <tr>
+                                <td>
+                                    <select name="os0">
+                                        <option value="Option 2">Option 2 $10.00 USD</option>
+                                        <option value="Option 1">Option 1 $5.00 USD</option>
+                                        <option value="Option 3">Option 3 $15.00 USD</option>
+                                        <option value="Option 4">Option 4 $20.00 USD</option>
+                                        <option value="Option 5">Option 5 $30.00 USD</option>
+                                        <option value="Option 6">Option 6 $40.00 USD</option>
+                                        <option value="Option 7">Option 7 $50.00 USD</option>
+                                    </select>
+                                </td>
+                            </tr>
+                        </table>
+                        <input type="hidden" name="currency_code" value="USD" />
+                        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_buynowCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!" />
+                        <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+                    </form>
+                </div>
+
+                <div><h4>Bitcoin:</h4><pre>1F2PdwFG9eXyE3y4vCpAUv8SD3v3wCnTLW</pre></div>
+
+                <div>
+                    <!-- Place this tag where you want the +1 button to render -->
+                    <g:plusone></g:plusone>
+                    <!-- Place this render call where appropriate -->
+                </div>           
+            
+                <div>
+                    <ins class="adsbygoogle"
+                         style="display:inline-block;width:336px;height:280px"
+                         data-ad-client="ca-pub-7346054437135126"
+                         data-ad-slot="9226631181"></ins>
+                    <script>
+                        (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
