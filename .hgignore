@@ -20,3 +20,8 @@ PTP Tools/NikonDump/bin
 PTP Tools/NikonDump/obj
 PTP Tools/NikonFlags/bin
 PTP Tools/NikonFlags/obj
+Nikon-Patch/Nikon-Patch/obj/
+Nikon-Patch/Nikon-Patch/Bin/
+Nikon-Patch/Nikon-Patch.Web/obj/
+Nikon-Patch/Nikon-Patch.Web/bin/
+Nikon-Patch/Nikon-Patch.Web/ClientBin/

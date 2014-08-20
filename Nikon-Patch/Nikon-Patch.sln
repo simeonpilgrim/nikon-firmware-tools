@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.21005.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nikon-Patch", "Nikon-Patch\Nikon-Patch.csproj", "{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nikon-Patch.Web", "Nikon-Patch.Web\Nikon-Patch.Web.csproj", "{A7C9DB93-88DE-48D0-8899-05D1E9DBB34F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E} = {BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEE29CE2-7FC8-4888-9B3C-D1ABD6E2538E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7C9DB93-88DE-48D0-8899-05D1E9DBB34F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7C9DB93-88DE-48D0-8899-05D1E9DBB34F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7C9DB93-88DE-48D0-8899-05D1E9DBB34F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7C9DB93-88DE-48D0-8899-05D1E9DBB34F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
