@@ -73,6 +73,9 @@
     <Folder Include="ClientBin\Debug\" />
     <Folder Include="ClientBin\Release\" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\PublishProfiles\Nikon Hacker.pubxml" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
