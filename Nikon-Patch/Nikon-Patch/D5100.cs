@@ -500,7 +500,7 @@ new Patch(1, 0x712069, new byte[] { 0x6E, 0x6F, 0x72, 0x6D, 0x61, 0x6C } ,new by
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_bitrate_36mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_29mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_29mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54Mbps, NQ 29Mbps", patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ));
 
             // Still pictures

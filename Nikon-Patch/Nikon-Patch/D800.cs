@@ -171,10 +171,10 @@ namespace Nikon_Patch
             Model = "D800";
             Version = "1.10";
 
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps, patch_1080_64_36_mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps, NQ 36mbps", patch_1080_64_36_mbps, patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps, patch_1080_64_36_mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps, NQ 36mbps", patch_1080_64_36_mbps, patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps));
 
         }
     }
@@ -319,9 +319,9 @@ namespace Nikon_Patch
             Model = "D800E";
             Version = "1.10";
 
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps));
 
         }
     }
