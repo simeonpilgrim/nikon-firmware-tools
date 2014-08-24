@@ -80,17 +80,6 @@ namespace Nikon_Patch
             new Patch(1, 0x84BD0A, new byte[] { 0x00 } , new byte[] { 0x02 } ),
                              };
 
-        Patch[] patch_bitrate_54mbps = {
-            new Patch(1, 0x84BCAE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BCB4, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BCC2, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BCC8, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BCD6, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BCDC, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BD04, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x84BD0A, new byte[] { 0x00 } , new byte[] { 0x03 } ),
-                             };
-
         Patch[] patch_bitrate_29mbps_playback = {
             new Patch(1, 0x40A501, new byte[] { 0x20, 0x20, 0x37, 0x32, 0x30, 0x3B, 0x20 } , new byte[] { 0x37, 0x32, 0x30, 0x2E, 0x3B, 0x48, 0x51 } ),
             new Patch(1, 0x40A6EC, new byte[] { 0x20, 0x20 } , new byte[] { 0x34, 0x32 } ),
@@ -157,6 +146,7 @@ namespace Nikon_Patch
             new Patch(1, 0x52B1CD, new byte[] { 0x20, 0x32, 0x34, 0x20 } , new byte[] { 0x48, 0x51, 0x32, 0x34 } ),
             new Patch(1, 0x52B3A9, new byte[] { 0x20, 0x20, 0x37, 0x32, 0x30 } , new byte[] { 0x37, 0x32, 0x30, 0x2E, 0x2E } ),
             new Patch(1, 0x52B3AF, new byte[] { 0x20, 0x32, 0x34, 0x20 } , new byte[] { 0x48, 0x51, 0x32, 0x34 } ),
+            
             new Patch(1, 0x84BCAF, new byte[] { 0x4F, 0xB1, 0x80 } , new byte[] { 0xC4, 0x1B, 0x00 } ),
             new Patch(1, 0x84BCB5, new byte[] { 0x12, 0xA8, 0x80 } , new byte[] { 0x98, 0x96, 0x66 } ),
             new Patch(1, 0x84BD04, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0xBF, 0x0C, 0x00 } ),
@@ -167,19 +157,40 @@ namespace Nikon_Patch
             new Patch(1, 0x84BD54, new byte[] { 0x00 } , new byte[] { 0x01 } ),
                             };
 
+        Patch[] patch_bitrate_54mbps = {
+            new Patch(1, 0x84BCAE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BCB4, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BCC2, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BCC8, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BCD6, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BCDC, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BD04, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x84BD0A, new byte[] { 0x00 } , new byte[] { 0x03 } ),
+                             };
+
+        Patch[] patch_bitrate_64mbps = {
+            new Patch(1, 0x84BCAE, Sys.mbps22 , Sys.mbps64 ),
+            new Patch(1, 0x84BCB4, Sys.mbps18 , Sys.mbps60  ),
+            new Patch(1, 0x84BCC2, Sys.mbps12 , Sys.mbps64 ),
+            new Patch(1, 0x84BCC8, Sys.mbps8 , Sys.mbps60 ),
+            new Patch(1, 0x84BCD6, Sys.mbps12 , Sys.mbps64 ),
+            new Patch(1, 0x84BCDC, Sys.mbps8 , Sys.mbps60 ),
+                             };
+
         public D3100_0102()
         {
             p = new Package();
             Model = "D3100";
             Version = "1.02";
 
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Change Time Based Video Restrictions to 17:28", patch_vid_17min));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Change Time Based Video Restrictions to 17:28", patch_vid_17min));
             Patches.Add(new PatchSet(PatchLevel.Released, "Non-brand Battery", patch_Battery));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "ISO/Shutter Lv Patch", patch_manual_lv));
+            Patches.Add(new PatchSet(PatchLevel.Released, "ISO/Shutter Lv Patch", patch_manual_lv));
 
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_bitrate_36mbps, patch_bitrate_54mbps));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_36mbps, patch_bitrate_54mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_29mbps_playback, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_29mbps_playback, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate", patch_bitrate_64mbps, patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_29mbps_playback));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_64mbps));
         }
     }
 
