@@ -16,22 +16,56 @@ namespace Nikon_Decode
 
         static void Main(string[] args)
         {
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
-            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
-            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin"); 
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7100_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7100_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3100Update\D3100_0101.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3100Update\D3100_0102.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5100Update\D5100_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5100Update\D5100_0102.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
+
+            //DOWAHT??(@"C:\Users\spilgrim\Downloads\Nikon\D90Update\D90_0101.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0103.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0104.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0105.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7100_0101.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7100Update\D7100_0102.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3SUpdate\D3S_0101.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0102.bin");
+
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D610Update\D610_0101.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0110.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0101.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0102.bin");
+            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0110.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0102.bin"); 
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0103.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4SUpdate\D4S_0101.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
+
 
             //DecryptNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01002.BIN");
             //DecodeNKLDFile(@"C:\Users\spilgrim\Downloads\Nikon\NKLD\NKLD01002.BIN.bin");
@@ -42,40 +76,12 @@ namespace Nikon_Decode
 
             //FR_V.DecodeFile(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\d5100\0x0008A2BC.BIN");
 
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin"); 
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");    
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
-            DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
-            ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
 
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
 
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\DfUpdate\DF__0101.bin");
-
-            //DecodePackageFile(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
-
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
-
+            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
+            //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
-
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0102.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0103.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3100_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D300S101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D3S_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0102.bin");    
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D4__0103.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800_0101.bin");
-            //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D800E_0101.bin");
 
 
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
@@ -88,11 +94,6 @@ namespace Nikon_Decode
             //SearchWords2(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D5100_0101.bin");
 
             //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
-            //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
-            //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
-            //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
-            //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750101b.bin"); 
-            //TryCRC_16(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b750102a.bin");
 
             //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //SearchJpegs(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b740101b.bin");
@@ -138,7 +139,11 @@ namespace Nikon_Decode
         }
 
 
-
+        private static void DecodeAndExtractFirm(string filename)
+        {
+            DecodePackageFile(filename);
+            ExactFirmware(filename);
+        }
 
         private static void Dump_D7000_S179_s177_B_A(string filename, string header, byte[] data, int offset, int number)
         {
