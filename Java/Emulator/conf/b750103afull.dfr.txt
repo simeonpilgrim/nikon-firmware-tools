@@ -1,0 +1,90 @@
+# WARNING: doesn't work in Emulator. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b750103afull.dfr.txt -o b750103a.asm b750103a.bin
+
+-x b750103a.dfr.txt
+-e 0x40000
+
+# copied data
+# at 0x0004056A copied size 0x0001D3F8
+-i 0x8F9ACE44-0x8F9CA23B=0x00327E74
+# at 0x000405D6 copied size 0x00000A50
+-i 0x8F800000-0x8F800A4F=0x00345268
+
+-s 0x8F9BF0E8=BFTDataV2C
+-s 0x0052A790=textTableEnglish
+-s 0x0052B40C=dialogTextTableEnglish
+-s 0x0052B484=menuTextTableEnglish
+-s 0x0052AF0C=helpTextTableEnglish
+-s 0x8F9B5518=rootMenu0
+-s 0x8F9BBB48=rootMenu1
+-s 0x8F9BB608=rootMenu2
+-s 0x8F9BA338=rootMenu3
+-s 0x8F9BA0D8=rootMenu4
+-s 0x8F9B82A8=rootMenu5
+-s 0x8F9BA158=rootMenu6
+-s 0x8F9B7448=rootMenu7
+-s 0x8F9B74E8=rootMenu8
+-s 0x8F9B7488=rootMenu9
+-s 0x8F9B74A8=rootMenu10
+-s 0x8F9B7688=rootMenu11
+-s 0x8F9B7728=rootMenu12
+-s 0x8F9B77B8=rootMenu13
+-s 0x8F9B80E8=rootMenu14
+-s 0x8F9B81D8=rootMenu15
+-s 0x8F9B7E48=rootMenu16
+-s 0x8F9B7948=rootMenu17
+-s 0x8F9B52F8=rootMenu18
+-s 0x8F9B2CD8=rootMenu19
+-s 0x8F9B2CB8=rootMenu20
+-s 0x8F9B2C18=rootMenu21
+-s 0x8F9B2AE8=rootMenu22
+-s 0x8F9B2AA8=rootMenu23
+-s 0x8F9B2A38=rootMenu24
+-s 0x8F9B29B8=rootMenu25
+-s 0x8F9B2958=rootMenu26
+-s 0x8F9B27A8=rootMenu27
+-s 0x8F9B2718=rootMenu28
+-s 0x8F9B2698=rootMenu29
+-s 0x8F9B2618=rootMenu30
+-s 0x8F9B25A8=rootMenu31
+-s 0x8F9B2528=rootMenu32
+-s 0x8F9B22E8=rootMenu33
+-s 0x8F9B2288=rootMenu34
+-s 0x8F9B2248=rootMenu35
+-s 0x8F9B21D8=rootMenu36
+-s 0x8F9B2158=rootMenu37
+-s 0x8F9B20D8=rootMenu38
+-s 0x8F9B2068=rootMenu39
+-s 0x8F9B1FE8=rootMenu40
+-s 0x8F9B1368=rootMenu41
+-s 0x8F9B11E8=rootMenu42
+-s 0x8F9B1188=rootMenu43
+-s 0x8F9B1168=rootMenu44
+-s 0x8F9B1148=rootMenu45
+-s 0x8F9B1108=rootMenu46
+-s 0x8F9B0FC8=rootMenu47
+-s 0x8F9B0F28=rootMenu48
+-s 0x8F9B0758=rootMenu49
+-s 0x8F9B0588=rootMenu50
+-s 0x8F9B0558=rootMenu51
+-s 0x8F9AFDC8=rootMenu52
+-s 0x8F9AFD08=rootMenu53
+-s 0x8F9AFCB8=rootMenu54
+-s 0x8F9AFAB8=rootMenu55
+-s 0x8F9AFA98=rootMenu56
+-s 0x8F9AFA48=rootMenu57
+-s 0x8F9AFA08=rootMenu58
+-s 0x8F9AF9E8=rootMenu59
+-s 0x8F9AF9C8=rootMenu60
+-s 0x8F9AF9A8=rootMenu61
+-s 0x8F9AF988=rootMenu62
+-s 0x8F9AF968=rootMenu63
+-s 0x8F9AF948=rootMenu64
+-s 0x8F9AF928=rootMenu65
+-s 0x8F9AF908=rootMenu66
+-s 0x8F9AF8E8=rootMenu67
+-s 0x8F9AF8C8=rootMenu68
+-s 0x8F9AF8A8=rootMenu69
+-s 0x8F9AF888=rootMenu70

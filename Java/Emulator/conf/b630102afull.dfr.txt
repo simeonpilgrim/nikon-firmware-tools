@@ -1,0 +1,74 @@
+# WARNING: doesn't work in Emulator. This not a bug!
+#
+# Usage:
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b630102afull.dfr.txt -o b630102a.asm b630102a.bin
+
+# copied data
+# at 0x000408B8 copied size 0x0001FCA0
+-i 0x84F23B20-0x84F437BB=0x0048FDE8
+# at 0x000408DC copied size 0x00000020
+-i 0x68003808-0x68003827=0x004C176C
+# at 0x0011214E copied size 0x00011020
+-i 0x84F437BC-0x84F547DB=0x004AFA84
+# at 0x00040924 copied size 0x00000CCA
+-i 0x85B4A154-0x85B4AE1D=0x004C0AA0
+-m 0x85B4A154-0x85B4AE1D=CODE
+
+-x b630102a.dfr.txt
+-e 0x40000
+
+-s 0x84F245F8=BFTDataV30
+-s 0x00D13A64=textTableEnglish
+-s 0x00D14B7C=dialogTextTableEnglish
+-s 0x00D14BF4=menuTextTableEnglish
+-s 0x00D14558=helpTextTableEnglish
+-s 0x84F4383C=rootMenu0
+-s 0x84F439BC=rootMenu1
+-s 0x84F439DC=rootMenu2
+-s 0x84F43A1C=rootMenu3
+-s 0x84F43A5C=rootMenu4
+-s 0x84F43A9C=rootMenu5
+-s 0x84F43B0C=rootMenu6
+-s 0x84F43D5C=rootMenu7
+-s 0x84F43E0C=rootMenu8
+-s 0x84F4403C=rootMenu9
+-s 0x84F4479C=rootMenu10
+-s 0x84F44FBC=rootMenu11
+-s 0x84F4503C=rootMenu12
+-s 0x84F450FC=rootMenu13
+-s 0x84F4519C=rootMenu14
+-s 0x84F451DC=rootMenu15
+-s 0x84F4523C=rootMenu16
+-s 0x84F453BC=rootMenu17
+-s 0x84F45D1C=rootMenu18
+-s 0x84F45D4C=rootMenu19
+-s 0x84F45D8C=rootMenu20
+-s 0x84F4602C=rootMenu21
+-s 0x84F4606C=rootMenu22
+-s 0x84F460CC=rootMenu23
+-s 0x84F4658C=rootMenu24
+-s 0x84F4679C=rootMenu25
+-s 0x84F4681C=rootMenu26
+-s 0x84F468CC=rootMenu27
+-s 0x84F46A4C=rootMenu28
+-s 0x84F46B3C=rootMenu29
+-s 0x84F46CEC=rootMenu30
+-s 0x84F46E2C=rootMenu31
+-s 0x84F46F2C=rootMenu32
+-s 0x84F4957C=rootMenu33
+-s 0x84F495AC=rootMenu34
+-s 0x84F4968C=rootMenu35
+-s 0x84F4983C=rootMenu36
+-s 0x84F4C0CC=rootMenu37
+-s 0x84F4C10C=rootMenu38
+-s 0x84F4C12C=rootMenu39
+-s 0x84F4C1CC=rootMenu40
+-s 0x84F4C59C=rootMenu41
+-s 0x84F4C7CC=rootMenu42
+-s 0x84F4CA6C=rootMenu43
+-s 0x84F4CB5C=rootMenu44
+-s 0x84F4CB9C=rootMenu45
+-s 0x84F4E71C=rootMenu46
+-s 0x84F5059C=rootMenu47
+-s 0x84F5074C=rootMenu48
+-s 0x84F5204C=rootMenu49

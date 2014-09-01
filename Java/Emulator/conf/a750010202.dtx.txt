@@ -1,0 +1,43 @@
+# The main part of this file describes the D7000 "A" firmware, ver 1.03
+#
+# startDtx.bat -wstructure -wparameters -wmemory -wshift -wli -wquestion -wdmov -wbz -wret -waddress -whexcode -x a750010202.dtx.txt -o a750010202.asm a750010202.bin
+
+############################### File map: D7000
+
+-i 0xBFC00000-0xBFCBFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0xBFC00000-0xBFC0000F=CODE:32
+
+-m 0xBFC00400-0xBFC004CB=CODE:32
+
+-m 0xBFC00500-0xBFC0087B=CODE:32
+
+-m 0xBFC008A0-0xBFC00997=CODE:16
+-m 0xBFC00998-0xBFC009DF=CODE:32
+
+-m 0xBFC009E0-0xBFC02BEB=CODE:32
+
+-m 0xBFC02BEC-0xBFC03F8E=CODE:16
+
+-m 0xBFC03F90-0xBFC045D7=DATA:L
+
+# code 0xBFC0B000-0xBFC0FE15 is copied to FFFF4000 in sub_bfc0f35c
+#-m 0xBFC0B008-0xBFC0B12B=CODE:32
+#-m 0xBFC0B12C-0xBFC0E99F=CODE:16
+
+-m 0xBFC0ED28-0xBFC0FDEF=CODE:32
+
+-m 0xBFC10000-0xBFC14DA5=CODE:16
+
+-m 0xBFC14DA8-0xBFC1661B=CODE:32
+
+-m 0xBFC1661C-0xBFC605EB=CODE:16
+
+-m 0xBFC605EC-0xBFC614D3=CODE:32
+
+-m 0xBFC614D4-0xBFCA1B9F=CODE:16
+
+-m 0xBFCA1BA0-0xBFCB7A50=DATA:L
+

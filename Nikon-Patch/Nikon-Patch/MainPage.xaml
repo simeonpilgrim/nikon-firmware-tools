@@ -1,0 +1,41 @@
+﻿<UserControl x:Class="Nikon_Patch.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:control="clr-namespace:System.Windows;assembly=System.Windows.Controls"
+    xmlns:vsm="clr-namespace:System.Windows;assembly=System.Windows"
+             
+    mc:Ignorable="d"
+    d:DesignWidth="600">
+    <UserControl.Resources>
+        <DataTemplate x:Key="PatchTemplate">
+            <StackPanel Orientation="Horizontal" Width="600" HorizontalAlignment="Center" Background="{Binding Path=BetaColor}">
+                <CheckBox IsChecked="{Binding Path=Enabled, Mode=TwoWay}"/>
+                <TextBlock Text="{Binding Path=Name}" TextWrapping="Wrap"/>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer Width="600">
+        <StackPanel x:Name="LayoutRoot" Background="White" Loaded="LayoutRoot_Loaded">
+            <TextBlock x:Name="tTitleText" Text="Online Nikon Firmware Patching Tool" FontSize="12" Margin="10" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="bOpenFileDialog" Content="Select Firmware File"
+                 Margin="10,10,10,10"     Width="200" Click="bOpenFileDialog_Click" />
+                <Button x:Name="bSaveFirmware" Content="Save Patched Firmware File"
+                    Margin="10,10,10,10" Width="200" Click="bSaveFirmware_Click" IsEnabled="false"/>
+            </StackPanel>
+
+            <StackPanel x:Name="FeaturePanel" >
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock x:Name="tFirmwareName" Margin="10" />
+                    <TextBlock x:Name="tFirmwareVersion" Margin="10" />
+                </StackPanel>
+                <ListBox x:Name="lstFeatures" ItemTemplate="{StaticResource PatchTemplate}" SelectionChanged="lstFeatures_SelectionChanged"></ListBox>
+                <TextBlock x:Name="lbFeature" Text="Patch Description:" />
+                <TextBlock x:Name="tFeature" TextWrapping="Wrap" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

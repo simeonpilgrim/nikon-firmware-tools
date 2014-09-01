@@ -1,0 +1,37 @@
+# The main part of this file describes the D3200 "B" firmware, ver 1.03
+# Two special parts are also included but commented out :
+# - the ROM part at 0x000E0000
+#
+# Use in Emulator or
+# startDfr.bat -wstructure -wparameters -wint40 -wmemory -waddress -whexcode -x b830103_.dfr.txt -o b830103_.asm b830103_.bin
+
+############################### File map:
+-i 0x00040000-0x00AAFFFF=0x00000000
+
+############################### Memory map:
+
+-m 0x00040000-0x00040B53=CODE
+
+
+# Table of offsets used by INT 0x40 :
+-m 0x00040B54-0x00040CB3=DATA:W
+
+-m 0x00040CB4-0x00040D91=CODE
+
+# Softune RTOS Copyright :
+-m 0x00040D92-0x00040DFD=DATA:L
+
+# ITRON kernel code
+-m 0x00040DFE-0x0008C645=CODE
+
+# Interrupt vector table.
+-t 0x000DFC00
+
+-m 0x00100000-0x0026D6E5=CODE
+
+-m 0x0036DCD2-0x00435E65=CODE
+
+-m 0x005665BC-0x005737E9=CODE
+
+############################### Symbols
+
