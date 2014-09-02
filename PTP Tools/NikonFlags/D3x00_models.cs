@@ -36,7 +36,7 @@ namespace NikonFlags
 
         public byte[] ReadBytes(BaseMTPCamera cam, uint addr, uint readlength)
         {
-            return ReadBytes_FD31(cam, OC_Fx31_base, addr, readlength);
+            return ReadBytes_FE31(cam, OC_Fx31_base, addr, readlength);
         }
 
         public void WriteBytes(BaseMTPCamera cam, uint addr, byte[] data)

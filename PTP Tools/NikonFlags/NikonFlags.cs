@@ -293,6 +293,9 @@ namespace NikonFlags
 
             case "D5100_101b":
                 return new d5100_101b(); // v1.0
+
+            case "D5200_102":
+                return new d5200_102(); // v1.2
             }
             return null;
         }
@@ -329,7 +332,7 @@ namespace NikonFlags
             }
         }
 
-        public byte[] ReadBytes_FD31(BaseMTPCamera cam, uint OC_Fx31_base, uint addr, uint readlength)
+        public byte[] ReadBytes_FE31(BaseMTPCamera cam, uint OC_Fx31_base, uint addr, uint readlength)
         {
             uint step = 0x800;
             byte[] data = new byte[readlength];
@@ -349,6 +352,11 @@ namespace NikonFlags
             var res = cam.ExecuteReadDataEx(0xFE34, addr, readlength, 0, 0, 0);
 
             return res.Data;
+        }
+
+        public void WriteBytes_FD34(BaseMTPCamera cam, uint addr, byte[] data)
+        {
+            cam.SetProperty(0xFD34, data, addr, (uint)data.Length, 0);
         }
     }
 
