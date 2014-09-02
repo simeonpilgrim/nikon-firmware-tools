@@ -45,4 +45,40 @@ namespace NikonFlags
         }
     }
 
+    class d5200_102 : BaseModel_Camera, ICamera
+    {
+        public bool DoChecks(BaseMTPCamera cam)
+        {
+            return true;
+        }
+
+        public uint GetKnownAddresss(KnownAddressList addrId)
+        {
+            switch (addrId)
+            {
+            //case KnownAddressList.Set04Ram: return 0x8F85159D;
+            default: return 0;
+            }
+        }
+
+        public uint GetKnownLenght(KnownAddressList addrId)
+        {
+            switch (addrId)
+            {
+            case KnownAddressList.Set04Ram: return 0x1A;
+            default: return 0;
+            }
+        }
+
+        public byte[] ReadBytes(BaseMTPCamera cam, uint addr, uint readlength)
+        {
+            return ReadBytes_FE34(cam, addr, readlength);
+        }
+
+        public void WriteBytes(BaseMTPCamera cam, uint addr, byte[] data)
+        {
+            WriteBytes_FD34(cam, addr, data);
+        }
+    }
+
 }
