@@ -27,7 +27,6 @@ namespace NikonDump
 
         static void Main(string[] args)
         {
-            //string camid = "\\\\?\\usb#vid_04b0&pid_0429#000003047903#{6ac27878-a6fa-4155-ba85-f98f491d4f33}";
             string camid = FindNikonCamera();
             if (camid == "")
             {
@@ -50,7 +49,7 @@ namespace NikonDump
                 
                 EnterServiceMode();
 
-                FR_BKT_Test();
+                //FR_BKT_Test();
                 
 
                 if (false)
@@ -58,9 +57,9 @@ namespace NikonDump
                     //FR_Dump_6700xxxx();
                     //FR_D7000_alter_blacklevel_B();
                     
-                    FR_D7000_alter_blacklevel_B();
+                    //FR_D7000_alter_blacklevel_B();
 
-                    Tmp19_DisablesDefectProcessing_Set(true);
+                    //Tmp19_DisablesDefectProcessing_Set(true);
 
                     //cam.SetProperty(0xD015, new byte[] { 0x01 }, 0, 0);
                     //cam.SetProperty(0x5010, new byte[] { 0x00, 0x00 }, 0, 0);
@@ -74,7 +73,7 @@ namespace NikonDump
 
                     //FR_FC44_Overscan(1);
 
-                    cam.SetProperty(0xFD31, new byte[] { 0x00, 0x9C, 0x00, 0x01, 0x20, 0x00 }, 0x2176, 6, 0);
+                    //cam.SetProperty(0xFD31, new byte[] { 0x00, 0x9C, 0x00, 0x01, 0x20, 0x00 }, 0x2176, 6, 0);
 
                     //byte[] iso = { 0xC0, 0xEF, 0xFC, 0x0E, 0xFC, 0x0E, 0xFC, 0x0E };
                     //cam.SetProperty(0xFD31, iso, 0xC90A, 8, 0);
@@ -82,7 +81,7 @@ namespace NikonDump
                     Thread.Sleep(1 * 1000);
                     Tmp19_CMD_475D(6, 66);
                     Thread.Sleep(3 * 1000);
-                    Tmp19_DisablesDefectProcessing_Set(false);
+                    //Tmp19_DisablesDefectProcessing_Set(false);
 
                     Tmp19_Resume();
 
