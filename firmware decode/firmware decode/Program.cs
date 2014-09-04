@@ -17,7 +17,7 @@ namespace Nikon_Decode
         static void Main(string[] args)
         {
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3100Update\D3100_0101.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3100Update\D3100_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3100Update\D3100_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
@@ -34,11 +34,11 @@ namespace Nikon_Decode
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0102.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0103.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0104.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0105.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0104.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7000_0105.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\D7100_0101.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7100Update\D7100_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D7100Update\D7100_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D300SUpdate\D300S102.bin");
@@ -46,17 +46,17 @@ namespace Nikon_Decode
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3SUpdate\D3S_0101.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0101.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0102.bin");
 
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D610Update\D610_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D610Update\D610_0101.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0102.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0110.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0101.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0102.bin");
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0110.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0110.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0102.bin"); 
@@ -118,6 +118,8 @@ namespace Nikon_Decode
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
             //DumpMenusD800(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\b630101a.bin");
+
+            DumpRttiD5200(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\b970101.bin");
 
             //InteractiveTextD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //InteractiveTextD7000(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin");
@@ -836,11 +838,33 @@ namespace Nikon_Decode
             return (UInt32)(data[pos + 0] << 24 | data[pos + 1] << 16 | data[pos + 2] << 8 | data[pos + 3]);
         }
 
+        static UInt32 ReadUint32BE(byte[] data, long pos)
+        {
+            return (UInt32)(data[pos + 0] << 0 | data[pos + 1] << 8 | data[pos + 2] << 16 | data[pos + 3] << 24);
+        }
+
         static UInt16 ReadUint16(byte[] data, long pos)
         {
             return (UInt16)(data[pos + 0] << 8 | data[pos + 1]);
         }
 
+        static string ReadString(byte[] data, long pos, int max)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < max; i++)
+            {
+                byte c = data[pos+i];
+                if (c != 0)
+                {
+                    sb.Append((char)c);
+                }
+                else
+                {
+                    break;
+                }
+            }
+            return sb.ToString();
+        }
 
         static string ReadString(BinaryReader br, int count)
         {
