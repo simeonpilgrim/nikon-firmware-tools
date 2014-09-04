@@ -222,6 +222,17 @@ namespace Nikon_Patch
             new Patch(1, 0x74516, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x12, 0xA8, 0x80 } ),
                              };
 
+        Patch[] patch_dark_current = {
+            // Disable dark current
+            new Patch(1, 0x234E21, new byte[] {0x01, 0x37}, new byte[] {0x00, 0x00}),
+
+            // Lower Sensor Bias Level to allow better JPEG preview
+            new Patch(1, 0x2331F5, new byte[] {0x58, 0x02}, new byte[] {0x80, 0x00}),
+
+            // lastly, make change for start up code so that it loads these fixed table into ram instead of calibrated data in flash, essentially the key to success
+            new Patch(1, 0x1990D7, new byte[] {0xC8, 0x00, 0x00 }, new byte[] {0x27, 0x2C, 0xA8}),
+        };
+
         public D5100_0101()
         {
             p = new Package();
@@ -240,7 +251,8 @@ namespace Nikon_Patch
             // Still pictures
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Off", patch_3_nocomp, patch_3_LosslessNEF));
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Lossless", patch_3_LosslessNEF, patch_3_nocomp));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Disable Nikon Star Eater", patch_stareater)); 
+            Patches.Add(new PatchSet(PatchLevel.Released, "Disable Nikon Star Eater", patch_stareater));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current", patch_dark_current));
             //Patches.Add(new PatchSet(true, "*FOR TESTERS* NEF Overscan", patch_NEF_Overscan));
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Jpeg Compression - Quality (vs. Space)", patch_4));
