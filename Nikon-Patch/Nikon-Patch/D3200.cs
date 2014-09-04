@@ -53,18 +53,18 @@ namespace Nikon_Patch
         Patch[] patch_1080_36mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
         Patch[] patch_1080_54mbps = {
@@ -79,18 +79,18 @@ namespace Nikon_Patch
         Patch[] patch_1080_54mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
         public D3200_0101()
         {
@@ -103,8 +103,8 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "Multi-Language Support", patch_Language_Fix));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
         }
     }
 
@@ -147,35 +147,35 @@ namespace Nikon_Patch
         Patch[] patch_1080_36mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
         Patch[] patch_1080_54mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
         public D3200_0102()
@@ -188,8 +188,8 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "Multi-Language Support", patch_Language_Fix));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
         }
     }
 
@@ -207,18 +207,18 @@ namespace Nikon_Patch
         Patch[] patch_1080_36mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x02 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x02 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
         Patch[] patch_1080_54mbps = {
@@ -240,18 +240,35 @@ namespace Nikon_Patch
         Patch[] patch_1080_54mbps_NQ = {
             new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239A0, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239A6, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x239CC, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x239D2, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
 
             new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x03 } ),
             new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x03 } ),
-            new Patch(1, 0x23A18, new byte[] { 0x00, 0xB7, 0x1B } , new byte[] { 0x01, 0x6E, 0x36 } ),
-            new Patch(1, 0x23A1E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
+                                  };
+
+        Patch[] patch_1080_64mbps_NQ = {
+            new Patch(1, 0x2398C, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x23992, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x239A0, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x239B8, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x239BE, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x239CC, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x23A04, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x23A0A, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x23A18, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
         public D3200_0103()
@@ -261,10 +278,11 @@ namespace Nikon_Patch
             Version = "1.03";
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Multi-Language Support", patch_Language_Fix));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
         }
     }
 }
