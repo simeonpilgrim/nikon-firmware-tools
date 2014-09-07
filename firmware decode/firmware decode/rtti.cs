@@ -122,7 +122,8 @@ namespace Nikon_Decode
 
             var thisClass = help.GetClass(class_addr);
             var activeClass = thisClass;
-            int activeOffset = 0;
+            int funcOffset = 0;
+            int classOffset = 0;
             int state = 0;
             while (ReadUint32BE(data, file_loc + offset) != 0)
             {
@@ -132,13 +133,15 @@ namespace Nikon_Decode
                 {
                     if (val < 0)
                     {
-                        activeOffset = val;
+                        funcOffset = 0;
+                        classOffset = val;
+
                         state = 1;
                     }
                     else
                     {
-                        thisClass.AddFunction(activeOffset, val);
-                        activeOffset += 4;
+                        thisClass.AddFunction(classOffset, funcOffset, val);
+                        funcOffset += 1;
                     }
                 }
                 else if (state == 1)
@@ -262,13 +265,13 @@ namespace Nikon_Decode
                 mem_loc = startAddr;
                 file_loc = startAddr - addrOffset;
                 baseClasses = new List<Tuple<int, long>>();
-                funcs = new List<Tuple<int, long>>();
+                funcs = new List<Tuple<int, int, long>>();
 
                 Read(help, data, mem_loc, file_loc, addrOffset);
             }
 
             List<Tuple<int, long>> baseClasses;
-            List<Tuple<int, long>> funcs;
+            List<Tuple<int, int, long>> funcs;
 
             public void Read(RttiHelp help, byte[] data, long addr, long fileOffset, long fileFix)
             {
@@ -320,15 +323,15 @@ namespace Nikon_Decode
                 }
             }
 
-            public void AddFunction(int offset, long funcAddr)
+            public void AddFunction(int offset, int funcIdx, long funcAddr)
             {
                 long real_addr = funcAddr & 0xFFffFFfe;
                 bool arm16 = real_addr != funcAddr;
                 bool neg_off = offset < 0;
                 int t_offset = neg_off ? -offset : offset;
 
-                Debug.WriteLine("{0} {1}{2:X2} 0x{3:X4}{4}", name, neg_off?"-":"", t_offset, real_addr, arm16?"+1":"");
-                funcs.Add(new Tuple<int,long>(offset, real_addr));
+                Debug.WriteLine("{0} {1}{2:X2} {5} 0x{3:X4}{4}", name, neg_off?"-":"", t_offset, real_addr, arm16?"+1":"", funcIdx);
+                funcs.Add(new Tuple<int,int,long>(offset, funcIdx,real_addr));
 
             }
 
@@ -362,14 +365,15 @@ namespace Nikon_Decode
 
                 foreach (var f in funcs)
                 {
-                    long funcAddr = f.Item2;
+                    long funcAddr = f.Item3;
+                    int funcIdx = f.Item2;
                     int offset = f.Item1;
                     long real_addr = funcAddr & 0xFFffFFfe;
                     bool arm16 = real_addr != funcAddr;
                     bool neg_off = offset < 0;
                     int t_offset = neg_off ? -offset : offset;
 
-                    tw.WriteLine("{0}  f {1}{2:X2} 0x{3:X4}{4}", p, neg_off ? "-" : "", t_offset, real_addr, arm16 ? "+1" : "");
+                    tw.WriteLine("{0}  f {1}{2:X2} {5} 0x{3:X4}{4}", p, neg_off ? "-" : "", t_offset, real_addr, arm16 ? "+1" : "", funcIdx);
 
                     //tw.WriteLine("{0}  f {1:X} {2:X4}", p, f.Item1, f.Item2);
                 }
