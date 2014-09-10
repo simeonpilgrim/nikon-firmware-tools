@@ -178,6 +178,8 @@ namespace Nikon_Patch
         public static byte[] mbps12 = { 0x00, 0xb7, 0x1b, 0x00 };
         public static byte[] mbps10 = { 0x00, 0x98, 0x96, 0x80 };
         public static byte[] mbps8 = { 0x00, 0x7A, 0x12, 0x00 };
+        public static byte[] mbps6 = { 0x00, 0x5B, 0x8D, 0x80 };
+        public static byte[] mbps5 = { 0x00, 0x4C, 0x4B, 0x40 };
     }
 
     public class Firmware
