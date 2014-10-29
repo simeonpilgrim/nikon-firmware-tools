@@ -13,8 +13,6 @@ namespace Nikon_Decode
 {
     partial class Program
     {
-        private static Dictionary<long, vft> vfts;
-
         internal class RttiConsts
         {
             public FirmOffsets offsets;
@@ -70,17 +68,10 @@ namespace Nikon_Decode
                 RangeVft(data, 0x51432158, 0x51435024, 0x51432044 - 0x01412044, help);
                 //RangeVft(data, 0x51432158, 0x51458F6C, 0x51432044 - 0x01412044, help);
 
-                //var off = ScanVft(data, 0x51431EFC, 0x51432044 - 0x01412044, help);
 
-                //Debug.WriteLine("off {0:X4}", off);
-                //help.AddClassRef(0, 0x5141DF00);
-                //while (help.HasWork())
-                //{
-                //    var addr = help.GetWork();
+                help.AddFuncName(0x502BD4A0, "pure_virt_memberPtr");
 
-                //    var h = new ClassHdr(help, data, addr, 0x51432044 - 0x01412044);
-                //    help.AddClass(addr, h);
-                //}
+                help.SortClasses();
 
                 using (var sw = new StreamWriter(File.Open(fileName + ".class.txt", FileMode.Create, FileAccess.Write, FileShare.ReadWrite)))
                 {
@@ -163,12 +154,17 @@ namespace Nikon_Decode
             Dictionary<long, ClassHdr> hdrs;
             List<Tuple<long, long>> hrd_refs;
             Queue<long> que;
+            Dictionary<long, string> func_names;
+            List<long> dup_func_names;
 
             public RttiHelp()
             {
                 hdrs = new Dictionary<long, ClassHdr>();
                 hrd_refs = new List<Tuple<long, long>>();
                 que = new Queue<long>();
+                func_names = new Dictionary<long, string>();
+                dup_func_names = new List<long>();
+
             }
 
             
@@ -212,6 +208,78 @@ namespace Nikon_Decode
             {
                 return hdrs[addr];
             }
+
+
+            public void SortClasses()
+            {
+                var unsorted = hdrs.Keys.ToList();
+                var sorted = new List<long>();
+
+                Debug.WriteLine("SortClasses: {0}", unsorted.Count);
+                int index = 0;
+                // find next class
+                while(unsorted.Count > 0)
+                {
+                    long us = unsorted[index];
+                    var uc = hdrs[us];
+                    bool allsorted = true;
+                    foreach (long bca in uc.BaseClassAddr())
+                    {
+                        if (unsorted.Contains(bca))
+                        {
+                            allsorted = false;
+                            index += 1;
+                            break;
+                        }
+                    }
+
+                    if (allsorted)
+                    { 
+                        // do work.
+                        Debug.WriteLine("SortClasses: work on: 0x{0:X4} left: {1}", us, unsorted.Count);
+
+                        uc.SortFuncs(this);
+
+                        // remove from unsorted.
+                        index = 0;
+                        unsorted.Remove(us);
+                        sorted.Add(us);
+                    }
+                }
+
+                Debug.WriteLine(string.Format("Dup Func Name count: {0}", dup_func_names.Count));
+            }
+
+            internal string GetFuncName(long addr)
+            {
+                string name;
+                if (func_names.TryGetValue(addr, out name))
+                {
+                    return name;
+                }
+                return "Not Solved";
+            }
+
+            internal void AddFuncName(long addr, string name)
+            {
+                if (func_names.ContainsKey(addr))
+                {
+                    if (dup_func_names.Contains(addr) == false)
+                    {
+                        Debug.WriteLine(string.Format("func_name dup {0:X4}", addr)); 
+                        dup_func_names.Add(addr);
+                    }
+                }
+                else
+                {
+                    func_names.Add(addr, name);
+                }
+            }
+
+            internal bool HasFuncName(long addr)
+            {
+                return func_names.ContainsKey(addr);
+            }
         }
 
         internal class funcptr
@@ -225,38 +293,7 @@ namespace Nikon_Decode
             }
         }
 
-        internal class vft
-        {
-            public long size_of = 0;
-            long mem_loc;
-            long file_loc;
 
-            public vft(byte[] data, long addr, long addrOffset)
-            {
-                if (firmConsts.BFT_start != 0)
-                {
-                    mem_loc = addr;
-                    file_loc = addr - addrOffset;
-
-                    Read(data, mem_loc, file_loc);
-                }
-            }
-
-            List<funcptr> funcptrs;
-
-
-            public void Read(byte[] data, long startAddr, long addrOffset)
-            {
-            }
-
-            internal void Dump(TextWriter tw, string p)
-            {
-                if (firmConsts.BFT_start != 0)
-                {
-                    tw.WriteLine("{0}VFT: 0x{1:X8}", p, mem_loc);
-                }
-            }
-        }
 
         class ClassHdr
         {
@@ -264,13 +301,15 @@ namespace Nikon_Decode
             {
                 mem_loc = startAddr;
                 file_loc = startAddr - addrOffset;
-                baseClasses = new List<Tuple<int, long>>();
+                baseClassesAddr = new List<Tuple<int, long>>();
                 funcs = new List<Tuple<int, int, long>>();
+                baseClasses = new List<Tuple<int, ClassHdr>>();
 
                 Read(help, data, mem_loc, file_loc, addrOffset);
             }
 
-            List<Tuple<int, long>> baseClasses;
+            List<Tuple<int, long>> baseClassesAddr;
+            List<Tuple<int, ClassHdr>> baseClasses;
             List<Tuple<int, int, long>> funcs;
 
             public void Read(RttiHelp help, byte[] data, long addr, long fileOffset, long fileFix)
@@ -287,7 +326,7 @@ namespace Nikon_Decode
                 {
                     sub_loc = ReadUint32BE(data, file_loc + 0x08);
                     help.AddClassRef(addr, sub_loc);
-                    baseClasses.Add(new Tuple<int,long>(0, sub_loc));
+                    baseClassesAddr.Add(new Tuple<int,long>(0, sub_loc));
                 }
                 else if (type == 0x51458F40)
                 {
@@ -308,10 +347,10 @@ namespace Nikon_Decode
                             Debug.WriteLine(" 0x{0:X4} {1:x2} {2:x2} {3:x2} {4:x2}", suba_loc, a, b, c, d);
                             help.AddClassRef(addr, suba_loc);
                             if (a == 2)
-                                baseClasses.Add(new Tuple<int,long>(b, suba_loc));
+                                baseClassesAddr.Add(new Tuple<int,long>(b, suba_loc));
                             else
                             {
-                                baseClasses.Add(new Tuple<int, long>(b, suba_loc));
+                                baseClassesAddr.Add(new Tuple<int, long>(b, suba_loc));
                             }
                         }
                     }
@@ -334,7 +373,7 @@ namespace Nikon_Decode
                 funcs.Add(new Tuple<int,int,long>(offset, funcIdx,real_addr));
 
             }
-
+            
             public long mem_loc;
             long file_loc;
 
@@ -346,16 +385,20 @@ namespace Nikon_Decode
             long subtype;
             long subcount;
 
+            int baseclassfunc_count = 0;
+            int myclassfunc_count = 0;
+            int max_base_depth = 0;
+
 
             public override string ToString()
             {
-                return string.Format("{0}", name_loc);
+                return string.Format("0x{0:X4} {1}", name_loc, name);
             }
 
             internal void Dump(RttiHelp help, TextWriter tw, TextWriter tw_sym, string p)
             {
-                tw.WriteLine("0x{1:X4} t: {2:X4} n: {3:x4} '{4}'",p ,mem_loc, type, name_loc, name);
-                foreach (var b in baseClasses)
+                tw.WriteLine("0x{1:X4} t: {2:X4} n: {3:x4} '{4}' fc: {5} bfc: {6} mfc: {7} ",p ,mem_loc, type, name_loc, name, baseclassfunc_count+myclassfunc_count, baseclassfunc_count, myclassfunc_count);
+                foreach (var b in baseClassesAddr)
                 {
                     var hdr = help.GetClass(b.Item2);
 
@@ -373,7 +416,7 @@ namespace Nikon_Decode
                     bool neg_off = offset < 0;
                     int t_offset = neg_off ? -offset : offset;
 
-                    tw.WriteLine("{0}  f {1}{2:X2} {5} 0x{3:X4}{4}", p, neg_off ? "-" : "", t_offset, real_addr, arm16 ? "+1" : "", funcIdx);
+                    tw.WriteLine("{0}  f {1}{2:X2} {3} 0x{4:X4}{5} {6}", p, neg_off ? "-" : "", t_offset, funcIdx, real_addr, arm16 ? "+1" : "", help.GetFuncName(real_addr) );
 
                     //tw.WriteLine("{0}  f {1:X} {2:X4}", p, f.Item1, f.Item2);
                 }
@@ -382,11 +425,113 @@ namespace Nikon_Decode
             internal void DumpBase(RttiHelp help, TextWriter tw, TextWriter tw_sym, string p)
             {
                 tw.WriteLine("{0}0x{1:X4} t: {2:X4} n: {3:x4} '{4}'", p, mem_loc, type, name_loc, name);
-                foreach (var b in baseClasses)
+                foreach (var b in baseClassesAddr)
                 {
                     var hdr = help.GetClass(b.Item2);
                     tw.WriteLine("{0}  {1:X} {2:X4}", p, b.Item1, b.Item2);
                     hdr.DumpBase(help, tw, tw_sym, p + "  ");
+                }
+            }
+
+            public IEnumerable BaseClassAddr()
+            {
+                foreach (var bca in baseClassesAddr)
+                {
+                    yield return bca.Item2;
+                }
+            }
+
+            ClassHdr FindFuncBaseClassByOffset(RttiHelp help, int offset, int index)
+            {
+                foreach (var bca in baseClasses)
+                {
+                    if( bca.Item1 == -offset)
+                    {
+                        return bca.Item2;    
+                    }
+                }
+                
+                return null;
+            }
+
+            void ResolveBaseClassOffsets(RttiHelp help)
+            {
+                // Add the offsetted base classes for all base class to this class table.
+                max_base_depth = 0;
+
+                foreach (var bca in baseClassesAddr)
+                {
+                    int offset = bca.Item1; 
+                    var bc = help.GetClass(bca.Item2);
+
+                    foreach (var bbc in bc.baseClasses)
+                    {
+                        baseClasses.Add(new Tuple<int,ClassHdr>(offset + bbc.Item1, bbc.Item2));
+                    }
+
+                    baseClasses.Add(new Tuple<int,ClassHdr>(offset, bc));
+                    max_base_depth = Math.Max(max_base_depth, bc.max_base_depth + 1);
+                }
+            }
+
+            public void SortFuncs(RttiHelp help)
+            {
+                Debug.WriteLine("Sorting: {0} base: {1} funcs: {2}", name, baseClassesAddr.Count, funcs.Count);
+
+                ResolveBaseClassOffsets(help);
+
+                // the first BaseClass virt table is blended with ours, to sort that out.
+                if (baseClassesAddr.Count != 0)
+                {
+                    var bc = help.GetClass(baseClassesAddr[0].Item2);
+                    baseclassfunc_count = bc.myclassfunc_count + bc.baseclassfunc_count;
+                    // if I have no functions set at my level, but the first does does, I have no, but have base items.
+                    myclassfunc_count = Math.Max((funcs.Count - baseclassfunc_count), 0);
+                }
+                else
+                {
+                    baseclassfunc_count = 0;
+                    myclassfunc_count = funcs.Count;
+                }
+
+                // count base class function, and find my function count.
+                foreach (var bbc in baseClasses)
+                {
+                    Debug.WriteLine(string.Format("BC: {0} {1:X} {2} {3}", name, bbc.Item1, bbc.Item2.max_base_depth, bbc.Item2.name));
+
+                    Debug.WriteLine(string.Format("  fc: {0} bfc: {1} mfc: {2}", bbc.Item2.funcs.Count, bbc.Item2.baseclassfunc_count, bbc.Item2.myclassfunc_count));
+                    // my func count is: my number of functions minus base class, if I define some.
+
+                }
+
+                Debug.WriteLine(string.Format("me FC: {0} bfc: {1} mfc: {2}", funcs.Count, baseclassfunc_count, myclassfunc_count));
+
+
+                foreach (var fun in funcs)
+                {
+                    var offset = fun.Item1;
+                    var index = fun.Item2;
+                    var addr = fun.Item3;
+
+                    var bc = FindFuncBaseClassByOffset(help, offset, index);
+                    string bc_name = bc == null ? "unknown" : bc.name;
+
+                    
+                    if (offset != 0 ||
+                        index < baseclassfunc_count)
+                    {
+                        // overloaded virtual functions
+                        if (help.HasFuncName(addr) == false)
+                        {
+                            //TODO find the correct base class name, and base class virt index
+                            help.AddFuncName(addr, string.Format("{0}_{1}_virt{2}", name, bc_name, index));
+                        }
+                    }
+                    else
+                    {
+                        // original virtual functions
+                        help.AddFuncName(addr, string.Format("{0}_virt{1}", name, index));
+                    }
                 }
             }
         }
