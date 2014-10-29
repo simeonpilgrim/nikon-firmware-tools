@@ -416,6 +416,23 @@ namespace Nikon_Patch
             new Patch(1, 0x74516, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x7D, 0x78, 0x40 } ),
                              };
 
+        Patch[] patch_bitrate_64mbps = {
+            new Patch(1, 0x074464, Sys.mbps22, Sys.mbps64 ), // 1080 - 23.9fps
+            new Patch(1, 0x07446A, Sys.mbps18, Sys.mbps60 ),
+            new Patch(1, 0x074478, Sys.mbps12, Sys.mbps22 ),
+            new Patch(1, 0x07447E, Sys.mbps10, Sys.mbps18 ),
+
+            new Patch(1, 0x074490, Sys.mbps22, Sys.mbps64 ), // 1080 - 29.9fps NTSC
+            new Patch(1, 0x074496, Sys.mbps18, Sys.mbps60 ),
+            new Patch(1, 0x0744A4, Sys.mbps12, Sys.mbps22 ),
+            new Patch(1, 0x0744AA, Sys.mbps10, Sys.mbps18 ),
+
+            new Patch(1, 0x0744FC, Sys.mbps22, Sys.mbps64 ), // 1080 - 25fps PAL
+            new Patch(1, 0x074502, Sys.mbps18, Sys.mbps60 ),
+            new Patch(1, 0x074510, Sys.mbps12, Sys.mbps22 ),
+            new Patch(1, 0x074516, Sys.mbps10, Sys.mbps18 ),
+                             };
+
         Patch[] patch_bitrate_29mbps_playback = {
             new Patch(1, 0x074478, new byte[] { 0x00, 0xB7, 0x1B, 0x00 } , new byte[] { 0x01, 0x4C, 0x4B, 0x40 } ),
             new Patch(1, 0x07447E, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x4C, 0x4B, 0x40 } ),
@@ -508,12 +525,13 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "Remove Time Based Video Restrictions", patch_1));
             Patches.Add(new PatchSet(PatchLevel.Released, "Liveview Manual Control ISO/Shutter", patch_LiveViewManual));
             Patches.Add(new PatchSet(PatchLevel.Released, "Clean HDMI & LCD Liveview", patch_clean_hdmi));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_bitrate_36mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_29mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54Mbps, NQ 29Mbps", patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_bitrate_36mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_54mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54Mbps, NQ 29Mbps", patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64Mbps, NQ 22Mbps", patch_bitrate_64mbps, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ));
 
             // Still pictures
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Off", patch_3_nocomp, patch_3_LosslessNEF));
