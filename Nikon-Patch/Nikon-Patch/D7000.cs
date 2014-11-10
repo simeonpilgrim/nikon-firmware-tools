@@ -211,7 +211,7 @@ namespace Nikon_Patch
             Model = "D7000";
             Version = "1.03";
 
-            Patches.Add(new PatchSet(PatchLevel.Released, "HDMI full sized", hdmi_full_sized));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI full sized", hdmi_full_sized));
 
           
             Patches.Add(new PatchSet(PatchLevel.Released, "Remove Time Based Video Restrictions", patch_1));
