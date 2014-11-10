@@ -36,6 +36,7 @@ namespace Nikon_Patch
             HelpMap.Add("Video 1080 24fps HQ 36mbps NQ old HQ", "This patch changes the HQ bitrate from ~20mbps to ~36mbps. This will reduce recording time due to the 4gb limitation of the recording process. Due to the increased data rate: depending on the speed of your SD card, the record may abruptly stop and the file may not playback in camera. The NQ bitrate set to the old HQ rate");
             HelpMap.Add("Video 1080 24fps HQ 49mbps NQ old HQ", "This patch changes the HQ bitrate from ~20mbps to ~49mbps. This will reduce recording time due to the 4gb limitation of the recording process. Due to the increased data rate: depending on the speed of your SD card, the record may abruptly stop and the file may not playback in camera. The NQ bitrate set to the old HQ rate");
             HelpMap.Add("Video 1080 24fps HQ 64mbps NQ old HQ", "This patch changes the HQ bitrate from ~20mbps to ~64mbps. This will reduce recording time due to the 4gb limitation of the recording process. Due to the increased data rate: depending on the speed of your SD card, the record may abruptly stop and the file may not playback in camera. The NQ bitrate set to the old HQ rate");
+            HelpMap.Add("Video 1080/720 HQ 64mbps Bit-rate NQ old HQ", "");
             HelpMap.Add("Liveview Manual Control ISO/Shutter", "This patch allows the user manual control over ISO and shutter speed in Liveview.");
 
             

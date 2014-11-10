@@ -144,6 +144,17 @@ namespace Nikon_Patch
             return (UInt16)(data[pos + 0] << 8 | data[pos + 1]);
         }
 
+        public static byte[] LittleWords(params Int16[] words)
+        {
+            var data = new byte[words.Length * 2];
+            for (int i = 0; i < words.Length; i++)
+            {
+                data[(i * 2) + 0] = (byte)((words[i] >> 8) & 0xFF);
+                data[(i * 2) + 1] = (byte)((words[i] >> 0) & 0xFF);
+            }
+            return data;
+        }
+
         public static string ReadString(byte[] data, long pos, int count)
         {
             StringBuilder sb = new StringBuilder();

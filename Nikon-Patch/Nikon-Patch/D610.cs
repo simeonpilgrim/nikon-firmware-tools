@@ -46,7 +46,7 @@ namespace Nikon_Patch
         };
 
 
-        Patch[] patch_1080_64mbps_NQ = {
+        Patch[] patch_1080_720_64mbps_NQ = {
             // 1080 0 24 fps
             new Patch(1, 0x23DD2, Sys.mbps24 , Sys.mbps64 ),
             new Patch(1, 0x23DD8, Sys.mbps20 , Sys.mbps60 ),
@@ -55,7 +55,7 @@ namespace Nikon_Patch
 
             // 1080 2 30 fps
             new Patch(1, 0x23DFE, Sys.mbps24 , Sys.mbps64 ),
-            new Patch(1, 0x23E02, Sys.mbps20 , Sys.mbps60 ),
+            new Patch(1, 0x23E04, Sys.mbps20 , Sys.mbps60 ),
             new Patch(1, 0x23E12, Sys.mbps12 , Sys.mbps24 ),
             new Patch(1, 0x23E18, Sys.mbps10 , Sys.mbps20 ),
 
@@ -82,7 +82,7 @@ namespace Nikon_Patch
             new Patch(1, 0x23F08, Sys.mbps12, Sys.mbps64 ),
             new Patch(1, 0x23F0E, Sys.mbps10, Sys.mbps60 ),
             new Patch(1, 0x23F1C, Sys.mbps8 , Sys.mbps24 ),
-            new Patch(1, 0x23F22, Sys.mbps5 , Sys.mbps20 ),
+            new Patch(1, 0x23F22, Sys.mbps6 , Sys.mbps20 ),
 
             // 720 5 50 fps
             new Patch(1, 0x23F54, Sys.mbps24 , Sys.mbps64 ),
@@ -99,9 +99,9 @@ namespace Nikon_Patch
             Model = "D610";
             Version = "1.01";
 
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_36mbps_NQ, patch_1080_64mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_720_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_36mbps_NQ, patch_1080_720_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080/720 HQ 64mbps Bit-rate NQ old HQ", patch_1080_720_64mbps_NQ, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
         }
     }
 }
