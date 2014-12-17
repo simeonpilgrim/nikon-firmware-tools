@@ -50,9 +50,10 @@ namespace NikonDump
                 EnterServiceMode();
 
                 //FR_BKT_Test();
-                
 
                 if (false)
+                //int count = 0;
+                //while (Console.KeyAvailable == false)
                 {
                     //FR_Dump_6700xxxx();
                     //FR_D7000_alter_blacklevel_B();
@@ -78,13 +79,13 @@ namespace NikonDump
                     //byte[] iso = { 0xC0, 0xEF, 0xFC, 0x0E, 0xFC, 0x0E, 0xFC, 0x0E };
                     //cam.SetProperty(0xFD31, iso, 0xC90A, 8, 0);
 
-                    Thread.Sleep(1 * 1000);
-                    Tmp19_CMD_475D(6, 66);
-                    Thread.Sleep(3 * 1000);
+                    //Thread.Sleep(1 * 1000);
+                    //Tmp19_CMD_475D(50, 120);
+                    //Thread.Sleep(3 * 1000);
                     //Tmp19_DisablesDefectProcessing_Set(false);
 
-                    Tmp19_Resume();
-
+                    //Tmp19_Resume();
+                    //Console.WriteLine("{0}", ++count);
                 }
 
 
@@ -105,8 +106,11 @@ namespace NikonDump
 //simeon HDMI testing
 
                 //FR_test_USB_offbit();
-                //FR_Set04Ram_SetBit(0x14, 0x01); // Liveview auto off timer off.
-                
+                FR_Set04Ram_SetBit(0x14, 0x01); // Liveview auto off timer off.
+                FR_Set04Ram_SetBit(0x16, 0x02); // Liveview raw save.
+
+                //FR_Set04Ram_SetBit(0x16, 0x08); // ??
+
                 //FR_FindMemChange();
 
                 //FR_FC44_Overscan(1);
@@ -119,10 +123,15 @@ namespace NikonDump
                 //FR_D7000_alter_blacklevel();
                 //FR_D7000_alter_iso_tab();
                 //FR_D7000_alter_vid_tab();
-                //FR_StartLiveView();
-                //FR_StartMovie();
-                //Thread.Sleep(10 * 1000);
-                //FR_EndLiveView();
+
+                FR_USB_ClearOnBit();
+
+                //FR_Set0B_b01b08();
+                //FR_Set0B_b01b08_clear();
+             //FR_StartLiveView();
+             //FR_StartMovie();
+             //Thread.Sleep(10 * 1000);
+             //FR_EndLiveView();
                 
                 //ScanForServiceFunctions();
                 //FR_FindMemChange();
@@ -149,7 +158,7 @@ namespace NikonDump
                 //FR_LiveView_hack();
 
                 //Tmp19_Resume();
-                ExitServiceMode();
+                //ExitServiceMode();
             }
         }
 
@@ -274,7 +283,7 @@ namespace NikonDump
             }
         }
 
-        static void FR_test_USB_offbit()
+        static void FR_USB_ClearOnBit()
         {
             //8F84C3A2
             uint set0b_addr = 0x8F84C3A2;
@@ -299,6 +308,40 @@ namespace NikonDump
             //}
 
 
+        }
+
+
+        static void FR_Set0B_b01b08()
+        {
+            //8F84C3A2
+            uint set0b_addr = 0x8F84C3A2;
+
+            var b = ReadBytes(cam, set0b_addr + 1, 1);
+
+            Debug.WriteLine(" byte 1 {0:x}", b[0]);
+            if ((b[0] & 0x80) == 0)
+            {
+                b[0] = (byte)(0x80 | b[0]);
+                WriteBytes(cam, set0b_addr + 1, b);
+
+                Debug.WriteLine(" * SET 0x80");
+            }
+        }
+
+        static void FR_Set0B_b01b08_clear()
+        {
+            //8F84C3A2
+            uint set0b_addr = 0x8F84C3A2;
+
+            var b = ReadBytes(cam, set0b_addr + 1, 1);
+
+            if ((b[0] & 0x80) != 0)
+            {
+                b[0] = (byte)((~0x80) & b[0]);
+                WriteBytes(cam, set0b_addr + 1, b);
+
+                Debug.WriteLine(" * CLEAR 0x80");
+            }
         }
 
         static public byte[] ReadBytes(BaseMTPCamera cam, uint addr, uint readlength)
@@ -438,7 +481,7 @@ namespace NikonDump
         static void FR_StartMovie()
         {
             var res = cam.ExecuteWithNoData(0x920A);
-            Debug.WriteLine("res code: {0:X}", res);
+            Debug.WriteLine("FR_StartMovie res code: {0:X}", res);
         }
 
         static void FR_FDE1_test()
