@@ -50,6 +50,10 @@ namespace Nikon_Patch
 
             HelpMap.Add("True Dark Current", "This Astro patch makes the camera not truncate black to zero, allowing for better calculation of very low light stars");
 
+            HelpMap.Add("HDMI Output 1080i", "This patch force the HDMI output to be in 1080i verse defualt 720p");
+            HelpMap.Add("HDMI Output 1080i FullScreen", "This forces HDMI 1080i output to be fullscreen, and is independant of the 'HDMI Output 1080i'");
+            HelpMap.Add("HDMI Output 720p FullScreen", "This forces HDMI 720p output to be fullscreen");
+
         }
 
         Firmware firm = null;

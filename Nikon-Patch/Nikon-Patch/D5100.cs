@@ -514,6 +514,24 @@ namespace Nikon_Patch
             new Patch(1, 0x711A65, new byte[] { 0x6E, 0x6F, 0x72, 0x6D, 0x61, 0x6C } ,new byte[] { 0x58, 0x2D, 0x48, 0x51, 0x00, 0x00 } ),
             new Patch(1, 0x712069, new byte[] { 0x6E, 0x6F, 0x72, 0x6D, 0x61, 0x6C } ,new byte[] { 0x58, 0x2D, 0x48, 0x51, 0x00, 0x00 } ),
                              };
+
+
+        Patch[] HDMI_output_1080i = {
+            new Patch(1, 0x17E466, new byte[] { 0xC0, 0x14 } ,new byte[] { 0xC0, 0x04 } ),
+        };
+
+        Patch[] HDMI_full_sized_1080i = {
+            // 720
+            new Patch(1, 0x2012A8, new byte[] {0x00,0x00,0xD2,0xF6, 0x00,0x20,0x0D,0x7B, 0x00,0x2F,0xDF,0x7B}, new byte[] {0x00,0x00,0x00,0x00, 0x00,0x1F,0xA4,0x00, 0x00,0x2F,0x76,0x00} ),
+            new Patch(1, 0x2012B4, Sys.LittleWords(1920,960,1428,950,714,950), Sys.LittleWords(1920,960,1920,1080,960,1080)),
+                                };
+
+        Patch[] HDMI_full_sized_720p = {
+            // 720
+            new Patch(1, 0x2012C4, new byte[] {0x00,0x00,0x5a,0xa4, 0x00,0x0E,0x3D,0x52, 0x00,0x15,0x45,0x52}, new byte[] {0x00,0x00,0x00,0x00, 0x00,0x0E,0x10,0x00, 0x00,0x15,0x18,0x00} ),
+            new Patch(1, 0x2012D0, Sys.LittleWords(1280,640,952,634,476,634 ), Sys.LittleWords(1280,640,1280,720,640,720 )),
+                                };
+
         public D5100_0102()
         {
             p = new Package();
@@ -532,6 +550,9 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_64mbps));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54Mbps, NQ 29Mbps", patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ, patch_bitrate_64mbps));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64Mbps, NQ 22Mbps", patch_bitrate_64mbps, patch_bitrate_54mbps_29mbps_NQ, patch_bitrate_29mbps_playback, patch_bitrate_54mbps_NQ, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI Output 1080i", HDMI_output_1080i));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI Output 1080i FullScreen", HDMI_full_sized_1080i));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI Output 720p FullScreen", HDMI_full_sized_720p));
 
             // Still pictures
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Off", patch_3_nocomp, patch_3_LosslessNEF));

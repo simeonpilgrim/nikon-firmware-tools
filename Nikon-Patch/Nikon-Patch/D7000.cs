@@ -199,7 +199,7 @@ namespace Nikon_Patch
             new Patch(1, 0x199E17, new byte[] {0x90, 0x00, 0x00 }, new byte[] {0x25, 0xC2, 0xD4}),
         };
 
-       Patch[] hdmi_full_sized = {
+       Patch[] hdmi_full_sized_720p = {
             // 720
             new Patch(1, 0x1E6C34, new byte[] {0x00,0x00,0x5A,0xA4, 0x00,0x0E,0x3D,0x52, 0x00,0x15,0x45,0x52}, new byte[] {0x00,0x00,0x00,0x00, 0x00,0x0E,0x10,0x00, 0x00,0x15,0x18,0x00} ),
             new Patch(1, 0x1E6C40, Sys.LittleWords(1280,640,952,634,476,634 ), Sys.LittleWords(1280,640,1280,720,640,720 )),
@@ -211,7 +211,7 @@ namespace Nikon_Patch
             Model = "D7000";
             Version = "1.03";
 
-            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI full sized", hdmi_full_sized));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI Output 720p FullScreen", hdmi_full_sized_720p));
 
           
             Patches.Add(new PatchSet(PatchLevel.Released, "Remove Time Based Video Restrictions", patch_1));
