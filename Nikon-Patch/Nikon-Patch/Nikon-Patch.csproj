@@ -94,9 +94,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="D7100.cs" />
+    <Compile Include="D750.cs" />
     <Compile Include="D800.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="D810.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
