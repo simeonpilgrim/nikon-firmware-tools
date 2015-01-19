@@ -103,4 +103,24 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
         }
     }
+
+    class D600_0102 : Firmware
+    {
+        Patch[] patch_Language_Fix = {
+            //new Patch(1, 0x38063C, new byte[] { 0xE2, 0x08 }, new byte[] { 0xE0, 0x08 }),
+            //new Patch(1, 0x385B3C, new byte[] { 0xE2, 0x11 }, new byte[] { 0xE0, 0x11 }),
+            //new Patch(1, 0x41EC34, new byte[] { 0xE2, 0x06 }, new byte[] { 0xE0, 0x06 }),
+            //new Patch(1, 0x3E320C, new byte[] { 0xB1, 0xF4 }, new byte[] { 0xC0, 0x04 }), this case (from 3200) was not found
+                          };
+
+
+        public D600_0102()
+        {
+            p = new Package();
+            Model = "D600";
+            Version = "1.02";
+
+            //Patches.Add(new PatchSet(PatchLevel.DevOnly, "Multi-Language Support", patch_Language_Fix));
+        }
+    }
 }
