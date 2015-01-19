@@ -92,6 +92,12 @@ namespace Nikon_Patch
 
                                        };
 
+        Patch[] patch_Language_Fix = {
+            new Patch(1, 0x380258, new byte[] { 0xE2, 0x08 }, new byte[] { 0xE0, 0x08 }),
+            new Patch(1, 0x385758, new byte[] { 0xE2, 0x11 }, new byte[] { 0xE0, 0x11 }),
+            new Patch(1, 0x41E638, new byte[] { 0xE2, 0x06 }, new byte[] { 0xE0, 0x06 }),
+            //new Patch(1, 0x3E320C, new byte[] { 0xB1, 0xF4 }, new byte[] { 0xC0, 0x04 }), this case (from 3200) was not found
+                          };
 
         public D610_0101()
         {
@@ -99,6 +105,7 @@ namespace Nikon_Patch
             Model = "D610";
             Version = "1.01";
 
+            Patches.Add(new PatchSet(PatchLevel.DevOnly, "Multi-Language Support", patch_Language_Fix));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_720_64mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_36mbps_NQ, patch_1080_720_64mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080/720 HQ 64mbps Bit-rate NQ old HQ", patch_1080_720_64mbps_NQ, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
