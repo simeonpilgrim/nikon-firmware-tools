@@ -50,7 +50,7 @@ namespace Nikon_Decode
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D610Update\D610_0101.bin");
 
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D750Update\D750_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D750Update\D750_0101.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0102.bin");
@@ -60,7 +60,7 @@ namespace Nikon_Decode
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0102.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800EUpdate\D800E_0110.bin");
 
-            DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D810Update\D810_0102.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D810Update\D810_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D4Update\D4__0102.bin"); 
@@ -86,6 +86,10 @@ namespace Nikon_Decode
             //DecodePackageFile1(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
+
+            DecodePackageFile1(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
+            ExactFirmware(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
+
 
 
             //SearchWords(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D7000_0101.bin");
