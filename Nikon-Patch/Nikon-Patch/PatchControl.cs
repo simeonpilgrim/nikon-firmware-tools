@@ -150,13 +150,50 @@ namespace Nikon_Patch
             return (UInt16)(data[pos + 0] << 8 | data[pos + 1]);
         }
 
-        public static byte[] LittleWords(params Int16[] words)
+        public static byte[] LittleWords(params Int32[] words)
         {
             var data = new byte[words.Length * 2];
             for (int i = 0; i < words.Length; i++)
             {
                 data[(i * 2) + 0] = (byte)((words[i] >> 8) & 0xFF);
                 data[(i * 2) + 1] = (byte)((words[i] >> 0) & 0xFF);
+            }
+            return data;
+        }
+
+        public static byte[] LittleDwords(params Int32[] dwords)
+        {
+            var data = new byte[dwords.Length * 4];
+            for (int i = 0; i < dwords.Length; i++)
+            {
+                data[(i * 4) + 0] = (byte)((dwords[i] >> 24) & 0xFF);
+                data[(i * 4) + 1] = (byte)((dwords[i] >> 16) & 0xFF);
+                data[(i * 4) + 2] = (byte)((dwords[i] >> 8) & 0xFF);
+                data[(i * 4) + 3] = (byte)((dwords[i] >> 0) & 0xFF);
+            }
+            return data;
+        }
+
+        public static byte[] BigWords(params Int32[] words)
+        {
+            var data = new byte[words.Length * 2];
+            for (int i = 0; i < words.Length; i++)
+            {
+                data[(i * 2) + 0] = (byte)((words[i] >> 0) & 0xFF);
+                data[(i * 2) + 1] = (byte)((words[i] >> 8) & 0xFF);
+            }
+            return data;
+        }
+
+        public static byte[] BigDwords(params Int32[] dwords)
+        {
+            var data = new byte[dwords.Length * 4];
+            for (int i = 0; i < dwords.Length; i++)
+            {
+                data[(i * 4) + 0] = (byte)((dwords[i] >> 0) & 0xFF);
+                data[(i * 4) + 1] = (byte)((dwords[i] >> 8) & 0xFF);
+                data[(i * 4) + 2] = (byte)((dwords[i] >> 16) & 0xFF);
+                data[(i * 4) + 3] = (byte)((dwords[i] >> 24) & 0xFF);
             }
             return data;
         }
