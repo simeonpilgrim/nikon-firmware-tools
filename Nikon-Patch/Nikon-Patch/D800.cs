@@ -165,12 +165,18 @@ namespace Nikon_Patch
             new Patch(1, 0x21EC8 - 8, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x02, 0x31, 0x2D, 0x00} ),
                                   };
 
+        Patch[] patch_Language_Fix = {
+            new Patch(1, 0x3EA1A6, new byte[] { 0xE2, 0x08 }, new byte[] { 0xE0, 0x08 }),
+            new Patch(1, 0x3EEE76, new byte[] { 0xE2, 0x11 }, new byte[] { 0xE0, 0x11 }),
+                          };
+
         public D800_0110()
         {
             p = new Package();
             Model = "D800";
             Version = "1.10";
 
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Multi-Language Support", patch_Language_Fix));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps, patch_1080_64_36_mbps));
@@ -313,11 +319,13 @@ namespace Nikon_Patch
             new Patch(1, 0x21EC8 - 8, new byte[] { 0x00, 0x98, 0x96, 0x80 } , new byte[] { 0x01, 0x31, 0x2D, 0x00} ),
                                   };
 
+ 
         public D800E_0110()
         {
             p = new Package();
             Model = "D800E";
             Version = "1.10";
+
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps, patch_1080_54mbps, patch_1080_64mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps));
