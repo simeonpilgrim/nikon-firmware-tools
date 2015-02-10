@@ -105,10 +105,10 @@ namespace Nikon_Patch
             Model = "D610";
             Version = "1.01";
 
-            Patches.Add(new PatchSet(PatchLevel.DevOnly, "Multi-Language Support", patch_Language_Fix));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_720_64mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_36mbps_NQ, patch_1080_720_64mbps_NQ));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080/720 HQ 64mbps Bit-rate NQ old HQ", patch_1080_720_64mbps_NQ, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Multi-Language Support", patch_Language_Fix));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_720_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_36mbps_NQ, patch_1080_720_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080/720 HQ 64mbps Bit-rate NQ old HQ", patch_1080_720_64mbps_NQ, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
         }
     }
 }
