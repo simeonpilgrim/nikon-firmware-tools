@@ -44,123 +44,199 @@ namespace NikonDump
 
             if (rep.ErrorCode == ErrorCodes.MTP_OK)
             {
-                if (Directory.Exists(path) == false)
-                    Directory.CreateDirectory(path);
-                
-                EnterServiceMode();
+                //DumpTests();
 
-                //FR_BKT_Test();
-
-                if (false)
-                //int count = 0;
-                //while (Console.KeyAvailable == false)
-                {
-                    //FR_Dump_6700xxxx();
-                    //FR_D7000_alter_blacklevel_B();
-                    
-                    //FR_D7000_alter_blacklevel_B();
-
-                    //Tmp19_DisablesDefectProcessing_Set(true);
-
-                    //cam.SetProperty(0xD015, new byte[] { 0x01 }, 0, 0);
-                    //cam.SetProperty(0x5010, new byte[] { 0x00, 0x00 }, 0, 0);
-                    //cam.SetProperty(0xD10B, new byte[] { 0x01 }, 0, 0);
-                    //cam.SetProperty(0x5004, new byte[] { 0x04 }, 0, 0);
-                    ////FR_FC46_Compression(1);
-
-                    //cam.SetProperty(0xd149, new byte[] { 0x01 }, 0, 0);
-                    //cam.SetProperty(0xd054, new byte[] { 0x00 }, 0, 0);
-                    //cam.SetProperty(0xd070, new byte[] { 0x00 }, 0, 0);
-
-                    //FR_FC44_Overscan(1);
-
-                    //cam.SetProperty(0xFD31, new byte[] { 0x00, 0x9C, 0x00, 0x01, 0x20, 0x00 }, 0x2176, 6, 0);
-
-                    //byte[] iso = { 0xC0, 0xEF, 0xFC, 0x0E, 0xFC, 0x0E, 0xFC, 0x0E };
-                    //cam.SetProperty(0xFD31, iso, 0xC90A, 8, 0);
-
-                    //Thread.Sleep(1 * 1000);
-                    //Tmp19_CMD_475D(50, 120);
-                    //Thread.Sleep(3 * 1000);
-                    //Tmp19_DisablesDefectProcessing_Set(false);
-
-                    //Tmp19_Resume();
-                    //Console.WriteLine("{0}", ++count);
-                }
+                Dump_Eeprom_LANG_Test1(SN);
+            }
+        }
 
 
-     // Step 1
-                //Console.WriteLine("Dump 0x00xxxxxx");
-                //FR_Dump_00xxxxxx();
-                //Console.WriteLine("Dump 0x9xxxxxxx");
-                //FR_Dump_9xxxxxxx();
+        static void DumpTests()
+        {
+            if (Directory.Exists(path) == false)
+                Directory.CreateDirectory(path);
 
-     // Step 2
-                //Console.WriteLine("Dump All");
-                //FR_Dump_all2();
+            EnterServiceMode();
 
-                //Tmp19_DumpEeprom();
+            //FR_BKT_Test();
 
+            if (false)
+            //int count = 0;
+            //while (Console.KeyAvailable == false)
+            {
+                //FR_Dump_6700xxxx();
+                //FR_D7000_alter_blacklevel_B();
 
+                //FR_D7000_alter_blacklevel_B();
 
-//simeon HDMI testing
+                //Tmp19_DisablesDefectProcessing_Set(true);
 
-                //FR_test_USB_offbit();
-                FR_Set04Ram_SetBit(0x14, 0x01); // Liveview auto off timer off.
-                FR_Set04Ram_SetBit(0x16, 0x02); // Liveview raw save.
+                //cam.SetProperty(0xD015, new byte[] { 0x01 }, 0, 0);
+                //cam.SetProperty(0x5010, new byte[] { 0x00, 0x00 }, 0, 0);
+                //cam.SetProperty(0xD10B, new byte[] { 0x01 }, 0, 0);
+                //cam.SetProperty(0x5004, new byte[] { 0x04 }, 0, 0);
+                ////FR_FC46_Compression(1);
 
-                //FR_Set04Ram_SetBit(0x16, 0x08); // ??
-
-                //FR_FindMemChange();
+                //cam.SetProperty(0xd149, new byte[] { 0x01 }, 0, 0);
+                //cam.SetProperty(0xd054, new byte[] { 0x00 }, 0, 0);
+                //cam.SetProperty(0xd070, new byte[] { 0x00 }, 0, 0);
 
                 //FR_FC44_Overscan(1);
 
-                //FR_Set04Ram_SetBit(0x07, 0x01); // LiveView Clean LCD
+                //cam.SetProperty(0xFD31, new byte[] { 0x00, 0x9C, 0x00, 0x01, 0x20, 0x00 }, 0x2176, 6, 0);
 
-                //FR_D7000_dump_button_bits();
-                //FR_Set_LED_test();
+                //byte[] iso = { 0xC0, 0xEF, 0xFC, 0x0E, 0xFC, 0x0E, 0xFC, 0x0E };
+                //cam.SetProperty(0xFD31, iso, 0xC90A, 8, 0);
 
-                //FR_D7000_alter_blacklevel();
-                //FR_D7000_alter_iso_tab();
-                //FR_D7000_alter_vid_tab();
-
-                FR_USB_ClearOnBit();
-
-                //FR_Set0B_b01b08();
-                //FR_Set0B_b01b08_clear();
-             //FR_StartLiveView();
-             //FR_StartMovie();
-             //Thread.Sleep(10 * 1000);
-             //FR_EndLiveView();
-                
-                //ScanForServiceFunctions();
-                //FR_FindMemChange();
-                //FR_Dump_all2();
-                //FR_Dump_all_via_FE31();
-                //FR_Dump_00xxxxxx();
-                //FR_Dump_01xxxxxx();
-                //FR_Dump_8xxxxxxx();
-
-                //Tmp19_Suspend();
-
-                //Tmp19_Dump_ADCTab();
-                //Tmp19_Dump_FFxxxx();
-                //Tmp19_Dump_FF6A5C();
-
-                //var va = Tmp19_Cmd_4152(0xFF5FDC, 0x20);
-
-                //FR_FDE1_test();
-                //FR_StartLiveView();
-                //FR_StartMovie();
-               
-                //FR_FDE1_test();
-
-                //FR_LiveView_hack();
+                //Thread.Sleep(1 * 1000);
+                //Tmp19_CMD_475D(50, 120);
+                //Thread.Sleep(3 * 1000);
+                //Tmp19_DisablesDefectProcessing_Set(false);
 
                 //Tmp19_Resume();
-                //ExitServiceMode();
+                //Console.WriteLine("{0}", ++count);
             }
+
+
+            // Step 1
+            //Console.WriteLine("Dump 0x00xxxxxx");
+            //FR_Dump_00xxxxxx();
+            //Console.WriteLine("Dump 0x9xxxxxxx");
+            //FR_Dump_9xxxxxxx();
+
+            // Step 2
+            //Console.WriteLine("Dump All");
+            //FR_Dump_all2();
+
+            //Tmp19_DumpEeprom();
+
+
+
+            //simeon HDMI testing
+
+            //FR_test_USB_offbit();
+            FR_Set04Ram_SetBit(0x14, 0x01); // Liveview auto off timer off.
+            FR_Set04Ram_SetBit(0x16, 0x02); // Liveview raw save.
+
+            //FR_Set04Ram_SetBit(0x16, 0x08); // ??
+
+            //FR_FindMemChange();
+
+            //FR_FC44_Overscan(1);
+
+            //FR_Set04Ram_SetBit(0x07, 0x01); // LiveView Clean LCD
+
+            //FR_D7000_dump_button_bits();
+            //FR_Set_LED_test();
+
+            //FR_D7000_alter_blacklevel();
+            //FR_D7000_alter_iso_tab();
+            //FR_D7000_alter_vid_tab();
+
+            FR_USB_ClearOnBit();
+
+            //FR_Set0B_b01b08();
+            //FR_Set0B_b01b08_clear();
+            //FR_StartLiveView();
+            //FR_StartMovie();
+            //Thread.Sleep(10 * 1000);
+            //FR_EndLiveView();
+
+            //ScanForServiceFunctions();
+            //FR_FindMemChange();
+            //FR_Dump_all2();
+            //FR_Dump_all_via_FE31();
+            //FR_Dump_00xxxxxx();
+            //FR_Dump_01xxxxxx();
+            //FR_Dump_8xxxxxxx();
+
+            //Tmp19_Suspend();
+
+            //Tmp19_Dump_ADCTab();
+            //Tmp19_Dump_FFxxxx();
+            //Tmp19_Dump_FF6A5C();
+
+            //var va = Tmp19_Cmd_4152(0xFF5FDC, 0x20);
+
+            //FR_FDE1_test();
+            //FR_StartLiveView();
+            //FR_StartMovie();
+
+            //FR_FDE1_test();
+
+            //FR_LiveView_hack();
+
+            //Tmp19_Resume();
+            //ExitServiceMode();
         }
+
+        static void Dump_Eeprom_LANG_Test1(string sn)
+        {
+            string filesname = string.Format("eeprom_log_{0}.txt", sn);
+            using (TextWriter tw = new StreamWriter(filesname))
+            {
+                var set = FR_DumpSet(1, 0x3);
+                tw.WriteLine("set01 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(2, 0x80);
+                tw.WriteLine("set02 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(3, 0x80);
+                tw.WriteLine("set03 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(4, 0x80);
+                tw.WriteLine("set04 " + DataToHexString(set.Data, 0));
+
+                var res = Tmp19_Cmd_4155_EepromRead(0x0, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x80, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x100, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x180, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+            }
+
+            Tmp19_Resume();
+            ExitServiceMode();
+        }
+
+        static void Tmp19_Search_Set04()
+        {
+            var set = FR_DumpSet(1, 0x3);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(2, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(3, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(4, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+
+            var res = Tmp19_Cmd_4155_EepromRead(0x0, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x80, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x100, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x180, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+
+
+            //Debug.WriteLine(DataToHexString(res.Data, 44));
+
+            //if (turnOff)
+            //    res.Data[0] |= 0x08;
+            //else
+            //    res.Data[0] &= 0xF7;
+
+
+            ////Tmp19_Cmd_4154_RAMWrite(0xFF4043, 1, res.Data);
+            //Tmp19_Cmd_4157_EepromWrite(0x43, 1, res.Data);
+            //Tmp19_Cmd_4771_EepromSave();
+
+            //var chk = Tmp19_Cmd_4155_EepromRead(0x43, 1);
+            //Debug.WriteLine(chk.Data[0]);
+            Tmp19_Resume();
+        }
+
+
 
         static void pack_ISO(byte[] d, uint R, uint G1, uint B, uint G2)
         {
