@@ -61,12 +61,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="D3x00_models.cs" />
-    <Compile Include="D5x00_models.cs" />
-    <Compile Include="D600_models.cs" />
-    <Compile Include="D7x00_models.cs" />
     <Compile Include="NikonFlags.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CameraModels\CameraModels.csproj">
+      <Project>{9EE587E0-3C7B-417A-89AE-5A5BE0CE764C}</Project>
+      <Name>CameraModels</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -27,6 +27,9 @@ namespace NikonDump
 
         static void Main(string[] args)
         {
+            EepromChecko();
+            return;
+
             string camid = FindNikonCamera();
             if (camid == "")
             {
@@ -47,9 +50,90 @@ namespace NikonDump
                 //DumpTests();
 
                 Dump_Eeprom_LANG_Test1(SN);
+              
             }
         }
 
+        static void EepromChecko()
+        {
+            // d5100 
+            var set04 = stringtodata("00 01 00 00 00 00 00 03 00 00 00 80 00 C0 00 00 80 00 00 00 02 00 FF C0 00 00");
+            var eeprom = stringtodata("FD FD FE FE FF FF FE E9 FF F3 00 63 FD 8A FF ED 1C 1A 1A 1A 1A 1B 19 18 18 19 1C 1A 19 19 1A 01 02 00 00 C0 00 01 00 00 00 00 00 03 00 80 00 C0 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 53 1C 72 70 A4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 01 00 00 1E 75 00 00 00 00 00 12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 00 00 00 00 01 80 02 00 ");
+
+
+            promChecko("D5100", "00 01 00 00 00 00 00 03 00 00 00 80 00 C0 00 00 80 00 00 00 02 00 FF C0 00 00", "FD FD FE FE FF FF FE E9 FF F3 00 63 FD 8A FF ED 1C 1A 1A 1A 1A 1B 19 18 18 19 1C 1A 19 19 1A 01 02 00 00 C0 00 01 00 00 00 00 00 03 00 80 00 C0 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 53 1C 72 70 A4 00 00 00 00 00 00 00 00 00 00 00 00 00 00 01 01 00 00 1E 75 00 00 00 00 00 12 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 00 00 00 00 01 80 02 00 ");
+            promChecko("D5200", "00 00 00 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 42 00 00 80 7F 00", "FE FD FF FE FD FE FE 00 FF F3 00 50 FD D3 E8 01 03 6B 02 71 FF F2 00 00 00 00 00 00 00 00 00 00 02 00 00 42 00 00 80 00 00 00 00 04 00 00 00 00 00 00 00 00 00 00 7F 00 00 00 00 00 00 00 00 FB 1C 7C 2A E6 00 01 00 00 00 00 00 00 00 00 00 00 0B DF 04 01 00 00 23 55 00 01 00 00 00 00 00 00 00 01 00 01 00 01 00 00 00 00 00 00 00 00 00 00 00 80 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
+            promChecko("D800 ", "00 00 80 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 C0 42 00 00", "00 00 0C 35 00 55 00 93 0A 03 00 00 00 58 FD EA EA 01 00 00 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 18 00 FF F7 01 01 01 01 02 03 03 03 75 50 64 00 00 00 00 00 02 00 C0 42 00 00 80 04 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 92 1C 6E 73 84 00 01 00 00 00 00 00 00 00 00 00 00 00 18 08 01 00 00 03 CA 00 00 00 05 00 05 00 00");
+            promChecko("D3200", "00 01 00 00 00 00 00 03 00 00 00 82 00 C0 00 00 00 00 00 00 00 00 C0 40 00 00 00", "FD FB FD FD FD FD FD E8 FF D5 00 50 FE 59 00 05 01 F5 03 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 C0 40 00 01 00 00 00 00 00 03 00 82 00 C0 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 70 1C 73 6C 99 01 01 00 00 00 00 00 00 00 00 00 00 00 00 00 01 00 00 B0 03 25 43 E3 D9 00 00 08 00 1E 0A 00 00 00 03 01 01 00 00 00 00 00 00 00 00 00 00 00 00 04 00 00 00 00 00 00 00 02 80 02 00 ");
+            promChecko("D7100", "00 01 00 00 00 00 00 03 00 00 00 82 00 C0 00 00 00 00 00 00 00 00 C0 40 00 00 00", "EC F6 F6 00 0A 14 14 14 00 21 FF AE 00 54 FD FE EA 00 02 A9 02 A9 FF EF 73 93 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 02 00 00 42 00 00 80 04 00 00 00 00 00 00 00 00 00 00 7F 00 00 00 00 08 00 00 00 00 00 00 00 42 1C C2 EC 13 00 01 00 00 00 00 00 00 00 00 00 00 00 7C 06 01 00 00 14 3D 00 00 00 02 04 05 00 00 "); 
+
+
+
+        }
+
+        static void promChecko(string model, string s4, string ee)
+        {
+            var eeprom = stringtodata(ee);
+
+            //Debug.WriteLine(set_04_eeprom_order(set04));
+            Debug.WriteLine("                                                                                   *");
+            Debug.WriteLine(string.Format("{0} set04  {1}", model, s4));
+            Debug.WriteLine(string.Format("{0} eeprom {1}", model, eeprom_set_04_order(eeprom, 0x20)));
+            Debug.WriteLine(string.Format("{0} e24    {1}", model, set_04_eeprom_order(stringtodata(s4))));
+            Debug.WriteLine("");
+        }
+
+
+        static string map_string(byte[] data, int[] map, int offset)
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for(int i = 0; i<map.Length; i++)
+            {
+                sb.Append(string.Format("{0:X2} ", data[map[i] + offset]));
+            }
+
+            return sb.ToString();
+        }
+
+
+        static string eeprom_set_04_order(byte[] eeprom, int offset)
+        {
+            int[] d5100_map = new int[] { 4, 5, 6, 7, 8, 9, 0xA, 0xB, 0x16, 0x17, 0xC, 0xD, 0xE, 0xF, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0, 1, 2, 3, 0x18, 0x19 };
+            return map_string(eeprom, d5100_map, offset);
+        }
+
+        static string set_04_eeprom_order(byte[] set04)
+        {
+            int[] d5100_map = new int[] { 0x14, 0x15, 0x16, 0x17, 0, 1, 2, 3, 4, 5, 6, 7, 0xA, 0xB, 0xC, 0xD, 0xE, 0xF, 0x10, 0x11, 0x12, 0x13, 8, 9, 0x18, 0x19 };
+            return map_string(set04, d5100_map, 0);
+        }
+
+        static byte[] stringtodata(string s)
+        {
+            List<byte> data = new List<byte>();
+
+            for (int i = 0; i < s.Length; i += 3)
+            {
+                int h = HexCharToInt(s[i]);
+                int l = HexCharToInt(s[i + 1]);
+                int b = (h << 4) + l;
+                data.Add((byte)b);
+            }
+
+            return data.ToArray();
+        }
+
+        static int HexCharToInt(char c)
+        {
+            if (c >= '0' && c <= '9')
+                return c - '0';
+            if (c >= 'A' && c <= 'F')
+                return c - 'A' + 10;
+            if (c >= 'a' && c <= 'f')
+                return c - 'f' + 10;
+            throw new InvalidDataException();
+        }
 
         static void DumpTests()
         {
