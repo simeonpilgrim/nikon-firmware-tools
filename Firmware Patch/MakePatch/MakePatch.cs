@@ -44,10 +44,10 @@ namespace MakePatch
             var br_a = new BinaryReader(File.OpenRead(file_a));
             var br_b = new BinaryReader(File.OpenRead(file_b));
 
-            if( br_a.BaseStream.Length != br_b.BaseStream.Length )
+            if( br_a.BaseStream.Length != br_b.BaseStream.Length + 2 )
                 return false;
   
-            int len = (int)br_a.BaseStream.Length;
+            int len = (int)br_b.BaseStream.Length;
             using (var sw = new StreamWriter(file_b + "_patch.txt"))
             {
                 CompareBlock(br_a.ReadBytes(len), br_b.ReadBytes(len), 0, len, sw);
