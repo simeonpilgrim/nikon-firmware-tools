@@ -203,8 +203,8 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps, patch_1080_36mbps, patch_1080_64mbps, patch_1080_64_36_mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps, patch_1080_64_36_mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps, NQ 36mbps", patch_1080_64_36_mbps, patch_1080_64mbps, patch_1080_36mbps, patch_1080_54mbps));
-            
-            Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current Menu", patch_dark_current_menu));
+
+            Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current - Menu based", patch_dark_current_menu));
         }
     }
 

@@ -281,7 +281,7 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Lossless", patch_3_LosslessNEF, patch_3_nocomp));
             Patches.Add(new PatchSet(PatchLevel.Released, "Disable Nikon Star Eater", patch_stareater));
             Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current", patch_dark_current, patch_dark_current_menu));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current Menu", patch_dark_current_menu, patch_dark_current));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current - Menu based", patch_dark_current_menu, patch_dark_current));
             //Patches.Add(new PatchSet(true, "*FOR TESTERS* NEF Overscan", patch_NEF_Overscan));
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Jpeg Compression - Quality (vs. Space)", patch_4));
@@ -615,7 +615,7 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Off", patch_3_nocomp, patch_3_LosslessNEF));
             Patches.Add(new PatchSet(PatchLevel.Released, "NEF Compression Lossless", patch_3_LosslessNEF, patch_3_nocomp));
             Patches.Add(new PatchSet(PatchLevel.Released, "Disable Nikon Star Eater", patch_stareater));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Astro Menu", patch_dark_current_menu));
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "True Dark Current - Menu based", patch_dark_current_menu));
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Jpeg Compression - Quality (vs. Space)", patch_4));
 
