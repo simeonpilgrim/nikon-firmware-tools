@@ -49,8 +49,10 @@ namespace Nikon_Decode
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D600Update\D600_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D610Update\D610_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\D610_0101a.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D750Update\D750_0101.bin");
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D750Update\D750_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\D800_0102.bin");
@@ -87,8 +89,8 @@ namespace Nikon_Decode
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\V1_0111.bin");
             //ExactFirmware(@"C:\Users\spilgrim\Downloads\Nikon\Decode\J1_0111.bin");
 
-            DecodePackageFile1(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
-            ExactFirmware(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
+            //DecodePackageFile1(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
+            //ExactFirmware(@"C:\Temp\1N 10mm f2.8\1n_10_01000600.bin");
 
 
 
@@ -145,6 +147,9 @@ namespace Nikon_Decode
             //FindEmptyBlocks(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin", 0x40000);
 
            // Dump_D7000_S179(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\D7000\s179.bin");
+
+            //Dump_All_NEF_MakerNotes_002C(@"C:\Users\spilgrim\Pictures\");
+            Dump_All_NEF_MakerNotes_002C(System.IO.Directory.GetCurrentDirectory());
 
         }
 
@@ -431,9 +436,162 @@ namespace Nikon_Decode
                 finally
                 {
                     if (br != null)
+                    {           
                         br.Close();
+                        br.Dispose();
+                    }
                     if (tw != null)
+                    {
                         tw.Close();
+                        tw.Dispose();
+                    }
+                }
+            }
+        }
+
+        private static void Dump_All_NEF_MakerNotes_002C(string path)
+        {
+            if (Directory.Exists(path))
+            {
+                StreamWriter tw = null;
+                try
+                {
+                    tw = new StreamWriter(File.Open(Path.Combine(path, "search_002C.txt"), FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+
+                    foreach( var file in Directory.EnumerateFiles(path, "*.NEF", SearchOption.AllDirectories))
+                    {
+                        Dump_NEF_MakerNotes_002C(file, tw);
+                    }
+                }
+                finally
+                {
+                    if (tw != null)
+                    {
+                        tw.Close();
+                        tw.Dispose();
+                    }
+                }
+            }
+        }
+
+        private static void Dump_NEF_MakerNotes_002C(string fileName, StreamWriter tw)
+        {
+            if (File.Exists(fileName))
+            {
+                BinaryReader br = null;
+ 
+                try
+                {
+                    br = new BinaryReader(File.Open(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
+
+                    var data = br.ReadBytes((int)br.BaseStream.Length);
+                    var datalen = data.Length;
+                    if( datalen < 8)
+                        return;
+
+                    // Check TIFF header is big endian
+                    if (data[0] != 0x4D || data[1] != 0x4D)
+                        return;
+
+                    // check TIFF header is version x2A
+                    if (data[2] != 0x00 || data[3] != 0x2A)
+                        return;
+
+                    var hoffset = (data[4] << 24) + (data[5] << 16) + (data[6] << 8) + (data[7]);
+
+                    int exifoffset = 0;
+                    // scan TIFF header IFD0 entries for ExifOffset
+                    int hcount = (data[hoffset] << 8) + data[hoffset+1];
+                    for(int i = 0; i <hcount; i++)
+                    {
+                        var idx = i * 12;
+                        if(idx + 12 >= datalen )
+                            return;
+
+                        int token = (data[hoffset + 2 + idx + 0] << 8) + (data[hoffset + 2 + idx + 1]);
+                        int token_type = (data[hoffset + 2 + idx+ 2] << 8) + (data[hoffset + 2 + idx + 3]);
+                        if( token == 0x8769 && token_type == 4)
+                        {
+                            exifoffset = (data[hoffset + 2 + idx + 8] << 24) + (data[hoffset + 2 + idx + 9] << 16) + (data[hoffset + 2 + idx + 10] << 8) + (data[hoffset + 2 + idx + 11]);
+                            break;
+                        }
+                    }
+
+                    if (exifoffset == 0) 
+                        return;
+
+                    // find MakerNotes 
+                    int mnoffset = 0;
+                    int exifcount = (data[exifoffset] << 8) + data[exifoffset + 1];
+                    for (int i = 0; i < exifcount; i++)
+                    {
+                        var idx = i * 12;
+                        if (idx + 12 >= datalen)
+                            return;
+
+                        int token = (data[exifoffset + 2 + idx + 0] << 8) + (data[exifoffset + 2 + idx + 1]);
+                        int token_type = (data[exifoffset + 2 + idx + 2] << 8) + (data[exifoffset + 2 + idx + 3]);
+                        if (token == 0x927C && token_type == 7)
+                        {
+                            mnoffset = (data[exifoffset + 2 + idx + 8] << 24) + (data[exifoffset + 2 + idx + 9] << 16) + (data[exifoffset + 2 + idx + 10] << 8) + (data[exifoffset + 2 + idx + 11]);
+                            break;
+                        }
+                    }
+
+                    // Check it's the Nikon MakerNotes
+                    if (data[mnoffset] != 'N' || data[mnoffset + 1] != 'i' || data[mnoffset + 2] != 'k' || data[mnoffset + 3] != 'o' || data[mnoffset + 4] != 'n')
+                        return;
+
+
+                    // find 002C UnknownInfo 
+                    int uioffset = 0;
+                    int uilength = 0;
+                    int mncount = (data[mnoffset + 18 + 0] << 8) + data[mnoffset + 18 + 1];
+                    for (int i = 0; i < mncount; i++)
+                    {
+                        var idx = i * 12;
+                        if (idx + 12 >= datalen)
+                            return;
+
+                        int token = (data[mnoffset + 18 + 2 + idx + 0] << 8) + (data[mnoffset + 18 + 2 + idx + 1]);
+                        int token_type = (data[mnoffset + 18 + 2 + idx + 2] << 8) + (data[mnoffset + 18 + 2 + idx + 3]);
+                        if (token == 0x002C && token_type == 7)
+                        {
+                            uilength = (data[mnoffset + 18 + 2 + idx + 4] << 24) + (data[mnoffset + 18 + 2 + idx + 5] << 16) + (data[mnoffset + 18 + 2 + idx + 6] << 8) + (data[mnoffset + 18 + 2 + idx + 7]);
+                            uioffset = (data[mnoffset + 18 + 2 + idx + 8] << 24) + (data[mnoffset + 18 + 2 + idx + 9] << 16) + (data[mnoffset + 18 + 2 + idx + 10] << 8) + (data[mnoffset + 18 + 2 + idx + 11]);
+                            uioffset += mnoffset + 0xA; // not sure where the 0x0A comes from.
+                            break;
+                        }
+                    }
+
+                    // Check for expected tokens.
+                    if (data[uioffset] != 0x30 || data[uioffset + 1] != 0x31 || data[uioffset + 2] != 0x30 || data[uioffset + 3] != 0x31)
+                        return;
+
+                    int v0 = data[uioffset + 4]; // always 0x23
+                    int v1 = data[uioffset + 5]; // r11, entry count;
+                    int v2 = (data[uioffset + 6] << 8) + data[uioffset + 7];
+                    int v3 = (data[uioffset + 8] << 8) + data[uioffset + 9];
+
+                    int v4 = (data[uioffset + 10] << 24) + (data[uioffset + 11] << 16) + (data[uioffset + 12] << 8) + (data[uioffset + 13]); // zero
+
+                    tw.Write("{0:X2} {1:X2} {2:X4} {3:X4} ", v0, v1, v2, v3);
+
+                    for (int i = 0; i < v1; i++)
+                    {
+                        int idx = uioffset + 14;
+                        int v = (data[idx + 0] << 24) + (data[idx + 1] << 16) + (data[idx + 2] << 8) + (data[idx + 3]);
+                        tw.Write("{0:X8} ", v);
+                    }
+                    tw.WriteLine("     {0}", fileName);
+                }
+                finally
+                {
+                    if (br != null)
+                    {
+                        br.Close();
+                        br.Dispose();
+                    }
                 }
             }
         }
