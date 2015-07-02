@@ -50,7 +50,7 @@ namespace MakePatch
             int len = (int)br_b.BaseStream.Length;
             using (var sw = new StreamWriter(file_b + "_patch.txt"))
             {
-                CompareBlock(br_a.ReadBytes(len), br_b.ReadBytes(len), 0, len, sw);
+                CompareBlock(br_a.ReadBytes(len), br_b.ReadBytes(len), 1, len, sw);
             }
 
             return true;
