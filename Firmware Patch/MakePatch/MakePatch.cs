@@ -97,18 +97,36 @@ namespace MakePatch
             List<Tuple<byte, byte>> chunk = new List<Tuple<byte, byte>>();
 
             int last = -1;
+            int skips = 0;
+            const int max_skips = 1;
             for (int j = 0; j < dataend; j++)
             {
                 if (ba[j] != bb[j])
                 {
-                    if (j != last + 1)
+                    if (j != (last + 1) && j != (last + 1 + skips))
                     {
                         OutputChunk(sw, blockId, chunk, last);
                         chunk.Clear();
                     }
 
+                    if (skips != 0)
+                    {
+                        for (int i = 0; i < skips; i++)
+                        {
+                            chunk.Add(new Tuple<byte, byte>(ba[(j - skips) + i], bb[(j - skips) + i]));
+                        }
+                        skips = 0;
+                    }
                     chunk.Add(new Tuple<byte, byte>(ba[j], bb[j]));
                     last = j;
+                }
+                else if ((j - last) <= max_skips)
+                {
+                    skips++;
+                }
+                else
+                {
+                    skips = 0;
                 }
             }
             OutputChunk(sw, blockId, chunk, last);
