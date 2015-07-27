@@ -168,6 +168,18 @@ namespace Nikon_Patch
             new Patch(1, 0x11F8D74+0x2250, mbps_24_20tbe, mbps_1_1tbe ),
                            };
 
+        Patch[] patch_liveview_no_timeout_15m = {
+                                                    new Patch(1,0x95B4, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
+                                                    new Patch(1,0xCEB8, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
+                                                    new Patch(1,0x27877C, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
+                                                };
+
+        //Patch[] patch_liveview_no_timeout_15m_b = {
+        //                                            new Patch(1,0x95B4, Sys.BigDwords(900000), Sys.BigDwords(10800000) ),
+        //                                            new Patch(1,0xCEB8, Sys.BigDwords(900000), Sys.BigDwords(10800000) ),
+        //                                            new Patch(1,0x27877C, Sys.BigDwords(900000), Sys.BigDwords(10800000) ),
+        //                                        };
+
 
         public D5200_0102()
         {
@@ -179,6 +191,8 @@ namespace Nikon_Patch
             Patches.Add(new PatchSet(PatchLevel.Beta, "Video HQ 64mbps Bit-rate", patch_64mbps, patch_40mbps, patch_8mbps, patch_1mbps));
             Patches.Add(new PatchSet(PatchLevel.DevOnly, "Video HQ 8mbps Bit-rate", patch_8mbps, patch_40mbps, patch_64mbps, patch_1mbps));
             Patches.Add(new PatchSet(PatchLevel.DevOnly, "Video HQ 1mbps Bit-rate", patch_1mbps, patch_40mbps, patch_64mbps, patch_8mbps));
+
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
         }
     }
 

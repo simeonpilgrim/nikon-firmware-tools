@@ -54,6 +54,8 @@ namespace Nikon_Patch
             HelpMap.Add("HDMI Output 1080i FullScreen", "This forces HDMI 1080i output to be fullscreen, and is independant of the 'HDMI Output 1080i'");
             HelpMap.Add("HDMI Output 720p FullScreen", "This forces HDMI 720p output to be fullscreen");
 
+            HelpMap.Add("Liveview (15min) No Timeout", "When you select the 15min liveview timeout option, you will get 3 hours instead");
+
         }
 
         Firmware firm = null;
