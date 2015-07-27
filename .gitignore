@@ -1,1 +1,5 @@
 /Nikon-Patch/Nikon-Patch.Web/ClientBin
+*.suo
+*.user
+obj
+bin
