@@ -1,0 +1,118 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="spark-md5.min.js"></script>
+</head>
+<body>
+    <style>
+        #progress_bar {
+            margin: 10px 0;
+            padding: 3px;
+            border: 1px solid #000;
+            font-size: 14px;
+            clear: both;
+            opacity: 0;
+            -moz-transition: opacity 1s linear;
+            -o-transition: opacity 1s linear;
+            -webkit-transition: opacity 1s linear;
+        }
+
+            #progress_bar.loading {
+                opacity: 1.0;
+            }
+
+            #progress_bar .percent {
+                background-color: #99ccff;
+                height: auto;
+                width: 0;
+            }
+    </style>
+
+    <input type="file" id="files" name="file" />
+    <button onclick="abortRead();">Cancel read</button>
+    <div id="progress_bar"><div class="percent">0%</div></div>
+
+    <script>
+  var reader;
+  var progress = document.querySelector('.percent');
+
+  function abortRead() {
+    reader.abort();
+  }
+
+  function errorHandler(evt) {
+    switch(evt.target.error.code) {
+      case evt.target.error.NOT_FOUND_ERR:
+        alert('File Not Found!');
+        break;
+      case evt.target.error.NOT_READABLE_ERR:
+        alert('File is not readable');
+        break;
+      case evt.target.error.ABORT_ERR:
+        break; // noop
+      default:
+        alert('An error occurred reading this file.');
+    };
+  }
+
+
+  function handleFileSelect(evt) {
+    // Reset progress indicator on new file selection.
+    progress.style.width = '0%';
+    progress.textContent = '0%';
+
+    var blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice;
+    var file = evt.target.files[0];
+    var chunkSize = 2097152;                           // Read in chunks of 2MB
+    var chunks = Math.ceil(file.size / chunkSize);
+    var currentChunk = 0;
+    var spark = new SparkMD5.ArrayBuffer();
+    var fileReader = new FileReader();
+
+    fileReader.onload = function (e) {
+        var percentLoaded = Math.round(((currentChunk + 1) / chunks) * 100);
+        // Increase the progress bar length.
+        if (percentLoaded < 100) {
+            progress.style.width = percentLoaded + '%';
+            progress.textContent = percentLoaded + '%';
+        }
+        //console.log('read chunk nr', currentChunk + 1, 'of', chunks);
+        spark.append(e.target.result);                   // Append array buffer
+        currentChunk++;
+
+        if (currentChunk < chunks) {
+            loadNext();
+        } else {
+            progress.style.width = '100%';
+            progress.textContent = '100%';
+            console.log('finished loading');
+            console.info('computed hash', spark.end());  // Compute hash
+        }
+    };
+
+    fileReader.onerror = errorHandler;
+    fileReader.onloadstart = function (e) {
+        document.getElementById('progress_bar').className = 'loading';
+    };
+
+    function loadNext() {
+        var start = currentChunk * chunkSize,
+            end = ((start + chunkSize) >= file.size) ? file.size : start + chunkSize;
+
+        fileReader.readAsArrayBuffer(blobSlice.call(file, start, end));
+    }
+
+    loadNext();
+
+  }
+
+  document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    </script>
+
+    <p><strong>Example</strong>: Monitoring the progress of a read. Try it!</p>
+
+</body>
+</html>
