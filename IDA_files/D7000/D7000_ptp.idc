@@ -141,16 +141,9 @@ static PtpFixC(start, end)
 
 static main() 
 {
-	// PTP D3000
-	//PtpFixA(0xD0CE0, 0xD0DAC); // 5xxx table D3000
-	//PtpFixA(0xD0DAC, 0xD0E78); // Dxxx table D3000
+	// PTP D7000 1.03
 
-	//PtpFixB(0xD0A9C, 0xD0AF4, "90xx"); //D3000
-	//PtpFixB(0xD0A74, 0xD0A9C, "98xx"); //D3000
-	//PtpFixB(0xD0AF4, 0xD0B94, "10xx"); //D3000
 	PtpFixB(0x22F108, 0x22F388, "Fxxx"); //D7000
-
-	//PtpFixC(0xD061C, 0xD0754); //D3000
 
 	Message("Lang Fix: Done\n");
 }

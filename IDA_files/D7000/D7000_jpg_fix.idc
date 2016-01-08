@@ -123,8 +123,6 @@ static main()
 	JpgTableTypeA(0x055DB4, 0x055EBC);
 	JpgTableTypeA(0x767A68, 0x767B00);
 	JpgTableTypeA(0x054228, 0x054230);
-
-
 	
 	Message("Jpg Fix: Done\n");
 }
