@@ -250,6 +250,42 @@ namespace Nikon_Decode
             }
         }
 
+
+        internal class D7000_0105_Const : FirmConsts
+        {
+            public D7000_0105_Const()
+            {
+                BFT_start = 0x8F9BF0EC;
+                BFT_end = 0x8F9C4474;
+                offsets = new FirmOffsets(0x40000, 0x880000, 0x040000);
+
+                EngTableAddr = 0x52B430;
+                EngMenuTextAddr = 0x52C124;
+                EngLastAddr = 0x52E13C;
+
+                Copy_From = 0x368B14;
+                Copy_To = 0x8F9ACE48;
+
+                DFR_file = @"";
+
+                MenuRootList = new long[] { 0x8F9B551C
+                , 0x8F9BBB4C, 0x8F9BB60C, 0x8F9BA33C, 0x8F9BA0DC,
+                //                0x8F9B82AC, 0x8F9BA15C, 0x8F9B744C, 0x8F9B74EC, 0x8F9B748C, 0x8F9B74AC,
+                //                0x8F9B768C, 0x8F9B772C, 0x8F9B77BC, 0x8F9B80EC, 0x8F9B81DC, 0x8F9B7E4C,
+                //                0x8F9B794C, 0x8F9B52FC, 0x8F9B2CDC, 0x8F9B2CBC, 0x8F9B2C1C, 0x8F9B2AEC,
+                //                0x8F9B2AAC, 0x8F9B2A3C, 0x8F9B29BC, 0x8F9B295C, 0x8F9B27AC, 0x8F9B271C,
+                //                0x8F9B269C, 0x8F9B261C, 0x8F9B25AC, 0x8F9B252C, 0x8F9B22EC, 0x8F9B228C,
+                //                0x8F9B224C, 0x8F9B21DC, 0x8F9B215C, 0x8F9B20DC, 0x8F9B206C, 0x8F9B1FEC,
+                //                0x8F9B136C, 0x8F9B11EC, 0x8F9B118C, 0x8F9B116C, 0x8F9B114C, 0x8F9B110C,
+                //                0x8F9B0FCC, 0x8F9B0F2C, 0x8F9B075C, 0x8F9B058C, 0x8F9B055C, 0x8F9AFDCC,
+                //                0x8F9AFD0C, 0x8F9AFCBC, 0x8F9AFABC, 0x8F9AFA9C, 0x8F9AFA4C, 0x8F9AFA0C,
+                //                0x8F9AF9EC, 0x8F9AF9C8 ,0x8F9AF9AC, 0x8F9AF98C, 0x8F9AF96C, 0x8F9AF94C,
+                //                0x8F9AF92C, 0x8F9AF90C, 0x8F9AF8EC, 0x8F9AF8CC, 0x8F9AF8AC, 0x8F9AF88C
+                };
+            }
+        }
+
+
         internal class FirmOffsets
         {
             List<Tuple<uint,uint,uint>> offsets = new List<Tuple<uint,uint,uint>>();
@@ -486,6 +522,12 @@ namespace Nikon_Decode
             DumpMenus(fileName);
         }
 
+        private static void DumpMenusD7000_105(string fileName)
+        {
+            firmConsts = new D7000_0105_Const();
+            DumpMenus(fileName);
+        }
+
         private static void DumpMenusD300S(string fileName)
         {
             firmConsts = new D300S_0101_Const();
@@ -576,7 +618,7 @@ namespace Nikon_Decode
 	                    sw2.WriteLine("\tif( type == 0) {");
 		                sw2.WriteLine("\t\tMakeUnknown(ref, 0x20, 0 );");
 		                sw2.WriteLine("\t\tMakeStructEx(ref, 0x20, \"Menu\");");
-	                    sw2.WriteLine("\t} else {");
+                        sw2.WriteLine("\t} else {");
                         sw2.WriteLine("\t\tMakeUnknown(ref, 0x10, 0 );");
                         sw2.WriteLine("\t\tMakeStructEx(ref, 0x10, \"MenuEl\");");
                         sw2.WriteLine("\t}");
@@ -659,7 +701,7 @@ namespace Nikon_Decode
 
                 if (field_12 < firmConsts.BFT_Count)
                 {
-                    field_12_item = new Unknown_xx(data, field_12, addrOffset);
+                    field_12_item = new Unknown_xx(data, field_12, addrOffset, startAddr);
                 }
             }
 
@@ -723,7 +765,7 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  18 field_18: 0x{1:X8}", p, field_18);
                 //tw.WriteLine("{0}  1C elementsAddr: 0x{1:X8}", p, field_1C);
 
-                var sym = NameToSymbol(mem_loc, elemnt_name);
+                var sym = NameToSymbol(mem_loc, elemnt_name, 0);
                 if (sym != "")
                 {
                     switch (Program.OUTPUT)
@@ -736,7 +778,7 @@ namespace Nikon_Decode
 
                 if (field_12_item != null)
                 {
-                    field_12_item.Dump(tw, p);
+                    field_12_item.Dump(tw, tw_sym, p, sym);
                 }
 
                 foreach (var el in menu_elements)
@@ -753,15 +795,19 @@ namespace Nikon_Decode
             public const long size_of = 0x2C;
             long mem_loc;
             long file_loc;
+            long parent_loc;
+            int bft_idx;
 
-            public Unknown_xx(byte[] data, int index, long addrOffset)
+            public Unknown_xx(byte[] data, int index, long addrOffset, long parentAddr)
             {
+                bft_idx = index;
                 if (firmConsts.BFT_start != 0)
                 {
                     long startAddr = ((index * size_of) + firmConsts.BFT_start);
 
                     mem_loc = startAddr;
                     file_loc = startAddr - addrOffset;
+                    parent_loc = parentAddr;
 
                     Read(data, mem_loc, file_loc);
                 }
@@ -796,25 +842,51 @@ namespace Nikon_Decode
                 field_28 = ReadUint32(data, file_loc + 0x28);
             }
 
-            internal void Dump(TextWriter tw, string p)
+            internal void Dump(TextWriter tw, TextWriter tw_sym, string p, string sym)
             {
                 if (firmConsts.BFT_start != 0)
                 {
                     tw.WriteLine("{0}BigFuncTable: 0x{1:X8} {2}", p, mem_loc, (mem_loc - firmConsts.BFT_start) / size_of);
                     tw.WriteLine("{0}  field_00: 0x{1:X4}", p, field_0);
                     tw.WriteLine("{0}  field_02: 0x{1:X4}", p, field_2);
-                    if(field_4 != 0 )tw.WriteLine("{0}  ptr_1 (setup): 0x{1:X8} - {2}", p, field_4, ResolveFuncName(field_4));
-                    if (field_8 != 0) tw.WriteLine("{0}  ptr_2: 0x{1:X8} - {2}", p, field_8, ResolveFuncName(field_8));
-                    if (field_C != 0) tw.WriteLine("{0}  ptr_3 (action): 0x{1:X8} - {2}", p, field_C, ResolveFuncName(field_C));
-                    if (field_10 != 0) tw.WriteLine("{0}  ptr_4: 0x{1:X8} - {2}", p, field_10, ResolveFuncName(field_10));
-                    if (field_14 != 0) tw.WriteLine("{0}  ptr_5: 0x{1:X8} - {2}", p, field_14, ResolveFuncName(field_14));
-                    if (field_18 != 0) tw.WriteLine("{0}  ptr_6: 0x{1:X8} - {2}", p, field_18, ResolveFuncName(field_18));
-                    if (field_1C != 0) tw.WriteLine("{0}  ptr_7: 0x{1:X8} - {2}", p, field_1C, ResolveFuncName(field_1C));
-                    if (field_20 != 0) tw.WriteLine("{0}  ptr_8 (check): 0x{1:X8} - {2}", p, field_20, ResolveFuncName(field_20));
-                    if (field_24 != 0) tw.WriteLine("{0}  ptr_9: 0x{1:X8} - {2}", p, field_24, ResolveFuncName(field_24));
+                    OutPutFuncPtr(1, field_4, "setup", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(2, field_8, "", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(3, field_C, "action", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(4, field_10, "", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(5, field_14, "", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(6, field_18, "", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(7, field_1C, "", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(8, field_20, "check", tw, tw_sym, p, sym);
+                    OutPutFuncPtr(9, field_24, "", tw, tw_sym, p, sym);
+
                     tw.WriteLine("{0}  field_28: 0x{1:X8}", p, field_28);
                 }
             }
+
+            internal void OutPutFuncPtr(int idx, uint addr, string name, TextWriter tw, TextWriter tw_sym, string p, string sym)
+            {
+                if (addr != 0)
+                {
+                    tw.WriteLine("{0}  ptr_{1} {2}0x{3:X8} - {4}", 
+                        p, 
+                        idx, 
+                        name.Length > 0 ? "(" + name + "): " : "", 
+                        addr, 
+                        ResolveFuncName(addr));
+
+                    if (sym != "")
+                    {
+                        var bft_name = string.Format("BFT{0:00}_{1}_{2}", bft_idx, idx, sym);
+                        switch (Program.OUTPUT)
+                        {
+                            //case 0: tw_sym.WriteLine("-s 0x{0:X8}=MN_{1}", addr, sym); break;
+                            case 1: tw_sym.WriteLine("MakeNameEx(0x{0:X8}, \"{1}\", 0);", addr, bft_name); break;
+                            //case 2: tw_sym.WriteLine("MakeNameEx(0x{0:X8}, \"\", 0 );", addr); break;
+                        }
+                    }
+                }
+            }
+
         }
 
         class Struct14
@@ -875,7 +947,7 @@ namespace Nikon_Decode
                 //tw.WriteLine("{0}  field_A: 0x{1:X4}", p, field_A);
                 //tw.WriteLine("{0}  menu_ptr: 0x{1:X8}", p, menu_ptr);
 
-                var sym = NameToSymbol(mem_loc, txt_2);
+                var sym = NameToSymbol(mem_loc, txt_2, 1);
                 if (sym != "")
                 {
                     switch (Program.OUTPUT)
@@ -937,26 +1009,42 @@ namespace Nikon_Decode
 
         }
 
-        static Dictionary<long, string> Symbols = new Dictionary<long, string>();
-        static string NameToSymbol(long addr, string text)
+        static Dictionary<long, string> Symbols_MN = new Dictionary<long, string>();
+        static Dictionary<long, string> Symbols_ME = new Dictionary<long, string>();
+
+        static string NameToSymbol(long addr, string text, int index)
         {
-            if (Symbols.ContainsKey(addr))
-                return Symbols[addr];
+            var symbols = index == 0 ? Symbols_MN : Symbols_ME;
+
+            if (symbols.ContainsKey(addr))
+                return symbols[addr];
 
             const int maxIn = 20;
             StringBuilder sb = new StringBuilder();
 
             char[] skips = { ' ', '/', '-', '(', ')' };
-
+            bool skipped = false;
             for (int i = 0; i < text.Length && sb.Length < maxIn; i++)
             {
                 //if (Array.IndexOf(skips, text[i]) == -1)
                 char c = text[i];
                 if ((c >= '0' && c <= '9') ||
-                    (c >= 'a' && c <= 'z') ||
                     (c >= 'A' && c <= 'Z'))
                 {
                     sb.Append(text[i]);
+                    skipped = false;
+                }
+                else if (c >= 'a' && c <= 'z')
+                {
+                    if(skipped)
+                        sb.Append(char.ToUpper(text[i]));
+                    else
+                        sb.Append(text[i]);
+                    skipped = false;
+                }
+                else
+                {
+                    skipped = true;
                 }
             }
 
@@ -965,12 +1053,12 @@ namespace Nikon_Decode
             string basetxt = sb.ToString();
             string trytxt = basetxt;
             int next = 0;
-            while (Symbols.ContainsValue(trytxt))
+            while (symbols.ContainsValue(trytxt))
             {
                 trytxt = string.Format("{0}_{1}", basetxt, next++);
             }
 
-            Symbols.Add(addr, trytxt);
+            symbols.Add(addr, trytxt);
             return trytxt;
         }
 
@@ -983,6 +1071,8 @@ namespace Nikon_Decode
             {
                 return FuncNames[addr];
             }
+
+
 
             return string.Format("sub_{0:X}", addr);
         }

@@ -1,0 +1,4696 @@
+Menu: 0x8F9B551C CUSTOM SETTING MENU
+BigFuncTable: 0x8F9C0668 125
+  field_00: 0xC000
+  field_02: 0x004A
+  ptr_1 (setup): 0x002B2960 - sub_2B2960
+  ptr_2 0x002AED0A - sub_2AED0A
+  ptr_3 (action): 0x002B296E - sub_2B296E
+  ptr_5 0x002AECFC - sub_2AECFC
+  ptr_6 0x002AEC74 - sub_2AEC74
+  ptr_7 0x002AF3C2 - sub_2AF3C2
+  ptr_9 0x002B29EC - sub_2B29EC
+  field_28: 0x01000000
+Element: 0x8F9B553C Reset custom settings
+  Menu: 0x8F9B740C Reset custom settings
+  BigFuncTable: 0x8F9C0694 126
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002B3FF8 - sub_2B3FF8
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002B401A - sub_2B401A
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9B742C Yes
+  Element: 0x8F9B743C No
+Element: 0x8F9B554C Autofocus
+  Menu: 0x8F9B562C Autofocus
+  BigFuncTable: 0x8F9C06C0 127
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002B3F58 - sub_2B3F58
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002B3D26 - sub_2B3D26
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002B3CF8 - sub_2B3CF8
+    ptr_7 0x002AF9A4 - sub_2AF9A4
+    ptr_8 (check): 0x002B3D12 - sub_2B3D12
+    ptr_9 0x002B29EE - sub_2B29EE
+    field_28: 0x8B001000
+  Element: 0x8F9B564C AF-C priority selection
+    Menu: 0x8F9B73CC AF-C priority selection
+    BigFuncTable: 0x8F9C06EC 128
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B45A4 - sub_2B45A4
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4600 - sub_2B4600
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4680 - sub_2B4680
+      field_28: 0x02000000
+    Element: 0x8F9B73EC Release
+    Element: 0x8F9B73FC Focus
+  Element: 0x8F9B565C AF-S priority selection
+    Menu: 0x8F9B738C AF-S priority selection
+    BigFuncTable: 0x8F9C0718 129
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4696 - sub_2B4696
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B46F2 - sub_2B46F2
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4772 - sub_2B4772
+      field_28: 0x02000000
+    Element: 0x8F9B73AC Release
+    Element: 0x8F9B73BC Focus
+  Element: 0x8F9B566C Focus tracking with lock-on
+    Menu: 0x8F9B730C Focus tracking with lock-on
+    BigFuncTable: 0x8F9C0744 130
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4788 - sub_2B4788
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B487C - sub_2B487C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B49DA - sub_2B49DA
+      field_28: 0x02000000
+    Element: 0x8F9B732C 5 (Long)
+    Element: 0x8F9B733C 4
+    Element: 0x8F9B734C 3 (Normal)
+    Element: 0x8F9B735C 2
+    Element: 0x8F9B736C 1 (Short)
+    Element: 0x8F9B737C Off
+  Element: 0x8F9B567C AF point illumination
+    Menu: 0x8F9B72BC AF point illumination
+    BigFuncTable: 0x8F9C0770 131
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B49F0 - sub_2B49F0
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4A72 - sub_2B4A72
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4B28 - sub_2B4B28
+      field_28: 0x02000000
+    Element: 0x8F9B72DC Auto
+    Element: 0x8F9B72EC On
+    Element: 0x8F9B72FC Off
+  Element: 0x8F9B568C Focus point wrap-around
+    Menu: 0x8F9B727C Focus point wrap-around
+    BigFuncTable: 0x8F9C079C 132
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4B3E - sub_2B4B3E
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4B9A - sub_2B4B9A
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4C1A - sub_2B4C1A
+      field_28: 0x02000000
+    Element: 0x8F9B729C Wrap
+    Element: 0x8F9B72AC No wrap
+  Element: 0x8F9B569C Number of focus points
+    Menu: 0x8F9B723C Number of focus points
+    BigFuncTable: 0x8F9C07C8 133
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4C30 - sub_2B4C30
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4C8C - sub_2B4C8C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4D0C - sub_2B4D0C
+      field_28: 0x02000000
+    Element: 0x8F9B725C 39 points
+    Element: 0x8F9B726C 11 points
+  Element: 0x8F9B56AC Built-in AF-assist illuminator
+    Menu: 0x8F9B71FC Built-in AF-assist illuminator
+    BigFuncTable: 0x8F9C07F4 134
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4D22 - sub_2B4D22
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4DD6 - sub_2B4DD6
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4D7E - sub_2B4D7E
+      field_28: 0x00000000
+    Element: 0x8F9B721C On
+    Element: 0x8F9B722C Off
+  Element: 0x8F9B56BC Live view/movie AF
+    Menu: 0x8F9B711C Live view/movie AF
+    BigFuncTable: 0x8F9C0820 135
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B4E56 - sub_2B4E56
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B4F9E - sub_2B4F9E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B4FAC - sub_2B4FAC
+      field_28: 0x02000000
+    Element: 0x8F9B713C Autofocus mode
+      Menu: 0x8F9B71BC Autofocus mode
+      BigFuncTable: 0x8F9C084C 136
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B4FC0 - sub_2B4FC0
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B50BA - sub_2B50BA
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x02000000
+      Element: 0x8F9B71DC Single-servo AF
+      Element: 0x8F9B71EC Full-time-servo AF
+    Element: 0x8F9B714C AF-area mode
+      Menu: 0x8F9B715C AF-area mode
+      BigFuncTable: 0x8F9C0878 137
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B5200 - sub_2B5200
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B5382 - sub_2B5382
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002B8D16 - sub_2B8D16
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        ptr_8 (check): 0x002B5322 - sub_2B5322
+        field_28: 0x02000000
+      Element: 0x8F9B717C Face-priority AF
+      Element: 0x8F9B718C Wide-area AF
+      Element: 0x8F9B719C Normal-area AF
+      Element: 0x8F9B71AC Subject-tracking AF
+  Element: 0x8F9B56CC ISO sensitivity step value
+    Menu: 0x8F9B70DC ISO sensitivity step value
+    BigFuncTable: 0x8F9C08D0 139
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B5550 - sub_2B5550
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B55B4 - sub_2B55B4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B70FC 1/3 step
+    Element: 0x8F9B710C 1/2 step
+  Element: 0x8F9B56DC EV steps for exposure cntrl.
+    Menu: 0x8F9B709C EV steps for exposure cntrl.
+    BigFuncTable: 0x8F9C08FC 140
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B5634 - sub_2B5634
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B5690 - sub_2B5690
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B70BC 1/3 step
+    Element: 0x8F9B70CC 1/2 step
+  Element: 0x8F9B56EC Easy exposure compensation
+    Menu: 0x8F9B704C Easy exposure compensation
+    BigFuncTable: 0x8F9C0928 141
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B5710 - sub_2B5710
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B57E8 - sub_2B57E8
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B5782 - sub_2B5782
+      field_28: 0x00000000
+    Element: 0x8F9B706C On (Auto reset)
+    Element: 0x8F9B707C On
+    Element: 0x8F9B708C Off
+  Element: 0x8F9B56FC Center-weighted area
+    Menu: 0x8F9B6FDC Center-weighted area
+    BigFuncTable: 0x8F9C0954 142
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B590A - sub_2B590A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B5A18 - sub_2B5A18
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B59B2 - sub_2B59B2
+      field_28: 0x00000000
+    Element: 0x8F9B6FFC <80><1B>  6 mm
+    Element: 0x8F9B700C <80><1B>  8 mm
+    Element: 0x8F9B701C <80><1B>10 mm
+    Element: 0x8F9B702C <80><1B>13 mm
+    Element: 0x8F9B703C Average
+  Element: 0x8F9B570C Fine tune optimal exposure
+    Menu: 0x8F9B6EBC Fine tune optimal exposure
+    BigFuncTable: 0x8F9C0980 143
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B5B3A - sub_2B5B3A
+      ptr_2 0x002B5B86 - sub_2B5B86
+      ptr_3 (action): 0x002B5B3C - sub_2B5B3C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B6EDC Yes
+      Menu: 0x8F9B6EFC Yes
+      BigFuncTable: 0x8F9C09AC 144
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B5BEA - sub_2B5BEA
+        ptr_2 0x002B5C4C - sub_2B5C4C
+        ptr_3 (action): 0x002B5C3E - sub_2B5C3E
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6F1C Matrix metering
+        Menu: 0x8F9B6FAC Matrix metering
+        BigFuncTable: 0x8F9C09D8 145
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x002B5C7E - sub_2B5C7E
+          ptr_2 0x002B5C80 - sub_2B5C80
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9B6FCC 
+      Element: 0x8F9B6F2C Center-weighted metering
+        Menu: 0x8F9B6F7C Center-weighted metering
+        BigFuncTable: 0x8F9C0A04 146
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x002B5CB8 - sub_2B5CB8
+          ptr_2 0x002B5CBA - sub_2B5CBA
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9B6F9C 
+      Element: 0x8F9B6F3C Spot metering
+        Menu: 0x8F9B6F4C Spot metering
+        BigFuncTable: 0x8F9C0A30 147
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x002B5CF2 - sub_2B5CF2
+          ptr_2 0x002B5CF4 - sub_2B5CF4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9B6F6C 
+    Element: 0x8F9B6EEC No
+  Element: 0x8F9B571C Shutter-release button AE-L
+    Menu: 0x8F9B6E7C Shutter-release button AE-L
+    BigFuncTable: 0x8F9C0A88 149
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B6024 - sub_2B6024
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B6080 - sub_2B6080
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B6E9C On
+    Element: 0x8F9B6EAC Off
+  Element: 0x8F9B572C Auto meter-off delay
+    Menu: 0x8F9B6DBC Auto meter-off delay
+    BigFuncTable: 0x8F9C0AB4 150
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B6100 - sub_2B6100
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B6236 - sub_2B6236
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B6490 - sub_2B6490
+      field_28: 0x00000000
+    Element: 0x8F9B6DDC   4 s
+    Element: 0x8F9B6DEC   6 s
+    Element: 0x8F9B6DFC   8 s
+    Element: 0x8F9B6E0C 16 s
+    Element: 0x8F9B6E1C 30 s
+    Element: 0x8F9B6E2C   1 min
+    Element: 0x8F9B6E3C   5 min
+    Element: 0x8F9B6E4C 10 min
+    Element: 0x8F9B6E5C 30 min
+    Element: 0x8F9B6E6C No limit
+  Element: 0x8F9B573C Self-timer
+    Menu: 0x8F9B6C7C Self-timer
+    BigFuncTable: 0x8F9C0AE0 151
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B64A6 - sub_2B64A6
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B64A8 - sub_2B64A8
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_9 0x002B64B6 - sub_2B64B6
+      field_28: 0x00000000
+    Element: 0x8F9B6C9C Self-timer delay
+      Menu: 0x8F9B6D5C Self-timer delay
+      BigFuncTable: 0x8F9C0B0C 152
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B658C - sub_2B658C
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B6634 - sub_2B6634
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6D7C   2 s
+      Element: 0x8F9B6D8C   5 s
+      Element: 0x8F9B6D9C 10 s
+      Element: 0x8F9B6DAC 20 s
+    Element: 0x8F9B6CAC Number of shots
+      Menu: 0x8F9B6D2C Number of shots
+      BigFuncTable: 0x8F9C0B38 153
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B6720 - sub_2B6720
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x003000EA - sub_3000EA
+        ptr_4 0x002B6746 - sub_2B6746
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002B6764 - sub_2B6764
+        ptr_7 0x002B67E0 - sub_2B67E0
+        field_28: 0x00000000
+      Element: 0x8F9B6D4C 
+    Element: 0x8F9B6CBC Interval between shots
+      Menu: 0x8F9B6CCC Interval between shots
+      BigFuncTable: 0x8F9C0B64 154
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B6904 - sub_2B6904
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B69AC - sub_2B69AC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6CEC 0.5 s
+      Element: 0x8F9B6CFC    1 s
+      Element: 0x8F9B6D0C    2 s
+      Element: 0x8F9B6D1C    3 s
+  Element: 0x8F9B574C Monitor off delay
+    Menu: 0x8F9B699C Monitor off delay
+    BigFuncTable: 0x8F9C0B90 155
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B6D46 - sub_2B6D46
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B6D42 - sub_2B6D42
+      ptr_9 0x002B6A98 - sub_2B6A98
+      field_28: 0x00000000
+    Element: 0x8F9B69BC Playback
+      Menu: 0x8F9B6BFC Playback
+      BigFuncTable: 0x8F9C0BBC 156
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B6D54 - sub_2B6D54
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B6E48 - sub_2B6E48
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6C1C   4 s
+      Element: 0x8F9B6C2C 10 s
+      Element: 0x8F9B6C3C 20 s
+      Element: 0x8F9B6C4C   1 min
+      Element: 0x8F9B6C5C   5 min
+      Element: 0x8F9B6C6C 10 min
+    Element: 0x8F9B69CC Menus
+      Menu: 0x8F9B6B7C Menus
+      BigFuncTable: 0x8F9C0BE8 157
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B6FA6 - sub_2B6FA6
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B709A - sub_2B709A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6B9C   4 s
+      Element: 0x8F9B6BAC 10 s
+      Element: 0x8F9B6BBC 20 s
+      Element: 0x8F9B6BCC   1 min
+      Element: 0x8F9B6BDC   5 min
+      Element: 0x8F9B6BEC 10 min
+    Element: 0x8F9B69DC Information display
+      Menu: 0x8F9B6AFC Information display
+      BigFuncTable: 0x8F9C0C14 158
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B71F8 - sub_2B71F8
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B72EC - sub_2B72EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6B1C   4 s
+      Element: 0x8F9B6B2C 10 s
+      Element: 0x8F9B6B3C 20 s
+      Element: 0x8F9B6B4C   1 min
+      Element: 0x8F9B6B5C   5 min
+      Element: 0x8F9B6B6C 10 min
+    Element: 0x8F9B69EC Image review
+      Menu: 0x8F9B6A7C Image review
+      BigFuncTable: 0x8F9C0C40 159
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B744A - sub_2B744A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B753E - sub_2B753E
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6A9C   4 s
+      Element: 0x8F9B6AAC 10 s
+      Element: 0x8F9B6ABC 20 s
+      Element: 0x8F9B6ACC   1 min
+      Element: 0x8F9B6ADC   5 min
+      Element: 0x8F9B6AEC 10 min
+    Element: 0x8F9B69FC Live view
+      Menu: 0x8F9B6A0C Live view
+      BigFuncTable: 0x8F9C0C6C 160
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B769C - sub_2B769C
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B776A - sub_2B776A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B6A2C   5 min
+      Element: 0x8F9B6A3C 10 min
+      Element: 0x8F9B6A4C 15 min
+      Element: 0x8F9B6A5C 20 min
+      Element: 0x8F9B6A6C 30 min
+  Element: 0x8F9B575C Remote on duration
+    Menu: 0x8F9B693C Remote on duration
+    BigFuncTable: 0x8F9C0C98 161
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B788C - sub_2B788C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B7934 - sub_2B7934
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B695C   1 min
+    Element: 0x8F9B696C   5 min
+    Element: 0x8F9B697C 10 min
+    Element: 0x8F9B698C 15 min
+  Element: 0x8F9B576C Beep
+    Menu: 0x8F9B685C Beep
+    BigFuncTable: 0x8F9C0CF0 163
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B7A20 - sub_2B7A20
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B7A22 - sub_2B7A22
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_9 0x002B7A30 - sub_2B7A30
+      field_28: 0x00000000
+    Element: 0x8F9B687C Volume
+      Menu: 0x8F9B68DC Volume
+      BigFuncTable: 0x8F9C0D48 165
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B7C92 - sub_2B7C92
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B7E0E - sub_2B7E0E
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002B7D3A - sub_2B7D3A
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B68FC 3
+      Element: 0x8F9B690C 2
+      Element: 0x8F9B691C 1
+      Element: 0x8F9B692C Off
+    Element: 0x8F9B688C Pitch
+      Menu: 0x8F9B689C Pitch
+      BigFuncTable: 0x8F9C0D1C 164
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B7AC0 - sub_2B7AC0
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B7C12 - sub_2B7C12
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002B7B24 - sub_2B7B24
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        ptr_8 (check): 0x002B7BC2 - sub_2B7BC2
+        field_28: 0x00000000
+      Element: 0x8F9B68BC High
+      Element: 0x8F9B68CC Low
+  Element: 0x8F9B577C Viewfinder grid display
+    Menu: 0x8F9B681C Viewfinder grid display
+    BigFuncTable: 0x8F9C0D74 166
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B7F5C - sub_2B7F5C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B7FB8 - sub_2B7FB8
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x02000000
+    Element: 0x8F9B683C On
+    Element: 0x8F9B684C Off
+  Element: 0x8F9B578C ISO display and adjustment
+    Menu: 0x8F9B67CC ISO display and adjustment
+    BigFuncTable: 0x8F9C0DA0 167
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8038 - sub_2B8038
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B80D2 - sub_2B80D2
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B67EC Show ISO sensitivity
+    Element: 0x8F9B67FC Show ISO/Easy ISO
+    Element: 0x8F9B680C Show frame count
+  Element: 0x8F9B579C Viewfinder warning display
+    Menu: 0x8F9B678C Viewfinder warning display
+    BigFuncTable: 0x8F9C0DCC 168
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B81F0 - sub_2B81F0
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B824C - sub_2B824C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B67AC On
+    Element: 0x8F9B67BC Off
+  Element: 0x8F9B57AC Screen tips
+    Menu: 0x8F9B674C Screen tips
+    BigFuncTable: 0x8F9C0DF8 169
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B82CC - sub_2B82CC
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B8328 - sub_2B8328
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B676C On
+    Element: 0x8F9B677C Off
+  Element: 0x8F9B57BC CL mode shooting speed
+    Menu: 0x8F9B66DC CL mode shooting speed
+    BigFuncTable: 0x8F9C0E24 170
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B83A8 - sub_2B83A8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B846A - sub_2B846A
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B66FC 5 fps
+    Element: 0x8F9B670C 4 fps
+    Element: 0x8F9B671C 3 fps
+    Element: 0x8F9B672C 2 fps
+    Element: 0x8F9B673C 1 fps
+  Element: 0x8F9B57CC Max. continuous release
+    Menu: 0x8F9B66AC Max. continuous release
+    BigFuncTable: 0x8F9C0E50 171
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_2 0x002B858C - sub_2B858C
+      ptr_3 (action): 0x003000EA - sub_3000EA
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B66CC 
+  Element: 0x8F9B57DC File number sequence
+    Menu: 0x8F9B665C File number sequence
+    BigFuncTable: 0x8F9C0E7C 172
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8802 - sub_2B8802
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B885E - sub_2B885E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B8950 - sub_2B8950
+      field_28: 0x00000000
+    Element: 0x8F9B667C On
+    Element: 0x8F9B668C Off
+    Element: 0x8F9B669C Reset
+  Element: 0x8F9B57EC Information display
+    Menu: 0x8F9B65DC Information display
+    BigFuncTable: 0x8F9C0EA8 173
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8954 - sub_2B8954
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B89E2 - sub_2B89E2
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B65FC Auto
+    Element: 0x8F9B660C Manual
+      Menu: 0x8F9B661C Manual
+      BigFuncTable: 0x8F9C0ED4 174
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B8A34 - sub_2B8A34
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B8A90 - sub_2B8A90
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B663C Dark on light
+      Element: 0x8F9B664C Light on dark
+  Element: 0x8F9B57FC LCD illumination
+    Menu: 0x8F9B659C LCD illumination
+    BigFuncTable: 0x8F9C0F00 175
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8B1E - sub_2B8B1E
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B8B7A - sub_2B8B7A
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B65BC On
+    Element: 0x8F9B65CC Off
+  Element: 0x8F9B580C Exposure delay mode
+    Menu: 0x8F9B655C Exposure delay mode
+    BigFuncTable: 0x8F9C0F2C 176
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8BFA - sub_2B8BFA
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B8C56 - sub_2B8C56
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B657C On
+    Element: 0x8F9B658C Off
+  Element: 0x8F9B581C Flash warning
+    Menu: 0x8F9B651C Flash warning
+    BigFuncTable: 0x8F9C0F58 177
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8D72 - sub_2B8D72
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B8E34 - sub_2B8E34
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B8DCE - sub_2B8DCE
+      field_28: 0x00000000
+    Element: 0x8F9B653C On
+    Element: 0x8F9B654C Off
+  Element: 0x8F9B582C MB-D11 battery type
+    Menu: 0x8F9B64CC MB-D11 battery type
+    BigFuncTable: 0x8F9C0F84 178
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8EB4 - sub_2B8EB4
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B8F36 - sub_2B8F36
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B64EC LR6 (AA alkaline)
+    Element: 0x8F9B64FC HR6 (AA Ni-MH)
+    Element: 0x8F9B650C FR6 (AA lithium)
+  Element: 0x8F9B583C Battery order
+    Menu: 0x8F9B648C Battery order
+    BigFuncTable: 0x8F9C0FB0 179
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B8FEC - sub_2B8FEC
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B9048 - sub_2B9048
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B64AC Use MB-D11 batteries first
+    Element: 0x8F9B64BC Use camera battery first
+  Element: 0x8F9B584C Flash sync speed
+    Menu: 0x8F9B63DC Flash sync speed
+    BigFuncTable: 0x8F9C1008 181
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B90C8 - sub_2B90C8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B91E2 - sub_2B91E2
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B63FC 1/320 s (Auto FP)
+    Element: 0x8F9B640C 1/250 s (Auto FP)
+    Element: 0x8F9B641C 1/250 s
+    Element: 0x8F9B642C 1/200 s
+    Element: 0x8F9B643C 1/160 s
+    Element: 0x8F9B644C 1/125 s
+    Element: 0x8F9B645C 1/100 s
+    Element: 0x8F9B646C 1/80 s
+    Element: 0x8F9B647C 1/60 s
+  Element: 0x8F9B585C Flash shutter speed
+    Menu: 0x8F9B62FC Flash shutter speed
+    BigFuncTable: 0x8F9C1034 182
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B93F4 - sub_2B93F4
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B95D4 - sub_2B95D4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B956E - sub_2B956E
+      field_28: 0x00000000
+    Element: 0x8F9B631C 1/60 s
+    Element: 0x8F9B632C 1/30 s
+    Element: 0x8F9B633C 1/15 s
+    Element: 0x8F9B634C 1/8 s
+    Element: 0x8F9B635C 1/4 s
+    Element: 0x8F9B636C 1/2 s
+    Element: 0x8F9B637C    1 s
+    Element: 0x8F9B638C    2 s
+    Element: 0x8F9B639C    4 s
+    Element: 0x8F9B63AC    8 s
+    Element: 0x8F9B63BC  15 s
+    Element: 0x8F9B63CC  30 s
+  Element: 0x8F9B586C Flash cntrl for built-in flash
+    Menu: 0x8F9B60DC Flash cntrl for built-in flash
+    BigFuncTable: 0x8F9C1060 183
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002B9A00 - sub_2B9A00
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002B9AB2 - sub_2B9AB2
+      ptr_5 0x002B99CA - sub_2B99CA
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002B99C2 - sub_2B99C2
+      field_28: 0x00001000
+    Element: 0x8F9B60FC TTL
+    Element: 0x8F9B610C Manual
+      Menu: 0x8F9B617C Manual
+      BigFuncTable: 0x8F9C108C 184
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002B9B04 - sub_2B9B04
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002B9D1A - sub_2B9D1A
+        ptr_5 0x002B9CE0 - sub_2B9CE0
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00001000
+      Element: 0x8F9B619C Full
+      Element: 0x8F9B61AC 1/1.3
+      Element: 0x8F9B61BC 1/1.7
+      Element: 0x8F9B61CC 1/2
+      Element: 0x8F9B61DC 1/2.5
+      Element: 0x8F9B61EC 1/3.2
+      Element: 0x8F9B61FC 1/4
+      Element: 0x8F9B620C 1/5
+      Element: 0x8F9B621C 1/6.4
+      Element: 0x8F9B622C 1/8
+      Element: 0x8F9B623C 1/10
+      Element: 0x8F9B624C 1/13
+      Element: 0x8F9B625C 1/16
+      Element: 0x8F9B626C 1/20
+      Element: 0x8F9B627C 1/25
+      Element: 0x8F9B628C 1/32
+      Element: 0x8F9B629C 1/40
+      Element: 0x8F9B62AC 1/50
+      Element: 0x8F9B62BC 1/64
+      Element: 0x8F9B62CC 1/80
+      Element: 0x8F9B62DC 1/100
+      Element: 0x8F9B62EC 1/128
+    Element: 0x8F9B611C Repeating flash
+      Menu: 0x8F9B615C Repeating flash
+      BigFuncTable: 0x8F9C1110 187
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BA252 - sub_2BA252
+        ptr_2 0x002BA254 - sub_2BA254
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00001000
+    Element: 0x8F9B612C Commander mode
+      Menu: 0x8F9B613C Commander mode
+      BigFuncTable: 0x8F9C113C 188
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BAFAA - sub_2BAFAA
+        ptr_2 0x002BB05E - sub_2BB05E
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00001000
+  Element: 0x8F9B587C Modeling flash
+    Menu: 0x8F9B609C Modeling flash
+    BigFuncTable: 0x8F9C1168 189
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BCA8A - sub_2BCA8A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BCB5C - sub_2BCB5C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BCAE6 - sub_2BCAE6
+      field_28: 0x00000000
+    Element: 0x8F9B60BC On
+    Element: 0x8F9B60CC Off
+  Element: 0x8F9B588C Auto bracketing set
+    Menu: 0x8F9B602C Auto bracketing set
+    BigFuncTable: 0x8F9C1194 190
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BCBDC - sub_2BCBDC
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BCD58 - sub_2BCD58
+      ptr_5 0x002BCCAA - sub_2BCCAA
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BCCE0 - sub_2BCCE0
+      field_28: 0x02000000
+    Element: 0x8F9B604C AE & flash
+    Element: 0x8F9B605C AE only
+    Element: 0x8F9B606C Flash only
+    Element: 0x8F9B607C WB bracketing
+    Element: 0x8F9B608C ADL bracketing
+  Element: 0x8F9B589C Bracketing order
+    Menu: 0x8F9B5FEC Bracketing order
+    BigFuncTable: 0x8F9C11C0 191
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BCF44 - sub_2BCF44
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BD006 - sub_2BD006
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BCFA0 - sub_2BCFA0
+      field_28: 0x00000000
+    Element: 0x8F9B600C MTR > under > over
+    Element: 0x8F9B601C Under > MTR > over
+  Element: 0x8F9B58AC <9D><1A>switch
+    Menu: 0x8F9B5FAC <9D><1A>switch
+    BigFuncTable: 0x8F9C1218 193
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BD086 - sub_2BD086
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BD0E2 - sub_2BD0E2
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B5FCC LCD backlight (<9D><1A>)
+    Element: 0x8F9B5FDC <9D><1A> and information display
+  Element: 0x8F9B58BC OK button (shooting mode)
+    Menu: 0x8F9B5F5C OK button (shooting mode)
+    BigFuncTable: 0x8F9C1244 194
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BD162 - sub_2BD162
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BD1E4 - sub_2BD1E4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BD29A - sub_2BD29A
+      field_28: 0x00000000
+    Element: 0x8F9B5F7C Select center focus point
+    Element: 0x8F9B5F8C Highlight active focus point
+    Element: 0x8F9B5F9C Not used
+  Element: 0x8F9B58CC Assign Fn button
+    Menu: 0x8F9B5DFC Assign Fn button
+    BigFuncTable: 0x8F9C1270 195
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BD2B0 - sub_2BD2B0
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BD624 - sub_2BD624
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BD550 - sub_2BD550
+      field_28: 0x00000000
+    Element: 0x8F9B5E1C Preview
+    Element: 0x8F9B5E2C FV lock
+    Element: 0x8F9B5E3C AE/AF lock
+    Element: 0x8F9B5E4C AE lock only
+    Element: 0x8F9B5E5C AE lock (Hold)
+    Element: 0x8F9B5E6C AF lock only
+    Element: 0x8F9B5E7C Flash off
+    Element: 0x8F9B5E8C Bracketing burst
+    Element: 0x8F9B5E9C Active D-Lighting
+    Element: 0x8F9B5EAC + NEF (RAW)
+    Element: 0x8F9B5EBC Matrix metering
+    Element: 0x8F9B5ECC Center-weighted metering
+    Element: 0x8F9B5EDC Spot metering
+    Element: 0x8F9B5EEC Framing grid
+    Element: 0x8F9B5EFC Viewfinder virtual horizon
+    Element: 0x8F9B5F0C Access top item in MY MENU
+    Element: 0x8F9B5F1C 1 step spd/aperture
+    Element: 0x8F9B5F2C Choose non-CPU lens number
+    Element: 0x8F9B5F3C Playback
+    Element: 0x8F9B5F4C Start movie recording
+  Element: 0x8F9B58DC Assign preview button
+    Menu: 0x8F9B5C9C Assign preview button
+    BigFuncTable: 0x8F9C129C 196
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BDAD2 - sub_2BDAD2
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BDE46 - sub_2BDE46
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_8 (check): 0x002BDD72 - sub_2BDD72
+      field_28: 0x00000000
+    Element: 0x8F9B5CBC Preview
+    Element: 0x8F9B5CCC FV lock
+    Element: 0x8F9B5CDC AE/AF lock
+    Element: 0x8F9B5CEC AE lock only
+    Element: 0x8F9B5CFC AE lock (Hold)
+    Element: 0x8F9B5D0C AF lock only
+    Element: 0x8F9B5D1C Flash off
+    Element: 0x8F9B5D2C Bracketing burst
+    Element: 0x8F9B5D3C Active D-Lighting
+    Element: 0x8F9B5D4C + NEF (RAW)
+    Element: 0x8F9B5D5C Matrix metering
+    Element: 0x8F9B5D6C Center-weighted metering
+    Element: 0x8F9B5D7C Spot metering
+    Element: 0x8F9B5D8C Framing grid
+    Element: 0x8F9B5D9C Viewfinder virtual horizon
+    Element: 0x8F9B5DAC Access top item in MY MENU
+    Element: 0x8F9B5DBC 1 step spd/aperture
+    Element: 0x8F9B5DCC Choose non-CPU lens number
+    Element: 0x8F9B5DDC Playback
+    Element: 0x8F9B5DEC Start movie recording
+  Element: 0x8F9B58EC Assign AE-L/AF-L button
+    Menu: 0x8F9B5C1C Assign AE-L/AF-L button
+    BigFuncTable: 0x8F9C12C8 197
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BE2F4 - sub_2BE2F4
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BE3BC - sub_2BE3BC
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B5C3C AE/AF lock
+    Element: 0x8F9B5C4C AE lock only
+    Element: 0x8F9B5C5C AF lock only
+    Element: 0x8F9B5C6C AE lock (Hold)
+    Element: 0x8F9B5C7C AF-ON
+    Element: 0x8F9B5C8C FV lock
+  Element: 0x8F9B58FC Customize command dials
+    Menu: 0x8F9B5A9C Customize command dials
+    BigFuncTable: 0x8F9C12F4 198
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002FFF76 - sub_2FFF76
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      ptr_9 0x002BE51A - sub_2BE51A
+      field_28: 0x00000000
+    Element: 0x8F9B5ABC Reverse rotation
+      Menu: 0x8F9B5BDC Reverse rotation
+      BigFuncTable: 0x8F9C1320 199
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BE60C - sub_2BE60C
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002BE668 - sub_2BE668
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B5BFC Yes
+      Element: 0x8F9B5C0C No
+    Element: 0x8F9B5ACC Change main/sub
+      Menu: 0x8F9B5B8C Change main/sub
+      BigFuncTable: 0x8F9C134C 200
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BE6EC - sub_2BE6EC
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002BE76E - sub_2BE76E
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B5BAC On
+      Element: 0x8F9B5BBC On (Mode A)
+      Element: 0x8F9B5BCC Off
+    Element: 0x8F9B5ADC Aperture setting
+      Menu: 0x8F9B5B4C Aperture setting
+      BigFuncTable: 0x8F9C1378 201
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BE828 - sub_2BE828
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002BE884 - sub_2BE884
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B5B6C Sub-command dial
+      Element: 0x8F9B5B7C Aperture ring
+    Element: 0x8F9B5AEC Menus and playback
+      Menu: 0x8F9B5AFC Menus and playback
+      BigFuncTable: 0x8F9C13A4 202
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x002BE908 - sub_2BE908
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002BE98A - sub_2BE98A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9B5B1C On
+      Element: 0x8F9B5B2C On (image review excluded)
+      Element: 0x8F9B5B3C Off
+  Element: 0x8F9B590C Release button to use dial
+    Menu: 0x8F9B5A5C Release button to use dial
+    BigFuncTable: 0x8F9C13D0 203
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BEA98 - sub_2BEA98
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BEAF4 - sub_2BEAF4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B5A7C Yes
+    Element: 0x8F9B5A8C No
+  Element: 0x8F9B591C Slot empty release lock
+    Menu: 0x8F9B5A1C Slot empty release lock
+    BigFuncTable: 0x8F9C13FC 204
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BEE32 - sub_2BEE32
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BEE8E - sub_2BEE8E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B5A3C Release locked
+    Element: 0x8F9B5A4C Enable release
+  Element: 0x8F9B592C Reverse indicators
+    Menu: 0x8F9B59DC Reverse indicators
+    BigFuncTable: 0x8F9C1428 205
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BEF22 - sub_2BEF22
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BEF7E - sub_2BEF7E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B59FC <E8><17><E9><17><EA><17><EB><17><EC><17><ED><17><EE><17><EF><17>
+    Element: 0x8F9B5A0C <F0><17><F1><17><F2><17><F3><17><F4><17><F5><17><F6><17><F7><17>
+  Element: 0x8F9B593C Assign MB-D11 <BE><18> button
+    Menu: 0x8F9B594C Assign MB-D11 <BE><18> button
+    BigFuncTable: 0x8F9C1454 206
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002BEB74 - sub_2BEB74
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002BEC98 - sub_2BEC98
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9B596C AE/AF lock
+    Element: 0x8F9B597C AE lock only
+    Element: 0x8F9B598C AF lock only
+    Element: 0x8F9B599C AE lock (Hold)
+    Element: 0x8F9B59AC AF-ON
+    Element: 0x8F9B59BC FV lock
+    Element: 0x8F9B59CC Same as Fn button
+Element: 0x8F9B555C Metering/exposure
+  Menu: 0x8F9B560C Metering/exposure
+  BigFuncTable: 0x8F9C08A4 138
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+Element: 0x8F9B556C Timers/AE lock
+  Menu: 0x8F9B55EC Timers/AE lock
+  BigFuncTable: 0x8F9C0A5C 148
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+Element: 0x8F9B557C Shooting/display
+  Menu: 0x8F9B55CC Shooting/display
+  BigFuncTable: 0x8F9C0CC4 162
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+Element: 0x8F9B558C Bracketing/flash
+  Menu: 0x8F9B55AC Bracketing/flash
+  BigFuncTable: 0x8F9C0FDC 180
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+Element: 0x8F9B559C Controls
+  Menu: 0x8F9B54FC Controls
+  BigFuncTable: 0x8F9C11EC 192
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+Menu: 0x8F9BBB4C SETUP MENU
+BigFuncTable: 0x8F9C1480 207
+  field_00: 0xC000
+  field_02: 0x004A
+  ptr_1 (setup): 0x002D09F8 - sub_2D09F8
+  ptr_2 0x002AED0A - sub_2AED0A
+  ptr_3 (action): 0x002D0CCE - sub_2D0CCE
+  ptr_5 0x002AECFC - sub_2AECFC
+  ptr_6 0x002AEC74 - sub_2AEC74
+  ptr_7 0x002AF3C2 - sub_2AF3C2
+  ptr_8 (check): 0x002D0A12 - sub_2D0A12
+  ptr_9 0x002D0AD2 - sub_2D0AD2
+  field_28: 0x89308028
+Element: 0x8F9BBB6C Format memory card
+  Menu: 0x8F9BBB2C Format memory card
+  BigFuncTable: 0x8F9C14AC 208
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D9636 - sub_2D9636
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D9770 - sub_2D9770
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D963A - sub_2D963A
+    field_28: 0x00000000
+  Element: 0x8F9BBA8C Slot 1
+    Menu: 0x8F9BBAEC Slot 1
+    BigFuncTable: 0x8F9C14D8 209
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D977E - sub_2D977E
+      ptr_2 0x002D97A0 - sub_2D97A0
+      ptr_3 (action): 0x002D9804 - sub_2D9804
+      ptr_4 0x002D9638 - sub_2D9638
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002B204C - sub_2B204C
+      field_28: 0x00000000
+    Element: 0x8F9BBB0C Yes
+    Element: 0x8F9BBB1C No
+  Element: 0x8F9BBA9C Slot 2
+    Menu: 0x8F9BBAAC Slot 2
+    BigFuncTable: 0x8F9C1504 210
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D996C - sub_2D996C
+      ptr_2 0x002D998E - sub_2D998E
+      ptr_3 (action): 0x002D99F2 - sub_2D99F2
+      ptr_4 0x002D9638 - sub_2D9638
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002B204C - sub_2B204C
+      field_28: 0x00000000
+    Element: 0x8F9BBACC Yes
+    Element: 0x8F9BBADC No
+Element: 0x8F9BBB7C Save user settings
+  Menu: 0x8F9BD59C Save user settings
+  BigFuncTable: 0x8F9C2634 310
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DE614 - sub_2DE614
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DE616 - sub_2DE616
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD5BC U1
+    Menu: 0x8F9BD61C U1
+    BigFuncTable: 0x8F9C2660 311
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE624 - sub_2DE624
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DE646 - sub_2DE646
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD63C Save settings
+    Element: 0x8F9BD64C Cancel
+  Element: 0x8F9BD5CC U2
+    Menu: 0x8F9BD5DC U2
+    BigFuncTable: 0x8F9C268C 312
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE754 - sub_2DE754
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DE776 - sub_2DE776
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD5FC Save settings
+    Element: 0x8F9BD60C Cancel
+Element: 0x8F9BBB8C Reset user settings
+  Menu: 0x8F9BD4DC Reset user settings
+  BigFuncTable: 0x8F9C26B8 313
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DE93C - sub_2DE93C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DE93E - sub_2DE93E
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD4FC U1
+    Menu: 0x8F9BD55C U1
+    BigFuncTable: 0x8F9C26E4 314
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE94C - sub_2DE94C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DEA6C - sub_2DEA6C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD57C Reset
+    Element: 0x8F9BD58C Cancel
+  Element: 0x8F9BD50C U2
+    Menu: 0x8F9BD51C U2
+    BigFuncTable: 0x8F9C2710 315
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DEABE - sub_2DEABE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DEBE0 - sub_2DEBE0
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD53C Reset
+    Element: 0x8F9BD54C Cancel
+Element: 0x8F9BBB9C LCD brightness
+  Menu: 0x8F9BD4AC LCD brightness
+  BigFuncTable: 0x8F9C1530 211
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D0E8C - sub_2D0E8C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_4 0x002D0E8E - sub_2D0E8E
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002D0ED0 - sub_2D0ED0
+    ptr_7 0x002D0F38 - sub_2D0F38
+    field_28: 0x00000000
+  Element: 0x8F9BD4CC 
+Element: 0x8F9BBBAC Clean image sensor
+  Menu: 0x8F9BD40C Clean image sensor
+  BigFuncTable: 0x8F9C155C 212
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D116A - sub_2D116A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D11D2 - sub_2D11D2
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D12DE - sub_2D12DE
+    ptr_8 (check): 0x002D1236 - sub_2D1236
+    field_28: 0x00100000
+  Element: 0x8F9BD42C Clean now
+  Element: 0x8F9BD43C Clean at startup/shutdown
+    Menu: 0x8F9BD44C Clean at startup/shutdown
+    BigFuncTable: 0x8F9C1588 213
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D173C - sub_2D173C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D17E4 - sub_2D17E4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD46C Clean at startup
+    Element: 0x8F9BD47C Clean at shutdown
+    Element: 0x8F9BD48C Clean at startup & shutdown
+    Element: 0x8F9BD49C Cleaning off
+Element: 0x8F9BBBBC Lock mirror up for cleaning
+  Menu: 0x8F9BD3BC Lock mirror up for cleaning
+  BigFuncTable: 0x8F9C15B4 214
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D19CE - sub_2D19CE
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D1B00 - sub_2D1B00
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D1AE0 - sub_2D1AE0
+    ptr_8 (check): 0x002D1A38 - sub_2D1A38
+    field_28: 0x00100000
+  Element: 0x8F9BD3DC Start
+    Menu: 0x8F9BD3EC Start
+    BigFuncTable: 0x8F9C15E0 215
+      field_00: 0x4000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+Element: 0x8F9BBBCC Video mode
+  Menu: 0x8F9BD37C Video mode
+  BigFuncTable: 0x8F9C160C 216
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2024 - sub_2D2024
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D2080 - sub_2D2080
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD39C NTSC
+  Element: 0x8F9BD3AC PAL
+Element: 0x8F9BBBDC HDMI
+  Menu: 0x8F9BD28C HDMI
+  BigFuncTable: 0x8F9C1638 217
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002FFF76 - sub_2FFF76
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D21FC - sub_2D21FC
+    ptr_9 0x002D215A - sub_2D215A
+    field_28: 0x00000000
+  Element: 0x8F9BD2AC Output resolution
+    Menu: 0x8F9BD30C Output resolution
+    BigFuncTable: 0x8F9C1664 218
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D2240 - sub_2D2240
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D230E - sub_2D230E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD32C Auto
+    Element: 0x8F9BD33C   480p (progressive)
+    Element: 0x8F9BD34C   576p (progressive)
+    Element: 0x8F9BD35C   720p (progressive)
+    Element: 0x8F9BD36C 1080i  (interlaced)
+  Element: 0x8F9BD2BC Device control
+    Menu: 0x8F9BD2CC Device control
+    BigFuncTable: 0x8F9C1690 219
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D2498 - sub_2D2498
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D24F4 - sub_2D24F4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD2EC On
+    Element: 0x8F9BD2FC Off
+Element: 0x8F9BBBEC Flicker reduction
+  Menu: 0x8F9BD24C Flicker reduction
+  BigFuncTable: 0x8F9C16BC 220
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2578 - sub_2D2578
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D25D0 - sub_2D25D0
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD26C 50 Hz
+  Element: 0x8F9BD27C 60 Hz
+Element: 0x8F9BBBFC Time zone and date
+  Menu: 0x8F9BD11C Time zone and date
+  BigFuncTable: 0x8F9C16E8 221
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2650 - sub_2D2650
+    ptr_2 0x002D2D68 - sub_2D2D68
+    ptr_3 (action): 0x002D32CA - sub_2D32CA
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D2794 - sub_2D2794
+    ptr_8 (check): 0x002D26EC - sub_2D26EC
+    ptr_9 0x002D2652 - sub_2D2652
+    field_28: 0x00600000
+  Element: 0x8F9BD13C Time zone
+    Menu: 0x8F9BD22C Time zone
+    BigFuncTable: 0x8F9C1714 222
+      field_00: 0xD000
+      field_02: 0x0007
+      ptr_1 (setup): 0x002D32D8 - sub_2D32D8
+      ptr_2 0x002D3314 - sub_2D3314
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+  Element: 0x8F9BD14C Date and time
+    Menu: 0x8F9BD20C Date and time
+    BigFuncTable: 0x8F9C1740 223
+      field_00: 0xD000
+      field_02: 0x0008
+      ptr_2 0x002D3DE8 - sub_2D3DE8
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+  Element: 0x8F9BD15C Date format
+    Menu: 0x8F9BD1BC Date format
+    BigFuncTable: 0x8F9C176C 224
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D3A30 - sub_2D3A30
+      ptr_2 0x002D3B5C - sub_2D3B5C
+      ptr_3 (action): 0x002D3AA6 - sub_2D3AA6
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD1DC Year/Month/Day
+    Element: 0x8F9BD1EC Month/Day/Year
+    Element: 0x8F9BD1FC Day/Month/Year
+  Element: 0x8F9BD16C Daylight saving time
+    Menu: 0x8F9BD17C Daylight saving time
+    BigFuncTable: 0x8F9C1798 225
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D3CF0 - sub_2D3CF0
+      ptr_2 0x002D3B5C - sub_2D3B5C
+      ptr_3 (action): 0x002D3D4C - sub_2D3D4C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD19C On
+    Element: 0x8F9BD1AC Off
+Element: 0x8F9BBC0C Language
+  Menu: 0x8F9BCF9C Language
+  BigFuncTable: 0x8F9C17C4 226
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D49C0 - sub_2D49C0
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D4D72 - sub_2D4D72
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BCFBC <B5><02>e<C9><02>tina
+  Element: 0x8F9BCFCC Dansk
+  Element: 0x8F9BCFDC Deutsch
+  Element: 0x8F9BCFEC English
+  Element: 0x8F9BCFFC Espa<A8><02>ol
+  Element: 0x8F9BD00C Fran<A0><02>ais
+  Element: 0x8F9BD01C Indonesia
+  Element: 0x8F9BD02C Italiano
+  Element: 0x8F9BD03C Nederlands
+  Element: 0x8F9BD04C Norsk
+  Element: 0x8F9BD05C Polski
+  Element: 0x8F9BD06C Portugu<A3><02>s
+  Element: 0x8F9BD07C <90><03><B0><03><AE><03><AE><03><A7><03><A5><03><A6><03>
+  Element: 0x8F9BD08C Suomi
+  Element: 0x8F9BD09C Svenska
+  Element: 0x8F9BD0AC T<B1><02>rk<A0><02>e
+  Element: 0x8F9BD0BC <0E><01><0D><EE><05><8F><05><AB><05><C7><05>
+  Element: 0x8F9BD0CC <0F><08><87><1D><B8><1F>(<83>!<DA>")
+  Element: 0x8F9BD0DC <0F><08><8C>1<CB>3(<FA>4<B0>1)
+  Element: 0x8F9BD0EC <D7><14><EE><14><9A><16>
+  Element: 0x8F9BD0FC <D3>/<A5>,
+  Element: 0x8F9BD10C <98><06><A7><06><A0><06><A7><06><AC><06><90><06><9A><06>
+Element: 0x8F9BBC1C Image comment
+  Menu: 0x8F9BCF1C Image comment
+  BigFuncTable: 0x8F9C17F0 227
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D540A - sub_2D540A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D54FC - sub_2D54FC
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D542C - sub_2D542C
+    ptr_9 0x002D540C - sub_2D540C
+    field_28: 0x00000000
+  Element: 0x8F9BCF3C Done
+  Element: 0x8F9BCF4C Input comment
+    Menu: 0x8F9BCF6C Input comment
+    BigFuncTable: 0x8F9C181C 228
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D5640 - sub_2D5640
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BCF8C 
+  Element: 0x8F9BCF5C Attach comment
+Element: 0x8F9BBC2C Auto image rotation
+  Menu: 0x8F9BCEDC Auto image rotation
+  BigFuncTable: 0x8F9C1848 229
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D627E - sub_2D627E
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D62D6 - sub_2D62D6
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BCEFC On
+  Element: 0x8F9BCF0C Off
+Element: 0x8F9BBC3C Image Dust Off ref photo
+  Menu: 0x8F9BCE7C Image Dust Off ref photo
+  BigFuncTable: 0x8F9C1874 230
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D6A04 - sub_2D6A04
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x003000EA - sub_3000EA
+    ptr_5 0x002D6356 - sub_2D6356
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D63C6 - sub_2D63C6
+    ptr_8 (check): 0x002D6A06 - sub_2D6A06
+    field_28: 0x18108000
+  Element: 0x8F9BCE9C Start
+    Menu: 0x8F9BCEBC Start
+    BigFuncTable: 0x8F9C18A0 231
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D6B80 - sub_2D6B80
+      ptr_2 0x002D6B96 - sub_2D6B96
+      ptr_5 0x002D6E6C - sub_2D6E6C
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x18108100
+  Element: 0x8F9BCEAC Clean sensor and then start
+Element: 0x8F9BBC4C Battery info
+  Menu: 0x8F9BCE4C Battery info
+  BigFuncTable: 0x8F9C18F8 233
+    field_00: 0xC000
+    field_02: 0x0009
+    ptr_2 0x002D573C - sub_2D573C
+    ptr_4 0x002D56F6 - sub_2D56F6
+    ptr_5 0x002D58C2 - sub_2D58C2
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D5870 - sub_2D5870
+    ptr_8 (check): 0x002D571A - sub_2D571A
+    field_28: 0x00100000
+  Element: 0x8F9BCE6C 
+Element: 0x8F9BBC5C Wireless transmitter
+  Menu: 0x8F9BC4DC Wireless transmitter
+  BigFuncTable: 0x8F9C1924 234
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x0035D306 - sub_35D306
+    ptr_2 0x0035D57A - sub_35D57A
+    ptr_3 (action): 0x0035D7EA - sub_35D7EA
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x0035D960 - sub_35D960
+    field_28: 0x00000018
+  Element: 0x8F9BC4FC Mode
+    Menu: 0x8F9BC97C Mode
+    BigFuncTable: 0x8F9C1950 235
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x0035D9AE - sub_35D9AE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x0035DB80 - sub_35DB80
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC99C Transfer mode
+      Menu: 0x8F9BCA3C Transfer mode
+      BigFuncTable: 0x8F9C197C 236
+        field_00: 0xD000
+        field_02: 0x004A
+        ptr_1 (setup): 0x0035DC42 - sub_35DC42
+        ptr_2 0x0035DDB8 - sub_35DDB8
+        ptr_3 (action): 0x0035E2DE - sub_35E2DE
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BCA5C <80>$<80>$<80>$
+      Element: 0x8F9BCA6C <80>$<80>$<80>$
+      Element: 0x8F9BCA7C <80>$<80>$<80>$
+      Element: 0x8F9BCA8C <80>$<80>$<80>$
+      Element: 0x8F9BCA9C <80>$<80>$<80>$
+      Element: 0x8F9BCAAC <80>$<80>$<80>$
+      Element: 0x8F9BCABC <80>$<80>$<80>$
+      Element: 0x8F9BCACC <80>$<80>$<80>$
+      Element: 0x8F9BCADC <80>$<80>$<80>$
+      Element: 0x8F9BCAEC FTP registration
+        Menu: 0x8F9BCAFC FTP registration
+        BigFuncTable: 0x8F9C19D4 238
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x0035E7F0 - sub_35E7F0
+          ptr_2 0x002AE948 - sub_2AE948
+          ptr_3 (action): 0x0035E876 - sub_35E876
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BCB1C Done
+          Menu: 0x8F9BCE0C Done
+          BigFuncTable: 0x8F9C1A00 239
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035EA54 - sub_35EA54
+            ptr_2 0x002AE948 - sub_2AE948
+            ptr_3 (action): 0x0035EB5E - sub_35EB5E
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCE2C Yes
+          Element: 0x8F9BCE3C No
+        Element: 0x8F9BCB2C Rename
+          Menu: 0x8F9BCDEC Rename
+          BigFuncTable: 0x8F9C1A58 241
+            field_00: 0xD000
+            field_02: 0x004A
+            ptr_2 0x0035EBEC - sub_35EBEC
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+        Element: 0x8F9BCB3C Interface type
+          Menu: 0x8F9BCDAC Interface type
+          BigFuncTable: 0x8F9C1A84 242
+            field_00: 0xE000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035EC32 - sub_35EC32
+            ptr_2 0x002AE948 - sub_2AE948
+            ptr_3 (action): 0x0035EC7E - sub_35EC7E
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCDCC Wireless & Ethernet
+          Element: 0x8F9BCDDC Ethernet only
+        Element: 0x8F9BCB4C Wireless
+          Menu: 0x8F9BCCCC Wireless
+          BigFuncTable: 0x8F9C1AB0 243
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035ECF0 - sub_35ECF0
+            ptr_2 0x0035EE0E - sub_35EE0E
+            ptr_3 (action): 0x0035F0B6 - sub_35F0B6
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000010
+          Element: 0x8F9BCCEC SSID
+            Menu: 0x8F9BCD8C SSID
+            BigFuncTable: 0x8F9C1ADC 244
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x0035F0EC - sub_35F0EC
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCCFC Communication mode
+            Menu: 0x8F9BCD4C Communication mode
+            BigFuncTable: 0x8F9C1B08 245
+              field_00: 0xE000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F132 - sub_35F132
+              ptr_2 0x002AE948 - sub_2AE948
+              ptr_3 (action): 0x0035F184 - sub_35F184
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+            Element: 0x8F9BCD6C Infrastructure
+            Element: 0x8F9BCD7C Ad hoc
+          Element: 0x8F9BCD0C Channel
+            Menu: 0x8F9BCD1C Channel
+            BigFuncTable: 0x8F9C1B34 246
+              field_00: 0xC000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x0035F21C - sub_35F21C
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+            Element: 0x8F9BCD3C 
+        Element: 0x8F9BCB5C TCP/IP
+          Menu: 0x8F9BCC3C TCP/IP
+          BigFuncTable: 0x8F9C1C94 254
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x003604F2 - sub_3604F2
+            ptr_2 0x003605E0 - sub_3605E0
+            ptr_3 (action): 0x003607BE - sub_3607BE
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000010
+          Element: 0x8F9BCC5C Obtain automatically
+          Element: 0x8F9BCC6C Address
+            Menu: 0x8F9BCCAC Address
+            BigFuncTable: 0x8F9C1CC0 255
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x003608C0 - sub_3608C0
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCC7C Mask
+            Menu: 0x8F9BCC8C Mask
+            BigFuncTable: 0x8F9C1CEC 256
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00360904 - sub_360904
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+        Element: 0x8F9BCB6C FTP
+          Menu: 0x8F9BCB7C FTP
+          BigFuncTable: 0x8F9C1D9C 260
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x00360E30 - sub_360E30
+            ptr_2 0x00360E9C - sub_360E9C
+            ptr_3 (action): 0x00360EAA - sub_360EAA
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCB9C Address
+            Menu: 0x8F9BCC1C Address
+            BigFuncTable: 0x8F9C1DC8 261
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00360FDE - sub_360FDE
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBAC Folder
+            Menu: 0x8F9BCBFC Folder
+            BigFuncTable: 0x8F9C1DF4 262
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00361022 - sub_361022
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBBC Port
+            Menu: 0x8F9BCBDC Port
+            BigFuncTable: 0x8F9C1E20 263
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00361068 - sub_361068
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBCC PASV mode
+    Element: 0x8F9BC9AC Thumbnail select mode
+      Menu: 0x8F9BCA1C Thumbnail select mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC9BC PC mode
+      Menu: 0x8F9BC9FC PC mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC9CC Print mode
+      Menu: 0x8F9BC9DC Print mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+  Element: 0x8F9BC50C Transfer settings
+    Menu: 0x8F9BC76C Transfer settings
+    BigFuncTable: 0x8F9C1F54 270
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x003615F8 - sub_3615F8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x00361802 - sub_361802
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC78C Auto send
+      Menu: 0x8F9BC93C Auto send
+      BigFuncTable: 0x8F9C1F80 271
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361810 - sub_361810
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x0036185A - sub_36185A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC95C On
+      Element: 0x8F9BC96C Off
+    Element: 0x8F9BC79C Delete after send?
+      Menu: 0x8F9BC8FC Delete after send?
+      BigFuncTable: 0x8F9C1FAC 272
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003618C8 - sub_3618C8
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x00361912 - sub_361912
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC91C Yes
+      Element: 0x8F9BC92C No
+    Element: 0x8F9BC7AC Send file as
+      Menu: 0x8F9BC8BC Send file as
+      BigFuncTable: 0x8F9C1FD8 273
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003619AC - sub_3619AC
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x003619F6 - sub_3619F6
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC8DC NEF (RAW) + JPEG
+      Element: 0x8F9BC8EC JPEG only
+    Element: 0x8F9BC7BC Send folder
+      Menu: 0x8F9BC81C Send folder
+      BigFuncTable: 0x8F9C2004 274
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361A64 - sub_361A64
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC83C Slot 1
+        Menu: 0x8F9BC88C Slot 1
+        BigFuncTable: 0x8F9C2030 275
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x00361BA2 - sub_361BA2
+          ptr_2 0x00361BB2 - sub_361BB2
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC8AC 
+      Element: 0x8F9BC84C Slot 2
+        Menu: 0x8F9BC85C Slot 2
+        BigFuncTable: 0x8F9C205C 276
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x00361BA2 - sub_361BA2
+          ptr_2 0x00361BC2 - sub_361BC2
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC87C 
+    Element: 0x8F9BC7CC Deselect all?
+      Menu: 0x8F9BC7DC Deselect all?
+      BigFuncTable: 0x8F9C2088 277
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361BD2 - sub_361BD2
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x00361BF4 - sub_361BF4
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC7FC Yes
+      Element: 0x8F9BC80C No
+  Element: 0x8F9BC51C Device info
+    Menu: 0x8F9BC65C Device info
+    BigFuncTable: 0x8F9C210C 280
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x00361C82 - sub_361C82
+      ptr_2 0x00361D0A - sub_361D0A
+      ptr_3 (action): 0x00361FA4 - sub_361FA4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000018
+    Element: 0x8F9BC67C Battery info
+      Menu: 0x8F9BC74C Battery info
+      BigFuncTable: 0x8F9C2138 281
+        field_00: 0xD000
+        field_02: 0x0009
+        ptr_2 0x00361FDE - sub_361FDE
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC68C MAC address
+      Menu: 0x8F9BC72C MAC address
+      BigFuncTable: 0x8F9C2164 282
+        field_00: 0xC000
+        field_02: 0x0009
+        ptr_2 0x0036228A - sub_36228A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC69C Firmware version
+      Menu: 0x8F9BC6AC Firmware version
+      BigFuncTable: 0x8F9C2190 283
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x0036244A - sub_36244A
+        ptr_2 0x003624AC - sub_3624AC
+        ptr_3 (action): 0x00362800 - sub_362800
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC6CC Done
+      Element: 0x8F9BC6DC Update
+        Menu: 0x8F9BC6EC Update
+        BigFuncTable: 0x8F9C21BC 284
+          field_00: 0xC800
+          field_02: 0x004A
+          ptr_1 (setup): 0x00362844 - sub_362844
+          ptr_2 0x00362B4A - sub_362B4A
+          ptr_3 (action): 0x00362DFE - sub_362DFE
+          ptr_4 0x00362866 - sub_362866
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC70C Yes
+        Element: 0x8F9BC71C No
+  Element: 0x8F9BC52C Device settings
+    Menu: 0x8F9BC53C Device settings
+    BigFuncTable: 0x8F9C21E8 285
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x00362ECC - sub_362ECC
+      ptr_2 0x00361D0A - sub_361D0A
+      ptr_3 (action): 0x00362F98 - sub_362F98
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x01000008
+    Element: 0x8F9BC55C Auto power off
+      Menu: 0x8F9BC5BC Auto power off
+      BigFuncTable: 0x8F9C2214 286
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00362FD2 - sub_362FD2
+        ptr_2 0x00361D0A - sub_361D0A
+        ptr_3 (action): 0x00363078 - sub_363078
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000008
+      Element: 0x8F9BC5DC Always on
+      Element: 0x8F9BC5EC Auto off delay
+        Menu: 0x8F9BC5FC Auto off delay
+        BigFuncTable: 0x8F9C2240 287
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x003631B2 - sub_3631B2
+          ptr_2 0x00361D0A - sub_361D0A
+          ptr_3 (action): 0x0036328A - sub_36328A
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000008
+        Element: 0x8F9BC61C 30 s
+        Element: 0x8F9BC62C   1 min
+        Element: 0x8F9BC63C 10 min
+        Element: 0x8F9BC64C 30 min
+    Element: 0x8F9BC56C Format transmitter's memory
+      Menu: 0x8F9BC57C Format transmitter's memory
+      BigFuncTable: 0x8F9C226C 288
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x00363422 - sub_363422
+        ptr_2 0x003635F8 - sub_3635F8
+        ptr_3 (action): 0x00363424 - sub_363424
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000008
+      Element: 0x8F9BC59C Yes
+      Element: 0x8F9BC5AC No
+Element: 0x8F9BBC6C Copyright information
+  Menu: 0x8F9BC41C Copyright information
+  BigFuncTable: 0x8F9C2298 289
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D9B5A - sub_2D9B5A
+    ptr_2 0x002D9D22 - sub_2D9D22
+    ptr_3 (action): 0x002D9C26 - sub_2D9C26
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D9DF0 - sub_2D9DF0
+    ptr_9 0x002D9BF2 - sub_2D9BF2
+    field_28: 0x00000000
+  Element: 0x8F9BC43C Done
+  Element: 0x8F9BC44C Artist
+    Menu: 0x8F9BC4AC Artist
+    BigFuncTable: 0x8F9C22C4 290
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D9EE4 - sub_2D9EE4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC4CC 
+  Element: 0x8F9BC45C Copyright
+    Menu: 0x8F9BC47C Copyright
+    BigFuncTable: 0x8F9C22F0 291
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D9F84 - sub_2D9F84
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC49C 
+  Element: 0x8F9BC46C Attach copyright information
+Element: 0x8F9BBC7C Save/load settings
+  Menu: 0x8F9BC3DC Save/load settings
+  BigFuncTable: 0x8F9C231C 292
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DA20C - sub_2DA20C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DA340 - sub_2DA340
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DA20E - sub_2DA20E
+    field_28: 0x00000000
+  Element: 0x8F9BC3FC Save settings
+  Element: 0x8F9BC40C Load settings
+Element: 0x8F9BBC8C GPS
+  Menu: 0x8F9BC2DC GPS
+  BigFuncTable: 0x8F9C2348 293
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D82EA - sub_2D82EA
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D83EA - sub_2D83EA
+    ptr_5 0x002D834C - sub_2D834C
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D838E - sub_2D838E
+    ptr_9 0x002D82EC - sub_2D82EC
+    field_28: 0x00080000
+  Element: 0x8F9BC2FC Auto meter-off
+    Menu: 0x8F9BC39C Auto meter-off
+    BigFuncTable: 0x8F9C2374 294
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D83F8 - sub_2D83F8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D8452 - sub_2D8452
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC3BC Enable
+    Element: 0x8F9BC3CC Disable
+  Element: 0x8F9BC30C Position
+    Menu: 0x8F9BC36C Position
+    BigFuncTable: 0x8F9C23A0 295
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D8510 - sub_2D8510
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x003000EA - sub_3000EA
+      ptr_4 0x002D8512 - sub_2D8512
+      ptr_5 0x002D853E - sub_2D853E
+      ptr_7 0x002D856E - sub_2D856E
+      field_28: 0x40000000
+    Element: 0x8F9BC38C (<80>$<80>$<80>$<80>$<80>$<80>$)
+  Element: 0x8F9BC31C Use GPS to set camera clock
+    Menu: 0x8F9BC32C Use GPS to set camera clock
+    BigFuncTable: 0x8F9C23CC 296
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D94AE - sub_2D94AE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D9508 - sub_2D9508
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC34C Yes
+    Element: 0x8F9BC35C No
+Element: 0x8F9BBC9C Virtual horizon
+  Menu: 0x8F9BC2BC Virtual horizon
+  BigFuncTable: 0x8F9C247C 300
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002DF4FE - sub_2DF4FE
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DF4E8 - sub_2DF4E8
+    field_28: 0x00000000
+Element: 0x8F9BBCAC Non-CPU lens data
+  Menu: 0x8F9BC25C Non-CPU lens data
+  BigFuncTable: 0x8F9C24A8 301
+    field_00: 0xD000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DBAC0 - sub_2DBAC0
+    ptr_2 0x002DBB7E - sub_2DBB7E
+    ptr_3 (action): 0x002DBB14 - sub_2DBB14
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002DC0B0 - sub_2DC0B0
+    field_28: 0x00000020
+  Element: 0x8F9BC27C Done
+  Element: 0x8F9BC28C Lens number
+  Element: 0x8F9BC29C Focal length (mm)
+  Element: 0x8F9BC2AC Maximum aperture
+Element: 0x8F9BBCBC AF fine tune
+  Menu: 0x8F9BBD7C AF fine tune
+  BigFuncTable: 0x8F9C24D4 302
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DC81A - sub_2DC81A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DC912 - sub_2DC912
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DC830 - sub_2DC830
+    ptr_9 0x002DC8D6 - sub_2DC8D6
+    field_28: 0x08000000
+  Element: 0x8F9BBD9C AF fine tune (On/Off)
+    Menu: 0x8F9BC21C AF fine tune (On/Off)
+    BigFuncTable: 0x8F9C2500 303
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DC9FA - sub_2DC9FA
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DCA46 - sub_2DCA46
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC23C On
+    Element: 0x8F9BC24C Off
+  Element: 0x8F9BBDAC Saved value
+    Menu: 0x8F9BC1FC Saved value
+    BigFuncTable: 0x8F9C252C 304
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002DCACC - sub_2DCACC
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DCF0E - sub_2DCF0E
+      field_28: 0x00000000
+  Element: 0x8F9BBDBC Default
+    Menu: 0x8F9BC1DC Default
+    BigFuncTable: 0x8F9C252C 304
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002DCACC - sub_2DCACC
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DCF0E - sub_2DCF0E
+      field_28: 0x00000000
+  Element: 0x8F9BBDCC List saved values
+    Menu: 0x8F9BBDDC List saved values
+    BigFuncTable: 0x8F9C2558 305
+      field_00: 0xD000
+      field_02: 0x002C
+      ptr_1 (setup): 0x002DD06C - sub_2DD06C
+      ptr_2 0x002DD0F6 - sub_2DD0F6
+      ptr_3 (action): 0x002DD0AE - sub_2DD0AE
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DD2FA - sub_2DD2FA
+      field_28: 0x08000000
+    Element: 0x8F9BBDFC 
+      Menu: 0x8F9BC17C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC19C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC1AC No
+    Element: 0x8F9BBE0C 
+      Menu: 0x8F9BC13C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC15C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC16C No
+    Element: 0x8F9BBE1C 
+      Menu: 0x8F9BC0FC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC11C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC12C No
+    Element: 0x8F9BBE2C 
+      Menu: 0x8F9BC0BC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC0DC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC0EC No
+    Element: 0x8F9BBE3C 
+      Menu: 0x8F9BC07C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC09C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC0AC No
+    Element: 0x8F9BBE4C 
+      Menu: 0x8F9BC03C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC05C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC06C No
+    Element: 0x8F9BBE5C 
+      Menu: 0x8F9BBFFC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC01C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC02C No
+    Element: 0x8F9BBE6C 
+      Menu: 0x8F9BBFBC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBFDC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBFEC No
+    Element: 0x8F9BBE7C 
+      Menu: 0x8F9BBF7C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF9C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBFAC No
+    Element: 0x8F9BBE8C 
+      Menu: 0x8F9BBF3C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF5C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBF6C No
+    Element: 0x8F9BBE9C 
+      Menu: 0x8F9BBEFC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF1C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBF2C No
+    Element: 0x8F9BBEAC 
+      Menu: 0x8F9BBEBC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBEDC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBEEC No
+Element: 0x8F9BBCCC Firmware version
+  Menu: 0x8F9BBCDC Firmware version
+  BigFuncTable: 0x8F9C25DC 308
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D7050 - sub_2D7050
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D7574 - sub_2D7574
+    ptr_4 0x002D70D0 - sub_2D70D0
+    ptr_5 0x002D70AE - sub_2D70AE
+    ptr_6 0x002D70D8 - sub_2D70D8
+    ptr_7 0x002D7136 - sub_2D7136
+    field_28: 0x00000800
+  Element: 0x8F9BBCFC Done
+  Element: 0x8F9BBD0C Update
+    Menu: 0x8F9BBD1C Update
+    BigFuncTable: 0x8F9C2608 309
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D75F0 - sub_2D75F0
+      ptr_2 0x002D7F40 - sub_2D7F40
+      ptr_3 (action): 0x002D81AE - sub_2D81AE
+      ptr_4 0x002D76BC - sub_2D76BC
+      ptr_5 0x002D767C - sub_2D767C
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002D76C4 - sub_2D76C4
+      field_28: 0x00000800
+    Element: 0x8F9BBD3C Yes
+      Menu: 0x8F9BBD5C Yes
+    Element: 0x8F9BBD4C No
+Menu: 0x8F9BB60C SETUP MENU
+BigFuncTable: 0x8F9C1480 207
+  field_00: 0xC000
+  field_02: 0x004A
+  ptr_1 (setup): 0x002D09F8 - sub_2D09F8
+  ptr_2 0x002AED0A - sub_2AED0A
+  ptr_3 (action): 0x002D0CCE - sub_2D0CCE
+  ptr_5 0x002AECFC - sub_2AECFC
+  ptr_6 0x002AEC74 - sub_2AEC74
+  ptr_7 0x002AF3C2 - sub_2AF3C2
+  ptr_8 (check): 0x002D0A12 - sub_2D0A12
+  ptr_9 0x002D0AD2 - sub_2D0AD2
+  field_28: 0x89308028
+Element: 0x8F9BB62C Format memory card
+  Menu: 0x8F9BBA6C Format memory card
+  BigFuncTable: 0x8F9C14AC 208
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D9636 - sub_2D9636
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D9770 - sub_2D9770
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D963A - sub_2D963A
+    field_28: 0x00000000
+  Element: 0x8F9BBA8C Slot 1
+    Menu: 0x8F9BBAEC Slot 1
+    BigFuncTable: 0x8F9C14D8 209
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D977E - sub_2D977E
+      ptr_2 0x002D97A0 - sub_2D97A0
+      ptr_3 (action): 0x002D9804 - sub_2D9804
+      ptr_4 0x002D9638 - sub_2D9638
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002B204C - sub_2B204C
+      field_28: 0x00000000
+    Element: 0x8F9BBB0C Yes
+    Element: 0x8F9BBB1C No
+  Element: 0x8F9BBA9C Slot 2
+    Menu: 0x8F9BBAAC Slot 2
+    BigFuncTable: 0x8F9C1504 210
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D996C - sub_2D996C
+      ptr_2 0x002D998E - sub_2D998E
+      ptr_3 (action): 0x002D99F2 - sub_2D99F2
+      ptr_4 0x002D9638 - sub_2D9638
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002B204C - sub_2B204C
+      field_28: 0x00000000
+    Element: 0x8F9BBACC Yes
+    Element: 0x8F9BBADC No
+Element: 0x8F9BB63C Save user settings
+  Menu: 0x8F9BBA4C Save user settings
+  BigFuncTable: 0x8F9C2634 310
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DE614 - sub_2DE614
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DE616 - sub_2DE616
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD5BC U1
+    Menu: 0x8F9BD61C U1
+    BigFuncTable: 0x8F9C2660 311
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE624 - sub_2DE624
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DE646 - sub_2DE646
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD63C Save settings
+    Element: 0x8F9BD64C Cancel
+  Element: 0x8F9BD5CC U2
+    Menu: 0x8F9BD5DC U2
+    BigFuncTable: 0x8F9C268C 312
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE754 - sub_2DE754
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DE776 - sub_2DE776
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD5FC Save settings
+    Element: 0x8F9BD60C Cancel
+Element: 0x8F9BB64C Reset user settings
+  Menu: 0x8F9BBA2C Reset user settings
+  BigFuncTable: 0x8F9C26B8 313
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DE93C - sub_2DE93C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DE93E - sub_2DE93E
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD4FC U1
+    Menu: 0x8F9BD55C U1
+    BigFuncTable: 0x8F9C26E4 314
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DE94C - sub_2DE94C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DEA6C - sub_2DEA6C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD57C Reset
+    Element: 0x8F9BD58C Cancel
+  Element: 0x8F9BD50C U2
+    Menu: 0x8F9BD51C U2
+    BigFuncTable: 0x8F9C2710 315
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DEABE - sub_2DEABE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DEBE0 - sub_2DEBE0
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD53C Reset
+    Element: 0x8F9BD54C Cancel
+Element: 0x8F9BB65C LCD brightness
+  Menu: 0x8F9BBA0C LCD brightness
+  BigFuncTable: 0x8F9C1530 211
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D0E8C - sub_2D0E8C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_4 0x002D0E8E - sub_2D0E8E
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002D0ED0 - sub_2D0ED0
+    ptr_7 0x002D0F38 - sub_2D0F38
+    field_28: 0x00000000
+  Element: 0x8F9BD4CC 
+Element: 0x8F9BB66C Clean image sensor
+  Menu: 0x8F9BB9EC Clean image sensor
+  BigFuncTable: 0x8F9C155C 212
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D116A - sub_2D116A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D11D2 - sub_2D11D2
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D12DE - sub_2D12DE
+    ptr_8 (check): 0x002D1236 - sub_2D1236
+    field_28: 0x00100000
+  Element: 0x8F9BD42C Clean now
+  Element: 0x8F9BD43C Clean at startup/shutdown
+    Menu: 0x8F9BD44C Clean at startup/shutdown
+    BigFuncTable: 0x8F9C1588 213
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D173C - sub_2D173C
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D17E4 - sub_2D17E4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD46C Clean at startup
+    Element: 0x8F9BD47C Clean at shutdown
+    Element: 0x8F9BD48C Clean at startup & shutdown
+    Element: 0x8F9BD49C Cleaning off
+Element: 0x8F9BB67C Lock mirror up for cleaning
+  Menu: 0x8F9BB9CC Lock mirror up for cleaning
+  BigFuncTable: 0x8F9C15B4 214
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D19CE - sub_2D19CE
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D1B00 - sub_2D1B00
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D1AE0 - sub_2D1AE0
+    ptr_8 (check): 0x002D1A38 - sub_2D1A38
+    field_28: 0x00100000
+  Element: 0x8F9BD3DC Start
+    Menu: 0x8F9BD3EC Start
+    BigFuncTable: 0x8F9C15E0 215
+      field_00: 0x4000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+Element: 0x8F9BB68C Video mode
+  Menu: 0x8F9BB9AC Video mode
+  BigFuncTable: 0x8F9C160C 216
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2024 - sub_2D2024
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D2080 - sub_2D2080
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD39C NTSC
+  Element: 0x8F9BD3AC PAL
+Element: 0x8F9BB69C HDMI
+  Menu: 0x8F9BB98C HDMI
+  BigFuncTable: 0x8F9C1638 217
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002FFF76 - sub_2FFF76
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D21FC - sub_2D21FC
+    ptr_9 0x002D215A - sub_2D215A
+    field_28: 0x00000000
+  Element: 0x8F9BD2AC Output resolution
+    Menu: 0x8F9BD30C Output resolution
+    BigFuncTable: 0x8F9C1664 218
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D2240 - sub_2D2240
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D230E - sub_2D230E
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD32C Auto
+    Element: 0x8F9BD33C   480p (progressive)
+    Element: 0x8F9BD34C   576p (progressive)
+    Element: 0x8F9BD35C   720p (progressive)
+    Element: 0x8F9BD36C 1080i  (interlaced)
+  Element: 0x8F9BD2BC Device control
+    Menu: 0x8F9BD2CC Device control
+    BigFuncTable: 0x8F9C1690 219
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D2498 - sub_2D2498
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D24F4 - sub_2D24F4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD2EC On
+    Element: 0x8F9BD2FC Off
+Element: 0x8F9BB6AC Flicker reduction
+  Menu: 0x8F9BB96C Flicker reduction
+  BigFuncTable: 0x8F9C16BC 220
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2578 - sub_2D2578
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D25D0 - sub_2D25D0
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BD26C 50 Hz
+  Element: 0x8F9BD27C 60 Hz
+Element: 0x8F9BB6BC Time zone and date
+  Menu: 0x8F9BB94C Time zone and date
+  BigFuncTable: 0x8F9C16E8 221
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D2650 - sub_2D2650
+    ptr_2 0x002D2D68 - sub_2D2D68
+    ptr_3 (action): 0x002D32CA - sub_2D32CA
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D2794 - sub_2D2794
+    ptr_8 (check): 0x002D26EC - sub_2D26EC
+    ptr_9 0x002D2652 - sub_2D2652
+    field_28: 0x00600000
+  Element: 0x8F9BD13C Time zone
+    Menu: 0x8F9BD22C Time zone
+    BigFuncTable: 0x8F9C1714 222
+      field_00: 0xD000
+      field_02: 0x0007
+      ptr_1 (setup): 0x002D32D8 - sub_2D32D8
+      ptr_2 0x002D3314 - sub_2D3314
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+  Element: 0x8F9BD14C Date and time
+    Menu: 0x8F9BD20C Date and time
+    BigFuncTable: 0x8F9C1740 223
+      field_00: 0xD000
+      field_02: 0x0008
+      ptr_2 0x002D3DE8 - sub_2D3DE8
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+  Element: 0x8F9BD15C Date format
+    Menu: 0x8F9BD1BC Date format
+    BigFuncTable: 0x8F9C176C 224
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D3A30 - sub_2D3A30
+      ptr_2 0x002D3B5C - sub_2D3B5C
+      ptr_3 (action): 0x002D3AA6 - sub_2D3AA6
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD1DC Year/Month/Day
+    Element: 0x8F9BD1EC Month/Day/Year
+    Element: 0x8F9BD1FC Day/Month/Year
+  Element: 0x8F9BD16C Daylight saving time
+    Menu: 0x8F9BD17C Daylight saving time
+    BigFuncTable: 0x8F9C1798 225
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D3CF0 - sub_2D3CF0
+      ptr_2 0x002D3B5C - sub_2D3B5C
+      ptr_3 (action): 0x002D3D4C - sub_2D3D4C
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD19C On
+    Element: 0x8F9BD1AC Off
+Element: 0x8F9BB6CC Language
+  Menu: 0x8F9BB92C Language
+  BigFuncTable: 0x8F9C17C4 226
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D49C0 - sub_2D49C0
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D4D72 - sub_2D4D72
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BCFBC <B5><02>e<C9><02>tina
+  Element: 0x8F9BCFCC Dansk
+  Element: 0x8F9BCFDC Deutsch
+  Element: 0x8F9BCFEC English
+  Element: 0x8F9BCFFC Espa<A8><02>ol
+  Element: 0x8F9BD00C Fran<A0><02>ais
+  Element: 0x8F9BD01C Indonesia
+  Element: 0x8F9BD02C Italiano
+  Element: 0x8F9BD03C Nederlands
+  Element: 0x8F9BD04C Norsk
+  Element: 0x8F9BD05C Polski
+  Element: 0x8F9BD06C Portugu<A3><02>s
+  Element: 0x8F9BD07C <90><03><B0><03><AE><03><AE><03><A7><03><A5><03><A6><03>
+  Element: 0x8F9BD08C Suomi
+  Element: 0x8F9BD09C Svenska
+  Element: 0x8F9BD0AC T<B1><02>rk<A0><02>e
+  Element: 0x8F9BD0BC <0E><01><0D><EE><05><8F><05><AB><05><C7><05>
+  Element: 0x8F9BD0CC <0F><08><87><1D><B8><1F>(<83>!<DA>")
+  Element: 0x8F9BD0DC <0F><08><8C>1<CB>3(<FA>4<B0>1)
+  Element: 0x8F9BD0EC <D7><14><EE><14><9A><16>
+  Element: 0x8F9BD0FC <D3>/<A5>,
+  Element: 0x8F9BD10C <98><06><A7><06><A0><06><A7><06><AC><06><90><06><9A><06>
+Element: 0x8F9BB6DC Image comment
+  Menu: 0x8F9BB90C Image comment
+  BigFuncTable: 0x8F9C17F0 227
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D540A - sub_2D540A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D54FC - sub_2D54FC
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D542C - sub_2D542C
+    ptr_9 0x002D540C - sub_2D540C
+    field_28: 0x00000000
+  Element: 0x8F9BCF3C Done
+  Element: 0x8F9BCF4C Input comment
+    Menu: 0x8F9BCF6C Input comment
+    BigFuncTable: 0x8F9C181C 228
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D5640 - sub_2D5640
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BCF8C 
+  Element: 0x8F9BCF5C Attach comment
+Element: 0x8F9BB6EC Auto image rotation
+  Menu: 0x8F9BB8EC Auto image rotation
+  BigFuncTable: 0x8F9C1848 229
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D627E - sub_2D627E
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D62D6 - sub_2D62D6
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BCEFC On
+  Element: 0x8F9BCF0C Off
+Element: 0x8F9BB6FC Image Dust Off ref photo
+  Menu: 0x8F9BB8CC Image Dust Off ref photo
+  BigFuncTable: 0x8F9C1874 230
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D6A04 - sub_2D6A04
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x003000EA - sub_3000EA
+    ptr_5 0x002D6356 - sub_2D6356
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D63C6 - sub_2D63C6
+    ptr_8 (check): 0x002D6A06 - sub_2D6A06
+    field_28: 0x18108000
+  Element: 0x8F9BCE9C Start
+    Menu: 0x8F9BCEBC Start
+    BigFuncTable: 0x8F9C18A0 231
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D6B80 - sub_2D6B80
+      ptr_2 0x002D6B96 - sub_2D6B96
+      ptr_5 0x002D6E6C - sub_2D6E6C
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x18108100
+  Element: 0x8F9BCEAC Clean sensor and then start
+Element: 0x8F9BB70C Battery info
+  Menu: 0x8F9BB8AC Battery info
+  BigFuncTable: 0x8F9C18F8 233
+    field_00: 0xC000
+    field_02: 0x0009
+    ptr_2 0x002D573C - sub_2D573C
+    ptr_4 0x002D56F6 - sub_2D56F6
+    ptr_5 0x002D58C2 - sub_2D58C2
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D5870 - sub_2D5870
+    ptr_8 (check): 0x002D571A - sub_2D571A
+    field_28: 0x00100000
+  Element: 0x8F9BCE6C 
+Element: 0x8F9BB71C Wireless transmitter
+  Menu: 0x8F9BB88C Wireless transmitter
+  BigFuncTable: 0x8F9C1924 234
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x0035D306 - sub_35D306
+    ptr_2 0x0035D57A - sub_35D57A
+    ptr_3 (action): 0x0035D7EA - sub_35D7EA
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x0035D960 - sub_35D960
+    field_28: 0x00000018
+  Element: 0x8F9BC4FC Mode
+    Menu: 0x8F9BC97C Mode
+    BigFuncTable: 0x8F9C1950 235
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x0035D9AE - sub_35D9AE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x0035DB80 - sub_35DB80
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC99C Transfer mode
+      Menu: 0x8F9BCA3C Transfer mode
+      BigFuncTable: 0x8F9C197C 236
+        field_00: 0xD000
+        field_02: 0x004A
+        ptr_1 (setup): 0x0035DC42 - sub_35DC42
+        ptr_2 0x0035DDB8 - sub_35DDB8
+        ptr_3 (action): 0x0035E2DE - sub_35E2DE
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BCA5C <80>$<80>$<80>$
+      Element: 0x8F9BCA6C <80>$<80>$<80>$
+      Element: 0x8F9BCA7C <80>$<80>$<80>$
+      Element: 0x8F9BCA8C <80>$<80>$<80>$
+      Element: 0x8F9BCA9C <80>$<80>$<80>$
+      Element: 0x8F9BCAAC <80>$<80>$<80>$
+      Element: 0x8F9BCABC <80>$<80>$<80>$
+      Element: 0x8F9BCACC <80>$<80>$<80>$
+      Element: 0x8F9BCADC <80>$<80>$<80>$
+      Element: 0x8F9BCAEC FTP registration
+        Menu: 0x8F9BCAFC FTP registration
+        BigFuncTable: 0x8F9C19D4 238
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x0035E7F0 - sub_35E7F0
+          ptr_2 0x002AE948 - sub_2AE948
+          ptr_3 (action): 0x0035E876 - sub_35E876
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BCB1C Done
+          Menu: 0x8F9BCE0C Done
+          BigFuncTable: 0x8F9C1A00 239
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035EA54 - sub_35EA54
+            ptr_2 0x002AE948 - sub_2AE948
+            ptr_3 (action): 0x0035EB5E - sub_35EB5E
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCE2C Yes
+          Element: 0x8F9BCE3C No
+        Element: 0x8F9BCB2C Rename
+          Menu: 0x8F9BCDEC Rename
+          BigFuncTable: 0x8F9C1A58 241
+            field_00: 0xD000
+            field_02: 0x004A
+            ptr_2 0x0035EBEC - sub_35EBEC
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+        Element: 0x8F9BCB3C Interface type
+          Menu: 0x8F9BCDAC Interface type
+          BigFuncTable: 0x8F9C1A84 242
+            field_00: 0xE000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035EC32 - sub_35EC32
+            ptr_2 0x002AE948 - sub_2AE948
+            ptr_3 (action): 0x0035EC7E - sub_35EC7E
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCDCC Wireless & Ethernet
+          Element: 0x8F9BCDDC Ethernet only
+        Element: 0x8F9BCB4C Wireless
+          Menu: 0x8F9BCCCC Wireless
+          BigFuncTable: 0x8F9C1AB0 243
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x0035ECF0 - sub_35ECF0
+            ptr_2 0x0035EE0E - sub_35EE0E
+            ptr_3 (action): 0x0035F0B6 - sub_35F0B6
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000010
+          Element: 0x8F9BCCEC SSID
+            Menu: 0x8F9BCD8C SSID
+            BigFuncTable: 0x8F9C1ADC 244
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x0035F0EC - sub_35F0EC
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCCFC Communication mode
+            Menu: 0x8F9BCD4C Communication mode
+            BigFuncTable: 0x8F9C1B08 245
+              field_00: 0xE000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F132 - sub_35F132
+              ptr_2 0x002AE948 - sub_2AE948
+              ptr_3 (action): 0x0035F184 - sub_35F184
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+            Element: 0x8F9BCD6C Infrastructure
+            Element: 0x8F9BCD7C Ad hoc
+          Element: 0x8F9BCD0C Channel
+            Menu: 0x8F9BCD1C Channel
+            BigFuncTable: 0x8F9C1B34 246
+              field_00: 0xC000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x0035F21C - sub_35F21C
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+            Element: 0x8F9BCD3C 
+        Element: 0x8F9BCB5C TCP/IP
+          Menu: 0x8F9BCC3C TCP/IP
+          BigFuncTable: 0x8F9C1C94 254
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x003604F2 - sub_3604F2
+            ptr_2 0x003605E0 - sub_3605E0
+            ptr_3 (action): 0x003607BE - sub_3607BE
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000010
+          Element: 0x8F9BCC5C Obtain automatically
+          Element: 0x8F9BCC6C Address
+            Menu: 0x8F9BCCAC Address
+            BigFuncTable: 0x8F9C1CC0 255
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x003608C0 - sub_3608C0
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCC7C Mask
+            Menu: 0x8F9BCC8C Mask
+            BigFuncTable: 0x8F9C1CEC 256
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00360904 - sub_360904
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+        Element: 0x8F9BCB6C FTP
+          Menu: 0x8F9BCB7C FTP
+          BigFuncTable: 0x8F9C1D9C 260
+            field_00: 0xC000
+            field_02: 0x004A
+            ptr_1 (setup): 0x00360E30 - sub_360E30
+            ptr_2 0x00360E9C - sub_360E9C
+            ptr_3 (action): 0x00360EAA - sub_360EAA
+            ptr_5 0x002AECFC - sub_2AECFC
+            ptr_6 0x002AEC74 - sub_2AEC74
+            ptr_7 0x002AF3C2 - sub_2AF3C2
+            field_28: 0x00000000
+          Element: 0x8F9BCB9C Address
+            Menu: 0x8F9BCC1C Address
+            BigFuncTable: 0x8F9C1DC8 261
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00360FDE - sub_360FDE
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBAC Folder
+            Menu: 0x8F9BCBFC Folder
+            BigFuncTable: 0x8F9C1DF4 262
+              field_00: 0xD000
+              field_02: 0x004A
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00361022 - sub_361022
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBBC Port
+            Menu: 0x8F9BCBDC Port
+            BigFuncTable: 0x8F9C1E20 263
+              field_00: 0xD000
+              field_02: 0x001D
+              ptr_1 (setup): 0x0035F0C4 - sub_35F0C4
+              ptr_2 0x00361068 - sub_361068
+              ptr_5 0x002AECFC - sub_2AECFC
+              ptr_6 0x002AEC74 - sub_2AEC74
+              ptr_7 0x002AF3C2 - sub_2AF3C2
+              field_28: 0x00000000
+          Element: 0x8F9BCBCC PASV mode
+    Element: 0x8F9BC9AC Thumbnail select mode
+      Menu: 0x8F9BCA1C Thumbnail select mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC9BC PC mode
+      Menu: 0x8F9BC9FC PC mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC9CC Print mode
+      Menu: 0x8F9BC9DC Print mode
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+  Element: 0x8F9BC50C Transfer settings
+    Menu: 0x8F9BC76C Transfer settings
+    BigFuncTable: 0x8F9C1F54 270
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x003615F8 - sub_3615F8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x00361802 - sub_361802
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC78C Auto send
+      Menu: 0x8F9BC93C Auto send
+      BigFuncTable: 0x8F9C1F80 271
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361810 - sub_361810
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x0036185A - sub_36185A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC95C On
+      Element: 0x8F9BC96C Off
+    Element: 0x8F9BC79C Delete after send?
+      Menu: 0x8F9BC8FC Delete after send?
+      BigFuncTable: 0x8F9C1FAC 272
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003618C8 - sub_3618C8
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x00361912 - sub_361912
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC91C Yes
+      Element: 0x8F9BC92C No
+    Element: 0x8F9BC7AC Send file as
+      Menu: 0x8F9BC8BC Send file as
+      BigFuncTable: 0x8F9C1FD8 273
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003619AC - sub_3619AC
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x003619F6 - sub_3619F6
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC8DC NEF (RAW) + JPEG
+      Element: 0x8F9BC8EC JPEG only
+    Element: 0x8F9BC7BC Send folder
+      Menu: 0x8F9BC81C Send folder
+      BigFuncTable: 0x8F9C2004 274
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361A64 - sub_361A64
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC83C Slot 1
+        Menu: 0x8F9BC88C Slot 1
+        BigFuncTable: 0x8F9C2030 275
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x00361BA2 - sub_361BA2
+          ptr_2 0x00361BB2 - sub_361BB2
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC8AC 
+      Element: 0x8F9BC84C Slot 2
+        Menu: 0x8F9BC85C Slot 2
+        BigFuncTable: 0x8F9C205C 276
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x00361BA2 - sub_361BA2
+          ptr_2 0x00361BC2 - sub_361BC2
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC87C 
+    Element: 0x8F9BC7CC Deselect all?
+      Menu: 0x8F9BC7DC Deselect all?
+      BigFuncTable: 0x8F9C2088 277
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00361BD2 - sub_361BD2
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x00361BF4 - sub_361BF4
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC7FC Yes
+      Element: 0x8F9BC80C No
+  Element: 0x8F9BC51C Device info
+    Menu: 0x8F9BC65C Device info
+    BigFuncTable: 0x8F9C210C 280
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x00361C82 - sub_361C82
+      ptr_2 0x00361D0A - sub_361D0A
+      ptr_3 (action): 0x00361FA4 - sub_361FA4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000018
+    Element: 0x8F9BC67C Battery info
+      Menu: 0x8F9BC74C Battery info
+      BigFuncTable: 0x8F9C2138 281
+        field_00: 0xD000
+        field_02: 0x0009
+        ptr_2 0x00361FDE - sub_361FDE
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC68C MAC address
+      Menu: 0x8F9BC72C MAC address
+      BigFuncTable: 0x8F9C2164 282
+        field_00: 0xC000
+        field_02: 0x0009
+        ptr_2 0x0036228A - sub_36228A
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BC69C Firmware version
+      Menu: 0x8F9BC6AC Firmware version
+      BigFuncTable: 0x8F9C2190 283
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x0036244A - sub_36244A
+        ptr_2 0x003624AC - sub_3624AC
+        ptr_3 (action): 0x00362800 - sub_362800
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+      Element: 0x8F9BC6CC Done
+      Element: 0x8F9BC6DC Update
+        Menu: 0x8F9BC6EC Update
+        BigFuncTable: 0x8F9C21BC 284
+          field_00: 0xC800
+          field_02: 0x004A
+          ptr_1 (setup): 0x00362844 - sub_362844
+          ptr_2 0x00362B4A - sub_362B4A
+          ptr_3 (action): 0x00362DFE - sub_362DFE
+          ptr_4 0x00362866 - sub_362866
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000000
+        Element: 0x8F9BC70C Yes
+        Element: 0x8F9BC71C No
+  Element: 0x8F9BC52C Device settings
+    Menu: 0x8F9BC53C Device settings
+    BigFuncTable: 0x8F9C21E8 285
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x00362ECC - sub_362ECC
+      ptr_2 0x00361D0A - sub_361D0A
+      ptr_3 (action): 0x00362F98 - sub_362F98
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x01000008
+    Element: 0x8F9BC55C Auto power off
+      Menu: 0x8F9BC5BC Auto power off
+      BigFuncTable: 0x8F9C2214 286
+        field_00: 0xE000
+        field_02: 0x004A
+        ptr_1 (setup): 0x00362FD2 - sub_362FD2
+        ptr_2 0x00361D0A - sub_361D0A
+        ptr_3 (action): 0x00363078 - sub_363078
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000008
+      Element: 0x8F9BC5DC Always on
+      Element: 0x8F9BC5EC Auto off delay
+        Menu: 0x8F9BC5FC Auto off delay
+        BigFuncTable: 0x8F9C2240 287
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_1 (setup): 0x003631B2 - sub_3631B2
+          ptr_2 0x00361D0A - sub_361D0A
+          ptr_3 (action): 0x0036328A - sub_36328A
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002AF3C2 - sub_2AF3C2
+          field_28: 0x00000008
+        Element: 0x8F9BC61C 30 s
+        Element: 0x8F9BC62C   1 min
+        Element: 0x8F9BC63C 10 min
+        Element: 0x8F9BC64C 30 min
+    Element: 0x8F9BC56C Format transmitter's memory
+      Menu: 0x8F9BC57C Format transmitter's memory
+      BigFuncTable: 0x8F9C226C 288
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x00363422 - sub_363422
+        ptr_2 0x003635F8 - sub_3635F8
+        ptr_3 (action): 0x00363424 - sub_363424
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000008
+      Element: 0x8F9BC59C Yes
+      Element: 0x8F9BC5AC No
+Element: 0x8F9BB72C Copyright information
+  Menu: 0x8F9BB86C Copyright information
+  BigFuncTable: 0x8F9C2298 289
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D9B5A - sub_2D9B5A
+    ptr_2 0x002D9D22 - sub_2D9D22
+    ptr_3 (action): 0x002D9C26 - sub_2D9C26
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002D9DF0 - sub_2D9DF0
+    ptr_9 0x002D9BF2 - sub_2D9BF2
+    field_28: 0x00000000
+  Element: 0x8F9BC43C Done
+  Element: 0x8F9BC44C Artist
+    Menu: 0x8F9BC4AC Artist
+    BigFuncTable: 0x8F9C22C4 290
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D9EE4 - sub_2D9EE4
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC4CC 
+  Element: 0x8F9BC45C Copyright
+    Menu: 0x8F9BC47C Copyright
+    BigFuncTable: 0x8F9C22F0 291
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002D9F84 - sub_2D9F84
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC49C 
+  Element: 0x8F9BC46C Attach copyright information
+Element: 0x8F9BB73C Save/load settings
+  Menu: 0x8F9BB84C Save/load settings
+  BigFuncTable: 0x8F9C231C 292
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DA20C - sub_2DA20C
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DA340 - sub_2DA340
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DA20E - sub_2DA20E
+    field_28: 0x00000000
+  Element: 0x8F9BC3FC Save settings
+  Element: 0x8F9BC40C Load settings
+Element: 0x8F9BB74C GPS
+  Menu: 0x8F9BB82C GPS
+  BigFuncTable: 0x8F9C2348 293
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D82EA - sub_2D82EA
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D83EA - sub_2D83EA
+    ptr_5 0x002D834C - sub_2D834C
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002D838E - sub_2D838E
+    ptr_9 0x002D82EC - sub_2D82EC
+    field_28: 0x00080000
+  Element: 0x8F9BC2FC Auto meter-off
+    Menu: 0x8F9BC39C Auto meter-off
+    BigFuncTable: 0x8F9C2374 294
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D83F8 - sub_2D83F8
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D8452 - sub_2D8452
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC3BC Enable
+    Element: 0x8F9BC3CC Disable
+  Element: 0x8F9BC30C Position
+    Menu: 0x8F9BC36C Position
+    BigFuncTable: 0x8F9C23A0 295
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D8510 - sub_2D8510
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x003000EA - sub_3000EA
+      ptr_4 0x002D8512 - sub_2D8512
+      ptr_5 0x002D853E - sub_2D853E
+      ptr_7 0x002D856E - sub_2D856E
+      field_28: 0x40000000
+    Element: 0x8F9BC38C (<80>$<80>$<80>$<80>$<80>$<80>$)
+  Element: 0x8F9BC31C Use GPS to set camera clock
+    Menu: 0x8F9BC32C Use GPS to set camera clock
+    BigFuncTable: 0x8F9C23CC 296
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D94AE - sub_2D94AE
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002D9508 - sub_2D9508
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC34C Yes
+    Element: 0x8F9BC35C No
+Element: 0x8F9BB75C Virtual horizon
+  Menu: 0x8F9BB80C Virtual horizon
+  BigFuncTable: 0x8F9C247C 300
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_2 0x002DF4FE - sub_2DF4FE
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DF4E8 - sub_2DF4E8
+    field_28: 0x00000000
+Element: 0x8F9BB76C Non-CPU lens data
+  Menu: 0x8F9BB7EC Non-CPU lens data
+  BigFuncTable: 0x8F9C24A8 301
+    field_00: 0xD000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DBAC0 - sub_2DBAC0
+    ptr_2 0x002DBB7E - sub_2DBB7E
+    ptr_3 (action): 0x002DBB14 - sub_2DBB14
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002DC0B0 - sub_2DC0B0
+    field_28: 0x00000020
+  Element: 0x8F9BC27C Done
+  Element: 0x8F9BC28C Lens number
+  Element: 0x8F9BC29C Focal length (mm)
+  Element: 0x8F9BC2AC Maximum aperture
+Element: 0x8F9BB77C AF fine tune
+  Menu: 0x8F9BB7CC AF fine tune
+  BigFuncTable: 0x8F9C24D4 302
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DC81A - sub_2DC81A
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DC912 - sub_2DC912
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DC830 - sub_2DC830
+    ptr_9 0x002DC8D6 - sub_2DC8D6
+    field_28: 0x08000000
+  Element: 0x8F9BBD9C AF fine tune (On/Off)
+    Menu: 0x8F9BC21C AF fine tune (On/Off)
+    BigFuncTable: 0x8F9C2500 303
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DC9FA - sub_2DC9FA
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DCA46 - sub_2DCA46
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BC23C On
+    Element: 0x8F9BC24C Off
+  Element: 0x8F9BBDAC Saved value
+    Menu: 0x8F9BC1FC Saved value
+    BigFuncTable: 0x8F9C252C 304
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002DCACC - sub_2DCACC
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DCF0E - sub_2DCF0E
+      field_28: 0x00000000
+  Element: 0x8F9BBDBC Default
+    Menu: 0x8F9BC1DC Default
+    BigFuncTable: 0x8F9C252C 304
+      field_00: 0xD000
+      field_02: 0x004A
+      ptr_2 0x002DCACC - sub_2DCACC
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DCF0E - sub_2DCF0E
+      field_28: 0x00000000
+  Element: 0x8F9BBDCC List saved values
+    Menu: 0x8F9BBDDC List saved values
+    BigFuncTable: 0x8F9C2558 305
+      field_00: 0xD000
+      field_02: 0x002C
+      ptr_1 (setup): 0x002DD06C - sub_2DD06C
+      ptr_2 0x002DD0F6 - sub_2DD0F6
+      ptr_3 (action): 0x002DD0AE - sub_2DD0AE
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002DD2FA - sub_2DD2FA
+      field_28: 0x08000000
+    Element: 0x8F9BBDFC 
+      Menu: 0x8F9BC17C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC19C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC1AC No
+    Element: 0x8F9BBE0C 
+      Menu: 0x8F9BC13C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC15C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC16C No
+    Element: 0x8F9BBE1C 
+      Menu: 0x8F9BC0FC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC11C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC12C No
+    Element: 0x8F9BBE2C 
+      Menu: 0x8F9BC0BC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC0DC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC0EC No
+    Element: 0x8F9BBE3C 
+      Menu: 0x8F9BC07C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC09C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC0AC No
+    Element: 0x8F9BBE4C 
+      Menu: 0x8F9BC03C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC05C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC06C No
+    Element: 0x8F9BBE5C 
+      Menu: 0x8F9BBFFC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BC01C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BC02C No
+    Element: 0x8F9BBE6C 
+      Menu: 0x8F9BBFBC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBFDC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBFEC No
+    Element: 0x8F9BBE7C 
+      Menu: 0x8F9BBF7C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF9C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBFAC No
+    Element: 0x8F9BBE8C 
+      Menu: 0x8F9BBF3C AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF5C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBF6C No
+    Element: 0x8F9BBE9C 
+      Menu: 0x8F9BBEFC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBF1C Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBF2C No
+    Element: 0x8F9BBEAC 
+      Menu: 0x8F9BBEBC AF fine tune
+      BigFuncTable: 0x8F9C2584 306
+        field_00: 0xC800
+        field_02: 0x004A
+        ptr_1 (setup): 0x002DD43A - sub_2DD43A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002DD4C8 - sub_2DD4C8
+        ptr_4 0x002DD45C - sub_2DD45C
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002DD640 - sub_2DD640
+        field_28: 0x00000000
+      Element: 0x8F9BBEDC Yes
+        Menu: 0x8F9BC1BC Yes
+        BigFuncTable: 0x8F9C25B0 307
+          field_00: 0xD000
+          field_02: 0x004A
+          ptr_2 0x002DD6A4 - sub_2DD6A4
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x002DD8CA - sub_2DD8CA
+          field_28: 0x00000000
+      Element: 0x8F9BBEEC No
+Element: 0x8F9BB78C Eye-Fi upload
+  Menu: 0x8F9BB58C Eye-Fi upload
+  BigFuncTable: 0x8F9C23F8 297
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002DF160 - sub_2DF160
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002DF1EC - sub_2DF1EC
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    ptr_8 (check): 0x002DF162 - sub_2DF162
+    field_28: 0x00000000
+  Element: 0x8F9BB5AC Slot 1
+    Menu: 0x8F9BB5CC Slot 1
+    BigFuncTable: 0x8F9C2424 298
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DF1FA - sub_2DF1FA
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DF254 - sub_2DF254
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BB5EC Enable
+    Element: 0x8F9BB5FC Disable
+  Element: 0x8F9BB5BC Slot 2
+    Menu: 0x8F9BB56C Slot 2
+    BigFuncTable: 0x8F9C2450 299
+      field_00: 0xE000
+      field_02: 0x004A
+      ptr_1 (setup): 0x002DF308 - sub_2DF308
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002DF362 - sub_2DF362
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002AF3C2 - sub_2AF3C2
+      field_28: 0x00000000
+    Element: 0x8F9BD65C Enable
+    Element: 0x8F9BD66C Disable
+Element: 0x8F9BB79C Firmware version
+  Menu: 0x8F9BB7AC Firmware version
+  BigFuncTable: 0x8F9C25DC 308
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x002D7050 - sub_2D7050
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x002D7574 - sub_2D7574
+    ptr_4 0x002D70D0 - sub_2D70D0
+    ptr_5 0x002D70AE - sub_2D70AE
+    ptr_6 0x002D70D8 - sub_2D70D8
+    ptr_7 0x002D7136 - sub_2D7136
+    field_28: 0x00000800
+  Element: 0x8F9BBCFC Done
+  Element: 0x8F9BBD0C Update
+    Menu: 0x8F9BBD1C Update
+    BigFuncTable: 0x8F9C2608 309
+      field_00: 0xC800
+      field_02: 0x004A
+      ptr_1 (setup): 0x002D75F0 - sub_2D75F0
+      ptr_2 0x002D7F40 - sub_2D7F40
+      ptr_3 (action): 0x002D81AE - sub_2D81AE
+      ptr_4 0x002D76BC - sub_2D76BC
+      ptr_5 0x002D767C - sub_2D767C
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x002D76C4 - sub_2D76C4
+      field_28: 0x00000800
+    Element: 0x8F9BBD3C Yes
+      Menu: 0x8F9BBD5C Yes
+    Element: 0x8F9BBD4C No
+Menu: 0x8F9BA33C MY MENU
+BigFuncTable: 0x8F9C386C 416
+  field_00: 0xC000
+  field_02: 0x004A
+  ptr_1 (setup): 0x00312A54 - sub_312A54
+  ptr_2 0x002AED0A - sub_2AED0A
+  ptr_3 (action): 0x003130A4 - sub_3130A4
+  ptr_5 0x002AECFC - sub_2AECFC
+  ptr_6 0x002AEC74 - sub_2AEC74
+  ptr_7 0x0031303A - sub_31303A
+  ptr_8 (check): 0x00312B02 - sub_312B02
+  ptr_9 0x00312F7A - sub_312F7A
+  field_28: 0x00000000
+Element: 0x8F9BA35C <80>$<80>$<80>$
+Element: 0x8F9BA36C <80>$<80>$<80>$
+Element: 0x8F9BA37C <80>$<80>$<80>$
+Element: 0x8F9BA38C <80>$<80>$<80>$
+Element: 0x8F9BA39C <80>$<80>$<80>$
+Element: 0x8F9BA3AC <80>$<80>$<80>$
+Element: 0x8F9BA3BC <80>$<80>$<80>$
+Element: 0x8F9BA3CC <80>$<80>$<80>$
+Element: 0x8F9BA3DC <80>$<80>$<80>$
+Element: 0x8F9BA3EC <80>$<80>$<80>$
+Element: 0x8F9BA3FC <80>$<80>$<80>$
+Element: 0x8F9BA40C <80>$<80>$<80>$
+Element: 0x8F9BA41C <80>$<80>$<80>$
+Element: 0x8F9BA42C <80>$<80>$<80>$
+Element: 0x8F9BA43C <80>$<80>$<80>$
+Element: 0x8F9BA44C <80>$<80>$<80>$
+Element: 0x8F9BA45C <80>$<80>$<80>$
+Element: 0x8F9BA46C <80>$<80>$<80>$
+Element: 0x8F9BA47C <80>$<80>$<80>$
+Element: 0x8F9BA48C <80>$<80>$<80>$
+Element: 0x8F9BA49C <80>$<80>$<80>$
+Element: 0x8F9BA4AC <80>$<80>$<80>$
+Element: 0x8F9BA4BC <80>$<80>$<80>$
+Element: 0x8F9BA4CC <80>$<80>$<80>$
+Element: 0x8F9BA4DC Add items
+  Menu: 0x8F9BA7EC Add items
+  BigFuncTable: 0x8F9C3898 417
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x00313156 - sub_313156
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x00313160 - sub_313160
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BA80C Playback menu
+    Menu: 0x8F9BB48C Playback menu
+    BigFuncTable: 0x8F9C38C4 418
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002FFF76 - sub_2FFF76
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x003133D8 - sub_3133D8
+      ptr_9 0x0031330A - sub_31330A
+      field_28: 0x00000000
+    Element: 0x8F9BB4AC Delete
+    Element: 0x8F9BB4BC Playback folder
+    Element: 0x8F9BB4CC Hide image
+    Element: 0x8F9BB4DC Display mode
+    Element: 0x8F9BB4EC Copy image(s)
+    Element: 0x8F9BB4FC Image review
+    Element: 0x8F9BB50C After delete
+    Element: 0x8F9BB51C Rotate tall
+    Element: 0x8F9BB52C Slide show
+    Element: 0x8F9BB53C Print set (DPOF)
+  Element: 0x8F9BA81C Shooting menu
+    Menu: 0x8F9BB21C Shooting menu
+    BigFuncTable: 0x8F9C38F0 419
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002FFF76 - sub_2FFF76
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x003133D8 - sub_3133D8
+      ptr_9 0x0031330A - sub_31330A
+      field_28: 0x00000000
+    Element: 0x8F9BB23C Reset shooting menu
+    Element: 0x8F9BB24C Storage folder
+    Element: 0x8F9BB25C File naming
+    Element: 0x8F9BB26C Role played by card in Slot 2
+    Element: 0x8F9BB27C Image quality
+    Element: 0x8F9BB28C Image size
+    Element: 0x8F9BB29C JPEG compression
+    Element: 0x8F9BB2AC NEF (RAW) recording
+      Menu: 0x8F9BB44C NEF (RAW) recording
+      BigFuncTable: 0x8F9C391C 420
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BB46C Type
+      Element: 0x8F9BB47C NEF (RAW) bit depth
+    Element: 0x8F9BB2BC White balance
+    Element: 0x8F9BB2CC Set Picture Control
+    Element: 0x8F9BB2DC Manage Picture Control
+    Element: 0x8F9BB2EC Auto distortion control
+    Element: 0x8F9BB2FC Color space
+    Element: 0x8F9BB30C Active D-Lighting
+    Element: 0x8F9BB31C Long exp. NR
+    Element: 0x8F9BB32C High ISO NR
+    Element: 0x8F9BB33C ISO sensitivity settings
+      Menu: 0x8F9BB3EC ISO sensitivity settings
+      BigFuncTable: 0x8F9C3948 421
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BB40C ISO sensitivity
+      Element: 0x8F9BB41C Auto ISO sensitivity control
+      Element: 0x8F9BB42C Maximum sensitivity
+      Element: 0x8F9BB43C Minimum shutter speed
+    Element: 0x8F9BB34C Multiple exposure
+    Element: 0x8F9BB35C Movie settings
+      Menu: 0x8F9BB38C Movie settings
+      BigFuncTable: 0x8F9C39A0 423
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BB3AC Movie quality
+      Element: 0x8F9BB3BC Microphone
+      Element: 0x8F9BB3CC Destination
+      Element: 0x8F9BB3DC Manual movie settings
+    Element: 0x8F9BB36C Interval timer shooting
+    Element: 0x8F9BB37C Remote control mode
+  Element: 0x8F9BA82C Custom setting menu
+    Menu: 0x8F9BAC9C Custom setting menu
+    BigFuncTable: 0x8F9C39CC 424
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x00313592 - sub_313592
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x003133D8 - sub_3133D8
+      ptr_9 0x0031330A - sub_31330A
+      field_28: 0x00000000
+    Element: 0x8F9BACBC Reset custom settings
+    Element: 0x8F9BACCC Autofocus
+      Menu: 0x8F9BADCC Autofocus
+      BigFuncTable: 0x8F9C39F8 425
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x0031362C - sub_31362C
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x0031360C - sub_31360C
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00001000
+      Element: 0x8F9BADEC AF-C priority selection
+      Element: 0x8F9BADFC AF-S priority selection
+      Element: 0x8F9BAE0C Focus tracking with lock-on
+      Element: 0x8F9BAE1C AF point illumination
+      Element: 0x8F9BAE2C Focus point wrap-around
+      Element: 0x8F9BAE3C Number of focus points
+      Element: 0x8F9BAE4C Built-in AF-assist illuminator
+      Element: 0x8F9BAE5C Live view/movie AF
+      Element: 0x8F9BAE6C ISO sensitivity step value
+      Element: 0x8F9BAE7C EV steps for exposure cntrl.
+      Element: 0x8F9BAE8C Easy exposure compensation
+      Element: 0x8F9BAE9C Center-weighted area
+      Element: 0x8F9BAEAC Fine tune optimal exposure
+      Element: 0x8F9BAEBC Shutter-release button AE-L
+      Element: 0x8F9BAECC Auto meter-off delay
+      Element: 0x8F9BAEDC Self-timer
+      Element: 0x8F9BAEEC Monitor off delay
+        Menu: 0x8F9BB1AC Monitor off delay
+        BigFuncTable: 0x8F9C3B84 434
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_2 0x002AE948 - sub_2AE948
+          ptr_3 (action): 0x002FFF76 - sub_2FFF76
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x003133D8 - sub_3133D8
+          ptr_9 0x0031330A - sub_31330A
+          field_28: 0x00000000
+        Element: 0x8F9BB1CC Playback
+        Element: 0x8F9BB1DC Menus
+        Element: 0x8F9BB1EC Information display
+        Element: 0x8F9BB1FC Image review
+        Element: 0x8F9BB20C Live view
+      Element: 0x8F9BAEFC Remote on duration
+      Element: 0x8F9BAF0C Beep
+      Element: 0x8F9BAF1C Viewfinder grid display
+      Element: 0x8F9BAF2C ISO display and adjustment
+      Element: 0x8F9BAF3C Viewfinder warning display
+      Element: 0x8F9BAF4C Screen tips
+      Element: 0x8F9BAF5C CL mode shooting speed
+      Element: 0x8F9BAF6C Max. continuous release
+      Element: 0x8F9BAF7C File number sequence
+      Element: 0x8F9BAF8C Information display
+      Element: 0x8F9BAF9C LCD illumination
+      Element: 0x8F9BAFAC Exposure delay mode
+      Element: 0x8F9BAFBC Flash warning
+      Element: 0x8F9BAFCC MB-D11 battery type
+      Element: 0x8F9BAFDC Battery order
+      Element: 0x8F9BAFEC Flash sync speed
+      Element: 0x8F9BAFFC Flash shutter speed
+      Element: 0x8F9BB00C Flash cntrl for built-in flash
+        Menu: 0x8F9BB14C Flash cntrl for built-in flash
+        BigFuncTable: 0x8F9C3B2C 432
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_2 0x002AE948 - sub_2AE948
+          ptr_3 (action): 0x002FFF76 - sub_2FFF76
+          ptr_5 0x002B99CA - sub_2B99CA
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x003133D8 - sub_3133D8
+          ptr_9 0x0031330A - sub_31330A
+          field_28: 0x00001000
+        Element: 0x8F9BB16C TTL
+        Element: 0x8F9BB17C Manual
+        Element: 0x8F9BB18C Repeating flash
+        Element: 0x8F9BB19C Commander mode
+      Element: 0x8F9BB01C Modeling flash
+      Element: 0x8F9BB02C Auto bracketing set
+      Element: 0x8F9BB03C Bracketing order
+      Element: 0x8F9BB04C <9D><1A>switch
+      Element: 0x8F9BB05C OK button (shooting mode)
+      Element: 0x8F9BB06C Assign Fn button
+      Element: 0x8F9BB07C Assign preview button
+      Element: 0x8F9BB08C Assign AE-L/AF-L button
+      Element: 0x8F9BB09C Customize command dials
+        Menu: 0x8F9BB0EC Customize command dials
+        BigFuncTable: 0x8F9C3BB0 435
+          field_00: 0xC000
+          field_02: 0x004A
+          ptr_2 0x002AE948 - sub_2AE948
+          ptr_3 (action): 0x002FFF76 - sub_2FFF76
+          ptr_5 0x002AECFC - sub_2AECFC
+          ptr_6 0x002AEC74 - sub_2AEC74
+          ptr_7 0x003133D8 - sub_3133D8
+          ptr_9 0x0031330A - sub_31330A
+          field_28: 0x00000000
+        Element: 0x8F9BB10C Reverse rotation
+        Element: 0x8F9BB11C Change main/sub
+        Element: 0x8F9BB12C Aperture setting
+        Element: 0x8F9BB13C Menus and playback
+      Element: 0x8F9BB0AC Release button to use dial
+      Element: 0x8F9BB0BC Slot empty release lock
+      Element: 0x8F9BB0CC Reverse indicators
+      Element: 0x8F9BB0DC Assign MB-D11 <BE><18> button
+    Element: 0x8F9BACDC Metering/exposure
+      Menu: 0x8F9BADAC Metering/exposure
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BACEC Timers/AE lock
+      Menu: 0x8F9BAD8C Timers/AE lock
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BACFC Shooting/display
+      Menu: 0x8F9BAD6C Shooting/display
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BAD0C Bracketing/flash
+      Menu: 0x8F9BAD4C Bracketing/flash
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+    Element: 0x8F9BAD1C Controls
+      Menu: 0x8F9BAD2C Controls
+      BigFuncTable: 0x8F9BF0EC 0
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_1 (setup): 0x003000DA - sub_3000DA
+        ptr_2 0x003000EC - sub_3000EC
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x002AF3C2 - sub_2AF3C2
+        field_28: 0x00000000
+  Element: 0x8F9BA83C Setup menu
+    Menu: 0x8F9BAACC Setup menu
+    BigFuncTable: 0x8F9C3A24 426
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002FFF76 - sub_2FFF76
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x003133D8 - sub_3133D8
+      ptr_9 0x0031330A - sub_31330A
+      field_28: 0x00000000
+    Element: 0x8F9BAAEC Format memory card
+    Element: 0x8F9BAAFC Save user settings
+    Element: 0x8F9BAB0C Reset user settings
+    Element: 0x8F9BAB1C LCD brightness
+    Element: 0x8F9BAB2C Clean image sensor
+    Element: 0x8F9BAB3C Lock mirror up for cleaning
+    Element: 0x8F9BAB4C Video mode
+    Element: 0x8F9BAB5C HDMI
+      Menu: 0x8F9BAC5C HDMI
+      BigFuncTable: 0x8F9C3A50 427
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BAC7C Output resolution
+      Element: 0x8F9BAC8C Device control
+    Element: 0x8F9BAB6C Flicker reduction
+    Element: 0x8F9BAB7C Time zone and date
+    Element: 0x8F9BAB8C Language
+    Element: 0x8F9BAB9C Image comment
+    Element: 0x8F9BABAC Auto image rotation
+    Element: 0x8F9BABBC Image Dust Off ref photo
+    Element: 0x8F9BABCC Battery info
+    Element: 0x8F9BABDC Wireless transmitter
+    Element: 0x8F9BABEC Copyright information
+    Element: 0x8F9BABFC Save/load settings
+    Element: 0x8F9BAC0C GPS
+    Element: 0x8F9BAC1C Virtual horizon
+    Element: 0x8F9BAC2C Non-CPU lens data
+    Element: 0x8F9BAC3C AF fine tune
+    Element: 0x8F9BAC4C Firmware version
+  Element: 0x8F9BA84C Retouch menu
+    Menu: 0x8F9BA85C Retouch menu
+    BigFuncTable: 0x8F9C3A7C 428
+      field_00: 0xC000
+      field_02: 0x004A
+      ptr_2 0x002AE948 - sub_2AE948
+      ptr_3 (action): 0x002FFF76 - sub_2FFF76
+      ptr_5 0x002AECFC - sub_2AECFC
+      ptr_6 0x002AEC74 - sub_2AEC74
+      ptr_7 0x003133D8 - sub_3133D8
+      ptr_9 0x0031330A - sub_31330A
+      field_28: 0x00000000
+    Element: 0x8F9BA87C D-Lighting
+    Element: 0x8F9BA88C Red-eye correction
+    Element: 0x8F9BA89C Trim
+    Element: 0x8F9BA8AC Monochrome
+      Menu: 0x8F9BAA7C Monochrome
+      BigFuncTable: 0x8F9C3AA8 429
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BAA9C Black-and-white
+      Element: 0x8F9BAAAC Sepia
+      Element: 0x8F9BAABC Cyanotype
+    Element: 0x8F9BA8BC Filter effects
+      Menu: 0x8F9BA9EC Filter effects
+      BigFuncTable: 0x8F9C3AD4 430
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BAA0C Skylight
+      Element: 0x8F9BAA1C Warm filter
+      Element: 0x8F9BAA2C Red intensifier
+      Element: 0x8F9BAA3C Green intensifier
+      Element: 0x8F9BAA4C Blue intensifier
+      Element: 0x8F9BAA5C Cross screen
+      Element: 0x8F9BAA6C Soft
+    Element: 0x8F9BA8CC Color balance
+    Element: 0x8F9BA8DC Image overlay
+    Element: 0x8F9BA8EC NEF (RAW) processing
+    Element: 0x8F9BA8FC Resize
+    Element: 0x8F9BA90C Quick retouch
+    Element: 0x8F9BA91C Straighten
+    Element: 0x8F9BA92C Distortion control
+    Element: 0x8F9BA93C Fisheye
+    Element: 0x8F9BA94C Color outline
+    Element: 0x8F9BA95C Color sketch
+    Element: 0x8F9BA96C Perspective control
+    Element: 0x8F9BA97C Miniature effect
+    Element: 0x8F9BA98C Edit movie
+      Menu: 0x8F9BA99C Edit movie
+      BigFuncTable: 0x8F9C3B00 431
+        field_00: 0xC000
+        field_02: 0x004A
+        ptr_2 0x002AE948 - sub_2AE948
+        ptr_3 (action): 0x002FFF76 - sub_2FFF76
+        ptr_5 0x002AECFC - sub_2AECFC
+        ptr_6 0x002AEC74 - sub_2AEC74
+        ptr_7 0x003133D8 - sub_3133D8
+        ptr_9 0x0031330A - sub_31330A
+        field_28: 0x00000000
+      Element: 0x8F9BA9BC Choose start point
+      Element: 0x8F9BA9CC Choose end point
+      Element: 0x8F9BA9DC Save selected frame
+Element: 0x8F9BA4EC Remove items
+  Menu: 0x8F9BA67C Remove items
+  BigFuncTable: 0x8F9C3BDC 436
+    field_00: 0xC000
+    field_02: 0x004A
+    ptr_1 (setup): 0x003136A6 - sub_3136A6
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x00313B44 - sub_313B44
+    ptr_5 0x00313B24 - sub_313B24
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x0031375C - sub_31375C
+    field_28: 0x00001000
+  Element: 0x8F9BA69C Done
+  Element: 0x8F9BA6AC <80>$<80>$<80>$
+  Element: 0x8F9BA6BC <80>$<80>$<80>$
+  Element: 0x8F9BA6CC <80>$<80>$<80>$
+  Element: 0x8F9BA6DC <80>$<80>$<80>$
+  Element: 0x8F9BA6EC <80>$<80>$<80>$
+  Element: 0x8F9BA6FC <80>$<80>$<80>$
+  Element: 0x8F9BA70C <80>$<80>$<80>$
+  Element: 0x8F9BA71C <80>$<80>$<80>$
+  Element: 0x8F9BA72C <80>$<80>$<80>$
+  Element: 0x8F9BA73C <80>$<80>$<80>$
+  Element: 0x8F9BA74C <80>$<80>$<80>$
+  Element: 0x8F9BA75C <80>$<80>$<80>$
+  Element: 0x8F9BA76C <80>$<80>$<80>$
+  Element: 0x8F9BA77C <80>$<80>$<80>$
+  Element: 0x8F9BA78C <80>$<80>$<80>$
+  Element: 0x8F9BA79C <80>$<80>$<80>$
+  Element: 0x8F9BA7AC <80>$<80>$<80>$
+  Element: 0x8F9BA7BC <80>$<80>$<80>$
+  Element: 0x8F9BA7CC <80>$<80>$<80>$
+  Element: 0x8F9BA7DC <80>$<80>$<80>$
+Element: 0x8F9BA4FC Rank items
+  Menu: 0x8F9BA51C Rank items
+  BigFuncTable: 0x8F9C3C08 437
+    field_00: 0xD000
+    field_02: 0x004A
+    ptr_1 (setup): 0x00313B7A - sub_313B7A
+    ptr_2 0x00313C3A - sub_313C3A
+    ptr_3 (action): 0x003140C0 - sub_3140C0
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BA53C <80>$<80>$<80>$
+  Element: 0x8F9BA54C <80>$<80>$<80>$
+  Element: 0x8F9BA55C <80>$<80>$<80>$
+  Element: 0x8F9BA56C <80>$<80>$<80>$
+  Element: 0x8F9BA57C <80>$<80>$<80>$
+  Element: 0x8F9BA58C <80>$<80>$<80>$
+  Element: 0x8F9BA59C <80>$<80>$<80>$
+  Element: 0x8F9BA5AC <80>$<80>$<80>$
+  Element: 0x8F9BA5BC <80>$<80>$<80>$
+  Element: 0x8F9BA5CC <80>$<80>$<80>$
+  Element: 0x8F9BA5DC <80>$<80>$<80>$
+  Element: 0x8F9BA5EC <80>$<80>$<80>$
+  Element: 0x8F9BA5FC <80>$<80>$<80>$
+  Element: 0x8F9BA60C <80>$<80>$<80>$
+  Element: 0x8F9BA61C <80>$<80>$<80>$
+  Element: 0x8F9BA62C <80>$<80>$<80>$
+  Element: 0x8F9BA63C <80>$<80>$<80>$
+  Element: 0x8F9BA64C <80>$<80>$<80>$
+  Element: 0x8F9BA65C <80>$<80>$<80>$
+  Element: 0x8F9BA66C <80>$<80>$<80>$
+Element: 0x8F9BA50C Choose tab
+  Menu: 0x8F9BA31C Choose tab
+  BigFuncTable: 0x8F9C3C34 438
+    field_00: 0xE000
+    field_02: 0x004A
+    ptr_1 (setup): 0x00314DD6 - sub_314DD6
+    ptr_2 0x002AE948 - sub_2AE948
+    ptr_3 (action): 0x00314E16 - sub_314E16
+    ptr_5 0x002AECFC - sub_2AECFC
+    ptr_6 0x002AEC74 - sub_2AEC74
+    ptr_7 0x002AF3C2 - sub_2AF3C2
+    field_28: 0x00000000
+  Element: 0x8F9BB54C My Menu
+  Element: 0x8F9BB55C Recent settings
+Menu: 0x8F9BA0DC Add items
+BigFuncTable: 0x8F9C3B58 433
+  field_00: 0xC000
+  field_02: 0x004A
+  ptr_2 0x002AE948 - sub_2AE948
+  ptr_3 (action): 0x002FFF76 - sub_2FFF76
+  ptr_5 0x002B99CA - sub_2B99CA
+  ptr_6 0x002AEC74 - sub_2AEC74
+  ptr_7 0x003133D8 - sub_3133D8
+  ptr_9 0x0031330A - sub_31330A
+  field_28: 0x00001000
+Element: 0x8F9BA0FC TTL
+Element: 0x8F9BA10C Manual
+Element: 0x8F9BA11C Repeating flash
+Element: 0x8F9BA12C Commander mode

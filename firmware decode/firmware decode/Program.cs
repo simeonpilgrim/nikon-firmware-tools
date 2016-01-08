@@ -125,6 +125,8 @@ namespace Nikon_Decode
             //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
             //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin");
+            DumpMenusD7000_105(@"C:\Users\parents\Documents\Dev\nikon-firmware-tools\IDA_files\D7000\105\b750105a.bin");
+
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
             //DumpMenusD800(@"C:\Users\spilgrim\Downloads\Nikon\D800Update\b630101a.bin");
@@ -149,7 +151,7 @@ namespace Nikon_Decode
            // Dump_D7000_S179(@"C:\Users\spilgrim\Downloads\Nikon\MemDump\D7000\s179.bin");
 
             //Dump_All_NEF_MakerNotes_002C(@"C:\Users\spilgrim\Pictures\");
-            Dump_All_NEF_MakerNotes_002C(System.IO.Directory.GetCurrentDirectory());
+            //Dump_All_NEF_MakerNotes_002C(System.IO.Directory.GetCurrentDirectory());
 
         }
 
