@@ -10,8 +10,8 @@ import java.util.EnumSet;
 import java.util.Set;
 
 /*
-
-Parts of code Copyright (c) 2003-2010,  Pete Sanderson and Kenneth Vollmar
+Partly based on MARS MIPS simulator
+Copyright (c) 2003-2010, Pete Sanderson and Kenneth Vollmar
 
 Developed by Pete Sanderson (psanderson@otterbein.edu)
 and Kenneth Vollmar (kenvollmar@missouristate.edu)
@@ -40,7 +40,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /**
  * The list of TxInstruction objects, each of which represents a TX19a MIPS32 instruction.
- * This is based mainly on
+ * This is based mainly on http://www.datasheetarchive.com/dl/Datasheet-014/DSA00240404.pdf
+ * (alt link http://html.alldatasheet.com/html-pdf/211857/TOSHIBA/TX19A/292/1/TX19A.html)
  *
  * @author original: Pete Sanderson and Ken Vollmar
  * @version August 2003-5
@@ -54,7 +55,16 @@ public class TxInstructionSet
     /**
      * All 16bit variations of opcode and arguments
      */
+    /**
+     * Standard statements are 16-bit long, with 5-bit opcode and 11-bit operand
+     */
     private static TxInstruction[] opcode16Map = new TxInstruction[0x10000];
+    /**
+     * Extended statements are 32-bit long :
+     * - a 16-bit prefix with the 5-bit "EXTEND" opcode and 11 bits for high bits of the immediate operand
+     * - a standard 16-bit instruction, with 5 low bits of the immediate operand
+     * The behaviour is the same as the standard instruction, but with a larger immediate operand
+     */
     private static TxInstruction[] extendedOpcode16Map = new TxInstruction[0x10000];
 
     /**
@@ -95,88 +105,200 @@ public class TxInstructionSet
     };
 
     /**
-     * Instruction types (formats)
+     * 16-bit instruction formats (aka types)
+     * (see pages 4-2 and 4-3 of the specification)
      */
     public enum InstructionFormat16 {
-        /** Layout of type I instructions is as follows         : <pre>[ op  |    imm    ]</pre> */
+        /** Layout of type I instructions is as follows:
+         * <pre>
+         *      FEDCB A9876543210
+         *     [ op  |    imm    ]
+         * </pre>
+         */
         I,
 
-        /** Layout of type RI instructions is as follows        : <pre>[ op  |rx |  imm   ]</pre> */
+        /** Layout of type RI instructions is as follows:
+         * <pre>
+         *      FEDCB A98 76543210
+         *     [ op  |rx |  imm   ]
+         * </pre>
+         */
         RI,
 
-        /** Layout of type RR instructions is as follows        : <pre>[ RR  |rx |ry |  F  ]</pre> */
+        /** Layout of type RR instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 43210
+         *     [ RR  |rx |ry |  F  ]
+         * </pre>
+         */
         RR,
 
-        /** Layout of type RRI instructions is as follows       : <pre>[ op  |rx |ry | imm ]</pre> */
+        /** Layout of type RRI instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 43210
+         *     [ op  |rx |ry | imm ]
+         * </pre> */
         RRI,
 
-        /** Layout of type RRR1 instructions is as follows      : <pre>[ RRR |rx |ry |rz |F ]</pre> */
+        /** Layout of type RRR1 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 432 10
+         *     [ RRR |rx |ry |rz |F ]
+         * </pre> */
         RRR1,
 
-        /** Layout of type RRR2 instructions is as follows      : <pre>[ op  |ry |F| imm |F ]</pre> */
+        /** Layout of type RRR2 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 7 65432 10
+         *     [ op  |ry |F| imm |F ]
+         * </pre> */
         RRR2,
 
-        /** Layout of type RRR3 instructions is as follows      : <pre>[ op  |imm|F|cpr32|F ]</pre> */
+        /** Layout of type RRR3 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 7 65432 10
+         *     [ op  |imm|F|cpr32|F ]
+         * </pre> */
         RRR3,
 
-        /** Layout of type RRR4 instructions is as follows      : <pre>[ op  |rx |F|00000|F ]</pre> */
+        /** Layout of type RRR4 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 7 65432 10
+         *     [ op  |rx |F|00000|F ]
+         * </pre> */
         RRR4,
 
-        /** Layout of type RRIA instructions is as follows      : <pre>[RRI-A|rx |ry |F|imm ]</pre> */
+        /** Layout of type RRIA instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 4 3210
+         *     [RRI-A|rx |ry |F|imm ]
+         * </pre> */
         RRIA,
 
-        /** Layout of type SHIFT1 instructions is as follows    : <pre>[SHIFT|rx |ry |SA |F ]</pre> */
+        /** Layout of type SHIFT1 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 432 10
+         *     [SHIFT|rx |ry |SA |F ]
+         * </pre> */
         SHIFT1,
 
-        /** Layout of type SHIFT2 instructions is as follows    : <pre>[ op  |rxy|cpr32| F ]</pre> */
+        /** Layout of type SHIFT2 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 76543 210
+         *     [ op  |rxy|cpr32| F ]
+         * </pre> */
         SHIFT2,
 
-        /** Layout of type I8 instructions is as follows        : <pre>[ I8  | F |        ]</pre> */
+        /** Layout of type I8 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 76543210
+         *     [ I8  | F |        ]
+         * </pre> */
         I8,
 
-        /** Layout of type I8MOVFP instructions is as follows   : <pre>[ op  |1| r32 |  F  ]</pre> */
+        /** Layout of type I8MOVFP instructions is as follows:
+         * <pre>
+         *      FEDCB A 98765 43210
+         *     [ op  |1| r32 |  F  ]
+         * </pre> */
         I8MOVFP,
 
-        /** Layout of type I8MOVR32 instructions is as follows  : <pre>[ I8  | F |ry |r3240]</pre> */
+        /** Layout of type I8MOVR32 instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 43210
+         *     [ I8  | F |ry |r3240]
+         * </pre> */
         I8MOVR32,
 
-        /** Layout of type I8MOV32R instructions is as follows  : <pre>[ I8  | F |R32A4|rz ]</pre> */
+        /** Layout of type I8MOV32R instructions is as follows:
+         * <pre>
+         *      FEDCB A98 76543 210
+         *     [ I8  | F |R32A4|rz ]
+         * </pre> */
         I8MOV32R,
 
-        /** Layout of type I8SVRS instructions is as follows    : <pre>[ I8  | F  |r|s|s|imm ]</pre> */
+        /** Layout of type I8SVRS instructions is as follows:
+         * <pre>
+         *      FEDCB A987 6 5 4 3210
+         *     [ I8  | F  |r|s|s|imm ]
+         * </pre> */
         I8SVRS,
 
-        /** Layout of type FPB_SPB instructions is as follows   : <pre>[ op  |rx |F|  imm  ]</pre> */
+        /** Layout of type FPB_SPB instructions is as follows:
+         * <pre>
+         *      FEDCB A98 7 6543210
+         *     [ op  |rx |F|  imm  ]
+         * </pre> */
         FPB_SPB,
 
-        /** Layout of type FP_SP_H instructions is as follows   : <pre>[ op  |rx |F| imm  |F]</pre> */
+        /** Layout of type FP_SP_H instructions is as follows:
+         * <pre>
+         *      FEDCB A98 7 654321 0
+         *     [ op  |rx |F| imm  |F]
+         * </pre> */
         FPH_SPH,
 
-        /** Layout of type SWFP_LWFP instructions is as follows : <pre>[ op  | F |ry | imm ]</pre> */
+        /** Layout of type SWFP_LWFP instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 43210
+         *     [ op  | F |ry | imm ]
+         * </pre> */
         SWFP_LWFP,
 
-        /** Layout of type SPC_BIT instructions is as follows   : <pre>[ op  | F |ps3| imm ]</pre> */
+        /** Layout of type SPC_BIT instructions is as follows:
+         * <pre>
+         *      FEDCB A98 765 43210
+         *     [ op  | F |ps3| imm ]
+         * </pre> */
         SPC_BIT,
 
-        /** Layout of type SPC_BAL instructions is as follows   : <pre>[ op  | F |  imm   ]</pre> */
+        /** Layout of type SPC_BAL instructions is as follows:
+         * <pre>
+         *      FEDCB A98 76543210
+         *     [ op  | F |  imm   ]
+         * </pre> */
         SPC_BAL,
 
-        /** Layout of type RRR_INT instructions is as follows   : <pre>[ op  |00|F |0000|F ]</pre> */
+        /** Layout of type RRR_INT instructions is as follows:
+         * <pre>
+         *      FEDCB A9 87 65432 10
+         *     [ op  |00|F |00000|F ]
+         * </pre> */
         RRR_INT,
 
-        /** Layout for data reading is as follows               : <pre>[      imm       ]</pre> */
+        /** Layout for data reading is as follows:
+         * <pre>
+         *      FEDCBA9876543210
+         *     [      imm       ]
+         * </pre> */
         W,
 
-        /** Layout for data reading is as follows               : <pre>[ op  | imm  |  F  ]</pre> */
+        /** Layout for data reading is as follows:
+         * <pre>
+         *      FEDCB A98765 43210
+         *     [ op  | imm  |  F  ]
+         * </pre> */
         BREAK,
 
-        /** Layout for JAL/JALX (extended only) :<pre>[ op  |x| tar | tar |      tar       ]</pre> */
+        /** Layout for JAL/JALX (extended only):
+         * <pre>
+         *      FEDCB A 98765 43210 FEDCBA9876543210
+         *     [ op  |x| tar | tar |      tar       ]
+         * </pre> */
         JAL_JALX,
 
-        /** Layout for BFINS (extended only)    :<pre>[ ext |0|bit2 |bit1 | op  |ry |rx |  F  ]</pre> */
+        /** Layout for BFINS (extended only):
+         * <pre>
+         *      FEDCB A9876543210
+         *     [ ext |0|bit2 |bit1 | op  |ry |rx |  F  ]
+         * </pre> */
         RR_BS1F_BFINS,
 
-        /** Layout for MIN/MAX (extended only)  :<pre>[ ext |M|0000000|ry | op  |rz |rx |  F  ]</pre> */
+        /** Layout for MIN/MAX (extended only):
+         * <pre>
+         *      FEDCB A9876543210
+         *     [ ext |M|0000000|ry | op  |rz |rx |  F  ]
+         * </pre> */
         RR_MIN_MAX
     }
 
@@ -185,19 +307,35 @@ public class TxInstructionSet
     // ----------------------------- 32 bits ------------------------------------
 
     /**
-     * Instruction types (formats)
+     * 32-bit instruction formats (aka types)
+     * (see pages 4-4 and 4-5 of the specification)
      */
     public enum InstructionFormat32 {
-        /** Layout of type I instructions is as follows : <pre>[  op  | rs  | rt  |      imm       ]</pre> */
+        /** Layout of type I instructions is as follows:
+         * <pre>
+         *     TODO check all 32 bit formats below (and in the code). Shouldn't "op" be on 5 chars ?
+         *      11111111111111110000000000000000
+         *      FEDCBA9876543210FEDCBA9876543210
+         *     [  op  |  rs  | rt  |      imm       ]
+         * </pre> */
         I,
 
-        /** Layout of type J instructions is as follows : <pre>[  op  |           target           ]</pre> */
+        /** Layout of type J instructions is as follows:
+         * <pre>
+         *     [  op  |           target           ]
+         * </pre> */
         J,
 
-        /** Layout of type R instructions is as follows : <pre>[  op  | rs  | rt  | rd  |shamt| fnct ]</pre> */
+        /** Layout of type R instructions is as follows:
+         * <pre>
+         *     [  op  | rs  | rt  | rd  |shamt| fnct ]
+         * </pre> */
         R ,
 
-        /** MARS-defined variant of I layout as follows : <pre>[  op  |base | rt  |     offset     ]</pre> */
+        /** MARS-defined variant of I layout is as follows:
+         * <pre>
+         *     [  op  |base | rt  |     offset     ]
+         * </pre> */
         I_BRANCH,
 
         /** used for BREAK code */
@@ -206,28 +344,54 @@ public class TxInstructionSet
         /** used for TRAP code */
         TRAP,
 
-        /** Layout used for CP0 instructions as follows : <pre>[  op  |xxxxx| rt  | rd  |00000000|res]</pre> */
+        /** Layout used for CP0 instructions is as follows:
+         * <pre>
+         *     [  op  |xxxxx| rt  | rd  |00000000|res]
+         * </pre> */
         CP0,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx| rt  | fs  |00000000000]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  |xxxxx| rt  | fs  |00000000000]
+         * </pre> */
         CP1_R1,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx| rt  | cr  |00000000000]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  |xxxxx| rt  | cr  |00000000000]
+         * </pre> */
         CP1_CR1,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | fmt | ft  | fs  | fd  |xxxxxx]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  | fmt | ft  | fs  | fd  |xxxxxx]
+         * </pre> */
         CP1_R2,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | rs  | ft  |      imm       ]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  | rs  | ft  |      imm       ]
+         * </pre> */
         CP1_I,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  |xxxxx||cc |xx|     offset     ]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  |xxxxx||cc |xx|     offset     ]
+         * </pre> */
         CP1_CC_BRANCH,
 
-        /** Layout used for CP1 instructions as follows : <pre>[  op  | fmt | ft  | fs  |cc |0|0|11|cond]</pre> */
+        /** Layout used for CP1 instructions is as follows:
+         * <pre>
+         *     [  op  | fmt | ft  | fs  |cc |0|0|11|cond]
+         * </pre> */
         CP1_R_CC,
 
-        /** Layout for data reading is as follows       : <pre>[              imm               ]</pre> */
+        /** Layout for data reading is as follows:
+         * <pre>
+         *      11111111111111110000000000000000
+         *      FEDCBA9876543210FEDCBA9876543210
+         *     [              imm               ]
+         * </pre> */
         W
     }
 
@@ -2821,56 +2985,56 @@ public class TxInstructionSet
             );
 
     /**
-     * EXTENDed 16-bit ISA version of lhufpInstruction: sign-extends offset and multiplies it by 2
+     * EXTENDed 16-bit ISA version of lhufpInstruction: sign-extends offset (already multiplied by 2)
      */
-    private static final TxInstruction lhufpInstruction = new TxInstruction("lhu", "j, 2s(F)", "sF>j", "", "jw", "lhu $t1,-100($fp)",
+    private static final TxInstruction lhufpInstruction = new TxInstruction("lhu", "j, s(F)", "sF>j", "", "jw", "lhu $t1,-100($fp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 15)));
+                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
-     * non-EXTENDed 16-bit ISA version of lhufpInstruction: does not sign-extend offset but multiplies it by 2
+     * non-EXTENDed 16-bit ISA version of lhufpInstruction: does not sign-extend offset (already multiplied by 2)
      */
-    private static final TxInstruction lhufp16Instruction = new TxInstruction("lhu", "j, 2u(F)", "uF>j", "", "jw", "lhu $t1,-100($fp)",
+    private static final TxInstruction lhufp16Instruction = new TxInstruction("lhu", "j, u(F)", "uF>j", "", "jw", "lhu $t1,-100($fp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 1)));
+                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.FP) + statement.imm));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
 
     /**
-     * EXTENDed 16-bit ISA version of lhuspInstruction: sign-extends offset and multiplies it by 2
+     * EXTENDed 16-bit ISA version of lhuspInstruction: sign-extends offset (already multiplied by 2)
      */
-    private static final TxInstruction lhuspInstruction = new TxInstruction("lhu", "j, 2s(S)", "sS>j", "", "jw", "lhu $t1,-100($sp)",
+    private static final TxInstruction lhuspInstruction = new TxInstruction("lhu", "j, s(S)", "sS>j", "", "jw", "lhu $t1,-100($sp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 15)));
+                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16)));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
     /**
-     * non-EXTENDed 16-bit ISA version of lhuspInstruction: does not sign-extend offset but multiplies it by 2
+     * non-EXTENDed 16-bit ISA version of lhuspInstruction: does not sign-extend offset (already multiplied by 2)
      */
-    private static final TxInstruction lhusp16Instruction = new TxInstruction("lhu", "j, 2u(S)", "sS>j", "", "jw", "lhu $t1,-100($sp)",
+    private static final TxInstruction lhusp16Instruction = new TxInstruction("lhu", "j, u(S)", "uS>j", "", "jw", "lhu $t1,-100($sp)",
             "Load Halfword Unsigned: Set $t1 to unsigned 16-bit value from effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
-                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 1)));
+                    context.cpuState.setReg(statement.rj_rt_ft, context.memory.loadUnsigned16(context.cpuState.getReg(TxCPUState.SP) + statement.imm));
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
@@ -3498,64 +3662,64 @@ public class TxInstructionSet
             );
 
     /**
-     * EXTENDed 16-bit ISA version of shfpInstruction: sign-extends offset and multiplies it by 2
+     * EXTENDed 16-bit ISA version of shfpInstruction: sign-extends offset (already multiplied by 2)
      */
-    private static final TxInstruction shfpInstruction = new TxInstruction("sh", "j, 2s(F)", "sF>j", "", "", "sh $t1,-100($fp)",
+    private static final TxInstruction shfpInstruction = new TxInstruction("sh", "j, s(F)", "sF>j", "", "", "sh $t1,-100($fp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
-                            context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 15),
+                            context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
     /**
-     * non-EXTENDed 16-bit ISA version of shfpInstruction: does not sign-extend offset but multiplies it by 2
+     * non-EXTENDed 16-bit ISA version of shfpInstruction: does not sign-extend offset (already multiplied by 2)
      */
-    private static final TxInstruction shfp16Instruction = new TxInstruction("sh", "j, 2s(F)", "sF>j", "", "", "sh $t1,-100($fp)",
+    private static final TxInstruction shfp16Instruction = new TxInstruction("sh", "j, u(F)", "uF>j", "", "", "sh $t1,-100($fp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
-                            context.cpuState.getReg(TxCPUState.FP) + (statement.imm << 1),
+                            context.cpuState.getReg(TxCPUState.FP) + statement.imm,
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
     /**
-     * EXTENDed 16-bit ISA version of shspInstruction: sign-extends offset and multiplies it by 2
+     * EXTENDed 16-bit ISA version of shspInstruction: sign-extends offset (already multiplied by 2)
      */
-    private static final TxInstruction shspInstruction = new TxInstruction("sh", "j, 2s(S)", "sS>j", "", "", "sh $t1,-100($sp)",
+    private static final TxInstruction shspInstruction = new TxInstruction("sh", "j, s(S)", "sS>j", "", "", "sh $t1,-100($sp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
-                            context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 15),
+                            context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 16 >> 16),
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
             });
 
     /**
-     * non-EXTENDed 16-bit ISA version of shspInstruction: does not sign-extend offset but multiplies it by 2
+     * non-EXTENDed 16-bit ISA version of shspInstruction: does not sign-extend offset (already multiplied by 2)
      */
-    private static final TxInstruction shsp16Instruction = new TxInstruction("sh", "j, 2s(S)", "sS>j", "", "", "sh $t1,-100($sp)",
+    private static final TxInstruction shsp16Instruction = new TxInstruction("sh", "j, u(S)", "uS>j", "", "", "sh $t1,-100($sp)",
             "Store Halfword: Store the low-order 16 bits of $t1 into the effective memory halfword address",
             null, InstructionFormat16.FPH_SPH,
             Instruction.FlowType.NONE, false, Instruction.DelaySlotType.NONE,
             new SimulationCode() {
                 public void simulate(Statement statement, StatementContext context) throws EmulationException {
                     context.memory.store16(
-                            context.cpuState.getReg(TxCPUState.SP) + (statement.imm << 1),
+                            context.cpuState.getReg(TxCPUState.SP) + statement.imm,
                             context.cpuState.getReg(statement.rj_rt_ft) & 0x0000ffff);
                     context.cpuState.pc += statement.getNumBytes();
                 }
