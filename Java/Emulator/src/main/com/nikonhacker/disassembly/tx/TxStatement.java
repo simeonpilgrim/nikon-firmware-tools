@@ -240,7 +240,7 @@ public class TxStatement extends Statement {
                 case FPH_SPH:
                     ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rj_rt_ft = ri_rs_fs; // TODO useful ?
-                    imm   =  (binaryStatement >>> 1) & 0b111111;
+                    imm   =  binaryStatement & 0b1111110;
                     immBitWidth = 6;
                     rd_fd = rj_rt_ft;
                     break;
@@ -321,13 +321,19 @@ public class TxStatement extends Statement {
                             | ((binaryStatement >> 4)       & 0b00_00000111); // xsregs|aregs|ra|s0|s1
                     break;
                 case FPB_SPB:
-                case FPH_SPH:
-                    // same as RI in 32bit
                     ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
                     rj_rt_ft = ri_rs_fs; // TODO useful ?
                     imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
                             | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
                             | ((binaryStatement           ) & 0b00000000_00011111);
+                    immBitWidth = 16;
+                    break;
+                case FPH_SPH:
+                    ri_rs_fs = TxCPUState.REGISTER_MAP_16B[(binaryStatement >>> 8) & 0b111]; // rx
+                    rj_rt_ft = ri_rs_fs; // TODO useful ?
+                    imm   =   ((binaryStatement >> (16-11)) & 0b11111000_00000000)
+                            | ((binaryStatement >> (21- 5)) & 0b00000111_11100000)
+                            | ((binaryStatement           ) & 0b00000000_00011110); // Note the trailing 0
                     immBitWidth = 16;
                     break;
                 case SPC_BIT:
