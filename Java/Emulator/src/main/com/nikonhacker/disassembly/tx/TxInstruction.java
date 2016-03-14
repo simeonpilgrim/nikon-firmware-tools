@@ -12,29 +12,34 @@ public class TxInstruction extends Instruction {
     /**
      * Creates a new TxInstruction
      * @param name the symbolic name
-     * @param operandFormat
-     * @param formula indicates the source and target of the operation. E.g. "x>z" means x is required to compute y
+     * @param operandFormat indicates the presentation of the instruction, such as "s(i)". The symbols are among:
+    <pre>
     'i': register Rs<br/>
     'j': register Rt<br/>
     'k': register Rd<br/>
     'h': register HI<br/>
     'l': register LO<br/>
-    'u' or 's': immediate operand<br/>
-     * @param commentFormat
+    'u' or 's': immediate operand, as unsigned or signed
+    </pre>
+     * @param formula indicates the source and target of the operation, separated by '>', such as "ij>k' to indicate
+     *                the operation requires i and j to compute k. The symbols are the same as in operandFormat above.
+     * @param commentFormat indicates an additional format to be presented next to the instruction, such as "Ju".
+     *                      The same symbols as in operandFormat above can be used.
      * @param action a string specifying how to interpret the instruction. It is a list of characters among :<br/>
-* <pre>
-'A': current register is RA<br/>
-'F': current register is FP<br/>
-'S': current register is SP<br/>
-'i': current register is Rs<br/>
-'j': current register is Rt<br/>
-'k': current register is Rd<br/>
-'w': current register is marked invalid<br/>
-'v': current register is marked valid and loaded with the given value<br/>
-'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
-'+': current register is incremented by given value<br/>
-'|': current register is or'ed with given value<br/>
-'x': current register is undefined<br/>
+    <pre>
+    'A': current register is RA<br/>
+    'F': current register is FP<br/>
+    'S': current register is SP<br/>
+    'i': current register is Rs<br/>
+    'j': current register is Rt<br/>
+    'k': current register is Rd<br/>
+    'w': current register is marked invalid<br/>
+    'v': current register is marked valid and loaded with the given value<br/>
+    'V': current register is marked valid and set to the given value shifted left by 16 positions<br/>
+    '+': current register is incremented by given value<br/>
+    '|': current register is or'ed with given value<br/>
+    'x': current register is undefined
+    </pre>
      * @param instructionFormat32 pattern that specifies how the instruction word should be split in parts
      * @param instructionFormat16
      * @param flowType
