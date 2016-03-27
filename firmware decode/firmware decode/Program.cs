@@ -23,11 +23,17 @@ namespace Nikon_Decode
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0102.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3200Update\D3200_0103.bin");
 
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D3300Update\D3300_0101.bin");
+
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5100Update\D5100_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5100Update\D5100_0102.bin");
 
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0101.bin");
             //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5200Update\D5200_0102.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5300Update\D5300_0101.bin");
+
+            //DecodeAndExtractFirm(@"C:\Users\spilgrim\Downloads\Nikon\D5500Update\D5500_0101.bin");
 
             //DOWAHT??(@"C:\Users\spilgrim\Downloads\Nikon\D90Update\D90_0101.bin");
 
@@ -125,7 +131,7 @@ namespace Nikon_Decode
             //DumpMenusD5100(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b640101b.bin");
             //DumpMenusD3s(@"C:\Users\spilgrim\Downloads\Nikon\Decode\bd3s101c.bin");
             //DumpMenusD7000(@"C:\Users\spilgrim\Downloads\Nikon\D7000Update\b750103a.bin");
-            DumpMenusD7000_105(@"C:\Users\parents\Documents\Dev\nikon-firmware-tools\IDA_files\D7000\105\b750105a.bin");
+            //DumpMenusD7000_105(@"C:\Users\parents\Documents\Dev\nikon-firmware-tools\IDA_files\D7000\105\b750105a.bin");
 
             //DumpMenusD300S(@"C:\Users\spilgrim\Downloads\Nikon\Decode\b810101b.bin");
             //DumpMenusD700(@"C:\Users\spilgrim\Downloads\Nikon\Decode\D700_0103.bin_B.bin");
