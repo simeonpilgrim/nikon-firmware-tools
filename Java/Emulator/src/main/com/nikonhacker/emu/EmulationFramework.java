@@ -52,12 +52,14 @@ import com.nikonhacker.emu.peripherials.realtimeClock.RealtimeClock;
 import com.nikonhacker.emu.peripherials.realtimeClock.tx.TxRealtimeClock;
 import com.nikonhacker.emu.peripherials.resolutionConverter.ResolutionConverter;
 import com.nikonhacker.emu.peripherials.resolutionConverter.fr.FrResolutionConverter;
+import com.nikonhacker.emu.peripherials.sdController.SdController;
+import com.nikonhacker.emu.peripherials.sdController.fr.FrSdController;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialDevice;
 import com.nikonhacker.emu.peripherials.serialInterface.SerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St95040;
 import com.nikonhacker.emu.peripherials.serialInterface.eeprom.St950x0;
-import com.nikonhacker.emu.peripherials.serialInterface.flashCharger.Nhhs2;
 import com.nikonhacker.emu.peripherials.serialInterface.fMount.FMountCircuit;
+import com.nikonhacker.emu.peripherials.serialInterface.flashCharger.Nhhs2;
 import com.nikonhacker.emu.peripherials.serialInterface.fr.FrSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.imageSensor.Imx071;
 import com.nikonhacker.emu.peripherials.serialInterface.lcd.LcdDriver;
@@ -65,8 +67,6 @@ import com.nikonhacker.emu.peripherials.serialInterface.sensorBridge.Ei155;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxHSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.tx.TxSerialInterface;
 import com.nikonhacker.emu.peripherials.serialInterface.util.SpiBus;
-import com.nikonhacker.emu.peripherials.sdController.SdController;
-import com.nikonhacker.emu.peripherials.sdController.fr.FrSdController;
 import com.nikonhacker.emu.trigger.BreakTrigger;
 import com.nikonhacker.emu.trigger.condition.AlwaysBreakCondition;
 import com.nikonhacker.emu.trigger.condition.AndCondition;
@@ -341,7 +341,7 @@ public class EmulationFramework {
                             }
                         }
                         else {
-                            System.err.println("Attempt at reloading last eeprom contents from file failed. Seems no eeprom was ever loaded...");
+                            System.err.println("No eeprom was ever loaded. Skipping reload...");
                             eeprom.clear();
                         }
                         break;

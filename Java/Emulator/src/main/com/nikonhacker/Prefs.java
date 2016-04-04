@@ -505,7 +505,7 @@ public class Prefs {
 
     public EepromInitMode getEepromInitMode() {
         if (eepromInitMode == null) {
-            return EepromInitMode.BLANK;
+            return EepromInitMode.LAST_LOADED;
         }
         else {
             return eepromInitMode;

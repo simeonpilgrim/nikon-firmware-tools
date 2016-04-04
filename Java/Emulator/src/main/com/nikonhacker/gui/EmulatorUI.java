@@ -2008,7 +2008,7 @@ public class EmulatorUI extends JFrame implements ActionListener {
         if (chip == Constants.CHIP_TX) {
             JPanel chipSpecificOptionsPanel = new JPanel(new VerticalLayout(5, VerticalLayout.LEFT));
 
-            chipSpecificOptionsPanel.add(new JLabel("Eeprom initialization mode:"));
+            chipSpecificOptionsPanel.add(new JLabel("Eeprom status upon startup:"));
 
             ActionListener eepromInitializationRadioActionListener = new ActionListener() {
                 @Override
