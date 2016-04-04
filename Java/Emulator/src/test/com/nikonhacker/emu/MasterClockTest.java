@@ -8,8 +8,8 @@ public class MasterClockTest  extends TestCase {
         TestClockable d1 = new TestClockable("1", 80000000);
         TestClockable d2 = new TestClockable("2", 132000000);
 
-        masterClock.add(d1, d1, true);
-        masterClock.add(d2, d2, true);
+        masterClock.add(d1, 0, true, false);
+        masterClock.add(d2, 1, true, false);
         new Thread(masterClock).start();
 
         Thread.sleep(5000);
@@ -20,8 +20,8 @@ public class MasterClockTest  extends TestCase {
         TestClockable d1 = new TestClockable("1", 80000000);
         TestClockable d2 = new TestClockable("2", 132000000);
 
-        masterClock.add(d1, d1, true);
-        masterClock.add(d2, d2, false);
+        masterClock.add(d1, 0, true, false);
+        masterClock.add(d2, 1, false, false);
         new Thread(masterClock).start();
         Thread.sleep(100);
         masterClock.enableClockable(d2);
