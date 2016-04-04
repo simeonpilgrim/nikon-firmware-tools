@@ -296,6 +296,10 @@ public class EmulationFramework {
                 // I/O ports
                 ioPorts = TxIoPort.setupPorts(platform[chip], interruptController, programmableTimers, prefs.isLogPinMessages(chip));
 
+                // Hardcoded value of P51 to VCC for the moment, until more information about this input's role
+                FixedSourceComponent dummyVCCcomponent = new FixedSourceComponent(1, Constants.LABEL_HI + " until more information", prefs.isLogPinMessages(chip));
+                Pin.interconnect(ioPorts[IoPort.PORT_5].getPin(1), dummyVCCcomponent.getPin1());
+
                 // Serial interfaces
                 // Standard
                 for (int i = 0; i < TxIoListener.NUM_SERIAL_IF; i++) {
