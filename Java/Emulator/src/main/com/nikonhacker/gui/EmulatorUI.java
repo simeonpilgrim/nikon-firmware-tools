@@ -25,7 +25,6 @@ import com.nikonhacker.emu.EmulationFramework;
 import com.nikonhacker.emu.memory.DebuggableMemory;
 import com.nikonhacker.emu.memory.Memory;
 import com.nikonhacker.emu.memory.listener.TrackingMemoryActivityListener;
-import com.nikonhacker.emu.peripherials.ioPort.IoPort;
 import com.nikonhacker.emu.peripherials.lcd.fr.FrLcd;
 import com.nikonhacker.emu.peripherials.programmableTimer.ProgrammableTimer;
 import com.nikonhacker.emu.trigger.condition.BreakCondition;
@@ -494,6 +493,9 @@ public class EmulatorUI extends JFrame implements ActionListener {
             int height = screenSize.height - inset * 2;
             setLocation(inset, inset);
             setPreferredSize(new Dimension(width, height));
+
+            splitPane.setDividerLocation(width/2);
+            setKeepHidden(splitPane, false);
         }
         else {
             setLocation(prefs.getMainWindowPositionX(), prefs.getMainWindowPositionY());
