@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using CameraControl.Devices;
 using PortableDeviceLib;
+using CameraControl.Devices.Classes;
 
 namespace CameraModels
 {
@@ -97,7 +98,48 @@ namespace CameraModels
             return null;
         }
 
-        public static string FindNikonCamera()
+
+        public static bool InitilizeCamera(string wpdId)
+        {
+            DeviceDescriptor descriptor = new DeviceDescriptor { WpdId = wpdId };
+            var cam = new BaseMTPCamera();
+            bool i = cam.Init(descriptor);
+            var rep = cam.ExecuteReadDataEx(PtpCommands.MTP_OPERATION_GET_DEVICE_INFO);
+
+            if (rep.ErrorCode != ErrorCodes.MTP_OK)
+            {
+                //LogIt("Failed to initialise");
+                return false;
+            }
+
+            return false;
+            //var version = Get_Version_FirmB();
+            //var model = Get_CameraModel();
+        }
+    }
+
+
+
+    public class CameraSession
+    {
+        public string SerialNumber { get; protected set; }
+        public string ModelNumber { get; protected set; }
+        public string FirmwareNumber { get; protected set; }
+
+        public string StatusMessage { get; protected set; }
+
+        string deviceId;
+        public BaseMTPCamera cam;
+
+        public bool InServiceMode = false;
+        public bool TMP19_Suspend = false;
+
+        public CameraSession()
+        {
+            StatusMessage = "Failed to Find Nikon Camera";
+        }
+
+        public bool FindNikonCamera()
         {
             if (PortableDeviceCollection.Instance == null)
             {
@@ -105,8 +147,14 @@ namespace CameraModels
                 const int AppMajorVersionNumber = 1;
                 const int AppMinorVersionNumber = 0;
 
-                PortableDeviceCollection.CreateInstance(AppName, AppMajorVersionNumber, AppMinorVersionNumber);
-                PortableDeviceCollection.Instance.AutoConnectToPortableDevice = false;
+                try {
+                    PortableDeviceCollection.CreateInstance(AppName, AppMajorVersionNumber, AppMinorVersionNumber);
+                    PortableDeviceCollection.Instance.AutoConnectToPortableDevice = false;
+                }catch(Exception)
+                {
+                    StatusMessage = "Failed to load depentant .dll's";
+                    return false;
+                }
             }
 
             foreach (PortableDevice portableDevice in PortableDeviceCollection.Instance.Devices)
@@ -118,10 +166,54 @@ namespace CameraModels
 
                 // find Nikon cameras
                 if (portableDevice.DeviceId.Contains("vid_04b0"))
-                    return portableDevice.DeviceId;
+                {
+                    deviceId = portableDevice.DeviceId;
+                    try
+                    {
+                        SerialNumber = deviceId.Split('#')[2];
+                    }
+                    catch (Exception)
+                    {
+                        StatusMessage = "Failed to find Serial Number";
+                        return false;
+                    }
+
+                    return true;
+                }
             }
 
-            return "";
+            StatusMessage = "Failed to Find Nikon Camera";
+            deviceId = "";
+            return false;
+        }
+
+        public bool InitilizeCamera()
+        {
+            if(deviceId == "")
+            {
+                StatusMessage = "Nikon Camera not present";
+                return false;
+            }
+
+            DeviceDescriptor descriptor = new DeviceDescriptor { WpdId = deviceId };
+            cam = new BaseMTPCamera();
+            if (cam.Init(descriptor) == false)
+            {
+                StatusMessage = "Failed to Initilize BaseMTPCamera";
+                return false;
+            }
+
+            var rep = cam.ExecuteReadDataEx(PtpCommands.MTP_OPERATION_GET_DEVICE_INFO);
+
+            if (rep.ErrorCode != ErrorCodes.MTP_OK)
+            {
+                StatusMessage = "Failed to GET_DEVICE_INFO)";
+                return false;
+            }
+
+            ModelNumber = PtpCommands.Get_CameraModel(this);
+            FirmwareNumber = PtpCommands.Get_Version_FirmB(this);
+            return true;
         }
     }
 }

@@ -30,14 +30,15 @@
         {
             this.model_lb = new System.Windows.Forms.Label();
             this.firmware_lb = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
+            this.btBackupEeprom = new System.Windows.Forms.Button();
             this.model_tb = new System.Windows.Forms.TextBox();
             this.firmware_tb = new System.Windows.Forms.TextBox();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btRestoreEeprom = new System.Windows.Forms.Button();
             this.lang_lb = new System.Windows.Forms.Label();
             this.langage_tb = new System.Windows.Forms.TextBox();
-            this.button3 = new System.Windows.Forms.Button();
-            this.emaildev = new System.Windows.Forms.Button();
+            this.btUnlockLanguage = new System.Windows.Forms.Button();
+            this.btEmailDeveloper = new System.Windows.Forms.Button();
+            this.btSearchForCamera = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // model_lb
@@ -58,47 +59,47 @@
             this.firmware_lb.TabIndex = 2;
             this.firmware_lb.Text = "Firmware:";
             // 
-            // button1
+            // btBackupEeprom
             // 
-            this.button1.Enabled = false;
-            this.button1.Location = new System.Drawing.Point(12, 64);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(129, 24);
-            this.button1.TabIndex = 4;
-            this.button1.Text = "Backup Eeprom";
-            this.button1.UseVisualStyleBackColor = true;
+            this.btBackupEeprom.Enabled = false;
+            this.btBackupEeprom.Location = new System.Drawing.Point(12, 64);
+            this.btBackupEeprom.Name = "btBackupEeprom";
+            this.btBackupEeprom.Size = new System.Drawing.Size(129, 24);
+            this.btBackupEeprom.TabIndex = 4;
+            this.btBackupEeprom.Text = "Backup Eeprom";
+            this.btBackupEeprom.UseVisualStyleBackColor = true;
             // 
             // model_tb
             // 
-            this.model_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.model_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.model_tb.Location = new System.Drawing.Point(73, 12);
             this.model_tb.Name = "model_tb";
             this.model_tb.ReadOnly = true;
-            this.model_tb.Size = new System.Drawing.Size(204, 20);
+            this.model_tb.Size = new System.Drawing.Size(345, 20);
             this.model_tb.TabIndex = 5;
             this.model_tb.Text = "Camera Not Detected, plug in via USB";
             // 
             // firmware_tb
             // 
-            this.firmware_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.firmware_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.firmware_tb.Location = new System.Drawing.Point(73, 38);
             this.firmware_tb.Name = "firmware_tb";
             this.firmware_tb.ReadOnly = true;
-            this.firmware_tb.Size = new System.Drawing.Size(204, 20);
+            this.firmware_tb.Size = new System.Drawing.Size(345, 20);
             this.firmware_tb.TabIndex = 6;
             this.firmware_tb.Text = "Camera Not Detected, plug in via USB";
             // 
-            // button2
+            // btRestoreEeprom
             // 
-            this.button2.Enabled = false;
-            this.button2.Location = new System.Drawing.Point(147, 64);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(129, 24);
-            this.button2.TabIndex = 7;
-            this.button2.Text = "Restore Eeprom";
-            this.button2.UseVisualStyleBackColor = true;
+            this.btRestoreEeprom.Enabled = false;
+            this.btRestoreEeprom.Location = new System.Drawing.Point(147, 64);
+            this.btRestoreEeprom.Name = "btRestoreEeprom";
+            this.btRestoreEeprom.Size = new System.Drawing.Size(129, 24);
+            this.btRestoreEeprom.TabIndex = 7;
+            this.btRestoreEeprom.Text = "Restore Eeprom";
+            this.btRestoreEeprom.UseVisualStyleBackColor = true;
             // 
             // lang_lb
             // 
@@ -111,52 +112,62 @@
             // 
             // langage_tb
             // 
-            this.langage_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.langage_tb.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.langage_tb.Location = new System.Drawing.Point(73, 111);
             this.langage_tb.Name = "langage_tb";
             this.langage_tb.ReadOnly = true;
-            this.langage_tb.Size = new System.Drawing.Size(204, 20);
+            this.langage_tb.Size = new System.Drawing.Size(345, 20);
             this.langage_tb.TabIndex = 9;
             this.langage_tb.Text = "Camera Not Detected, plug in via USB";
             // 
-            // button3
+            // btUnlockLanguage
             // 
-            this.button3.Enabled = false;
-            this.button3.Location = new System.Drawing.Point(12, 137);
-            this.button3.Name = "button3";
-            this.button3.Size = new System.Drawing.Size(129, 24);
-            this.button3.TabIndex = 10;
-            this.button3.Text = "Unlock Language";
-            this.button3.UseVisualStyleBackColor = true;
+            this.btUnlockLanguage.Enabled = false;
+            this.btUnlockLanguage.Location = new System.Drawing.Point(12, 137);
+            this.btUnlockLanguage.Name = "btUnlockLanguage";
+            this.btUnlockLanguage.Size = new System.Drawing.Size(129, 24);
+            this.btUnlockLanguage.TabIndex = 10;
+            this.btUnlockLanguage.Text = "Unlock Language";
+            this.btUnlockLanguage.UseVisualStyleBackColor = true;
             // 
-            // emaildev
+            // btEmailDeveloper
             // 
-            this.emaildev.Location = new System.Drawing.Point(12, 167);
-            this.emaildev.Name = "emaildev";
-            this.emaildev.Size = new System.Drawing.Size(129, 23);
-            this.emaildev.TabIndex = 11;
-            this.emaildev.Text = "Email Developer";
-            this.emaildev.UseVisualStyleBackColor = true;
+            this.btEmailDeveloper.Location = new System.Drawing.Point(12, 167);
+            this.btEmailDeveloper.Name = "btEmailDeveloper";
+            this.btEmailDeveloper.Size = new System.Drawing.Size(129, 23);
+            this.btEmailDeveloper.TabIndex = 11;
+            this.btEmailDeveloper.Text = "Email Developer";
+            this.btEmailDeveloper.UseVisualStyleBackColor = true;
             // 
-            // Form1
+            // btSearchForCamera
+            // 
+            this.btSearchForCamera.Location = new System.Drawing.Point(283, 65);
+            this.btSearchForCamera.Name = "btSearchForCamera";
+            this.btSearchForCamera.Size = new System.Drawing.Size(135, 23);
+            this.btSearchForCamera.TabIndex = 13;
+            this.btSearchForCamera.Text = "Search For Camera";
+            this.btSearchForCamera.UseVisualStyleBackColor = true;
+            this.btSearchForCamera.Click += new System.EventHandler(this.button4_Click);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(289, 202);
-            this.Controls.Add(this.emaildev);
-            this.Controls.Add(this.button3);
+            this.ClientSize = new System.Drawing.Size(430, 289);
+            this.Controls.Add(this.btSearchForCamera);
+            this.Controls.Add(this.btEmailDeveloper);
+            this.Controls.Add(this.btUnlockLanguage);
             this.Controls.Add(this.langage_tb);
             this.Controls.Add(this.lang_lb);
-            this.Controls.Add(this.button2);
+            this.Controls.Add(this.btRestoreEeprom);
             this.Controls.Add(this.firmware_tb);
             this.Controls.Add(this.model_tb);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btBackupEeprom);
             this.Controls.Add(this.firmware_lb);
             this.Controls.Add(this.model_lb);
-            this.MaximumSize = new System.Drawing.Size(1024, 240);
-            this.MinimumSize = new System.Drawing.Size(305, 240);
-            this.Name = "Form1";
+            this.MinimumSize = new System.Drawing.Size(305, 0);
+            this.Name = "MainForm";
             this.Text = "LanguageFix";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -167,14 +178,15 @@
 
         private System.Windows.Forms.Label model_lb;
         private System.Windows.Forms.Label firmware_lb;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button btBackupEeprom;
         private System.Windows.Forms.TextBox model_tb;
         private System.Windows.Forms.TextBox firmware_tb;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btRestoreEeprom;
         private System.Windows.Forms.Label lang_lb;
         private System.Windows.Forms.TextBox langage_tb;
-        private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button emaildev;
+        private System.Windows.Forms.Button btUnlockLanguage;
+        private System.Windows.Forms.Button btEmailDeveloper;
+        private System.Windows.Forms.Button btSearchForCamera;
     }
 }
 
