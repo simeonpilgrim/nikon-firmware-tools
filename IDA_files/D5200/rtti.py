@@ -242,14 +242,16 @@ while ea != idc.BADADDR and ea != last:
 	real_ea = ea
 	val = Dword(real_ea)
 	#print " ea: 0x%x val: 0x%x" %(real_ea, val)
-	obj_ref = rtti_objects.get(val)
-	if obj_ref and rtti_obj_mem_map.inMap(real_ea) == False:
-		#print "found 0x%x 0x%x %s" % (real_ea,val,rtti_objects[val])
-		vtab_possibles.add(real_ea)
+	if (real_ea & 3) == 0:	
+		obj_ref = rtti_objects.get(val)
+		if obj_ref and rtti_obj_mem_map.inMap(real_ea) == False:
+			#print "found 0x%x 0x%x %s" % (real_ea,val,rtti_objects[val])
+			vtab_possibles.add(real_ea)
 	ea = idc.FindBinary(ea + 4, srch_code, srch)
 
-#for v in sorted(vtab_possibles):
-	#if rtti_vtab_mem_map.inMap(v) == False:
+for v in sorted(vtab_possibles):
+	if rtti_vtab_mem_map.inMap(v) == False:
+		print "possible vtable 0x%x" % (v)
 		#load_vtable(v)
 
 
