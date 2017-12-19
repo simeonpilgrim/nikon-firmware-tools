@@ -169,9 +169,9 @@ namespace Nikon_Patch
                            };
 
         Patch[] patch_liveview_no_timeout_15m = {
-                                                    new Patch(1,0x95B4, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
-                                                    new Patch(1,0xCEB8, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
-                                                    new Patch(1,0x27877C, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0xCB, 0xA4, 0x00} ),
+                                                    new Patch(1,0x95B4, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+                                                    new Patch(1,0xCEB8, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+                                                    new Patch(1,0x27877C, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
                                                 };
 
         //Patch[] patch_liveview_no_timeout_15m_b = {
