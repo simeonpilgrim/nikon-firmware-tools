@@ -19,3 +19,9 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# wasm output files
+public/nikon_patch.js
+public/nikon_patch.wasm
+src/nikon_patch/nikon_patch.js
+src/nikon_patch/nikon_patch.wasm
