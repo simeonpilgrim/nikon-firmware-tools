@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-
+using System.Linq;
 
 namespace Nikon_Patch
 {
@@ -57,8 +57,80 @@ namespace Nikon_Patch
             hashMap.Add(new byte[] { 0xB0, 0x1F, 0xD3, 0xDF, 0xE5, 0x74, 0x2F, 0xB7, 0x49, 0xA0, 0x85, 0xD3, 0xE4, 0x14, 0x52, 0x7D }, new D4_0105());
             hashMap.Add(new byte[] { 0x80, 0x9D, 0xBB, 0xE0, 0x40, 0x95, 0x4E, 0x02, 0x24, 0xF0, 0x95, 0xB9, 0xC2, 0xF6, 0xA8, 0xC0 }, new D4_0110());
             hashMap.Add(new byte[] { 0xBB, 0xB0, 0x44, 0x5F, 0x58, 0x18, 0x57, 0xCD, 0x0A, 0xF7, 0x76, 0x9D, 0xEF, 0xBD, 0x09, 0x51 }, new D4S_0101());
+        }
+
+        static public void ExportToC()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            // build patches
+            //struct Patch D5100_0102_patches[] = {
+            //    {.id=1, .level=Released, .name="Remove Time Based Video Restrictions", .blocks={2}} /*patch_1*/
+            //};
+            foreach (var pm in hashMap)
+            {
+                var type = pm.Value.GetType().ToString().Split('.')[1];
+
+                sb.AppendLine($"struct Patch {type}_patches[] = {{");
+                var patches = pm.Value.Patches.AsEnumerable().ToList();
+
+                foreach (var p in patches)
+                {
+                    int idx = patches.IndexOf(p) + 1;
+                    var sep = idx > 1 ? "," : "";
+                    var status = p.PatchStatus.ToString();
+                    var blocksS = new List<string>();
+                    foreach(var b in p.incompatible)
+                    {
+                        for(int x=0; x<patches.Count; x++)
+                        {
+                            if(patches[x].changes == b)
+                            {
+                                blocksS.Add((x + 1).ToString());
+                            }
+                        }
+                    }
+
+                    //var blocks = string.Join(",", p.incompatible.SelectMany(b => (patches.IndexOf(b) + 1).ToString()));
+                    var blocks = string.Join(",", blocksS);
+                    var s = $"    {sep}{{.id = {idx}, .level = {status}, .name=\"{p.Name}\", .blocks={{{blocks}}}}}";
+                    sb.AppendLine(s);
+                }
+                sb.AppendLine("};");
+                sb.AppendLine();
+            }
+
+            // build patch sets
+            sb.AppendLine();
+            foreach (var pm in hashMap)
+            {
+                var type = pm.Value.GetType().ToString().Split('.')[1];
+                sb.AppendLine($"struct PatchSet {type}_ps = PATCHSET(\"{pm.Value.Model}\", \"{pm.Value.Version}\", {type}_patches);");
+                //struct PatchSet D5100_0102_ps = PATCHSET("D5100", "1.02", D5100_0102_patches);
+            }
 
 
+            // build patch map
+            sb.AppendLine();
+            sb.AppendLine("struct PatchMap patches[] = {");
+            int id = 1;
+            foreach (var pm in hashMap)
+            {
+                var hash = string.Join(",", pm.Key.Select(k => string.Format("0x{0:X2}", k)));
+                var sep = id > 1 ? "," : "";
+                var type = pm.Value.GetType().ToString().Split('.')[1];
+                var s = $"     {sep}{{.id = {id}, .hash = {{{hash}}}, .patches = &{type}_ps}}";
+                sb.AppendLine(s);
+                id+=1;
+                //     {.id = 1, .hash = {0x22, 0x14, 0x21, 0x0A, 0xD2, 0xC6, 0x5B, 0x5E, 0x85, 0x78, 0x99, 0xCA, 0x79, 0xF3, 0xDA, 0x19}, .patches=&D5100_0102_ps},
+            }
+            sb.AppendLine("};");
+
+
+            using (var s = File.CreateText(@"C:\temp\patch.c"))
+            {
+                s.Write(sb.ToString());
+            }
         }
 
         static public string BuildPatchMatrix()
