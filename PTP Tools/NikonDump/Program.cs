@@ -250,6 +250,9 @@ namespace NikonDump
 
             //FR_LiveView_hack();
 
+            //Tmp19_LogSet_Eeprom(SN);
+            //Tmp19_Search_Set04();
+
             //Tmp19_Resume();
             //ExitServiceMode();
         }
@@ -1099,6 +1102,72 @@ namespace NikonDump
             }
         }
 
+        static void Tmp19_LogSet_Eeprom(string sn)
+        {
+            string filesname = string.Format("eeprom_log_{0}.txt", sn);
+            using (TextWriter tw = new StreamWriter(filesname))
+            {
+                var set = FR_DumpSet(1, 0x3);
+                tw.WriteLine("set01 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(2, 0x80);
+                tw.WriteLine("set02 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(3, 0x80);
+                tw.WriteLine("set03 " + DataToHexString(set.Data, 0));
+                set = FR_DumpSet(4, 0x80);
+                tw.WriteLine("set04 " + DataToHexString(set.Data, 0));
+
+                var res = Tmp19_Cmd_4155_EepromRead(0x0, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x80, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x100, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0));
+                res = Tmp19_Cmd_4155_EepromRead(0x180, 0x80);
+                tw.WriteLine(DataToHexString(res.Data, 0)); 
+            }
+
+            Tmp19_Resume();
+            ExitServiceMode();
+        }
+
+        static void Tmp19_Search_Set04()
+        {
+            var set = FR_DumpSet(1, 0x3);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(2, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(3, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+            set = FR_DumpSet(4, 0x80);
+            Debug.WriteLine(DataToHexString(set.Data, 0));
+ 
+            var res = Tmp19_Cmd_4155_EepromRead(0x0, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x80, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x100, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0));
+            res = Tmp19_Cmd_4155_EepromRead(0x180, 0x80);
+            Debug.WriteLine(DataToHexString(res.Data, 0)); 
+
+
+            //Debug.WriteLine(DataToHexString(res.Data, 44));
+
+            //if (turnOff)
+            //    res.Data[0] |= 0x08;
+            //else
+            //    res.Data[0] &= 0xF7;
+
+
+            ////Tmp19_Cmd_4154_RAMWrite(0xFF4043, 1, res.Data);
+            //Tmp19_Cmd_4157_EepromWrite(0x43, 1, res.Data);
+            //Tmp19_Cmd_4771_EepromSave();
+
+            //var chk = Tmp19_Cmd_4155_EepromRead(0x43, 1);
+            //Debug.WriteLine(chk.Data[0]);
+            Tmp19_Resume();
+        }
+
         static void Tmp19_DisablesDefectProcessing_Set(bool turnOff)
         {
             var res = Tmp19_Cmd_4155_EepromRead(0x43, 1);
@@ -1441,6 +1510,17 @@ namespace NikonDump
         {
             StringBuilder sb = new StringBuilder();
             for (int i = offset; i < data.Length; i++)
+            {
+                sb.Append(string.Format("{0:X2} ", data[i]));
+            }
+
+            return sb.ToString();
+        }
+
+        static string DataToHexString(byte[] data, int offset, int len)
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = offset; i < data.Length && i < len; i++)
             {
                 sb.Append(string.Format("{0:X2} ", data[i]));
             }
