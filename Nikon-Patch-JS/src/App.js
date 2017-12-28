@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
-/*global _detectFirmware Module*/
+/*global _detectFirmware _getInFilePtr _getJsonPtr _getMaxFileSize Module*/
 
 
 class FirmwareControl extends Component {
@@ -18,21 +18,20 @@ class FirmwareControl extends Component {
         if (inputfile.files.length === 0)
                 return;
         var file = inputfile.files[0];
-        if (file.size > 30000000)
+        var maxFileSize = _getMaxFileSize();
+        if (file.size > maxFileSize)
             return;
 
         var patches = {"model":"Unknown", "version":"Unknown2", "patches":[]};
         var fr = new FileReader();
         fr.onload = function () {
             var data = new Uint8Array(fr.result);
-            var data_mem = Module._malloc(data.length);
-            const out_len = 3*1024;
-            var out_mem = Module._malloc(out_len);
+            var data_mem = _getInFilePtr();
             Module.HEAPU8.set(data, data_mem);
 
-            var outcount = _detectFirmware(data_mem, data.length, out_mem, out_len);
-            //console.log(outcount);
+            var outcount = _detectFirmware(data.length);
             if(outcount>0){
+                var out_mem = _getJsonPtr();
                 let s = "";
                 for (let i = 0; i < outcount; ++i){
                     s += String.fromCharCode(Module.getValue(out_mem+i));
@@ -41,7 +40,6 @@ class FirmwareControl extends Component {
             }
             var patchSet = new Map()
             var pp = patches["patches"];
-            //console.log(pp);
 
             pp.forEach((patch) => patchSet.set(patch.id,false) );
             this.setState({patchSet:patchSet, patches: pp})
