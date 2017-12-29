@@ -67,15 +67,36 @@ namespace Nikon_Patch
             //struct Patch D5100_0102_patches[] = {
             //    {.id=1, .level=Released, .name="Remove Time Based Video Restrictions", .blocks={2}} /*patch_1*/
             //};
+
             foreach (var pm in hashMap)
             {
                 var type = pm.Value.GetType().ToString().Split('.')[1];
 
-                sb.AppendLine($"struct Patch {type}_patches[] = {{");
-                var patches = pm.Value.Patches.AsEnumerable().ToList();
+                StringBuilder psb = new StringBuilder();
 
+                psb.AppendLine($"struct Patch {type}_patches[] = {{");
+                var patches = pm.Value.Patches.AsEnumerable().ToList();
+                int p_id = 0;
                 foreach (var p in patches)
                 {
+                    int c_id = 0;
+                    var patch_name = $"{type}_{p_id:000}";
+                    var change_names = new List<string>();
+                    foreach(var c in p.changes)
+                    {
+                        var change_name = $"{patch_name}_change_{c_id:000}";
+                        change_names.Add("&"+change_name);
+                        var bl = $"uint8_t {change_name}_b[] = {{{string.Join(",", c.orig.Select(v => string.Format("0x{0:X2}", v)))}}};";
+                        var al = $"uint8_t {change_name}_a[] = {{{string.Join(",", c.patch.Select(v => string.Format("0x{0:X2}", v)))}}};";
+                        var cl = $"struct Change {change_name} = CHANGE({c.block}, 0x{c.start:X6}, {change_name}_b, {change_name}_a);";
+                        sb.AppendLine(bl);
+                        sb.AppendLine(al);
+                        sb.AppendLine(cl);
+                        c_id++;
+                    }
+                    sb.AppendLine($"struct Change* {patch_name}[] = {{{string.Join(",", change_names)}}};");
+                    sb.AppendLine();
+
                     int idx = patches.IndexOf(p) + 1;
                     var sep = idx > 1 ? "," : "";
                     var status = p.PatchStatus.ToString();
@@ -91,13 +112,14 @@ namespace Nikon_Patch
                         }
                     }
 
-                    //var blocks = string.Join(",", p.incompatible.SelectMany(b => (patches.IndexOf(b) + 1).ToString()));
                     var blocks = string.Join(",", blocksS);
-                    var s = $"    {sep}{{.id = {idx}, .level = {status}, .name=\"{p.Name}\", .blocks={{{blocks}}}}}";
-                    sb.AppendLine(s);
+                    var s = $"    {sep}{{.id = {idx}, .level = {status}, .name=\"{p.Name}\", .blocks={{{blocks}}}, .changes={patch_name}, .changes_len=(sizeof({patch_name})/sizeof(struct Change*))}}";
+                    psb.AppendLine(s);
+                    p_id++;
                 }
-                sb.AppendLine("};");
-                sb.AppendLine();
+                psb.AppendLine("};");
+                psb.AppendLine();
+                sb.Append(psb.ToString());
             }
 
             // build patch sets
@@ -105,7 +127,8 @@ namespace Nikon_Patch
             foreach (var pm in hashMap)
             {
                 var type = pm.Value.GetType().ToString().Split('.')[1];
-                sb.AppendLine($"struct PatchSet {type}_ps = PATCHSET(\"{pm.Value.Model}\", \"{pm.Value.Version}\", {type}_patches);");
+                var firmware_type = pm.Value.p is Package ? 0 : 1;
+                sb.AppendLine($"struct PatchSet {type}_ps = PATCHSET(\"{pm.Value.Model}\", \"{pm.Value.Version}\", {type}_patches, {firmware_type});");
                 //struct PatchSet D5100_0102_ps = PATCHSET("D5100", "1.02", D5100_0102_patches);
             }
 
@@ -311,7 +334,7 @@ namespace Nikon_Patch
     public class Firmware
     {
         public ObservableCollection<PatchSet> Patches = new ObservableCollection<PatchSet>();
-        protected IPackage p = null;
+        internal IPackage p = null;
 
         public void LoadData(byte[] data)
         {
