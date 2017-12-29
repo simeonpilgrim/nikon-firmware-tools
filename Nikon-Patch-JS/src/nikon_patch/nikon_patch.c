@@ -9,10 +9,21 @@
 #include "patches.c"
 
 int GenerateOutput(struct PatchSet const * const ps);
+int CheckPatches(int select_len);
+void ApplyPatches(int select_len);
+void LoadBlocksOffsets();
 
 int main(int argc, char ** argv) {
   return 0;
 }
+
+struct BlockOffset {
+    int offset;
+    int length;
+};
+
+const uint32_t MAX_BLOCKS = 10;
+struct BlockOffset blocks_table[MAX_BLOCKS];
 
 const uint32_t patches_count = sizeof(patches)/sizeof(struct PatchMap);
 
@@ -60,16 +71,24 @@ extern int32_t EMSCRIPTEN_KEEPALIVE patch_firmare(int32_t select_len){
         return 0;
     }
 
-    for(int i = 0; i < select_len; i++){
-        printf("s: %d\n", selected[i]);
-    }
+    // for(int i = 0; i < select_len; i++){
+    //     printf("s: %d\n", selected[i]);
+    // }
     
     memcpy(output_file, input_file, data_length);
-    Xor(output_file, data_length);
-       
-    // check patches
-    // apply patches
-    //Xor(output_file, data_length);
+    if(selectedPatch->patch_type == 0){
+        Xor(output_file, data_length);
+    }
+    LoadBlocksOffsets();
+
+    if(CheckPatches(select_len) == 0){
+        return 0;
+    }
+    ApplyPatches(select_len);
+    // fix checksums
+    if(selectedPatch->patch_type == 0){
+        //Xor(output_file, data_length);
+    }
     return data_length;
 }
 
@@ -135,3 +154,89 @@ int GenerateOutput(struct PatchSet const * const ps){
     return outlen; 
 }
 
+int CheckPatches(int select_len){
+    for(int i = 0; i < select_len; i++){
+        int p_idx = selected[i];
+
+        for(int p=0; p<selectedPatch->patch_count; p++){
+            struct Patch* pp = &(selectedPatch->patches[p]);
+        
+            if(p_idx == pp->id){
+                //printf("patch %s\n",pp->name);
+                for(int ci=0;ci <pp->changes_len; ci++){
+                    //printf(" change %d\n",ci);
+                    struct Change *c = pp->changes[ci];
+                    uint32_t file_offset = blocks_table[c->file_idx].offset;
+                    for(int b=0; b<c->orig_len;b++){
+                        int base = file_offset + c->file_offset;
+                        if(output_file[base+b] != c->orig[b]){
+                            //printf("no match %d %d %d %d\n", base, b, output_file[base+b], c->orig[b] );
+                            return 0;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+void ApplyPatches(int select_len){
+    for(int i = 0; i < select_len; i++){
+        int p_idx = selected[i];
+        for(int p=0; p<selectedPatch->patch_count; p++){
+            struct Patch* pp = &(selectedPatch->patches[p]);
+        
+            if(p_idx == pp->id){
+                for(int ci=0;ci <pp->changes_len; ci++){
+                    struct Change *c = pp->changes[ci];
+                    uint32_t file_offset = blocks_table[c->file_idx].offset;
+                    for(int b=0; b<c->orig_len;b++){
+                        int base = file_offset + c->file_offset;
+                        output_file[base+b] = c->patch[b];
+                    }
+                }
+            }
+        }
+    }
+
+    return 1;
+}
+
+uint32_t ReadU32(uint8_t* data, uint32_t offset){
+    // big endian to little
+    uint32_t v = data[offset+3] + (data[offset+2]<<8)+(data[offset+1]<<16)+(data[offset]<<24);
+    return v;
+}
+
+void LoadBlocksOffsets(){
+    memset(blocks_table, 0, sizeof(blocks_table));
+
+    if(selectedPatch->patch_type == 1){
+        blocks_table[0].offset = 0;
+        blocks_table[0].length = data_length;
+    } else {
+        if( data_length > 0x30){
+            int pos = 0x20;
+            uint32_t count = ReadU32(output_file,pos+0);
+            printf("header count %d\n", count);
+            //uint32_t headerlen = ReadU32(output_file, pos + 4);
+            //uint32_t dummy1 = ReadU32(output_file, pos + 8);
+            //uint32_t dummy2 = ReadU32(output_file, pos + 12);
+            pos += 16;
+
+            if(data_length> ((count * 30 )+pos)){
+                for(int c = 0; c < count; c++){
+                    blocks_table[c].offset = ReadU32(output_file, pos + 16);
+                    blocks_table[c].length = ReadU32(output_file, pos + 20);
+                    printf("block %d %4x %4x\n", c, blocks_table[c].offset, blocks_table[c].length);
+                    //uint32_t hdummy1 = ReadU32(output_file, pos + 24);
+                    //uint32_t hdummy2 = ReadU32(output_file, pos + 28);
+
+                    pos += 32; 
+                }
+            }
+        }
+    }
+}
