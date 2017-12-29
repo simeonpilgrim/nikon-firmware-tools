@@ -44,7 +44,7 @@ class FirmwareControl extends Component {
             var pp = patches["patches"];
 
             pp.forEach((patch) => patchSet.set(patch.id,false) );
-            this.setState({patchSet:patchSet, patches: pp})
+            this.setState({patchSet:patchSet, patches: pp, filename: file.name})
         }.bind(this);
         fr.readAsArrayBuffer(file);
     }
@@ -65,7 +65,7 @@ class FirmwareControl extends Component {
             var outptr = _getOutFilePtr();
             var data = new Uint8Array(Module.HEAPU8.buffer, outptr, ret);
             var blob = new Blob([data], {type: 'binary/octet-stream'});
-            saveAs(blob, "patched.bin", true);
+            saveAs(blob, "patched_"+this.state.filename, true);
         }
     }
 
