@@ -12,6 +12,7 @@ int GenerateOutput(struct PatchSet const * const ps);
 int CheckPatches(int select_len);
 void ApplyPatches(int select_len);
 void LoadBlocksOffsets();
+void CorrectCrcs();
 
 int main(int argc, char ** argv) {
   return 0;
@@ -85,9 +86,9 @@ extern int32_t EMSCRIPTEN_KEEPALIVE patch_firmare(int32_t select_len){
         return 0;
     }
     ApplyPatches(select_len);
-    // fix checksums
+    CorrectCrcs();
     if(selectedPatch->patch_type == 0){
-        //Xor(output_file, data_length);
+        Xor(output_file, data_length);
     }
     return data_length;
 }
@@ -228,13 +229,53 @@ void LoadBlocksOffsets(){
                 for(int c = 0; c < count; c++){
                     blocks_table[c].offset = ReadU32(output_file, pos + 16);
                     blocks_table[c].length = ReadU32(output_file, pos + 20);
-                    printf("block %d %4x %4x\n", c, blocks_table[c].offset, blocks_table[c].length);
+                    //printf("block %d %4x %4x\n", c, blocks_table[c].offset, blocks_table[c].length);
                     //uint32_t hdummy1 = ReadU32(output_file, pos + 24);
                     //uint32_t hdummy2 = ReadU32(output_file, pos + 28);
 
                     pos += 32; 
                 }
             }
+        }
+    }
+}
+
+uint32_t CrcBig(uint8_t* data, int len)
+{
+    uint32_t rem = 0x0000;
+
+    for (uint32_t i = 0; i < len; i++)
+    {
+        rem = rem ^ (data[i] << 8);
+        for (uint32_t j = 0; j < 8; j++)
+        {
+            if ((rem & 0x8000) != 0)
+            {
+                rem = (rem << 1) ^ 0x1021;
+            }
+            else
+            {
+                rem = rem << 1;
+
+            }
+            rem = rem & 0xFFFF; // Trim remainder to 16 bits
+        }
+    }
+
+    return rem;
+}
+
+void CorrectCrcs(){
+    for(int i =0; i<MAX_BLOCKS;i++){
+        if( blocks_table[i].length > 2){
+            uint8_t* data = &output_file[blocks_table[i].offset];
+            uint32_t len = blocks_table[i].length;
+
+            uint32_t checksum = CrcBig(data, len-2);
+            
+            data[len - 2] = ((checksum >> 8) & 0xff);
+            data[len - 1] = ((checksum >> 0) & 0xff);
+            
         }
     }
 }
