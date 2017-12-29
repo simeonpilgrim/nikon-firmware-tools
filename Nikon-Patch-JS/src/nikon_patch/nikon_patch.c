@@ -200,8 +200,6 @@ void ApplyPatches(int select_len){
             }
         }
     }
-
-    return 1;
 }
 
 uint32_t ReadU32(uint8_t* data, uint32_t offset){
