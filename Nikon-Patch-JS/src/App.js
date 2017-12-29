@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
-/*global _detectFirmware _getInFilePtr _getJsonPtr _getMaxFileSize Module*/
+import { saveAs } from 'file-saver';
+
+/*global _detectFirmware _patch_firmare _getInFilePtr _getOutFilePtr _getJsonPtr _getMaxFileSize _getSelectPtr Module*/
 
 
 class FirmwareControl extends Component {
@@ -48,7 +50,23 @@ class FirmwareControl extends Component {
     }
     
     handleSaveClick(){
+        var selected = [];
+        for (var [key, value] of this.state.patchSet.entries()) {
+            if( value){
+                selected.push(parseInt(key,10));
+            }
+        }
+        var select_ptr = _getSelectPtr();
+        Module.HEAPU32.set(selected, select_ptr/4);
 
+        var ret = _patch_firmare(selected.length);
+
+        if(ret>0){
+            var outptr = _getOutFilePtr();
+            var data = new Uint8Array(Module.HEAPU8.buffer, outptr, ret);
+            var blob = new Blob([data], {type: 'binary/octet-stream'});
+            saveAs(blob, "patched.bin", true);
+        }
     }
 
     handlePatchClick(id, set){
