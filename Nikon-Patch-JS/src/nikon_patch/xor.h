@@ -1,0 +1,1 @@
+void Xor(uint8_t* data, uint32_t datalen);

@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <emscripten/emscripten.h>
 #include "md5.h"
+#include "xor.h"
 #include "patches.h"
 #include "patches.c"
 
@@ -18,10 +20,15 @@ const uint32_t MAX_OUTPUT = 4*1024;
 char output[MAX_OUTPUT];
 
 const int32_t MAX_FILE = 30*1024*1024;
+uint32_t data_length = 0;
 uint8_t input_file[MAX_FILE];
 uint8_t output_file[MAX_FILE];
 
+const uint32_t MAX_SELECT = 20;
+uint32_t selected[MAX_SELECT];
+
 char const * const PatchLevelStr[] = {"DevOnly","Alpha","Beta","Released"};
+struct PatchSet const * selectedPatch = NULL;
 
 extern int32_t EMSCRIPTEN_KEEPALIVE getMaxFileSize(){
     return MAX_FILE;
@@ -35,9 +42,41 @@ extern uint8_t* EMSCRIPTEN_KEEPALIVE getInFilePtr(){
 extern uint8_t* EMSCRIPTEN_KEEPALIVE getOutFilePtr(){
     return output_file;
 }
+extern uint32_t* EMSCRIPTEN_KEEPALIVE getSelectPtr(){
+    return selected;
+}
+
+extern int32_t EMSCRIPTEN_KEEPALIVE patch_firmare(int32_t select_len){
+    if( selectedPatch == NULL){
+        printf("selectedPatch is NULL\n");
+        return 0;
+    }
+    if( data_length < 1 || data_length > MAX_FILE){
+        printf("data_length is out of range: %d\n", data_length);
+        return 0;
+    }
+    if(select_len < 1 || select_len > MAX_SELECT){
+        printf("select_len is out of range: %d\n", select_len);
+        return 0;
+    }
+
+    for(int i = 0; i < select_len; i++){
+        printf("s: %d\n", selected[i]);
+    }
+    
+    memcpy(output_file, input_file, data_length);
+    Xor(output_file, data_length);
+       
+    // check patches
+    // apply patches
+    //Xor(output_file, data_length);
+    return data_length;
+}
 
 extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
-    //printf("ptr_check %p %d\n",ptr,data_len);
+    selectedPatch = NULL;
+    data_length = 0;
+    //printf("ptr_check %p %d\n",data_len);
     if(data_len > 0x30){
         MD5_CTX mdContext;
 
@@ -56,6 +95,8 @@ extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
             }
             if (y == 16){
                 struct PatchSet const * const ps = patches[i].patches;
+                selectedPatch = ps;
+                data_length = data_len;
                 return GenerateOutput(ps);
             }
         }
