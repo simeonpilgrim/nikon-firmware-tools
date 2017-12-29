@@ -6,6 +6,8 @@
 #include "patches.h"
 #include "patches.c"
 
+int GenerateOutput(struct PatchSet const * const ps);
+
 int main(int argc, char ** argv) {
   return 0;
 }
@@ -54,36 +56,41 @@ extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
             }
             if (y == 16){
                 struct PatchSet const * const ps = patches[i].patches;
-                //printf("match \n");  
-                int outlen = 0;
-                outlen += sprintf(&output[outlen],"{\"model\":\"%s\", \"version\":\"%s\", \"patches\":[", 
-                    ps->model, ps->version);
-                /* do all the patches */
-                for(int p=0; p<ps->patch_count; p++){
-                    if( p > 0){
-                        outlen += sprintf(&output[outlen],",");
-                    }
-                    struct Patch* pp = &(ps->patches[p]);
-                    outlen += sprintf(&output[outlen],"{\"id\":\"%d\", \"name\":\"%s\", \"level\":\"%s\", \"blocks\":[",
-                        pp->id, pp->name, PatchLevelStr[pp->level]);
-                    for(int b=0; b<MAX_BLOCK; b++){
-                        int v = pp->blocks[b];
-                        if( v > 0 ){
-                            if(b > 0){
-                                outlen += sprintf(&output[outlen],",");
-                            }
-                            outlen += sprintf(&output[outlen],"\"%d\"", v);
-                        }              
-                    }
-                    outlen += sprintf(&output[outlen],"]}");         
-                }
-                outlen += sprintf(&output[outlen],"]}");
-                output[outlen] = '\0';
-                //printf("output len: %d\n",outlen);
-                //printf("%s\n", output);
-                return outlen;        
+                return GenerateOutput(ps);
             }
         }
     }
     return 0;
 }
+
+int GenerateOutput(struct PatchSet const * const ps){
+    //printf("match \n");  
+    int outlen = 0;
+    outlen += sprintf(&output[outlen],"{\"model\":\"%s\", \"version\":\"%s\", \"patches\":[", 
+        ps->model, ps->version);
+    /* do all the patches */
+    for(int p=0; p<ps->patch_count; p++){
+        if( p > 0){
+            outlen += sprintf(&output[outlen],",");
+        }
+        struct Patch* pp = &(ps->patches[p]);
+        outlen += sprintf(&output[outlen],"{\"id\":\"%d\", \"name\":\"%s\", \"level\":\"%s\", \"blocks\":[",
+            pp->id, pp->name, PatchLevelStr[pp->level]);
+        for(int b=0; b<MAX_BLOCK; b++){
+            int v = pp->blocks[b];
+            if( v > 0 ){
+                if(b > 0){
+                    outlen += sprintf(&output[outlen],",");
+                }
+                outlen += sprintf(&output[outlen],"\"%d\"", v);
+            }              
+        }
+        outlen += sprintf(&output[outlen],"]}");         
+    }
+    outlen += sprintf(&output[outlen],"]}");
+    output[outlen] = '\0';
+    //printf("output len: %d\n",outlen);
+    //printf("%s\n", output);
+    return outlen; 
+}
+
