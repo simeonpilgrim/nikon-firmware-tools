@@ -24,7 +24,7 @@ class FirmwareControl extends Component {
         if (file.size > maxFileSize)
             return;
 
-        var patches = {"model":"Unknown", "version":"Unknown2", "patches":[]};
+        var patches = {"model":"Unknown", "version":"Unknown", "patches":[]};
         var fr = new FileReader();
         fr.onload = function () {
             var data = new Uint8Array(fr.result);
