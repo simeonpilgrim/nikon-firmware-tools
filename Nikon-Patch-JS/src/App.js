@@ -42,9 +42,11 @@ class FirmwareControl extends Component {
             }
             var patchSet = new Map()
             var pp = patches["patches"];
+            var _model = patches["model"];
+            var _version = patches["version"];
 
             pp.forEach((patch) => patchSet.set(patch.id,false) );
-            this.setState({patchSet:patchSet, patches: pp, filename: file.name})
+            this.setState({patchSet:patchSet, patches: pp, filename: file.name, model: _model, version: _version})
         }.bind(this);
         fr.readAsArrayBuffer(file);
     }
@@ -84,20 +86,31 @@ class FirmwareControl extends Component {
     }
 
     render(){
-        const content = this.state.patches.map((patch) =>
+        let content = null;
+        if(this.state.patches.length > 0){
+            content = <table><tbody>
+                {this.state.patches.map((patch) =>
             <PatchRow key={patch.id.toString()} 
                 id={patch.id}
                 name={patch.name} 
                 set={this.state.patchSet.get(patch.id)}
-                onTrySet={this.handlePatchClick} />
-        );
+                onTrySet={this.handlePatchClick} />)}
+            </tbody></table>;
+        } else {
+            if(this.state.model === "Unknown"){
+                content = <label>This is ether not a Nikon firmware .bin file or it is not recognised by the Patch Tool</label>;
+            }else if(this.state.model){
+                content = <label>This firmware file is recognised, but the are no patches availible for this Model/Version</label>;
+            }
+        }
         return (<div> 
             <input type="file" id="inputfile" name="select file" accept=".bin" onChange={this.handleSelectClick} />
             <button onClick={this.handleSaveClick} disabled={!this.state.hasPatchesSelect}>Save Patched Firmware File</button>
             <hr/>
-            <table><tbody>
-                {content}
-            </tbody></table>
+            <label>Model: {this.state.model}&nbsp;</label>
+            <label>Version: {this.state.version}</label>
+            <hr/>
+            {content}
             <hr/>
         </div>
         );
