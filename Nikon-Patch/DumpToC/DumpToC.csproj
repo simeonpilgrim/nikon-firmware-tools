@@ -75,7 +75,6 @@
     <Compile Include="..\Nikon-Patch\D800.cs" />
     <Compile Include="..\Nikon-Patch\D810.cs" />
     <Compile Include="..\Nikon-Patch\MD5.cs" />
-    <Compile Include="..\Nikon-Patch\MD5CryptoServiceProvider.cs" />
     <Compile Include="..\Nikon-Patch\PatchControl.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

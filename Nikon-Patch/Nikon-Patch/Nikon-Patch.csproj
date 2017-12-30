@@ -103,7 +103,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MD5.cs" />
-    <Compile Include="MD5CryptoServiceProvider.cs" />
     <Compile Include="PatchControl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
