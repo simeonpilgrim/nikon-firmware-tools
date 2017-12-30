@@ -127,8 +127,8 @@ class PatchRow extends Component {
     }
     render() {
         return (
-            <tr className="PatchRow">
-                <td><button onClick={this.handleClick}>{this.props.set ? '*': '_'}</button></td>
+            <tr className="PatchRow" onClick={this.handleClick}>
+                <td><button>{this.props.set ? '*': '_'}</button></td>
                 <td>{this.props.name}</td>
             </tr>
         );
