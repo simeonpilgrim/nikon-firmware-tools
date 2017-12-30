@@ -1,11 +1,4 @@
-﻿using Nikon_Patch;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nikon_Patch
+﻿namespace Nikon_Patch
 {
     public enum PatchLevel
     {

@@ -1,14 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Security.Cryptography;
-using System.Linq.Expressions;
-using System.Diagnostics;
-using System.Text;
-using System.Collections.ObjectModel;
-
-
-namespace Nikon_Patch
+﻿namespace Nikon_Patch
 {
     class D5100_0101 : Firmware
     {
