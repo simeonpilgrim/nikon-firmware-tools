@@ -7,7 +7,6 @@
             p = new Package();
             Model = "D7100";
             Version = "1.01";
-
         }
     }
 
@@ -18,7 +17,16 @@
             p = new Package();
             Model = "D7100";
             Version = "1.02";
+        }
+    }
 
+    class D7100_0103 : Firmware
+    {
+        public D7100_0103()
+        {
+            p = new Package();
+            Model = "D7100";
+            Version = "1.03";
         }
     }
 }

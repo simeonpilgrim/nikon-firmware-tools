@@ -31,7 +31,7 @@ const uint32_t patches_count = sizeof(patches)/sizeof(struct PatchMap);
 const uint32_t MAX_OUTPUT = 4*1024;
 char output[MAX_OUTPUT];
 
-const int32_t MAX_FILE = 30*1024*1024;
+const int32_t MAX_FILE = 50*1024*1024;
 uint32_t data_length = 0;
 uint8_t input_file[MAX_FILE];
 uint8_t output_file[MAX_FILE];

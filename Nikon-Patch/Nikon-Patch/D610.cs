@@ -116,4 +116,14 @@
 			Patches.Add(new PatchSet(PatchLevel.Beta, "True Dark Current - Menu based", patch_dark_current_menu));
 		}
 	}
+
+    class D610_0102 : Firmware
+    {
+        public D610_0102()
+        {
+            p = new Package();
+            Model = "D610";
+            Version = "1.02";
+        }
+    }
 }

@@ -64,13 +64,37 @@
     <Compile Include="..\Nikon-Patch\D300s.cs" />
     <Compile Include="..\Nikon-Patch\D3100.cs" />
     <Compile Include="..\Nikon-Patch\D3200.cs" />
+    <Compile Include="..\Nikon-Patch\D3300.cs">
+      <Link>D3300.cs</Link>
+    </Compile>
+    <Compile Include="..\Nikon-Patch\D3400.cs">
+      <Link>D3400.cs</Link>
+    </Compile>
     <Compile Include="..\Nikon-Patch\D4.cs" />
+    <Compile Include="..\Nikon-Patch\D5.cs">
+      <Link>D5.cs</Link>
+    </Compile>
+    <Compile Include="..\Nikon-Patch\D500.cs">
+      <Link>D500.cs</Link>
+    </Compile>
     <Compile Include="..\Nikon-Patch\D5100.cs" />
     <Compile Include="..\Nikon-Patch\D5200.cs" />
+    <Compile Include="..\Nikon-Patch\D5300.cs">
+      <Link>D5300.cs</Link>
+    </Compile>
+    <Compile Include="..\Nikon-Patch\D5500.cs">
+      <Link>D5500.cs</Link>
+    </Compile>
+    <Compile Include="..\Nikon-Patch\D5600.cs">
+      <Link>D5600.cs</Link>
+    </Compile>
     <Compile Include="..\Nikon-Patch\D600.cs" />
     <Compile Include="..\Nikon-Patch\D610.cs" />
     <Compile Include="..\Nikon-Patch\D7000.cs" />
     <Compile Include="..\Nikon-Patch\D7100.cs" />
+    <Compile Include="..\Nikon-Patch\D7200.cs">
+      <Link>D7200.cs</Link>
+    </Compile>
     <Compile Include="..\Nikon-Patch\D750.cs" />
     <Compile Include="..\Nikon-Patch\D800.cs" />
     <Compile Include="..\Nikon-Patch\D810.cs" />

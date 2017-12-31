@@ -72,6 +72,13 @@
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="D3300.cs" />
+    <Compile Include="D3400.cs" />
+    <Compile Include="D5.cs" />
+    <Compile Include="D500.cs" />
+    <Compile Include="D5300.cs" />
+    <Compile Include="D5500.cs" />
+    <Compile Include="D5600.cs" />
     <Compile Include="D610.cs" />
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
@@ -94,6 +101,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="D7100.cs" />
+    <Compile Include="D7200.cs" />
     <Compile Include="D750.cs" />
     <Compile Include="D800.cs">
       <SubType>Code</SubType>

@@ -88,4 +88,14 @@
             Version = "1.01";
         }
     }
+
+    class D4S_0132 : Firmware
+    {
+        public D4S_0132()
+        {
+            p = new Package();
+            Model = "D4S";
+            Version = "1.32";
+        }
+    }
 }

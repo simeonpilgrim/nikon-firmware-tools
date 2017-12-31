@@ -276,4 +276,14 @@
             Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
         }
     }
+
+    class D3200_0104 : Firmware
+    {
+        public D3200_0104()
+        {
+            p = new Package();
+            Model = "D3200";
+            Version = "1.04";
+        }
+    }
 }

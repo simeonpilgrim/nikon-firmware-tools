@@ -328,4 +328,13 @@
         }
     }
 
+    class D7000_0105 : Firmware
+    {
+        public D7000_0105()
+        {
+            p = new Package();
+            Model = "D7000";
+            Version = "1.05";
+        }
+    }
 }
