@@ -84,6 +84,8 @@ namespace Nikon_Patch
             //struct Patch D5100_0102_patches[] = {
             //    {.id=1, .level=Released, .name="Remove Time Based Video Restrictions", .blocks={2}} /*patch_1*/
             //};
+            sb.AppendLine("#include <stdint.h>");
+            sb.AppendLine("#include \"patches.h\"");
 
             foreach (var pm in hashMap)
             {
@@ -165,7 +167,7 @@ namespace Nikon_Patch
                 //     {.id = 1, .hash = {0x22, 0x14, 0x21, 0x0A, 0xD2, 0xC6, 0x5B, 0x5E, 0x85, 0x78, 0x99, 0xCA, 0x79, 0xF3, 0xDA, 0x19}, .patches=&D5100_0102_ps},
             }
             sb.AppendLine("};");
-
+            sb.AppendLine("const uint32_t patches_count = sizeof(patches)/sizeof(struct PatchMap);");
 
             using (var s = File.CreateText(@"C:\temp\patch.c"))
             {

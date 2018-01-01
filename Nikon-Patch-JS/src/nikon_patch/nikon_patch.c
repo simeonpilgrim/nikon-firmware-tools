@@ -6,7 +6,6 @@
 #include "md5.h"
 #include "xor.h"
 #include "patches.h"
-#include "patches.c"
 
 int GenerateOutput(struct PatchSet const * const ps);
 int CheckPatches(int select_len);
@@ -25,8 +24,6 @@ struct BlockOffset {
 
 const uint32_t MAX_BLOCKS = 10;
 struct BlockOffset blocks_table[MAX_BLOCKS];
-
-const uint32_t patches_count = sizeof(patches)/sizeof(struct PatchMap);
 
 const uint32_t MAX_OUTPUT = 4*1024;
 char output[MAX_OUTPUT];
