@@ -45,6 +45,24 @@ ga('send', 'pageview');
   </head>
   <body>
 	<script type="text/javascript" src="nikon_patch.js"></script>
+    <script type="text/javascript">
+        Module['onRuntimeInitialized'] = function() { 
+            var loading = document.getElementById('webasmloading');
+            loading.style.display = 'none';
+            var rootwrap = document.getElementById('rootwrap');
+            rootwrap.style.display = 'block';
+            var ret = _GeneratePatchMatrix();
+            if(ret>0){
+                var outptr = _getOutFilePtr();
+                let s = "";
+                for (let i = 0; i < ret; ++i){
+                    s += String.fromCharCode(Module.getValue(outptr+i));
+                }
+                var featurelist = document.getElementById('featurelist');
+                featurelist.innerHTML = s;
+            }
+        };
+    </script>
     <div style="width: 1000px; vertical-align: top">
         <h2>
             <a href="http://simeonpilgrim.com/blog/nikon-patching-help/">Patching How-To Help</a>
@@ -61,8 +79,8 @@ ga('send', 'pageview');
 	    </noscript>
 
     
-
-    <div id="root" style="vertical-align: top;"></div>
+        <div id="rootwrap" hidden="true">
+            <div id="root" style="vertical-align: top;"></div>
             <div>
                 <p>
                     <span style="font-weight: bold;">WARNING: ALL THAT YOU DO IS AT YOUR OWN RISK</span>.
@@ -74,6 +92,11 @@ ga('send', 'pageview');
                     for such use or abuse of your material. By installing or using a modified firmware,
                     you accept the terms of this disclaimer.</p>
             </div>
+            <div id="featurelist"></div>
+        </div>
+        <div id="webasmloading">Waiting for WebAssembley code to complete loading.... Which will not work on IE 11 and earlier.</div>
+        
+
         </div>
         <div style="border-style: dashed; border-width: 2px; border-color: inherit; height: 100%; width: 350px; float: right; vertical-align: top; padding-bottom: 3px;">
             <div style="width: 340px; padding: 0px 10px 0px 10px;">

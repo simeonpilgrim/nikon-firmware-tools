@@ -152,6 +152,38 @@ int GenerateOutput(struct PatchSet const * const ps){
     return outlen; 
 }
 
+extern int32_t EMSCRIPTEN_KEEPALIVE  GeneratePatchMatrix(){
+    int outlen = 0;
+    char* outp = (char*)output_file;
+    for(int f = 0; f<patches_count; f++){
+        struct PatchMap* pm = &patches[f];
+        struct PatchSet* ps = pm->patches;
+    
+        outlen += sprintf(&outp[outlen],"<li>%s %s<ul>\n", ps->model, ps->version);
+        for(int p=0; p<ps->patch_count; p++){
+            struct Patch* pp = &(ps->patches[p]);
+            switch (pp->level)
+            {
+            case Alpha:
+                outlen += sprintf(&outp[outlen],"<li>Alpha - %s</li>\n", pp->name); 
+                break;
+            case Beta:
+                outlen += sprintf(&outp[outlen],"<li>Beta - %s</li>\n", pp->name); 
+                break;
+            case Released:
+                outlen += sprintf(&outp[outlen],"<li>%s</li>\n", pp->name); 
+                break;
+            default:
+            case DevOnly:
+                // don't display this.
+                break;
+            }
+        }
+        outlen += sprintf(&outp[outlen],"</ul></li>\n");    
+    }
+    return outlen;
+}
+
 int CheckPatches(int select_len){
     for(int i = 0; i < select_len; i++){
         int p_idx = selected[i];
