@@ -17,3 +17,18 @@
   font-size: large;
 }
 
+tr {
+  text-align: left;
+}
+
+.Beta {
+  background-color: rgb(240, 179, 12);
+}
+
+.Alpha {
+  background-color: rgb(255, 51, 0);
+}
+
+.DevOnly {
+  visibility: collapse;
+}

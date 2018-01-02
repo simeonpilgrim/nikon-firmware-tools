@@ -11,8 +11,36 @@ class FirmwareControl extends Component {
         this.handleSelectClick = this.handleSelectClick.bind(this);
         this.handleSaveClick = this.handleSaveClick.bind(this);
         this.handlePatchClick = this.handlePatchClick.bind(this);
+        this.handleAcceptClick = this.handleAcceptClick.bind(this);
         var patchSet = new Map()
-        this.state = {hasPatchesSelect: false, patchSet:patchSet, patches: []};
+        this.state = {hasPatchesSelect: false, patchSet:patchSet, patches: [], warnShow: false, warnAccept: false};
+    }
+
+    checkButtonState(s, wa){
+        var a = false;
+        var maxlevel = "";
+        var ws = this.state.warnShow;
+        s.forEach((v,k) => {
+            a= a || v;
+            var patch = this.state.patches.find((p)=>p.id===k);
+            if(v && patch.level!=="Released"){
+                maxlevel = maxlevel>patch.level?maxlevel:patch.level;
+            }
+        });
+        if(a === false){
+            wa = false;
+        }
+        if(maxlevel === ""){
+            ws = false;
+        }else{
+            ws = true;
+            a = a & wa;
+        }
+        this.setState({hasPatchesSelect:a, warnShow: ws, warnAccept: wa});
+    }
+
+    handleAcceptClick() {
+        this.checkButtonState(this.state.patchSet, true);
     }
 
     handleSelectClick() {
@@ -72,7 +100,9 @@ class FirmwareControl extends Component {
     }
 
     handlePatchClick(id, set){
-        var s = this.state.patchSet
+        var s = this.state.patchSet;
+        var wa = this.state.warnAccept;
+        
         s.set(id,set)
         if(set){
             var patch = this.state.patches.find((p)=>p.id===id);
@@ -80,9 +110,8 @@ class FirmwareControl extends Component {
                 patch.blocks.forEach((b)=>s.set(b,false));
             }
         }
-        var a = false
-        s.forEach((v) => a|=v)
-        this.setState({patchSet:s, hasPatchesSelect:a});
+        this.checkButtonState(s, wa);
+        this.setState({patchSet:s});
     }
 
     render(){
@@ -92,7 +121,8 @@ class FirmwareControl extends Component {
                 {this.state.patches.map((patch) =>
             <PatchRow key={patch.id.toString()} 
                 id={patch.id}
-                name={patch.name} 
+                name={patch.name}
+                level={patch.level}
                 set={this.state.patchSet.get(patch.id)}
                 onTrySet={this.handlePatchClick} />)}
             </tbody></table>;
@@ -103,6 +133,15 @@ class FirmwareControl extends Component {
                 content = <label>This firmware file is recognised, but the are no patches availible for this Model/Version</label>;
             }
         }
+        let warnContext = null;
+        if(this.state.warnShow){
+            warnContext = <div>
+                <label>You have selected Beta or Alpha level patches.</label>
+                <ul><li class="Beta">Beta level patches might not work correctly but can be recovered from.</li>
+                <li class="Alpha">Alpha level patches might not work AND might not be recoverable from. These could damage your camera!</li></ul>
+                <button onClick={this.handleAcceptClick} disabled={this.state.warnAccept}>{this.state.warnAccept?"Accepted":"Accept"}</button>
+            </div>
+        }
         return (<div> 
             <input type="file" id="inputfile" name="select file" accept=".bin" onChange={this.handleSelectClick} />
             <button onClick={this.handleSaveClick} disabled={!this.state.hasPatchesSelect}>Save Patched Firmware File</button>
@@ -112,6 +151,7 @@ class FirmwareControl extends Component {
             <hr/>
             {content}
             <hr/>
+            {warnContext}
         </div>
         );
     }
@@ -127,7 +167,7 @@ class PatchRow extends Component {
     }
     render() {
         return (
-            <tr className="PatchRow" onClick={this.handleClick}>
+            <tr className={this.props.level} onClick={this.handleClick}>
                 <td><button>{this.props.set ? '*': '_'}</button></td>
                 <td>{this.props.name}</td>
             </tr>
