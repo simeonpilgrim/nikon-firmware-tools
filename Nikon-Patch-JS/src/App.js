@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 import { saveAs } from 'file-saver';
 
-/*global _detectFirmware _patch_firmare _getInFilePtr _getOutFilePtr _getJsonPtr _getMaxFileSize _getSelectPtr Module*/
+/*global _detectFirmware _patch_firmare _getInFilePtr _getOutFilePtr _getJsonPtr _getMaxFileSize _getSelectPtr Module EventFunction*/
 
 
 class FirmwareControl extends Component {
@@ -45,9 +45,11 @@ class FirmwareControl extends Component {
 
     handleSelectClick() {
         var inputfile = document.getElementById('inputfile');
+    
         if (inputfile.files.length === 0)
                 return;
         var file = inputfile.files[0];
+        EventFunction("TryFile",file.name);
         var maxFileSize = _getMaxFileSize();
         if (file.size > maxFileSize)
             return;
@@ -55,6 +57,7 @@ class FirmwareControl extends Component {
         var patches = {"model":"Unknown", "version":"Unknown", "patches":[]};
         var fr = new FileReader();
         fr.onload = function () {
+            EventFunction("OpenFile",file.name);
             var data = new Uint8Array(fr.result);
             var data_mem = _getInFilePtr();
             Module.HEAPU8.set(data, data_mem);
@@ -92,6 +95,7 @@ class FirmwareControl extends Component {
         var ret = _patch_firmare(selected.length);
 
         if(ret>0){
+            EventFunction("SaveFile",selected.toString());
             var outptr = _getOutFilePtr();
             var data = new Uint8Array(Module.HEAPU8.buffer, outptr, ret);
             var blob = new Blob([data], {type: 'binary/octet-stream'});
