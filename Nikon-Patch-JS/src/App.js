@@ -77,7 +77,7 @@ class FirmwareControl extends Component {
             var _version = patches["version"];
 
             pp.forEach((patch) => patchSet.set(patch.id,false) );
-            this.setState({patchSet:patchSet, patches: pp, filename: file.name, model: _model, version: _version})
+            this.setState({patchSet:patchSet, patches: pp, filename: file.name, model: _model, version: _version, warnShow: false, warnAccept: false})
         }.bind(this);
         fr.readAsArrayBuffer(file);
     }
