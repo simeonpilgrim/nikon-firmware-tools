@@ -2640,7 +2640,16 @@ struct Patch D7000_0104_patches[] = {
     ,{.id = 5, .level = Released, .name="Video 1080 24fps HQ 64mbps NQ old HQ", .blocks={3,4}, .changes=D7000_0104_004, .changes_len=(sizeof(D7000_0104_004)/sizeof(struct Change*))}
 };
 
+uint8_t D7000_0105_000_change_000_b[] = {0xE4,0x03};
+uint8_t D7000_0105_000_change_000_a[] = {0xE0,0x03};
+struct Change D7000_0105_000_change_000 = CHANGE(1, 0x0741FE, D7000_0105_000_change_000_b, D7000_0105_000_change_000_a);
+uint8_t D7000_0105_000_change_001_b[] = {0xE2,0x0B};
+uint8_t D7000_0105_000_change_001_a[] = {0xE0,0x0B};
+struct Change D7000_0105_000_change_001 = CHANGE(1, 0x074D28, D7000_0105_000_change_001_b, D7000_0105_000_change_001_a);
+struct Change* D7000_0105_000[] = {&D7000_0105_000_change_000,&D7000_0105_000_change_001};
+
 struct Patch D7000_0105_patches[] = {
+    {.id = 1, .level = Beta, .name="Remove Time Based Video Restrictions", .blocks={}, .changes=D7000_0105_000, .changes_len=(sizeof(D7000_0105_000)/sizeof(struct Change*))}
 };
 
 struct Patch D7100_0101_patches[] = {

@@ -330,11 +330,18 @@
 
     class D7000_0105 : Firmware
     {
+        Patch[] patch_1 = {
+             new Patch(1, 0x741FE, new byte[] { 0xE4, 0x03 }, new byte[] { 0xE0, 0x03 }), // unlimited recording 1/2
+             new Patch(1, 0x74D28, new byte[] { 0xE2, 0x0B }, new byte[] { 0xE0, 0x0B }), // unlimited recording 2/2
+         };
+
         public D7000_0105()
         {
             p = new Package();
             Model = "D7000";
             Version = "1.05";
+
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Remove Time Based Video Restrictions", patch_1));
         }
     }
 }
