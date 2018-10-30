@@ -33,9 +33,9 @@ static make_vtab(loc, name, type)
     MakeNameEx(loc, sprintf("%s_%s_vtab", type, name), 0);
     
     try_make_func(Dword(loc), sprintf("%s_%s_create", type, name), "");
-    try_make_func(Dword(loc), sprintf("%s_%s_init", type, name), "");
-    try_make_func(Dword(loc), sprintf("%s_%s_start", type, name), "");
-    try_make_func(Dword(loc), sprintf("%s_%s_4", type, name), "");
+    try_make_func(Dword(loc+4), sprintf("%s_%s_init", type, name), "");
+    try_make_func(Dword(loc+8), sprintf("%s_%s_start", type, name), "");
+    try_make_func(Dword(loc+0xc), sprintf("%s_%s_4", type, name), "");
 }
 
 static print_op(op)
