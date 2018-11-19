@@ -69,7 +69,7 @@ namespace Nikon_Decode
                         0xf9, 0xcc, 0x50, 0x44, 0xff, 0x80, 0x58, 0xf7, 0xc9, 0x60, 0x6b, 0x53, 0xa7, 0x85, 0xee, 0x1c, 
                         };
 
-        static void DecodePackageFile(string fileName)
+        static void DecodePackageFile(string fileName, int decodeOffset)
         {
             if (File.Exists(fileName))
             {
@@ -84,13 +84,13 @@ namespace Nikon_Decode
                     int count = (int)br.BaseStream.Length;
                     byte[] data = br.ReadBytes(count);
 
-                    for (int i = 0; i < count; i++)
+                    for (int i = 0; i < (count-decodeOffset); i++)
                     {
                         int ord1_idx = i & 0xFF;
                         int ord2_idx = (i >> 8) & 0xFF;
                         int ord3_idx = (i >> 16) & 0xFF;
 
-                        int b = data[i] ^ Xor_Ord1[ord1_idx] ^ Xor_Ord2[ord2_idx] ^ Xor_Ord3[ord3_idx];
+                        int b = data[i+decodeOffset] ^ Xor_Ord1[ord1_idx] ^ Xor_Ord2[ord2_idx] ^ Xor_Ord3[ord3_idx];
 
                         data[i] = (byte)b;
                     }
