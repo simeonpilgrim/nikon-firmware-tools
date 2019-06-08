@@ -3483,6 +3483,165 @@ struct Patch D800_0110_patches[] = {
     ,{.id = 6, .level = Released, .name="True Dark Current - Menu based", .blocks={}, .changes=D800_0110_005, .changes_len=(sizeof(D800_0110_005)/sizeof(struct Change*))}
 };
 
+uint8_t D800_0111_000_change_000_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_000_change_000_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_000 = CHANGE(1, 0x021E2E, D800_0111_000_change_000_b, D800_0111_000_change_000_a);
+uint8_t D800_0111_000_change_001_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_000_change_001_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_001 = CHANGE(1, 0x021E34, D800_0111_000_change_001_b, D800_0111_000_change_001_a);
+uint8_t D800_0111_000_change_002_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_000_change_002_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_002 = CHANGE(1, 0x021E42, D800_0111_000_change_002_b, D800_0111_000_change_002_a);
+uint8_t D800_0111_000_change_003_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_000_change_003_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_003 = CHANGE(1, 0x021E48, D800_0111_000_change_003_b, D800_0111_000_change_003_a);
+uint8_t D800_0111_000_change_004_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_000_change_004_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_004 = CHANGE(1, 0x021E5A, D800_0111_000_change_004_b, D800_0111_000_change_004_a);
+uint8_t D800_0111_000_change_005_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_000_change_005_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_005 = CHANGE(1, 0x021E60, D800_0111_000_change_005_b, D800_0111_000_change_005_a);
+uint8_t D800_0111_000_change_006_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_000_change_006_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_006 = CHANGE(1, 0x021E6E, D800_0111_000_change_006_b, D800_0111_000_change_006_a);
+uint8_t D800_0111_000_change_007_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_000_change_007_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_007 = CHANGE(1, 0x021E74, D800_0111_000_change_007_b, D800_0111_000_change_007_a);
+uint8_t D800_0111_000_change_008_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_000_change_008_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_008 = CHANGE(1, 0x021EA6, D800_0111_000_change_008_b, D800_0111_000_change_008_a);
+uint8_t D800_0111_000_change_009_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_000_change_009_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_009 = CHANGE(1, 0x021EAC, D800_0111_000_change_009_b, D800_0111_000_change_009_a);
+uint8_t D800_0111_000_change_010_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_000_change_010_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_000_change_010 = CHANGE(1, 0x021EBA, D800_0111_000_change_010_b, D800_0111_000_change_010_a);
+uint8_t D800_0111_000_change_011_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_000_change_011_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_000_change_011 = CHANGE(1, 0x021EC0, D800_0111_000_change_011_b, D800_0111_000_change_011_a);
+struct Change* D800_0111_000[] = {&D800_0111_000_change_000,&D800_0111_000_change_001,&D800_0111_000_change_002,&D800_0111_000_change_003,&D800_0111_000_change_004,&D800_0111_000_change_005,&D800_0111_000_change_006,&D800_0111_000_change_007,&D800_0111_000_change_008,&D800_0111_000_change_009,&D800_0111_000_change_010,&D800_0111_000_change_011};
+
+uint8_t D800_0111_001_change_000_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_001_change_000_a[] = {0x03,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_000 = CHANGE(1, 0x021E2E, D800_0111_001_change_000_b, D800_0111_001_change_000_a);
+uint8_t D800_0111_001_change_001_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_001_change_001_a[] = {0x03,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_001 = CHANGE(1, 0x021E34, D800_0111_001_change_001_b, D800_0111_001_change_001_a);
+uint8_t D800_0111_001_change_002_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_001_change_002_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_002 = CHANGE(1, 0x021E42, D800_0111_001_change_002_b, D800_0111_001_change_002_a);
+uint8_t D800_0111_001_change_003_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_001_change_003_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_003 = CHANGE(1, 0x021E48, D800_0111_001_change_003_b, D800_0111_001_change_003_a);
+uint8_t D800_0111_001_change_004_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_001_change_004_a[] = {0x03,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_004 = CHANGE(1, 0x021E5A, D800_0111_001_change_004_b, D800_0111_001_change_004_a);
+uint8_t D800_0111_001_change_005_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_001_change_005_a[] = {0x03,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_005 = CHANGE(1, 0x021E60, D800_0111_001_change_005_b, D800_0111_001_change_005_a);
+uint8_t D800_0111_001_change_006_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_001_change_006_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_006 = CHANGE(1, 0x021E6E, D800_0111_001_change_006_b, D800_0111_001_change_006_a);
+uint8_t D800_0111_001_change_007_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_001_change_007_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_007 = CHANGE(1, 0x021E74, D800_0111_001_change_007_b, D800_0111_001_change_007_a);
+uint8_t D800_0111_001_change_008_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_001_change_008_a[] = {0x03,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_008 = CHANGE(1, 0x021EA6, D800_0111_001_change_008_b, D800_0111_001_change_008_a);
+uint8_t D800_0111_001_change_009_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_001_change_009_a[] = {0x03,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_009 = CHANGE(1, 0x021EAC, D800_0111_001_change_009_b, D800_0111_001_change_009_a);
+uint8_t D800_0111_001_change_010_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_001_change_010_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_001_change_010 = CHANGE(1, 0x021EBA, D800_0111_001_change_010_b, D800_0111_001_change_010_a);
+uint8_t D800_0111_001_change_011_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_001_change_011_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_001_change_011 = CHANGE(1, 0x021EC0, D800_0111_001_change_011_b, D800_0111_001_change_011_a);
+struct Change* D800_0111_001[] = {&D800_0111_001_change_000,&D800_0111_001_change_001,&D800_0111_001_change_002,&D800_0111_001_change_003,&D800_0111_001_change_004,&D800_0111_001_change_005,&D800_0111_001_change_006,&D800_0111_001_change_007,&D800_0111_001_change_008,&D800_0111_001_change_009,&D800_0111_001_change_010,&D800_0111_001_change_011};
+
+uint8_t D800_0111_002_change_000_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_002_change_000_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_002_change_000 = CHANGE(1, 0x021E2E, D800_0111_002_change_000_b, D800_0111_002_change_000_a);
+uint8_t D800_0111_002_change_001_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_002_change_001_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_002_change_001 = CHANGE(1, 0x021E34, D800_0111_002_change_001_b, D800_0111_002_change_001_a);
+uint8_t D800_0111_002_change_002_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_002_change_002_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_002_change_002 = CHANGE(1, 0x021E42, D800_0111_002_change_002_b, D800_0111_002_change_002_a);
+uint8_t D800_0111_002_change_003_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_002_change_003_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_002_change_003 = CHANGE(1, 0x021E48, D800_0111_002_change_003_b, D800_0111_002_change_003_a);
+uint8_t D800_0111_002_change_004_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_002_change_004_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_002_change_004 = CHANGE(1, 0x021E5A, D800_0111_002_change_004_b, D800_0111_002_change_004_a);
+uint8_t D800_0111_002_change_005_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_002_change_005_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_002_change_005 = CHANGE(1, 0x021E60, D800_0111_002_change_005_b, D800_0111_002_change_005_a);
+uint8_t D800_0111_002_change_006_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_002_change_006_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_002_change_006 = CHANGE(1, 0x021E6E, D800_0111_002_change_006_b, D800_0111_002_change_006_a);
+uint8_t D800_0111_002_change_007_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_002_change_007_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_002_change_007 = CHANGE(1, 0x021E74, D800_0111_002_change_007_b, D800_0111_002_change_007_a);
+uint8_t D800_0111_002_change_008_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_002_change_008_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_002_change_008 = CHANGE(1, 0x021EA6, D800_0111_002_change_008_b, D800_0111_002_change_008_a);
+uint8_t D800_0111_002_change_009_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_002_change_009_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_002_change_009 = CHANGE(1, 0x021EAC, D800_0111_002_change_009_b, D800_0111_002_change_009_a);
+uint8_t D800_0111_002_change_010_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_002_change_010_a[] = {0x01,0x6E,0x36,0x00};
+struct Change D800_0111_002_change_010 = CHANGE(1, 0x021EBA, D800_0111_002_change_010_b, D800_0111_002_change_010_a);
+uint8_t D800_0111_002_change_011_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_002_change_011_a[] = {0x01,0x31,0x2D,0x00};
+struct Change D800_0111_002_change_011 = CHANGE(1, 0x021EC0, D800_0111_002_change_011_b, D800_0111_002_change_011_a);
+struct Change* D800_0111_002[] = {&D800_0111_002_change_000,&D800_0111_002_change_001,&D800_0111_002_change_002,&D800_0111_002_change_003,&D800_0111_002_change_004,&D800_0111_002_change_005,&D800_0111_002_change_006,&D800_0111_002_change_007,&D800_0111_002_change_008,&D800_0111_002_change_009,&D800_0111_002_change_010,&D800_0111_002_change_011};
+
+uint8_t D800_0111_003_change_000_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_003_change_000_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_003_change_000 = CHANGE(1, 0x021E2E, D800_0111_003_change_000_b, D800_0111_003_change_000_a);
+uint8_t D800_0111_003_change_001_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_003_change_001_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_003_change_001 = CHANGE(1, 0x021E34, D800_0111_003_change_001_b, D800_0111_003_change_001_a);
+uint8_t D800_0111_003_change_002_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_003_change_002_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_003_change_002 = CHANGE(1, 0x021E42, D800_0111_003_change_002_b, D800_0111_003_change_002_a);
+uint8_t D800_0111_003_change_003_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_003_change_003_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_003_change_003 = CHANGE(1, 0x021E48, D800_0111_003_change_003_b, D800_0111_003_change_003_a);
+uint8_t D800_0111_003_change_004_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_003_change_004_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_003_change_004 = CHANGE(1, 0x021E5A, D800_0111_003_change_004_b, D800_0111_003_change_004_a);
+uint8_t D800_0111_003_change_005_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_003_change_005_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_003_change_005 = CHANGE(1, 0x021E60, D800_0111_003_change_005_b, D800_0111_003_change_005_a);
+uint8_t D800_0111_003_change_006_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_003_change_006_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_003_change_006 = CHANGE(1, 0x021E6E, D800_0111_003_change_006_b, D800_0111_003_change_006_a);
+uint8_t D800_0111_003_change_007_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_003_change_007_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_003_change_007 = CHANGE(1, 0x021E74, D800_0111_003_change_007_b, D800_0111_003_change_007_a);
+uint8_t D800_0111_003_change_008_b[] = {0x01,0x6E,0x36,0x00};
+uint8_t D800_0111_003_change_008_a[] = {0x03,0xD0,0x90,0x00};
+struct Change D800_0111_003_change_008 = CHANGE(1, 0x021EA6, D800_0111_003_change_008_b, D800_0111_003_change_008_a);
+uint8_t D800_0111_003_change_009_b[] = {0x01,0x31,0x2D,0x00};
+uint8_t D800_0111_003_change_009_a[] = {0x03,0x93,0x87,0x00};
+struct Change D800_0111_003_change_009 = CHANGE(1, 0x021EAC, D800_0111_003_change_009_b, D800_0111_003_change_009_a);
+uint8_t D800_0111_003_change_010_b[] = {0x00,0xB7,0x1B,0x00};
+uint8_t D800_0111_003_change_010_a[] = {0x02,0x6E,0x36,0x00};
+struct Change D800_0111_003_change_010 = CHANGE(1, 0x021EBA, D800_0111_003_change_010_b, D800_0111_003_change_010_a);
+uint8_t D800_0111_003_change_011_b[] = {0x00,0x98,0x96,0x80};
+uint8_t D800_0111_003_change_011_a[] = {0x02,0x31,0x2D,0x00};
+struct Change D800_0111_003_change_011 = CHANGE(1, 0x021EC0, D800_0111_003_change_011_b, D800_0111_003_change_011_a);
+struct Change* D800_0111_003[] = {&D800_0111_003_change_000,&D800_0111_003_change_001,&D800_0111_003_change_002,&D800_0111_003_change_003,&D800_0111_003_change_004,&D800_0111_003_change_005,&D800_0111_003_change_006,&D800_0111_003_change_007,&D800_0111_003_change_008,&D800_0111_003_change_009,&D800_0111_003_change_010,&D800_0111_003_change_011};
+
+struct Patch D800_0111_patches[] = {
+    {.id = 1, .level = Alpha, .name="Video 1080 HQ 36mbps Bit-rate NQ old HQ", .blocks={2,3,4}, .changes=D800_0111_000, .changes_len=(sizeof(D800_0111_000)/sizeof(struct Change*))}
+    ,{.id = 2, .level = Alpha, .name="Video 1080 HQ 54mbps Bit-rate NQ old HQ", .blocks={1,3,4}, .changes=D800_0111_001, .changes_len=(sizeof(D800_0111_001)/sizeof(struct Change*))}
+    ,{.id = 3, .level = Alpha, .name="Video 1080 HQ 64mbps Bit-rate NQ old HQ", .blocks={1,2,4}, .changes=D800_0111_002, .changes_len=(sizeof(D800_0111_002)/sizeof(struct Change*))}
+    ,{.id = 4, .level = Alpha, .name="Video 1080 HQ 64mbps, NQ 36mbps", .blocks={3,1,2}, .changes=D800_0111_003, .changes_len=(sizeof(D800_0111_003)/sizeof(struct Change*))}
+};
+
 struct Patch D800E_0101_patches[] = {
 };
 
@@ -3944,6 +4103,7 @@ struct PatchSet D750_0110_ps = PATCHSET("D750", "1.10", D750_0110_patches, 0);
 struct PatchSet D800_0101_ps = PATCHSET("D800", "1.01", D800_0101_patches, 0);
 struct PatchSet D800_0102_ps = PATCHSET("D800", "1.02", D800_0102_patches, 0);
 struct PatchSet D800_0110_ps = PATCHSET("D800", "1.10", D800_0110_patches, 0);
+struct PatchSet D800_0111_ps = PATCHSET("D800", "1.11", D800_0111_patches, 0);
 struct PatchSet D800E_0101_ps = PATCHSET("D800E", "1.01", D800E_0101_patches, 0);
 struct PatchSet D800E_0102_ps = PATCHSET("D800E", "1.02", D800E_0102_patches, 0);
 struct PatchSet D800E_0110_ps = PATCHSET("D800E", "1.10", D800E_0110_patches, 0);
@@ -3997,16 +4157,17 @@ struct PatchMap patches[] = {
      ,{.id = 38, .hash = {0x99,0xD7,0x8D,0xEB,0xE5,0x04,0x51,0x03,0x4A,0x32,0x83,0x6E,0x7F,0xDF,0x77,0x88}, .patches = &D800_0101_ps}
      ,{.id = 39, .hash = {0xFD,0xD8,0x91,0xE9,0xFC,0xFE,0xAF,0x30,0x44,0x74,0xE2,0xDC,0x72,0x43,0x70,0x44}, .patches = &D800_0102_ps}
      ,{.id = 40, .hash = {0x61,0xEB,0xBE,0x3C,0xD1,0x6D,0x6A,0x33,0x55,0x2A,0x05,0x79,0x2C,0xAF,0x91,0x27}, .patches = &D800_0110_ps}
-     ,{.id = 41, .hash = {0x9C,0x16,0xE0,0x6D,0x85,0x69,0x78,0x71,0x22,0x44,0x35,0x40,0x89,0x33,0x22,0xC0}, .patches = &D800E_0101_ps}
-     ,{.id = 42, .hash = {0xB4,0x25,0xC8,0x79,0x71,0x8B,0xC7,0xF9,0x48,0xFD,0x05,0xA6,0x1D,0x7D,0x0A,0x24}, .patches = &D800E_0102_ps}
-     ,{.id = 43, .hash = {0xA6,0xA6,0xC6,0xA7,0x74,0x8D,0x5A,0xCC,0x97,0xE8,0x59,0xAD,0x50,0x31,0xAC,0xE5}, .patches = &D800E_0110_ps}
-     ,{.id = 44, .hash = {0x0E,0xED,0x2B,0xB2,0x48,0x75,0x61,0x5B,0x5F,0x40,0x8D,0x6D,0x90,0x3A,0x66,0xC6}, .patches = &D810_0102_ps}
-     ,{.id = 45, .hash = {0xF6,0x20,0xAC,0xD9,0x86,0x30,0xCD,0x78,0x39,0x5E,0x47,0x3A,0xF0,0x42,0x10,0x87}, .patches = &D810_0112_ps}
-     ,{.id = 46, .hash = {0x55,0x05,0x0D,0x9A,0xE3,0x71,0xD2,0xB5,0x6B,0xB0,0x94,0x95,0x26,0xCC,0xB5,0x0E}, .patches = &D810A_0102_ps}
-     ,{.id = 47, .hash = {0xB0,0x1F,0xD3,0xDF,0xE5,0x74,0x2F,0xB7,0x49,0xA0,0x85,0xD3,0xE4,0x14,0x52,0x7D}, .patches = &D4_0105_ps}
-     ,{.id = 48, .hash = {0x80,0x9D,0xBB,0xE0,0x40,0x95,0x4E,0x02,0x24,0xF0,0x95,0xB9,0xC2,0xF6,0xA8,0xC0}, .patches = &D4_0110_ps}
-     ,{.id = 49, .hash = {0xBB,0xB0,0x44,0x5F,0x58,0x18,0x57,0xCD,0x0A,0xF7,0x76,0x9D,0xEF,0xBD,0x09,0x51}, .patches = &D4S_0101_ps}
-     ,{.id = 50, .hash = {0x56,0xCB,0xD3,0xF0,0xBA,0x4B,0x2B,0x74,0x27,0x4F,0xC3,0xEA,0xE4,0x4F,0xD7,0x9B}, .patches = &D4S_0132_ps}
-     ,{.id = 51, .hash = {0x09,0xA6,0x90,0xCE,0x56,0x06,0xF2,0x46,0xCB,0x1B,0x51,0x45,0xFD,0x27,0x6E,0xD5}, .patches = &D5_0120_ps}
+     ,{.id = 41, .hash = {0x2B,0xC4,0xA7,0x48,0x81,0xB0,0x8D,0xC0,0xCE,0x67,0xB4,0xF7,0x48,0xA0,0xD9,0x47}, .patches = &D800_0111_ps}
+     ,{.id = 42, .hash = {0x9C,0x16,0xE0,0x6D,0x85,0x69,0x78,0x71,0x22,0x44,0x35,0x40,0x89,0x33,0x22,0xC0}, .patches = &D800E_0101_ps}
+     ,{.id = 43, .hash = {0xB4,0x25,0xC8,0x79,0x71,0x8B,0xC7,0xF9,0x48,0xFD,0x05,0xA6,0x1D,0x7D,0x0A,0x24}, .patches = &D800E_0102_ps}
+     ,{.id = 44, .hash = {0xA6,0xA6,0xC6,0xA7,0x74,0x8D,0x5A,0xCC,0x97,0xE8,0x59,0xAD,0x50,0x31,0xAC,0xE5}, .patches = &D800E_0110_ps}
+     ,{.id = 45, .hash = {0x0E,0xED,0x2B,0xB2,0x48,0x75,0x61,0x5B,0x5F,0x40,0x8D,0x6D,0x90,0x3A,0x66,0xC6}, .patches = &D810_0102_ps}
+     ,{.id = 46, .hash = {0xF6,0x20,0xAC,0xD9,0x86,0x30,0xCD,0x78,0x39,0x5E,0x47,0x3A,0xF0,0x42,0x10,0x87}, .patches = &D810_0112_ps}
+     ,{.id = 47, .hash = {0x55,0x05,0x0D,0x9A,0xE3,0x71,0xD2,0xB5,0x6B,0xB0,0x94,0x95,0x26,0xCC,0xB5,0x0E}, .patches = &D810A_0102_ps}
+     ,{.id = 48, .hash = {0xB0,0x1F,0xD3,0xDF,0xE5,0x74,0x2F,0xB7,0x49,0xA0,0x85,0xD3,0xE4,0x14,0x52,0x7D}, .patches = &D4_0105_ps}
+     ,{.id = 49, .hash = {0x80,0x9D,0xBB,0xE0,0x40,0x95,0x4E,0x02,0x24,0xF0,0x95,0xB9,0xC2,0xF6,0xA8,0xC0}, .patches = &D4_0110_ps}
+     ,{.id = 50, .hash = {0xBB,0xB0,0x44,0x5F,0x58,0x18,0x57,0xCD,0x0A,0xF7,0x76,0x9D,0xEF,0xBD,0x09,0x51}, .patches = &D4S_0101_ps}
+     ,{.id = 51, .hash = {0x56,0xCB,0xD3,0xF0,0xBA,0x4B,0x2B,0x74,0x27,0x4F,0xC3,0xEA,0xE4,0x4F,0xD7,0x9B}, .patches = &D4S_0132_ps}
+     ,{.id = 52, .hash = {0x09,0xA6,0x90,0xCE,0x56,0x06,0xF2,0x46,0xCB,0x1B,0x51,0x45,0xFD,0x27,0x6E,0xD5}, .patches = &D5_0120_ps}
 };
 const uint32_t patches_count = sizeof(patches)/sizeof(struct PatchMap);

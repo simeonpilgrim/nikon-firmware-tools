@@ -1,0 +1,1 @@
+..\..\..\..\emsdk\emsdk activate latest
