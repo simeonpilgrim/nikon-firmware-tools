@@ -1,5 +1,59 @@
 body {
-  margin: 0;
-  padding: 0;
-  font-family: sans-serif;
+    margin: 0;
+    padding: 0px 10px 0px 10px;
+    font-family: sans-serif;
+}
+.help_box {
+    float:left;
+    width: 100%;
+    margin-block-start: 20px;
+    margin-block-end: 20px;
+}
+h2 {
+    margin-block-start: 0px;
+    margin-block-end: 0px;
+}
+.help_link {
+    float:left;
+    padding:10px;
+}
+.warning {
+    padding: 5px 20px 5px 5px;
+}
+.support {
+    border-style: dashed; 
+    border-width: 2px; 
+    border-color: inherit; 
+    height: 100%; 
+    width: 350px; 
+    /* float: left;  */
+    vertical-align: top; 
+    padding: 0px 10px 3px 10px;
+    margin: 10px;
+}
+.main_app {
+    max-width: 700px;
+    /* float: left; */
+}
+.root {
+     vertical-align: top;
+}
+.flow {
+    width: 100%;
+    float:left;
+}
+.flow_a {
+    width: 374px; 
+    float: right;
+}
+.flow_b {
+    max-width: 700px;
+    min-width: 600px;
+    float: left;
+}
+@media screen and (max-width:1110px) {
+    .flow_a, .flow_b, .help_link {
+        width: 100%; 
+        float: left;
+    }
 }
