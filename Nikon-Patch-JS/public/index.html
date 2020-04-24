@@ -44,9 +44,12 @@ ga('send', 'pageview');
     <title>Nikon-Patch</title>
   </head>
   <body>
-	<script type="text/javascript" src="nikon_patch.js"></script>
-    <script type="text/javascript">
-        Module['onRuntimeInitialized'] = function() { 
+      <script type="text/javascript">
+        var Module = {
+                locateFile: function(s) {
+              return 'nikon-patch/' + s;
+            },
+            onRuntimeInitialized: function() { 
             var loading = document.getElementById('webasmloading');
             loading.style.display = 'none';
             var rootwrap = document.getElementById('rootwrap');
@@ -61,8 +64,10 @@ ga('send', 'pageview');
                 var featurelist = document.getElementById('featurelist');
                 featurelist.innerHTML = s;
             }
-        };
+          }
+        }
     </script>
+	<script type="text/javascript" src="/nikon-patch/nikon_patch.js"></script>
     <div class="help_box">
         <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_Help">Patching How-To Help</a></h2></div>
         <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_FAQ">Patching FAQ</a></h2></div>
