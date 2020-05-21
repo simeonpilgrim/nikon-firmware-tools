@@ -84,18 +84,16 @@
             this.tFirmwareName.AutoSize = true;
             this.tFirmwareName.Location = new System.Drawing.Point(24, 58);
             this.tFirmwareName.Name = "tFirmwareName";
-            this.tFirmwareName.Size = new System.Drawing.Size(35, 13);
+            this.tFirmwareName.Size = new System.Drawing.Size(0, 13);
             this.tFirmwareName.TabIndex = 4;
-            this.tFirmwareName.Text = "label1";
             // 
             // tFirmwareVersion
             // 
             this.tFirmwareVersion.AutoSize = true;
             this.tFirmwareVersion.Location = new System.Drawing.Point(24, 86);
             this.tFirmwareVersion.Name = "tFirmwareVersion";
-            this.tFirmwareVersion.Size = new System.Drawing.Size(35, 13);
+            this.tFirmwareVersion.Size = new System.Drawing.Size(0, 13);
             this.tFirmwareVersion.TabIndex = 5;
-            this.tFirmwareVersion.Text = "label1";
             // 
             // tFeature
             // 
@@ -107,7 +105,6 @@
             this.tFeature.Name = "tFeature";
             this.tFeature.Size = new System.Drawing.Size(373, 62);
             this.tFeature.TabIndex = 6;
-            this.tFeature.Text = "label1";
             // 
             // lstFeatures
             // 
