@@ -51,14 +51,16 @@
             Version = "1.02";
 
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
-
-
         }
     }
 
-
-
-
-
-
+    class D5300_0103 : Firmware
+    {
+        public D5300_0103()
+        {
+            p = new Package();
+            Model = "D5300";
+            Version = "1.03";
+        }
+    }
 }
