@@ -50,7 +50,7 @@
             Model = "D5300";
             Version = "1.02";
 
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
         }
     }
 
