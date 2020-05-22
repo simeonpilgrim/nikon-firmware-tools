@@ -187,4 +187,13 @@
         }
     }
 
+    class D5200_0103 : Firmware
+    {
+        public D5200_0103()
+        {
+            p = new Package();
+            Model = "D5200";
+            Version = "1.03";
+        }
+    }
 }
