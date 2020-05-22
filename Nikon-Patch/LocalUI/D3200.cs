@@ -83,6 +83,11 @@
             new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
             new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
+
+        Patch[] patch_Extend_LiveView = {
+            new Patch(1, 0x238F3E, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
+        };
+
         public D3200_0101()
         {
             p = new Package();
@@ -96,6 +101,7 @@
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
         }
     }
 
@@ -169,6 +175,10 @@
             new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
+        Patch[] patch_Extend_LiveView = {
+            new Patch(1, 0x2388C2, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
+        };
+
         public D3200_0102()
         {
             p = new Package();
@@ -181,6 +191,7 @@
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
         }
     }
 
@@ -262,6 +273,10 @@
             new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
                                   };
 
+        Patch[] patch_Extend_LiveView = {
+            new Patch(1, 0x2397EE, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
+        };
+
         public D3200_0103()
         {
             p = new Package();
@@ -274,6 +289,7 @@
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_64mbps_NQ));
             Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
         }
     }
 
