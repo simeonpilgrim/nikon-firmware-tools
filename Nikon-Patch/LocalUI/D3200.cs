@@ -295,11 +295,17 @@
 
     class D3200_0104 : Firmware
     {
+        //Patch[] patch_Extend_LiveView = {
+        //    new Patch(1, 0x2397EE, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
+        //};
+
         public D3200_0104()
         {
             p = new Package();
             Model = "D3200";
             Version = "1.04";
+
+            //Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
         }
     }
 }
