@@ -22,7 +22,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "eslint-plugin-flowtype": "^4.7.0",
-    "typescript": "^3.8.3"
+    "eslint-plugin-flowtype": "^5.1.0",
+    "typescript": "^3.9.3"
   }
 }
