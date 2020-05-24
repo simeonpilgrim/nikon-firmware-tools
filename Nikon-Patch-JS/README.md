@@ -31,7 +31,8 @@ Build React App
   1. cd \Nikon-Patch-JS\
   2. npm install
   3. npm start 
-  4. npm build  (to build deployment)
+  4. npm run build  (to build deployment)
+  5. rename index.html to nikon-patch.html
 
 Patch Development
 =================
