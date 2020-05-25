@@ -6,6 +6,7 @@ using System.Data.Odbc;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -129,10 +130,28 @@ namespace Nikon_Patch
                 bw.Close();
             }
 
+            if (p.TryOpen())
+            {
+                for(int i = 0; i < p.header.Count; i++)
+                {
+                    var h = p.header[i];
+                    var b = p.blocks[i];
 
+                    BinaryWriter bw = null;
 
-            //DecodePackageFile(filename, decodeOffset);
-            //ExactFirmware(filename);
+                    try
+                    {
+                        var new_filename = Path.Combine(Path.GetDirectoryName(filename), h.Item1);
+                        bw = new BinaryWriter(File.Open(new_filename, FileMode.Create, FileAccess.Write, FileShare.ReadWrite));
+                        bw.Write(b);
+                    }
+                    finally
+                    {
+                        if (bw != null)
+                            bw.Close();
+                    }
+                }
+            }
         }
 
 

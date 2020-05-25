@@ -34,8 +34,8 @@ namespace Nikon_Patch
 
         internal byte[] xored;
         internal byte[] raw;
-        List<Tuple<string, uint, uint>> header = new List<Tuple<string, uint, uint>>();
-        List<byte[]> blocks = new List<byte[]>();
+        internal List<Tuple<string, uint, uint>> header = new List<Tuple<string, uint, uint>>();
+        internal List<byte[]> blocks = new List<byte[]>();
 
         public bool TryOpen()
         {
