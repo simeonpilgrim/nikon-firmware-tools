@@ -56,11 +56,20 @@
 
     class D5300_0103 : Firmware
     {
+       Patch[] patch_liveview_no_timeout_15m = 
+           {
+               new Patch(1,0x0092E0, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+               new Patch(1,0x00C0E8, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+               new Patch(1,0x2DAF2C, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+           };
+
         public D5300_0103()
         {
             p = new Package();
             Model = "D5300";
             Version = "1.03";
+
+            Patches.Add(new PatchSet(PatchLevel.DevOnly, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
         }
     }
 }
