@@ -41,6 +41,14 @@
             new Patch(1, 0x143C3CC, mbps_24_20tbe, mbps_64_60tbe ),
             new Patch(1, 0x143C414, mbps_24_20tbe, mbps_64_60tbe ),
         };
+
+        Patch[] patch_liveview_no_timeout_15m =
+    {
+               new Patch(1,0x0092F0, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+               new Patch(1,0x00C318, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+               new Patch(1,0x3039F0, new byte[]{0xA0, 0xBB, 0x0D, 0x00}, new byte[] {0x80, 0x27, 0xCB, 0x05} ),
+           };
+
         public D3300_0102()
         {
             p = new Package();
@@ -48,7 +56,7 @@
             Version = "1.02";
 
             Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
-
+            Patches.Add(new PatchSet(PatchLevel.Alpha, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
         }
     }
 }
