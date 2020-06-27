@@ -1,3 +1,19 @@
+D7100
+=====
+
+B Firmware
+---
+file: b760nnnn.bin  
+processor: ARM v7 LE  
+load base: 0x50020000  
+mem maps: v1.04  
+Src|Dst|Len|Status
+---|---|---|---
+0x516c6388|0x10000000|0x3b284|rwx
+0x5170160c|0x1003b284|0x1670|rw
+0x517d0c80|0x1010ac80|0x1890c|rw
+ 
+
 D5300
 =====
 
@@ -7,7 +23,7 @@ file: b930_nnn.bin
 processor: ARM v7 LE  
 load base: 0x90020000  
 mem maps: v1.03
-Src|Dst|Len|Statis
+Src|Dst|Len|Status
 ---|---|---|---
 0x91498e24|0x10000000|0x3b5b4|rw
 0x914d43d8|0x1003b5b4|0x1834|rw
@@ -31,7 +47,7 @@ processor: ARM v7 LE
 load base: 90020000  
 mem maps: v1.02  
 
-Src|Dst|Len|Statis
+Src|Dst|Len|Status
 ---|---|---|---
 0x9158a358|0x10000000|0x0003b5b4|rwx
 0x915c590c|0x1003b5b4|0x0000179c|rw
