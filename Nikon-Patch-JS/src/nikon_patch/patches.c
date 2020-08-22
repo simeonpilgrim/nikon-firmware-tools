@@ -935,8 +935,20 @@ uint8_t D3300_0102_000_change_019_a[] = {0x00,0xFA,0x00,0x00,0x60,0xEA};
 struct Change D3300_0102_000_change_019 = CHANGE(1, 0x143C414, D3300_0102_000_change_019_b, D3300_0102_000_change_019_a);
 struct Change* D3300_0102_000[] = {&D3300_0102_000_change_000,&D3300_0102_000_change_001,&D3300_0102_000_change_002,&D3300_0102_000_change_003,&D3300_0102_000_change_004,&D3300_0102_000_change_005,&D3300_0102_000_change_006,&D3300_0102_000_change_007,&D3300_0102_000_change_008,&D3300_0102_000_change_009,&D3300_0102_000_change_010,&D3300_0102_000_change_011,&D3300_0102_000_change_012,&D3300_0102_000_change_013,&D3300_0102_000_change_014,&D3300_0102_000_change_015,&D3300_0102_000_change_016,&D3300_0102_000_change_017,&D3300_0102_000_change_018,&D3300_0102_000_change_019};
 
+uint8_t D3300_0102_001_change_000_b[] = {0xA0,0xBB,0x0D,0x00};
+uint8_t D3300_0102_001_change_000_a[] = {0x80,0x27,0xCB,0x05};
+struct Change D3300_0102_001_change_000 = CHANGE(1, 0x0092F0, D3300_0102_001_change_000_b, D3300_0102_001_change_000_a);
+uint8_t D3300_0102_001_change_001_b[] = {0xA0,0xBB,0x0D,0x00};
+uint8_t D3300_0102_001_change_001_a[] = {0x80,0x27,0xCB,0x05};
+struct Change D3300_0102_001_change_001 = CHANGE(1, 0x00C318, D3300_0102_001_change_001_b, D3300_0102_001_change_001_a);
+uint8_t D3300_0102_001_change_002_b[] = {0xA0,0xBB,0x0D,0x00};
+uint8_t D3300_0102_001_change_002_a[] = {0x80,0x27,0xCB,0x05};
+struct Change D3300_0102_001_change_002 = CHANGE(1, 0x3039F0, D3300_0102_001_change_002_b, D3300_0102_001_change_002_a);
+struct Change* D3300_0102_001[] = {&D3300_0102_001_change_000,&D3300_0102_001_change_001,&D3300_0102_001_change_002};
+
 struct Patch D3300_0102_patches[] = {
     {.id = 1, .level = Alpha, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D3300_0102_000, .changes_len=(sizeof(D3300_0102_000)/sizeof(struct Change*))}
+    ,{.id = 2, .level = Alpha, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D3300_0102_001, .changes_len=(sizeof(D3300_0102_001)/sizeof(struct Change*))}
 };
 
 struct Patch D3400_0112_patches[] = {
