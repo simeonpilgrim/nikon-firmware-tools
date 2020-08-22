@@ -76,7 +76,7 @@ namespace Nikon_Patch
             }
         }
 
-        private static void DecodeAndExtractFirm(string filename, int decodeOffset = 0)
+        private static void DecodeAndExtractFirm(string filename)
         {
 
             //SendEvent("TryFile", openFileDialog1.File.Name);
@@ -102,16 +102,38 @@ namespace Nikon_Patch
 
             // Open the selected file to read.
             System.IO.Stream fileStream = File.OpenRead(filename);
+            const int headerCheckLen = 0x20;
+            byte[] headerCheck = new byte[headerCheckLen];
+
+            fileStream.Read(headerCheck, 0, headerCheckLen);
+
+            bool v1Header = headerCheck.All(b => b == 0x20);
+            bool v2Header = false;
+            long readLen = fileStream.Length;
+            int readOff = 0;
+
+            if (v1Header == false) {
+                fileStream.Seek(headerCheckLen, SeekOrigin.Begin);
+                fileStream.Read(headerCheck, 0, headerCheckLen);
+                v2Header = headerCheck.All(b => b == 0x20);
+                if(v2Header)
+                {
+                    readLen -= headerCheckLen;
+                    readOff = headerCheckLen;
+                }
+            }
+            fileStream.Seek(readOff, SeekOrigin.Begin);
+
 
             //SendEvent("OpenFile", openFileDialog1.File.Name);
 
-            if (fileStream.Length > (48 * 1024 * 1024))
+            if (readLen > (48 * 1024 * 1024))
             {
                 fileStream.Close();
                 return;
             }
 
-            byte[] data = new byte[fileStream.Length];
+            byte[] data = new byte[readLen];
 
             if (data == null)
             {
@@ -119,7 +141,7 @@ namespace Nikon_Patch
                 return;
             }
 
-            fileStream.Read(data, 0, (int)fileStream.Length);
+            fileStream.Read(data, 0, (int)readLen);
             fileStream.Close();
 
             var p = new Package();
