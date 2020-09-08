@@ -592,7 +592,7 @@
 
         Patch[] patch_liveview_3_min_to_6_hrs = {
             // time in seconds
-            new Patch(1, 0x232AF0, new byte[] { 0x00, 0x00, 0x00, 0xB4 }, new byte[] { 0x00, 0x00, 0x00, 0x0F } ),
+            new Patch(1, 0x232AF0, new byte[] { 0x00, 0x00, 0x00, 0xB4 }, new byte[] { 0x00, 0x00, 0x54, 0x60 } ),
 
             // menu text: "  5 min10 min15 min  3 min" >> "  5 min10 min15 min  6 hrs"
             // 5af622 - English Liveview option text
