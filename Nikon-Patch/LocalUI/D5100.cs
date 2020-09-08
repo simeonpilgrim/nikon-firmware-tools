@@ -590,6 +590,18 @@
             new Patch(1, 0x5B2411, new byte[] { 0x6E, 0x73 } , new byte[] { 0x64, 0x65 } ),
                              };
 
+        Patch[] patch_liveview_3_min_to_6_hrs = {
+            // time in seconds
+            new Patch(1, 0x232AF0, new byte[] { 0x00, 0x00, 0x00, 0xB4 }, new byte[] { 0x00, 0x00, 0x00, 0x0F } ),
+
+            // menu text: "  5 min10 min15 min  3 min" >> "  5 min10 min15 min  6 hrs"
+            // 5af622 - English Liveview option text
+            new Patch(1, 0x5AF622
+                , new byte[] { 0x20, 0x20, 0x35, 0x20, 0x6D, 0x69, 0x6E, 0x31, 0x30, 0x20, 0x6D, 0x69, 0x6E, 0x31, 0x35, 0x20, 0x6D, 0x69, 0x6E, 0x20, 0x20, 0x33, 0x20, 0x6D, 0x69, 0x6E }
+                , new byte[] { 0x20, 0x20, 0x35, 0x20, 0x6D, 0x69, 0x6E, 0x31, 0x30, 0x20, 0x6D, 0x69, 0x6E, 0x31, 0x35, 0x20, 0x6D, 0x69, 0x6E, 0x20, 0x20, 0x36, 0x20, 0x68, 0x72, 0x73 }
+            ),
+        };
+
         public D5100_0102()
         {
             p = new Package();
@@ -621,6 +633,8 @@
             Patches.Add(new PatchSet(PatchLevel.Released, "Jpeg Compression - Quality (vs. Space)", patch_4));
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Non-Brand Battery", patch_battery));
+
+            Patches.Add(new PatchSet(PatchLevel.Released, "Liveview - 3 mins to 6 hours", patch_liveview_3_min_to_6_hrs));
 
         }
     }
