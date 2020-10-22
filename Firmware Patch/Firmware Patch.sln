@@ -1,8 +1,8 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FirmwarePatch", "Firmware Patch\FirmwarePatch.csproj", "{334D1A9C-B86A-4C82-99B0-E7BB15DAC5E1}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30104.148
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MakePatch", "MakePatch\MakePatch.csproj", "{B5857C56-69E7-40D9-ACE1-D224DFE0AFCE}"
 EndProject
 Global
@@ -11,10 +11,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{334D1A9C-B86A-4C82-99B0-E7BB15DAC5E1}.Debug|x86.ActiveCfg = Debug|x86
-		{334D1A9C-B86A-4C82-99B0-E7BB15DAC5E1}.Debug|x86.Build.0 = Debug|x86
-		{334D1A9C-B86A-4C82-99B0-E7BB15DAC5E1}.Release|x86.ActiveCfg = Release|x86
-		{334D1A9C-B86A-4C82-99B0-E7BB15DAC5E1}.Release|x86.Build.0 = Release|x86
 		{B5857C56-69E7-40D9-ACE1-D224DFE0AFCE}.Debug|x86.ActiveCfg = Debug|x86
 		{B5857C56-69E7-40D9-ACE1-D224DFE0AFCE}.Debug|x86.Build.0 = Debug|x86
 		{B5857C56-69E7-40D9-ACE1-D224DFE0AFCE}.Release|x86.ActiveCfg = Release|x86
@@ -22,5 +18,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {740BEA2C-1C3C-461B-AAFC-D5BF0FB06011}
 	EndGlobalSection
 EndGlobal
