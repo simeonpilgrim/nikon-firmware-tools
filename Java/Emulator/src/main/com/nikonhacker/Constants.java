@@ -1,6 +1,6 @@
 package com.nikonhacker;
 
-import java.awt.*;
+import java.awt.Color;
 
 public interface Constants {
     /* These 2 constants are used to index everything pertaining to one chip or the other */
