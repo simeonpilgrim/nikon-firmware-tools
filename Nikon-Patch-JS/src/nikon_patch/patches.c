@@ -362,7 +362,7 @@ struct Patch D3100_0102_patches[] = {
     ,{.id = 3, .level = Released, .name="ISO/Shutter Lv Patch", .blocks={}, .changes=D3100_0102_002, .changes_len=(sizeof(D3100_0102_002)/sizeof(struct Change*))}
     ,{.id = 4, .level = Released, .name="Video 1080 HQ 36mbps Bit-rate", .blocks={5,7,6}, .changes=D3100_0102_003, .changes_len=(sizeof(D3100_0102_003)/sizeof(struct Change*))}
     ,{.id = 5, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate", .blocks={4,7,6}, .changes=D3100_0102_004, .changes_len=(sizeof(D3100_0102_004)/sizeof(struct Change*))}
-    ,{.id = 6, .level = Beta, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={5,4,7}, .changes=D3100_0102_005, .changes_len=(sizeof(D3100_0102_005)/sizeof(struct Change*))}
+    ,{.id = 6, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={5,4,7}, .changes=D3100_0102_005, .changes_len=(sizeof(D3100_0102_005)/sizeof(struct Change*))}
     ,{.id = 7, .level = Released, .name="Video HQ 29Mbps with playback", .blocks={4,5,6}, .changes=D3100_0102_006, .changes_len=(sizeof(D3100_0102_006)/sizeof(struct Change*))}
 };
 
@@ -528,7 +528,7 @@ struct Patch D3200_0101_patches[] = {
     ,{.id = 4, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate", .blocks={3,5,6}, .changes=D3200_0101_003, .changes_len=(sizeof(D3200_0101_003)/sizeof(struct Change*))}
     ,{.id = 5, .level = Released, .name="Video 1080 HQ 36mbps Bit-rate NQ old HQ", .blocks={4,3,6}, .changes=D3200_0101_004, .changes_len=(sizeof(D3200_0101_004)/sizeof(struct Change*))}
     ,{.id = 6, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate NQ old HQ", .blocks={4,3,5}, .changes=D3200_0101_005, .changes_len=(sizeof(D3200_0101_005)/sizeof(struct Change*))}
-    ,{.id = 7, .level = Beta, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0101_006, .changes_len=(sizeof(D3200_0101_006)/sizeof(struct Change*))}
+    ,{.id = 7, .level = Released, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0101_006, .changes_len=(sizeof(D3200_0101_006)/sizeof(struct Change*))}
 };
 
 uint8_t D3200_0102_000_change_000_b[] = {0xF0,0x28,0xA2,0x52,0xF0,0x60};
@@ -681,7 +681,7 @@ struct Patch D3200_0102_patches[] = {
     ,{.id = 4, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate", .blocks={3,5,6}, .changes=D3200_0102_003, .changes_len=(sizeof(D3200_0102_003)/sizeof(struct Change*))}
     ,{.id = 5, .level = Released, .name="Video 1080 HQ 36mbps Bit-rate NQ old HQ", .blocks={4,3,6}, .changes=D3200_0102_004, .changes_len=(sizeof(D3200_0102_004)/sizeof(struct Change*))}
     ,{.id = 6, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate NQ old HQ", .blocks={4,3,5}, .changes=D3200_0102_005, .changes_len=(sizeof(D3200_0102_005)/sizeof(struct Change*))}
-    ,{.id = 7, .level = Beta, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0102_006, .changes_len=(sizeof(D3200_0102_006)/sizeof(struct Change*))}
+    ,{.id = 7, .level = Released, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0102_006, .changes_len=(sizeof(D3200_0102_006)/sizeof(struct Change*))}
 };
 
 uint8_t D3200_0103_000_change_000_b[] = {0xE2,0x08};
@@ -864,7 +864,7 @@ struct Patch D3200_0103_patches[] = {
     ,{.id = 4, .level = Released, .name="Video 1080 HQ 36mbps Bit-rate NQ old HQ", .blocks={3,2,5,6}, .changes=D3200_0103_003, .changes_len=(sizeof(D3200_0103_003)/sizeof(struct Change*))}
     ,{.id = 5, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate NQ old HQ", .blocks={3,2,4,6}, .changes=D3200_0103_004, .changes_len=(sizeof(D3200_0103_004)/sizeof(struct Change*))}
     ,{.id = 6, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate NQ old HQ", .blocks={3,2,4,5}, .changes=D3200_0103_005, .changes_len=(sizeof(D3200_0103_005)/sizeof(struct Change*))}
-    ,{.id = 7, .level = Beta, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0103_006, .changes_len=(sizeof(D3200_0103_006)/sizeof(struct Change*))}
+    ,{.id = 7, .level = Released, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0103_006, .changes_len=(sizeof(D3200_0103_006)/sizeof(struct Change*))}
 };
 
 struct Patch D3200_0104_patches[] = {
@@ -947,8 +947,8 @@ struct Change D3300_0102_001_change_002 = CHANGE(1, 0x3039F0, D3300_0102_001_cha
 struct Change* D3300_0102_001[] = {&D3300_0102_001_change_000,&D3300_0102_001_change_001,&D3300_0102_001_change_002};
 
 struct Patch D3300_0102_patches[] = {
-    {.id = 1, .level = Alpha, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D3300_0102_000, .changes_len=(sizeof(D3300_0102_000)/sizeof(struct Change*))}
-    ,{.id = 2, .level = Alpha, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D3300_0102_001, .changes_len=(sizeof(D3300_0102_001)/sizeof(struct Change*))}
+    {.id = 1, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D3300_0102_000, .changes_len=(sizeof(D3300_0102_000)/sizeof(struct Change*))}
+    ,{.id = 2, .level = Released, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D3300_0102_001, .changes_len=(sizeof(D3300_0102_001)/sizeof(struct Change*))}
 };
 
 struct Patch D3400_0112_patches[] = {
@@ -2385,10 +2385,10 @@ struct Change* D5200_0102_004[] = {&D5200_0102_004_change_000,&D5200_0102_004_ch
 
 struct Patch D5200_0102_patches[] = {
     {.id = 1, .level = Released, .name="Video HQ 40mbps Bit-rate", .blocks={2,3,4}, .changes=D5200_0102_000, .changes_len=(sizeof(D5200_0102_000)/sizeof(struct Change*))}
-    ,{.id = 2, .level = Beta, .name="Video HQ 64mbps Bit-rate", .blocks={1,3,4}, .changes=D5200_0102_001, .changes_len=(sizeof(D5200_0102_001)/sizeof(struct Change*))}
+    ,{.id = 2, .level = Released, .name="Video HQ 64mbps Bit-rate", .blocks={1,3,4}, .changes=D5200_0102_001, .changes_len=(sizeof(D5200_0102_001)/sizeof(struct Change*))}
     ,{.id = 3, .level = DevOnly, .name="Video HQ 8mbps Bit-rate", .blocks={1,2,4}, .changes=D5200_0102_002, .changes_len=(sizeof(D5200_0102_002)/sizeof(struct Change*))}
     ,{.id = 4, .level = DevOnly, .name="Video HQ 1mbps Bit-rate", .blocks={1,2,3}, .changes=D5200_0102_003, .changes_len=(sizeof(D5200_0102_003)/sizeof(struct Change*))}
-    ,{.id = 5, .level = Beta, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D5200_0102_004, .changes_len=(sizeof(D5200_0102_004)/sizeof(struct Change*))}
+    ,{.id = 5, .level = Released, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D5200_0102_004, .changes_len=(sizeof(D5200_0102_004)/sizeof(struct Change*))}
 };
 
 struct Patch D5200_0103_patches[] = {
@@ -2460,7 +2460,7 @@ struct Change D5300_0102_000_change_019 = CHANGE(1, 0x12B58B0, D5300_0102_000_ch
 struct Change* D5300_0102_000[] = {&D5300_0102_000_change_000,&D5300_0102_000_change_001,&D5300_0102_000_change_002,&D5300_0102_000_change_003,&D5300_0102_000_change_004,&D5300_0102_000_change_005,&D5300_0102_000_change_006,&D5300_0102_000_change_007,&D5300_0102_000_change_008,&D5300_0102_000_change_009,&D5300_0102_000_change_010,&D5300_0102_000_change_011,&D5300_0102_000_change_012,&D5300_0102_000_change_013,&D5300_0102_000_change_014,&D5300_0102_000_change_015,&D5300_0102_000_change_016,&D5300_0102_000_change_017,&D5300_0102_000_change_018,&D5300_0102_000_change_019};
 
 struct Patch D5300_0102_patches[] = {
-    {.id = 1, .level = Beta, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D5300_0102_000, .changes_len=(sizeof(D5300_0102_000)/sizeof(struct Change*))}
+    {.id = 1, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D5300_0102_000, .changes_len=(sizeof(D5300_0102_000)/sizeof(struct Change*))}
 };
 
 uint8_t D5300_0103_000_change_000_b[] = {0xA0,0xBB,0x0D,0x00};
@@ -2537,8 +2537,8 @@ struct Change D5300_0103_001_change_019 = CHANGE(1, 0x12849F0, D5300_0103_001_ch
 struct Change* D5300_0103_001[] = {&D5300_0103_001_change_000,&D5300_0103_001_change_001,&D5300_0103_001_change_002,&D5300_0103_001_change_003,&D5300_0103_001_change_004,&D5300_0103_001_change_005,&D5300_0103_001_change_006,&D5300_0103_001_change_007,&D5300_0103_001_change_008,&D5300_0103_001_change_009,&D5300_0103_001_change_010,&D5300_0103_001_change_011,&D5300_0103_001_change_012,&D5300_0103_001_change_013,&D5300_0103_001_change_014,&D5300_0103_001_change_015,&D5300_0103_001_change_016,&D5300_0103_001_change_017,&D5300_0103_001_change_018,&D5300_0103_001_change_019};
 
 struct Patch D5300_0103_patches[] = {
-    {.id = 1, .level = Alpha, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D5300_0103_000, .changes_len=(sizeof(D5300_0103_000)/sizeof(struct Change*))}
-    ,{.id = 2, .level = Alpha, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D5300_0103_001, .changes_len=(sizeof(D5300_0103_001)/sizeof(struct Change*))}
+    {.id = 1, .level = Released, .name="Liveview (15min) No Timeout", .blocks={}, .changes=D5300_0103_000, .changes_len=(sizeof(D5300_0103_000)/sizeof(struct Change*))}
+    ,{.id = 2, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={}, .changes=D5300_0103_001, .changes_len=(sizeof(D5300_0103_001)/sizeof(struct Change*))}
 };
 
 struct Patch D5500_0101_patches[] = {

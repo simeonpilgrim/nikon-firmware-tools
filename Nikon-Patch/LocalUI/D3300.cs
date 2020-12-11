@@ -55,8 +55,8 @@
             Model = "D3300";
             Version = "1.02";
 
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
-            Patches.Add(new PatchSet(PatchLevel.Alpha, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate", patch_hq_64mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
         }
     }
 }

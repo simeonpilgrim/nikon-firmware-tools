@@ -179,11 +179,11 @@
             Version = "1.02";
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 40mbps Bit-rate", patch_40mbps, patch_64mbps, patch_8mbps, patch_1mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video HQ 64mbps Bit-rate", patch_64mbps, patch_40mbps, patch_8mbps, patch_1mbps));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 64mbps Bit-rate", patch_64mbps, patch_40mbps, patch_8mbps, patch_1mbps));
             Patches.Add(new PatchSet(PatchLevel.DevOnly, "Video HQ 8mbps Bit-rate", patch_8mbps, patch_40mbps, patch_64mbps, patch_1mbps));
             Patches.Add(new PatchSet(PatchLevel.DevOnly, "Video HQ 1mbps Bit-rate", patch_1mbps, patch_40mbps, patch_64mbps, patch_8mbps));
 
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Liveview (15min) No Timeout", patch_liveview_no_timeout_15m));
         }
     }
 

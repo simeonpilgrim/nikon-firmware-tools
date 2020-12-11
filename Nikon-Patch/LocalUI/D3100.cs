@@ -180,7 +180,7 @@
 
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 36mbps Bit-rate", patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_29mbps_playback, patch_bitrate_64mbps));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 54mbps Bit-rate", patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_29mbps_playback, patch_bitrate_64mbps));
-            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate", patch_bitrate_64mbps, patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_29mbps_playback));
+            Patches.Add(new PatchSet(PatchLevel.Released, "Video 1080 HQ 64mbps Bit-rate", patch_bitrate_64mbps, patch_bitrate_54mbps, patch_bitrate_36mbps, patch_bitrate_29mbps_playback));
             Patches.Add(new PatchSet(PatchLevel.Released, "Video HQ 29Mbps with playback", patch_bitrate_29mbps_playback, patch_bitrate_36mbps, patch_bitrate_54mbps, patch_bitrate_64mbps));
         }
     }
