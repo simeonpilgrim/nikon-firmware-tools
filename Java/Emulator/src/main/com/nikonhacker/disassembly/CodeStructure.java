@@ -5,7 +5,13 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.*;
+import java.util.TreeMap;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.Set;
+import java.util.List;
+import java.util.EnumSet;
+import java.util.ArrayList;
 
 public abstract class CodeStructure {
 
