@@ -7,7 +7,7 @@
     "file-saver": "^2.0.5",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "react-scripts": "^4.0.1"
+    "react-scripts": "^4.0.3"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -22,7 +22,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "eslint-plugin-flowtype": "^5.2.0",
-    "typescript": "^3.9.7"
+    "eslint-plugin-flowtype": "^5.3.1",
+    "typescript": "^3.9.9"
   }
 }
