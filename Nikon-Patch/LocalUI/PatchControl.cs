@@ -117,7 +117,7 @@ namespace Nikon_Patch
                         sb.AppendLine(cl);
                         c_id++;
                     }
-                    sb.AppendLine($"struct Change* {patch_name}[] = {{{string.Join(",", change_names)}}};");
+                    sb.AppendLine($"struct Change const * {patch_name}[] = {{{string.Join(",", change_names)}}};");
                     sb.AppendLine();
 
                     int idx = patches.IndexOf(p) + 1;

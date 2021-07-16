@@ -121,7 +121,7 @@ int GenerateOutput(struct PatchSet const * const ps){
         if( p > 0){
             outlen += sprintf(&output[outlen],",");
         }
-        struct Patch* pp = &(ps->patches[p]);
+        struct Patch const * const pp = &(ps->patches[p]);
         outlen += sprintf(&output[outlen],"{\"id\":\"%d\", \"name\":\"%s\", \"level\":\"%s\", \"blocks\":[",
             pp->id, pp->name, PatchLevelStr[pp->level]);
         for(int b=0; b<MAX_BLOCK; b++){
@@ -149,7 +149,7 @@ extern int32_t EMSCRIPTEN_KEEPALIVE  GeneratePatchMatrix(){
     
         outlen += sprintf(&outp[outlen],"<li>%s %s<ul>\n", ps->model, ps->version);
         for(int p=0; p<ps->patch_count; p++){
-            struct Patch* pp = &(ps->patches[p]);
+            struct Patch const * const pp = &(ps->patches[p]);
             switch (pp->level)
             {
             case Alpha:
@@ -177,11 +177,11 @@ int CheckPatches(int select_len){
         int p_idx = selected[i];
 
         for(int p=0; p<selectedPatch->patch_count; p++){
-            struct Patch* pp = &(selectedPatch->patches[p]);
+            struct Patch const * const pp = &(selectedPatch->patches[p]);
         
             if(p_idx == pp->id){
                 for(int ci=0;ci <pp->changes_len; ci++){
-                    struct Change *c = pp->changes[ci];
+                    struct Change const * const c = pp->changes[ci];
                     uint32_t file_offset = blocks_table[c->file_idx].offset;
                     for(int b=0; b<c->orig_len;b++){
                         int base = file_offset + c->file_offset;
@@ -201,11 +201,11 @@ void ApplyPatches(int select_len){
     for(int i = 0; i < select_len; i++){
         int p_idx = selected[i];
         for(int p=0; p<selectedPatch->patch_count; p++){
-            struct Patch* pp = &(selectedPatch->patches[p]);
+            struct Patch const * const pp = &(selectedPatch->patches[p]);
         
             if(p_idx == pp->id){
                 for(int ci=0;ci <pp->changes_len; ci++){
-                    struct Change *c = pp->changes[ci];
+                    struct Change const * const c = pp->changes[ci];
                     uint32_t file_offset = blocks_table[c->file_idx].offset;
                     for(int b=0; b<c->orig_len;b++){
                         int base = file_offset + c->file_offset;

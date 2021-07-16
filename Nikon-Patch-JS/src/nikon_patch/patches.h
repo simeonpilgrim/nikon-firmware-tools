@@ -1,38 +1,40 @@
-enum PatchLevel{
+enum PatchLevel : char{
     DevOnly,
     Alpha,
     Beta,
     Released
 };
 
-#define MAX_BLOCK 10
+#define MAX_BLOCK 8
 
 struct Change {
-    int file_idx;
+    uint8_t const * const orig;
+    uint8_t const * const patch;
     int file_offset;
-    uint8_t * orig;
-    int orig_len;
-    uint8_t * patch;
-    int patch_len;
+    uint16_t orig_len;
+    uint16_t patch_len;
+    uint8_t file_idx;
 };
+
 #define CHANGE(i,o,b,a) {.file_idx=i, .file_offset=o, .orig=b, .orig_len=sizeof(b), .patch = a, .patch_len = sizeof(a)}
 
 struct Patch{
-    int id;
-    enum PatchLevel level;
     char const * const name;
-    int blocks[MAX_BLOCK];
-    struct Change ** changes;
+    struct Change const ** const changes;
+    uint8_t blocks[MAX_BLOCK];
     int changes_len;
+    enum PatchLevel level;
+    uint8_t id;
 };
 
 struct PatchSet{
     char const * const model;
     char const * const version;
-    struct Patch* patches;
-    int patch_count;
-    int patch_type; /* 0 modern file, */
+    struct Patch const * const patches;
+    uint8_t patch_count;
+    uint8_t patch_type; /* 0 modern file, */
 };
+
 #define PATCHSET(m,v,p,t) {.model=m, .version=v, .patches=p, .patch_count=sizeof(p)/sizeof(struct Patch), .patch_type = t}
 
 struct PatchMap{
