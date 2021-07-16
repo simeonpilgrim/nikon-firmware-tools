@@ -57,22 +57,15 @@ extern uint32_t* EMSCRIPTEN_KEEPALIVE getSelectPtr(){
 
 extern int32_t EMSCRIPTEN_KEEPALIVE patch_firmare(int32_t select_len){
     if( selectedPatch == NULL){
-        printf("selectedPatch is NULL\n");
         return 0;
     }
     if( data_length < 1 || data_length > MAX_FILE){
-        printf("data_length is out of range: %d\n", data_length);
         return 0;
     }
     if(select_len < 1 || select_len > MAX_SELECT){
-        printf("select_len is out of range: %d\n", select_len);
         return 0;
     }
 
-    // for(int i = 0; i < select_len; i++){
-    //     printf("s: %d\n", selected[i]);
-    // }
-    
     memcpy(output_file, input_file, data_length);
     if(selectedPatch->patch_type == 0){
         Xor(output_file, data_length);
@@ -93,7 +86,6 @@ extern int32_t EMSCRIPTEN_KEEPALIVE patch_firmare(int32_t select_len){
 extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
     selectedPatch = NULL;
     data_length = 0;
-    //printf("ptr_check %p %d\n",data_len);
     if(data_len > 0x30){
         MD5_CTX mdContext;
 
@@ -102,7 +94,6 @@ extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
         MD5Final (&mdContext);
               
         MDPrint (&mdContext); 
-        printf("\n");
            
         for(int i = 0; i < patches_count; i++){
             int y;
@@ -122,7 +113,6 @@ extern int32_t EMSCRIPTEN_KEEPALIVE detectFirmware(int32_t data_len){
 }
 
 int GenerateOutput(struct PatchSet const * const ps){
-    //printf("match \n");  
     int outlen = 0;
     outlen += sprintf(&output[outlen],"{\"model\":\"%s\", \"version\":\"%s\", \"patches\":[", 
         ps->model, ps->version);
@@ -147,8 +137,6 @@ int GenerateOutput(struct PatchSet const * const ps){
     }
     outlen += sprintf(&output[outlen],"]}");
     output[outlen] = '\0';
-    //printf("output len: %d\n",outlen);
-    //printf("%s\n", output);
     return outlen; 
 }
 
@@ -192,15 +180,12 @@ int CheckPatches(int select_len){
             struct Patch* pp = &(selectedPatch->patches[p]);
         
             if(p_idx == pp->id){
-                //printf("patch %s\n",pp->name);
                 for(int ci=0;ci <pp->changes_len; ci++){
-                    //printf(" change %d\n",ci);
                     struct Change *c = pp->changes[ci];
                     uint32_t file_offset = blocks_table[c->file_idx].offset;
                     for(int b=0; b<c->orig_len;b++){
                         int base = file_offset + c->file_offset;
                         if(output_file[base+b] != c->orig[b]){
-                            //printf("no match %d %d %d %d\n", base, b, output_file[base+b], c->orig[b] );
                             return 0;
                         }
                     }
@@ -248,19 +233,13 @@ void LoadBlocksOffsets(){
         if( data_length > 0x30){
             int pos = 0x20;
             uint32_t count = ReadU32(output_file,pos+0);
-            printf("header count %d\n", count);
-            //uint32_t headerlen = ReadU32(output_file, pos + 4);
-            //uint32_t dummy1 = ReadU32(output_file, pos + 8);
-            //uint32_t dummy2 = ReadU32(output_file, pos + 12);
+
             pos += 16;
 
             if(data_length> ((count * 30 )+pos)){
                 for(int c = 0; c < count; c++){
                     blocks_table[c].offset = ReadU32(output_file, pos + 16);
                     blocks_table[c].length = ReadU32(output_file, pos + 20);
-                    //printf("block %d %4x %4x\n", c, blocks_table[c].offset, blocks_table[c].length);
-                    //uint32_t hdummy1 = ReadU32(output_file, pos + 24);
-                    //uint32_t hdummy2 = ReadU32(output_file, pos + 28);
 
                     pos += 32; 
                 }
@@ -304,7 +283,6 @@ void CorrectCrcs(){
             
             data[len - 2] = ((checksum >> 8) & 0xff);
             data[len - 1] = ((checksum >> 0) & 0xff);
-            
         }
     }
 }
