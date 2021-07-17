@@ -144,8 +144,8 @@ extern int32_t EMSCRIPTEN_KEEPALIVE  GeneratePatchMatrix(){
     int outlen = 0;
     char* outp = (char*)output_file;
     for(int f = 0; f<patches_count; f++){
-        struct PatchMap* pm = &patches[f];
-        struct PatchSet* ps = pm->patches;
+        struct PatchMap const * const pm = &patches[f];
+        struct PatchSet const * const ps = pm->patches;
     
         outlen += sprintf(&outp[outlen],"<li>%s %s<ul>\n", ps->model, ps->version);
         for(int p=0; p<ps->patch_count; p++){

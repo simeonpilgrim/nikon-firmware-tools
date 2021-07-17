@@ -158,7 +158,7 @@ namespace Nikon_Patch
 
             // build patch map
             sb.AppendLine();
-            sb.AppendLine("struct PatchMap patches[] = {");
+            sb.AppendLine("const struct PatchMap patches[] = {");
             int id = 1;
             foreach (var pm in hashMap)
             {
