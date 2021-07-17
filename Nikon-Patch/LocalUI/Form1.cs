@@ -193,6 +193,12 @@ namespace Nikon_Patch
             if (userClickedOK == DialogResult.OK)
             {
                 PatchControl.ExportToC(ofd.FileName);
+
+                using (var s = File.CreateText(ofd.FileName + ".html"))
+                {
+
+                    s.Write(PatchControl.BuildPatchMatrix());
+                }
             }
         }
 

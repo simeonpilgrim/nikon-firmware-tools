@@ -185,11 +185,39 @@ namespace Nikon_Patch
             StringBuilder sb = new StringBuilder();
             string alpha = "ALPHA";
             string beta = "BETA";
-
+            sb.Append("<html><body>\n");
+            sb.Append("<script type='text/javascript'>\n");
+            sb.Append("toggle = function(listelement, listsign) {\n");
+            sb.Append("    var listobject = document.getElementById(listelement);\n");
+            sb.Append("    var sign = document.getElementById(listsign);\n");
+            sb.Append("    if (listobject.style.display == 'block') {\n");
+            sb.Append("        listobject.style.display = 'none';\n");
+            sb.Append("        sign.children[0].src = 'https://simeonpilgrim.com/blog/plus.png';\n");
+            sb.Append("    } else {\n");
+            sb.Append("        listobject.style.display = 'block';\n");
+            sb.Append("        sign.children[0].src = 'https://simeonpilgrim.com/blog/minus.png';\n");
+            sb.Append("    }\n");
+            sb.Append("}\n");
+            sb.Append("</script>\n");
+            string lastModel = "";
+            sb.Append("<ul style=\"list-style-type: none\">\n");
             foreach (var hm in hashMap)
             {
                 Firmware f = hm.Value;
-                sb.AppendFormat("<li>{0} {1}<ul>\n", f.Model, f.Version);
+                if(f.Model != lastModel)
+                {
+                    if(lastModel != "")
+                    {
+                        sb.Append("</ul></li>\n");
+                    }
+                    sb.Append("<li>\n");
+                    sb.AppendFormat("<a style=\"cursor: pointer;\" onclick=\"toggle('mo{0}', 'mos{0}')\">\n", f.Model);
+                    sb.AppendFormat("<span id='mos{0}'><img src=\"https://simeonpilgrim.com/blog/plus.png\" width=\"11\" height=\"12\" alt=\"\">&nbsp;</span></a> {0}\n", f.Model);
+                    sb.AppendFormat("<ul id=\"mo{0}\" style=\"display: none\">\n", f.Model);
+                    lastModel = f.Model;
+                }
+
+                sb.AppendFormat("<li>{0}<ul>\n", f.Version);
                 foreach (var p in f.Patches)
                 {
                     switch (p.PatchStatus)
@@ -204,7 +232,12 @@ namespace Nikon_Patch
                 }
                 sb.AppendFormat("</ul></li>\n");
             }
-
+            if (lastModel != "")
+            {
+                sb.Append("</ul></li>\n");
+            }
+            sb.Append("</ul>\n");
+            sb.Append("</html></body>\n");
             //Debug.WriteLine(sb.ToString());
             return sb.ToString();
         }
