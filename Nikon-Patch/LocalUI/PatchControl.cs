@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Web;
 
 namespace Nikon_Patch
 {
@@ -220,14 +221,16 @@ namespace Nikon_Patch
                 sb.AppendFormat("<li>{0}<ul>\n", f.Version);
                 foreach (var p in f.Patches)
                 {
+                    string html_safe_name = HttpUtility.HtmlEncode(p.Name);
+
                     switch (p.PatchStatus)
                     {
                     case PatchLevel.Alpha:
-                        sb.AppendFormat("<li>{1} - {0}</li>\n", p.Name, alpha); break;
+                        sb.AppendFormat("<li>{1} - {0}</li>\n", html_safe_name, alpha); break;
                     case PatchLevel.Beta:
-                        sb.AppendFormat("<li>{1} - {0}</li>\n", p.Name, beta); break;
+                        sb.AppendFormat("<li>{1} - {0}</li>\n", html_safe_name, beta); break;
                     case PatchLevel.Released:
-                        sb.AppendFormat("<li>{0}</li>\n", p.Name); break;
+                        sb.AppendFormat("<li>{0}</li>\n", html_safe_name); break;
                     }
                 }
                 sb.AppendFormat("</ul></li>\n");
