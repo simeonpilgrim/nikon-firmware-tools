@@ -40,8 +40,8 @@ ga('send', 'pageview');
     </script>
 	
     <title>Nikon-Patch</title>
-    <link rel="preload" href="/nikon-patch/nikon_patch.js" as="script">
-    <link rel="preload" href="/nikon-patch/nikon_patch.wasm" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="%PUBLIC_URL%/nikon_patch.js" as="script">
+    <link rel="preload" href="%PUBLIC_URL%/nikon_patch.wasm" as="fetch" crossorigin="anonymous">
 
   </head>
   <body>
@@ -49,7 +49,7 @@ ga('send', 'pageview');
       <script type="text/javascript">
         var Module = {
                 locateFile: function(s) {
-                return '/nikon-patch/' + s;
+                return '%PUBLIC_URL%/' + s;
             },
             onRuntimeInitialized: function() { 
             var loading = document.getElementById('webasmloading');
@@ -59,11 +59,11 @@ ga('send', 'pageview');
     </script>
 	
 	<!-- React Script stuff -->
-	<script type="text/javascript" src="/nikon-patch/nikon_patch.js"></script>
+	<script type="text/javascript" src="%PUBLIC_URL%/nikon_patch.js"></script>
     <div class="help_box">
         <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_Help">Patching How-To Help</a></h2></div>
         <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_FAQ">Patching FAQ</a></h2></div>
-        <div class="help_link"><h2><a href="changelog.html">Change Log</a></h2></div>
+        <div class="help_link"><h2><a href="%PUBLIC_URL%/changelog.html">Change Log</a></h2></div>
     </div>
     <div class="flow" >
         <div class="flow_a">
