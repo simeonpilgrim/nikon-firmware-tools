@@ -1,3 +1,19 @@
+D750
+=====
+
+B Firmware
+---
+file: b1010_nnnd.bin  
+processor: ARM v7 LE  
+load base: 0x90020000  
+
+mem maps: v1.10  
+Src|Dst|Len|Status
+---|---|---|---
+0x912bec08|0x10000000|0x30344|rwx
+0x912eef4c|0x10030344|0xf95c|rw
+0x9135fc40|0x100a1400|0x5340c|rw
+
 D7100
 =====
 
@@ -6,6 +22,7 @@ B Firmware
 file: b760nnnn.bin  
 processor: ARM v7 LE  
 load base: 0x50020000  
+
 mem maps: v1.04  
 Src|Dst|Len|Status
 ---|---|---|---
@@ -21,7 +38,8 @@ B Firmware
 ---
 file: b930_nnn.bin  
 processor: ARM v7 LE  
-load base: 0x90020000  
+load base: 0x90020000 
+
 mem maps: v1.03
 Src|Dst|Len|Status
 ---|---|---|---
@@ -45,6 +63,7 @@ B Firmware
 file: b860_nnn.bin  
 processor: ARM v7 LE  
 load base: 90020000  
+
 mem maps: v1.02  
 
 Src|Dst|Len|Status
@@ -53,3 +72,12 @@ Src|Dst|Len|Status
 0x915c590c|0x1003b5b4|0x0000179c|rw
 0x916a73a0|0x1011d420|0x00028b3c|rw
 0x916a739c|0x1011d03c|4|rw
+
+D3200
+=====
+
+B Firmware
+---
+file: b640nnnb.bin  
+processor: FR BE  
+
