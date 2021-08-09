@@ -14,6 +14,15 @@ Src|Dst|Len|Status
 0x912eef4c|0x10030344|0xf95c|rw
 0x9135fc40|0x100a1400|0x5340c|rw
 
+D780
+=====
+
+B Firmware
+---
+file: eg1510_nnnnb0.bi  
+processor: ARM v7 LE  
+load base: 0x12020000  
+
 
 D7100
 =====
@@ -66,6 +75,7 @@ Src|Dst|Len|Status
 0x914d43d8|0x1003b5b4|0x1834|rw
 0x915b26a0|0x10119c60|0x1cd4c|rw
 0x915b2688|0x10119868|0x4|rw
+
 segments:
 Addr|Len|Status|Notesg
 ---|---|---|---
