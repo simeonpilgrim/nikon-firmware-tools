@@ -8,3 +8,6 @@ IDA_files/D7000/105/b750105a.bin
 IDA_files/D7000/105/b750105a.idb
 .vscode/
 Nikon-Patch-JS/.eslintcache
+Java/Emulator/batch_build/
+Java/Emulator/ant_build/
+Java/Emulator/.idea/
