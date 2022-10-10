@@ -201,7 +201,7 @@ namespace Nikon_Patch
             sb.Append("}\n");
             sb.Append("</script>\n");
             string lastModel = "";
-            sb.Append("<ul style=\"list-style-type: none\">\n");
+            sb.Append("<ul style=\"list-style-type: none;\">\n");
             foreach (var hm in hashMap)
             {
                 Firmware f = hm.Value;
@@ -211,7 +211,7 @@ namespace Nikon_Patch
                     {
                         sb.Append("</ul></li>\n");
                     }
-                    sb.Append("<li>\n");
+                    sb.Append("<li style=\"margin - bottom: 10px;\">\n");
                     sb.AppendFormat("<a style=\"cursor: pointer;\" onclick=\"toggle('mo{0}', 'mos{0}')\">\n", f.Model);
                     sb.AppendFormat("<span id='mos{0}'><img src=\"https://simeonpilgrim.com/blog/plus.png\" width=\"11\" height=\"12\" alt=\"\">&nbsp;</span></a> {0}\n", f.Model);
                     sb.AppendFormat("<ul id=\"mo{0}\" style=\"display: none\">\n", f.Model);
