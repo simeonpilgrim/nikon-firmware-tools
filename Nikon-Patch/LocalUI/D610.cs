@@ -126,4 +126,23 @@
             Version = "1.02";
         }
     }
+    //
+
+    class D610_0104 : Firmware
+    {
+        Patch[] patch_Language_Fix = {
+            new Patch(1, 0x380868, new byte[] { 0xE2, 0x08 }, new byte[] { 0xE0, 0x08 }),
+            new Patch(1, 0x385D68, new byte[] { 0xE2, 0x11 }, new byte[] { 0xE0, 0x11 }),
+            new Patch(1, 0x41EC5C, new byte[] { 0xE2, 0x06 }, new byte[] { 0xE0, 0x06 }),
+        };
+
+        public D610_0104()
+        {
+            p = new Package();
+            Model = "D610";
+            Version = "1.04";
+
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Multi-Language Support", patch_Language_Fix));
+        }
+    }
 }
