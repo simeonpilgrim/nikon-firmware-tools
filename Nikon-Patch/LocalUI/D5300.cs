@@ -13,7 +13,7 @@
     class D5300_0102 : Firmware
     {
         static byte[] mbps_24_20be = { 0x00, 0x36, 0x6e, 0x01, 0x00, 0x2D, 0x31, 0x01 };
-        static byte[] mbpa_42_35be = { 0x80, 0xDE, 0x80, 0x02, 0xC0, 0x0E, 0x16, 0x02 };
+        static byte[] mbps_42_35be = { 0x80, 0xDE, 0x80, 0x02, 0xC0, 0x0E, 0x16, 0x02 };
         static byte[] mbps_64_60be = { 0x00, 0x90, 0xd0, 0x03, 0x00, 0x87, 0x93, 0x03 };
 
         // the above values divided by 1,000
@@ -22,8 +22,8 @@
         static byte[] mbps_64_60tbe = { 0x00, 0xFA, 0x00, 0x00, 0x60, 0xEA };
 
         Patch[] patch_hq_64mbps = {
-            new Patch(1, 0x12B5D50, mbpa_42_35be, mbps_64_60be),
-            new Patch(1, 0x12B5D60, mbpa_42_35be, mbps_64_60be),
+            new Patch(1, 0x12B5D50, mbps_42_35be, mbps_64_60be),
+            new Patch(1, 0x12B5D60, mbps_42_35be, mbps_64_60be),
             new Patch(1, 0x12B5D70, mbps_24_20be, mbps_64_60be),
             new Patch(1, 0x12B5D80, mbps_24_20be, mbps_64_60be),
             new Patch(1, 0x12B5D90, mbps_24_20be, mbps_64_60be),
@@ -65,7 +65,7 @@
            };
 
         static byte[] mbps_24_20be = { 0x00, 0x36, 0x6e, 0x01, 0x00, 0x2D, 0x31, 0x01 };
-        static byte[] mbpa_42_35be = { 0x80, 0xDE, 0x80, 0x02, 0xC0, 0x0E, 0x16, 0x02 };
+        static byte[] mbps_42_35be = { 0x80, 0xDE, 0x80, 0x02, 0xC0, 0x0E, 0x16, 0x02 };
         static byte[] mbps_64_60be = { 0x00, 0x90, 0xd0, 0x03, 0x00, 0x87, 0x93, 0x03 };
 
         // the above values divided by 1,000
@@ -75,8 +75,8 @@
 
         Patch[] patch_hq_64mbps = {
             //1284E98   -0x30EC0
-            new Patch(1, 0x12B5D50-0x30EC0, mbpa_42_35be, mbps_64_60be),
-            new Patch(1, 0x12B5D60-0x30EC0, mbpa_42_35be, mbps_64_60be),
+            new Patch(1, 0x12B5D50-0x30EC0, mbps_42_35be, mbps_64_60be),
+            new Patch(1, 0x12B5D60-0x30EC0, mbps_42_35be, mbps_64_60be),
             new Patch(1, 0x12B5D70-0x30EC0, mbps_24_20be, mbps_64_60be),
             new Patch(1, 0x12B5D80-0x30EC0, mbps_24_20be, mbps_64_60be),
             new Patch(1, 0x12B5D90-0x30EC0, mbps_24_20be, mbps_64_60be),
