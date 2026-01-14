@@ -74,6 +74,7 @@ namespace Nikon_Patch
             hashMap.Add(new byte[] { 0xA6, 0xA6, 0xC6, 0xA7, 0x74, 0x8D, 0x5A, 0xCC, 0x97, 0xE8, 0x59, 0xAD, 0x50, 0x31, 0xAC, 0xE5 }, new D800E_0110());
             hashMap.Add(new byte[] { 0x0E, 0xED, 0x2B, 0xB2, 0x48, 0x75, 0x61, 0x5B, 0x5F, 0x40, 0x8D, 0x6D, 0x90, 0x3A, 0x66, 0xC6 }, new D810_0102());
             hashMap.Add(new byte[] { 0xf6, 0x20, 0xac, 0xd9, 0x86, 0x30, 0xcd, 0x78, 0x39, 0x5e, 0x47, 0x3a, 0xf0, 0x42, 0x10, 0x87 }, new D810_0112());
+            hashMap.Add(new byte[] { 0xF5, 0xBE, 0xB1, 0x47, 0x93, 0xE5, 0xB2, 0x2D, 0x07, 0xA6, 0xA8, 0xBB, 0x58, 0xB7, 0xB6, 0x29 }, new D810_0114());
             hashMap.Add(new byte[] { 0x55, 0x05, 0x0d, 0x9a, 0xe3, 0x71, 0xd2, 0xb5, 0x6b, 0xb0, 0x94, 0x95, 0x26, 0xcc, 0xb5, 0x0e }, new D810A_0102());
             hashMap.Add(new byte[] { 0xB0, 0x1F, 0xD3, 0xDF, 0xE5, 0x74, 0x2F, 0xB7, 0x49, 0xA0, 0x85, 0xD3, 0xE4, 0x14, 0x52, 0x7D }, new D4_0105());
             hashMap.Add(new byte[] { 0x80, 0x9D, 0xBB, 0xE0, 0x40, 0x95, 0x4E, 0x02, 0x24, 0xF0, 0x95, 0xB9, 0xC2, 0xF6, 0xA8, 0xC0 }, new D4_0110());
@@ -99,27 +100,27 @@ namespace Nikon_Patch
 
                 StringBuilder psb = new StringBuilder();
 
-                psb.AppendLine($"struct Patch {type}_patches[] = {{");
+                psb.AppendLine(string.Format("struct Patch {0}_patches[] = {{", type));
                 var patches = pm.Value.Patches.AsEnumerable().ToList();
                 int p_id = 0;
                 foreach (var p in patches)
                 {
                     int c_id = 0;
-                    var patch_name = $"{type}_{p_id:000}";
+                    var patch_name = string.Format("{0}_{1:000}", type, p_id);
                     var change_names = new List<string>();
                     foreach(var c in p.changes)
                     {
-                        var change_name = $"{patch_name}_change_{c_id:000}";
+                        var change_name = string.Format("{0}_change_{1:000}", patch_name, c_id);
                         change_names.Add("&"+change_name);
-                        var bl = $"uint8_t {change_name}_b[] = {{{string.Join(",", c.orig.Select(v => string.Format("0x{0:X2}", v)))}}};";
-                        var al = $"uint8_t {change_name}_a[] = {{{string.Join(",", c.patch.Select(v => string.Format("0x{0:X2}", v)))}}};";
-                        var cl = $"struct Change {change_name} = CHANGE({c.block}, 0x{c.start:X6}, {change_name}_b, {change_name}_a);";
+                        var bl = string.Format("uint8_t {0}_b[] = {{{1}}};", change_name, string.Join(",", c.orig.Select(v => string.Format("0x{0:X2}", v))));
+                        var al = string.Format("uint8_t {0}_a[] = {{{1}}};", change_name, string.Join(",", c.patch.Select(v => string.Format("0x{0:X2}", v))));
+                        var cl = string.Format("struct Change {0} = CHANGE({1}, 0x{2:X6}, {0}_b, {0}_a);", change_name, c.block, c.start);
                         sb.AppendLine(bl);
                         sb.AppendLine(al);
                         sb.AppendLine(cl);
                         c_id++;
                     }
-                    sb.AppendLine($"struct Change const * {patch_name}[] = {{{string.Join(",", change_names)}}};");
+                    sb.AppendLine(string.Format("struct Change const * {0}[] = {{{1}}};", patch_name, string.Join(",", change_names)));
                     sb.AppendLine();
 
                     int idx = patches.IndexOf(p) + 1;
@@ -138,7 +139,7 @@ namespace Nikon_Patch
                     }
 
                     var blocks = string.Join(",", blocksS);
-                    var s = $"    {sep}{{.id = {idx}, .level = {status}, .name=\"{p.Name}\", .blocks={{{blocks}}}, .changes={patch_name}, .changes_len=(sizeof({patch_name})/sizeof(struct Change*))}}";
+                    var s = string.Format("    {0}{{.id = {1}, .level = {2}, .name=\"{3}\", .blocks={{{4}}}, .changes={5}, .changes_len=(sizeof({5})/sizeof(struct Change*))}}", sep, idx, status, p.Name, blocks, patch_name);
                     psb.AppendLine(s);
                     p_id++;
                 }
@@ -153,7 +154,7 @@ namespace Nikon_Patch
             {
                 var type = pm.Value.GetType().ToString().Split('.')[1];
                 var firmware_type = pm.Value.p is Package ? 0 : 1;
-                sb.AppendLine($"struct PatchSet {type}_ps = PATCHSET(\"{pm.Value.Model}\", \"{pm.Value.Version}\", {type}_patches, {firmware_type});");
+                sb.AppendLine(string.Format("struct PatchSet {0}_ps = PATCHSET(\"{1}\", \"{2}\", {0}_patches, {3});", type, pm.Value.Model, pm.Value.Version, firmware_type));
                 //struct PatchSet D5100_0102_ps = PATCHSET("D5100", "1.02", D5100_0102_patches);
             }
 
@@ -167,7 +168,7 @@ namespace Nikon_Patch
                 var hash = string.Join(",", pm.Key.Select(k => string.Format("0x{0:X2}", k)));
                 var sep = id > 1 ? "," : "";
                 var type = pm.Value.GetType().ToString().Split('.')[1];
-                var s = $"     {sep}{{.id = {id}, .hash = {{{hash}}}, .patches = &{type}_ps}}";
+                var s = string.Format("     {0}{{.id = {1}, .hash = {{{2}}}, .patches = &{3}_ps}}", sep, id, hash, type);
                 sb.AppendLine(s);
                 id+=1;
                 //     {.id = 1, .hash = {0x22, 0x14, 0x21, 0x0A, 0xD2, 0xC6, 0x5B, 0x5E, 0x85, 0x78, 0x99, 0xCA, 0x79, 0xF3, 0xDA, 0x19}, .patches=&D5100_0102_ps},
