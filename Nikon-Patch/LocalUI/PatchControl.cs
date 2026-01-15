@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
@@ -100,27 +100,27 @@ namespace Nikon_Patch
 
                 StringBuilder psb = new StringBuilder();
 
-                psb.AppendLine(string.Format("struct Patch {0}_patches[] = {{", type));
+                psb.AppendLine($"struct Patch {type}_patches[] = {{");
                 var patches = pm.Value.Patches.AsEnumerable().ToList();
                 int p_id = 0;
                 foreach (var p in patches)
                 {
                     int c_id = 0;
-                    var patch_name = string.Format("{0}_{1:000}", type, p_id);
+                    var patch_name = $"{type}_{p_id:000}";
                     var change_names = new List<string>();
                     foreach(var c in p.changes)
                     {
-                        var change_name = string.Format("{0}_change_{1:000}", patch_name, c_id);
+                        var change_name = $"{patch_name}_change_{c_id:000}";
                         change_names.Add("&"+change_name);
-                        var bl = string.Format("uint8_t {0}_b[] = {{{1}}};", change_name, string.Join(",", c.orig.Select(v => string.Format("0x{0:X2}", v))));
-                        var al = string.Format("uint8_t {0}_a[] = {{{1}}};", change_name, string.Join(",", c.patch.Select(v => string.Format("0x{0:X2}", v))));
-                        var cl = string.Format("struct Change {0} = CHANGE({1}, 0x{2:X6}, {0}_b, {0}_a);", change_name, c.block, c.start);
+                        var bl = $"uint8_t {change_name}_b[] = {{{string.Join(",", c.orig.Select(v => string.Format("0x{0:X2}", v)))}}};";
+                        var al = $"uint8_t {change_name}_a[] = {{{string.Join(",", c.patch.Select(v => string.Format("0x{0:X2}", v)))}}};";
+                        var cl = $"struct Change {change_name} = CHANGE({c.block}, 0x{c.start:X6}, {change_name}_b, {change_name}_a);";
                         sb.AppendLine(bl);
                         sb.AppendLine(al);
                         sb.AppendLine(cl);
                         c_id++;
                     }
-                    sb.AppendLine(string.Format("struct Change const * {0}[] = {{{1}}};", patch_name, string.Join(",", change_names)));
+                    sb.AppendLine($"struct Change const * {patch_name}[] = {{{string.Join(",", change_names)}}};");
                     sb.AppendLine();
 
                     int idx = patches.IndexOf(p) + 1;
@@ -139,7 +139,7 @@ namespace Nikon_Patch
                     }
 
                     var blocks = string.Join(",", blocksS);
-                    var s = string.Format("    {0}{{.id = {1}, .level = {2}, .name=\"{3}\", .blocks={{{4}}}, .changes={5}, .changes_len=(sizeof({5})/sizeof(struct Change*))}}", sep, idx, status, p.Name, blocks, patch_name);
+                    var s = $"    {sep}{{.id = {idx}, .level = {status}, .name=\"{p.Name}\", .blocks={{{blocks}}}, .changes={patch_name}, .changes_len=(sizeof({patch_name})/sizeof(struct Change*))}}";
                     psb.AppendLine(s);
                     p_id++;
                 }
@@ -154,7 +154,7 @@ namespace Nikon_Patch
             {
                 var type = pm.Value.GetType().ToString().Split('.')[1];
                 var firmware_type = pm.Value.p is Package ? 0 : 1;
-                sb.AppendLine(string.Format("struct PatchSet {0}_ps = PATCHSET(\"{1}\", \"{2}\", {0}_patches, {3});", type, pm.Value.Model, pm.Value.Version, firmware_type));
+                sb.AppendLine($"struct PatchSet {type}_ps = PATCHSET(\"{pm.Value.Model}\", \"{pm.Value.Version}\", {type}_patches, {firmware_type});");
                 //struct PatchSet D5100_0102_ps = PATCHSET("D5100", "1.02", D5100_0102_patches);
             }
 
@@ -168,7 +168,7 @@ namespace Nikon_Patch
                 var hash = string.Join(",", pm.Key.Select(k => string.Format("0x{0:X2}", k)));
                 var sep = id > 1 ? "," : "";
                 var type = pm.Value.GetType().ToString().Split('.')[1];
-                var s = string.Format("     {0}{{.id = {1}, .hash = {{{2}}}, .patches = &{3}_ps}}", sep, id, hash, type);
+                var s = $"     {sep}{{.id = {id}, .hash = {{{hash}}}, .patches = &{type}_ps}}";
                 sb.AppendLine(s);
                 id+=1;
                 //     {.id = 1, .hash = {0x22, 0x14, 0x21, 0x0A, 0xD2, 0xC6, 0x5B, 0x5E, 0x85, 0x78, 0x99, 0xCA, 0x79, 0xF3, 0xDA, 0x19}, .patches=&D5100_0102_ps},
