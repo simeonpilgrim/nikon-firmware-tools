@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import './App.css';
 import { saveAs } from 'file-saver';
 
-/*global _detectFirmware _patch_firmare _getInFilePtr _getOutFilePtr _getJsonPtr _getMaxFileSize _getSelectPtr Module EventFunction*/
-
 
 class FirmwareControl extends Component {
     constructor(props){
@@ -60,7 +58,7 @@ class FirmwareControl extends Component {
             EventFunction("OpenFile",file.name);
             var data = new Uint8Array(fr.result);
             var data_mem = _getInFilePtr();
-            Module.HEAPU8.set(data, data_mem);
+            HEAPU8.set(data, data_mem);
 
             var outcount = _detectFirmware(data.length);
             if(outcount>0){
@@ -90,14 +88,14 @@ class FirmwareControl extends Component {
             }
         }
         var select_ptr = _getSelectPtr();
-        Module.HEAPU32.set(selected, select_ptr/4);
+        HEAPU32.set(selected, select_ptr/4);
 
         var ret = _patch_firmare(selected.length);
 
         if(ret>0){
             EventFunction("SaveFile",selected.toString());
             var outptr = _getOutFilePtr();
-            var data = new Uint8Array(Module.HEAPU8.buffer, outptr, ret);
+            var data = new Uint8Array(HEAPU8.buffer, outptr, ret);
             var blob = new Blob([data], {type: 'binary/octet-stream'});
             saveAs(blob, "patched_"+this.state.filename, true);
         }
@@ -141,8 +139,8 @@ class FirmwareControl extends Component {
         if(this.state.warnShow){
             warnContext = <div>
                 <label>You have selected Beta or Alpha level patches.</label>
-                <ul><li class="Beta">Beta level patches might not work correctly but can be recovered from.</li>
-                <li class="Alpha">Alpha level patches might not work AND might not be recoverable from. These could damage your camera!</li></ul>
+                <ul><li className="Beta">Beta level patches might not work correctly but can be recovered from.</li>
+                <li className="Alpha">Alpha level patches might not work AND might not be recoverable from. These could damage your camera!</li></ul>
                 <button onClick={this.handleAcceptClick} disabled={this.state.warnAccept}>{this.state.warnAccept?"Accepted":"Accept"}</button>
             </div>
         }

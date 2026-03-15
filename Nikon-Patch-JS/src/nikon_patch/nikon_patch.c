@@ -22,18 +22,18 @@ struct BlockOffset {
     int length;
 };
 
-const uint32_t MAX_BLOCKS = 10;
+enum { MAX_BLOCKS = 10 };
 struct BlockOffset blocks_table[MAX_BLOCKS];
 
-const uint32_t MAX_OUTPUT = 4*1024;
+enum { MAX_OUTPUT = 4*1024 };
 char output[MAX_OUTPUT];
 
-const int32_t MAX_FILE = 50*1024*1024;
+enum {MAX_FILE = 50*1024*1024};
 uint32_t data_length = 0;
 uint8_t input_file[MAX_FILE];
 uint8_t output_file[MAX_FILE];
 
-const uint32_t MAX_SELECT = 20;
+enum { MAX_SELECT = 20 };
 uint32_t selected[MAX_SELECT];
 
 char const * const PatchLevelStr[] = {"DevOnly","Alpha","Beta","Released"};

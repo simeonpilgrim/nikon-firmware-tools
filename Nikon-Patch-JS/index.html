@@ -4,54 +4,41 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#000000">
-    <!--
-      manifest.json provides metadata used when your web app is added to the
-      homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
-    -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    <link rel="manifest" href="/manifest.json">
+    <link rel="shortcut icon" href="/favicon.ico">
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-	
     <!-- javascript called by WebAssembley to register actions for analytics -->
     <script type="text/javascript">
         function EventFunction(cat, action, label) {
             //ga('send', 'event', cat, action, label);
         }
     </script>
-	
+
     <title>Nikon-Patch</title>
-    <link rel="preload" href="%PUBLIC_URL%/nikon_patch.js" as="script">
-    <link rel="preload" href="%PUBLIC_URL%/nikon_patch.wasm" as="fetch" crossorigin="anonymous">
+    <link rel="preload" href="/nikon_patch.js" as="script">
+    <link rel="preload" href="/nikon_patch.wasm" as="fetch" crossorigin="anonymous">
 
   </head>
   <body>
       <!-- javascript to load WebAssembley -->
       <script type="text/javascript">
         var Module = {
-                locateFile: function(s) {
-                return '%PUBLIC_URL%/' + s;
+            locateFile: function(s) {
+                return '/nikon-patch/' + s;
             },
-            onRuntimeInitialized: function() { 
-            var loading = document.getElementById('webasmloading');
-            loading.style.display = 'none';
+            onRuntimeInitialized: function() {
+                var loading = document.getElementById('webasmloading');
+                loading.style.display = 'none';
             }
         }
     </script>
-	
+
 	<!-- React Script stuff -->
-	<script type="text/javascript" src="%PUBLIC_URL%/nikon_patch.js"></script>
+	<script type="text/javascript" src="/nikon_patch.js"></script>
     <div class="help_box">
-        <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_Help">Patching How-To Help</a></h2></div>
-        <div class="help_link"><h2><a href="https://nikonhacker.com/wiki/Patching_FAQ">Patching FAQ</a></h2></div>
-        <div class="help_link"><h2><a href="%PUBLIC_URL%/changelog.html">Change Log</a></h2></div>
+        <div class="help_link"><h2><a href="https://web.archive.org/web/20191025111942/https://nikonhacker.com/wiki/Patching_Help">Patching How-To Help</a></h2></div>
+        <div class="help_link"><h2><a href="https://web.archive.org/web/20191029215924/https://nikonhacker.com/wiki/Patching_FAQ">Patching FAQ</a></h2></div>
+        <div class="help_link"><h2><a href="/nikon-patch/changelog.html">Change Log</a></h2></div>
     </div>
     <div class="flow" >
         <div class="flow_a">
@@ -65,8 +52,7 @@
                 <noscript>
                 You need to enable JavaScript to run this app.
                 </noscript>
-                <div id="webasmloading">Waiting for WebAssembley code to complete loading.... 
-                    <div>Which will not work on IE 11 and earlier</div>
+                <div id="webasmloading">Waiting for WebAssembley code to complete loading....
                 </div>
                 <div id="rootwrap">
                     <div class="root" id="root"></div>
@@ -467,5 +453,6 @@
             </div>
         </div>
     </div>
+    <script type="module" src="/src/index.jsx"></script>
   </body>
 </html>

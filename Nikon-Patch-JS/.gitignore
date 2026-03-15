@@ -8,6 +8,9 @@
 
 # production
 /build
+/dist
+# emsdk
+/emsdk
 
 # misc
 .DS_Store
@@ -25,3 +28,9 @@ public/nikon_patch.js
 public/nikon_patch.wasm
 src/nikon_patch/nikon_patch.js
 src/nikon_patch/nikon_patch.wasm
+
+# Environments
+.env
+env/
+ENV/
+env.bak/
