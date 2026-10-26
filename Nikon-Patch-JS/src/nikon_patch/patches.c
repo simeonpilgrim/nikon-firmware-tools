@@ -867,7 +867,18 @@ struct Patch D3200_0103_patches[] = {
     ,{.id = 7, .level = Released, .name="Change 15 - minute LiveView to 3 - hour", .blocks={}, .changes=D3200_0103_006, .changes_len=(sizeof(D3200_0103_006)/sizeof(struct Change*))}
 };
 
+uint8_t D3200_0104_000_change_000_b[] = {0x9F,0x8C,0x00,0x3D,0x09,0xD6,0x97,0x1C};
+uint8_t D3200_0104_000_change_000_a[] = {0xC0,0x14,0x9F,0xA0,0x9F,0xA0,0x9F,0xA0};
+struct Change D3200_0104_000_change_000 = CHANGE(1, 0x1965AC, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change D3200_0104_000_change_001 = CHANGE(1, 0x197668, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change D3200_0104_000_change_002 = CHANGE(1, 0x197746, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change D3200_0104_000_change_003 = CHANGE(1, 0x19781A, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change D3200_0104_000_change_004 = CHANGE(1, 0x19B33C, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change D3200_0104_000_change_005 = CHANGE(1, 0x200216, D3200_0104_000_change_000_b, D3200_0104_000_change_000_a);
+struct Change const * D3200_0104_000[] = {&D3200_0104_000_change_000,&D3200_0104_000_change_001,&D3200_0104_000_change_002,&D3200_0104_000_change_003,&D3200_0104_000_change_004,&D3200_0104_000_change_005};
+
 struct Patch D3200_0104_patches[] = {
+    {.id = 1, .level = Beta, .name="HDMI audio without sound level meter", .blocks={}, .changes=D3200_0104_000, .changes_len=(sizeof(D3200_0104_000)/sizeof(struct Change*))}
 };
 
 struct Patch D3300_0101_patches[] = {

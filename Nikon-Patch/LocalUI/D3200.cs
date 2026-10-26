@@ -299,6 +299,19 @@
         //    new Patch(1, 0x2397EE, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
         //};
 
+        // LV audio capture (which feeds HDMI audio) only runs while the sound level meter is shown.
+        // Replace "LDI:32 #0x3D09D6,R12; CALL @R12" (meter visible?) with "LDI:8 #1,R4; NOP x3" at each capture start/stop decision.
+        static readonly byte[] meter_check = { 0x9F, 0x8C, 0x00, 0x3D, 0x09, 0xD6, 0x97, 0x1C };
+        static readonly byte[] meter_forced = { 0xC0, 0x14, 0x9F, 0xA0, 0x9F, 0xA0, 0x9F, 0xA0 };
+        Patch[] patch_hdmi_audio = {
+            new Patch(1, 0x1965AC, meter_check, meter_forced),
+            new Patch(1, 0x197668, meter_check, meter_forced),
+            new Patch(1, 0x197746, meter_check, meter_forced),
+            new Patch(1, 0x19781A, meter_check, meter_forced),
+            new Patch(1, 0x19B33C, meter_check, meter_forced),
+            new Patch(1, 0x200216, meter_check, meter_forced),
+        };
+
         public D3200_0104()
         {
             p = new Package();
@@ -306,6 +319,7 @@
             Version = "1.04";
 
             //Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI audio without sound level meter", patch_hdmi_audio));
         }
     }
 }
