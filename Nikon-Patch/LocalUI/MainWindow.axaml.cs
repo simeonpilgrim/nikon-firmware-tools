@@ -1,21 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Data.Odbc;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+using Avalonia.Controls;
+using Avalonia.Interactivity;
+using Avalonia.Layout;
+using Avalonia.Platform.Storage;
 
 namespace Nikon_Patch
 {
-    public partial class MainForm : Form
+    public partial class MainWindow : Window
     {
-        public MainForm()
+        public MainWindow()
         {
             InitializeComponent();
 
@@ -50,33 +48,56 @@ namespace Nikon_Patch
             HelpMap.Add("HDMI Output 720p FullScreen", "This forces HDMI 720p output to be fullscreen");
 
             HelpMap.Add("Liveview (15min) No Timeout", "When you select the 15min liveview timeout option, you will get 3 hours instead");
-
         }
 
         private Dictionary<string, string> HelpMap = new Dictionary<string, string>();
 
-        private void DecodeButton_Click(object sender, EventArgs e)
+        static readonly FilePickerFileType BinFiles = new FilePickerFileType("Binary Files (.bin)") { Patterns = new[] { "*.bin" } };
+        static readonly FilePickerFileType CFiles = new FilePickerFileType("C Files (.c)") { Patterns = new[] { "*.c" } };
+        static readonly FilePickerFileType AllFiles = new FilePickerFileType("All Files (*.*)") { Patterns = new[] { "*" } };
+
+        private async Task<string> OpenBinFile(string title)
         {
-            // Create an instance of the open file dialog box.
-            OpenFileDialog ofd = new OpenFileDialog();
-
-            ofd.Title = "Select Nikon firmware .bin file to decode";
-            // Set filter options and filter index.
-            ofd.Filter = "Binary Files (.bin)|*.bin|All Files (*.*)|*.*";
-            ofd.FilterIndex = 1;
-            ofd.Multiselect = false;
-
-            // Call the ShowDialog method to show the dialog box.
-            var userClickedOK = ofd.ShowDialog();
-
-            // Process input if the user clicked OK.
-            if (userClickedOK == DialogResult.OK)
+            var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                DecodeAndExtractFirm(ofd.FileName);
+                Title = title,
+                AllowMultiple = false,
+                FileTypeFilter = new[] { BinFiles, AllFiles },
+            });
+
+            return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+        }
+
+        private async Task MessageBox(string text)
+        {
+            var ok = new Button { Content = "OK", HorizontalAlignment = HorizontalAlignment.Right };
+            var dlg = new Window
+            {
+                Title = Title,
+                SizeToContent = SizeToContent.WidthAndHeight,
+                CanResize = false,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Content = new StackPanel
+                {
+                    Margin = new Avalonia.Thickness(16),
+                    Spacing = 12,
+                    Children = { new TextBlock { Text = text, MaxWidth = 400, TextWrapping = Avalonia.Media.TextWrapping.Wrap }, ok }
+                }
+            };
+            ok.Click += (s, e) => dlg.Close();
+            await dlg.ShowDialog(this);
+        }
+
+        private async void DecodeButton_Click(object sender, RoutedEventArgs e)
+        {
+            var filename = await OpenBinFile("Select Nikon firmware .bin file to decode");
+            if (filename != null)
+            {
+                await DecodeAndExtractFirm(filename);
             }
         }
 
-        private static void DecodeAndExtractFirm(string filename)
+        private async Task DecodeAndExtractFirm(string filename)
         {
 
             //SendEvent("TryFile", openFileDialog1.File.Name);
@@ -84,21 +105,19 @@ namespace Nikon_Patch
             var ext = Path.GetExtension(filename).ToLower();
             if (ext == ".dmg")
             {
-                MessageBox.Show("Please open the DMG file and select the .BIN file inside");
+                await MessageBox("Please open the DMG file and select the .BIN file inside");
                 return;
             }
             if (ext == ".exe")
             {
-                MessageBox.Show("Please open the .EXE file and select the .BIN file inside");
+                await MessageBox("Please open the .EXE file and select the .BIN file inside");
                 return;
             }
             if (ext != ".bin")
             {
-                MessageBox.Show("The files need to be a Nikon Firmware .BIN file");
+                await MessageBox("The files need to be a Nikon Firmware .BIN file");
                 return;
             }
-
-
 
             // Open the selected file to read.
             System.IO.Stream fileStream = File.OpenRead(filename);
@@ -177,24 +196,21 @@ namespace Nikon_Patch
         }
 
 
-        private void ExportCFile_Click(object sender, EventArgs e)
+        private async void ExportCFile_Click(object sender, RoutedEventArgs e)
         {
-            // Create an instance of the open file dialog box.
-            SaveFileDialog ofd = new SaveFileDialog();
-
-            ofd.Title = "Select the file to write the C patch code into..";
-
-            // Set filter options and filter index.
-            ofd.Filter = "Binary Files (.c)|*.c|All Files (*.*)|*.*";
-            ofd.FilterIndex = 1;
-
-            // Call the ShowDialog method to show the dialog box.
-            var userClickedOK = ofd.ShowDialog();
-            if (userClickedOK == DialogResult.OK)
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                PatchControl.ExportToC(ofd.FileName);
+                Title = "Select the file to write the C patch code into..",
+                FileTypeChoices = new[] { CFiles, AllFiles },
+                DefaultExtension = "c",
+            });
 
-                using (var s = File.CreateText(ofd.FileName + ".html"))
+            var filename = file?.TryGetLocalPath();
+            if (filename != null)
+            {
+                PatchControl.ExportToC(filename);
+
+                using (var s = File.CreateText(filename + ".html"))
                 {
 
                     s.Write(PatchControl.BuildPatchMatrix());
@@ -206,7 +222,7 @@ namespace Nikon_Patch
         {
             tFirmwareName.Text = "";
             tFirmwareVersion.Text = "";
-            lstFeatures.DataSource = null;
+            lstFeatures.ItemsSource = null;
         }
 
         Firmware firm = null;
@@ -219,51 +235,41 @@ namespace Nikon_Patch
                 if (e.PropertyName == "Enabled")
                 {
                     canSave = firm != null && firm.Patches.Any(p => p.Enabled);
-                    bSaveFirmware.Enabled = canSave;
+                    bSaveFirmware.IsEnabled = canSave;
                 }
             }
         }
 
-        private void PatchFileButton_Click(object sender, EventArgs e)
+        private async void PatchFileButton_Click(object sender, RoutedEventArgs e)
         {
-            // Create an instance of the open file dialog box.
-            OpenFileDialog openFileDialog1 = new OpenFileDialog();
-            openFileDialog1.Title = "Select Nikon firmware .bin file to patch";
-
-            // Set filter options and filter index.
-            openFileDialog1.Filter = "Binary Files (.bin)|*.bin|All Files (*.*)|*.*";
-            openFileDialog1.FilterIndex = 1;
-            openFileDialog1.Multiselect = false;
-
-            // Call the ShowDialog method to show the dialog box.
-            var userClickedOK = openFileDialog1.ShowDialog();
+            var filename = await OpenBinFile("Select Nikon firmware .bin file to patch");
 
             // Process input if the user clicked OK.
-            if (userClickedOK == DialogResult.OK)
+            if (filename != null)
             {
                 //SendEvent("TryFile", openFileDialog1.File.Name);
 
-                var ext = Path.GetExtension(openFileDialog1.FileName).ToLower();
+                var ext = Path.GetExtension(filename).ToLower();
                 if (ext == ".dmg")
                 {
-                    MessageBox.Show("Please open the DMG file and select the .BIN file inside");
+                    await MessageBox("Please open the DMG file and select the .BIN file inside");
                     return;
                 }
                 if (ext == ".exe")
                 {
-                    MessageBox.Show("Please open the .EXE file and select the .BIN file inside");
+                    await MessageBox("Please open the .EXE file and select the .BIN file inside");
                     return;
                 }
                 if (ext != ".bin")
                 {
-                    MessageBox.Show("The files to be a Nikon Firmware .BIN file");
+                    await MessageBox("The files to be a Nikon Firmware .BIN file");
                     return;
                 }
 
                 Clear();
 
                 // Open the selected file to read.
-                System.IO.Stream fileStream = File.OpenRead(openFileDialog1.FileName);
+                System.IO.Stream fileStream = File.OpenRead(filename);
 
                 //SendEvent("OpenFile", openFileDialog1.File.Name);
 
@@ -302,9 +308,8 @@ namespace Nikon_Patch
                         var text = firm.TestPatch();
                         if (text == "")
                         {
-                            lstFeatures.DataSource = firm.Patches;
-                           // lstFeatures.DisplayMember = "DisplayString";
-                            PatchSet.SetListBox(lstFeatures);
+                            lstFeatures.ItemsSource = firm.Patches;
+                            PatchSet.SetPatchList(firm.Patches);
                             tFeature.Text = "";
                         }
                         else
@@ -326,30 +331,28 @@ namespace Nikon_Patch
             }
         }
 
-        private void bSaveFirmware_Click(object sender, EventArgs e)
+        private async void bSaveFirmware_Click(object sender, RoutedEventArgs e)
         {
-            SaveFileDialog saveFileDialog1 = new SaveFileDialog();
-
-            // Set filter options and filter index.
-            saveFileDialog1.Filter = "Binary Files (.bin)|*.bin|All Files (*.*)|*.*";
-            saveFileDialog1.FilterIndex = 1;
-
-            // Call the ShowDialog method to show the dialog box.
-            var userClickedOK = saveFileDialog1.ShowDialog();
+            var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+            {
+                FileTypeChoices = new[] { BinFiles, AllFiles },
+                DefaultExtension = "bin",
+            });
 
             // Process input if the user clicked OK.
-            if (userClickedOK == DialogResult.OK)
+            if (file != null)
             {
-                System.IO.Stream fileStream = saveFileDialog1.OpenFile();
-                firm.Patch(fileStream);
-                fileStream.Close();
+                using (var fileStream = await file.OpenWriteAsync())
+                {
+                    firm.Patch(fileStream);
+                }
                 //SendEvent("SaveFile", firm.ModelVersion, firm.PatchesString);
             }
         }
 
-        private void lstFeatures_SelectedIndexChanged(object sender, EventArgs e)
+        private void lstFeatures_SelectedIndexChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (lstFeatures.Items.Count > 0)
+            if (lstFeatures.ItemCount > 0)
             {
                 var item = lstFeatures.SelectedItem as PatchSet;
                 if (item != null)
@@ -365,47 +368,6 @@ namespace Nikon_Patch
             }
 
             tFeature.Text = "";
-        }
-
-        private void ListBox1_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            if ((e.State & DrawItemState.Selected) == DrawItemState.Selected)
-                e = new DrawItemEventArgs(e.Graphics,
-                                          e.Font,
-                                          e.Bounds,
-                                          e.Index,
-                                          e.State ^ DrawItemState.Selected,
-                                          e.ForeColor,
-                                          Color.Yellow);//Choose the color
-
-            // Draw the background of the ListBox control for each item.
-            e.DrawBackground();
-
-            Brush myBrush = Brushes.Black;
-
-            PatchSet ps = lstFeatures.Items[e.Index] as PatchSet;
-            
-            if (ps != null)
-            {
-                if (ps.Enabled)
-                {
-                    myBrush = Brushes.Blue;
-                }
-
-                e.Graphics.DrawString(string.Format("{0} {1}",ps.Enabled?"*":" ",ps.Name),
-                    e.Font, myBrush, e.Bounds, StringFormat.GenericDefault);
-            }
-            e.DrawFocusRectangle();
-        }
-
-        private void lstFeatures_DoubleClick(object sender, EventArgs e)
-        {
-            if(sender == lstFeatures)
-            {
-                var ps = firm.Patches[lstFeatures.SelectedIndex];
-                ps.Enabled = !ps.Enabled;
-                lstFeatures.Invalidate();
-            }
         }
     }
 }

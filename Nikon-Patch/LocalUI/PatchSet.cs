@@ -1,5 +1,5 @@
-﻿using System.ComponentModel;
-using System.Windows.Forms;
+﻿using System.Collections.Generic;
+using System.ComponentModel;
 
 namespace Nikon_Patch
 {
@@ -30,7 +30,7 @@ namespace Nikon_Patch
                 if (value == true && incompatible.Length > 0 && patches != null)
                 {
                     int i = 0;
-                    foreach (var pps in patches.Items)
+                    foreach (var pps in patches)
                     {
                         foreach (var inc in incompatible)
                         {
@@ -57,10 +57,10 @@ namespace Nikon_Patch
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        static ListBox patches = null; // hack
-        public static void SetListBox(ListBox lb)
+        static IEnumerable<PatchSet> patches = null; // hack
+        public static void SetPatchList(IEnumerable<PatchSet> list)
         {
-            patches = lb;
+            patches = list;
         }
     }
 }

@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:Nikon_Patch"
+        x:Class="Nikon_Patch.MainWindow"
+        Title="Nikon Patch - LocalUI"
+        Width="520" Height="440" MinWidth="420" MinHeight="320">
+  <DockPanel Margin="12">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6">
+      <Button Content="Decode File" Click="DecodeButton_Click" />
+      <Button Content="Encode File" IsEnabled="False" />
+      <Button Content="Patch File" Click="PatchFileButton_Click" />
+      <Button Content="Export Patches to C" Click="ExportCFile_Click" />
+    </StackPanel>
+
+    <StackPanel DockPanel.Dock="Top" Margin="12,12,0,8" Spacing="6">
+      <TextBlock x:Name="tFirmwareName" />
+      <TextBlock x:Name="tFirmwareVersion" />
+    </StackPanel>
+
+    <Button x:Name="bSaveFirmware" DockPanel.Dock="Bottom" Content="Save Firmware"
+            IsEnabled="False" Margin="0,8,0,0" Click="bSaveFirmware_Click" />
+
+    <TextBlock x:Name="tFeature" DockPanel.Dock="Bottom" TextWrapping="Wrap"
+               MinHeight="60" Margin="0,8,0,0" />
+
+    <ListBox x:Name="lstFeatures" SelectionChanged="lstFeatures_SelectedIndexChanged">
+      <ListBox.ItemTemplate>
+        <DataTemplate x:DataType="local:PatchSet">
+          <CheckBox IsChecked="{Binding Enabled}" Content="{Binding Name}" />
+        </DataTemplate>
+      </ListBox.ItemTemplate>
+    </ListBox>
+  </DockPanel>
+</Window>
