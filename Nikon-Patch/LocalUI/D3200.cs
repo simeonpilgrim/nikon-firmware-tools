@@ -295,9 +295,98 @@
 
     class D3200_0104 : Firmware
     {
-        //Patch[] patch_Extend_LiveView = {
-        //    new Patch(1, 0x2397EE, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
-        //};
+        Patch[] patch_1080_36mbps = {
+            new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+                                  };
+
+        Patch[] patch_1080_36mbps_NQ = {
+            new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x02 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
+                                  };
+
+        Patch[] patch_1080_54mbps = {
+            new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+                                  };
+
+        Patch[] patch_Language_Fix = {
+            new Patch(1, 0x343EE4, new byte[] { 0xE2, 0x08 }, new byte[] { 0xE0, 0x08 }),
+            new Patch(1, 0x347D52, new byte[] { 0xE2, 0x11 }, new byte[] { 0xE0, 0x11 }),
+            new Patch(1, 0x3D8648, new byte[] { 0xE2, 0x06 }, new byte[] { 0xE0, 0x06 }),    
+            new Patch(1, 0x3E45B6, new byte[] { 0xB1, 0xF4 }, new byte[] { 0xC0, 0x04 }),
+                          };
+
+        Patch[] patch_1080_54mbps_NQ = {
+            new Patch(1, 0x2398C, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23992, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x239A0, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x239B8, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x239BE, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x239CC, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x23A04, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23A0A, new byte[] { 0x01 } , new byte[] { 0x03 } ),
+            new Patch(1, 0x23A18, Sys.mbps12 , Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
+                                  };
+
+        Patch[] patch_1080_64mbps_NQ = {
+            new Patch(1, 0x2398C, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x23992, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x239A0, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x239A6, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x239B8, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x239BE, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x239CC, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x239D2, Sys.mbps10, Sys.mbps20 ),
+
+            new Patch(1, 0x23A04, Sys.mbps24, Sys.mbps64 ),
+            new Patch(1, 0x23A0A, Sys.mbps20, Sys.mbps60 ),
+            new Patch(1, 0x23A18, Sys.mbps12, Sys.mbps24 ),
+            new Patch(1, 0x23A1E, Sys.mbps10, Sys.mbps20 ),
+                                  };
+
+        Patch[] patch_Extend_LiveView = {
+            new Patch(1, 0x23A352, new byte[] { 0x03, 0x84 }, new byte[] { 0x2A, 0x30 }),
+        };
+
+        // LV audio capture (which feeds HDMI audio) only runs while the sound level meter is shown.
+        // Replace "LDI:32 #0x3D09D6,R12; CALL @R12" (meter visible?) with "LDI:8 #1,R4; NOP x3" at each capture start/stop decision.
+        static readonly byte[] meter_check = { 0x9F, 0x8C, 0x00, 0x3D, 0x09, 0xD6, 0x97, 0x1C };
+        static readonly byte[] meter_forced = { 0xC0, 0x14, 0x9F, 0xA0, 0x9F, 0xA0, 0x9F, 0xA0 };
+        Patch[] patch_hdmi_audio = {
+            new Patch(1, 0x1965AC, meter_check, meter_forced),
+            new Patch(1, 0x197668, meter_check, meter_forced),
+            new Patch(1, 0x197746, meter_check, meter_forced),
+            new Patch(1, 0x19781A, meter_check, meter_forced),
+            new Patch(1, 0x19B33C, meter_check, meter_forced),
+            new Patch(1, 0x200216, meter_check, meter_forced),
+        };
 
         public D3200_0104()
         {
@@ -305,7 +394,14 @@
             Model = "D3200";
             Version = "1.04";
 
-            //Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "HDMI audio without sound level meter", patch_hdmi_audio));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Multi-Language Support", patch_Language_Fix));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate", patch_1080_36mbps, patch_1080_54mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate", patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 36mbps Bit-rate NQ old HQ", patch_1080_36mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_54mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 54mbps Bit-rate NQ old HQ", patch_1080_54mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_64mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Video 1080 HQ 64mbps Bit-rate NQ old HQ", patch_1080_64mbps_NQ, patch_1080_54mbps, patch_1080_36mbps, patch_1080_36mbps_NQ, patch_1080_54mbps_NQ));
+            Patches.Add(new PatchSet(PatchLevel.Beta, "Change 15 - minute LiveView to 3 - hour", patch_Extend_LiveView));
         }
     }
 }
