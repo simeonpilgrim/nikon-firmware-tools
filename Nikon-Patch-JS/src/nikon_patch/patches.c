@@ -356,6 +356,25 @@ uint8_t D3100_0102_006_change_072_a[] = {0x01};
 struct Change D3100_0102_006_change_072 = CHANGE(1, 0x84BD54, D3100_0102_006_change_072_b, D3100_0102_006_change_072_a);
 struct Change const * D3100_0102_006[] = {&D3100_0102_006_change_000,&D3100_0102_006_change_001,&D3100_0102_006_change_002,&D3100_0102_006_change_003,&D3100_0102_006_change_004,&D3100_0102_006_change_005,&D3100_0102_006_change_006,&D3100_0102_006_change_007,&D3100_0102_006_change_008,&D3100_0102_006_change_009,&D3100_0102_006_change_010,&D3100_0102_006_change_011,&D3100_0102_006_change_012,&D3100_0102_006_change_013,&D3100_0102_006_change_014,&D3100_0102_006_change_015,&D3100_0102_006_change_016,&D3100_0102_006_change_017,&D3100_0102_006_change_018,&D3100_0102_006_change_019,&D3100_0102_006_change_020,&D3100_0102_006_change_021,&D3100_0102_006_change_022,&D3100_0102_006_change_023,&D3100_0102_006_change_024,&D3100_0102_006_change_025,&D3100_0102_006_change_026,&D3100_0102_006_change_027,&D3100_0102_006_change_028,&D3100_0102_006_change_029,&D3100_0102_006_change_030,&D3100_0102_006_change_031,&D3100_0102_006_change_032,&D3100_0102_006_change_033,&D3100_0102_006_change_034,&D3100_0102_006_change_035,&D3100_0102_006_change_036,&D3100_0102_006_change_037,&D3100_0102_006_change_038,&D3100_0102_006_change_039,&D3100_0102_006_change_040,&D3100_0102_006_change_041,&D3100_0102_006_change_042,&D3100_0102_006_change_043,&D3100_0102_006_change_044,&D3100_0102_006_change_045,&D3100_0102_006_change_046,&D3100_0102_006_change_047,&D3100_0102_006_change_048,&D3100_0102_006_change_049,&D3100_0102_006_change_050,&D3100_0102_006_change_051,&D3100_0102_006_change_052,&D3100_0102_006_change_053,&D3100_0102_006_change_054,&D3100_0102_006_change_055,&D3100_0102_006_change_056,&D3100_0102_006_change_057,&D3100_0102_006_change_058,&D3100_0102_006_change_059,&D3100_0102_006_change_060,&D3100_0102_006_change_061,&D3100_0102_006_change_062,&D3100_0102_006_change_063,&D3100_0102_006_change_064,&D3100_0102_006_change_065,&D3100_0102_006_change_066,&D3100_0102_006_change_067,&D3100_0102_006_change_068,&D3100_0102_006_change_069,&D3100_0102_006_change_070,&D3100_0102_006_change_071,&D3100_0102_006_change_072};
 
+uint8_t D3100_0102_007_change_000_b[] = {0x00,0x00,0x00,0x1E,0x00,0x00,0x00,0x3C,0x00,0x00,0x00,0xB4,0x00,0x00,0x01,0x2C,0x00,0x00,0x07,0x08,0x00,0x00,0x07,0x08,0x00,0x00,0x07,0x08,0x00,0x00,0x07,0x08};
+uint8_t D3100_0102_007_change_000_a[] = {0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60,0x00,0x00,0x54,0x60};
+struct Change D3100_0102_007_change_000 = CHANGE(1, 0x1F7CE4, D3100_0102_007_change_000_b, D3100_0102_007_change_000_a);
+struct Change const * D3100_0102_007[] = {&D3100_0102_007_change_000};
+
+uint8_t D3100_0102_008_change_000_b[] = {0x9F,0x8C,0x8F,0xA9,0xD7,0xE6,0x06,0xC4};
+uint8_t D3100_0102_008_change_000_a[] = {0x9F,0x8C,0x00,0x21,0x4A,0x00,0x97,0x0C};
+struct Change D3100_0102_008_change_000 = CHANGE(1, 0x0D789C, D3100_0102_008_change_000_b, D3100_0102_008_change_000_a);
+uint8_t D3100_0102_008_change_001_b[] = {0x06,0x90,0xB0,0x70,0xE2,0x7F,0x81,0x79};
+uint8_t D3100_0102_008_change_001_a[] = {0x9F,0x8C,0x00,0x21,0x4A,0x40,0x97,0x0C};
+struct Change D3100_0102_008_change_001 = CHANGE(1, 0x2A693A, D3100_0102_008_change_001_b, D3100_0102_008_change_001_a);
+uint8_t D3100_0102_008_change_002_b[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+uint8_t D3100_0102_008_change_002_a[] = {0x9F,0x80,0x8F,0xA9,0xD8,0xA7,0x06,0x00,0xB5,0xB0,0xB1,0xD0,0xA8,0x00,0xE3,0x04,0x9F,0x8C,0x00,0x11,0x82,0x18,0x97,0x0C,0x9F,0x8C,0x8F,0xA9,0xD7,0xE6,0x06,0xC4,0x9F,0x8C,0x00,0x11,0x78,0xA4,0x97,0x0C};
+struct Change D3100_0102_008_change_002 = CHANGE(1, 0x1D4A00, D3100_0102_008_change_002_b, D3100_0102_008_change_002_a);
+uint8_t D3100_0102_008_change_003_b[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+uint8_t D3100_0102_008_change_003_a[] = {0x9F,0x80,0x8F,0xA9,0xD8,0xA7,0x06,0x00,0xB5,0xB0,0xB1,0xD0,0xA8,0x00,0xE3,0x05,0x81,0x79,0x9F,0x8C,0x00,0x2E,0x6A,0x3E,0x97,0x0C,0x06,0x90,0xB0,0x70,0xE2,0x05,0x81,0x79,0x9F,0x8C,0x00,0x2E,0x69,0x42,0x97,0x0C,0x9F,0x8C,0x00,0x2E,0x6A,0x3E,0x97,0x0C};
+struct Change D3100_0102_008_change_003 = CHANGE(1, 0x1D4A40, D3100_0102_008_change_003_b, D3100_0102_008_change_003_a);
+struct Change const * D3100_0102_008[] = {&D3100_0102_008_change_000,&D3100_0102_008_change_001,&D3100_0102_008_change_002,&D3100_0102_008_change_003};
+
 struct Patch D3100_0102_patches[] = {
     {.id = 1, .level = Released, .name="Change Time Based Video Restrictions to 17:28", .blocks={}, .changes=D3100_0102_000, .changes_len=(sizeof(D3100_0102_000)/sizeof(struct Change*))}
     ,{.id = 2, .level = Released, .name="Non-brand Battery", .blocks={}, .changes=D3100_0102_001, .changes_len=(sizeof(D3100_0102_001)/sizeof(struct Change*))}
@@ -364,6 +383,8 @@ struct Patch D3100_0102_patches[] = {
     ,{.id = 5, .level = Released, .name="Video 1080 HQ 54mbps Bit-rate", .blocks={4,7,6}, .changes=D3100_0102_004, .changes_len=(sizeof(D3100_0102_004)/sizeof(struct Change*))}
     ,{.id = 6, .level = Released, .name="Video 1080 HQ 64mbps Bit-rate", .blocks={5,4,7}, .changes=D3100_0102_005, .changes_len=(sizeof(D3100_0102_005)/sizeof(struct Change*))}
     ,{.id = 7, .level = Released, .name="Video HQ 29Mbps with playback", .blocks={4,5,6}, .changes=D3100_0102_006, .changes_len=(sizeof(D3100_0102_006)/sizeof(struct Change*))}
+    ,{.id = 8, .level = Beta, .name="Liveview - auto-off timer to 6 hours", .blocks={}, .changes=D3100_0102_007, .changes_len=(sizeof(D3100_0102_007)/sizeof(struct Change*))}
+    ,{.id = 9, .level = Beta, .name="Clean HDMI & LCD Liveview (Auto off timers: Short/Normal = clean)", .blocks={}, .changes=D3100_0102_008, .changes_len=(sizeof(D3100_0102_008)/sizeof(struct Change*))}
 };
 
 uint8_t D3200_0101_000_change_000_b[] = {0xF0,0x00,0x2A,0x1C};
