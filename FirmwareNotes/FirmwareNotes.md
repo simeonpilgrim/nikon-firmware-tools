@@ -137,3 +137,17 @@ B Firmware
 file: b830nnna.bin  
 processor: FR BE  
 
+
+D90
+=====
+
+A Firmware
+---
+file: D90_0101.bin  
+processor: FR BE  
+load base: 0x00000000  
+
+container: plain, payload @0x40, whole-file CRC-16/XMODEM (poly 0x1021) stored BE at EOF  
+retained flash: 0x9CCA6-0x13FFC2 blank in file, boot/service code, not rewritten by update  
+dfr map: dfr/d90.txt  
+
