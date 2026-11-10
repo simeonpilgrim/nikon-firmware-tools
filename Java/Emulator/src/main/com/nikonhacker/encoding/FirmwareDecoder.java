@@ -39,11 +39,14 @@ public class FirmwareDecoder {
             try {
                 byte[] source = FirmwareUtils.load(sourceFile);
                 int type = FirmwareUtils.tryXor(source);
+                List<FirmwareFileEntry> fileEntries;
                 if (type == 0) {
-                    throw new FirmwareFormatException("Unknown file type !!!");
+                    // Old plain format (e.g. D90) : not XOR-scrambled
+                    fileEntries = FirmwareUtils.unpackPlain(source);
                 }
-
-                List<FirmwareFileEntry> fileEntries = FirmwareUtils.unpack(source, type);
+                else {
+                    fileEntries = FirmwareUtils.unpack(source, type);
+                }
                 File unpackDir = new File(unpackDirName);
                 unpackDir.mkdirs();
                 for (FirmwareFileEntry fileEntry : fileEntries) {

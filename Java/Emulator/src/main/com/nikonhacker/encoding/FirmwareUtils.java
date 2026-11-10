@@ -141,6 +141,7 @@ public class FirmwareUtils {
     private static final int CRC_MASK = 0x1021;
     private static final int CRC_INIT_FILE = 0x0000;
     private static final int CRC_INIT_PACK = 0xcd18;
+    public static final int PLAIN_HEADER_LENGTH = 0x40;
 
     public static byte[] load(File f) throws IOException {
         FileInputStream fis = null;
@@ -316,6 +317,34 @@ public class FirmwareUtils {
         assertZero32(buffer, offset); offset +=4;
         assertZero32(buffer, offset); offset +=4;
 
+        return fileEntries;
+    }
+
+    /**
+     * Old plain format (e.g. D90) : 0x40-byte ASCII header, single block,
+     * payload to EOF-2, whole-file CRC stored big-endian in the last two bytes
+     */
+    public static List<FirmwareFileEntry> unpackPlain(byte[] buffer) throws IOException, NoSuchAlgorithmException, FirmwareFormatException {
+        if (buffer.length <= PLAIN_HEADER_LENGTH + 2) {
+            throw new FirmwareFormatException("File too small for plain format");
+        }
+        String name = getString(buffer, 8, 0x38);
+        if (!name.contains("Firmware")) {
+            throw new FirmwareFormatException("Not a plain-format firmware file");
+        }
+        int fileChecksum = getUInt16(buffer, buffer.length - 2);
+        int computedFileChecksum = computeChecksum(buffer, 0, buffer.length - 2);
+        if (computedFileChecksum != fileChecksum) {
+            throw new FirmwareFormatException("Warning : whole-file checksum not OK. Computed=" + computedFileChecksum + ", stored=" + fileChecksum);
+        }
+        String model = name.substring(0, name.indexOf("  Firmware")).trim();
+        char block = name.charAt(name.indexOf("Firmware ") + "Firmware ".length());
+        int payloadOffset = PLAIN_HEADER_LENGTH;
+        int payloadLength = buffer.length - 2 - payloadOffset;
+        // Entry carries the payload checksum, as the stored one covers the whole file
+        int payloadChecksum = computeChecksum(buffer, payloadOffset, payloadLength);
+        List<FirmwareFileEntry> fileEntries = new ArrayList<FirmwareFileEntry>();
+        fileEntries.add(new FirmwareFileEntry(model + "_" + block + ".bin", buffer, payloadOffset, payloadLength, payloadChecksum));
         return fileEntries;
     }
 
